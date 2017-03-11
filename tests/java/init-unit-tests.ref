@@ -2,6 +2,171 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "IosXrMultiCast" : "ios_xr_multicast",
+        "L2VPN" : "ios_xr_l2vpn",
+        "MCastRouting" : "ios_xr_multicast_routing",
+        "aaa_accounting" : "aaa_accounting",
+        "aaa_authentication_login_default_tacacs_local" : "aaa_authentication_login_default_tacacs_local",
+        "aaa_group_server_source_interface" : "aaa_group_server_source_interface",
+        "access_list" : "access_list",
+        "address_family" : "address_family",
+        "aggAddress" : "ios_bgp_aggregate_address",
+        "arista-event-handler" : "arista-event-handler",
+        "arista_ip_route" : "arista_ip_route",
+        "arista_logging" : "arista-logging",
+        "arista_misc" : "arista_misc",
+        "as_path_prepend" : "as_path_prepend",
+        "asa_acl" : "asa_acl",
+        "asa_ssh" : "asa_ssh",
+        "banner" : "banner",
+        "banner_dos" : "banner_dos",
+        "bgp_address_family" : "bgp_address_family",
+        "bgp_default_originate_policy" : "bgp_default_originate_policy",
+        "bgp_foundry" : "bgp_foundry",
+        "bgp_nsr" : "bgp_nsr",
+        "bgp_route_policy" : "bgp_route_policy",
+        "cisco_aaa" : "cisco_aaa",
+        "cisco_authentication" : "cisco_authentication",
+        "cisco_bgp" : "cisco_bgp",
+        "cisco_callhome" : "cisco_callhome",
+        "cisco_control_plane" : "cisco_control_plane",
+        "cisco_controller" : "cisco_controller",
+        "cisco_crypto" : "cisco_crypto",
+        "cisco_dhcp" : "cisco_dhcp",
+        "cisco_domain" : "cisco_domain",
+        "cisco_dot11" : "cisco_dot11",
+        "cisco_dot1x" : "cisco_dot1x",
+        "cisco_dspfarm" : "cisco_dscpfarm",
+        "cisco_dynamic_access_policy_record" : "cisco_dynamic_access_policy_record",
+        "cisco_flow" : "cisco_flow",
+        "cisco_hardware" : "cisco_hardware",
+        "cisco_interface" : "cisco_interface",
+        "cisco_ip" : "cisco_ip",
+        "cisco_ip_nat" : "cisco_ip_nat",
+        "cisco_ip_route" : "cisco_ip_route",
+        "cisco_ipsla" : "cisco_ipsla",
+        "cisco_ipv6" : "cisco_ipv6",
+        "cisco_ipv6_access_list" : "cisco_ipv6_access_list",
+        "cisco_isis" : "cisco_isis",
+        "cisco_line" : "cisco_line",
+        "cisco_logging" : "cisco_logging",
+        "cisco_mac_acl" : "cisco_mac_acl",
+        "cisco_misc" : "cisco_misc",
+        "cisco_mpls" : "cisco_mpls",
+        "cisco_multicast" : "cisco_multicast",
+        "cisco_ospf" : "cisco_ospf",
+        "cisco_pim" : "cisco_pim",
+        "cisco_platform" : "cisco_platform",
+        "cisco_privilege" : "cisco_privilege",
+        "cisco_qos" : "cisco_qos",
+        "cisco_queue_monitor" : "cisco_queue_monitor",
+        "cisco_redundancy" : "cisco_redundancy",
+        "cisco_role" : "cisco_role",
+        "cisco_route_map" : "cisco_route_map",
+        "cisco_sccp" : "cisco_sccp",
+        "cisco_snmp" : "cisco_snmp",
+        "cisco_spanning_tree" : "cisco_spanning_tree",
+        "cisco_ssh" : "cisco_ssh",
+        "cisco_stcapp" : "cisco_stcapp",
+        "cisco_style_acl1" : "cisco_style_acl1",
+        "cisco_style_acl2" : "cisco_style_acl2",
+        "cisco_tacacs" : "cisco_tacacs",
+        "cisco_track" : "cisco_track",
+        "cisco_vdc" : "cisco_vdc",
+        "cisco_vlan" : "cisco_vlan",
+        "cisco_voice_port" : "cisco_voice_port",
+        "cisco_vpdn" : "cisco_vpdn",
+        "cisco_vpn" : "cisco_vpn",
+        "cisco_vrrp" : "cisco_vrrp",
+        "cisco_webvpn" : "cisco_webvpn",
+        "cisco_wsma" : "cisco_wsma",
+        "colon_in_vrf" : "colon_in_vrf",
+        "commSet" : "ios_xr_community_set",
+        "community-name-numbers" : "community_name_numbers",
+        "community-name-numbers_dos" : "community_name_numbers_dos",
+        "community_list_named" : "community_list_named",
+        "community_set" : "community_set",
+        "eigrp" : "eigrp",
+        "foundry_access_list" : "foundry_access_list",
+        "foundry_bgp" : "foundry_bgp",
+        "foundry_interface" : "foundry_interface",
+        "foundry_misc" : "foundry_misc",
+        "foundry_vlan_group" : "foundry_vlan_group",
+        "host1" : "host1.json",
+        "if_tag_is" : "if_tag_is",
+        "interface_exit" : "interface_exit",
+        "interface_name" : "interface_name",
+        "interface_sdr" : "interface_sdr",
+        "ios_xr_acl" : "ios_xr_acl",
+        "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
+        "ios_xr_isis" : "ios_xr_isis",
+        "ios_xr_multipart" : "ios_xr_multipart",
+        "ios_xr_ntp" : "ios_xr_ntp",
+        "ios_xr_ospf" : "ios_xr_ospf",
+        "ios_xr_router_static" : "ios_xr_router_static",
+        "ios_xr_ssh" : "ios_xr_ssh",
+        "ios_xr_taskgroup" : "ios_xr_taskgroup",
+        "ip_access_list_with_seq" : "ip_access_list_with_seq",
+        "ip_prefix_list_single_line" : "ip_prefix_list_single_line",
+        "juniper-tcpflags" : "juniper-tcpflags",
+        "juniper_apply_macro" : "juniper_apply_macro",
+        "juniper_extended_community" : "juniper_extended_community",
+        "juniper_firewall" : "juniper_firewall",
+        "juniper_interfaces" : "juniper_interfaces",
+        "juniper_misc" : "juniper_misc",
+        "juniper_ntp" : "juniper_ntp",
+        "juniper_routing_options" : "juniper_routing_options",
+        "juniper_snmp" : "juniper_snmp",
+        "juniper_syslog" : "juniper_syslog",
+        "juniper_system" : "juniper_system",
+        "juniper_tacplus" : "juniper_tacplus",
+        "local_v6_addr" : "local_v6_addr",
+        "mac_access_list" : "mac_access_list",
+        "msdp_originator_id" : "msdp_originator_id",
+        "named_and_numbered_lists" : "named_and_numbered_lists",
+        "neighbor" : "neighbor",
+        "neighbor-name-numbers" : "neighbor_name_numbers",
+        "neighbor_dos" : "neighbor_dos",
+        "neighbor_mix" : "neighbor_mix",
+        "neighbor_nxos" : "neighbor_nxos",
+        "network6" : "network6",
+        "nexus" : "nexus",
+        "nexus-arista-router-bgp" : "nexus-arista-router-bgp",
+        "nexus_bgp" : "nexus_bgp",
+        "nexus_ntp" : "nexus_ntp",
+        "nexus_ssh" : "nexus_ssh",
+        "no_aaa_group_server" : "no_aaa_group_server",
+        "non_nexus_neighbor_af" : "non_nexus_neighbor_af",
+        "openflow" : "openflow",
+        "peer_template" : "peer_template",
+        "pim" : "pim",
+        "pim_snooping" : "pim_snooping",
+        "preSet" : "ios_xr_prefix_set",
+        "prefix_list_ipv4" : "prefix_list_ipv4",
+        "rP" : "ios_xr_route_policy",
+        "route_maps_in_two_address_families" : "route_maps_in_two_address_families",
+        "route_policy_as_path_set" : "route_policy_as_path",
+        "route_policy_igp_cost" : "route_policy_igp_cost",
+        "route_policy_metric_type" : "route_policy_metric_type",
+        "route_policy_param" : "route_policy_param",
+        "router_hsrp" : "router_hsrp",
+        "router_msdp" : "router_msdp",
+        "set_inline_community" : "set_inline_community",
+        "statistics" : "statistics",
+        "switchport_range" : "switchport_range",
+        "syslog_source_interface" : "syslog_source_interface",
+        "taskgroup" : "taskgroup",
+        "tcpflags" : "tcpflags",
+        "test" : "ip_default_route_classless",
+        "testrig/iptables/host1.iptables" : "host1.iptables",
+        "underscore_variable" : "underscore_variable",
+        "variables" : "variables",
+        "variables_dos" : "variables_dos",
+        "vlan_access_map4" : "vlan_access_map2",
+        "vrf_context" : "vrf_context",
+        "vxlan" : "vxlan"
+      },
       "parseStatus" : {
         "IosXrMultiCast" : "PASSED",
         "L2VPN" : "PASSED",
@@ -167,7 +332,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.8.1",
+      "version" : "0.9.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -218,402 +383,716 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "undefinedReferences" : {
-        "IosXrMultiCast" : {
-          "msdp peer sa-list" : [
-            "MSDP_filter"
-          ]
-        },
         "bgp_address_family" : {
-          "interface" : [
-            "Loopback0"
-          ],
-          "route-map" : [
-            "as1_to_as2",
-            "as1_to_as3",
-            "as2_to_as1",
-            "as3_to_as1"
-          ]
+          "interface" : {
+            "Loopback0" : {
+              "update-source interface" : [
+                14
+              ]
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "bgp outbound route-map" : [
+                26
+              ]
+            },
+            "as1_to_as3" : {
+              "bgp outbound route-map" : [
+                28
+              ]
+            },
+            "as2_to_as1" : {
+              "bgp inbound route-map" : [
+                27
+              ]
+            },
+            "as3_to_as1" : {
+              "bgp inbound route-map" : [
+                29
+              ]
+            }
+          }
         },
         "bgp_foundry" : {
-          "route-map" : [
-            "from_ucr",
-            "tag-bbone-prefixes"
-          ]
+          "route-map" : {
+            "from_ucr" : {
+              "bgp inbound route-map" : [
+                10
+              ]
+            },
+            "tag-bbone-prefixes" : {
+              "bgp ipv4 network statement route-map" : [
+                15
+              ]
+            }
+          }
         },
         "bgp_route_policy" : {
-          "bgp group" : [
-            "EBGP-PEER-SVL-PNI"
-          ]
+          "bgp group" : {
+            "EBGP-PEER-SVL-PNI" : {
+              "inherited BGP group" : [
+                0
+              ]
+            }
+          }
         },
         "cisco_interface" : {
-          "interface ip verify access-list" : [
-            "167"
-          ],
-          "ip nat source dynamic access-list" : [
-            "abc",
-            "def"
-          ]
-        },
-        "cisco_line" : {
-          "line access-class list" : [
-            "40",
-            "99",
-            "ipv6-vty-acl",
-            "vty-acl"
-          ]
+          "ipv4/6 acl" : {
+            "310-systems" : {
+              "interface outgoing ip access-list" : [
+                65
+              ]
+            }
+          }
         },
         "cisco_ospf" : {
-          "route-map" : [
-            "DIRECT_OSPF"
-          ]
-        },
-        "cisco_pim" : {
-          "pim acl" : [
-            "foobar"
-          ]
+          "route-map" : {
+            "DIRECT_OSPF" : {
+              "ospf redistribute connected route-map" : [
+                30
+              ]
+            }
+          }
         },
         "cisco_route_map" : {
-          "ipv4 prefix-list" : [
-            "bobble",
-            "hpr-connector-subnets"
-          ]
-        },
-        "cisco_snmp" : {
-          "snmp access-list" : [
-            "2",
-            "8",
-            "customer-snmp",
-            "dummyacl",
-            "snmp-acl",
-            "snmp-arpa-acl",
-            "to-VTY"
-          ]
+          "ipv4 prefix-list" : {
+            "bobble" : {
+              "route-map match ip prefix-list" : [
+                29
+              ]
+            },
+            "hpr-connector-subnets" : {
+              "route-map match ip prefix-list" : [
+                5
+              ]
+            }
+          }
         },
         "colon_in_vrf" : {
-          "route-map" : [
-            "RMT_PBI"
-          ]
+          "route-map" : {
+            "RMT_PBI" : {
+              "bgp redistribute connected route-map" : [
+                6
+              ]
+            }
+          }
         },
         "foundry_bgp" : {
-          "interface" : [
-            "Loopback1"
-          ]
-        },
-        "foundry_misc" : {
-          "ssh ipv4 access-list" : [
-            "blib"
-          ],
-          "ssh ipv6 access-list" : [
-            "blob"
-          ]
+          "interface" : {
+            "Loopback1" : {
+              "update-source interface" : [
+                0
+              ]
+            }
+          }
         },
         "ios_xr_bgp_neighbor_group" : {
-          "bgp group" : [
-            "bippety",
-            "excellect-group"
-          ],
-          "interface" : [
-            "Loopback0"
-          ]
-        },
-        "ios_xr_multipart" : {
-          "ssh ipv4 access-list" : [
-            "GNS-VTY-ACCESS"
-          ]
-        },
-        "ios_xr_ssh" : {
-          "ssh ipv4 access-list" : [
-            "ACL99"
-          ],
-          "ssh ipv6 access-list" : [
-            "ipv6-vty-acl"
-          ]
+          "bgp group" : {
+            "bippety" : {
+              "inherited BGP peer-session" : [
+                34
+              ]
+            },
+            "excellect-group" : {
+              "inherited BGP peer-session" : [
+                88
+              ]
+            }
+          },
+          "interface" : {
+            "Loopback0" : {
+              "update-source interface" : [
+                0
+              ]
+            }
+          }
         },
         "juniper_snmp" : {
-          "prefix-list" : [
-            "bippetyboo"
-          ]
+          "prefix-list" : {
+            "bippetyboo" : {
+              "snmp community prefix-list" : [
+                4
+              ]
+            }
+          }
         },
         "named_and_numbered_lists" : {
-          "ip acl" : [
-            "1",
-            "2",
-            "4",
-            "456def",
-            "5",
-            "95qrs5",
-            "a4",
-            "abc123"
-          ]
+          "ipv4/6 acl" : {
+            "1" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "2" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "4" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "456def" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "5" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "95qrs5" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "a4" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            },
+            "abc123" : {
+              "route-map match ip access-list" : [
+                5
+              ]
+            }
+          }
         },
         "neighbor_nxos" : {
-          "bgp group" : [
-            "KLMN"
-          ]
+          "bgp group" : {
+            "KLMN" : {
+              "inherited BGP group" : [
+                0
+              ]
+            }
+          }
         },
         "nexus_bgp" : {
-          "route-map" : [
-            "BLIB",
-            "BLIBB",
-            "BLOBB",
-            "EG_CCC",
-            "IN_BBB"
-          ]
+          "route-map" : {
+            "BLIB" : {
+              "bgp ipv6 network statement route-map" : [
+                21
+              ]
+            },
+            "BLIBB" : {
+              "bgp ipv4 network statement route-map" : [
+                18
+              ]
+            },
+            "BLOBB" : {
+              "bgp redistribute connected route-map" : [
+                15
+              ]
+            },
+            "EG_CCC" : {
+              "bgp outbound route-map" : [
+                29
+              ]
+            },
+            "IN_BBB" : {
+              "bgp inbound route-map" : [
+                28
+              ]
+            }
+          }
         },
         "peer_template" : {
-          "interface" : [
-            "Loopback1"
-          ],
-          "route-map" : [
-            "PROTECT-LEAF"
-          ]
+          "interface" : {
+            "Loopback1" : {
+              "update-source interface" : [
+                0
+              ]
+            }
+          },
+          "route-map" : {
+            "PROTECT-LEAF" : {
+              "bgp inbound route-map" : [
+                16
+              ]
+            }
+          }
         },
         "rP" : {
-          "as-path-set" : [
-            "chill-as-path",
-            "chill_aspath_141_deny",
-            "chill_aspath_141_permit",
-            "chill_aspath_142_permit",
-            "xo-deny-as"
-          ],
-          "ipv4 prefix-list" : [
-            "EBGP-PEER-BOGONS",
-            "EBGP-PEER-OTHER-UNDESIRABLES",
-            "EBGP-PEER-TOO-SPECIFIC",
-            "barbar_blackhole_routes",
-            "barbar_networks_ipv4",
-            "barbar_networks_ipv6",
-            "bippetyboppety_ipv4",
-            "local-peer-aggregates",
-            "null",
-            "remote-router-loopbacks"
-          ]
+          "as-path-set" : {
+            "chill-as-path" : {
+              "route-policy as-path in" : [
+                123
+              ]
+            },
+            "chill_aspath_141_deny" : {
+              "route-policy as-path in" : [
+                129
+              ]
+            },
+            "chill_aspath_141_permit" : {
+              "route-policy as-path in" : [
+                143
+              ]
+            },
+            "chill_aspath_142_permit" : {
+              "route-policy as-path in" : [
+                145
+              ]
+            },
+            "xo-deny-as" : {
+              "route-policy as-path in" : [
+                90
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "EBGP-PEER-BOGONS" : {
+              "route-policy prefix-set" : [
+                78
+              ]
+            },
+            "EBGP-PEER-OTHER-UNDESIRABLES" : {
+              "route-policy prefix-set" : [
+                78
+              ]
+            },
+            "EBGP-PEER-TOO-SPECIFIC" : {
+              "route-policy prefix-set" : [
+                80
+              ]
+            },
+            "barbar_blackhole_routes" : {
+              "route-policy prefix-set" : [
+                5,
+                51
+              ]
+            },
+            "barbar_networks_ipv4" : {
+              "route-policy prefix-set" : [
+                51
+              ]
+            },
+            "barbar_networks_ipv6" : {
+              "route-policy prefix-set" : [
+                21
+              ]
+            },
+            "bippetyboppety_ipv4" : {
+              "route-policy prefix-set" : [
+                44,
+                51
+              ]
+            },
+            "local-peer-aggregates" : {
+              "route-policy prefix-set" : [
+                68
+              ]
+            },
+            "null" : {
+              "route-policy prefix-set" : [
+                114
+              ]
+            },
+            "remote-router-loopbacks" : {
+              "route-policy prefix-set" : [
+                66
+              ]
+            }
+          }
         },
         "route_policy_as_path_set" : {
-          "ipv4 prefix-list" : [
-            "CENIC_DC_Internal",
-            "classful_default"
-          ]
+          "ipv4 prefix-list" : {
+            "CENIC_DC_Internal" : {
+              "route-policy prefix-set" : [
+                23
+              ]
+            },
+            "classful_default" : {
+              "route-policy prefix-set" : [
+                14
+              ]
+            }
+          }
         },
         "route_policy_metric_type" : {
-          "ipv4 prefix-list" : [
-            "DC_Internal"
-          ]
+          "ipv4 prefix-list" : {
+            "DC_Internal" : {
+              "route-policy prefix-set" : [
+                7
+              ]
+            }
+          }
         },
         "route_policy_param" : {
-          "ipv4 prefix-list" : [
-            "$cust_v4_pfx"
-          ]
+          "ipv4 prefix-list" : {
+            "$cust_v4_pfx" : {
+              "route-policy prefix-set" : [
+                5
+              ]
+            }
+          }
         },
         "underscore_variable" : {
-          "ipv4 prefix-list" : [
-            "ABC_DEF",
-            "_GHI"
-          ]
+          "ipv4 prefix-list" : {
+            "ABC_DEF" : {
+              "route-map match ip prefix-list" : [
+                5
+              ]
+            },
+            "_GHI" : {
+              "route-map match ip prefix-list" : [
+                5
+              ]
+            }
+          }
+        },
+        "variables" : {
+          "ipv4/6 acl" : {
+            "ABC_def.gh_vlan789_out_20000101" : {
+              "interface outgoing ip access-list" : [
+                5
+              ]
+            }
+          }
+        },
+        "variables_dos" : {
+          "ipv4/6 acl" : {
+            "ABC_def.gh_vlan789_out_20000101" : {
+              "interface outgoing ip access-list" : [
+                5
+              ]
+            }
+          }
         }
       },
       "unusedStructures" : {
         "aggAddress" : {
-          "ipv4 prefix-list" : [
-            "ScienceDMZ-networks"
-          ],
-          "ipv6 prefix-list" : [
-            "ScienceDMZ-networks"
-          ]
+          "ipv4 prefix-list" : {
+            "ScienceDMZ-networks" : [
+              14
+            ]
+          },
+          "ipv6 prefix-list" : {
+            "ScienceDMZ-networks" : [
+              16
+            ]
+          }
         },
         "as_path_prepend" : {
-          "route-map" : [
-            "rmap"
-          ]
+          "route-map" : {
+            "rmap" : [
+              4
+            ]
+          }
         },
         "asa_acl" : {
-          "ip acl" : [
-            "Local_LAN_Access",
-            "outside",
-            "outside_in"
-          ]
+          "extended ip access-list" : {
+            "outside" : [
+              6
+            ],
+            "outside_in" : [
+              4
+            ]
+          },
+          "standard ip access-list" : {
+            "Local_LAN_Access" : [
+              5
+            ]
+          }
         },
         "bgp_address_family" : {
-          "bgp group" : [
-            "as3",
-            "dcp-rrs"
-          ]
+          "bgp group" : {
+            "as3" : [
+              11
+            ],
+            "dcp-rrs" : [
+              16
+            ]
+          }
         },
         "bgp_default_originate_policy" : {
-          "bgp group" : [
-            "ama-coe"
-          ]
+          "bgp group" : {
+            "ama-coe" : [
+              5
+            ]
+          }
         },
         "bgp_foundry" : {
-          "bgp group" : [
-            "ucr"
-          ]
+          "bgp group" : {
+            "ucr" : [
+              7
+            ]
+          }
         },
         "cisco_ipv6_access_list" : {
-          "ipv6 acl" : [
-            "RT404888-XO",
-            "abcdefg"
-          ]
+          "extended ipv6 access-list" : {
+            "RT404888-XO" : [
+              4
+            ],
+            "abcdefg" : [
+              19
+            ]
+          }
         },
         "cisco_route_map" : {
-          "route-map" : [
-            "MSDP-SA-RP-FILTER",
-            "beeble",
-            "connected-to-bgp",
-            "ijfw$%^&****(((([]grr",
-            "mgmt",
-            "next-hop-null",
-            "to_svl-hub-router"
-          ]
+          "route-map" : {
+            "MSDP-SA-RP-FILTER" : [
+              19
+            ],
+            "beeble" : [
+              28
+            ],
+            "connected-to-bgp" : [
+              4
+            ],
+            "ijfw$%^&****(((([]grr" : [
+              17
+            ],
+            "mgmt" : [
+              25
+            ],
+            "next-hop-null" : [
+              22
+            ],
+            "to_svl-hub-router" : [
+              12
+            ]
+          }
         },
         "cisco_style_acl1" : {
-          "ip acl" : [
-            "blah"
-          ]
+          "extended ip access-list" : {
+            "blah" : [
+              1
+            ]
+          }
         },
         "cisco_style_acl2" : {
-          "ip acl" : [
-            "1"
-          ]
+          "standard ip access-list" : {
+            "1" : [
+              1
+            ]
+          }
         },
         "community-name-numbers" : {
-          "route-map" : [
-            "AAA1-BBB-CCC"
-          ]
+          "route-map" : {
+            "AAA1-BBB-CCC" : [
+              6
+            ]
+          }
         },
         "community-name-numbers_dos" : {
-          "route-map" : [
-            "AAA1-BBB-CCC"
-          ]
+          "route-map" : {
+            "AAA1-BBB-CCC" : [
+              6
+            ]
+          }
         },
         "community_list_named" : {
-          "community-list" : [
-            "COMM_LIST_NAME"
-          ],
-          "route-map" : [
-            "TO_NEIGHBOR"
-          ]
+          "route-map" : {
+            "TO_NEIGHBOR" : [
+              8
+            ]
+          },
+          "standard community-list" : {
+            "COMM_LIST_NAME" : [
+              6
+            ]
+          }
         },
         "eigrp" : {
-          "ip acl" : [
-            "bippety",
-            "bloop_blop"
-          ]
+          "extended ip access-list" : {
+            "bippety" : [
+              21
+            ],
+            "bloop_blop" : [
+              90
+            ]
+          }
         },
         "foundry_access_list" : {
-          "ipv6 acl" : [
-            "RT404888-Caltech"
-          ]
+          "extended ipv6 access-list" : {
+            "RT404888-Caltech" : [
+              8
+            ]
+          }
         },
         "foundry_bgp" : {
-          "bgp group" : [
-            "bippety",
-            "boop"
-          ]
+          "bgp group" : {
+            "bippety" : [
+              11
+            ],
+            "boop" : [
+              18
+            ]
+          }
         },
         "ios_xr_bgp_neighbor_group" : {
-          "bgp group" : [
-            "blabbety",
-            "blappety",
-            "foobar-iBGP_border_ipv6",
-            "foobar-iBGP_ipv6"
-          ],
-          "bgp session" : [
-            "OLA",
-            "blibber"
-          ]
+          "bgp group" : {
+            "blabbety" : [
+              10
+            ],
+            "blappety" : [
+              5
+            ],
+            "foobar-iBGP_border_ipv6" : [
+              67
+            ],
+            "foobar-iBGP_ipv6" : [
+              46
+            ]
+          },
+          "bgp session" : {
+            "OLA" : [
+              92
+            ],
+            "blibber" : [
+              15
+            ]
+          }
         },
         "ip_access_list_with_seq" : {
-          "ip acl" : [
-            "BLAH-BLAH"
-          ]
+          "extended ip access-list" : {
+            "BLAH-BLAH" : [
+              4
+            ]
+          }
         },
         "ip_prefix_list_single_line" : {
-          "ipv4 prefix-list" : [
-            "DENY-IPV4-ANY-IN"
-          ]
+          "ipv4 prefix-list" : {
+            "DENY-IPV4-ANY-IN" : [
+              4
+            ]
+          }
         },
         "juniper-tcpflags" : {
-          "filter" : [
-            "foo"
-          ]
+          "firewall filter" : {
+            "foo" : [
+              4
+            ]
+          }
         },
         "juniper_firewall" : {
-          "filter" : [
-            "blah"
-          ]
+          "firewall filter" : {
+            "blah" : [
+              4
+            ]
+          }
         },
         "local_v6_addr" : {
-          "bgp group" : [
-            "NEIGH"
-          ]
+          "bgp group" : {
+            "NEIGH" : [
+              5
+            ]
+          }
         },
         "named_and_numbered_lists" : {
-          "route-map" : [
-            "foo"
-          ]
+          "route-map" : {
+            "foo" : [
+              4
+            ]
+          }
         },
         "neighbor" : {
-          "bgp group" : [
-            "1.2.3.4abc",
-            "123.123.123.abc",
-            "1234-5",
-            "abc1.2.3.4",
-            "abc1.2.3.4def"
-          ]
+          "bgp group" : {
+            "1.2.3.4abc" : [
+              7
+            ],
+            "123.123.123.abc" : [
+              11
+            ],
+            "1234-5" : [
+              5
+            ],
+            "abc1.2.3.4" : [
+              8
+            ],
+            "abc1.2.3.4def" : [
+              9
+            ]
+          }
         },
         "neighbor-name-numbers" : {
-          "bgp group" : [
-            "8075-CORE"
-          ]
+          "bgp group" : {
+            "8075-CORE" : [
+              6
+            ]
+          }
         },
         "neighbor_dos" : {
-          "bgp group" : [
-            "1.2.3.4abc",
-            "123.123.123.abc",
-            "1234-5",
-            "abc1.2.3.4",
-            "abc1.2.3.4def"
-          ]
+          "bgp group" : {
+            "1.2.3.4abc" : [
+              7
+            ],
+            "123.123.123.abc" : [
+              11
+            ],
+            "1234-5" : [
+              5
+            ],
+            "abc1.2.3.4" : [
+              8
+            ],
+            "abc1.2.3.4def" : [
+              9
+            ]
+          }
         },
         "nexus_bgp" : {
-          "bgp group" : [
-            "PEER_BLLF"
-          ]
+          "bgp group" : {
+            "PEER_BLLF" : [
+              22
+            ]
+          }
         },
         "preSet" : {
-          "ipv4 prefix-list" : [
-            "default_route",
-            "ucla_networks"
-          ]
+          "ipv4 prefix-list" : {
+            "default_route" : [
+              4
+            ],
+            "ucla_networks" : [
+              7
+            ]
+          }
         },
         "prefix_list_ipv4" : {
-          "ipv4 prefix-list" : [
-            "test"
-          ],
-          "route-map" : [
-            "to_elacc"
-          ]
+          "ipv4 prefix-list" : {
+            "test" : [
+              4
+            ]
+          },
+          "route-map" : {
+            "to_elacc" : [
+              9
+            ]
+          }
         },
         "route_policy_as_path_set" : {
-          "as-path-set" : [
-            "ama-coe-as-path",
-            "ama-coe-as-path2",
-            "ama-coe-as-path3"
-          ]
+          "as-path-set" : {
+            "ama-coe-as-path" : [
+              32
+            ],
+            "ama-coe-as-path2" : [
+              35
+            ],
+            "ama-coe-as-path3" : [
+              37
+            ]
+          }
         },
         "tcpflags" : {
-          "ip acl" : [
-            "100"
-          ]
+          "extended ip access-list" : {
+            "100" : [
+              4
+            ]
+          }
         },
         "underscore_variable" : {
-          "route-map" : [
-            "JKL_MNO_PQR"
-          ]
+          "route-map" : {
+            "JKL_MNO_PQR" : [
+              4
+            ]
+          }
         }
       },
-      "version" : "0.8.1",
+      "version" : "0.9.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -633,8 +1112,7 @@
         },
         "cisco_interface" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Ethernet1/11' configured with non-existent outgoing acl '310-systems'",
-            "2" : "MISCELLANEOUS: Interface: 'Loopback0' contains OSPF settings, but there is no OSPF process"
+            "1" : "MISCELLANEOUS: Interface: 'Loopback0' contains OSPF settings, but there is no OSPF process"
           }
         },
         "ios_xr_bgp_neighbor_group" : {
@@ -691,16 +1169,6 @@
         "route_maps_in_two_address_families" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.1.1.1'"
-          }
-        },
-        "variables" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'FastEthernet0/0' configured with non-existent outgoing acl 'ABC_def.gh_vlan789_out_20000101'"
-          }
-        },
-        "variables_dos" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'FastEthernet0/0' configured with non-existent outgoing acl 'ABC_def.gh_vlan789_out_20000101'"
           }
         }
       }

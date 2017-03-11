@@ -38,6 +38,8 @@ public class OspfProcess extends ComparableStructure<String> {
 
    private String _defaultInformationOriginateMap;
 
+   private Integer _defaultInformationOriginateMapLine;
+
    private Set<String> _interfaceBlacklist;
 
    private Set<String> _interfaceWhitelist;
@@ -122,6 +124,10 @@ public class OspfProcess extends ComparableStructure<String> {
       return _defaultInformationOriginateMap;
    }
 
+   public Integer getDefaultInformationOriginateMapLine() {
+      return _defaultInformationOriginateMapLine;
+   }
+
    public Set<OspfNetwork> getNetworks() {
       return _networks;
    }
@@ -176,6 +182,11 @@ public class OspfProcess extends ComparableStructure<String> {
 
    public void setDefaultInformationOriginateMap(String name) {
       _defaultInformationOriginateMap = name;
+   }
+
+   public void setDefaultInformationOriginateMapLine(
+         Integer defaultInformationOriginateMapLine) {
+      _defaultInformationOriginateMapLine = defaultInformationOriginateMapLine;
    }
 
    public void setPassiveInterfaceDefault(boolean b) {

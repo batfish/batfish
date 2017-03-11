@@ -4,15 +4,16 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.Problem;
+import org.batfish.datamodel.answers.ProblemsAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -21,15 +22,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
-   public static class UnusedStructuresAnswerElement implements AnswerElement {
+   public static class UnusedStructuresAnswerElement
+         extends ProblemsAnswerElement {
 
-      private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
+      private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> _unusedStructures;
 
       public UnusedStructuresAnswerElement() {
          _unusedStructures = new TreeMap<>();
       }
 
-      public SortedMap<String, SortedMap<String, SortedSet<String>>> getUnusedStructures() {
+      public SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> getUnusedStructures() {
          return _unusedStructures;
       }
 
@@ -40,16 +42,17 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
             sb.append(node + ":\n");
             types.forEach((type, members) -> {
                sb.append("  " + type + ":\n");
-               for (String member : members) {
-                  sb.append("    " + member + "\n");
-               }
+               members.forEach((member, lines) -> {
+                  sb.append(
+                        "    " + member + " lines " + lines.toString() + "\n");
+               });
             });
          });
          return sb.toString();
       }
 
       public void setUnusedStructures(
-            SortedMap<String, SortedMap<String, SortedSet<String>>> undefinedReferences) {
+            SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> undefinedReferences) {
          _unusedStructures = undefinedReferences;
       }
    }
@@ -61,10 +64,8 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
-
+      public UnusedStructuresAnswerElement answer() {
          UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
-
          Pattern nodeRegex;
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -75,20 +76,39 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-
          _batfish.checkConfigurations();
          UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
          ConvertConfigurationAnswerElement ccae = _batfish
-               .getConvertConfigurationAnswerElement();
-         for (Entry<String, SortedMap<String, SortedSet<String>>> e : ccae
-               .getUnusedStructures().entrySet()) {
-            String hostname = e.getKey();
-            if (!nodeRegex.matcher(hostname).matches()) {
-               continue;
+               .loadConvertConfigurationAnswerElement();
+         ccae.getUnusedStructures().forEach((hostname, byType) -> {
+            if (nodeRegex.matcher(hostname).matches()) {
+               answerElement.getUnusedStructures().put(hostname, byType);
             }
-            SortedMap<String, SortedSet<String>> byType = e.getValue();
-            answerElement.getUnusedStructures().put(hostname, byType);
-         }
+         });
+
+         ParseVendorConfigurationAnswerElement pvcae = _batfish
+               .loadParseVendorConfigurationAnswerElement();
+         SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
+         answerElement.getUnusedStructures().forEach((hostname, byType) -> {
+            String filename = hostnameFilenameMap.get(hostname);
+            if (filename != null) {
+               byType.forEach((type, byName) -> {
+                  byName.forEach((name, lines) -> {
+                     String problemShort = "unused:" + type + ":" + name;
+                     Problem problem = answerElement.getProblems()
+                           .get(problemShort);
+                     if (problem == null) {
+                        problem = new Problem();
+                        String problemLong = "Unused structure of type: '"
+                              + type + "' with name: '" + name + "'";
+                        problem.setDescription(problemLong);
+                        answerElement.getProblems().put(problemShort, problem);
+                     }
+                     problem.getFiles().put(filename, lines);
+                  });
+               });
+            }
+         });
          return answerElement;
       }
 

@@ -214,7 +214,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
          IpsecPolicy ipsecPolicy = new IpsecPolicy(vpnId);
          vpnGatewayCfgNode.getIpsecPolicies().put(vpnId, ipsecPolicy);
          ipsecVpn.setIpsecPolicy(ipsecPolicy);
-         IpsecProposal ipsecProposal = new IpsecProposal(vpnId);
+         IpsecProposal ipsecProposal = new IpsecProposal(vpnId, -1);
          vpnGatewayCfgNode.getIpsecProposals().put(vpnId, ipsecProposal);
          ipsecPolicy.getProposals().put(vpnId, ipsecProposal);
          IkeGateway ikeGateway = new IkeGateway(vpnId);
@@ -223,7 +223,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
          IkePolicy ikePolicy = new IkePolicy(vpnId);
          vpnGatewayCfgNode.getIkePolicies().put(vpnId, ikePolicy);
          ikeGateway.setIkePolicy(ikePolicy);
-         IkeProposal ikeProposal = new IkeProposal(vpnId);
+         IkeProposal ikeProposal = new IkeProposal(vpnId, -1);
          vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
          ikePolicy.getProposals().put(vpnId, ikeProposal);
          String externalInterfaceName = "external" + idNum;

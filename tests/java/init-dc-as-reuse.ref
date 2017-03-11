@@ -2,6 +2,18 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "plane_0_spine_0" : "plane_0_spine_0",
+        "plane_1_spine_0" : "plane_1_spine_0",
+        "pod_0_leaf_0" : "pod_0_leaf_0",
+        "pod_0_leaf_1" : "pod_0_leaf_1",
+        "pod_0_tor_0" : "pod_0_tor_0",
+        "pod_0_tor_1" : "pod_0_tor_1",
+        "pod_1_leaf_0" : "pod_1_leaf_0",
+        "pod_1_leaf_1" : "pod_1_leaf_1",
+        "pod_1_tor_0" : "pod_1_tor_0",
+        "pod_1_tor_1" : "pod_1_tor_1"
+      },
       "parseStatus" : {
         "plane_0_spine_0" : "PASSED",
         "plane_1_spine_0" : "PASSED",
@@ -14,103 +26,163 @@
         "pod_1_tor_0" : "PASSED",
         "pod_1_tor_1" : "PASSED"
       },
-      "version" : "0.8.1"
+      "version" : "0.9.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "unusedStructures" : {
         "plane_0_spine_0" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              54
+            ],
+            "IPV4_18_OR_LONGER" : [
+              55
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              52
+            ]
+          }
         },
         "plane_1_spine_0" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              54
+            ],
+            "IPV4_18_OR_LONGER" : [
+              55
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              52
+            ]
+          }
         },
         "pod_0_leaf_0" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_0_leaf_1" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_0_tor_0" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_0_tor_1" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_1_leaf_0" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_1_leaf_1" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_1_tor_0" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         },
         "pod_1_tor_1" : {
-          "community-list" : [
-            "LEAK_COMMUNITY"
-          ],
-          "ipv4 prefix-list" : [
-            "DEFAULT_IPV4",
-            "IPV4_18_OR_LONGER"
-          ]
+          "ipv4 prefix-list" : {
+            "DEFAULT_IPV4" : [
+              61
+            ],
+            "IPV4_18_OR_LONGER" : [
+              62
+            ]
+          },
+          "standard community-list" : {
+            "LEAK_COMMUNITY" : [
+              59
+            ]
+          }
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.9.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

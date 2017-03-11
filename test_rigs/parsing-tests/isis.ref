@@ -2,6 +2,15 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "A1Border" : "A1Border.cfg",
+        "A1Dist" : "A1Dist.cfg",
+        "A1Inter" : "A1Inter.cfg",
+        "A2Dist1" : "A2Dist1.cfg",
+        "A2Dist2" : "A2Dist2.cfg",
+        "A2Inter" : "A2Inter.cfg",
+        "ISP" : "ISP.cfg"
+      },
       "parseStatus" : {
         "A1Border" : "PASSED",
         "A1Dist" : "PASSED",
@@ -2437,11 +2446,11 @@
           ]
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.9.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.8.1"
+      "version" : "0.9.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

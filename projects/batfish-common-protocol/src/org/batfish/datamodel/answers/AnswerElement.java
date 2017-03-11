@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public interface AnswerElement {
 
    default String prettyPrint() {
-      // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
          return mapper.writeValueAsString(this);
@@ -19,7 +18,6 @@ public interface AnswerElement {
       catch (JsonProcessingException e) {
          throw new BatfishException("Failed to pretty print answer element", e);
       }
-
    }
 
 }

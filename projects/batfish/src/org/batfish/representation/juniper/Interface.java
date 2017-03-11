@@ -49,7 +49,11 @@ public class Interface extends ComparableStructure<String> {
 
    private double _bandwidth;
 
+   private final int _definitionLine;
+
    private String _incomingFilter;
+
+   private int _incomingFilterLine;
 
    private transient boolean _inherited;
 
@@ -73,6 +77,8 @@ public class Interface extends ComparableStructure<String> {
 
    private String _outgoingFilter;
 
+   private int _outgoingFilterLine;
+
    private Interface _parent;
 
    private Prefix _preferredPrefix;
@@ -91,15 +97,16 @@ public class Interface extends ComparableStructure<String> {
 
    @SuppressWarnings("unused")
    private Interface() {
-      this(null);
+      this(null, -1);
    }
 
-   public Interface(String name) {
+   public Interface(String name, int definitionLine) {
       super(name);
       _active = true;
       _allPrefixes = new LinkedHashSet<>();
       _allPrefixIps = new LinkedHashSet<>();
       _bandwidth = getDefaultBandwidthByName(name);
+      _definitionLine = definitionLine;
       _isisSettings = new IsisInterfaceSettings();
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
@@ -139,8 +146,16 @@ public class Interface extends ComparableStructure<String> {
       return _bandwidth;
    }
 
+   public int getDefinitionLine() {
+      return _definitionLine;
+   }
+
    public String getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public int getIncomingFilterLine() {
+      return _incomingFilterLine;
    }
 
    public IsisInterfaceSettings getIsisSettings() {
@@ -181,6 +196,10 @@ public class Interface extends ComparableStructure<String> {
 
    public String getOutgoingFilter() {
       return _outgoingFilter;
+   }
+
+   public int getOutgoingFilterLine() {
+      return _outgoingFilterLine;
    }
 
    public Interface getParent() {
@@ -243,6 +262,10 @@ public class Interface extends ComparableStructure<String> {
       _incomingFilter = accessListName;
    }
 
+   public void setIncomingFilterLine(int incomingFilterLine) {
+      _incomingFilterLine = incomingFilterLine;
+   }
+
    public void setIsoAddress(IsoAddress address) {
       _isoAddress = address;
    }
@@ -273,6 +296,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setOutgoingFilter(String accessListName) {
       _outgoingFilter = accessListName;
+   }
+
+   public void setOutgoingFilterLine(int outgoingFilterLine) {
+      _outgoingFilterLine = outgoingFilterLine;
    }
 
    public void setParent(Interface parent) {

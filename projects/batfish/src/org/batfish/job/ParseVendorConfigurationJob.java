@@ -325,6 +325,7 @@ public class ParseVendorConfigurationJob
       }
       vc = extractor.getVendorConfiguration();
       vc.setVendor(format);
+      vc.setFilename(_file.getFileName().toString());
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {

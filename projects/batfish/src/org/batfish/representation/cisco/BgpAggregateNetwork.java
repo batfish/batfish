@@ -10,6 +10,8 @@ public abstract class BgpAggregateNetwork implements Serializable {
 
    private String _attributeMap;
 
+   private int _attributeMapLine;
+
    private boolean _summaryOnly;
 
    @Override
@@ -21,6 +23,10 @@ public abstract class BgpAggregateNetwork implements Serializable {
 
    public String getAttributeMap() {
       return _attributeMap;
+   }
+
+   public int getAttributeMapLine() {
+      return _attributeMapLine;
    }
 
    public boolean getSummaryOnly() {
@@ -36,6 +42,10 @@ public abstract class BgpAggregateNetwork implements Serializable {
 
    public void setAttributeMap(String attributeMap) {
       _attributeMap = attributeMap;
+   }
+
+   public void setAttributeMapLine(int attributeMapLine) {
+      _attributeMapLine = attributeMapLine;
    }
 
    public void setSummaryOnly(boolean summaryOnly) {

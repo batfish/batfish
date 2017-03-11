@@ -1,6 +1,7 @@
 package org.batfish.question.nodespath;
 
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -11,6 +12,10 @@ public class NodesPathResult {
    private NodesPath _path;
 
    private SortedMap<ConcretePath, JsonNode> _result;
+
+   public NodesPathResult() {
+      _result = new TreeMap<>();
+   }
 
    public Integer getNumResults() {
       return _numResults;

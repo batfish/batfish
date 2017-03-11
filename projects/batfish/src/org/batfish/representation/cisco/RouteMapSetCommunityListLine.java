@@ -22,8 +22,12 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
 
    private final Set<String> _communityLists;
 
-   public RouteMapSetCommunityListLine(Set<String> communityLists) {
+   private final int _statementLine;
+
+   public RouteMapSetCommunityListLine(Set<String> communityLists,
+         int statementLine) {
       _communityLists = communityLists;
+      _statementLine = statementLine;
    }
 
    @Override
@@ -56,8 +60,8 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
             }
          }
          else {
-            w.redFlag("Reference to undefined community list: \""
-                  + communityListName + "\"");
+            cc.undefined(CiscoStructureType.COMMUNITY_LIST, communityListName,
+                  CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY, _statementLine);
          }
       }
       statements.add(new SetCommunity(

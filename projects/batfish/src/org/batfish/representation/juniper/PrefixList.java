@@ -13,15 +13,22 @@ public class PrefixList extends ReferenceCountedStructure {
     */
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private boolean _ipv6;
 
    private String _name;
 
    private Set<Prefix> _prefixes;
 
-   public PrefixList(String name) {
+   public PrefixList(String name, int definitionLine) {
       _name = name;
+      _definitionLine = definitionLine;
       _prefixes = new TreeSet<>();
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public boolean getIpv6() {

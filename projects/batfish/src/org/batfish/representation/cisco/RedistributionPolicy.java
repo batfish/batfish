@@ -11,7 +11,13 @@ public abstract class RedistributionPolicy implements Serializable {
    private static final long serialVersionUID = 1L;
 
    protected final RoutingProtocol _destinationProtocol;
+
+   protected String _routeMap;
+
+   protected Integer _routeMapLine;
+
    protected final RoutingProtocol _sourceProtocol;
+
    protected final Map<String, Object> _specialAttributes;
 
    public RedistributionPolicy(RoutingProtocol sourceProtocol,
@@ -25,12 +31,28 @@ public abstract class RedistributionPolicy implements Serializable {
       return _destinationProtocol;
    }
 
+   public String getRouteMap() {
+      return _routeMap;
+   }
+
+   public Integer getRouteMapLine() {
+      return _routeMapLine;
+   }
+
    public RoutingProtocol getSourceProtocol() {
       return _sourceProtocol;
    }
 
    public Map<String, Object> getSpecialAttributes() {
       return _specialAttributes;
+   }
+
+   public void setRouteMap(String routeMap) {
+      _routeMap = routeMap;
+   }
+
+   public void setRouteMapLine(Integer routeMapLine) {
+      _routeMapLine = routeMapLine;
    }
 
 }

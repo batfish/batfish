@@ -12,7 +12,7 @@ public class RouteMapClause implements Serializable {
 
    private LineAction _action;
 
-   private RouteMapContinueLine _continueLine;
+   private RouteMapContinue _continueLine;
 
    private boolean _ignore;
 
@@ -44,7 +44,7 @@ public class RouteMapClause implements Serializable {
       return _action;
    }
 
-   public RouteMapContinueLine getContinueLine() {
+   public RouteMapContinue getContinueLine() {
       return _continueLine;
    }
 
@@ -68,7 +68,7 @@ public class RouteMapClause implements Serializable {
       return _setList;
    }
 
-   public void setContinueLine(RouteMapContinueLine continueLine) {
+   public void setContinueLine(RouteMapContinue continueLine) {
       _continueLine = continueLine;
    }
 

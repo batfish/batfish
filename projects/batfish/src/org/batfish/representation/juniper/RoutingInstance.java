@@ -1,8 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -26,6 +25,8 @@ public class RoutingInstance implements Serializable {
 
    private String _forwardingTableExportPolicy;
 
+   private int _forwardingTableExportPolicyLine;
+
    private final Interface _globalMasterInterface;
 
    private String _hostname;
@@ -46,7 +47,7 @@ public class RoutingInstance implements Serializable {
 
    private Map<Ip, OspfArea> _ospfAreas;
 
-   private List<String> _ospfExportPolicies;
+   private Map<String, Integer> _ospfExportPolicies;
 
    private double _ospfReferenceBandwidth;
 
@@ -63,13 +64,13 @@ public class RoutingInstance implements Serializable {
       _interfaces = new TreeMap<>();
       _ipBgpGroups = new TreeMap<>();
       _masterBgpGroup = new BgpGroup();
-      _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
+      _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME, -1);
       _globalMasterInterface.setRoutingInstance(name);
       _name = name;
       _namedBgpGroups = new TreeMap<>();
       _nodeDevices = new TreeMap<>();
       _ospfAreas = new TreeMap<>();
-      _ospfExportPolicies = new ArrayList<>();
+      _ospfExportPolicies = new LinkedHashMap<>();
       _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
       _ribs = new TreeMap<>();
       _ribs.put(RoutingInformationBase.RIB_IPV4_UNICAST,
@@ -100,6 +101,10 @@ public class RoutingInstance implements Serializable {
 
    public String getForwardingTableExportPolicy() {
       return _forwardingTableExportPolicy;
+   }
+
+   public int getForwardingTableExportPolicyLine() {
+      return _forwardingTableExportPolicyLine;
    }
 
    public Interface getGlobalMasterInterface() {
@@ -142,7 +147,7 @@ public class RoutingInstance implements Serializable {
       return _ospfAreas;
    }
 
-   public List<String> getOspfExportPolicies() {
+   public Map<String, Integer> getOspfExportPolicies() {
       return _ospfExportPolicies;
    }
 
@@ -177,6 +182,11 @@ public class RoutingInstance implements Serializable {
    public void setForwardingTableExportPolicy(
          String forwardingTableExportPolicy) {
       _forwardingTableExportPolicy = forwardingTableExportPolicy;
+   }
+
+   public void setForwardingTableExportPolicyLine(
+         int forwardingTableExportPolicyLine) {
+      _forwardingTableExportPolicyLine = forwardingTableExportPolicyLine;
    }
 
    public void setHostname(String hostname) {

@@ -13,10 +13,13 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
 
    private static final long serialVersionUID = 1L;
 
-   private String _listName;
+   private final String _listName;
 
-   public RouteMapSetDeleteCommunityLine(String listName) {
+   private final int _statementLine;
+
+   public RouteMapSetDeleteCommunityLine(String listName, int statementLine) {
       _listName = listName;
+      _statementLine = statementLine;
    }
 
    @Override
@@ -38,8 +41,8 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
          statements.add(new DeleteCommunity(new NamedCommunitySet(_listName)));
       }
       else {
-         cc.undefined("Reference to undefined community-list: " + _listName,
-               CiscoConfiguration.COMMUNITY_LIST, _listName);
+         cc.undefined(CiscoStructureType.COMMUNITY_LIST, _listName,
+               CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY, _statementLine);
       }
    }
 

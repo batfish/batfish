@@ -41,11 +41,11 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    private Map<Prefix6, DynamicIpv6BgpPeerGroup> _dynamicIpv6PeerGroups;
 
-   private Map<Prefix, String> _ipNetworks;
+   private Map<Prefix, BgpNetwork> _ipNetworks;
 
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
 
-   private Map<Prefix6, String> _ipv6Networks;
+   private Map<Prefix6, BgpNetwork6> _ipv6Networks;
 
    private Map<Ip6, Ipv6BgpPeerGroup> _ipv6PeerGroups;
 
@@ -147,14 +147,14 @@ public class BgpProcess extends ComparableStructure<Integer> {
       }
    }
 
-   public void addNamedPeerGroup(String name) {
-      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
+   public void addNamedPeerGroup(String name, int definitionLine) {
+      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name, definitionLine);
       _namedPeerGroups.put(name, pg);
       _allPeerGroups.add(pg);
    }
 
-   public void addPeerSession(String name) {
-      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
+   public void addPeerSession(String name, int definitionLine) {
+      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name, definitionLine);
       _peerSessions.put(name, pg);
       _allPeerGroups.add(pg);
    }
@@ -195,7 +195,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
       return _dynamicIpv6PeerGroups;
    }
 
-   public Map<Prefix, String> getIpNetworks() {
+   public Map<Prefix, BgpNetwork> getIpNetworks() {
       return _ipNetworks;
    }
 
@@ -203,7 +203,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
       return _ipPeerGroups;
    }
 
-   public Map<Prefix6, String> getIpv6Networks() {
+   public Map<Prefix6, BgpNetwork6> getIpv6Networks() {
       return _ipv6Networks;
    }
 
