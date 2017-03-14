@@ -27,6 +27,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
@@ -258,8 +259,8 @@ public class Synthesizer {
       Set<IpWildcard> dstIpWildcards = headerSpace.getDstIps();
       Set<IpWildcard> dstIpWildcardsBlacklist = headerSpace.getNotDstIps();
 
-      Set<IpProtocol> protocols = headerSpace.getIpProtocols();
-      Set<IpProtocol> notProtocols = headerSpace.getNotIpProtocols();
+      Set<IpProtocol> ipProtocols = headerSpace.getIpProtocols();
+      Set<IpProtocol> notIpProtocols = headerSpace.getNotIpProtocols();
 
       Set<SubRange> srcPortRanges = new LinkedHashSet<>();
       srcPortRanges.addAll(headerSpace.getSrcPorts());
@@ -273,6 +274,12 @@ public class Synthesizer {
       dstPortRanges.addAll(headerSpace.getDstPorts());
       Set<SubRange> notDstPortRanges = new LinkedHashSet<>();
       notDstPortRanges.addAll(headerSpace.getNotDstPorts());
+
+      Set<Protocol> dstProtocols = headerSpace.getDstProtocols();
+      Set<Protocol> notDstProtocols = headerSpace.getNotDstProtocols();
+      Set<Protocol> srcProtocols = headerSpace.getSrcProtocols();
+      Set<Protocol> notSrcProtocols = headerSpace.getNotSrcProtocols();
+      Set<Protocol> srcOrDstProtocols = headerSpace.getSrcOrDstProtocols();
 
       Set<SubRange> fragmentOffsetRanges = new LinkedHashSet<>();
       fragmentOffsetRanges.addAll(headerSpace.getFragmentOffsets());
@@ -295,10 +302,10 @@ public class Synthesizer {
       Set<Integer> ecns = headerSpace.getEcns();
       Set<Integer> notEcns = headerSpace.getEcns();
 
-      // match protocols
-      if (protocols.size() > 0) {
+      // match ipProtocols
+      if (ipProtocols.size() > 0) {
          OrExpr matchesSomeProtocol = new OrExpr();
-         for (IpProtocol protocol : protocols) {
+         for (IpProtocol protocol : ipProtocols) {
             int protocolNumber = protocol.number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
             LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
@@ -309,10 +316,10 @@ public class Synthesizer {
          match.addConjunct(matchesSomeProtocol);
       }
 
-      // don't match notProtocols
-      if (notProtocols.size() > 0) {
+      // don't match notIpProtocols
+      if (notIpProtocols.size() > 0) {
          OrExpr matchesSomeProtocol = new OrExpr();
-         for (IpProtocol protocol : notProtocols) {
+         for (IpProtocol protocol : notIpProtocols) {
             int protocolNumber = protocol.number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
             LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
@@ -321,6 +328,128 @@ public class Synthesizer {
             matchesSomeProtocol.addDisjunct(matchProtocol);
          }
          match.addConjunct(new NotExpr(matchesSomeProtocol));
+      }
+
+      // destination protocols
+      if (dstProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : dstProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(DST_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         match.addConjunct(matchesSomeProtocol);
+      }
+
+      // not destination protocols
+      if (notDstProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : dstProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(DST_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         NotExpr notMatch = new NotExpr(matchesSomeProtocol);
+         match.addConjunct(notMatch);
+      }
+
+      // source protocols
+      if (srcProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : srcProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(SRC_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         match.addConjunct(matchesSomeProtocol);
+      }
+
+      // not source protocols
+      if (notSrcProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : notSrcProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(SRC_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         NotExpr notMatch = new NotExpr(matchesSomeProtocol);
+         match.addConjunct(notMatch);
+      }
+
+      // source or destination protocols
+      if (srcOrDstProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : srcOrDstProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr dstPortVar = new VarIntExpr(DST_PORT_VAR);
+               VarIntExpr srcPortVar = new VarIntExpr(SRC_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchDstPort = new EqExpr(dstPortVar, portLit);
+               EqExpr matchSrcPort = new EqExpr(srcPortVar, portLit);
+               OrExpr matchSrcOrDstPort = new OrExpr();
+               matchSrcOrDstPort.addDisjunct(matchDstPort);
+               matchSrcOrDstPort.addDisjunct(matchSrcPort);
+               matchProtocolAndPort.addConjunct(matchSrcOrDstPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         match.addConjunct(matchesSomeProtocol);
       }
 
       // match srcIp
