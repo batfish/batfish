@@ -1,7 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Protocol;
 
 public interface ITracerouteQuestion extends IQuestion {
 
@@ -9,12 +9,10 @@ public interface ITracerouteQuestion extends IQuestion {
 
    void setDstIp(Ip dstIp);
 
-   void setDstPort(Integer dstPort);
+   void setDstProtocol(Protocol protocol);
 
    void setIngressNode(String ingressNode);
 
    void setIngressVrf(String ingressVrf);
-
-   void setIpProtocol(IpProtocol ipProtocol);
 
 }

@@ -1,28 +1,23 @@
 package org.batfish.datamodel.questions;
 
-import java.util.Set;
+import java.util.SortedSet;
 
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Protocol;
 
 public interface IReachabilityQuestion extends IQuestion {
 
    static final String NAME = "reachability";
 
-   void setActions(Set<ForwardingAction> actionSet);
+   void setActions(SortedSet<ForwardingAction> actionSet);
 
-   void setDstIps(Set<IpWildcard> singleton);
+   void setDstIps(SortedSet<IpWildcard> singleton);
 
-   void setDstPorts(Set<SubRange> portRanges);
+   void setDstProtocols(SortedSet<Protocol> protocols);
 
    void setIngressNodeRegex(String ingressNodeRegex);
 
-   void setIpProtocols(Set<IpProtocol> singleton);
-
-   void setNotDstPorts(Set<SubRange> portRanges);
-
-   void setNotIpProtocols(Set<IpProtocol> singleton);
+   void setNotDstProtocols(SortedSet<Protocol> protocols);
 
 }
