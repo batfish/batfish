@@ -1,58 +1,60 @@
 package org.batfish.question;
 
 import java.util.Iterator;
+import java.util.SortedMap;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Directory;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONObject;
 
-public class FileTreeQuestionPlugin extends QuestionPlugin {
+public class FileMapQuestionPlugin extends QuestionPlugin {
 
-   public static class FileTreeAnswerElement implements AnswerElement {
+   public static class FileMapAnswerElement implements AnswerElement {
 
-      Directory _testRigRoot;
+      SortedMap<String, String> _fileMap;
 
-      public Directory getTestRigRoot() {
-         return _testRigRoot;
+      public SortedMap<String, String> getFileMap() {
+         return _fileMap;
       }
 
-      public void setTestRigRoot(Directory testRigRoot) {
-         _testRigRoot = testRigRoot;
+      public void setFileMap(SortedMap<String, String> fileMap) {
+         _fileMap = fileMap;
       }
 
    }
 
-   public static class FileTreeAnswerer extends Answerer {
+   public static class FileMapAnswerer extends Answerer {
 
-      public FileTreeAnswerer(Question question, IBatfish batfish) {
+      public FileMapAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
       }
 
       @Override
-      public FileTreeAnswerElement answer() {
-         Directory root = _batfish.getTestrigFileTree();
-         FileTreeAnswerElement ae = new FileTreeAnswerElement();
-         ae.setTestRigRoot(root);
+      public FileMapAnswerElement answer() {
+         ParseVendorConfigurationAnswerElement pvcae = _batfish
+               .loadParseVendorConfigurationAnswerElement();
+         FileMapAnswerElement ae = new FileMapAnswerElement();
+         ae.setFileMap(pvcae.getFileMap());
          return ae;
       }
    }
 
    // <question_page_comment>
    /**
-    * Outputs file tree of test-rig directory
+    * Outputs mapping of hostnames to filenames
     *
-    * @type FileTree multifile
+    * @type FileMap multifile
     *
-    * @example bf_answer("filetree")
+    * @example bf_answer("filemap")
     *
     */
-   public static class FileTreeQuestion extends Question {
+   public static class FileMapQuestion extends Question {
 
-      public FileTreeQuestion() {
+      public FileMapQuestion() {
       }
 
       @Override
@@ -62,7 +64,7 @@ public class FileTreeQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String getName() {
-         return "filetree";
+         return "filemap";
       }
 
       @Override
@@ -95,14 +97,14 @@ public class FileTreeQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected FileTreeAnswerer createAnswerer(Question question,
+   protected FileMapAnswerer createAnswerer(Question question,
          IBatfish batfish) {
-      return new FileTreeAnswerer(question, batfish);
+      return new FileMapAnswerer(question, batfish);
    }
 
    @Override
-   protected FileTreeQuestion createQuestion() {
-      return new FileTreeQuestion();
+   protected FileMapQuestion createQuestion() {
+      return new FileMapQuestion();
    }
 
 }
