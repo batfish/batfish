@@ -1,8 +1,8 @@
 matrix:
    include:
-      - os: osx
-        install: ./.travis/install.sh
-        script: ./.travis/build.sh
+      #      - os: osx
+      #        install: ./.travis/install.sh
+      #        script: ./.travis/build.sh
       - os: linux
         dist: trusty
         addons:
