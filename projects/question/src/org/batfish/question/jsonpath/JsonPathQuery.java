@@ -1,11 +1,11 @@
-package org.batfish.question.nodespath;
+package org.batfish.question.jsonpath;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class NodesPath {
+public class JsonPathQuery {
 
    private String _description;
 
