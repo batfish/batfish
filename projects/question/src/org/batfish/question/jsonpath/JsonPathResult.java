@@ -1,19 +1,19 @@
-package org.batfish.question.nodespath;
+package org.batfish.question.jsonpath;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class NodesPathResult {
+public class JsonPathResult {
 
    private Integer _numResults;
 
-   private NodesPath _path;
+   private JsonPathQuery _path;
 
-   private SortedMap<ConcretePath, JsonNode> _result;
+   private SortedMap<ConcreteJsonPath, JsonNode> _result;
 
-   public NodesPathResult() {
+   public JsonPathResult() {
       _result = new TreeMap<>();
    }
 
@@ -21,11 +21,11 @@ public class NodesPathResult {
       return _numResults;
    }
 
-   public NodesPath getPath() {
+   public JsonPathQuery getPath() {
       return _path;
    }
 
-   public SortedMap<ConcretePath, JsonNode> getResult() {
+   public SortedMap<ConcreteJsonPath, JsonNode> getResult() {
       return _result;
    }
 
@@ -33,11 +33,11 @@ public class NodesPathResult {
       _numResults = numResults;
    }
 
-   public void setPath(NodesPath path) {
+   public void setPath(JsonPathQuery path) {
       _path = path;
    }
 
-   public void setResult(SortedMap<ConcretePath, JsonNode> result) {
+   public void setResult(SortedMap<ConcreteJsonPath, JsonNode> result) {
       _result = result;
    }
 

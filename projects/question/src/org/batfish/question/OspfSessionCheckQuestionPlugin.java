@@ -333,7 +333,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
     *
     * @type OspfSessionCheck multifile
     *
-    * @param foreignOspfGroups
+    * @param foreignOspfNetworks
     *           Details coming.
     * @param node1Regex
     *           Regular expression to match the nodes names for one end of the
@@ -348,7 +348,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
     */
    public static class OspfSessionCheckQuestion extends Question {
 
-      private static final String FOREIGN_OSPF_NETWORKS_VAR = "foreignOspfGroups";
+      private static final String FOREIGN_OSPF_NETWORKS_VAR = "foreignOspfNetworks";
 
       private static final String NODE1_REGEX_VAR = "node1Regex";
 
@@ -372,7 +372,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(FOREIGN_OSPF_NETWORKS_VAR)
-      public Set<Prefix> getForeignOspfNetworks() {
+      public SortedSet<Prefix> getForeignOspfNetworks() {
          return _foreignOspfNetworks;
       }
 
@@ -439,10 +439,12 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
          }
       }
 
+      @JsonProperty(NODE1_REGEX_VAR)
       public void setNode1Regex(String regex) {
          _node1Regex = regex;
       }
 
+      @JsonProperty(NODE2_REGEX_VAR)
       public void setNode2Regex(String regex) {
          _node2Regex = regex;
       }

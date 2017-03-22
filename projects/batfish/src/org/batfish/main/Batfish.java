@@ -113,6 +113,8 @@ import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Question.InstanceData;
+import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -163,6 +165,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -373,6 +376,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private BatfishLogger _logger;
 
+   private SortedMap<String, String> _questionMap;
+
    private Settings _settings;
 
    // this variable is used communicate with parent thread on how the job
@@ -397,6 +402,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _terminatedWithException = false;
       _answererCreators = new HashMap<>();
       _testrigSettingsStack = new ArrayList<>();
+      _questionMap = new TreeMap<>();
    }
 
    private void anonymizeConfigurations() {
@@ -2496,9 +2502,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private Question parseQuestion() {
       Path questionPath = _settings.getQuestionPath();
       _logger.info("Reading question file: \"" + questionPath + "\"...");
-      String questionText = CommonUtil.readFile(questionPath);
+      String rawQuestionText = CommonUtil.readFile(questionPath);
       _logger.info("OK\n");
-
+      String questionText = preprocessQuestion(rawQuestionText);
       try {
          ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
          Question question = mapper.readValue(questionText, Question.class);
@@ -2731,6 +2737,65 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             FlowTrace flowTrace = flowTraces.get(i);
             flowHistory.addFlowTrace(flow, environmentName, flowTrace);
          }
+      }
+   }
+
+   private String preprocessQuestion(String rawQuestionText) {
+      try {
+         JSONObject jobj = new JSONObject(rawQuestionText);
+         String questionText = rawQuestionText;
+         Set<String> varsToRemove = new HashSet<>();
+         if (jobj.has(Question.INSTANCE_VAR)
+               && !jobj.isNull(Question.INSTANCE_VAR)) {
+            JSONObject instanceDataObj = jobj
+                  .getJSONObject(Question.INSTANCE_VAR);
+            String instanceDataStr = instanceDataObj.toString();
+            BatfishObjectMapper mapper = new BatfishObjectMapper();
+            InstanceData instanceData = mapper.<InstanceData> readValue(
+                  instanceDataStr, new TypeReference<InstanceData>() {
+                  });
+            for (Entry<String, Variable> e : instanceData.getVariables()
+                  .entrySet()) {
+               String varName = e.getKey();
+               Variable variable = e.getValue();
+               String value = variable.getValue();
+               boolean optional = variable.getOptional();
+               boolean stringType = variable.getType().getStringType()
+                     && variable.getMinElements() == null;
+               if (value != null) {
+                  String valueRegex = Matcher.quoteReplacement(value);
+                  if (!stringType) {
+                     String varNameRegex = Pattern
+                           .quote("\"${" + varName + "}\"");
+                     questionText = questionText.replaceAll(varNameRegex,
+                           valueRegex);
+                  }
+                  String varNameRegex = Pattern.quote("${" + varName + "}");
+                  questionText = questionText.replaceAll(varNameRegex,
+                        valueRegex);
+               }
+               else if (optional) {
+                  /*
+                   * For now we assume optional values are top-level variables
+                   * and single-line. Otherwise it's not really clear what to
+                   * do.
+                   */
+                  varsToRemove.add(varName);
+               }
+            }
+            if (!varsToRemove.isEmpty()) {
+               JSONObject withRemovals = new JSONObject(questionText);
+               for (String varName : varsToRemove) {
+                  withRemovals.remove(varName);
+               }
+               questionText = withRemovals.toString();
+            }
+         }
+         return questionText;
+      }
+      catch (JSONException | IOException e) {
+         throw new BatfishException(
+               "Could not convert raw question text to JSON", e);
       }
    }
 
@@ -3022,9 +3087,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void registerAnswerer(String questionClassName,
+   public void registerAnswerer(String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator) {
-      _answererCreators.put(questionClassName, answererCreator);
+      _questionMap.put(questionName, questionClassName);
+      _answererCreators.put(questionName, answererCreator);
    }
 
    private void repairConfigurations() {

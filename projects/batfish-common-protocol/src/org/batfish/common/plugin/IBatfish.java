@@ -113,7 +113,7 @@ public interface IBatfish extends IPluginConsumer {
 
    AnswerElement reducedReachability(HeaderSpace headerSpace);
 
-   void registerAnswerer(String questionClassName,
+   void registerAnswerer(String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator);
 
    void resetTimer();
