@@ -242,6 +242,7 @@ package() {
    RELEASE=1
    PACKAGE_VERSION="${BATFISH_VERSION}-${RELEASE}"
    PACKAGE_NAME="batfish-${SECONDARY_VERSION}"
+   TARBALL_NAME="${PACKAGE_NAME}-${BATFISH_VERSION}.tar.gz"
    RPM_NAME=${PACKAGE_NAME}-${BATFISH_VERSION}-${RELEASE}.el${REDHAT_VERSION}.${ARCHITECTURE}
    TARGET="${OLD_PWD}/${DEB_NAME}.deb"
    BATFISH_Z3_RHEL_INSTALLER=${BATFISH_TOOLS_PATH}/install_z3_rhel_x86_64.sh
@@ -493,7 +494,7 @@ EOF
    echo "Building and installing z3 in $USR_P"
    $BATFISH_Z3_RHEL_INSTALLER $USR_P
    cd $RBASE
-   fakeroot tar -cpzvf ${PACKAGE_NAME}.tar.gz ${PACKAGE_NAME}/ && cp ${PACKAGE_NAME}.tar.gz SOURCES/ && rpmbuild --define "_topdir $RBASE" -ba SPECS/$SPEC_FILE_NAME
+   fakeroot tar -cpzvf ${TARBALL_NAME} ${PACKAGE_NAME}/ && cp ${TARBALL_NAME} SOURCES/ && rpmbuild --define "_topdir $RBASE" -ba SPECS/$SPEC_FILE_NAME
    [ $? -ne 0 ] && return 1
    RPM_SRC=$(find RPMS -type f)
    RPM_NAME=$(basename $RPM_SRC)
