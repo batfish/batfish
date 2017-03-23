@@ -7,7 +7,7 @@ export OLD_PWD="$PWD"
 architecture() {
    local MACHINE=$(uname -m)
    if [ "$MACHINE" = "x86_64" ]; then
-      local ARCHITECTURE=amd64
+      local ARCHITECTURE=x86_64
    elif [ "$MACHINE" = "i386" ]; then
       local ARCHITECTURE=i386
    else
