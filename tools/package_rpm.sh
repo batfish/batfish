@@ -243,12 +243,11 @@ package() {
    PACKAGE_VERSION="${BATFISH_VERSION}-${RELEASE}"
    PACKAGE_NAME="batfish-${SECONDARY_VERSION}"
    TARBALL_NAME="${PACKAGE_NAME}-${BATFISH_VERSION}.tar.gz"
-   RPM_NAME=${PACKAGE_NAME}-${BATFISH_VERSION}-${RELEASE}.el${REDHAT_VERSION}.${ARCHITECTURE}
-   TARGET="${OLD_PWD}/${DEB_NAME}.deb"
+   FINAL_RPM_NAME=${PACKAGE_NAME}-${BATFISH_VERSION}-${RELEASE}.el${REDHAT_VERSION}.${ARCHITECTURE}
    BATFISH_Z3_RHEL_INSTALLER=${BATFISH_TOOLS_PATH}/install_z3_rhel_x86_64.sh
    WORKING=$(mktemp -d)
-   RBASE=$WORKING/rpmbuild
-   PBASE=$RBASE/$PACKAGE_NAME
+   RBASE=${WORKING}/rpmbuild
+   PBASE=${RBASE}/${PACKAGE_NAME}-${PACKAGE_VERSION}
    USR=/usr
    USR_P=${PBASE}${USR}
    DATA_DIR=/usr/share/batfish
@@ -391,7 +390,7 @@ Summary: RHEL binary package for batfish
 
 Group:   Applications/Engineering
 License: Apache2.0
-URL:     https://github.com/intentionet/batfish
+URL:     https://github.com/batfish/batfish
 Source0: %{name}-%{version}.tar.gz
 BuildArch: ${ARCHITECTURE}
 
@@ -494,14 +493,13 @@ EOF
    echo "Building and installing z3 in $USR_P"
    $BATFISH_Z3_RHEL_INSTALLER $USR_P
    cd $RBASE
-   fakeroot tar -cpzvf ${TARBALL_NAME} ${PACKAGE_NAME}/ && cp ${TARBALL_NAME} SOURCES/ && rpmbuild --define "_topdir $RBASE" -ba SPECS/$SPEC_FILE_NAME
+   fakeroot tar -cpzvf ${TARBALL_NAME} ${PACKAGE_NAME}-${BATFISH_VERSION}/ && cp ${TARBALL_NAME} SOURCES/ && rpmbuild --define "_topdir $RBASE" -ba SPECS/$SPEC_FILE_NAME
    [ $? -ne 0 ] && return 1
    RPM_SRC=$(find RPMS -type f)
-   RPM_NAME=$(basename $RPM_SRC)
-   cp $RPM_SRC ${OLD_PWD}/
+   cp $RPM_SRC ${OLD_PWD}/${FINAL_RPM_NAME}
    cd $OLD_PWD
    rm -rf $WORKING
-   rpm --addsign $RPM_NAME || return 1
+   rpm --addsign ${FINAL_RPM_NAME} || return 1
 }
 package
 
