@@ -39,8 +39,10 @@ set_init_vars() {
 set_service_path() {
    if [ "${REDHAT_VERSION}" = "7" ]; then
       SERVICE=/usr/sbin/service
+      CTL=/usr/bin/systemctl
    elif [ "${REDHAT_VERSION}" = "6" ]; then
       SERVICE=/sbin/service
+      CTL=/sbin/initctl
    else
       echo "Unsupported RHEL version: $REDHAT_VERSION"
       exit 1
@@ -395,7 +397,7 @@ BuildArch: ${ARCHITECTURE}
 
 BuildRoot: %{_tmppath}/%name}-%{version}-%{release}-root
 Requires(pre): /usr/sbin/useradd, /usr/sbin/groupadd, /usr/bin/getent, /bin/mkdir, /bin/chown, /bin/chmod
-Requires(post): /bin/mkdir, /bin/chown, /bin/chmod, ${SERVICE}, /sbin/initctl
+Requires(post): /bin/mkdir, /bin/chown, /bin/chmod, ${SERVICE}, ${CTL}
 Requires(preun): ${SERVICE}, /bin/true
 
 %pre
