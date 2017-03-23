@@ -490,7 +490,7 @@ License: Apache-2.0
  '/usr/share/common-licenses/Apache-2.0'.
 EOF
 
-   cat > $BATFISH_INIT_P <<EOF   echo "Building and installing z3 in $USR_P"
+   echo "Building and installing z3 in $USR_P"
    $BATFISH_Z3_RHEL_INSTALLER $USR_P
    cd $RBASE
    fakeroot tar -cpzvf ${PACKAGE_NAME}.tar.gz ${PACKAGE_NAME}/ && cp ${PACKAGE_NAME}.tar.gz SOURCES/ && rpmbuild --define "_topdir $RBASE" -ba SPECS/$SPEC_FILE_NAME
