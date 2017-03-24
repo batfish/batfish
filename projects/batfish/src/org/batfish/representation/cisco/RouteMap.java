@@ -11,13 +11,20 @@ public class RouteMap extends ComparableStructure<String> {
 
    private NavigableMap<Integer, RouteMapClause> _clauses;
 
-   public RouteMap(String name) {
+   private final int _definitionLine;
+
+   public RouteMap(String name, int definitionLine) {
       super(name);
+      _definitionLine = definitionLine;
       _clauses = new TreeMap<>();
    }
 
    public NavigableMap<Integer, RouteMapClause> getClauses() {
       return _clauses;
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
 }

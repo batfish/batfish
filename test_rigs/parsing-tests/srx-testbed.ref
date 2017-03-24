@@ -2,6 +2,11 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "junos-srx-1" : "junos-srx-1.cfg",
+        "junos-srx-2" : "junos-srx-2.cfg",
+        "junos-srx-3" : "junos-srx-3.cfg"
+      },
       "parseStatus" : {
         "junos-srx-1" : "PASSED",
         "junos-srx-2" : "PASSED",
@@ -5904,21 +5909,25 @@
           ]
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.11.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "unusedStructures" : {
         "junos-srx-3" : {
-          "ike-gateway" : [
-            "gateway-1"
-          ],
-          "interface" : [
-            "st0.1"
-          ]
+          "ike gateway" : {
+            "gateway-1" : [
+              28
+            ]
+          },
+          "secure tunnel interface" : {
+            "st0.1" : [
+              59
+            ]
+          }
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.11.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

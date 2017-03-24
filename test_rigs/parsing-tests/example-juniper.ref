@@ -2,6 +2,22 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "as1border1" : "as1border1.cfg",
+        "as1border2" : "as1border2.cfg",
+        "as1core1" : "as1core1.cfg",
+        "as2border1" : "as2border1.cfg",
+        "as2border2" : "as2border2.cfg",
+        "as2core1" : "as2core1.cfg",
+        "as2core2" : "as2core2.cfg",
+        "as2dept1" : "as2dept1.cfg",
+        "as2dist1" : "as2dist1.cfg",
+        "as2dist2" : "as2dist2.cfg",
+        "as2host1" : "as2host1.cfg",
+        "as3border1" : "as3border1.cfg",
+        "as3border2" : "as3border2.cfg",
+        "as3core1" : "as3core1.cfg"
+      },
       "parseStatus" : {
         "as1border1" : "PASSED",
         "as1border2" : "PASSED",
@@ -10300,92 +10316,136 @@
           ]
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.11.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "undefinedReferences" : {
         "as2core2" : {
-          "route-map" : [
-            "filter-bogons"
-          ]
+          "route-map" : {
+            "filter-bogons" : {
+              "bgp inbound route-map" : [
+                87
+              ]
+            }
+          }
         }
       },
       "unusedStructures" : {
         "as1border1" : {
-          "prefix-list" : [
-            "as3_prefixes",
-            "original_prefixes"
-          ]
+          "prefix-list" : {
+            "as3_prefixes" : [
+              49
+            ],
+            "original_prefixes" : [
+              47
+            ]
+          }
         },
         "as1border2" : {
-          "prefix-list" : [
-            "as2_prefixes",
-            "original_prefixes"
-          ]
+          "prefix-list" : {
+            "as2_prefixes" : [
+              56
+            ],
+            "original_prefixes" : [
+              54
+            ]
+          }
         },
         "as2border1" : {
-          "bgp group" : [
-            "as3"
-          ],
-          "community-list" : [
-            "as2_community"
-          ],
-          "ipv4 prefix-list" : [
-            "inbound_route_filter"
-          ]
+          "bgp group" : {
+            "as3" : [
+              85
+            ]
+          },
+          "expanded community-list" : {
+            "as2_community" : [
+              116
+            ]
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : [
+              128
+            ]
+          }
         },
         "as2border2" : {
-          "bgp group" : [
-            "as1"
-          ],
-          "community-list" : [
-            "as2_community"
-          ],
-          "ipv4 prefix-list" : [
-            "inbound_route_filter"
-          ]
+          "bgp group" : {
+            "as1" : [
+              81
+            ]
+          },
+          "expanded community-list" : {
+            "as2_community" : [
+              116
+            ]
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : [
+              127
+            ]
+          }
         },
         "as2dept1" : {
-          "ip acl" : [
-            "105",
-            "RESTRICT_HOST_TRAFFIC_OUT"
-          ]
+          "extended ip access-list" : {
+            "105" : [
+              110
+            ],
+            "RESTRICT_HOST_TRAFFIC_OUT" : [
+              97
+            ]
+          }
         },
         "as2dist1" : {
-          "ip acl" : [
-            "102"
-          ]
+          "extended ip access-list" : {
+            "102" : [
+              117
+            ]
+          }
         },
         "as2dist2" : {
-          "ip acl" : [
-            "102"
-          ]
+          "extended ip access-list" : {
+            "102" : [
+              117
+            ]
+          }
         },
         "as3border1" : {
-          "bgp group" : [
-            "as1"
-          ],
-          "community-list" : [
-            "as3_community"
-          ],
-          "ipv4 prefix-list" : [
-            "inbound_route_filter"
-          ]
+          "bgp group" : {
+            "as1" : [
+              74
+            ]
+          },
+          "expanded community-list" : {
+            "as3_community" : [
+              108
+            ]
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : [
+              114
+            ]
+          }
         },
         "as3border2" : {
-          "bgp group" : [
-            "as2"
-          ],
-          "community-list" : [
-            "as3_community"
-          ],
-          "ipv4 prefix-list" : [
-            "inbound_route_filter"
-          ]
+          "bgp group" : {
+            "as2" : [
+              77
+            ]
+          },
+          "expanded community-list" : {
+            "as3_community" : [
+              109
+            ]
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : [
+              115
+            ]
+          }
         }
       },
-      "version" : "0.8.1",
+      "version" : "0.11.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {

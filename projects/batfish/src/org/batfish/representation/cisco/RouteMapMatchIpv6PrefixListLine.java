@@ -15,10 +15,14 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<String> _listNames;
+   private final Set<String> _listNames;
 
-   public RouteMapMatchIpv6PrefixListLine(Set<String> names) {
+   private final int _statementLine;
+
+   public RouteMapMatchIpv6PrefixListLine(Set<String> names,
+         int statementLine) {
       _listNames = names;
+      _statementLine = statementLine;
    }
 
    public Set<String> getListNames() {
@@ -38,8 +42,9 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
                   new NamedPrefix6Set(listName)));
          }
          else {
-            cc.undefined("Reference to undefined ipv6 prefix-list: " + listName,
-                  CiscoConfiguration.PREFIX6_LIST, listName);
+            cc.undefined(CiscoStructureType.PREFIX6_LIST, listName,
+                  CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST,
+                  _statementLine);
          }
       }
       return d.simplify();

@@ -4,15 +4,16 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.Problem;
+import org.batfish.datamodel.answers.ProblemsAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -22,35 +23,39 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
    public static class UndefinedReferencesAnswerElement
-         implements AnswerElement {
+         extends ProblemsAnswerElement {
 
-      private SortedMap<String, SortedMap<String, SortedSet<String>>> _undefinedReferences;
+      private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> _undefinedReferences;
 
       public UndefinedReferencesAnswerElement() {
          _undefinedReferences = new TreeMap<>();
       }
 
-      public SortedMap<String, SortedMap<String, SortedSet<String>>> getUndefinedReferences() {
+      public SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> getUndefinedReferences() {
          return _undefinedReferences;
       }
 
       @Override
       public String prettyPrint() {
          final StringBuilder sb = new StringBuilder();
-         _undefinedReferences.forEach((node, types) -> {
-            sb.append(node + ":\n");
-            types.forEach((type, members) -> {
+         _undefinedReferences.forEach((hostname, byType) -> {
+            sb.append(hostname + ":\n");
+            byType.forEach((type, byName) -> {
                sb.append("  " + type + ":\n");
-               for (String member : members) {
-                  sb.append("    " + member + "\n");
-               }
+               byName.forEach((name, byUsage) -> {
+                  sb.append("    " + name + ":\n");
+                  byUsage.forEach((usage, lines) -> {
+                     sb.append("      " + usage + ": lines " + lines.toString()
+                           + "\n");
+                  });
+               });
             });
          });
          return sb.toString();
       }
 
       public void setUndefinedReferences(
-            SortedMap<String, SortedMap<String, SortedSet<String>>> undefinedReferences) {
+            SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> undefinedReferences) {
          _undefinedReferences = undefinedReferences;
       }
 
@@ -63,10 +68,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
-
+      public UndefinedReferencesAnswerElement answer() {
          UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
-
          Pattern nodeRegex;
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -77,21 +80,43 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-
          _batfish.checkConfigurations();
          UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
          ConvertConfigurationAnswerElement ccae = _batfish
-               .getConvertConfigurationAnswerElement();
-
-         for (Entry<String, SortedMap<String, SortedSet<String>>> e : ccae
-               .getUndefinedReferences().entrySet()) {
-            String hostname = e.getKey();
-            if (!nodeRegex.matcher(hostname).matches()) {
-               continue;
+               .loadConvertConfigurationAnswerElement();
+         ccae.getUndefinedReferences().forEach((hostname, byType) -> {
+            if (nodeRegex.matcher(hostname).matches()) {
+               answerElement.getUndefinedReferences().put(hostname, byType);
             }
-            SortedMap<String, SortedSet<String>> byType = e.getValue();
-            answerElement.getUndefinedReferences().put(hostname, byType);
-         }
+         });
+         ParseVendorConfigurationAnswerElement pvcae = _batfish
+               .loadParseVendorConfigurationAnswerElement();
+         SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
+         answerElement.getUndefinedReferences().forEach((hostname, byType) -> {
+            String filename = hostnameFilenameMap.get(hostname);
+            if (filename != null) {
+               byType.forEach((type, byName) -> {
+                  byName.forEach((name, byUsage) -> {
+                     byUsage.forEach((usage, lines) -> {
+                        String problemShort = "undefined:" + type + ":usage:"
+                              + usage + ":" + name;
+                        Problem problem = answerElement.getProblems()
+                              .get(problemShort);
+                        if (problem == null) {
+                           problem = new Problem();
+                           String problemLong = "Undefined reference to structure of type: '"
+                                 + type + "' with usage: '" + usage
+                                 + "' named '" + name + "'";
+                           problem.setDescription(problemLong);
+                           answerElement.getProblems().put(problemShort,
+                                 problem);
+                        }
+                        problem.getFiles().put(filename, lines);
+                     });
+                  });
+               });
+            }
+         });
          return answerElement;
       }
    }

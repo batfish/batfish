@@ -9,10 +9,13 @@ public class Prefix6List extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private List<Prefix6ListLine> _lines;
 
-   public Prefix6List(String n) {
-      super(n);
+   public Prefix6List(String name, int definitionLine) {
+      super(name);
+      _definitionLine = definitionLine;
       _lines = new ArrayList<>();
    }
 
@@ -22,6 +25,10 @@ public class Prefix6List extends ComparableStructure<String> {
 
    public void addLines(List<Prefix6ListLine> r) {
       _lines.addAll(r);
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public List<Prefix6ListLine> getLines() {

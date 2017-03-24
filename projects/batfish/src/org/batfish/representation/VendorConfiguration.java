@@ -27,9 +27,35 @@ public abstract class VendorConfiguration
 
    private transient ConvertConfigurationAnswerElement _answerElement;
 
+   protected String _filename;
+
+   protected final SortedMap<StructureType, SortedMap<String, SortedSet<Integer>>> _structureDefinitions;
+
+   protected final SortedMap<StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>> _structureReferences;
+
    private transient boolean _unrecognized;
 
    protected transient Warnings _w;
+
+   public VendorConfiguration() {
+      _structureDefinitions = new TreeMap<>();
+      _structureReferences = new TreeMap<>();
+   }
+
+   public void defineStructure(StructureType type, String name, int line) {
+      SortedMap<String, SortedSet<Integer>> byName = _structureDefinitions
+            .get(type);
+      if (byName == null) {
+         byName = new TreeMap<>();
+         _structureDefinitions.put(type, byName);
+      }
+      SortedSet<Integer> lines = byName.get(name);
+      if (lines == null) {
+         lines = new TreeSet<>();
+         byName.put(name, lines);
+      }
+      lines.add(line);
+   }
 
    @JsonIgnore
    public final ConvertConfigurationAnswerElement getAnswerElement() {
@@ -51,9 +77,34 @@ public abstract class VendorConfiguration
       return _w;
    }
 
+   public void referenceStructure(StructureType type, String name,
+         StructureUsage usage, int line) {
+      SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName = _structureReferences
+            .get(type);
+      if (byName == null) {
+         byName = new TreeMap<>();
+         _structureReferences.put(type, byName);
+      }
+      SortedMap<StructureUsage, SortedSet<Integer>> byUsage = byName.get(name);
+      if (byUsage == null) {
+         byUsage = new TreeMap<>();
+         byName.put(name, byUsage);
+      }
+      SortedSet<Integer> lines = byUsage.get(usage);
+      if (lines == null) {
+         lines = new TreeSet<>();
+         byUsage.put(usage, lines);
+      }
+      lines.add(line);
+   }
+
    public final void setAnswerElement(
          ConvertConfigurationAnswerElement answerElement) {
       _answerElement = answerElement;
+   }
+
+   public void setFilename(String filename) {
+      _filename = filename;
    }
 
    public abstract void setHostname(String hostname);
@@ -73,36 +124,56 @@ public abstract class VendorConfiguration
    public abstract Configuration toVendorIndependentConfiguration()
          throws VendorConversionException;
 
-   public void undefined(String message, String type, String name) {
+   public void undefined(StructureType structureType, String name,
+         StructureUsage usage, int line) {
       String hostname = getHostname();
-      SortedMap<String, SortedSet<String>> byHostname = _answerElement
+      String type = structureType.getDescription();
+      String usageStr = usage.getDescription();
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType = _answerElement
             .getUndefinedReferences().get(hostname);
-      if (byHostname == null) {
-         byHostname = new TreeMap<>();
-         _answerElement.getUndefinedReferences().put(hostname, byHostname);
-      }
-      SortedSet<String> byType = byHostname.get(type);
       if (byType == null) {
-         byType = new TreeSet<>();
-         byHostname.put(type, byType);
+         byType = new TreeMap<>();
+         _answerElement.getUndefinedReferences().put(hostname, byType);
       }
-      byType.add(name);
+      SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName = byType
+            .get(type);
+      if (byName == null) {
+         byName = new TreeMap<>();
+         byType.put(type, byName);
+      }
+      SortedMap<String, SortedSet<Integer>> byUsage = byName.get(name);
+      if (byUsage == null) {
+         byUsage = new TreeMap<>();
+         byName.put(name, byUsage);
+      }
+      SortedSet<Integer> lines = byUsage.get(usageStr);
+      if (lines == null) {
+         lines = new TreeSet<>();
+         byUsage.put(usageStr, lines);
+      }
+      lines.add(line);
    }
 
-   protected void unused(String message, String type, String name) {
+   public void unused(StructureType structureType, String name, int line) {
       String hostname = getHostname();
-      SortedMap<String, SortedSet<String>> byHostname = _answerElement
+      String type = structureType.getDescription();
+      SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType = _answerElement
             .getUnusedStructures().get(hostname);
-      if (byHostname == null) {
-         byHostname = new TreeMap<>();
-         _answerElement.getUnusedStructures().put(hostname, byHostname);
-      }
-      SortedSet<String> byType = byHostname.get(type);
       if (byType == null) {
-         byType = new TreeSet<>();
-         byHostname.put(type, byType);
+         byType = new TreeMap<>();
+         _answerElement.getUnusedStructures().put(hostname, byType);
       }
-      byType.add(name);
+      SortedMap<String, SortedSet<Integer>> byName = byType.get(type);
+      if (byName == null) {
+         byName = new TreeMap<>();
+         byType.put(type, byName);
+      }
+      SortedSet<Integer> lines = byName.get(name);
+      if (lines == null) {
+         lines = new TreeSet<>();
+         byName.put(name, lines);
+      }
+      lines.add(line);
    }
 
    // protected void duplicate(String message, String type, String name) {

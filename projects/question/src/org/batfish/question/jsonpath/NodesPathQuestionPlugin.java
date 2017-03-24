@@ -1,4 +1,4 @@
-package org.batfish.question.nodespath;
+package org.batfish.question.jsonpath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,13 +43,13 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
    public static class NodesPathAnswerElement implements AnswerElement {
 
-      private SortedMap<Integer, NodesPathResult> _results;
+      private SortedMap<Integer, JsonPathResult> _results;
 
       public NodesPathAnswerElement() {
          _results = new TreeMap<>();
       }
 
-      public SortedMap<Integer, NodesPathResult> getResults() {
+      public SortedMap<Integer, JsonPathResult> getResults() {
          return _results;
       }
 
@@ -58,10 +58,10 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          StringBuilder sb = new StringBuilder("Results for nodespath\n");
 
          for (Integer index : _results.keySet()) {
-            NodesPathResult result = _results.get(index);
+            JsonPathResult result = _results.get(index);
             sb.append(String.format("  [%d]: %d results for %s\n", index,
                   result.getNumResults(), result.getPath().toString()));
-            for (ConcretePath path : result.getResult().keySet()) {
+            for (ConcreteJsonPath path : result.getResult().keySet()) {
                JsonNode suffix = result.getResult().get(path);
                if (suffix != null) {
                   sb.append(String.format("    %s : %s\n", path.toString(),
@@ -76,7 +76,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          return sb.toString();
       }
 
-      public void setResults(SortedMap<Integer, NodesPathResult> results) {
+      public void setResults(SortedMap<Integer, JsonPathResult> results) {
          _results = results;
       }
 
@@ -96,7 +96,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          final Configuration c = b.build();
 
          NodesPathQuestion question = (NodesPathQuestion) _question;
-         List<NodesPath> paths = question.getPaths();
+         List<JsonPathQuery> paths = question.getPaths();
 
          _batfish.checkConfigurations();
 
@@ -115,7 +115,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   "Could not get JSON string from nodes answer", e);
          }
          Object jsonObject = JsonPath.parse(nodesAnswerStr, c).json();
-         Map<Integer, NodesPathResult> results = new ConcurrentHashMap<>();
+         Map<Integer, JsonPathResult> results = new ConcurrentHashMap<>();
          List<Integer> indices = new ArrayList<>();
          for (int i = 0; i < paths.size(); i++) {
             indices.add(i);
@@ -123,7 +123,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          AtomicInteger completed = _batfish.newBatch("NodesPath queries",
                indices.size());
          indices.parallelStream().forEach(i -> {
-            NodesPath nodesPath = paths.get(i);
+            JsonPathQuery nodesPath = paths.get(i);
             String path = nodesPath.getPath();
 
             ConfigurationBuilder prefixCb = new ConfigurationBuilder();
@@ -160,12 +160,12 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                      e);
             }
             int numResults = prefixes.size();
-            NodesPathResult nodePathResult = new NodesPathResult();
+            JsonPathResult nodePathResult = new JsonPathResult();
             nodePathResult.setPath(nodesPath);
             nodePathResult.setNumResults(numResults);
             boolean includeSuffix = nodesPath.getSuffix();
             if (!nodesPath.getSummary()) {
-               SortedMap<ConcretePath, JsonNode> result = new TreeMap<>();
+               SortedMap<ConcreteJsonPath, JsonNode> result = new TreeMap<>();
                Iterator<JsonNode> p = prefixes.iterator();
                Iterator<JsonNode> s = suffixes.iterator();
                while (p.hasNext()) {
@@ -175,7 +175,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   if (prefixStr == null) {
                      throw new BatfishException("Did not expect null value");
                   }
-                  ConcretePath concretePath = new ConcretePath(prefixStr);
+                  ConcreteJsonPath concretePath = new ConcreteJsonPath(
+                        prefixStr);
                   result.put(concretePath, suffix);
                }
                nodePathResult.setResult(result);
@@ -213,7 +214,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
    public static class NodesPathDiffAnswerElement implements AnswerElement {
 
-      private SortedMap<Integer, NodesPathDiffResult> _results;
+      private SortedMap<Integer, JsonPathDiffResult> _results;
 
       @JsonCreator
       public NodesPathDiffAnswerElement() {
@@ -223,15 +224,15 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             NodesPathAnswerElement after) {
          _results = new TreeMap<>();
          for (Integer index : before._results.keySet()) {
-            NodesPathResult nprBefore = before._results.get(index);
-            NodesPathResult nprAfter = after._results.get(index);
-            NodesPathDiffResult diff = new NodesPathDiffResult(nprBefore,
+            JsonPathResult nprBefore = before._results.get(index);
+            JsonPathResult nprAfter = after._results.get(index);
+            JsonPathDiffResult diff = new JsonPathDiffResult(nprBefore,
                   nprAfter);
             _results.put(index, diff);
          }
       }
 
-      public SortedMap<Integer, NodesPathDiffResult> getResults() {
+      public SortedMap<Integer, JsonPathDiffResult> getResults() {
          return _results;
       }
 
@@ -239,14 +240,14 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
          _results.forEach((index, diff) -> {
-            SortedMap<ConcretePath, JsonNode> added = diff.getAdded();
-            SortedMap<ConcretePath, JsonNode> removed = diff.getRemoved();
+            SortedMap<ConcreteJsonPath, JsonNode> added = diff.getAdded();
+            SortedMap<ConcreteJsonPath, JsonNode> removed = diff.getRemoved();
             sb.append(String.format("  [%d]: %d added and %d removed for %s\n",
                   index, added.size(), removed.size(),
                   diff.getPath().toString()));
-            SortedSet<ConcretePath> allKeys = CommonUtil.union(added.keySet(),
-                  removed.keySet(), TreeSet::new);
-            for (ConcretePath key : allKeys) {
+            SortedSet<ConcreteJsonPath> allKeys = CommonUtil
+                  .union(added.keySet(), removed.keySet(), TreeSet::new);
+            for (ConcreteJsonPath key : allKeys) {
                if (removed.containsKey(key)) {
                   JsonNode removedNode = removed.get(key);
                   if (removedNode != null) {
@@ -273,7 +274,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          return result;
       }
 
-      public void setResults(SortedMap<Integer, NodesPathDiffResult> results) {
+      public void setResults(SortedMap<Integer, JsonPathDiffResult> results) {
          _results = results;
       }
 
@@ -318,7 +319,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       private static final String PATHS_VAR = "paths";
 
-      private List<NodesPath> _paths;
+      private List<JsonPathQuery> _paths;
 
       public NodesPathQuestion() {
          _paths = Collections.emptyList();
@@ -334,7 +335,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          return "nodespath";
       }
 
-      public List<NodesPath> getPaths() {
+      public List<JsonPathQuery> getPaths() {
          return _paths;
       }
 
@@ -362,9 +363,9 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             try {
                switch (paramKey) {
                case PATHS_VAR:
-                  setPaths(new ObjectMapper().<List<NodesPath>> readValue(
+                  setPaths(new ObjectMapper().<List<JsonPathQuery>> readValue(
                         parameters.getString(paramKey),
-                        new TypeReference<List<NodesPath>>() {
+                        new TypeReference<List<JsonPathQuery>>() {
                         }));
                   break;
                default:
@@ -378,7 +379,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          }
       }
 
-      public void setPaths(List<NodesPath> paths) {
+      public void setPaths(List<JsonPathQuery> paths) {
          _paths = paths;
       }
 

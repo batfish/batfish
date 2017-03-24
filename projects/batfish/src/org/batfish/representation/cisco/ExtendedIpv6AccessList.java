@@ -9,17 +9,24 @@ public class ExtendedIpv6AccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private List<ExtendedIpv6AccessListLine> _lines;
 
    private StandardIpv6AccessList _parent;
 
-   public ExtendedIpv6AccessList(String id) {
+   public ExtendedIpv6AccessList(String id, int definitionLine) {
       super(id);
+      _definitionLine = definitionLine;
       _lines = new ArrayList<>();
    }
 
    public void addLine(ExtendedIpv6AccessListLine all) {
       _lines.add(all);
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public List<ExtendedIpv6AccessListLine> getLines() {

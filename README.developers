@@ -35,7 +35,7 @@ Compile the code so that the java files that are auto-generated (by Antlr) are g
 
 4. Extend the vendor-independent datamodel in package in org.batfish.datamodel to include the new information. The relevant file for our MTU example is Interface.java.
 
-5. Pass the new information from vendor-specific representation to vendor-independent datamodel. The starting point here is toVendorIndependentConfiguration() in org.batfish.representation.cisco.CiscoVendorConfiguration.java.
+5. Pass the new information from vendor-specific representation to vendor-independent datamodel. The starting point here is toVendorIndependentConfiguration() in org.batfish.representation.cisco.CiscoConfiguration.java.
 
 6. Add proper Json annotations to ensure that the new information is serialized and deserialized properly. Look at what is being done for other fields.
 

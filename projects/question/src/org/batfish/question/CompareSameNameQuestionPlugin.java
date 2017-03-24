@@ -184,7 +184,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     *
     * @type CompareSameName multifile
     *
-    * @param namedStructType
+    * @param namedStructTypes
     *           Set of structure types to analyze drawn from ( AsPathAccessList,
     *           CommunityList, IkeGateway, IkePolicies, IkeProposal,
     *           IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn,
@@ -201,9 +201,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     */
    public static final class CompareSameNameQuestion extends Question {
 
-      private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
+      private static final String NAMED_STRUCT_TYPE_VAR = "namedStructTypes";
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
+
+      private static final String SINGLETONS_VAR = "singletons";
 
       private Set<String> _namedStructTypes;
 
@@ -236,6 +238,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          return _nodeRegex;
       }
 
+      @JsonProperty(SINGLETONS_VAR)
       public boolean getSingletons() {
          return _singletons;
       }
@@ -279,14 +282,17 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          }
       }
 
+      @JsonProperty(NAMED_STRUCT_TYPE_VAR)
       public void setNamedStructTypes(Set<String> namedStructTypes) {
          _namedStructTypes = namedStructTypes;
       }
 
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String regex) {
          _nodeRegex = regex;
       }
 
+      @JsonProperty(SINGLETONS_VAR)
       public void setSingletons(boolean singletons) {
          _singletons = singletons;
       }

@@ -1,14 +1,34 @@
 {
-  "answerElements" : [ {
-    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesAnswerElement",
-    "undefinedReferences" : {
-      "as2core2" : {
-        "route-map" : [ "filter-bogons" ]
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesAnswerElement",
+      "problems" : {
+        "undefined:route-map:usage:bgp inbound route-map:filter-bogons" : {
+          "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'filter-bogons'",
+          "files" : {
+            "as2core2.cfg" : [
+              90
+            ]
+          }
+        }
+      },
+      "undefinedReferences" : {
+        "as2core2" : {
+          "route-map" : {
+            "filter-bogons" : {
+              "bgp inbound route-map" : [
+                90
+              ]
+            }
+          }
+        }
       }
     }
-  } ],
+  ],
   "question" : {
-    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion"
+    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }

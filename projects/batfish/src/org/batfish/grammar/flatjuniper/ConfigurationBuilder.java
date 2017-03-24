@@ -1505,11 +1505,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterB_group(B_groupContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       Map<String, NamedBgpGroup> namedBgpGroups = _currentRoutingInstance
             .getNamedBgpGroups();
       NamedBgpGroup namedBgpGroup = namedBgpGroups.get(name);
       if (namedBgpGroup == null) {
-         namedBgpGroup = new NamedBgpGroup(name);
+         namedBgpGroup = new NamedBgpGroup(name, definitionLine);
          namedBgpGroup.setParent(_currentBgpGroup);
          namedBgpGroups.put(name, namedBgpGroup);
       }
@@ -1552,13 +1553,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterF_filter(F_filterContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       Map<String, FirewallFilter> filters = _configuration.getFirewallFilters();
       _currentFilter = filters.get(name);
       if (_currentFirewallFamily == null) {
          _currentFirewallFamily = Family.INET;
       }
       if (_currentFilter == null) {
-         _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
+         _currentFilter = new FirewallFilter(name, _currentFirewallFamily,
+               definitionLine);
          filters.put(name, _currentFilter);
       }
    }
@@ -1577,11 +1580,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterI_unit(I_unitContext ctx) {
       String unit = ctx.num.getText();
+      int definitionLine = ctx.num.getLine();
       String unitFullName = _currentMasterInterface.getName() + "." + unit;
       Map<String, Interface> units = _currentMasterInterface.getUnits();
       _currentInterface = units.get(unitFullName);
       if (_currentInterface == null) {
-         _currentInterface = new Interface(unitFullName);
+         _currentInterface = new Interface(unitFullName, definitionLine);
          _currentInterface
                .setRoutingInstance(_currentRoutingInstance.getName());
          _currentInterface.setParent(_currentMasterInterface);
@@ -1655,7 +1659,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          currentInterface = interfaces.get(ifaceName);
          if (currentInterface == null) {
             String fullIfaceName = nodeDevicePrefix + ifaceName;
-            currentInterface = new Interface(fullIfaceName);
+            int definitionLine = ctx.interface_id().getStart().getLine();
+            currentInterface = new Interface(fullIfaceName, definitionLine);
             currentInterface
                   .setRoutingInstance(_currentRoutingInstance.getName());
             currentInterface
@@ -1672,6 +1677,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Map<String, Interface> interfaces = _configuration.getInterfaces();
       String unitFullName = null;
       String name = ctx.id.name.getText();
+      int definitionLine = ctx.id.name.getLine();
       String unit = null;
       if (ctx.id.unit != null) {
          unit = ctx.id.unit.getText();
@@ -1679,16 +1685,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       unitFullName = name + "." + unit;
       _currentIsisInterface = interfaces.get(name);
       if (_currentIsisInterface == null) {
-         _currentIsisInterface = new Interface(name);
+         _currentIsisInterface = new Interface(name, definitionLine);
          _currentIsisInterface
                .setRoutingInstance(_currentRoutingInstance.getName());
          interfaces.put(name, _currentIsisInterface);
       }
       if (unit != null) {
+         definitionLine = ctx.id.unit.getLine();
          Map<String, Interface> units = _currentIsisInterface.getUnits();
          _currentIsisInterface = units.get(unitFullName);
          if (_currentIsisInterface == null) {
-            _currentIsisInterface = new Interface(unitFullName);
+            _currentIsisInterface = new Interface(unitFullName, definitionLine);
             _currentIsisInterface
                   .setRoutingInstance(_currentRoutingInstance.getName());
             units.put(unitFullName, _currentIsisInterface);
@@ -1805,11 +1812,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterPo_policy_statement(Po_policy_statementContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       Map<String, PolicyStatement> policyStatements = _configuration
             .getPolicyStatements();
       _currentPolicyStatement = policyStatements.get(name);
       if (_currentPolicyStatement == null) {
-         _currentPolicyStatement = new PolicyStatement(name);
+         _currentPolicyStatement = new PolicyStatement(name, definitionLine);
          policyStatements.put(name, _currentPolicyStatement);
       }
       _currentPsTerm = _currentPolicyStatement.getDefaultTerm();
@@ -1819,10 +1827,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterPo_prefix_list(Po_prefix_listContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       Map<String, PrefixList> prefixLists = _configuration.getPrefixLists();
       _currentPrefixList = prefixLists.get(name);
       if (_currentPrefixList == null) {
-         _currentPrefixList = new PrefixList(name);
+         _currentPrefixList = new PrefixList(name, definitionLine);
          prefixLists.put(name, _currentPrefixList);
       }
    }
@@ -2077,9 +2086,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterSeik_gateway(Seik_gatewayContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       _currentIkeGateway = _configuration.getIkeGateways().get(name);
       if (_currentIkeGateway == null) {
-         _currentIkeGateway = new IkeGateway(name);
+         _currentIkeGateway = new IkeGateway(name, definitionLine);
          _configuration.getIkeGateways().put(name, _currentIkeGateway);
       }
    }
@@ -2087,9 +2097,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterSeik_policy(Seik_policyContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       _currentIkePolicy = _configuration.getIkePolicies().get(name);
       if (_currentIkePolicy == null) {
-         _currentIkePolicy = new IkePolicy(name);
+         _currentIkePolicy = new IkePolicy(name, definitionLine);
          _configuration.getIkePolicies().put(name, _currentIkePolicy);
       }
    }
@@ -2097,9 +2108,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterSeik_proposal(Seik_proposalContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       _currentIkeProposal = _configuration.getIkeProposals().get(name);
       if (_currentIkeProposal == null) {
-         _currentIkeProposal = new IkeProposal(name);
+         _currentIkeProposal = new IkeProposal(name, definitionLine);
          _configuration.getIkeProposals().put(name, _currentIkeProposal);
       }
    }
@@ -2107,9 +2119,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterSeip_policy(Seip_policyContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       _currentIpsecPolicy = _configuration.getIpsecPolicies().get(name);
       if (_currentIpsecPolicy == null) {
-         _currentIpsecPolicy = new IpsecPolicy(name);
+         _currentIpsecPolicy = new IpsecPolicy(name, definitionLine);
          _configuration.getIpsecPolicies().put(name, _currentIpsecPolicy);
       }
    }
@@ -2117,9 +2130,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterSeip_proposal(Seip_proposalContext ctx) {
       String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
       _currentIpsecProposal = _configuration.getIpsecProposals().get(name);
       if (_currentIpsecProposal == null) {
-         _currentIpsecProposal = new IpsecProposal(name);
+         _currentIpsecProposal = new IpsecProposal(name, definitionLine);
          _configuration.getIpsecProposals().put(name, _currentIpsecProposal);
       }
    }
@@ -2169,7 +2183,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          if (ctx.from.JUNOS_HOST() != null) {
             _currentFilter = _currentToZone.getFromHostFilter();
             if (_currentFilter == null) {
-               _currentFilter = new FirewallFilter(policyName, Family.INET);
+               _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
                _configuration.getFirewallFilters().put(policyName,
                      _currentFilter);
                _currentToZone.setFromHostFilter(_currentFilter);
@@ -2178,7 +2192,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          else if (ctx.to.JUNOS_HOST() != null) {
             _currentFilter = _currentFromZone.getToHostFilter();
             if (_currentFilter == null) {
-               _currentFilter = new FirewallFilter(policyName, Family.INET);
+               _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
                _configuration.getFirewallFilters().put(policyName,
                      _currentFilter);
                _currentFromZone.setToHostFilter(_currentFilter);
@@ -2187,7 +2201,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          else {
             _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
             if (_currentFilter == null) {
-               _currentFilter = new FirewallFilter(policyName, Family.INET);
+               _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
                _configuration.getFirewallFilters().put(policyName,
                      _currentFilter);
                _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
@@ -2235,7 +2249,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          if (_currentZoneInboundFilter == null) {
             String name = "~ZONE_INTERFACE_FILTER~" + _currentZone.getName()
                   + "~INTERFACE~" + _currentZoneInterface.getName();
-            _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
+            _currentZoneInboundFilter = new FirewallFilter(name, Family.INET,
+                  -1);
             _configuration.getFirewallFilters().put(name,
                   _currentZoneInboundFilter);
             _currentZone.getInboundInterfaceFilters().put(_currentZoneInterface,
@@ -2353,26 +2368,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitB_export(B_exportContext ctx) {
       Policy_expressionContext expr = ctx.expr;
       String name;
+      int line;
       if (expr.variable() != null) {
          name = expr.variable().getText();
+         line = expr.variable().getStart().getLine();
       }
       else {
          name = toComplexPolicyStatement(expr);
+         line = expr.getStart().getLine();
       }
-      _currentBgpGroup.getExportPolicies().add(name);
+      _currentBgpGroup.getExportPolicies().put(name, line);
    }
 
    @Override
    public void exitB_import(B_importContext ctx) {
       Policy_expressionContext expr = ctx.expr;
       String name;
+      int line;
       if (expr.variable() != null) {
          name = expr.variable().getText();
+         line = expr.variable().getStart().getLine();
       }
       else {
          name = toComplexPolicyStatement(expr);
+         line = expr.getStart().getLine();
       }
-      _currentBgpGroup.getImportPolicies().add(name);
+      _currentBgpGroup.getImportPolicies().put(name, line);
    }
 
    @Override
@@ -2787,12 +2808,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       FilterContext filter = ctx.filter();
       if (filter.direction() != null) {
          String name = filter.name.getText();
+         int line = filter.name.getStart().getLine();
          DirectionContext direction = filter.direction();
          if (direction.INPUT() != null) {
             _currentInterface.setIncomingFilter(name);
+            _currentInterface.setIncomingFilterLine(line);
          }
          else if (direction.OUTPUT() != null) {
             _currentInterface.setOutgoingFilter(name);
+            _currentInterface.setOutgoingFilterLine(line);
          }
       }
    }
@@ -2936,7 +2960,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitO_export(O_exportContext ctx) {
       String name = ctx.name.getText();
-      _currentRoutingInstance.getOspfExportPolicies().add(name);
+      int line = ctx.name.getStart().getLine();
+      _currentRoutingInstance.getOspfExportPolicies().put(name, line);
    }
 
    @Override
@@ -3069,15 +3094,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitPopsf_interface(Popsf_interfaceContext ctx) {
       String name = ctx.id.name.getText();
+      int definitionLine = ctx.id.name.getLine();
       String unit = null;
       if (ctx.id.unit != null) {
          unit = ctx.id.unit.getText();
+         definitionLine = ctx.id.unit.getLine();
       }
       String unitFullName = name + "." + unit;
       Map<String, Interface> interfaces = _configuration.getInterfaces();
       Interface iface = interfaces.get(name);
       if (iface == null) {
-         iface = new Interface(name);
+         iface = new Interface(name, definitionLine);
          iface.setRoutingInstance(_currentRoutingInstance.getName());
          interfaces.put(name, iface);
       }
@@ -3086,7 +3113,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Map<String, Interface> units = iface.getUnits();
          iface = units.get(unitFullName);
          if (iface == null) {
-            iface = new Interface(unitFullName);
+            iface = new Interface(unitFullName, definitionLine);
             iface.setRoutingInstance(_currentRoutingInstance.getName());
             units.put(unitFullName, iface);
          }
@@ -3304,8 +3331,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitRof_export(Rof_exportContext ctx) {
       String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _configuration.getDefaultRoutingInstance()
             .setForwardingTableExportPolicy(name);
+      _configuration.getDefaultRoutingInstance()
+            .setForwardingTableExportPolicyLine(line);
    }
 
    @Override
@@ -3318,7 +3348,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitRog_policy(Rog_policyContext ctx) {
       if (_currentGeneratedRoute != null) { // not ipv6
          String policy = ctx.policy.getText();
-         _currentGeneratedRoute.getPolicies().add(policy);
+         int line = ctx.policy.getStart().getLine();
+         _currentGeneratedRoute.getPolicies().put(policy, line);
       }
    }
 
@@ -3401,14 +3432,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitSeikg_external_interface(
          Seikg_external_interfaceContext ctx) {
       Interface_idContext interfaceId = ctx.interface_id();
+      int line = ctx.interface_id().getStart().getLine();
       Interface iface = initInterface(interfaceId);
       _currentIkeGateway.setExternalInterface(iface);
+      _currentIkeGateway.setExternalInterfaceLine(line);
    }
 
    @Override
    public void exitSeikg_ike_policy(Seikg_ike_policyContext ctx) {
       String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _currentIkeGateway.setIkePolicy(name);
+      _currentIkeGateway.setIkePolicyLine(line);
    }
 
    @Override
@@ -3428,13 +3463,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitSeikp_proposal_set(Seikp_proposal_setContext ctx) {
       Set<String> proposalsInSet = initIkeProposalSet(ctx.proposal_set_type());
-      _currentIkePolicy.getProposals().addAll(proposalsInSet);
+      for (String proposal : proposalsInSet) {
+         _currentIkePolicy.getProposals().put(proposal, -1);
+      }
    }
 
    @Override
    public void exitSeikp_proposals(Seikp_proposalsContext ctx) {
       String proposal = ctx.name.getText();
-      _currentIkePolicy.getProposals().add(proposal);
+      int line = ctx.name.getStart().getLine();
+      _currentIkePolicy.getProposals().put(proposal, line);
    }
 
    @Override
@@ -3499,13 +3537,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitSeipp_proposal_set(Seipp_proposal_setContext ctx) {
       Set<String> proposalsInSet = initIpsecProposalSet(
             ctx.proposal_set_type());
-      _currentIpsecPolicy.getProposals().addAll(proposalsInSet);
+      for (String proposal : proposalsInSet) {
+         _currentIpsecPolicy.getProposals().put(proposal, -1);
+      }
    }
 
    @Override
    public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
       String name = ctx.name.getText();
-      _currentIpsecPolicy.getProposals().add(name);
+      int line = ctx.name.getStart().getLine();
+      _currentIpsecPolicy.getProposals().put(name, line);
    }
 
    @Override
@@ -3546,19 +3587,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitSeipv_bind_interface(Seipv_bind_interfaceContext ctx) {
       Interface iface = initInterface(ctx.interface_id());
+      int line = ctx.interface_id().getStart().getLine();
       _currentIpsecVpn.setBindInterface(iface);
+      _currentIpsecVpn.setBindInterfaceLine(line);
    }
 
    @Override
    public void exitSeipvi_gateway(Seipvi_gatewayContext ctx) {
       String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _currentIpsecVpn.setGateway(name);
+      _currentIpsecVpn.setGatewayLine(line);
    }
 
    @Override
    public void exitSeipvi_ipsec_policy(Seipvi_ipsec_policyContext ctx) {
       String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _currentIpsecVpn.setIpsecPolicy(name);
+      _currentIpsecVpn.setIpsecPolicyLine(line);
    }
 
    @Override
@@ -3767,10 +3814,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitSnmpc_client_list_name(Snmpc_client_list_nameContext ctx) {
       String list = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _currentSnmpCommunity.setAccessList(list);
+      _currentSnmpCommunity.setAccessListLine(line);
       // TODO: verify whether both ipv4 and ipv6 list should be set with this
       // command
       _currentSnmpCommunity.setAccessList6(list);
+      _currentSnmpCommunity.setAccessList6Line(line);
    }
 
    @Override
@@ -3862,14 +3912,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          interfaces = _configuration.getInterfaces();
       }
       String name = id.name.getText();
+      int definitionLine = id.name.getLine();
       String unit = null;
       if (id.unit != null) {
          unit = id.unit.getText();
+         definitionLine = id.unit.getLine();
       }
       String unitFullName = name + "." + unit;
       Interface iface = interfaces.get(name);
       if (iface == null) {
-         iface = new Interface(name);
+         iface = new Interface(name, definitionLine);
          iface.setRoutingInstance(currentRoutingInstance);
          interfaces.put(name, iface);
       }
@@ -3877,7 +3929,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Map<String, Interface> units = iface.getUnits();
          iface = units.get(unitFullName);
          if (iface == null) {
-            iface = new Interface(unitFullName);
+            iface = new Interface(unitFullName, definitionLine);
             iface.setRoutingInstance(currentRoutingInstance);
             units.put(unitFullName, iface);
          }
@@ -3972,7 +4024,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                + _conjunctionPolicyIndex + "~";
          _conjunctionPolicyIndex++;
          PolicyStatement conjunctionPolicy = new PolicyStatement(
-               conjunctionPolicyName);
+               conjunctionPolicyName, -1);
          PsTerm conjunctionPolicyTerm = conjunctionPolicy.getDefaultTerm();
          PsFromPolicyStatementConjunction from = new PsFromPolicyStatementConjunction(
                conjuncts);
@@ -3993,7 +4045,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                + _disjunctionPolicyIndex + "~";
          _disjunctionPolicyIndex++;
          PolicyStatement disjunctionPolicy = new PolicyStatement(
-               disjunctionPolicyName);
+               disjunctionPolicyName, -1);
          PsTerm disjunctionPolicyTerm = disjunctionPolicy.getDefaultTerm();
          for (String disjunct : disjuncts) {
             PsFromPolicyStatement from = new PsFromPolicyStatement(disjunct);

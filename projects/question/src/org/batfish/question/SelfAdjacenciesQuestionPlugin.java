@@ -160,7 +160,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     * Outputs cases where two interfaces on the same node are in the same
     * subnet.
     * <p>
-    * This occurrence likely indicates an error in IP address announcement.
+    * This occurrence likely indicates an error in IP address assignment.
     *
     * @type SelfAdjacencies onefile
     *

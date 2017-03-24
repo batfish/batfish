@@ -2,17 +2,16 @@ package org.batfish.client;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -96,47 +95,34 @@ public class QuestionHelper {
    }
 
    public static IQuestion getReachabilityQuestion(String dstIp,
-         String protocol, String ingressNodeRegex, ForwardingAction action,
+         String protocolStr, String ingressNodeRegex, ForwardingAction action,
          Map<String, Supplier<Question>> questions) {
       IReachabilityQuestion question = (IReachabilityQuestion) questions
             .get(IReachabilityQuestion.NAME).get();
 
-      question.setDstIps(Collections.singleton(new IpWildcard(new Ip(dstIp))));
+      question.setDstIps(new TreeSet<>(
+            Collections.singleton(new IpWildcard(new Ip(dstIp)))));
 
       boolean inverted = false;
 
-      if (protocol.startsWith("!")) {
+      if (protocolStr.startsWith("!")) {
          inverted = true;
-         protocol = protocol.replace("!", "");
+         protocolStr = protocolStr.substring(1);
       }
-
-      MyApplication application = new MyApplication(protocol);
-
-      IpProtocol ipProtocol = application.getIpProtocol();
+      SortedSet<Protocol> protocols = new TreeSet<>(
+            Collections.singleton(Protocol.fromString(protocolStr)));
       if (inverted) {
-         question.setNotIpProtocols(Collections.singleton(ipProtocol));
+         question.setNotDstProtocols(protocols);
       }
       else {
-         question.setIpProtocols(Collections.singleton(ipProtocol));
-      }
-
-      if (application.getPort() != null) {
-         int portNum = application.getPort();
-         Set<SubRange> portRanges = Collections
-               .singleton(new SubRange(portNum));
-         if (inverted) {
-            question.setNotDstPorts(portRanges);
-         }
-         else {
-            question.setDstPorts(portRanges);
-         }
+         question.setDstProtocols(protocols);
       }
 
       if (ingressNodeRegex != null) {
          question.setIngressNodeRegex(ingressNodeRegex);
       }
 
-      Set<ForwardingAction> actionSet = new HashSet<>();
+      SortedSet<ForwardingAction> actionSet = new TreeSet<>();
       actionSet.add(action);
       question.setActions(actionSet);
 
@@ -193,12 +179,9 @@ public class QuestionHelper {
          question.setDstIp(new Ip(dstIp));
 
          if (words.length == 3) {
-            String protocol = words[2];
-            MyApplication application = new MyApplication(protocol);
-            question.setIpProtocol(application.getIpProtocol());
-            if (application.getPort() != null) {
-               question.setDstPort(application.getPort());
-            }
+            String protocolStr = words[2];
+            Protocol protocol = Protocol.fromString(protocolStr);
+            question.setDstProtocol(protocol);
          }
          // else {
          // question.setIpProtocol(IpProtocol.ICMP);

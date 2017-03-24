@@ -84,6 +84,8 @@ public class Interface extends ComparableStructure<String> {
 
    private String _incomingFilter;
 
+   private int _incomingFilterLine;
+
    private Integer _isisCost;
 
    private IsisInterfaceMode _isisInterfaceMode;
@@ -106,11 +108,15 @@ public class Interface extends ComparableStructure<String> {
 
    private String _outgoingFilter;
 
+   private int _outgoingFilterLine;
+
    private Prefix _prefix;
 
    private boolean _proxyArp;
 
    private String _routingPolicy;
+
+   int _routingPolicyLine;
 
    private Set<Prefix> _secondaryPrefixes;
 
@@ -171,6 +177,10 @@ public class Interface extends ComparableStructure<String> {
       return _incomingFilter;
    }
 
+   public int getIncomingFilterLine() {
+      return _incomingFilterLine;
+   }
+
    public Integer getIsisCost() {
       return _isisCost;
    }
@@ -215,6 +225,10 @@ public class Interface extends ComparableStructure<String> {
       return _outgoingFilter;
    }
 
+   public int getOutgoingFilterLine() {
+      return _outgoingFilterLine;
+   }
+
    public Prefix getPrefix() {
       return _prefix;
    }
@@ -225,6 +239,10 @@ public class Interface extends ComparableStructure<String> {
 
    public String getRoutingPolicy() {
       return _routingPolicy;
+   }
+
+   public int getRoutingPolicyLine() {
+      return _routingPolicyLine;
    }
 
    public Set<Prefix> getSecondaryPrefixes() {
@@ -271,6 +289,10 @@ public class Interface extends ComparableStructure<String> {
       _incomingFilter = accessListName;
    }
 
+   public void setIncomingFilterLine(int incomingFilterLine) {
+      _incomingFilterLine = incomingFilterLine;
+   }
+
    public void setIsisCost(Integer isisCost) {
       _isisCost = isisCost;
    }
@@ -315,6 +337,10 @@ public class Interface extends ComparableStructure<String> {
       _outgoingFilter = accessListName;
    }
 
+   public void setOutgoingFilterLine(int outgoingFilterLine) {
+      _outgoingFilterLine = outgoingFilterLine;
+   }
+
    public void setPrefix(Prefix prefix) {
       _prefix = prefix;
    }
@@ -325,6 +351,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setRoutingPolicy(String routingPolicy) {
       _routingPolicy = routingPolicy;
+   }
+
+   public void setRoutingPolicyLine(int routingPolicyLine) {
+      _routingPolicyLine = routingPolicyLine;
    }
 
    public void setStandbyPrefix(Prefix standbyPrefix) {

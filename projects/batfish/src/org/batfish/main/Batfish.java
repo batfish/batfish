@@ -43,6 +43,7 @@ import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.Directory;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
@@ -112,6 +113,8 @@ import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Question.InstanceData;
+import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -162,6 +165,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -372,6 +376,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private BatfishLogger _logger;
 
+   private SortedMap<String, String> _questionMap;
+
    private Settings _settings;
 
    // this variable is used communicate with parent thread on how the job
@@ -396,6 +402,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _terminatedWithException = false;
       _answererCreators = new HashMap<>();
       _testrigSettingsStack = new ArrayList<>();
+      _questionMap = new TreeMap<>();
    }
 
    private void anonymizeConfigurations() {
@@ -1511,12 +1518,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurations;
    }
 
-   @Override
-   public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement() {
-      return deserializeObject(_testrigSettings.getConvertAnswerPath(),
-            ConvertConfigurationAnswerElement.class);
-   }
-
    public DataPlanePlugin getDataPlanePlugin() {
       return _dataPlanePlugin;
    }
@@ -1664,12 +1665,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return blacklistNodes;
    }
 
-   @Override
-   public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement() {
-      return deserializeObject(_testrigSettings.getParseAnswerPath(),
-            ParseVendorConfigurationAnswerElement.class);
-   }
-
    public Settings getSettings() {
       return _settings;
    }
@@ -1690,6 +1685,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public boolean getTerminatedWithException() {
       return _terminatedWithException;
+   }
+
+   @Override
+   public Directory getTestrigFileTree() {
+      Path trPath = _testrigSettings.getTestRigPath();
+      Directory dir = new Directory(trPath);
+      return dir;
    }
 
    public String getTestrigName() {
@@ -1900,8 +1902,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public InitInfoAnswerElement initInfo(boolean summary) {
       checkConfigurations();
       InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
-      ParseVendorConfigurationAnswerElement parseAnswer = getParseVendorConfigurationAnswerElement();
-      ConvertConfigurationAnswerElement convertAnswer = getConvertConfigurationAnswerElement();
+      ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+      ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
       if (!summary) {
          SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
                .getWarnings();
@@ -2212,7 +2214,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = _cachedConfigurations
             .get(_testrigSettings);
       if (configurations == null) {
-         ConvertConfigurationAnswerElement ccae = getConvertConfigurationAnswerElement();
+         ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
          if (!Version.isCompatibleVersion("Service",
                "Old processed configurations", ccae.getVersion())) {
             repairConfigurations();
@@ -2226,6 +2228,32 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       processDeltaConfigurations(configurations);
       disableUnusableVpnInterfaces(configurations);
       return configurations;
+   }
+
+   @Override
+   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement() {
+      return loadConvertConfigurationAnswerElement(true);
+   }
+
+   private ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
+         boolean firstAttempt) {
+      ConvertConfigurationAnswerElement ccae = deserializeObject(
+            _testrigSettings.getConvertAnswerPath(),
+            ConvertConfigurationAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed configurations", ccae.getVersion())) {
+         if (firstAttempt) {
+            repairConfigurations();
+            return loadConvertConfigurationAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing configurations for convert configuration answer element");
+         }
+      }
+      else {
+         return ccae;
+      }
    }
 
    @Override
@@ -2252,6 +2280,32 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _dataPlanes.put(_testrigSettings, dp);
       }
       return dp;
+   }
+
+   @Override
+   public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+      return loadParseVendorConfigurationAnswerElement(true);
+   }
+
+   private ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+         boolean firstAttempt) {
+      ParseVendorConfigurationAnswerElement pvcae = deserializeObject(
+            _testrigSettings.getParseAnswerPath(),
+            ParseVendorConfigurationAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed configurations", pvcae.getVersion())) {
+         if (firstAttempt) {
+            repairVendorConfigurations();
+            return loadParseVendorConfigurationAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing vendor configurations for parse configuration answer element");
+         }
+      }
+      else {
+         return pvcae;
+      }
    }
 
    public Topology loadTopology() {
@@ -2448,9 +2502,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private Question parseQuestion() {
       Path questionPath = _settings.getQuestionPath();
       _logger.info("Reading question file: \"" + questionPath + "\"...");
-      String questionText = CommonUtil.readFile(questionPath);
+      String rawQuestionText = CommonUtil.readFile(questionPath);
       _logger.info("OK\n");
-
+      String questionText = preprocessQuestion(rawQuestionText);
       try {
          ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
          Question question = mapper.readValue(questionText, Question.class);
@@ -2683,6 +2737,65 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             FlowTrace flowTrace = flowTraces.get(i);
             flowHistory.addFlowTrace(flow, environmentName, flowTrace);
          }
+      }
+   }
+
+   private String preprocessQuestion(String rawQuestionText) {
+      try {
+         JSONObject jobj = new JSONObject(rawQuestionText);
+         String questionText = rawQuestionText;
+         Set<String> varsToRemove = new HashSet<>();
+         if (jobj.has(Question.INSTANCE_VAR)
+               && !jobj.isNull(Question.INSTANCE_VAR)) {
+            JSONObject instanceDataObj = jobj
+                  .getJSONObject(Question.INSTANCE_VAR);
+            String instanceDataStr = instanceDataObj.toString();
+            BatfishObjectMapper mapper = new BatfishObjectMapper();
+            InstanceData instanceData = mapper.<InstanceData> readValue(
+                  instanceDataStr, new TypeReference<InstanceData>() {
+                  });
+            for (Entry<String, Variable> e : instanceData.getVariables()
+                  .entrySet()) {
+               String varName = e.getKey();
+               Variable variable = e.getValue();
+               String value = variable.getValue();
+               boolean optional = variable.getOptional();
+               boolean stringType = variable.getType().getStringType()
+                     && variable.getMinElements() == null;
+               if (value != null) {
+                  String valueRegex = Matcher.quoteReplacement(value);
+                  if (!stringType) {
+                     String varNameRegex = Pattern
+                           .quote("\"${" + varName + "}\"");
+                     questionText = questionText.replaceAll(varNameRegex,
+                           valueRegex);
+                  }
+                  String varNameRegex = Pattern.quote("${" + varName + "}");
+                  questionText = questionText.replaceAll(varNameRegex,
+                        valueRegex);
+               }
+               else if (optional) {
+                  /*
+                   * For now we assume optional values are top-level variables
+                   * and single-line. Otherwise it's not really clear what to
+                   * do.
+                   */
+                  varsToRemove.add(varName);
+               }
+            }
+            if (!varsToRemove.isEmpty()) {
+               JSONObject withRemovals = new JSONObject(questionText);
+               for (String varName : varsToRemove) {
+                  withRemovals.remove(varName);
+               }
+               questionText = withRemovals.toString();
+            }
+         }
+         return questionText;
+      }
+      catch (JSONException | IOException e) {
+         throw new BatfishException(
+               "Could not convert raw question text to JSON", e);
       }
    }
 
@@ -2974,15 +3087,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void registerAnswerer(String questionClassName,
+   public void registerAnswerer(String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator) {
-      _answererCreators.put(questionClassName, answererCreator);
+      _questionMap.put(questionName, questionClassName);
+      _answererCreators.put(questionName, answererCreator);
    }
 
    private void repairConfigurations() {
       Path outputPath = _testrigSettings.getSerializeIndependentPath();
       CommonUtil.deleteDirectory(outputPath);
-      ParseVendorConfigurationAnswerElement pvcae = getParseVendorConfigurationAnswerElement();
+      ParseVendorConfigurationAnswerElement pvcae = loadParseVendorConfigurationAnswerElement();
       if (!Version.isCompatibleVersion("Service", "Old parsed configurations",
             pvcae.getVersion())) {
          repairVendorConfigurations();

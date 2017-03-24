@@ -17,8 +17,6 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
    private static final long serialVersionUID = 1L;
 
-   private String _map;
-
    private Integer _metric;
 
    private OspfMetricType _metricType;
@@ -29,10 +27,6 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
    public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
       super(sourceProtocol, RoutingProtocol.OSPF);
-   }
-
-   public String getMap() {
-      return _map;
    }
 
    public Integer getMetric() {
@@ -49,10 +43,6 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
    public Long getTag() {
       return _tag;
-   }
-
-   public void setMap(String name) {
-      _map = name;
    }
 
    public void setMetric(int metric) {

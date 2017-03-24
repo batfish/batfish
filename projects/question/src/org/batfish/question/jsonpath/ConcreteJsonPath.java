@@ -1,4 +1,4 @@
-package org.batfish.question.nodespath;
+package org.batfish.question.jsonpath;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -7,22 +7,22 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class ConcretePath implements Comparable<ConcretePath> {
+public class ConcreteJsonPath implements Comparable<ConcreteJsonPath> {
 
    private final List<String> _parts;
 
    @JsonCreator
-   private ConcretePath(List<String> parts) {
+   private ConcreteJsonPath(List<String> parts) {
       _parts = parts;
    }
 
-   public ConcretePath(String text) {
+   public ConcreteJsonPath(String text) {
       String endsCut = text.substring(2, text.length() - 1);
       _parts = Arrays.asList(endsCut.split("\\]\\["));
    }
 
    @Override
-   public int compareTo(ConcretePath o) {
+   public int compareTo(ConcreteJsonPath o) {
       Iterator<String> iLhs = _parts.iterator();
       Iterator<String> iRhs = o._parts.iterator();
       do {
@@ -57,7 +57,7 @@ public class ConcretePath implements Comparable<ConcretePath> {
       if (getClass() != obj.getClass()) {
          return false;
       }
-      return _parts.equals(((ConcretePath) obj)._parts);
+      return _parts.equals(((ConcreteJsonPath) obj)._parts);
    }
 
    @JsonValue

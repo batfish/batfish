@@ -12,6 +12,8 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private String _name;
 
    private Set<Ip> _neighborIpAddresses;
@@ -22,12 +24,13 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private Set<Prefix6> _neighborIpv6Prefixes;
 
-   public NamedBgpPeerGroup(String name) {
+   public NamedBgpPeerGroup(String name, int definitionLine) {
+      _name = name;
+      _definitionLine = definitionLine;
       _neighborIpAddresses = new LinkedHashSet<>();
       _neighborIpPrefixes = new LinkedHashSet<>();
       _neighborIpv6Addresses = new LinkedHashSet<>();
       _neighborIpv6Prefixes = new LinkedHashSet<>();
-      _name = name;
    }
 
    public void addNeighborIpAddress(Ip address) {
@@ -44,6 +47,10 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    public void addNeighborIpv6Prefix(Prefix6 prefix6) {
       _neighborIpv6Prefixes.add(prefix6);
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    @Override
