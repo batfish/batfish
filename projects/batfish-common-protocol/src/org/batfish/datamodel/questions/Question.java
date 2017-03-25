@@ -273,6 +273,8 @@ public abstract class Question implements IQuestion {
 
    private static final String DIFF_VAR = "differential";
 
+   public static final String INNER_QUESTION_VAR = "innerQuestion";
+
    public static final String INSTANCE_VAR = "instance";
 
    private boolean _differential;

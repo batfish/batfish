@@ -2745,6 +2745,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          JSONObject jobj = new JSONObject(rawQuestionText);
          String questionText = rawQuestionText;
          Set<String> varsToRemove = new HashSet<>();
+         // first preprocess inner questions
+         if (jobj.has(Question.INNER_QUESTION_VAR)) {
+            JSONObject innerQuestion = jobj
+                  .getJSONObject(Question.INNER_QUESTION_VAR);
+            String innerQuestionStr = innerQuestion.toString();
+            String preprocessedInnerQuestionStr = preprocessQuestion(
+                  innerQuestionStr);
+            JSONObject preprocessedInnerQuestion = new JSONObject(
+                  preprocessedInnerQuestionStr);
+            jobj.put(Question.INNER_QUESTION_VAR, preprocessedInnerQuestion);
+            questionText = jobj.toString();
+         }
          if (jobj.has(Question.INSTANCE_VAR)
                && !jobj.isNull(Question.INSTANCE_VAR)) {
             JSONObject instanceDataObj = jobj

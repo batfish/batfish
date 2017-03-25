@@ -317,8 +317,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     */
    public static class JsonPathQuestion extends Question {
 
-      private static final String INNER_QUESTION_VAR = "innerQuestion";
-
       private static final String PATHS_VAR = "paths";
 
       private Question _innerQuestion;
