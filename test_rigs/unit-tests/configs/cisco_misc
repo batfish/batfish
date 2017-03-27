@@ -278,6 +278,8 @@ map-class dialer swiRZ2
  dialer idle-timeout 360
  dialer fast-idle 5
 !
+config-register 0x2102
+!
 dialer watch-list 76 ip 130.59.53.128 255.255.255.192
 !
 
