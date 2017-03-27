@@ -1533,7 +1533,7 @@ CONFIG_COMMANDS
 
 CONFIG_REGISTER
 :
-   'config'
+   'config-register'
 ;
 
 CONFIGURATION
