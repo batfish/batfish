@@ -14,7 +14,8 @@
       },
       "dependentRoutesIterations" : 8,
       "ospfInternalIterations" : 3,
-      "totalRoutes" : 301
+      "totalRoutes" : 301,
+      "version" : "0.12.0"
     }
   ],
   "status" : "SUCCESS"

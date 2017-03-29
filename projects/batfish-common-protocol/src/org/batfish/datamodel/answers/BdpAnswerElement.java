@@ -3,7 +3,12 @@ package org.batfish.datamodel.answers;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class BdpAnswerElement implements AnswerElement {
+public class BdpAnswerElement implements DataPlaneAnswerElement {
+
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
    private SortedMap<Integer, Integer> _bgpRoutesByIteration;
 
@@ -12,6 +17,8 @@ public class BdpAnswerElement implements AnswerElement {
    private int _ospfInternalIterations;
 
    private int _totalRoutes;
+
+   private String _version;
 
    public BdpAnswerElement() {
       _bgpRoutesByIteration = new TreeMap<>();
@@ -31,6 +38,11 @@ public class BdpAnswerElement implements AnswerElement {
 
    public int getTotalRoutes() {
       return _totalRoutes;
+   }
+
+   @Override
+   public String getVersion() {
+      return _version;
    }
 
    @Override
@@ -62,6 +74,10 @@ public class BdpAnswerElement implements AnswerElement {
 
    public void setTotalRoutes(int totalRoutes) {
       _totalRoutes = totalRoutes;
+   }
+
+   public void setVersion(String version) {
+      _version = version;
    }
 
 }

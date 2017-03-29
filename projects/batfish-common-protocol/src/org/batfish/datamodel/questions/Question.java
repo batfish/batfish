@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
@@ -34,18 +35,20 @@ public abstract class Question implements IQuestion {
 
          public static enum Type {
             BOOLEAN("boolean", false),
+            COMPARATOR("comparator", true),
             DOUBLE("double", false),
             FLOAT("float", false),
             INTEGER("integer", false),
             IP("ip", true),
             IP_PROTOCOL("ipProtocol", true),
             IP_WILDCARD("ipWildcard", true),
+            JAVA_REGEX("javaRegex", true),
             JSON_PATH("jsonPath", true),
+            JSON_PATH_REGEX("jsonPathRegex", true),
             LONG("long", false),
             PREFIX("prefix", true),
             PREFIX_RANGE("prefixRange", true),
             PROTOCOL("protocol", true),
-            REGEX("regex", true),
             STRING("string", true),
             SUBRANGE("subrange", true);
 
@@ -116,7 +119,7 @@ public abstract class Question implements IQuestion {
 
          private Type _type;
 
-         private String _value;
+         private JsonNode _value;
 
          public Variable() {
             _allowedValues = new TreeSet<>();
@@ -153,7 +156,7 @@ public abstract class Question implements IQuestion {
          }
 
          @JsonProperty(VALUE_VAR)
-         public String getValue() {
+         public JsonNode getValue() {
             return _value;
          }
 
@@ -188,7 +191,7 @@ public abstract class Question implements IQuestion {
          }
 
          @JsonProperty(VALUE_VAR)
-         public void setValue(String value) {
+         public void setValue(JsonNode value) {
             _value = value;
          }
 

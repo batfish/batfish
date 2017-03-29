@@ -85,6 +85,7 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -166,6 +167,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -210,6 +212,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             envSettings.setEnvironmentBasePath(envPath);
             envSettings.setDataPlanePath(
                   envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR));
+            envSettings.setDataPlaneAnswerPath(
+                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
             Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
             envSettings.setEnvPath(envDirPath);
             envSettings.setNodeBlacklistPath(
@@ -1070,7 +1074,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
       checkConfigurations();
-      Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlanePath();
+      Path dpPath = testrigSettings.getEnvironmentSettings()
+            .getDataPlaneAnswerPath();
       return Files.exists(dpPath);
    }
 
@@ -2258,28 +2263,49 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public DataPlane loadDataPlane() {
-      return loadDataPlane(false);
-   }
-
-   private DataPlane loadDataPlane(boolean postRepair) {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
-         newBatch("Loading data plane from disk", 0);
-         dp = deserializeObject(
-               _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
-               DataPlane.class);
-         if (!Version.isCompatibleVersion("Service", "Old Data Plane",
-               dp.getVersion())) {
-            if (postRepair) {
-               throw new BatfishException("Failed to repair data plane");
-            }
-            else {
-               dp = repairDataPlane();
-            }
+         /*
+          * Data plane should exist after loading answer element, as it triggers
+          * repair if necessary. However, it might not be cached if it was not
+          * repaired, so we still might need to load it from disk.
+          */
+         loadDataPlaneAnswerElement();
+         dp = _dataPlanes.get(_testrigSettings);
+         if (dp == null) {
+            newBatch("Loading data plane from disk", 0);
+            dp = deserializeObject(
+                  _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
+                  DataPlane.class);
+            _dataPlanes.put(_testrigSettings, dp);
          }
-         _dataPlanes.put(_testrigSettings, dp);
       }
       return dp;
+   }
+
+   private DataPlaneAnswerElement loadDataPlaneAnswerElement() {
+      return loadDataPlaneAnswerElement(true);
+   }
+
+   private DataPlaneAnswerElement loadDataPlaneAnswerElement(
+         boolean firstAttempt) {
+      DataPlaneAnswerElement bae = deserializeObject(
+            _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath(),
+            DataPlaneAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service", "Old data plane",
+            bae.getVersion())) {
+         if (firstAttempt) {
+            repairDataPlane();
+            return loadDataPlaneAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing data plane for data plane answer element");
+         }
+      }
+      else {
+         return bae;
+      }
    }
 
    @Override
@@ -2743,8 +2769,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private String preprocessQuestion(String rawQuestionText) {
       try {
          JSONObject jobj = new JSONObject(rawQuestionText);
-         String questionText = rawQuestionText;
-         Set<String> varsToRemove = new HashSet<>();
          // first preprocess inner questions
          if (jobj.has(Question.INNER_QUESTION_VAR)) {
             JSONObject innerQuestion = jobj
@@ -2755,7 +2779,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             JSONObject preprocessedInnerQuestion = new JSONObject(
                   preprocessedInnerQuestionStr);
             jobj.put(Question.INNER_QUESTION_VAR, preprocessedInnerQuestion);
-            questionText = jobj.toString();
          }
          if (jobj.has(Question.INSTANCE_VAR)
                && !jobj.isNull(Question.INSTANCE_VAR)) {
@@ -2770,40 +2793,57 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .entrySet()) {
                String varName = e.getKey();
                Variable variable = e.getValue();
-               String value = variable.getValue();
+               JsonNode value = variable.getValue();
                boolean optional = variable.getOptional();
-               boolean stringType = variable.getType().getStringType()
-                     && variable.getMinElements() == null;
-               if (value != null) {
-                  String valueRegex = Matcher.quoteReplacement(value);
-                  if (!stringType) {
-                     String varNameRegex = Pattern
-                           .quote("\"${" + varName + "}\"");
-                     questionText = questionText.replaceAll(varNameRegex,
-                           valueRegex);
-                  }
-                  String varNameRegex = Pattern.quote("${" + varName + "}");
-                  questionText = questionText.replaceAll(varNameRegex,
-                        valueRegex);
-               }
-               else if (optional) {
+               if (value == null && optional) {
                   /*
                    * For now we assume optional values are top-level variables
                    * and single-line. Otherwise it's not really clear what to
                    * do.
                    */
-                  varsToRemove.add(varName);
+                  jobj.remove(varName);
                }
             }
-            if (!varsToRemove.isEmpty()) {
-               JSONObject withRemovals = new JSONObject(questionText);
-               for (String varName : varsToRemove) {
-                  withRemovals.remove(varName);
+            String questionText = jobj.toString();
+            for (Entry<String, Variable> e : instanceData.getVariables()
+                  .entrySet()) {
+               String varName = e.getKey();
+               Variable variable = e.getValue();
+               JsonNode value = variable.getValue();
+               String valueJsonString = new ObjectMapper()
+                     .writeValueAsString(value);
+               boolean stringType = variable.getType().getStringType();
+               boolean setType = variable.getMinElements() != null;
+               if (value != null) {
+                  String topLevelVarNameRegex = Pattern
+                        .quote("\"${" + varName + "}\"");
+                  String inlineVarNameRegex = Pattern
+                        .quote("${" + varName + "}");
+                  String topLevelReplacement = valueJsonString;
+                  String inlineReplacement;
+                  if (stringType && !setType) {
+                     inlineReplacement = valueJsonString.substring(1,
+                           valueJsonString.length() - 1);
+                  }
+                  else {
+                     String quotedValueJsonString = JSONObject
+                           .quote(valueJsonString);
+                     inlineReplacement = quotedValueJsonString.substring(1,
+                           quotedValueJsonString.length() - 1);
+                  }
+                  String inlineReplacementRegex = Matcher
+                        .quoteReplacement(inlineReplacement);
+                  String topLevelReplacementRegex = Matcher
+                        .quoteReplacement(topLevelReplacement);
+                  questionText = questionText.replaceAll(topLevelVarNameRegex,
+                        topLevelReplacementRegex);
+                  questionText = questionText.replaceAll(inlineVarNameRegex,
+                        inlineReplacementRegex);
                }
-               questionText = withRemovals.toString();
             }
+            return questionText;
          }
-         return questionText;
+         return rawQuestionText;
       }
       catch (JSONException | IOException e) {
          throw new BatfishException(
@@ -3117,12 +3157,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       serializeIndependentConfigs(inputPath, outputPath);
    }
 
-   private DataPlane repairDataPlane() {
+   private void repairDataPlane() {
       Path dataPlanePath = _testrigSettings.getEnvironmentSettings()
             .getDataPlanePath();
+      Path dataPlaneAnswerPath = _testrigSettings.getEnvironmentSettings()
+            .getDataPlaneAnswerPath();
       CommonUtil.delete(dataPlanePath);
+      CommonUtil.delete(dataPlaneAnswerPath);
       computeDataPlane(false);
-      return loadDataPlane(true);
    }
 
    private void repairVendorConfigurations() {
@@ -3785,9 +3827,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void writeDataPlane(DataPlane dp) {
+   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
+      _dataPlanes.put(_testrigSettings, dp);
       serializeObject(dp,
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
+      serializeObject(ae,
+            _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
    }
 
    private void writeIbgpNeighbors(Path ibgpTopologyPath) {

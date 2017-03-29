@@ -76,6 +76,7 @@ public class BfConsts {
    public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
    public static final String RELPATH_DIFF = "diff";
