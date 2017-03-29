@@ -20,6 +20,4 @@ public interface DataPlane extends Serializable {
 
    EdgeSet getTopologyEdges();
 
-   String getVersion();
-
 }

@@ -286,9 +286,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       dp.setTopology(topology);
       dp.setFlowSinks(_batfish.computeFlowSinks(configurations,
             differentialContext, topology));
-      dp.setVersion(Version.getVersion());
+      ae.setVersion(Version.getVersion());
       _batfish.newBatch("Writing data plane to disk", 0);
-      _batfish.writeDataPlane(dp);
+      _batfish.writeDataPlane(dp, ae);
       _batfish.printElapsedTime();
       answer.addAnswerElement(ae);
       return answer;
