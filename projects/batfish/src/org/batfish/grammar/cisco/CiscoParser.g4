@@ -2271,7 +2271,7 @@ s_tacacs
    TACACS
    (
       t_null
-      | t_server
+      | t_server (t_address | t_key)*
    )
 ;
 
@@ -2697,6 +2697,18 @@ t_null
 t_server
 :
    SERVER hostname = variable_hostname NEWLINE
+;
+
+t_address
+:
+   (
+      ADDRESS ((IPV4 IP_ADDRESS) | (IPV6 IPV6_ADDRESS)) NEWLINE
+   )
+;
+
+t_key
+:
+    KEY DIGIT HEX_DIGIT+
 ;
 
 tap_null

@@ -9435,6 +9435,11 @@ FORWARD_SLASH
    '/'
 ;
 
+HEX_DIGIT
+:
+   F_HexDigit
+;
+
 IP_ADDRESS
 :
    F_DecByte '.'
