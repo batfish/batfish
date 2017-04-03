@@ -10,6 +10,7 @@ INCLUDEDIR=$INSTALL_PREFIX/include
 JAVADIR=$INSTALL_PREFIX/share/java
 LIBDIR=$INSTALL_PREFIX/lib
 OLD_PWD=$PWD
+OLD_UMASK=$(umask)
 WORKING=$(mktemp -d)
 VERSION=4.5.0
 MACHINE=$(uname -m)
@@ -28,6 +29,7 @@ cd $WORKING || exit 1
 wget ${Z3_ZIP_URL} || exit 1
 unzip ${Z3_ZIP} || exit 1
 cd ${Z3_DIR} || exit 1
+umask 0022 || exit 1
 mkdir -p $LIBDIR $BINDIR $INCLUDEDIR $JAVADIR
 cp bin/libz3.so bin/libz3java.so $LIBDIR/ || exit 1
 cp bin/com.microsoft.z3.jar $JAVADIR/ || exit 1
@@ -36,6 +38,7 @@ cp include/* $INCLUDEDIR/ || exit 1
 strip $LIBDIR/libz3.so || exit 1
 strip $LIBDIR/libz3java.so || exit 1
 strip $BINDIR/z3 || exit 1
+umask $OLD_UMASK || exit 1
 cd $OLD_PWD || exit 1
 rm -rf ${WORKING} || exit 1
 
