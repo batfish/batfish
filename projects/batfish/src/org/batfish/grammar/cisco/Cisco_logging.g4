@@ -14,13 +14,13 @@ logging_address
       | IPV6_ADDRESS
    )
    (
-      (
-         VRF vrf = variable
-      )
+      s_logging_vrf_clause
       |
-      (
-         SEVERITY severity = variable
-      )
+      s_logging_severity_clause
+      |
+      s_logging_discriminator_clause
+      |
+      s_logging_port_clause
    )* NEWLINE
 ;
 
@@ -44,7 +44,10 @@ logging_archive_null
 
 logging_buffered
 :
-   BUFFERED size = DEC? logging_severity? NEWLINE
+   BUFFERED
+   (
+      s_logging_discriminator_clause? size = DEC? logging_severity?
+   ) NEWLINE
 ;
 
 logging_common
@@ -106,8 +109,8 @@ logging_host
 :
    HOST iname = variable? hostname = variable
    (
-      VRF variable
-   )? NEWLINE
+      s_logging_vrf_clause? s_logging_discriminator_clause? s_logging_port_clause?
+   ) NEWLINE
 ;
 
 logging_null
@@ -172,7 +175,7 @@ logging_source_interface
 :
    SOURCE_INTERFACE interface_name
    (
-      VRF variable
+      s_logging_vrf_clause
    )? NEWLINE
 ;
 
@@ -201,7 +204,7 @@ logging_trap
 
 logging_vrf
 :
-   VRF vrf = variable logging_common
+   s_logging_vrf_clause logging_common
 ;
 
 s_logging
@@ -211,4 +214,24 @@ s_logging
       logging_common
       | logging_vrf
    )
+;
+
+s_logging_vrf_clause
+:
+   VRF vrf = variable
+;
+
+s_logging_severity_clause
+:
+   SEVERITY severity = variable
+;
+
+s_logging_port_clause
+:
+    PORT (DEFAULT | DEC)
+;
+
+s_logging_discriminator_clause
+:
+    DISCRIMINATOR variable
 ;
