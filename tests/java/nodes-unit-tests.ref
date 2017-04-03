@@ -3555,6 +3555,12 @@
           "defaultInboundAction" : "ACCEPT",
           "tacacsServers" : [
             "1.2.3.4",
+            "1.example.com",
+            "2.example.com",
+            "3.example.com",
+            "4.example.com",
+            "5.example.com",
+            "6.example.com",
             "example.com"
           ],
           "vendorFamily" : {

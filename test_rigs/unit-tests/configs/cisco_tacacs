@@ -19,21 +19,25 @@ tacacs-server test username test password test idle-time 0
 tacacs-server timeout 5
 tacacs source-interface Loopback0 vrf default
 !
-tacacs server example.com
- address ipv4 1.2.3.4
+tacacs server 1.example.com
  key 7 0123456789ABCDEF012345
-!
-tacacs server example.com
- address ipv6 dead:beef::1
- key 7 0123456789ABCDEF012345
-!
-tacacs server example.com
  address ipv4 1.2.3.4
 !
-tacacs server example.com
- address ipv6 dead:beef::1
+tacacs server 2.example.com
+ address ipv4 1.2.3.5
+ key 7 0123456789ABCDEF012346
 !
-tacacs server example.com
- key 7 0123456789ABCDEF012345
+tacacs server 3.example.com
+ address ipv6 dead:beef::1
+ key 7 0123456789ABCDEF012347
+!
+tacacs server 4.example.com
+ address ipv4 1.2.3.6
+!
+tacacs server 5.example.com
+ address ipv6 dead:beef::2
+!
+tacacs server 6.example.com
+ key 7 0123456789ABCDEF012348
 !
 

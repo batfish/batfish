@@ -6974,6 +6974,11 @@ RP_LIST
    'rp-list'
 ;
 
+RSA
+:
+   'rsa'
+;
+
 RSAKEYPAIR
 :
    'rsakeypair'
@@ -9433,11 +9438,6 @@ FLOAT
 FORWARD_SLASH
 :
    '/'
-;
-
-HEX_DIGIT
-:
-   F_HexDigit
 ;
 
 IP_ADDRESS

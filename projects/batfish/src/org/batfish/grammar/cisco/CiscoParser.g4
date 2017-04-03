@@ -2271,7 +2271,11 @@ s_tacacs
    TACACS
    (
       t_null
-      | t_server (t_address | t_key)*
+      | t_server
+      (
+         t_address
+         | t_key
+      )*
    )
 ;
 
@@ -2701,14 +2705,21 @@ t_server
 
 t_address
 :
+   ADDRESS
    (
-      ADDRESS ((IPV4 IP_ADDRESS) | (IPV6 IPV6_ADDRESS)) NEWLINE
-   )
+      (
+         IPV4 IP_ADDRESS
+      )
+      |
+      (
+         IPV6 IPV6_ADDRESS
+      )
+   ) NEWLINE
 ;
 
 t_key
 :
-    KEY DIGIT HEX_DIGIT+
+   KEY DEC VARIABLE NEWLINE
 ;
 
 tap_null
