@@ -13,6 +13,10 @@ class-map type network-qos match-any boppety
 class-map match-any cos_all
   match cos  0  1  2  3  4  5  6  7    
 !
+object-group ip address BIPPETY
+ 10 1.2.3.0/24
+ 20 2.3.4.0/24
+ 30 host 3.4.5.6
 object network obj_any
  subnet 0.0.0.0 0.0.0.0
 object-group network dns_servers
@@ -90,4 +94,9 @@ policy-map type network-qos default-fleep-policy
     congestion-control tail-drop
     no congestion-control random-detect
     mtu 1500
+table-map tablemap1
+ default copy
+ from 10,12 to 14
+ map from 0 to 8
+!
 

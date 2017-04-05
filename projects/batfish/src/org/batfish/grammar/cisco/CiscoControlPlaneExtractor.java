@@ -331,7 +331,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private CiscoConfiguration _configuration;
 
-   private AaaAccountingCommands _currentAaaAccountingCommands;
+   @SuppressWarnings("unused")
+   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
    private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
@@ -478,19 +479,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Aaa_accounting_commandsContext ctx) {
       Map<String, AaaAccountingCommands> commands = _configuration.getCf()
             .getAaa().getAccounting().getCommands();
-      String level;
-      if (ctx.level != null) {
-         level = ctx.level.getText();
+      Set<String> levels = new TreeSet<>();
+      if (ctx.levels != null) {
+         List<SubRange> range = toRange(ctx.levels);
+         for (SubRange subRange : range) {
+            for (int i = subRange.getStart(); i <= subRange.getEnd(); i++) {
+               String level = Integer.toString(i);
+               levels.add(level);
+            }
+         }
       }
       else {
-         level = AaaAccounting.DEFAULT_COMMANDS;
+         levels.add(AaaAccounting.DEFAULT_COMMANDS);
       }
-      AaaAccountingCommands c = commands.get(level);
-      if (c == null) {
-         c = new AaaAccountingCommands();
-         commands.put(level, _currentAaaAccountingCommands);
+      List<AaaAccountingCommands> currentAaaAccountingCommands = new ArrayList<>();
+      for (String level : levels) {
+         AaaAccountingCommands c = commands.get(level);
+         if (c == null) {
+            c = new AaaAccountingCommands();
+            commands.put(level, c);
+         }
+         currentAaaAccountingCommands.add(c);
       }
-      _currentAaaAccountingCommands = c;
+      _currentAaaAccountingCommands = currentAaaAccountingCommands;
    }
 
    @Override
@@ -599,6 +610,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.name != null) {
          name = ctx.name.getText();
          definitionLine = ctx.name.getStart().getLine();
+      }
+      else if (ctx.shortname != null) {
+         name = ctx.shortname.getText();
+         definitionLine = ctx.shortname.getStart().getLine();
       }
       else if (ctx.num != null) {
          name = ctx.num.getText();
@@ -4016,8 +4031,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitS_ip_name_server(S_ip_name_serverContext ctx) {
       Set<String> dnsServers = _configuration.getDnsServers();
-      String domainName = ctx.hostname.getText();
-      dnsServers.add(domainName);
+      for (Ip_hostnameContext ipCtx : ctx.hostnames) {
+         String domainName = ipCtx.getText();
+         dnsServers.add(domainName);
+      }
    }
 
    @Override

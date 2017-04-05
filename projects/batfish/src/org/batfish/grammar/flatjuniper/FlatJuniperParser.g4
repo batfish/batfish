@@ -30,8 +30,14 @@ flat_juniper_configuration
    NEWLINE?
    (
       deactivate_line
+      | protect_line
       | set_line
    )+ NEWLINE? EOF
+;
+
+protect_line
+:
+   PROTECT ~NEWLINE* NEWLINE
 ;
 
 statement

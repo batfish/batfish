@@ -69,6 +69,7 @@ tokens {
    RAW_TEXT,
    SELF_SIGNED,
    SLIP_PPP,
+   TEXT,
    VALUE
 } // Cisco Keywords
 
@@ -497,6 +498,11 @@ ALLOW_CONNECTIONS
 ALLOW_DEFAULT
 :
    'allow-default'
+;
+
+ALLOW_NOPASSWORD_REMOTE_LOGIN
+:
+   'allow-nopassword-remote-login'
 ;
 
 ALLOW_SELF_PING
@@ -984,6 +990,11 @@ BIDIR_OFFER_INTERVAL
 BIDIR_OFFER_LIMIT
 :
    'bidir-offer-limit'
+;
+
+BIDIR_RP_LIMIT
+:
+   'bidir-rp-limit'
 ;
 
 BIFF
@@ -5509,6 +5520,16 @@ ON
    'on'
 ;
 
+ON_FAILURE
+:
+   'on-failure'
+;
+
+ON_SUCCESS
+:
+   'on-success'
+;
+
 ONE
 :
    'one'
@@ -6352,6 +6373,11 @@ PROXY_ARP
 PROXY_SERVER
 :
    'proxy-server'
+;
+
+PSEUDO_INFORMATION
+:
+   'pseudo-information'
 ;
 
 PSEUDOWIRE
@@ -7392,6 +7418,11 @@ SFLOW
 SFTP
 :
    'sftp'
+;
+
+SG_EXPIRY_TIMER
+:
+   'sg-expiry-timer'
 ;
 
 SGBP
@@ -8641,6 +8672,11 @@ USE_ACL
    'use-acl'
 ;
 
+USE_BIA
+:
+   'use-bia'
+;
+
 USE_IPV4_ACL
 :
    'use-ipv4-acl'
@@ -9001,6 +9037,11 @@ WATCH_LIST
 WAVELENGTH
 :
    'wavelength'
+;
+
+WCCP
+:
+   'wccp'
 ;
 
 WEBVPN
@@ -9906,6 +9947,11 @@ M_Authentication_PASSWORD_PROMPT
    'password-prompt' -> type ( PASSWORD_PROMPT ) , popMode
 ;
 
+M_Authentication_POLICY
+:
+   'policy' -> type ( POLICY ) , popMode
+;
+
 M_Authentication_PPP
 :
    'ppp' -> type ( PPP ) , popMode
@@ -9941,9 +9987,15 @@ M_Authentication_TELNET
    'telnet' -> type ( TELNET ) , popMode
 ;
 
+M_Authentication_TEXT
+:
+   'text' -> type ( TEXT ) , popMode
+;
+
 M_Authentication_USERNAME_PROMPT
 :
-   'username-prompt' -> type ( USERNAME_PROMPT ) , popMode
+   'username-prompt' -> type ( USERNAME_PROMPT ) , mode (
+   M_AuthenticationUsernamePrompt )
 ;
 
 M_Authentication_VARIABLE
@@ -9954,6 +10006,30 @@ M_Authentication_VARIABLE
 M_Authentication_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_AuthenticationUsernamePrompt;
+
+M_AuthenticationUsernamePrompt_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ) , mode ( M_AuthenticationUsernamePromptText )
+;
+
+M_AuthenticationUsernamePrompt_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_AuthenticationUsernamePromptText;
+
+M_AuthenticationUsernamePromptText_RAW_TEXT
+:
+   ~'"'+ -> type ( RAW_TEXT )
+;
+
+M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ) , popMode
 ;
 
 mode M_Banner;

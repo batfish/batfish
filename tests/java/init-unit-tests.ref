@@ -39,8 +39,10 @@
         "cisco_dot1x" : "cisco_dot1x",
         "cisco_dspfarm" : "cisco_dscpfarm",
         "cisco_dynamic_access_policy_record" : "cisco_dynamic_access_policy_record",
+        "cisco_eigrp" : "cisco_eigrp",
         "cisco_flow" : "cisco_flow",
         "cisco_hardware" : "cisco_hardware",
+        "cisco_hsrp" : "cisco_hsrp",
         "cisco_interface" : "cisco_interface",
         "cisco_ip" : "cisco_ip",
         "cisco_ip_nat" : "cisco_ip_nat",
@@ -87,7 +89,6 @@
         "community-name-numbers_dos" : "community_name_numbers_dos",
         "community_list_named" : "community_list_named",
         "community_set" : "community_set",
-        "eigrp" : "eigrp",
         "foundry_access_list" : "foundry_access_list",
         "foundry_bgp" : "foundry_bgp",
         "foundry_interface" : "foundry_interface",
@@ -109,8 +110,10 @@
         "ios_xr_taskgroup" : "ios_xr_taskgroup",
         "ip_access_list_with_seq" : "ip_access_list_with_seq",
         "ip_prefix_list_single_line" : "ip_prefix_list_single_line",
+        "juniper-ospf" : "juniper_ospf",
         "juniper-tcpflags" : "juniper-tcpflags",
         "juniper_apply_macro" : "juniper_apply_macro",
+        "juniper_bgp" : "juniper_bgp",
         "juniper_extended_community" : "juniper_extended_community",
         "juniper_firewall" : "juniper_firewall",
         "juniper_interfaces" : "juniper_interfaces",
@@ -138,6 +141,7 @@
         "nexus_ssh" : "nexus_ssh",
         "no_aaa_group_server" : "no_aaa_group_server",
         "non_nexus_neighbor_af" : "non_nexus_neighbor_af",
+        "nxos_acl" : "nxos_acl",
         "openflow" : "openflow",
         "peer_template" : "peer_template",
         "pim" : "pim",
@@ -150,7 +154,6 @@
         "route_policy_igp_cost" : "route_policy_igp_cost",
         "route_policy_metric_type" : "route_policy_metric_type",
         "route_policy_param" : "route_policy_param",
-        "router_hsrp" : "router_hsrp",
         "router_msdp" : "router_msdp",
         "set_inline_community" : "set_inline_community",
         "statistics" : "statistics",
@@ -204,8 +207,10 @@
         "cisco_dot1x" : "PASSED",
         "cisco_dspfarm" : "PASSED",
         "cisco_dynamic_access_policy_record" : "PASSED",
+        "cisco_eigrp" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
+        "cisco_hsrp" : "PASSED",
         "cisco_interface" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -252,7 +257,6 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
-        "eigrp" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -274,8 +278,10 @@
         "ios_xr_taskgroup" : "PASSED",
         "ip_access_list_with_seq" : "PASSED",
         "ip_prefix_list_single_line" : "PASSED",
+        "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
+        "juniper_bgp" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_interfaces" : "PASSED",
@@ -303,6 +309,7 @@
         "nexus_ssh" : "PASSED",
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
+        "nxos_acl" : "PASSED",
         "openflow" : "PASSED",
         "peer_template" : "PASSED",
         "pim" : "PASSED",
@@ -315,7 +322,6 @@
         "route_policy_igp_cost" : "PASSED",
         "route_policy_metric_type" : "PASSED",
         "route_policy_param" : "PASSED",
-        "router_hsrp" : "PASSED",
         "router_msdp" : "PASSED",
         "set_inline_community" : "PASSED",
         "statistics" : "PASSED",
@@ -332,7 +338,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.12.0",
+      "version" : "0.13.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -437,11 +443,20 @@
             }
           }
         },
+        "cisco_bgp" : {
+          "bgp group" : {
+            "p3" : {
+              "inherited BGP group" : [
+                9
+              ]
+            }
+          }
+        },
         "cisco_interface" : {
           "ipv4/6 acl" : {
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                65
+                68
               ]
             }
           }
@@ -512,7 +527,7 @@
           "prefix-list" : {
             "bippetyboo" : {
               "snmp community prefix-list" : [
-                4
+                5
               ]
             }
           }
@@ -822,6 +837,23 @@
             ]
           }
         },
+        "cisco_bgp" : {
+          "bgp group" : {
+            "p1" : [
+              7
+            ]
+          }
+        },
+        "cisco_eigrp" : {
+          "extended ip access-list" : {
+            "bippety" : [
+              21
+            ],
+            "bloop_blop" : [
+              90
+            ]
+          }
+        },
         "cisco_ipv6_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-XO" : [
@@ -848,6 +880,9 @@
             ],
             "mgmt" : [
               25
+            ],
+            "multicaststuff" : [
+              37
             ],
             "next-hop-null" : [
               22
@@ -894,16 +929,6 @@
           "standard community-list" : {
             "COMM_LIST_NAME" : [
               6
-            ]
-          }
-        },
-        "eigrp" : {
-          "extended ip access-list" : {
-            "bippety" : [
-              21
-            ],
-            "bloop_blop" : [
-              90
             ]
           }
         },
@@ -1042,6 +1067,19 @@
             ]
           }
         },
+        "nxos_acl" : {
+          "extended ip access-list" : {
+            "blah" : [
+              9
+            ],
+            "extended" : [
+              5
+            ],
+            "standard" : [
+              7
+            ]
+          }
+        },
         "preSet" : {
           "ipv4 prefix-list" : {
             "default_route" : [
@@ -1092,7 +1130,7 @@
           }
         }
       },
-      "version" : "0.12.0",
+      "version" : "0.13.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1212,8 +1250,10 @@
         "cisco_dot1x" : "PASSED",
         "cisco_dspfarm" : "PASSED",
         "cisco_dynamic_access_policy_record" : "PASSED",
+        "cisco_eigrp" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
+        "cisco_hsrp" : "PASSED",
         "cisco_interface" : "PASSED",
         "cisco_ip" : "PASSED",
         "cisco_ip_nat" : "PASSED",
@@ -1260,7 +1300,6 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
-        "eigrp" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -1282,8 +1321,10 @@
         "ios_xr_taskgroup" : "PASSED",
         "ip_access_list_with_seq" : "PASSED",
         "ip_prefix_list_single_line" : "PASSED",
+        "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
+        "juniper_bgp" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_interfaces" : "PASSED",
@@ -1311,6 +1352,7 @@
         "nexus_ssh" : "PASSED",
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
+        "nxos_acl" : "PASSED",
         "openflow" : "PASSED",
         "peer_template" : "PASSED",
         "pim" : "PASSED",
@@ -1323,7 +1365,6 @@
         "route_policy_igp_cost" : "PASSED",
         "route_policy_metric_type" : "PASSED",
         "route_policy_param" : "PASSED",
-        "router_hsrp" : "PASSED",
         "router_msdp" : "PASSED",
         "set_inline_community" : "PASSED",
         "statistics" : "PASSED",

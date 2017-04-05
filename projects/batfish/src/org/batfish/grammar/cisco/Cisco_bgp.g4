@@ -250,7 +250,7 @@ filter_list_bgp_tail
 
 inherit_peer_policy_bgp_tail
 :
-   INHERIT PEER_POLICY name = variable NEWLINE
+   INHERIT PEER_POLICY name = variable num = DEC? NEWLINE
 ;
 
 inherit_peer_session_bgp_tail
@@ -770,10 +770,7 @@ router_bgp_stanza_tail
    | template_peer_rb_stanza
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
-   |
-   {_multilineBgpNeighbors}?
-
-   vrf_block_rb_stanza
+   | vrf_block_rb_stanza
    | unrecognized_line
 ;
 
@@ -881,6 +878,7 @@ template_peer_policy_rb_stanza
    TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
    (
       bgp_tail
+      | inherit_peer_policy_bgp_tail
    )*
    (
       EXIT_PEER_POLICY NEWLINE

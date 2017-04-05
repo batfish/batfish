@@ -283,6 +283,11 @@ match_ipv6_access_list_rm_stanza
    )+ NEWLINE
 ;
 
+match_ip_multicast_rm_stanza
+:
+   MATCH IP MULTICAST ~NEWLINE* NEWLINE
+;
+
 match_ip_next_hop_rm_stanza_null
 :
    MATCH IP NEXT_HOP
@@ -338,6 +343,7 @@ match_rm_stanza
    | match_extcommunity_rm_stanza
    | match_interface_rm_stanza
    | match_ip_access_list_rm_stanza
+   | match_ip_multicast_rm_stanza
    | match_ip_next_hop_rm_stanza_null
    | match_ip_prefix_list_rm_stanza
    | match_ip_route_source_rm_stanza

@@ -72,5 +72,6 @@ router ospfv3 1
 ipv6 router ospf 1
  router-id 10.5.3.4
  log-adjacency-changes
+ log-adjacency-changes detail
  distribute-list prefix-list SWITCHLAN in  
 !

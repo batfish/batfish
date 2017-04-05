@@ -189,6 +189,12 @@ interface_name
    )
 ;
 
+ip_hostname
+:
+   IP_ADDRESS
+   | IPV6_ADDRESS
+;
+
 isis_level
 :
    LEVEL_1
@@ -456,7 +462,7 @@ variable
 
 variable_hostname
 :
-   ~(USE_VRF | NEWLINE | VRF)+
+   ~( USE_VRF | NEWLINE | VRF )+
 ;
 
 variable_permissive

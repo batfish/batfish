@@ -321,7 +321,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             vr.initStaticRib();
             vr.importRib(vr._independentRib, vr._staticInterfaceRib);
             vr.importRib(vr._mainRib, vr._staticInterfaceRib);
-            vr.initOspfInterfaceCosts();
             vr.initBaseOspfRoutes();
             vr.initEbgpTopology(dp);
             vr.initBaseBgpRibs(externalAdverts);

@@ -1,0 +1,6 @@
+#
+set system host-name juniper_bgp
+#
+set protocols bgp path-selection external-router-id
+#
+

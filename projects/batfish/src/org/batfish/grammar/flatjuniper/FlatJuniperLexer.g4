@@ -521,6 +521,11 @@ COMPATIBLE
    'compatible'
 ;
 
+COMPRESS_CONFIGURATION_FILES
+:
+   'compress-configuration-files'
+;
+
 CONDITION
 :
    'condition'
@@ -919,6 +924,11 @@ EXTERNAL_INTERFACE
 EXTERNAL_PREFERENCE
 :
    'external-preference'
+;
+
+EXTERNAL_ROUTER_ID
+:
+   'external-router-id'
 ;
 
 EXTENSIONS
@@ -3196,6 +3206,11 @@ NO_RETAIN
    'no-retain'
 ;
 
+NO_RFC_1583
+:
+   'no-rfc-1583'
+;
+
 NO_NEIGHBOR_LEARN
 :
    'no-neighbor-learn'
@@ -3299,6 +3314,11 @@ OUTER
 OVERLOAD
 :
    'overload'
+;
+
+OVERRIDE_METRIC
+:
+   'override-metric'
 ;
 
 P2P
@@ -3614,6 +3634,11 @@ PROPOSAL_SET
 PROPOSALS
 :
    'proposals'
+;
+
+PROTECT
+:
+   'protect'
 ;
 
 PROTOCOL
@@ -4551,6 +4576,11 @@ VERSION
    'version' -> pushMode ( M_Version )
 ;
 
+VIEW
+:
+   'view'
+;
+
 VIRTUAL_ADDRESS
 :
    'virtual-address'
@@ -4809,6 +4839,7 @@ DOUBLE_QUOTED_STRING
    '"' ~'"'* '"'
 ;
 
+/*
 FLOAT
 :
    F_PositiveDigit* F_Digit '.'
@@ -4817,7 +4848,7 @@ FLOAT
       | F_Digit* F_PositiveDigit
    )
 ;
-
+*/
 FORWARD_SLASH
 :
    '/'

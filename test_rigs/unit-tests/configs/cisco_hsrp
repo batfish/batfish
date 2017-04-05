@@ -1,5 +1,5 @@
 !
-hostname router_hsrp
+hostname cisco_hsrp
 !
 router hsrp
  interface TenGigE0/0/2/3
@@ -30,3 +30,17 @@ router hsrp
   !
  !
 !
+interface TenGigE0/0/2/2
+ no hsrp bfd
+ hsrp delay minimum 0 reload 0
+ no hsrp use-bia
+ hsrp 123
+  authentication text blah
+  name bloop
+  mac-address 0123.4567.89AB
+  preempt delay minimum 300 reload 300 sync 0 
+  priority 100 forwarding-threshold lower 0 upper 100
+  timers  1  4
+  ip 1.2.3.4
+!
+

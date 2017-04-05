@@ -182,6 +182,7 @@ b_path_selection
    PATH_SELECTION
    (
       bps_always_compare_med
+      | bps_external_router_id
    )
 ;
 
@@ -392,6 +393,11 @@ bpa_as
 bps_always_compare_med
 :
    ALWAYS_COMPARE_MED
+;
+
+bps_external_router_id
+:
+   EXTERNAL_ROUTER_ID
 ;
 
 p_bgp

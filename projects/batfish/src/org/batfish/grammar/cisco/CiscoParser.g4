@@ -619,6 +619,7 @@ ip_ssh_null
 :
    (
       AUTHENTICATION_RETRIES
+      | CLIENT
       | PORT
       | SOURCE_INTERFACE
       | TIME_OUT
@@ -1453,6 +1454,7 @@ pim_null
       | BIDIR_ENABLE
       | BIDIR_OFFER_INTERVAL
       | BIDIR_OFFER_LIMIT
+      | BIDIR_RP_LIMIT
       | BSR_CANDIDATE
       | DM_FALLBACK
       | LOG_NEIGHBOR_CHANGES
@@ -1460,6 +1462,7 @@ pim_null
       | REGISTER_SOURCE
       | RPF_VECTOR
       | SEND_RP_DISCOVERY
+      | SG_EXPIRY_TIMER
       | SNOOPING
       | V1_RP_REACHABILITY
    ) ~NEWLINE* NEWLINE
@@ -1924,7 +1927,13 @@ s_ip_name_server
    IP NAME_SERVER
    (
       VRF vrf = variable
-   )? hostname = variable_hostname NEWLINE
+   )?
+   (
+      hostnames += ip_hostname
+   )+
+   (
+      USE_VRF vrf = variable
+   )? NEWLINE
 ;
 
 s_ip_nat
@@ -2218,6 +2227,7 @@ s_spanning_tree
    NO? SPANNING_TREE
    (
       spanning_tree_mst
+      | spanning_tree_pseudo_information
       | spanning_tree_null
    )
 ;
@@ -2310,7 +2320,7 @@ s_tunnel_group
 
 s_vlan
 :
-   VLAN
+   NO? VLAN
    (
       ACCESS_MAP
       | DEC
@@ -2436,6 +2446,14 @@ spanning_tree_mst_null
    ) ~NEWLINE* NEWLINE
 ;
 
+spanning_tree_pseudo_information
+:
+   PSEUDO_INFORMATION NEWLINE
+   (
+      spti_null
+   )*
+;
+
 spanning_tree_null
 :
    (
@@ -2456,6 +2474,14 @@ spanning_tree_null
       | PORTFAST
       | UPLINKFAST
       | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+spti_null
+:
+   NO?
+   (
+      MST
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2650,6 +2676,7 @@ stanza
    | s_statistics
    | s_stcapp
    | s_switchport
+   | s_table_map
    | s_tacacs
    | s_tacacs_server
    | s_tap

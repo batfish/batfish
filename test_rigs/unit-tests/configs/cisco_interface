@@ -41,6 +41,9 @@ interface Dot11Radio0
  ssid blah
  station-role root access-point
  stbc
+ switchport backup interface Gi1/0
+ switchport backup interface Gi1/0 preemption delay 120
+ switchport backup interface Gi1/0 preemption mode forced
 !
 interface Async1
  dialer in-band

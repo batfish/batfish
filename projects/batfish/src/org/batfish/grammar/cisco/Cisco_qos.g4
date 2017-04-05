@@ -230,7 +230,17 @@ ogipa_host_info
 
 ogipa_ip_addresses
 :
-   IP_ADDRESS+ NEWLINE
+   (
+      IP_ADDRESS+
+      |
+      (
+         num = DEC
+         (
+            HOST IP_ADDRESS
+            | IP_PREFIX
+         )
+      )
+   ) NEWLINE
 ;
 
 ogit_group_object
@@ -543,4 +553,22 @@ s_qos_mapping
    (
       qm_null
    )*
+;
+
+s_table_map
+:
+   TABLE_MAP name = variable NEWLINE
+   (
+      table_map_null
+   )*
+;
+
+table_map_null
+:
+   NO?
+   (
+      DEFAULT
+      | FROM
+      | MAP
+   ) ~NEWLINE* NEWLINE
 ;
