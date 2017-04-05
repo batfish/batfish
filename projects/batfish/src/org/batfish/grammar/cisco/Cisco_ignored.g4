@@ -235,7 +235,6 @@ null_block
       | SYSLOGD
       | SYSTEM_INIT
       | SYSTEM_MAX
-      | TABLE_MAP
       | TAG_TYPE
       | TASKGROUP
       | TCP
@@ -333,7 +332,6 @@ null_inner
          | CREDENTIALS
          | CRYPTOGRAPHIC_ALGORITHM
          | DEADTIME
-         | DEFAULT
          | DEFAULT_DOMAIN
          | DEFAULT_ROUTER
          | DENY
@@ -427,7 +425,6 @@ null_inner
          | LOG
          | LPTS
          | MAC_ADDRESS
-         | MAP
          | MEDIA
          | MEMBER
          | MESH_GROUP
@@ -710,6 +707,7 @@ null_single
             | TELNET
             | TFTP
             | VERIFY
+            | WCCP
          )
       )
       | IP_ADDRESS_LITERAL

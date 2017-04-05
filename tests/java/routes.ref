@@ -3249,7 +3249,7 @@
             "metric" : 0,
             "network" : "90.90.90.0/24",
             "nextHop" : "(none)",
-            "nextHopInterface" : "FastEthernet1/0",
+            "nextHopInterface" : "FastEthernet1/1",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as3core1",
             "protocol" : "connected",

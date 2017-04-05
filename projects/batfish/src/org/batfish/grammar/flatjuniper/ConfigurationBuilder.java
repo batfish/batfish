@@ -3824,7 +3824,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSnmptgtd_targets(Snmptgtd_targetsContext ctx) {
+   public void exitSnmptg_targets(Snmptg_targetsContext ctx) {
       Ip ip = new Ip(ctx.target.getText());
       String name = ip.toString();
       SnmpHost host = _currentSnmpServer.getHosts().get(name);

@@ -476,7 +476,7 @@ ifiav_advertise_interval
 
 ifiav_authentication_key
 :
-   AUTHENTICATION_KEY DOUBLE_QUOTED_STRING
+   AUTHENTICATION_KEY string
 ;
 
 ifiav_authentication_type

@@ -1,5 +1,5 @@
 !
-hostname eigrp
+hostname cisco_eigrp
 !
 object-group ip address _anonymized_
  1.1.1.1 1.1.1.0
@@ -100,3 +100,5 @@ router eigrp 5
  no passive-interface GigabitEthernet1/5/3
  no passive-interface GigabitEthernet2/5/3
  network 1.1.1.1
+!
+

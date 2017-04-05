@@ -21,6 +21,7 @@ if_hsrp
    HSRP group = DEC NEWLINE
    (
       if_hsrp_ip_address
+      | if_hsrp_null
       | if_hsrp_preempt
       | if_hsrp_priority
       | if_hsrp_track
@@ -32,14 +33,25 @@ if_hsrp_ip_address
    IP ip = IP_ADDRESS NEWLINE
 ;
 
+if_hsrp_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | MAC_ADDRESS
+      | NAME
+      | TIMERS
+   ) ~NEWLINE* NEWLINE
+;
+
 if_hsrp_preempt
 :
-   PREEMPT NEWLINE
+   PREEMPT ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_priority
 :
-   PRIORITY value = DEC NEWLINE
+   PRIORITY value = DEC ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_track
@@ -335,7 +347,13 @@ if_null_block
       | HOLD_QUEUE
       |
       (
-         HSRP VERSION
+         HSRP
+         (
+            BFD
+            | DELAY
+            | USE_BIA
+            | VERSION
+         )
       )
       | IGNORE
       |
@@ -575,7 +593,8 @@ if_null_block
       (
          SWITCHPORT
          (
-            EMPTY
+            BACKUP
+            | EMPTY
             |
             (
                MODE PRIVATE_VLAN

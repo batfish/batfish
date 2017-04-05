@@ -321,7 +321,7 @@ ro6_distribute_list
 
 ro6_log_adjacency_changes
 :
-   LOG_ADJACENCY_CHANGES NEWLINE
+   LOG_ADJACENCY_CHANGES DETAIL? NEWLINE
 ;
 
 ro6_maximum_paths

@@ -29,7 +29,7 @@ aaa_accounting_commands
    COMMANDS
    (
       ALL
-      | level = DEC
+      | levels = range
    )?
    (
       DEFAULT
@@ -221,10 +221,12 @@ aaa_authentication
       | aaa_authentication_http
       | aaa_authentication_include
       | aaa_authentication_login
+      | aaa_authentication_policy
       | aaa_authentication_ppp
       | aaa_authentication_serial
       | aaa_authentication_ssh
       | aaa_authentication_telnet
+      | aaa_authentication_username_prompt
    )
 ;
 
@@ -397,6 +399,16 @@ aaa_authentication_login_privilege_mode
    PRIVILEGE_MODE NEWLINE
 ;
 
+aaa_authentication_policy
+:
+   POLICY
+   (
+      LOCAL ALLOW_NOPASSWORD_REMOTE_LOGIN
+      | ON_FAILURE LOG
+      | ON_SUCCESS LOG
+   ) NEWLINE
+;
+
 aaa_authentication_ppp
 :
    PPP
@@ -419,6 +431,11 @@ aaa_authentication_ssh
 aaa_authentication_telnet
 :
    TELNET aaa_authentication_asa_console
+;
+
+aaa_authentication_username_prompt
+:
+   USERNAME_PROMPT DOUBLE_QUOTE RAW_TEXT? DOUBLE_QUOTE NEWLINE
 ;
 
 aaa_authorization

@@ -1,6 +1,7 @@
 !
 hostname cisco_vlan
 !
+no vlan 1
 vlan 396 name grgrgrgrgr
  mtu 5000
  tagged ethe 1/2
