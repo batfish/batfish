@@ -2719,7 +2719,7 @@ t_address
 
 t_key
 :
-   KEY DEC VARIABLE NEWLINE
+   KEY DEC? variable_permissive NEWLINE
 ;
 
 tap_null

@@ -3561,6 +3561,8 @@
             "4.example.com",
             "5.example.com",
             "6.example.com",
+            "7.example.com",
+            "8.example.com",
             "example.com"
           ],
           "vendorFamily" : {

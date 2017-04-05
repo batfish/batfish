@@ -38,6 +38,12 @@ tacacs server 5.example.com
  address ipv6 dead:beef::2
 !
 tacacs server 6.example.com
- key 7 0123456789ABCDEF012348
+ key 7 010203040506070809
+!
+tacacs server 7.example.com
+ key 0 abcd1234
+!
+tacacs server 8.example.com
+ key hello,world
 !
 
