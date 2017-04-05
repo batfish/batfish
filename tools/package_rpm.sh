@@ -17,6 +17,18 @@ architecture() {
    echo $ARCHITECTURE
 }
 
+jdk_requirement() {
+   if [ "${REDHAT_VERSION}" = "7" ]; then
+      echo "Requires: java-1.8.0-openjdk"
+   elif [ "${REDHAT_VERSION}" = "6" ]; then
+      # TODO: find good way to install java 8
+      echo
+   else
+      echo "Unsupported RHEL version: $REDHAT_VERSION"
+      exit 1
+   fi
+}
+
 redhat_version() {
    sed 's/.*release \([^ ]*\).*/\1/g' /etc/redhat-release | cut -d'.' -f1
 }
@@ -396,6 +408,7 @@ Source0: %{name}-%{version}.tar.gz
 BuildArch: ${ARCHITECTURE}
 
 BuildRoot: %{_tmppath}/%name}-%{version}-%{release}-root
+$(jdk_requirement)
 Requires(pre): /usr/sbin/useradd, /usr/sbin/groupadd, /usr/bin/getent, /bin/mkdir, /bin/chown, /bin/chmod
 Requires(post): /bin/mkdir, /bin/chown, /bin/chmod, ${SERVICE}, ${CTL}
 Requires(preun): ${SERVICE}, /bin/true
