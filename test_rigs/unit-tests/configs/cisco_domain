@@ -3,6 +3,8 @@ hostname cisco_domain
 !
 domain name my.domain.name
 domain name-server 2.3.4.5
+domain vrf Management name example.com
+domain vrf Management name-server 1.2.3.4
 domain-name my.domain.name
 ip domain name my.domain.name
 ip domain name vrf blip my.domain.name

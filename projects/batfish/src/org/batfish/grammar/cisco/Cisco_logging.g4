@@ -19,6 +19,10 @@ logging_address
       )
       |
       (
+         PORT DEFAULT
+      )
+      |
+      (
          SEVERITY severity = variable
       )
    )* NEWLINE

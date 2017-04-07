@@ -263,11 +263,7 @@ match_ip_access_list_rm_stanza
 :
    MATCH IP ADDRESS
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable_access_list
    )+ NEWLINE
 ;
 
@@ -275,11 +271,7 @@ match_ipv6_access_list_rm_stanza
 :
    MATCH IPV6 ADDRESS
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable_access_list
    )+ NEWLINE
 ;
 
@@ -759,4 +751,9 @@ set_rp_stanza
    | set_origin_rp_stanza
    | set_tag_rp_stanza
    | set_weight_rp_stanza
+;
+
+variable_access_list
+:
+   ~( IP | IPV6 | NEWLINE | PREFIX_LIST )
 ;

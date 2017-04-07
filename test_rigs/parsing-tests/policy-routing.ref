@@ -936,7 +936,8 @@
             "            MATCH:'match'  <== mode:DEFAULT_MODE",
             "            IP:'ip'  <== mode:DEFAULT_MODE",
             "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'policy-filter'  <== mode:DEFAULT_MODE",
+            "            (variable_access_list",
+            "              VARIABLE:'policy-filter'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (rm_stanza",
             "        (set_rm_stanza",
@@ -1903,11 +1904,11 @@
           ]
         }
       },
-      "version" : "0.13.0"
+      "version" : "0.14.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.13.0"
+      "version" : "0.14.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

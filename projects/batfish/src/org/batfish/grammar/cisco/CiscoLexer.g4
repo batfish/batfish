@@ -15,6 +15,7 @@ private boolean enableIP_ADDRESS = true;
 private boolean enableDEC = true;
 private boolean enableACL_NUM = false;
 private boolean enableCOMMUNITY_LIST_NUM = false;
+private boolean _inAccessList = false;
 private boolean inCommunitySet = false;
 private boolean _foundry = false;
 
@@ -136,7 +137,7 @@ ACCESS_GROUP
 ACCESS_LIST
 :
    'access-list'
-   {enableACL_NUM = true; enableDEC = false;}
+   {enableACL_NUM = true; enableDEC = false;_inAccessList = true;}
 
 ;
 
@@ -183,6 +184,11 @@ ACCT_PORT
 ACK
 :
    'ack'
+;
+
+ACL
+:
+   'acl'
 ;
 
 ACL_POLICY
@@ -540,6 +546,11 @@ ALWAYS_ON_VPN
    'always-on-vpn'
 ;
 
+AM_DISABLE
+:
+   'am-disable'
+;
+
 AND
 :
    'and'
@@ -720,6 +731,11 @@ ASYNC
 ASYNC_BOOTP
 :
    'async-bootp'
+;
+
+ASYNCHRONOUS
+:
+   'asynchronous'
 ;
 
 ATM
@@ -1147,6 +1163,11 @@ BUFFERED
    'buffered'
 ;
 
+BUILDING_CONFIGURATION
+:
+   'Building configuration'
+;
+
 BUNDLE
 :
    'bundle'
@@ -1277,6 +1298,11 @@ CGMP
    'cgmp'
 ;
 
+CHAIN
+:
+   'chain'
+;
+
 CHANGES
 :
    'changes'
@@ -1320,6 +1346,11 @@ CHASSIS_ID
 CHAT_SCRIPT
 :
    'chat-script'
+;
+
+CHECK
+:
+   'check'
 ;
 
 CIPC
@@ -1415,6 +1446,11 @@ CLOCK
 CLOCK_PERIOD
 :
    'clock-period'
+;
+
+CLOSED
+:
+   'closed'
 ;
 
 CLUSTER
@@ -1803,6 +1839,11 @@ CTS
    'cts'
 ;
 
+CURRENT_CONFIGURATION
+:
+   'Current configuration'
+;
+
 CUSTOMER_ID
 :
    'customer-id'
@@ -2116,6 +2157,11 @@ DISPUTE
 DF
 :
    'df'
+;
+
+DF_BIT
+:
+   'df-bit'
 ;
 
 DFA_REGEX
@@ -2608,6 +2654,11 @@ END_SET
 ENFORCE_FIRST_AS
 :
    'enforce-first-as'
+;
+
+ENGINE
+:
+   'engine'
 ;
 
 ENGINEID
@@ -3242,6 +3293,11 @@ GE
    'ge'
 ;
 
+GENERATE
+:
+   'generate'
+;
+
 GID
 :
    'gid'
@@ -3517,6 +3573,11 @@ HOST_INFO
    'host-info'
 ;
 
+HOST_PROXY
+:
+   'host-proxy'
+;
+
 HOST_ROUTING
 :
    'host-routing'
@@ -3692,6 +3753,11 @@ IKEV1
    'ikev1'
 ;
 
+IKEV2
+:
+   'ikev2'
+;
+
 ILMI_KEEPALIVE
 :
    'ilmi-keepalive'
@@ -3830,9 +3896,8 @@ INTERAREA
 INTERFACE
 :
    'int' 'erface'?
-   { enableIPV6_ADDRESS = false; }
+   { enableIPV6_ADDRESS = false; if (!_inAccessList) {pushMode(M_Interface);}}
 
-   -> pushMode ( M_Interface )
 ;
 
 INTERNAL
@@ -3898,6 +3963,21 @@ IPINIP
 IPSEC
 :
    'ipsec'
+;
+
+IPSEC_ISAKMP
+:
+   'ipsec-isakmp'
+;
+
+IPSEC_OVER_TCP
+:
+   'ipsec-over-tcp'
+;
+
+IPSEC_PROPOSAL
+:
+   'ipsec-proposal'
 ;
 
 IPSEC_UDP
@@ -4158,6 +4238,16 @@ LAPB
 LAST_AS
 :
    'last-as'
+;
+
+LAST_MEMBER_QUERY_COUNT
+:
+   'last-member-query-count'
+;
+
+LAST_MEMBER_QUERY_INTERVAL
+:
+   'last-member-query-interval'
 ;
 
 LDAP
@@ -4835,6 +4925,11 @@ MICROCODE
    'microcode'
 ;
 
+MICROSOFT_DS
+:
+   'microsoft-ds'
+;
+
 MINIMAL
 :
    'minimal'
@@ -5105,6 +5200,11 @@ NAME_SERVER
    'name-server'
 ;
 
+NAMED_KEY
+:
+   'named-key'
+;
+
 NAMEIF
 :
    'nameif'
@@ -5133,6 +5233,11 @@ NAT
 NAT_CONTROL
 :
    'nat-control'
+;
+
+NAT_TRAVERSAL
+:
+   'nat-traversal'
 ;
 
 NATIVE
@@ -5670,6 +5775,11 @@ OUT_OF_BAND
    'out-of-band'
 ;
 
+OUTBOUND_ACL_CHECK
+:
+   'outbound-acl-check'
+;
+
 OUTPUT
 :
    'output'
@@ -5718,6 +5828,11 @@ PACKET_TOO_BIG
 PAGER
 :
    'pager'
+;
+
+PARAM
+:
+   'param'
 ;
 
 PARAMETER_PROBLEM
@@ -6440,6 +6555,11 @@ QUERY_INTERVAL
    'query-interval'
 ;
 
+QUERY_MAX_RESPONSE_TIME
+:
+   'query-max-response-time'
+;
+
 QUERY_ONLY
 :
    'query-only'
@@ -6615,6 +6735,11 @@ REDIRECT_FQDN
    'redirect-fqdn'
 ;
 
+REDIRECT_LIST
+:
+   'redirect-list'
+;
+
 REDIRECTS
 :
    'redirects'
@@ -6698,6 +6823,11 @@ REMARK
 REMOTE
 :
    'remote'
+;
+
+REMOTE_ACCESS
+:
+   'remote-access'
 ;
 
 REMOTE_AS
@@ -6950,6 +7080,11 @@ ROUTER_ADVERTISEMENT
    'router-advertisement'
 ;
 
+ROUTER_ALERT
+:
+   'router-alert'
+;
+
 ROUTER_ID
 :
    'router-id'
@@ -7190,6 +7325,11 @@ SECURITY
    'security'
 ;
 
+SECURITY_ASSOCIATION
+:
+   'security-association'
+;
+
 SECURITY_LEVEL
 :
    'security-level'
@@ -7318,6 +7458,11 @@ SERVICE
 SERVICE_CLASS
 :
    'service-class'
+;
+
+SERVICE_LIST
+:
+   'service-list'
 ;
 
 SERVICE_MODULE
@@ -7767,6 +7912,16 @@ START_TIME
    'start-time'
 ;
 
+STARTUP_QUERY_COUNT
+:
+   'startup-query-count'
+;
+
+STARTUP_QUERY_INTERVAL
+:
+   'startup-query-interval'
+;
+
 STATE
 :
    'state'
@@ -7780,6 +7935,11 @@ STATE_REFRESH
 STATIC
 :
    'static'
+;
+
+STATIC_GROUP
+:
+   'static-group'
 ;
 
 STATION_ROLE
@@ -8327,6 +8487,11 @@ TM_VOQ_COLLECTION
    'tm-voq-collection'
 ;
 
+TOKEN
+:
+   'token'
+;
+
 TOOL
 :
    'tool'
@@ -8380,6 +8545,11 @@ TRAFFIC_ENG
 TRAFFIC_INDEX
 :
    'traffic-index'
+;
+
+TRANSFORM_SET
+:
+   'transform-set'
 ;
 
 TRANSCEIVER
@@ -8892,6 +9062,11 @@ VMPS
    'vmps'
 ;
 
+VMTRACER
+:
+   'vmtracer'
+;
+
 VOICE
 :
    'voice'
@@ -9042,6 +9217,11 @@ WAVELENGTH
 WCCP
 :
    'wccp'
+;
+
+WEB_CACHE
+:
+   'web-cache'
 ;
 
 WEBVPN
@@ -9560,6 +9740,7 @@ NEWLINE
    	enableIP_ADDRESS = true;
       enableDEC = true;
       enableACL_NUM = false;
+      _inAccessList = false;
   }
 
 ;

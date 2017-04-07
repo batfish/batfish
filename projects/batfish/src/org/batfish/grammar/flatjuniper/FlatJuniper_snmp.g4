@@ -31,6 +31,8 @@ snmp_null
 :
    (
       CONTACT
+      | DESCRIPTION
+      | INTERFACE
       | LOCATION
       | TRACEOPTIONS
       | TRAP_OPTIONS

@@ -1392,6 +1392,322 @@
             }
           }
         },
+        "cisco_acl" : {
+          "name" : "cisco_acl",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "ipAccessLists" : {
+            "BLAH-BLAH" : {
+              "name" : "BLAH-BLAH",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "ICMP"
+                  ],
+                  "name" : "10 permit icmp any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "20 permit ip any any tracked",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "states" : [
+                    "ESTABLISHED"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "OSPF"
+                  ],
+                  "name" : "30 permit ospf any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "179-179"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "40 permit tcp any any eq bgp",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "67-67",
+                    "68-68",
+                    "123-123"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "50 permit udp any any eq bootps bootpc ntp",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "6784-6784"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "60 permit tcp any any eq mlag ttl eq 255",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "6784-6784"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "70 permit udp any any eq mlag ttl eq 255",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "VRRP"
+                  ],
+                  "name" : "80 permit vrrp any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "AHP"
+                  ],
+                  "name" : "90 permit ahp any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "PIM"
+                  ],
+                  "name" : "100 permit pim any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "IGMP"
+                  ],
+                  "name" : "110 permit igmp any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "1-10"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "120 permit tcp any any range 1 10",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "161-161"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "140 permit udp 10.0.0.0/19 any eq snmp",
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.0.0.0/19"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "161-161"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "180 permit udp host 10.0.0.0 any eq snmp",
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.0.0.0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "22-22"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "220 permit tcp 10.0.0.0/19 any eq ssh",
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.0.0.0/19"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "22-22"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "260 permit tcp host 10.0.0.0 any eq ssh",
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.0.0.0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "445-445",
+                    "5432-5432"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "270 permit tcp any any eq microsoft-ds 5432",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            },
+            "blah" : {
+              "name" : "blah",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "10 permit ip any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            },
+            "extended" : {
+              "name" : "extended"
+            },
+            "standard" : {
+              "name" : "standard"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_acl"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "cisco_authentication" : {
           "name" : "cisco_authentication",
           "configurationFormat" : "CISCO_NX",
@@ -1979,6 +2295,86 @@
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
+            "Vlan111" : {
+              "name" : "Vlan111",
+              "accessVlan" : 0,
+              "active" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
+            "Vlan112" : {
+              "name" : "Vlan112",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.3.4.0/29"
+              ],
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.3.4.0/29",
+              "proxyArp" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
+            "Vlan113" : {
+              "name" : "Vlan113",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "3.4.5.0/24"
+              ],
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "3.4.5.0/24",
+              "proxyArp" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
+            "Vxlan1" : {
+              "name" : "Vxlan1",
+              "accessVlan" : 0,
+              "active" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
             "tunnel-ip6" : {
               "name" : "tunnel-ip6",
               "accessVlan" : 0,
@@ -2017,6 +2413,10 @@
                 "Ethernet1/11",
                 "Loopback0",
                 "Null0",
+                "Vlan111",
+                "Vlan112",
+                "Vlan113",
+                "Vxlan1",
                 "tunnel-ip6"
               ]
             }
@@ -3021,7 +3421,7 @@
             "10.246.131.138",
             "11.2.3.4",
             "137.164.80.152",
-            "2001:220::141"
+            "dead:beef::1"
           ],
           "vendorFamily" : {
             "cisco" : {
@@ -3048,8 +3448,8 @@
                   "137.164.80.152" : {
                     "name" : "137.164.80.152"
                   },
-                  "2001:220::141" : {
-                    "name" : "2001:220::141"
+                  "dead:beef::1" : {
+                    "name" : "dead:beef::1"
                   }
                 },
                 "on" : true,
@@ -3377,7 +3777,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             },
@@ -3738,6 +4138,7 @@
           "defaultInboundAction" : "ACCEPT",
           "tacacsServers" : [
             "1.2.3.4",
+            "EACACS",
             "example.com"
           ],
           "vendorFamily" : {
@@ -5982,282 +6383,6 @@
             }
           }
         },
-        "ip_access_list_with_seq" : {
-          "name" : "ip_access_list_with_seq",
-          "configurationFormat" : "CISCO_NX",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "ipAccessLists" : {
-            "BLAH-BLAH" : {
-              "name" : "BLAH-BLAH",
-              "lines" : [
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "ipProtocols" : [
-                    "ICMP"
-                  ],
-                  "name" : "10 permit icmp any any",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "name" : "20 permit ip any any tracked",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "states" : [
-                    "ESTABLISHED"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "ipProtocols" : [
-                    "OSPF"
-                  ],
-                  "name" : "30 permit ospf any any",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "179-179"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "name" : "40 permit tcp any any eq bgp",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "67-67",
-                    "68-68",
-                    "123-123"
-                  ],
-                  "ipProtocols" : [
-                    "UDP"
-                  ],
-                  "name" : "50 permit udp any any eq bootps bootpc ntp",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "6784-6784"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "name" : "60 permit tcp any any eq mlag ttl eq 255",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "6784-6784"
-                  ],
-                  "ipProtocols" : [
-                    "UDP"
-                  ],
-                  "name" : "70 permit udp any any eq mlag ttl eq 255",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "ipProtocols" : [
-                    "VRRP"
-                  ],
-                  "name" : "80 permit vrrp any any",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "ipProtocols" : [
-                    "AHP"
-                  ],
-                  "name" : "90 permit ahp any any",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "ipProtocols" : [
-                    "PIM"
-                  ],
-                  "name" : "100 permit pim any any",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "ipProtocols" : [
-                    "IGMP"
-                  ],
-                  "name" : "110 permit igmp any any",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "1-10"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "name" : "120 permit tcp any any range 1 10",
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "161-161"
-                  ],
-                  "ipProtocols" : [
-                    "UDP"
-                  ],
-                  "name" : "140 permit udp 10.0.0.0/19 any eq snmp",
-                  "negate" : false,
-                  "srcIps" : [
-                    "10.0.0.0/19"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "161-161"
-                  ],
-                  "ipProtocols" : [
-                    "UDP"
-                  ],
-                  "name" : "180 permit udp host 10.0.0.0 any eq snmp",
-                  "negate" : false,
-                  "srcIps" : [
-                    "10.0.0.0"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "22-22"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "name" : "220 permit tcp 10.0.0.0/19 any eq ssh",
-                  "negate" : false,
-                  "srcIps" : [
-                    "10.0.0.0/19"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "dstPorts" : [
-                    "22-22"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "name" : "260 permit tcp host 10.0.0.0 any eq ssh",
-                  "negate" : false,
-                  "srcIps" : [
-                    "10.0.0.0"
-                  ]
-                }
-              ]
-            }
-          },
-          "vendorFamily" : {
-            "cisco" : {
-              "hostname" : "ip_access_list_with_seq"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default"
-            }
-          }
-        },
         "ip_prefix_list_single_line" : {
           "name" : "ip_prefix_list_single_line",
           "configurationFormat" : "CISCO_NX",
@@ -6653,7 +6778,8 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ntpServers" : [
-            "1.2.3.4"
+            "1.2.3.4",
+            "2.3.4.5"
           ],
           "vendorFamily" : { },
           "vrfs" : {
