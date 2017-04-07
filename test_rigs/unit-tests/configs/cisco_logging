@@ -1,8 +1,8 @@
 !
 hostname cisco_logging
 !
-logging 137.164.80.152
-logging 2001:220::141 vrf default severity info
+logging 1.2.3.4
+logging dead:beef::1 vrf default severity info port default
 logging alarm informational
 logging archive
  device harddisk
@@ -13,7 +13,7 @@ logging asdm errors
 logging asdm-buffer-size 512
 logging buffer-size 100000
 logging buffered 5
-logging buffered 5000 
+logging buffered 5000
 logging buffered 5000 5
 logging buffered 5000 alerts
 logging buffered warnings

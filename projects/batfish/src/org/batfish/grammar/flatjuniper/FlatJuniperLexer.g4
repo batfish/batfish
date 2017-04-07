@@ -3546,6 +3546,11 @@ PREEMPT
    'preempt'
 ;
 
+PREFER
+:
+   'prefer'
+;
+
 PREFERENCE
 :
    'preference'

@@ -145,7 +145,6 @@ null_block
             | ROUTING
          )
       )
-      | KEY
       | KEYSTORE
       | KRON
       | L2TP_CLASS
@@ -287,7 +286,6 @@ null_inner
       NO?
       (
          ACCEPT_DIALIN
-         | ACCEPT_LIFETIME
          | ACCOUNTING
          | ACTIVE
          | ADD_VLAN
@@ -330,7 +328,6 @@ null_inner
          | CONTEXT
          | CPU_SHARE
          | CREDENTIALS
-         | CRYPTOGRAPHIC_ALGORITHM
          | DEADTIME
          | DEFAULT_DOMAIN
          | DEFAULT_ROUTER
@@ -413,7 +410,6 @@ null_inner
          )
          | IPSEC_UDP
          | IPX
-         | KEY_STRING
          | KEYPATH
          | LACP_TIMEOUT
          | LEASE
@@ -496,7 +492,6 @@ null_inner
          | SA_FILTER
          | SATELLITE
          | SECRET
-         | SEND_LIFETIME
          | SEQUENCE
          | SERVER
          | SERVERFARM
@@ -596,6 +591,7 @@ null_single
       | BOOT_START_MARKER
       | BRIDGE
       | BRIDGE_DOMAIN
+      | BUILDING_CONFIGURATION
       | CALL
       | CARD
       | CCM_MANAGER
@@ -607,6 +603,7 @@ null_single
       | CONFIG_REGISTER
       | CONSOLE
       | CTS
+      | CURRENT_CONFIGURATION
       | DEFAULT
       | DEVICE_SENSOR
       | DHCPD
@@ -707,7 +704,6 @@ null_single
             | TELNET
             | TFTP
             | VERIFY
-            | WCCP
          )
       )
       | IP_ADDRESS_LITERAL

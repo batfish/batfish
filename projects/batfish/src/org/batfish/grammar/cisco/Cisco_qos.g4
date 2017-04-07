@@ -13,11 +13,12 @@ cm_end_class_map
 
 cm_match
 :
-   MATCH
+   num = DEC? MATCH
    (
       cmm_access_group
       | cmm_access_list
       | cmm_any
+      | cmm_class_map
       | cmm_cos
       | cmm_default_inspection_traffic
       | cmm_dscp
@@ -64,6 +65,11 @@ cmm_access_list
 cmm_any
 :
    ANY NEWLINE
+;
+
+cmm_class_map
+:
+   CLASS_MAP name = variable NEWLINE
 ;
 
 cmm_cos
@@ -404,7 +410,7 @@ os_service
 
 pm_class
 :
-   CLASS ~NEWLINE* NEWLINE
+   num = DEC? CLASS ~NEWLINE* NEWLINE
    (
       pmc_null
       | pmc_police

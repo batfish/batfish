@@ -118,7 +118,7 @@ syn_null
 
 syn_server
 :
-   SERVER hostname = variable
+   SERVER hostname = variable PREFER?
 ;
 
 sys_host

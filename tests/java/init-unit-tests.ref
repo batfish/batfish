@@ -27,6 +27,7 @@
         "bgp_nsr" : "bgp_nsr",
         "bgp_route_policy" : "bgp_route_policy",
         "cisco_aaa" : "cisco_aaa",
+        "cisco_acl" : "cisco_acl",
         "cisco_authentication" : "cisco_authentication",
         "cisco_bgp" : "cisco_bgp",
         "cisco_callhome" : "cisco_callhome",
@@ -108,7 +109,6 @@
         "ios_xr_router_static" : "ios_xr_router_static",
         "ios_xr_ssh" : "ios_xr_ssh",
         "ios_xr_taskgroup" : "ios_xr_taskgroup",
-        "ip_access_list_with_seq" : "ip_access_list_with_seq",
         "ip_prefix_list_single_line" : "ip_prefix_list_single_line",
         "juniper-ospf" : "juniper_ospf",
         "juniper-tcpflags" : "juniper-tcpflags",
@@ -195,6 +195,7 @@
         "bgp_nsr" : "PASSED",
         "bgp_route_policy" : "PASSED",
         "cisco_aaa" : "PASSED",
+        "cisco_acl" : "PASSED",
         "cisco_authentication" : "PASSED",
         "cisco_bgp" : "PASSED",
         "cisco_callhome" : "PASSED",
@@ -276,7 +277,6 @@
         "ios_xr_router_static" : "PASSED",
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
-        "ip_access_list_with_seq" : "PASSED",
         "ip_prefix_list_single_line" : "PASSED",
         "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "PASSED",
@@ -338,7 +338,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.13.0",
+      "version" : "0.14.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -389,6 +389,18 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "undefinedReferences" : {
+        "IosXrMultiCast" : {
+          "ipv4 acl" : {
+            "MSDP_filter" : {
+              "msdp peer sa-list" : [
+                29,
+                30,
+                46,
+                47
+              ]
+            }
+          }
+        },
         "bgp_address_family" : {
           "interface" : {
             "Loopback0" : {
@@ -452,11 +464,65 @@
             }
           }
         },
+        "cisco_crypto" : {
+          "ipv4/6 acl" : {
+            "myvpnacl" : {
+              "crypto map ipsec-isakmp acl" : [
+                192
+              ]
+            }
+          }
+        },
         "cisco_interface" : {
+          "ipv4 acl" : {
+            "167" : {
+              "interface ip verify access-list" : [
+                24
+              ]
+            },
+            "abc" : {
+              "ip nat source dynamic access-list" : [
+                23
+              ]
+            },
+            "def" : {
+              "ip nat source dynamic access-list" : [
+                22
+              ]
+            },
+            "mynatacl" : {
+              "ip nat destination acl" : [
+                127
+              ]
+            }
+          },
           "ipv4/6 acl" : {
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                68
+                73
+              ]
+            }
+          }
+        },
+        "cisco_ip" : {
+          "ipv4/6 acl" : {
+            "wccp-cachelist" : {
+              "ip wccp group-list" : [
+                6
+              ]
+            },
+            "wccp-redir" : {
+              "ip wccp redirect-list" : [
+                6
+              ]
+            }
+          }
+        },
+        "cisco_line" : {
+          "ipv6 acl" : {
+            "ipv6-vty-acl" : {
+              "line access-class ipv6 list" : [
+                54
               ]
             }
           }
@@ -470,16 +536,112 @@
             }
           }
         },
+        "cisco_pim" : {
+          "ipv4 acl" : {
+            "232.0.0.0/8" : {
+              "pim ssl acl" : [
+                8
+              ]
+            },
+            "foobar" : {
+              "pim rp-address" : [
+                4
+              ]
+            },
+            "foobarmap" : {
+              "pim rp-address" : [
+                6
+              ]
+            }
+          }
+        },
+        "cisco_qos" : {
+          "ipv4/6 acl" : {
+            "boop" : {
+              "class-map access-group" : [
+                14
+              ]
+            }
+          }
+        },
         "cisco_route_map" : {
           "ipv4 prefix-list" : {
             "bobble" : {
               "route-map match ip prefix-list" : [
-                29
+                30
               ]
             },
             "hpr-connector-subnets" : {
               "route-map match ip prefix-list" : [
                 5
+              ]
+            }
+          },
+          "ipv4/6 acl" : {
+            "test" : {
+              "route-map match ip access-list" : [
+                21
+              ]
+            }
+          }
+        },
+        "cisco_snmp" : {
+          "ipv4 acl" : {
+            "snmp-acl" : {
+              "snmp server community ipv4 acl" : [
+                9
+              ]
+            },
+            "snmp-arpa-acl" : {
+              "snmp server community ipv4 acl" : [
+                10
+              ]
+            }
+          },
+          "ipv4/6 acl" : {
+            "2" : {
+              "snmp server community acl" : [
+                8
+              ]
+            },
+            "8" : {
+              "snmp server file transfer acl" : [
+                65
+              ],
+              "snmp server tftp-server list" : [
+                84
+              ]
+            },
+            "customer-snmp" : {
+              "snmp server community acl" : [
+                12
+              ]
+            },
+            "dummyacl" : {
+              "snmp server community acl" : [
+                11
+              ]
+            },
+            "snmp-acl" : {
+              "snmp server community acl" : [
+                7
+              ]
+            },
+            "to-VTY" : {
+              "snmp server community acl" : [
+                14
+              ]
+            }
+          },
+          "ipv6 acl" : {
+            "dummyacl" : {
+              "snmp server community ipv6 acl" : [
+                13
+              ]
+            },
+            "to-VTY" : {
+              "snmp server community ipv6 acl" : [
+                14
               ]
             }
           }
@@ -502,6 +664,22 @@
             }
           }
         },
+        "foundry_misc" : {
+          "ipv4/6 acl" : {
+            "blib" : {
+              "ssh acl" : [
+                31
+              ]
+            }
+          },
+          "ipv6 acl" : {
+            "blob" : {
+              "ssh ipv6 access-list" : [
+                32
+              ]
+            }
+          }
+        },
         "ios_xr_bgp_neighbor_group" : {
           "bgp group" : {
             "bippety" : {
@@ -519,6 +697,31 @@
             "Loopback0" : {
               "update-source interface" : [
                 0
+              ]
+            }
+          }
+        },
+        "ios_xr_multipart" : {
+          "ipv4 acl" : {
+            "GNS-VTY-ACCESS" : {
+              "ssh ipv4 access-list" : [
+                31
+              ]
+            }
+          }
+        },
+        "ios_xr_ssh" : {
+          "ipv4 acl" : {
+            "ACL99" : {
+              "ssh ipv4 access-list" : [
+                5
+              ]
+            }
+          },
+          "ipv6 acl" : {
+            "ipv6-vty-acl" : {
+              "ssh ipv6 access-list" : [
+                5
               ]
             }
           }
@@ -837,6 +1040,22 @@
             ]
           }
         },
+        "cisco_acl" : {
+          "extended ip access-list" : {
+            "BLAH-BLAH" : [
+              4
+            ],
+            "blah" : [
+              30
+            ],
+            "extended" : [
+              26
+            ],
+            "standard" : [
+              28
+            ]
+          }
+        },
         "cisco_bgp" : {
           "bgp group" : {
             "p1" : [
@@ -864,13 +1083,26 @@
             ]
           }
         },
+        "cisco_mac_acl" : {
+          "mac acl" : {
+            "1199" : [
+              5
+            ],
+            "700" : [
+              4
+            ],
+            "copp-system-p-acl-mac-cdp-udld-vtp" : [
+              6
+            ]
+          }
+        },
         "cisco_route_map" : {
           "route-map" : {
             "MSDP-SA-RP-FILTER" : [
               19
             ],
             "beeble" : [
-              28
+              29
             ],
             "connected-to-bgp" : [
               4
@@ -879,13 +1111,13 @@
               17
             ],
             "mgmt" : [
-              25
+              26
             ],
             "multicaststuff" : [
-              37
+              38
             ],
             "next-hop-null" : [
-              22
+              23
             ],
             "to_svl-hub-router" : [
               12
@@ -973,13 +1205,6 @@
             ]
           }
         },
-        "ip_access_list_with_seq" : {
-          "extended ip access-list" : {
-            "BLAH-BLAH" : [
-              4
-            ]
-          }
-        },
         "ip_prefix_list_single_line" : {
           "ipv4 prefix-list" : {
             "DENY-IPV4-ANY-IN" : [
@@ -1005,6 +1230,22 @@
           "bgp group" : {
             "NEIGH" : [
               5
+            ]
+          }
+        },
+        "mac_access_list" : {
+          "mac acl" : {
+            "STPDENY" : [
+              13
+            ],
+            "filtermac" : [
+              8
+            ],
+            "ipmi_test" : [
+              9
+            ],
+            "permitCDP" : [
+              4
             ]
           }
         },
@@ -1130,7 +1371,7 @@
           }
         }
       },
-      "version" : "0.13.0",
+      "version" : "0.14.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1238,6 +1479,7 @@
         "bgp_nsr" : "PASSED",
         "bgp_route_policy" : "PASSED",
         "cisco_aaa" : "PASSED",
+        "cisco_acl" : "PASSED",
         "cisco_authentication" : "PASSED",
         "cisco_bgp" : "PASSED",
         "cisco_callhome" : "PASSED",
@@ -1319,7 +1561,6 @@
         "ios_xr_router_static" : "PASSED",
         "ios_xr_ssh" : "PASSED",
         "ios_xr_taskgroup" : "PASSED",
-        "ip_access_list_with_seq" : "PASSED",
         "ip_prefix_list_single_line" : "PASSED",
         "juniper-ospf" : "PASSED",
         "juniper-tcpflags" : "PASSED",

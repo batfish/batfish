@@ -293,6 +293,7 @@ port
    | LPD
    | LOGIN
    | LOTUSNOTES
+   | MICROSOFT_DS
    | MLAG
    | MOBILE_IP
    | MSRPC
