@@ -42,6 +42,7 @@ eo_null
       | NO_AUTO_NEGOTIATION
       | NO_FLOW_CONTROL
       | LINK_MODE
+      | LOOPBACK
    ) null_filler
 ;
 

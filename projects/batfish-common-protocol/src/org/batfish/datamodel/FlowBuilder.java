@@ -24,6 +24,8 @@ public class FlowBuilder {
 
    private IpProtocol _ipProtocol;
 
+   private Integer _packetLength;
+
    private Ip _srcIp;
 
    private Integer _srcPort;
@@ -60,6 +62,7 @@ public class FlowBuilder {
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
+      _packetLength = 0;
       _state = State.NEW;
       _tcpFlagsCwr = 0;
       _tcpFlagsEce = 0;
@@ -81,9 +84,9 @@ public class FlowBuilder {
       }
       return new Flow(_ingressNode, _ingressVrf, _srcIp, _dstIp, _srcPort,
             _dstPort, _ipProtocol, _dscp, _ecn, _fragmentOffset, _icmpType,
-            _icmpCode, _state, _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg,
-            _tcpFlagsAck, _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn,
-            _tcpFlagsFin, _tag);
+            _icmpCode, _packetLength, _state, _tcpFlagsCwr, _tcpFlagsEce,
+            _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh, _tcpFlagsRst,
+            _tcpFlagsSyn, _tcpFlagsFin, _tag);
    }
 
    public Integer getDscp() {
@@ -120,6 +123,10 @@ public class FlowBuilder {
 
    public IpProtocol getIpProtocol() {
       return _ipProtocol;
+   }
+
+   public Integer getPacketLength() {
+      return _packetLength;
    }
 
    public Ip getSrcIp() {
@@ -212,6 +219,10 @@ public class FlowBuilder {
 
    public void setIpProtocol(IpProtocol ipProtocol) {
       _ipProtocol = ipProtocol;
+   }
+
+   public void setPacketLength(Integer packetLength) {
+      _packetLength = packetLength;
    }
 
    public void setSrcIp(Ip srcIp) {

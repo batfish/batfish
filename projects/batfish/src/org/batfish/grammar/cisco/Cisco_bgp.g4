@@ -599,7 +599,7 @@ peer_group_assignment_rb_stanza
    (
       address = IP_ADDRESS
       | address6 = IPV6_ADDRESS
-   ) PEER_GROUP name = VARIABLE NEWLINE
+   ) PEER_GROUP name = variable NEWLINE
 ;
 
 peer_group_creation_rb_stanza

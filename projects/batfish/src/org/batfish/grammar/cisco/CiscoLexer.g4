@@ -6490,6 +6490,11 @@ PROXY_SERVER
    'proxy-server'
 ;
 
+PRUNING
+:
+   'pruning'
+;
+
 PSEUDO_INFORMATION
 :
    'pseudo-information'

@@ -1,167 +1,193 @@
 !
 hostname cisco_interface
 !
-interface Dot11Radio0
+interface Ethernet0
  antenna gain 6
+ arp timeout 240
  authentication control-direction in
+ bandwidth 20000000
+ no bandwidth inherit
+ bgp-policy accounting input
  bridge-group 1
  bridge-group 1 block-unknown-source
+ no bridge-group 1 source-learning
  bridge-group 1 subscriber-loop-control
  bridge-group 1 spanning-disabledinterface Ethernet0/0
+ no bridge-group 1 unicast-flooding
  channel 2462
  channel width 80
+ delay 1
+ description description-goes-here
+ no description
+ dfs
+ dialer idle-timeout 60
+ dialer in-band
+ dialer-group 5
  disable
  no disable
- shutdown
- no shutdown
- delay 1
- dfs
+ dsl operating-mode auto
+ duplex full
+ enable
  encryption mode ciphers aes-ccm tkip
+ ethernet udld
+  mode normal
+ !
+ flowcontrol receive off
+ flowcontrol send off
+ gig-default neg-off
+ no hardware multicast hw-hash
+ no hardware vethernet mac filtering per-vlan
+ hold-queue 2000 in
+ ip address 2.3.4.0/29
+ ip address 13.9.2.2 255.255.255.255
+ ip address virtual 1.2.3.4/27
+ no ip address
+ no ip arp inspection trust
+ ip bgp fast-external-fallover permit
+ no ip dhcp snooping trust
+ ip helper-address 172.16.0.1
+ ip helper-address 172.17.0.1
+ ip nat destination static 1.2.3.4 access-list mynatacl 2.3.4.5
  ip nat inside
  ip nat outside
  ip nat source dynamic access-list def overload
  ip nat source dynamic access-list abc pool beeble
- ip verify unicast source reachable-via rx 167
- ip wccp 61 redirect in
- l2-filter bridge-group-acl
- no bridge-group 1 source-learning
- no bridge-group 1 unicast-flooding
- no description
- no ip address
+ ip nhrp map 130.59.254.2 130.59.32.21
+ ip ospf 1 area 0
+ ip ospf demand-circuit
+ ip pim sparse-mode
  no ip redirects
  no ip route-cache
  no ip verify source dhcp-snooping-vlan
- no lldp receive
- no lldp transmit
- no management
- no switchport block unicast
- no switchport block multicast
- no switchport dot1q ethertype
- no switchport priority extend
- packet latency threshold 536870904
- peakdetect
- speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
- ssid blah
- station-role root access-point
- stbc
- switchport backup interface Gi1/0
- switchport backup interface Gi1/0 preemption delay 120
- switchport backup interface Gi1/0 preemption mode forced
-!
-interface Async1
- dialer in-band
- dialer-group 5
- dialer idle-timeout 60
- hold-queue 2000 in
- load-interval 30
- no ip address
-!
-interface Crypto-Engine1/2/3
-!
-interface ethernet 1/11
- no hardware vethernet mac filtering per-vlan
- bgp-policy accounting input
- dsl operating-mode auto
- enable
- ethernet udld
-  mode normal
- !
- gig-default neg-off
- ip pim sparse-mode
+ ip verify unicast source reachable-via rx 167
+ ip virtual-router address 2.3.4.1
+ ip wccp 61 redirect in
+ ipv4 access-group 310-systems egress hardware-count
+ ipv4 address 1.2.3.4 255.255.255.252
+ ipv4 icmp unreachables disable
  ipv4 point-to-point
  ipv4 unnumbered Loopback100
- ipv4 access-group 310-systems egress hardware-count
+ ipv6 address 2001:60:0:C00::B/128
+ ipv6 address 2222::1/64
+ ipv6 icmp unreachables disable
+ ipv6 ospf 1 area 0
+ l2-filter bridge-group-acl
  l2transport
   propagate remote-status
  !
+ lacp fast-select-hot-standby
+ lacp graceful-convergence
+ lacp max-bundle 32
+ lacp min-links 1
+ no lacp suspend-individual
+ no lldp receive
+ no lldp transmit
+ load-interval 30
+ load-interval counter 1 30
+ no load-interval counter 3
+ logging event port link-status
+ logging event port trunk-status
+ no management
  medium broadcast
+ mtu 1500
+ no negotiate auto
+ ntp multicast key 12 ttl 1
  no ospfv3 passive-interface
- no spanning-tree bpdufilter
- no spanning-tree bpduguard nv
-  satellite-fabric-link satellite 100
-   remote-ports GigabitEthernet 0/0/0-43
-  !
- !
  ospfv3 network point-to-point
- port-type nni
+ packet latency threshold 536870904
+ peakdetect
+ platform qos trust none remark
  port security
-  enable
-  violation restrict
-  maximum 100
   age 2
+  enable
+  maximum 100
   secure-mac-address 8618.88f2.eae1 vlan 428 auto
+  violation restrict
+ no port-channel port load-defer
+ port-type nni
+ priority-flow-control mode auto
  pvc 8/35
+  dialer pool-member 1
   encapsulation aal5snap
   protocol ppp dialer
-  dialer pool-member 1
  !
  queue-monitor length thresholds 12 1
  service instance 1 ethernet
+  bridge-domain 710
   encapsulation default
   l2protocol tunnel
   service-policy input limit-access-to-1Gbps
   service-policy output limit-access-to-1Gbps
   rewrite ingress tag pop 1 symmetric
-  bridge-domain 710
  !
+ shape rate 2000000
+ shutdown
+ no shutdown
+ no shutdown lan
+ snmp trap link-status
+ no spanning-tree bpdufilter
+ no spanning-tree bpduguard
+ no spanning-tree bpduguard nv
  spanning-tree cost auto
  spanning-tree link-type auto
  spanning-tree port type normal
  spanning-tree port-priority 128
  spanning-tree protect
+  satellite-fabric-link satellite 100
+   remote-ports GigabitEthernet 0/0/0-43
+  !
+ !
+ speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
+ ssid blah
+ station-role root access-point
+ stbc
+ no storm-control action
+ storm-control broadcast level 100.00
+ storm-control multicast level 100.00
+ storm-control unicast level 100.00
+ switchport
+ switchport backup interface Gi1/0
+ switchport backup interface Gi1/0 preemption delay 120
+ switchport backup interface Gi1/0 preemption mode forced
+ no switchport block unicast
+ no switchport block multicast
+ no switchport dot1q ethertype
+ switchport mode trunk
+ no switchport monitor
+ no switchport priority extend
+ switchport trunk native vlan 6
+ switchport trunk pruning vlan 2-3
  transceiver permit pid all
  transport-mode otn bit-transparent opu2e
- xconnect 1.2.3.4 649 encapsulation mpls
-  remote circuit id 649
-  backup peer 13.5.25.3 707
- !
- ntp multicast key 12 ttl 1
-!
-interface Null0
- ipv4 icmp unreachables disable
- ipv6 icmp unreachables disable
-!
-interface Loopback0
- description description-goes-here
- ip address 13.9.2.2 255.255.255.255
- ip nat destination static 1.2.3.4 access-list mynatacl 2.3.4.5
- ip ospf 1 area 0
- ip ospf demand-circuit
- platform qos trust none remark
- ipv6 address 2001:60:0:C00::B/128
- ipv6 ospf 1 area 0
- ip bgp fast-external-fallover permit
- ip nhrp map 130.59.254.2 130.59.32.21
-!
-interface tunnel-ip6
- ipv4 address 1.2.3.4 255.255.255.252
- ipv6 address 2222::1/64
+ tunnel destination 3.4.5.6
  tunnel mode gre ipv4
  tunnel source 2.3.4.5
- tunnel destination 3.4.5.6
+ xconnect 1.2.3.4 649 encapsulation mpls
+  backup peer 13.5.25.3 707
+  remote circuit id 649
+ !
+ vtp
+ vxlan source-interface Loopback1
+ vxlan udp-port 1234
+ vxlan vlan 123 vni 456
+ vxlan vlan 123 flood vtep 1.0.0.1 2.0.0.1 3.0.0.1
+!
+interface Async1
+!
+interface Crypto-Engine1/2/3
+!
+interface Dot11Radio0
+!
+interface ethernet 1/11
+!
+interface Loopback0
+!
+interface Null0
+!
+interface tunnel-ip6
 !
 interface Vlan111
-   arp timeout 240
-   ip address virtual 1.2.3.4/27
-!
-interface Vlan112
-   ip address 2.3.4.0/29
-   arp timeout 240
-   ip virtual-router address 2.3.4.1
-!
-interface Vlan113
-   ip address 3.4.5.0/24
-   arp timeout 240
-   ip helper-address 172.16.0.1
-   ip helper-address 172.17.0.1
-   ip pim sparse-mode
-   ip virtual-router address 3.4.5.1
-   shape rate 2000000
 !
 interface Vxlan1
-   vxlan source-interface Loopback1
-   vxlan udp-port 1234
-   vxlan vlan 123 vni 456
-   vxlan vlan 123 flood vtep 1.0.0.1 2.0.0.1 3.0.0.1
 !
 !

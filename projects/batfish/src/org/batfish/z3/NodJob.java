@@ -86,6 +86,10 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             flowBuilder.setIcmpCode(value.intValue());
             break;
 
+         case Synthesizer.PACKET_LENGTH_VAR:
+            flowBuilder.setPacketLength(value.intValue());
+            break;
+
          case Synthesizer.TCP_FLAGS_CWR_VAR:
             flowBuilder.setTcpFlagsCwr(value.intValue());
             break;

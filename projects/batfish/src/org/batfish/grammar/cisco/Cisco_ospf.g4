@@ -24,6 +24,11 @@ ro_area_nssa
    )* NEWLINE
 ;
 
+ro_area_range
+:
+   AREA area = IP_ADDRESS RANGE area_range = IP_PREFIX NEWLINE
+;
+
 ro_area_stub
 :
    AREA
@@ -335,6 +340,14 @@ ro6_maximum_paths
    ) DEC NEWLINE
 ;
 
+ro6_null
+:
+   NO?
+   (
+      TIMERS
+   ) ~NEWLINE* NEWLINE
+;
+
 ro6_passive_interface
 :
    NO? PASSIVE_INTERFACE ~NEWLINE* NEWLINE
@@ -439,6 +452,7 @@ rov3_null
       | INTERFACE
       | LOG
       | LOG_ADJACENCY_CHANGES
+      | MAX_METRIC
       | MAXIMUM
       | MAXIMUM_PATHS
       | MTU_IGNORE
@@ -467,6 +481,7 @@ s_ipv6_router_ospf
       | ro6_distribute_list
       | ro6_log_adjacency_changes
       | ro6_maximum_paths
+      | ro6_null
       | ro6_passive_interface
       | ro6_redistribute
       | ro6_router_id
@@ -481,9 +496,10 @@ s_router_ospf
    )? NEWLINE
    (
       ro_address_family
-      | ro_area_nssa
-      | ro_area_stub
       | ro_area
+      | ro_area_nssa
+      | ro_area_range
+      | ro_area_stub
       | ro_common
       | ro_default_information
       | ro_distance

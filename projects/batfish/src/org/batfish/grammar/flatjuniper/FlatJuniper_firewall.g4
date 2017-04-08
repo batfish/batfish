@@ -79,6 +79,7 @@ fft_from
       | fftf_learn_vlan_1p_priority
       | fftf_next_header
       | fftf_null
+      | fftf_packet_length
       | fftf_port
       | fftf_precedence
       | fftf_prefix_list
@@ -225,6 +226,16 @@ fftf_null
    (
       PAYLOAD_PROTOCOL
    ) null_filler
+;
+
+fftf_packet_length
+:
+   PACKET_LENGTH range
+;
+
+fftf_packet_length_except
+:
+   PACKET_LENGTH_EXCEPT range
 ;
 
 fftf_port

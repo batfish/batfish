@@ -538,15 +538,6 @@ if_null_block
          NO
          (
             DESCRIPTION
-            |
-            (
-               SWITCHPORT
-               (
-                  BLOCK
-                  | DOT1Q
-                  | PRIORITY
-               )
-            )
          )
       )
       |
@@ -620,6 +611,8 @@ if_null_block
          SWITCHPORT
          (
             BACKUP
+            | BLOCK
+            | DOT1Q
             | EMPTY
             |
             (
@@ -628,11 +621,16 @@ if_null_block
             | MONITOR
             | NONEGOTIATE
             | PORT_SECURITY
+            | PRIORITY
             | TAP
             | TOOL
             |
             (
-               TRUNK GROUP
+               TRUNK
+               (
+                  GROUP
+                  | PRUNING
+               )
             )
             | VOICE
             | VLAN
@@ -656,6 +654,7 @@ if_null_block
       | VPC
       | VRRP
       | VRRP_GROUP
+      | VTP
       | VXLAN
       | WEIGHTING
       | WRR_QUEUE
