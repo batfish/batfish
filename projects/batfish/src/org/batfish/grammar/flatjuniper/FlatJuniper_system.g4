@@ -59,6 +59,7 @@ sy_null
       | AUTHENTICATION_ORDER
       | BACKUP_ROUTER
       | COMMIT
+      | COMPRESS_CONFIGURATION_FILES
       | DDOS_PROTECTION
       | DOMAIN_SEARCH
       | EXTENSIONS
@@ -117,7 +118,7 @@ syn_null
 
 syn_server
 :
-   SERVER hostname = variable
+   SERVER hostname = variable PREFER?
 ;
 
 sys_host

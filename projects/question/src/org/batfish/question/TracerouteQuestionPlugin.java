@@ -230,6 +230,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String IP_PROTOCOL_VAR = "ipProtocol";
 
+      private static final String PACKET_LENGTH_VAR = "packetLength";
+
       private static final String SRC_IP_VAR = "srcIp";
 
       private static final String SRC_PORT_VAR = "srcPort";
@@ -273,6 +275,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       private String _ingressVrf;
 
       private IpProtocol _ipProtocol;
+
+      private Integer _packetLength;
 
       private Ip _srcIp;
 
@@ -329,6 +333,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          }
          if (_ipProtocol != null) {
             flowBuilder.setIpProtocol(_ipProtocol);
+         }
+         if (_packetLength != null) {
+            flowBuilder.setPacketLength(_packetLength);
          }
          if (_srcIp != null) {
             flowBuilder.setSrcIp(_srcIp);
@@ -451,6 +458,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          return NAME;
       }
 
+      @JsonProperty(PACKET_LENGTH_VAR)
+      public Integer getPacketLength() {
+         return _packetLength;
+      }
+
       @JsonProperty(SRC_IP_VAR)
       public Ip getSrcIp() {
          return _srcIp;
@@ -551,6 +563,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             if (_ipProtocol != null) {
                retString += String.format(" | %s=%s", IP_PROTOCOL_VAR,
                      _ipProtocol);
+            }
+            if (_packetLength != null) {
+               retString += String.format(" | %s=%s", PACKET_LENGTH_VAR,
+                     _packetLength);
             }
             if (_srcIp != null) {
                retString += String.format(" | %s=%s", SRC_IP_VAR, _srcIp);
@@ -709,6 +725,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                   setIpProtocol(
                         IpProtocol.fromString(parameters.getString(paramKey)));
                   break;
+               case PACKET_LENGTH_VAR:
+                  setPacketLength(parameters.getInt(paramKey));
+                  break;
                case SRC_IP_VAR:
                   setSrcIp(new Ip(parameters.getString(paramKey)));
                   break;
@@ -755,6 +774,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                throw new BatfishException("JSONException in parameters", e);
             }
          }
+      }
+
+      @JsonProperty(PACKET_LENGTH_VAR)
+      public void setPacketLength(Integer packetLength) {
+         _packetLength = packetLength;
       }
 
       @JsonProperty(SRC_IP_VAR)

@@ -91,7 +91,7 @@ b_family
       bf_inet
       | bf_inet6
       | bf_null
-   )
+   ) bf_accepted_prefix_limit?
 ;
 
 b_group
@@ -182,6 +182,7 @@ b_path_selection
    PATH_SELECTION
    (
       bps_always_compare_med
+      | bps_external_router_id
    )
 ;
 
@@ -211,6 +212,27 @@ b_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+bf_accepted_prefix_limit
+:
+   ACCEPTED_PREFIX_LIMIT
+   (
+      (
+         MAXIMUM max = DEC
+      )
+      |
+      (
+         TEARDOWN limit_threshold = DEC?
+         (
+            IDLE_TIMEOUT
+            (
+               idle_timeout = DEC
+               | FOREVER
+            )
+         )?
+      )
+   )*
 ;
 
 bf_inet
@@ -392,6 +414,11 @@ bpa_as
 bps_always_compare_med
 :
    ALWAYS_COMPARE_MED
+;
+
+bps_external_router_id
+:
+   EXTERNAL_ROUTER_ID
 ;
 
 p_bgp

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -102,24 +101,6 @@ public class BgpProcess extends ComparableStructure<Integer> {
       _allPeerGroups.add(pg);
    }
 
-   public void addIpPeerGroupMember(Ip address, String namedPeerGroupName) {
-      NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
-            .get(namedPeerGroupName);
-      if (namedPeerGroup != null) {
-         namedPeerGroup.addNeighborIpAddress(address);
-         IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(address);
-         if (ipPeerGroup == null) {
-            addIpPeerGroup(address);
-            ipPeerGroup = _ipPeerGroups.get(address);
-         }
-         ipPeerGroup.setGroupName(namedPeerGroupName);
-      }
-      else {
-         throw new BatfishException(
-               "Peer group: \"" + namedPeerGroupName + "\" does not exist!");
-      }
-   }
-
    public void addIpv6PeerGroup(Ip6 ip6) {
       Ipv6BgpPeerGroup pg = new Ipv6BgpPeerGroup(ip6);
       if (_defaultIpv6Activate) {
@@ -127,24 +108,6 @@ public class BgpProcess extends ComparableStructure<Integer> {
       }
       _ipv6PeerGroups.put(ip6, pg);
       _allPeerGroups.add(pg);
-   }
-
-   public void addIpv6PeerGroupMember(Ip6 address, String namedPeerGroupName) {
-      NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
-            .get(namedPeerGroupName);
-      if (namedPeerGroup != null) {
-         namedPeerGroup.addNeighborIpv6Address(address);
-         Ipv6BgpPeerGroup ipv6PeerGroup = _ipv6PeerGroups.get(address);
-         if (ipv6PeerGroup == null) {
-            addIpv6PeerGroup(address);
-            ipv6PeerGroup = _ipv6PeerGroups.get(address);
-         }
-         ipv6PeerGroup.setGroupName(namedPeerGroupName);
-      }
-      else {
-         throw new BatfishException(
-               "Peer group: \"" + namedPeerGroupName + "\" does not exist!");
-      }
    }
 
    public void addNamedPeerGroup(String name, int definitionLine) {

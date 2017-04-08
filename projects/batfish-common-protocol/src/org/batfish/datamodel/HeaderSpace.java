@@ -73,11 +73,15 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<IpProtocol> _notIpProtocols;
 
+   private SortedSet<SubRange> _notPacketLengths;
+
    private SortedSet<IpWildcard> _notSrcIps;
 
    private SortedSet<SubRange> _notSrcPorts;
 
    private SortedSet<Protocol> _notSrcProtocols;
+
+   private SortedSet<SubRange> _packetLengths;
 
    private SortedSet<IpWildcard> _srcIps;
 
@@ -103,6 +107,7 @@ public class HeaderSpace implements Serializable {
       _ecns = new TreeSet<>();
       _fragmentOffsets = new TreeSet<>();
       _ipProtocols = new TreeSet<>();
+      _packetLengths = new TreeSet<>();
       _srcIps = new TreeSet<>();
       _srcOrDstIps = new TreeSet<>();
       _srcOrDstPorts = new TreeSet<>();
@@ -122,6 +127,7 @@ public class HeaderSpace implements Serializable {
       _notIcmpCodes = new TreeSet<>();
       _notIcmpTypes = new TreeSet<>();
       _notIpProtocols = new TreeSet<>();
+      _notPacketLengths = new TreeSet<>();
       _notSrcIps = new TreeSet<>();
       _notSrcPorts = new TreeSet<>();
       _notSrcProtocols = new TreeSet<>();
@@ -190,6 +196,9 @@ public class HeaderSpace implements Serializable {
       if (!_notIpProtocols.equals(other._notIpProtocols)) {
          return false;
       }
+      if (!_notPacketLengths.equals(other._notPacketLengths)) {
+         return false;
+      }
       if (!_notSrcIps.equals(other._notSrcIps)) {
          return false;
       }
@@ -197,6 +206,9 @@ public class HeaderSpace implements Serializable {
          return false;
       }
       if (!_notSrcProtocols.equals(other._notSrcProtocols)) {
+         return false;
+      }
+      if (!_packetLengths.equals(other._packetLengths)) {
          return false;
       }
       if (!_srcIps.equals(other._srcIps)) {
@@ -319,6 +331,10 @@ public class HeaderSpace implements Serializable {
       return _notIpProtocols;
    }
 
+   public SortedSet<SubRange> getNotPacketLengths() {
+      return _notPacketLengths;
+   }
+
    @JsonPropertyDescription("A space of unacceptable source IP addresses for a packet")
    public SortedSet<IpWildcard> getNotSrcIps() {
       return _notSrcIps;
@@ -331,6 +347,10 @@ public class HeaderSpace implements Serializable {
 
    public SortedSet<Protocol> getNotSrcProtocols() {
       return _notSrcProtocols;
+   }
+
+   public SortedSet<SubRange> getPacketLengths() {
+      return _packetLengths;
    }
 
    @JsonPropertyDescription("A space of acceptable source IP addresses for a packet")
@@ -462,6 +482,14 @@ public class HeaderSpace implements Serializable {
       }
       if (!_notIpProtocols.isEmpty()
             && _notIpProtocols.contains(flow.getIpProtocol())) {
+         return false;
+      }
+      if (!_packetLengths.isEmpty()
+            && !rangesContain(_packetLengths, flow.getPacketLength())) {
+         return false;
+      }
+      if (!_notPacketLengths.isEmpty()
+            && rangesContain(_notPacketLengths, flow.getPacketLength())) {
          return false;
       }
       if (!_srcOrDstIps.isEmpty()
@@ -666,6 +694,10 @@ public class HeaderSpace implements Serializable {
       _notIpProtocols = notIpProtocols;
    }
 
+   public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
+      _notPacketLengths = notPacketLengths;
+   }
+
    public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
       _notSrcIps = notSrcIps;
    }
@@ -676,6 +708,10 @@ public class HeaderSpace implements Serializable {
 
    public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
       _notSrcProtocols = notSrcProtocols;
+   }
+
+   public void setPacketLengths(SortedSet<SubRange> packetLengths) {
+      _packetLengths = packetLengths;
    }
 
    public void setSrcIps(SortedSet<IpWildcard> srcIps) {
@@ -727,8 +763,10 @@ public class HeaderSpace implements Serializable {
             + _fragmentOffsets.toString() + ", NotFragmentOffsets: "
             + _notFragmentOffsets.toString() + ", IcmpType:" + _icmpTypes
             + ", NotIcmpType:" + _notIcmpTypes + ", IcmpCode:" + _icmpCodes
-            + ", NotIcmpCode:" + _notIcmpCodes + ", States:"
-            + _states.toString() + ", TcpFlags:" + _tcpFlags.toString() + "]";
+            + ", NotIcmpCode:" + _notIcmpCodes + ", PacketLengths:"
+            + _packetLengths.toString() + ", NotPacketLengths:"
+            + _notPacketLengths + ", States:" + _states.toString()
+            + ", TcpFlags:" + _tcpFlags.toString() + "]";
    }
 
    public final boolean unrestricted() {
@@ -740,7 +778,8 @@ public class HeaderSpace implements Serializable {
             && _notFragmentOffsets.isEmpty() && _icmpCodes.isEmpty()
             && _notIcmpCodes.isEmpty() && _icmpTypes.isEmpty()
             && _notIcmpTypes.isEmpty() && _ipProtocols.isEmpty()
-            && _notIpProtocols.isEmpty() && _srcIps.isEmpty()
+            && _notIpProtocols.isEmpty() && _packetLengths.isEmpty()
+            && _notPacketLengths.isEmpty() && _srcIps.isEmpty()
             && _notSrcIps.isEmpty() && _srcOrDstIps.isEmpty()
             && _srcOrDstPorts.isEmpty() && _srcOrDstProtocols.isEmpty()
             && _srcPorts.isEmpty() && _notSrcPorts.isEmpty()

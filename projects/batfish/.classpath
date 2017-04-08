@@ -54,5 +54,6 @@
 	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.9.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.9.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/guava/guava-21.0.jar" sourcepath="lib/guava/guava-21.0-sources.jar"/>
+	<classpathentry kind="lib" path="lib/commons/commons-collections4-4.1.jar" sourcepath="lib/commons/commons-collections4-4.1-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

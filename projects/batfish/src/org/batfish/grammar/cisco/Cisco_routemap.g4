@@ -263,11 +263,7 @@ match_ip_access_list_rm_stanza
 :
    MATCH IP ADDRESS
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable_access_list
    )+ NEWLINE
 ;
 
@@ -275,12 +271,13 @@ match_ipv6_access_list_rm_stanza
 :
    MATCH IPV6 ADDRESS
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable_access_list
    )+ NEWLINE
+;
+
+match_ip_multicast_rm_stanza
+:
+   MATCH IP MULTICAST ~NEWLINE* NEWLINE
 ;
 
 match_ip_next_hop_rm_stanza_null
@@ -338,6 +335,7 @@ match_rm_stanza
    | match_extcommunity_rm_stanza
    | match_interface_rm_stanza
    | match_ip_access_list_rm_stanza
+   | match_ip_multicast_rm_stanza
    | match_ip_next_hop_rm_stanza_null
    | match_ip_prefix_list_rm_stanza
    | match_ip_route_source_rm_stanza
@@ -753,4 +751,9 @@ set_rp_stanza
    | set_origin_rp_stanza
    | set_tag_rp_stanza
    | set_weight_rp_stanza
+;
+
+variable_access_list
+:
+   ~( IP | IPV6 | NEWLINE | PREFIX_LIST )
 ;

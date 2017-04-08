@@ -2,8 +2,10 @@ package org.batfish.main;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -30,8 +33,11 @@ import org.batfish.common.Task.Batch;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.Version;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.main.Settings.TestrigSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -49,6 +55,10 @@ public class Driver {
 
    private static ConcurrentMap<String, Task> _taskLog;
 
+   private static final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
+
+   private static final Map<TestrigSettings, Map<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
+
    private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1
                                                                                 // minute
 
@@ -62,9 +72,27 @@ public class Driver {
    static Logger httpServerLogger = Logger.getLogger(
          org.glassfish.grizzly.http.server.HttpServer.class.getName());
 
+   private static final int MAX_CACHED_DATA_PLANES = 2;
+
+   private static final int MAX_CACHED_TESTRIGS = 5;
+
    static Logger networkListenerLogger = Logger
          .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
+
    private static final String SERVICE_URL = "http://0.0.0.0";
+
+   private static synchronized Map<TestrigSettings, DataPlane> buildDataPlaneCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<TestrigSettings, DataPlane>(MAX_CACHED_DATA_PLANES));
+
+   }
+
+   private static synchronized Map<TestrigSettings, Map<String, Configuration>> buildTestrigCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<TestrigSettings, Map<String, Configuration>>(
+                  MAX_CACHED_TESTRIGS));
+
+   }
 
    private static synchronized boolean claimIdle() {
       if (_idle) {
@@ -294,7 +322,8 @@ public class Driver {
       final BatfishLogger logger = settings.getLogger();
 
       try {
-         final Batfish batfish = new Batfish(settings);
+         final Batfish batfish = new Batfish(settings, CACHED_TESTRIGS,
+               CACHED_DATA_PLANES);
 
          Thread thread = new Thread() {
             @Override

@@ -1,6 +1,10 @@
 !
 hostname cisco_vlan
 !
+no vlan 1
+vlan 2
+ name myfavoritevlan
+ trunk group elephants
 vlan 396 name grgrgrgrgr
  mtu 5000
  tagged ethe 1/2

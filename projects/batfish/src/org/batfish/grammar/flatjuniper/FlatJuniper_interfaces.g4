@@ -42,6 +42,7 @@ eo_null
       | NO_AUTO_NEGOTIATION
       | NO_FLOW_CONTROL
       | LINK_MODE
+      | LOOPBACK
    ) null_filler
 ;
 
@@ -476,7 +477,7 @@ ifiav_advertise_interval
 
 ifiav_authentication_key
 :
-   AUTHENTICATION_KEY DOUBLE_QUOTED_STRING
+   AUTHENTICATION_KEY string
 ;
 
 ifiav_authentication_type

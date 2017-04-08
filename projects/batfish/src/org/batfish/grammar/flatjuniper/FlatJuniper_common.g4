@@ -317,6 +317,12 @@ standard_community
    | sc_named
 ;
 
+string
+:
+   DOUBLE_QUOTED_STRING
+   | variable
+;
+
 subrange
 :
    low = DEC

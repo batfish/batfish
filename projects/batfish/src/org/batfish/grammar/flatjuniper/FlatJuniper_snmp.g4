@@ -20,7 +20,8 @@ snmp_community
 :
    COMMUNITY comm = variable
    (
-      snmpc_authorization
+      apply
+      | snmpc_authorization
       | snmpc_client_list_name
       | snmpc_null
    )
@@ -30,17 +31,21 @@ snmp_null
 :
    (
       CONTACT
+      | DESCRIPTION
+      | INTERFACE
       | LOCATION
       | TRACEOPTIONS
       | TRAP_OPTIONS
+      | VIEW
    ) null_filler
 ;
 
 snmp_trap_group
 :
-   TRAP_GROUP
+   TRAP_GROUP name = variable
    (
-      snmptg_trap_destinations
+      snmptg_null
+      | snmptg_targets
    )
 ;
 
@@ -62,26 +67,19 @@ snmpc_null
 :
    (
       CLIENTS
+      | VIEW
    ) null_filler
 ;
 
-snmptg_trap_destinations
-:
-   TRAP_DESTINATIONS
-   (
-      snmptgtd_null
-      | snmptgtd_targets
-   )
-;
-
-snmptgtd_null
+snmptg_null
 :
    (
       CATEGORIES
+      | VERSION
    ) null_filler
 ;
 
-snmptgtd_targets
+snmptg_targets
 :
    TARGETS target = IP_ADDRESS
 ;

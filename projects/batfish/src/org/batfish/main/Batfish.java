@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -372,9 +373,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private final Map<TestrigSettings, Map<String, Configuration>> _cachedConfigurations;
 
-   private DataPlanePlugin _dataPlanePlugin;
+   private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
 
-   private final Map<TestrigSettings, DataPlane> _dataPlanes;
+   private DataPlanePlugin _dataPlanePlugin;
 
    private TestrigSettings _deltaTestrigSettings;
 
@@ -394,11 +395,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private long _timerCount;
 
-   public Batfish(Settings settings) {
+   public Batfish(Settings settings,
+         Map<TestrigSettings, Map<String, Configuration>> cachedConfigurations,
+         Map<TestrigSettings, DataPlane> cachedDataPlanes) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
-      _cachedConfigurations = new HashMap<>();
-      _dataPlanes = new HashMap<>();
+      _cachedConfigurations = cachedConfigurations;
+      _cachedDataPlanes = cachedDataPlanes;
       _testrigSettings = settings.getActiveTestrigSettings();
       _baseTestrigSettings = settings.getBaseTestrigSettings();
       _deltaTestrigSettings = settings.getDeltaTestrigSettings();
@@ -1119,7 +1122,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   + "' instances",
             namesByPath.size());
       namesByPath.forEach((inputPath, name) -> {
-         logger.debug("Reading and gunzipping" + outputClassName + " '" + name
+         logger.debug("Reading and gunzipping: " + outputClassName + " '" + name
                + "' from '" + inputPath.toString() + "'");
          byte[] data = fromGzipFile(inputPath);
          logger.debug(" ...OK\n");
@@ -1520,6 +1523,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             serializedVendorConfigPath);
       Map<String, Configuration> configurations = convertConfigurations(
             vendorConfigurations, answerElement);
+      postProcessConfigurations(configurations.values());
       return configurations;
    }
 
@@ -2089,7 +2093,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             Vrf vrf = e2.getValue();
             OspfProcess proc = vrf.getOspfProcess();
             if (proc != null) {
-               proc.initInterfaceCosts();
                proc.setOspfNeighbors(new TreeMap<>());
                if (proc != null) {
                   String vrfName = e2.getKey();
@@ -2263,7 +2266,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public DataPlane loadDataPlane() {
-      DataPlane dp = _dataPlanes.get(_testrigSettings);
+      DataPlane dp = _cachedDataPlanes.get(_testrigSettings);
       if (dp == null) {
          /*
           * Data plane should exist after loading answer element, as it triggers
@@ -2271,13 +2274,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
           * repaired, so we still might need to load it from disk.
           */
          loadDataPlaneAnswerElement();
-         dp = _dataPlanes.get(_testrigSettings);
+         dp = _cachedDataPlanes.get(_testrigSettings);
          if (dp == null) {
             newBatch("Loading data plane from disk", 0);
             dp = deserializeObject(
                   _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
                   DataPlane.class);
-            _dataPlanes.put(_testrigSettings, dp);
+            _cachedDataPlanes.put(_testrigSettings, dp);
          }
       }
       return dp;
@@ -2762,6 +2765,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (flow.getTag().equals(tag)) {
             FlowTrace flowTrace = flowTraces.get(i);
             flowHistory.addFlowTrace(flow, environmentName, flowTrace);
+         }
+      }
+   }
+
+   private void postProcessConfigurations(
+         Collection<Configuration> configurations) {
+      // ComputeOSPF interface costs where they are missing
+      for (Configuration c : configurations) {
+         for (Vrf vrf : c.getVrfs().values()) {
+            OspfProcess proc = vrf.getOspfProcess();
+            if (proc != null) {
+               proc.initInterfaceCosts();
+            }
          }
       }
    }
@@ -3481,9 +3497,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       outputPath.toFile().mkdirs();
       Map<Path, Configuration> output = new TreeMap<>();
-      configurations.forEach((name, vc) -> {
+      configurations.forEach((name, c) -> {
          Path currentOutputPath = outputPath.resolve(name);
-         output.put(currentOutputPath, vc);
+         output.put(currentOutputPath, c);
       });
       serializeObjects(output);
       printElapsedTime();
@@ -3828,7 +3844,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
-      _dataPlanes.put(_testrigSettings, dp);
+      _cachedDataPlanes.put(_testrigSettings, dp);
       serializeObject(dp,
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
       serializeObject(ae,

@@ -2,7 +2,8 @@
 hostname cisco_logging
 !
 logging 1.2.3.4
-logging dead::beef vrf default severity info
+logging dead:beef::1 vrf default severity info
+logging dead:beef::1 vrf default severity info port default
 logging alarm informational
 logging archive
  device harddisk
@@ -13,7 +14,7 @@ logging asdm errors
 logging asdm-buffer-size 512
 logging buffer-size 100000
 logging buffered 5
-logging buffered 5000 
+logging buffered 5000
 logging buffered 5000 5
 logging buffered 5000 alerts
 logging buffered discriminator MPLS-NOL 32000 notifications
@@ -30,7 +31,7 @@ logging events link-status software-interfaces
 logging facility local0
 logging history informational
 logging 1.2.3.4 vrf default severity info port default
-logging dead::beef vrf default severity info port default
+logging dead:beef::1 vrf default severity info port default
 logging host mgmt 10.246.131.130
 logging host 10.246.131.130
 logging host 10.246.131.138
@@ -38,7 +39,7 @@ logging host 1.2.3.4 vrf mgmtVrf
 logging host 1.2.3.4 vrf mgmtVrf port default
 logging host 1.2.3.4 vrf mgmtVrf port 514
 logging host ipv4 1.2.3.4 discriminator MPLS-NOL
-logging host ipv6 dead::beef discriminator MPLS-NOL
+logging host ipv6 dead:beef::1 discriminator MPLS-NOL
 logging ip access-list cache entries 5000
 logging ip access-list cache interval 5
 logging ip access-list cache threshold 50000
