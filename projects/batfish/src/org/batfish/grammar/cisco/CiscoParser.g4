@@ -1784,7 +1784,7 @@ s_tacacs_server
 :
    NO? TACACS_SERVER
    (
-      ts_host
+      ts_host t_key?
       | ts_null
    )
 ;

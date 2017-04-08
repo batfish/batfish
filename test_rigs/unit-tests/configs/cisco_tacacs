@@ -15,6 +15,7 @@ tacacs-server directed-request
 tacacs-server host 1.2.3.4 key 7 "hello"
 tacacs-server host 1.2.3.4 key 7 "hello" port 49
 tacacs-server host 1.2.3.4 port 49
+ key 0 hello
 tacacs-server host 1.2.3.4 single-connection
 tacacs-server host 1.2.3.4 test username test password test idle-time 0
 tacacs-server key 7 00112233445566778899AABBCCDD
