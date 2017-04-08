@@ -55,6 +55,7 @@ pim_null
       | BIDIR_RP_LIMIT
       | BSR_CANDIDATE
       | DM_FALLBACK
+      | EVENT_HISTORY
       | LOG_NEIGHBOR_CHANGES
       | REGISTER_RATE_LIMIT
       | REGISTER_SOURCE

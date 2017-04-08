@@ -1867,6 +1867,7 @@ s_vrf_context
    VRF CONTEXT name = variable NEWLINE
    (
       vrfc_ip_route
+      | vrfc_null
    )*
 ;
 
@@ -2435,6 +2436,20 @@ vpn_null
 vrfc_ip_route
 :
    IP ROUTE ip_route_tail
+;
+
+vrfc_null
+:
+   NO?
+   (
+      (
+         IP
+         (
+            PIM
+         )
+      )
+      | MDT
+   ) ~NEWLINE* NEWLINE
 ;
 
 vrfd_address_family

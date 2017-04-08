@@ -47,6 +47,11 @@ ACCEPT_DATA
    'accept-data'
 ;
 
+ACCEPTED_PREFIX_LIMIT
+:
+   'accepted-prefix-limit'
+;
+
 ACCESS
 :
    'access'
@@ -1011,6 +1016,11 @@ FORCE_UP
    'force-up'
 ;
 
+FOREVER
+:
+   'forever'
+;
+
 FORWARDING
 :
    'forwarding'
@@ -1274,6 +1284,11 @@ IDENT
 IDENT_RESET
 :
    'ident-reset'
+;
+
+IDLE_TIMEOUT
+:
+   'idle-timeout'
 ;
 
 IGMP
@@ -2746,6 +2761,11 @@ LONGER
    'longer'
 ;
 
+LOOPBACK
+:
+   'loopback'
+;
+
 LOOPS
 :
    'loops'
@@ -2834,6 +2854,11 @@ MAX_CONFIGURATION_ROLLBACKS
 MAX_SESSION_NUMBER
 :
    'max-session-number'
+;
+
+MAXIMUM
+:
+   'maximum'
 ;
 
 MAXIMUM_LABELS
@@ -3324,6 +3349,16 @@ OVERRIDE_METRIC
 P2P
 :
    'p2p'
+;
+
+PACKET_LENGTH
+:
+   'packet-length'
+;
+
+PACKET_LENGTH_EXCEPT
+:
+   'packet-length-except'
 ;
 
 PACKET_TOO_BIG
@@ -4379,6 +4414,11 @@ TCP_RST
 TE_METRIC
 :
    'te-metric'
+;
+
+TEARDOWN
+:
+   'teardown'
 ;
 
 TELNET

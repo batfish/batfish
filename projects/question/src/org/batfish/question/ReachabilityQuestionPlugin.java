@@ -168,11 +168,15 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
       private static final String NOT_IP_PROTOCOLS_VAR = "notIpProtocols";
 
+      private static final String NOT_PACKET_LENGTHS_VAR = "notPacketLengths";
+
       private static final String NOT_SRC_IPS_VAR = "notSrcIps";
 
       private static final String NOT_SRC_PORTS_VAR = "notSrcPorts";
 
       private static final String NOT_SRC_PROTOCOLS_VAR = "notSrcProtocols";
+
+      private static final String PACKET_LENGTHS_VAR = "packetLengths";
 
       private static final String REACHABILITY_TYPE_VAR = "type";
 
@@ -328,6 +332,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
          return _headerSpace.getNotIpProtocols();
       }
 
+      @JsonProperty(NOT_PACKET_LENGTHS_VAR)
+      public SortedSet<SubRange> getNotPacketLengths() {
+         return _headerSpace.getNotPacketLengths();
+      }
+
       @JsonProperty(NOT_SRC_IPS_VAR)
       public SortedSet<IpWildcard> getNotSrcIps() {
          return _headerSpace.getNotSrcIps();
@@ -341,6 +350,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       @JsonProperty(NOT_SRC_PROTOCOLS_VAR)
       public SortedSet<Protocol> getNotSrcProtocols() {
          return _headerSpace.getNotSrcProtocols();
+      }
+
+      @JsonProperty(PACKET_LENGTHS_VAR)
+      public SortedSet<SubRange> getPacketLengths() {
+         return _headerSpace.getPacketLengths();
       }
 
       @JsonProperty(REACHABILITY_TYPE_VAR)
@@ -432,6 +446,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                retString += String.format(" | %s=%s", IP_PROTOCOLS_VAR,
                      getIpProtocols().toString());
             }
+            if (getPacketLengths() != null && !getPacketLengths().isEmpty()) {
+               retString += String.format(" | %s=%s", PACKET_LENGTHS_VAR,
+                     getPacketLengths().toString());
+            }
             if (getSrcIps() != null && !getSrcIps().isEmpty()) {
                retString += String.format(" | %s=%s", SRC_IPS_VAR, getSrcIps());
             }
@@ -493,6 +511,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
             if (getNotIpProtocols() != null && !getNotIpProtocols().isEmpty()) {
                retString += String.format(" | %s=%s", NOT_IP_PROTOCOLS_VAR,
                      getNotIpProtocols().toString());
+            }
+            if (getNotPacketLengths() != null
+                  && !getNotPacketLengths().isEmpty()) {
+               retString += String.format(" | %s=%s", NOT_PACKET_LENGTHS_VAR,
+                     getNotPacketLengths().toString());
             }
             if (getNotSrcIps() != null && !getNotSrcIps().isEmpty()) {
                retString += String.format(" | %s=%s", NOT_SRC_IPS_VAR,
@@ -646,6 +669,13 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                   setReachabilityType(ReachabilityType
                         .fromName(parameters.getString(paramKey)));
                   break;
+               case PACKET_LENGTHS_VAR:
+                  setPacketLengths(new TreeSet<>(
+                        new ObjectMapper().<Set<SubRange>> readValue(
+                              parameters.getString(paramKey),
+                              new TypeReference<Set<SubRange>>() {
+                              })));
+                  break;
                case SRC_IPS_VAR:
                   setSrcIps(new TreeSet<>(
                         new ObjectMapper().<Set<IpWildcard>> readValue(
@@ -737,6 +767,13 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                               new TypeReference<Set<IpProtocol>>() {
                               })));
                   break;
+               case NOT_PACKET_LENGTHS_VAR:
+                  setNotPacketLengths(new TreeSet<>(
+                        new ObjectMapper().<Set<SubRange>> readValue(
+                              parameters.getString(paramKey),
+                              new TypeReference<Set<SubRange>>() {
+                              })));
+                  break;
                case NOT_SRC_IPS_VAR:
                   setNotSrcIps(new TreeSet<>(
                         new ObjectMapper().<Set<IpWildcard>> readValue(
@@ -815,6 +852,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
          _headerSpace.setNotIpProtocols(notIpProtocols);
       }
 
+      @JsonProperty(NOT_PACKET_LENGTHS_VAR)
+      public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
+         _headerSpace.setNotPacketLengths(new TreeSet<>(notPacketLengths));
+      }
+
       @JsonProperty(NOT_SRC_IPS_VAR)
       public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
          _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
@@ -828,6 +870,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       @JsonProperty(NOT_SRC_PROTOCOLS_VAR)
       public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
          _headerSpace.setNotSrcProtocols(new TreeSet<>(notSrcProtocols));
+      }
+
+      @JsonProperty(PACKET_LENGTHS_VAR)
+      public void setPacketLengths(SortedSet<SubRange> packetLengths) {
+         _headerSpace.setPacketLengths(new TreeSet<>(packetLengths));
       }
 
       @JsonProperty(REACHABILITY_TYPE_VAR)

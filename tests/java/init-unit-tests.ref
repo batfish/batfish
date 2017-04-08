@@ -81,6 +81,7 @@
         "cisco_voice_port" : "cisco_voice_port",
         "cisco_vpdn" : "cisco_vpdn",
         "cisco_vpn" : "cisco_vpn",
+        "cisco_vrf" : "cisco_vrf",
         "cisco_vrrp" : "cisco_vrrp",
         "cisco_webvpn" : "cisco_webvpn",
         "cisco_wsma" : "cisco_wsma",
@@ -249,6 +250,7 @@
         "cisco_voice_port" : "PASSED",
         "cisco_vpdn" : "PASSED",
         "cisco_vpn" : "PASSED",
+        "cisco_vrf" : "PASSED",
         "cisco_vrrp" : "PASSED",
         "cisco_webvpn" : "PASSED",
         "cisco_wsma" : "PASSED",
@@ -338,7 +340,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.14.0",
+      "version" : "0.15.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -477,29 +479,29 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                24
+                62
               ]
             },
             "abc" : {
               "ip nat source dynamic access-list" : [
-                23
+                54
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                22
+                53
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                127
+                50
               ]
             }
           },
           "ipv4/6 acl" : {
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                73
+                65
               ]
             }
           }
@@ -531,7 +533,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                30
+                31
               ]
             }
           }
@@ -540,17 +542,17 @@
           "ipv4 acl" : {
             "232.0.0.0/8" : {
               "pim ssl acl" : [
-                8
+                9
               ]
             },
             "foobar" : {
               "pim rp-address" : [
-                4
+                6
               ]
             },
             "foobarmap" : {
               "pim rp-address" : [
-                6
+                7
               ]
             }
           }
@@ -722,6 +724,22 @@
             "ipv6-vty-acl" : {
               "ssh ipv6 access-list" : [
                 5
+              ]
+            }
+          }
+        },
+        "juniper_bgp" : {
+          "policy-statement" : {
+            "someexportpolicy" : {
+              "bgp export policy-statement" : [
+                8,
+                22
+              ]
+            },
+            "someimportpolicy" : {
+              "bgp import policy-statement" : [
+                10,
+                24
               ]
             }
           }
@@ -1371,7 +1389,7 @@
           }
         }
       },
-      "version" : "0.14.0",
+      "version" : "0.15.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1391,7 +1409,7 @@
         },
         "cisco_interface" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Loopback0' contains OSPF settings, but there is no OSPF process"
+            "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
           }
         },
         "ios_xr_bgp_neighbor_group" : {
@@ -1404,6 +1422,13 @@
         "juniper-tcpflags" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: missing action in firewall filter: 'foo', term: 'bar'"
+          }
+        },
+        "juniper_bgp" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system",
+            "2" : "MISCELLANEOUS: Missing local-as for neighbor: 1.2.3.5",
+            "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
           }
         },
         "juniper_firewall" : {
@@ -1533,6 +1558,7 @@
         "cisco_voice_port" : "PASSED",
         "cisco_vpdn" : "PASSED",
         "cisco_vpn" : "PASSED",
+        "cisco_vrf" : "PASSED",
         "cisco_vrrp" : "PASSED",
         "cisco_webvpn" : "PASSED",
         "cisco_wsma" : "PASSED",

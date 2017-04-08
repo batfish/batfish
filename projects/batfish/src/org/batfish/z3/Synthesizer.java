@@ -122,6 +122,8 @@ public class Synthesizer {
    public static final String ICMP_TYPE_VAR = "icmp_type";
    public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
+   public static final int PACKET_LENGTH_BITS = 16;
+   public static final String PACKET_LENGTH_VAR = "packet_length";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
    public static final List<String> PACKET_VARS = getPacketVars();
    public static final int PORT_BITS = 16;
@@ -171,6 +173,7 @@ public class Synthesizer {
       vars.add(FRAGMENT_OFFSET_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
+      vars.add(PACKET_LENGTH_VAR);
       vars.add(STATE_VAR);
       vars.add(TCP_FLAGS_CWR_VAR);
       vars.add(TCP_FLAGS_ECE_VAR);
@@ -231,6 +234,7 @@ public class Synthesizer {
       varSizes.put(FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
+      varSizes.put(PACKET_LENGTH_VAR, PACKET_LENGTH_BITS);
       varSizes.put(STATE_VAR, STATE_BITS);
       varSizes.put(TCP_FLAGS_CWR_VAR, TCP_FLAGS_CWR_BITS);
       varSizes.put(TCP_FLAGS_ECE_VAR, TCP_FLAGS_ECE_BITS);
@@ -291,6 +295,9 @@ public class Synthesizer {
 
       Set<SubRange> icmpCodes = headerSpace.getIcmpCodes();
       Set<SubRange> notIcmpCodes = headerSpace.getNotIcmpCodes();
+
+      Set<SubRange> packetLengths = headerSpace.getPacketLengths();
+      Set<SubRange> notPacketLengths = headerSpace.getNotPacketLengths();
 
       Set<State> states = headerSpace.getStates();
 
@@ -837,6 +844,20 @@ public class Synthesizer {
       if (notIcmpCodes != null && notIcmpCodes.size() > 0) {
          BooleanExpr matchRange = new RangeMatchExpr(ICMP_CODE_VAR,
                ICMP_CODE_BITS, notIcmpCodes);
+         match.addConjunct(new NotExpr(matchRange));
+      }
+
+      // match packetLengths
+      if (packetLengths != null && packetLengths.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(PACKET_LENGTH_VAR,
+               PACKET_LENGTH_BITS, packetLengths);
+         match.addConjunct(matchRange);
+      }
+
+      // don't match notPacketLengths
+      if (notPacketLengths != null && notPacketLengths.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(PACKET_LENGTH_VAR,
+               PACKET_LENGTH_BITS, notPacketLengths);
          match.addConjunct(new NotExpr(matchRange));
       }
 

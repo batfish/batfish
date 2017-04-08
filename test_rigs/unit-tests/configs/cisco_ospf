@@ -18,6 +18,7 @@ router ospf abcdefg
 router ospf 1
   address-family ipv4
   area 0.0.0.0 authentication message-digest
+  area 0.0.0.0 range 1.2.3.0/24
   auto-cost reference-bandwidth 40 Gbps
   discard-route external
   discard-route internal
@@ -55,6 +56,7 @@ router ospfv3 1
   graceful-restart
   graceful-restart grace-period 180
   log-adjacency-changes detail
+  max-metric router-lsa on-startup 600
   maximum-paths 16
   ospfv3 event-history hello size small
   ospfv3 event-history redistribution size small
@@ -70,8 +72,11 @@ router ospfv3 1
   timers throttle lsa 0 50 5000
 !
 ipv6 router ospf 1
- router-id 10.5.3.4
+ router-id 1.2.3.4
  log-adjacency-changes
  log-adjacency-changes detail
- distribute-list prefix-list SWITCHLAN in  
+ distribute-list prefix-list SWITCHLAN in
+ passive-interface default
+ timers throttle lsa 0 50 5000
+ timers throttle spf 50 50 5000
 !

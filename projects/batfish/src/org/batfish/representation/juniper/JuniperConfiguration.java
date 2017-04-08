@@ -346,8 +346,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
          // inherit local-as
          neighbor.setLocalAs(ig.getLocalAs());
          if (neighbor.getLocalAs() == null) {
-            throw new BatfishException("Missing local-as for neighbor: "
+            _w.redFlag("Missing local-as for neighbor: "
                   + ig.getRemoteAddress().toString());
+            continue;
          }
 
          // inherit peer-as, or use local-as if internal

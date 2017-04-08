@@ -2221,7 +2221,7 @@
             "Dot11Radio0" : {
               "name" : "Dot11Radio0",
               "accessVlan" : 0,
-              "active" : false,
+              "active" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2233,6 +2233,29 @@
               "ospfPassive" : false,
               "proxyArp" : false,
               "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : false,
+              "allPrefixes" : [
+                "1.2.3.4/30"
+              ],
+              "bandwidth" : 1.0E9,
+              "description" : "description-goes-here",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 6,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.2.3.4/30",
+              "proxyArp" : false,
+              "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
@@ -2258,11 +2281,7 @@
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
-              "allPrefixes" : [
-                "13.9.2.2/32"
-              ],
               "bandwidth" : 1.0E12,
-              "description" : "description-goes-here",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2271,7 +2290,6 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "prefix" : "13.9.2.2/32",
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2313,50 +2331,6 @@
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
-            "Vlan112" : {
-              "name" : "Vlan112",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "2.3.4.0/29"
-              ],
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "2.3.4.0/29",
-              "proxyArp" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "vrf" : "default"
-            },
-            "Vlan113" : {
-              "name" : "Vlan113",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "3.4.5.0/24"
-              ],
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "3.4.5.0/24",
-              "proxyArp" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "vrf" : "default"
-            },
             "Vxlan1" : {
               "name" : "Vxlan1",
               "accessVlan" : 0,
@@ -2379,9 +2353,6 @@
               "name" : "tunnel-ip6",
               "accessVlan" : 0,
               "active" : true,
-              "allPrefixes" : [
-                "1.2.3.4/30"
-              ],
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2391,7 +2362,6 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "prefix" : "1.2.3.4/30",
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2410,12 +2380,11 @@
                 "Async1",
                 "Crypto-Engine1/2/3",
                 "Dot11Radio0",
+                "Ethernet0",
                 "Ethernet1/11",
                 "Loopback0",
                 "Null0",
                 "Vlan111",
-                "Vlan112",
-                "Vlan113",
                 "Vxlan1",
                 "tunnel-ip6"
               ]
@@ -4248,6 +4217,34 @@
           "vrfs" : {
             "default" : {
               "name" : "default"
+            }
+          }
+        },
+        "cisco_vrf" : {
+          "name" : "cisco_vrf",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_vrf"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            },
+            "management" : {
+              "name" : "management",
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "network" : "0.0.0.0/0",
+                  "nextHopIp" : "1.2.3.4",
+                  "tag" : -1,
+                  "administrativeCost" : 1
+                }
+              ]
             }
           }
         },
@@ -6590,10 +6587,216 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "routingPolicies" : {
+            "~DEFAULT_BGP_EXPORT_POLICY~" : {
+              "name" : "~DEFAULT_BGP_EXPORT_POLICY~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                      "falseStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ExitReject"
+                        }
+                      ],
+                      "guard" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "CallExprContext"
+                      },
+                      "trueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ReturnFalse"
+                        }
+                      ]
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                      "falseStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ExitAccept"
+                        }
+                      ],
+                      "guard" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "CallExprContext"
+                      },
+                      "trueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ReturnTrue"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "~DEFAULT_BGP_IMPORT_POLICY~" : {
+              "name" : "~DEFAULT_BGP_IMPORT_POLICY~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                    "type" : "CallExprContext"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_EXPORT_POLICY:1.2.3.5~" : {
+              "name" : "~PEER_EXPORT_POLICY:1.2.3.5~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_EXPORT_POLICY:3.4.5.6~" : {
+              "name" : "~PEER_EXPORT_POLICY:3.4.5.6~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_IMPORT_POLICY:1.2.3.5~" : {
+              "name" : "~PEER_IMPORT_POLICY:1.2.3.5~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_IMPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_IMPORT_POLICY:3.4.5.6~" : {
+              "name" : "~PEER_IMPORT_POLICY:3.4.5.6~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_IMPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "name" : "default"
+              "name" : "default",
+              "bgpProcess" : { }
             }
           }
         },
@@ -6646,8 +6849,14 @@
                     "1.2.3.4",
                     "1.2.3.5"
                   ],
+                  "ipProtocols" : [
+                    "PIM"
+                  ],
                   "name" : "blorp",
-                  "negate" : false
+                  "negate" : false,
+                  "packetLengths" : [
+                    "70-12000"
+                  ]
                 }
               ]
             }

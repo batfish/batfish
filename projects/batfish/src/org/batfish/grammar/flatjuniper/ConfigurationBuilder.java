@@ -1246,6 +1246,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
+   private static List<SubRange> toRange(RangeContext ctx) {
+      List<SubRange> range = new ArrayList<>();
+      for (SubrangeContext sc : ctx.range_list) {
+         SubRange sr = toSubRange(sc);
+         range.add(sr);
+      }
+      return range;
+   }
+
    private static RoutingProtocol toRoutingProtocol(
          Routing_protocolContext ctx) {
       if (ctx.AGGREGATE() != null) {
@@ -2584,6 +2593,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitFftf_is_fragment(Fftf_is_fragmentContext ctx) {
       SubRange subRange = new SubRange(0, 0);
       FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_packet_length(Fftf_packet_lengthContext ctx) {
+      List<SubRange> range = toRange(ctx.range());
+      FwFrom from = new FwFromPacketLength(range, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_packet_length_except(
+         Fftf_packet_length_exceptContext ctx) {
+      List<SubRange> range = toRange(ctx.range());
+      FwFrom from = new FwFromPacketLength(range, true);
       _currentFwTerm.getFroms().add(from);
    }
 
