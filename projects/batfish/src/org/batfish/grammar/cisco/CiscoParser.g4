@@ -1773,10 +1773,6 @@ s_tacacs
    (
       t_null
       | t_server
-      (
-         t_address
-         | t_key
-      )*
    )
 ;
 
@@ -1784,7 +1780,7 @@ s_tacacs_server
 :
    NO? TACACS_SERVER
    (
-      ts_host t_key?
+      ts_host
       | ts_null
    )
 ;
@@ -2223,6 +2219,7 @@ t_server
    SERVER hostname = variable_hostname NEWLINE
    (
       t_server_address
+      | t_key
       | t_server_null
    )*
 ;
@@ -2247,20 +2244,6 @@ t_server_null
    (
       SINGLE_CONNECTION
    ) ~NEWLINE* NEWLINE
-;
-
-t_address
-:
-   ADDRESS
-   (
-      (
-         IPV4 IP_ADDRESS
-      )
-      |
-      (
-         IPV6 IPV6_ADDRESS
-      )
-   ) NEWLINE
 ;
 
 t_key
@@ -2307,7 +2290,7 @@ ts_host
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) ~NEWLINE* NEWLINE t_key?
 ;
 
 ts_null
