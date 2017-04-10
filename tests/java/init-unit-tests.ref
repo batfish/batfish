@@ -611,7 +611,7 @@
                 65
               ],
               "snmp server tftp-server list" : [
-                84
+                85
               ]
             },
             "customer-snmp" : {

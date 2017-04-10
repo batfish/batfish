@@ -67,6 +67,7 @@ tokens {
    PAREN_RIGHT_LITERAL,
    PIPE,
    PROMPT_TIMEOUT,
+   QUOTED_TEXT,
    RAW_TEXT,
    SELF_SIGNED,
    SLIP_PPP,
@@ -1495,7 +1496,7 @@ COMM_LIST
 
 COMMAND
 :
-   'command'
+   'command' -> pushMode ( M_Command )
 ;
 
 COMMANDER_ADDRESS
@@ -3721,6 +3722,11 @@ IF_NEEDED
 IFINDEX
 :
    'ifindex'
+;
+
+IFMIB
+:
+   'ifmib'
 ;
 
 IGMP
@@ -10356,6 +10362,31 @@ M_CertificateText_WS
       F_Whitespace
       | F_Newline
    )+ -> channel ( HIDDEN )
+;
+
+mode M_Command;
+
+M_Command_QuotedString
+:
+   '"'
+   (
+      ~'"'
+   )* '"' -> type ( QUOTED_TEXT )
+;
+
+M_Command_Newline
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Command_Variable
+:
+   F_NonWhitespace+ -> type ( VARIABLE )
+;
+
+M_Command_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_COMMENT;

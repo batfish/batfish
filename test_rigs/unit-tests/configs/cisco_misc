@@ -142,6 +142,17 @@ event manager applet Interface_Load
  action 1.0 syslog priority informational msg "$_cli_msg"
  set 2.0 _exit_status 1
 !
+event manager applet URLFilter_bw_safeguard
+ event interface name Tunnel9 parameter transmit_rate_bps entry-op ge entry-val 100000000 entry-type rate average-factor 2 poll-interval 60
+ action 1 syslog msg "Traffic rate to URLFilter pepper has exceeded 100Mbit/s over 2 minutes, shutting down Tunnel Interface..."
+ action 2 cli command "enable"
+ action 3 cli command "config t"
+ action 4 cli command "interface Tu9"
+ action 5 cli command "shutdown"
+ action 6 syslog msg "Interface Tunnel9 to URLfilter pepper has been shutdown. It needs to be manually unshut."
+ action 7 syslog msg "Interface \"Tunnel9\" to URLfilter pepper has been shutdown. It needs to be manually unshut."
+ action 8 syslog msg ""
+!
 dial-peer voice 1 voip
  codec transparent
  description oigjaiowfjiofjweiofjowe
@@ -282,4 +293,4 @@ config-register 0x2102
 !
 dialer watch-list 76 ip 130.59.53.128 255.255.255.192
 !
-
+end

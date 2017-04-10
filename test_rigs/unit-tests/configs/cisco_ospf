@@ -31,11 +31,13 @@ router ospf 1
   redistribute direct route-map DIRECT_OSPF
   redistribute ospf 2 match internal
   router-id 1.2.3.4
+  fast-reroute per-prefix
   snmp context ospf1
   timers lsa-arrival 1000
   timers throttle lsa 0 50 5000
   timers throttle spf 50 50 5000
   area 0
+    cost 2500
     network point-to-point
     dead-interval 6
     hello-interval 2
