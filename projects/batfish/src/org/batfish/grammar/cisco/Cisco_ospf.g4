@@ -50,6 +50,7 @@ ro_area
    ) NEWLINE
    (
       ro_common
+      | roa_cost
       | roa_interface
       | roa_network_null
       | roa_range
@@ -156,6 +157,7 @@ ro_null
       | DEAD_INTERVAL
       | DISCARD_ROUTE
       | DISTRIBUTE_LIST
+      | FAST_REROUTE
       | GRACEFUL_RESTART
       | HELLO_INTERVAL
       |
@@ -363,6 +365,11 @@ ro6_redistribute
    REDISTRIBUTE ~NEWLINE* NEWLINE
 ;
 
+roa_cost
+:
+   COST cost = DEC NEWLINE
+;
+
 roa_interface
 :
    INTERFACE iname = interface_name NEWLINE
@@ -447,6 +454,7 @@ rov3_null
       | DEFAULT_INFORMATION
       | DISCARD_ROUTE
       | DISTANCE
+      | FAST_REROUTE
       | GRACEFUL_RESTART
       | HELLO_INTERVAL
       | INTERFACE
