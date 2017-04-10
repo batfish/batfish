@@ -7140,6 +7140,11 @@ RP_LIST
    'rp-list'
 ;
 
+RSA
+:
+   'rsa'
+;
+
 RSAKEYPAIR
 :
    'rsakeypair'

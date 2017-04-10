@@ -2219,6 +2219,7 @@ t_server
    SERVER hostname = variable_hostname NEWLINE
    (
       t_server_address
+      | t_key
       | t_server_null
    )*
 ;
@@ -2243,6 +2244,11 @@ t_server_null
    (
       SINGLE_CONNECTION
    ) ~NEWLINE* NEWLINE
+;
+
+t_key
+:
+   KEY DEC? variable_permissive NEWLINE
 ;
 
 tap_null
@@ -2284,7 +2290,7 @@ ts_host
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) ~NEWLINE* NEWLINE t_key?
 ;
 
 ts_null

@@ -3389,7 +3389,6 @@
             "10.246.131.130",
             "10.246.131.138",
             "11.2.3.4",
-            "137.164.80.152",
             "dead:beef::1"
           ],
           "vendorFamily" : {
@@ -3413,9 +3412,6 @@
                   },
                   "11.2.3.4" : {
                     "name" : "11.2.3.4"
-                  },
-                  "137.164.80.152" : {
-                    "name" : "137.164.80.152"
                   },
                   "dead:beef::1" : {
                     "name" : "dead:beef::1"
@@ -4107,6 +4103,14 @@
           "defaultInboundAction" : "ACCEPT",
           "tacacsServers" : [
             "1.2.3.4",
+            "1.example.com",
+            "2.example.com",
+            "3.example.com",
+            "4.example.com",
+            "5.example.com",
+            "6.example.com",
+            "7.example.com",
+            "8.example.com",
             "EACACS",
             "example.com"
           ],
