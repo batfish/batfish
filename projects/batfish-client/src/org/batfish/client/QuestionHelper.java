@@ -15,7 +15,6 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class QuestionHelper {
 
@@ -83,8 +82,7 @@ public class QuestionHelper {
    }
 
    public static String getQuestionString(String questionTypeStr,
-         Map<String, Supplier<Question>> questions, boolean full)
-         throws JsonProcessingException {
+         Map<String, Supplier<Question>> questions, boolean full) {
       Question question = getQuestion(questionTypeStr, questions);
       if (full) {
          return question.toFullJsonString();
@@ -130,8 +128,7 @@ public class QuestionHelper {
    }
 
    public static String resolveMacro(String macroName, String paramsLine,
-         Map<String, Supplier<Question>> questions)
-         throws JsonProcessingException {
+         Map<String, Supplier<Question>> questions) {
       String macro = macroName.replace(MACRO_PREFIX, "");
       MacroType macroType = MacroType.fromName(macro);
 

@@ -4960,9 +4960,9 @@
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "network" : "1.2.28.104/31",
-                  "nextHopInterface" : "/",
+                  "nextHopInterface" : "Ethernet13/10",
                   "tag" : 64753,
-                  "administrativeCost" : 10
+                  "administrativeCost" : 1
                 }
               ]
             }
@@ -6314,7 +6314,7 @@
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "network" : "1.2.220.0/24",
-                  "nextHopInterface" : "TenGigE0/0/2/3",
+                  "nextHopInterface" : "TenGigabitEthernet0/0/2/3",
                   "nextHopIp" : "1.2.220.245",
                   "tag" : 64666,
                   "administrativeCost" : 1

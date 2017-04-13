@@ -1,6 +1,8 @@
 package org.batfish.common.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -368,6 +371,21 @@ public class CommonUtil {
       }
       else {
          return -1;
+      }
+   }
+
+   public static void outputFileLines(Path downloadedFile,
+         Consumer<String> outputFunction) {
+      try (BufferedReader br = new BufferedReader(
+            new FileReader(downloadedFile.toFile()))) {
+         String line = null;
+         while ((line = br.readLine()) != null) {
+            outputFunction.accept(line + "\n");
+         }
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to read and output lines of file: '"
+               + downloadedFile.toString() + "'");
       }
    }
 

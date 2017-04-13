@@ -1,9 +1,6 @@
 package org.batfish.question;
 
-import java.io.IOException;
-import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SortedMap;
@@ -24,14 +21,9 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RoutesQuestionPlugin extends QuestionPlugin {
 
@@ -230,11 +222,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       private String _nodeRegex;
 
-      private Set<RoutingProtocol> _protocols;
+      private SortedSet<RoutingProtocol> _protocols;
 
       public RoutesQuestion() {
          _nodeRegex = ".*";
-         _protocols = EnumSet.noneOf(RoutingProtocol.class);
+         _protocols = new TreeSet<>();
       }
 
       @Override
@@ -252,7 +244,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          return _nodeRegex;
       }
 
-      public Set<RoutingProtocol> getProtocols() {
+      @JsonProperty(PROTOCOLS_VAR)
+      public SortedSet<RoutingProtocol> getProtocols() {
          return _protocols;
       }
 
@@ -261,42 +254,13 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case NODE_REGEX_VAR:
-                  setNodeRegex(parameters.getString(paramKey));
-                  break;
-               case PROTOCOLS_VAR:
-                  setProtocols(
-                        new ObjectMapper().<Set<RoutingProtocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<RoutingProtocol>>() {
-                              }));
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }
 
-      private void setProtocols(Set<RoutingProtocol> protocols) {
+      @JsonProperty(PROTOCOLS_VAR)
+      public void setProtocols(SortedSet<RoutingProtocol> protocols) {
          _protocols = protocols;
       }
 

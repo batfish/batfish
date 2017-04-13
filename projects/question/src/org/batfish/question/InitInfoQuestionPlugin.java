@@ -1,15 +1,9 @@
 package org.batfish.question;
 
-import java.util.Iterator;
-
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class InitInfoQuestionPlugin extends QuestionPlugin {
@@ -68,31 +62,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() {
          return getName() + " " + SUMMARY_VAR + "=" + _summary;
-      }
-
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case SUMMARY_VAR:
-                  setSummary(parameters.getBoolean(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
       }
 
       @JsonProperty(SUMMARY_VAR)

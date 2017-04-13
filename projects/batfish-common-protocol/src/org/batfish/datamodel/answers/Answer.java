@@ -60,8 +60,9 @@ public class Answer {
 
    public String prettyPrint() {
       StringBuilder string = new StringBuilder();
-
-      string.append("Status: " + _status + "\n");
+      if (_status != null) {
+         string.append("Status: " + _status + "\n");
+      }
       if (_question != null) {
          string.append("Question: " + _question.prettyPrint() + "\n");
       }

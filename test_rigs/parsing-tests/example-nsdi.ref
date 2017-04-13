@@ -2108,7 +2108,7 @@
             "        IP_ADDRESS:'10.0.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
             "        (interface_name",
-            "          (variable",
+            "          (variable_interface_name",
             "            VARIABLE:'Null0'  <== mode:DEFAULT_MODE))",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -2829,11 +2829,11 @@
           ]
         }
       },
-      "version" : "0.15.0"
+      "version" : "0.16.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.15.0"
+      "version" : "0.16.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

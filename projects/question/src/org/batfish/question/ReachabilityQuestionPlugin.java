@@ -1,9 +1,6 @@
 package org.batfish.question;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -20,14 +17,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
@@ -537,7 +528,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                return "Pretty printing failed. Printing Json\n"
                      + toJsonString();
             }
-            catch (JsonProcessingException e1) {
+            catch (BatfishException e1) {
                throw new BatfishException(
                      "Both pretty and json printing failed\n");
             }
@@ -591,219 +582,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       @JsonProperty(IP_PROTOCOLS_VAR)
       public void setIpProtocols(SortedSet<IpProtocol> ipProtocols) {
          _headerSpace.setIpProtocols(ipProtocols);
-      }
-
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case ACTIONS_VAR:
-                  setActions(new TreeSet<>(
-                        new ObjectMapper().<Set<ForwardingAction>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<ForwardingAction>>() {
-                              })));
-                  break;
-               case DST_IPS_VAR:
-                  setDstIps(new TreeSet<>(
-                        new ObjectMapper().<Set<IpWildcard>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpWildcard>>() {
-                              })));
-                  break;
-               case DST_PORTS_VAR:
-                  setDstPorts(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case DST_PROTOCOLS_VAR:
-                  setDstProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<Protocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<Protocol>>() {
-                              })));
-                  break;
-               case FINAL_NODE_REGEX_VAR:
-                  setFinalNodeRegex(parameters.getString(paramKey));
-                  break;
-               case ICMP_CODES_VAR:
-                  setIcmpCodes(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case ICMP_TYPES_VAR:
-                  setIcmpTypes(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case INGRESS_NODE_REGEX_VAR:
-                  setIngressNodeRegex(parameters.getString(paramKey));
-                  break;
-               case IP_PROTOCOLS_VAR:
-                  setIpProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<IpProtocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpProtocol>>() {
-                              })));
-                  break;
-               case NEGATE_HEADER_VAR:
-                  setNegateHeader(parameters.getBoolean(paramKey));
-                  break;
-               case REACHABILITY_TYPE_VAR:
-                  setReachabilityType(ReachabilityType
-                        .fromName(parameters.getString(paramKey)));
-                  break;
-               case PACKET_LENGTHS_VAR:
-                  setPacketLengths(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case SRC_IPS_VAR:
-                  setSrcIps(new TreeSet<>(
-                        new ObjectMapper().<Set<IpWildcard>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpWildcard>>() {
-                              })));
-                  break;
-               case SRC_OR_DST_IPS_VAR:
-                  setSrcOrDstIps(new TreeSet<>(
-                        new ObjectMapper().<Set<IpWildcard>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpWildcard>>() {
-                              })));
-                  break;
-               case SRC_OR_DST_PORTS_VAR:
-                  setSrcOrDstPorts(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case SRC_OR_DST_PROTOCOLS_VAR:
-                  setSrcOrDstProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<Protocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<Protocol>>() {
-                              })));
-                  break;
-               case SRC_PORTS_VAR:
-                  setSrcPorts(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case SRC_PROTOCOLS_VAR:
-                  setSrcProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<Protocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<Protocol>>() {
-                              })));
-                  break;
-               case NOT_DST_IPS_VAR:
-                  setNotDstIps(new TreeSet<>(
-                        new ObjectMapper().<Set<IpWildcard>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpWildcard>>() {
-                              })));
-                  break;
-               case NOT_DST_PORTS_VAR:
-                  setNotDstPorts(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case NOT_DST_PROTOCOLS_VAR:
-                  setNotDstProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<Protocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<Protocol>>() {
-                              })));
-                  break;
-               case NOT_FINAL_NODE_REGEX_VAR:
-                  setNotFinalNodeRegex(parameters.getString(paramKey));
-                  break;
-               case NOT_ICMP_CODES_VAR:
-                  setNotIcmpCodes(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-
-                  break;
-               case NOT_ICMP_TYPES_VAR:
-                  setNotIcmpTypes(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case NOT_INGRESS_NODE_REGEX_VAR:
-                  setNotIngressNodeRegex(parameters.getString(paramKey));
-                  break;
-               case NOT_IP_PROTOCOLS_VAR:
-                  setNotIpProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<IpProtocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpProtocol>>() {
-                              })));
-                  break;
-               case NOT_PACKET_LENGTHS_VAR:
-                  setNotPacketLengths(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case NOT_SRC_IPS_VAR:
-                  setNotSrcIps(new TreeSet<>(
-                        new ObjectMapper().<Set<IpWildcard>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<IpWildcard>>() {
-                              })));
-                  break;
-               case NOT_SRC_PORTS_VAR:
-                  setNotSrcPortRange(new TreeSet<>(
-                        new ObjectMapper().<Set<SubRange>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<SubRange>>() {
-                              })));
-                  break;
-               case NOT_SRC_PROTOCOLS_VAR:
-                  setNotSrcProtocols(new TreeSet<>(
-                        new ObjectMapper().<Set<Protocol>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<Protocol>>() {
-                              })));
-                  break;
-               default:
-                  throw new BatfishException(
-                        "Unknown key in ReachabilityQuestion: " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
       }
 
       @JsonProperty(NEGATE_HEADER_VAR)

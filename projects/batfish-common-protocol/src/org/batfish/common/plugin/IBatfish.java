@@ -52,7 +52,7 @@ public interface IBatfish extends IPluginConsumer {
 
    AnswerElement createEnvironment(String environmentName,
          NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
-         boolean dp);
+         Topology edgeBlacklist, boolean dp);
 
    Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 

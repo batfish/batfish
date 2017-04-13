@@ -275,8 +275,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                .resolve(questionName);
          settings.setQuestionPath(
                questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
-         settings.setQuestionParametersPath(
-               questionPath.resolve(BfConsts.RELPATH_QUESTION_PARAM_FILE));
       }
    }
 
@@ -1020,7 +1018,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public EnvironmentCreationAnswerElement createEnvironment(String newEnvName,
          NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
-         boolean dp) {
+         Topology edgeBlacklist, boolean dp) {
       EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -1038,6 +1036,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
+      if (Files.exists(newEnvPath)) {
+         throw new BatfishException("Cannot create new environment '"
+               + newEnvName + "': environment with same name already exists");
+      }
       newEnvPath.toFile().mkdirs();
       try {
          FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
@@ -1067,6 +1069,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String interfaceBlacklistStr = interfaceBlacklistSb.toString();
          CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(),
                interfaceBlacklistStr);
+      }
+
+      // write edge blacklist from question
+      if (edgeBlacklist != null) {
+         SortedSet<Edge> edges = edgeBlacklist.sortedEdges();
+         if (!edges.isEmpty()) {
+            StringBuilder edgeBlacklistSb = new StringBuilder();
+            edgeBlacklistSb.append(BatfishTopologyCombinedParser.HEADER + "\n");
+            for (Edge edge : edges) {
+               String node1 = edge.getNode1();
+               String node2 = edge.getNode2();
+               String int1 = edge.getInt1();
+               String int2 = edge.getInt2();
+               edgeBlacklistSb.append("\"" + node1 + "\" : \"" + int1 + ", \""
+                     + node2 + "\" : \"" + int2 + "\"\n");
+            }
+            String edgeBlacklistStr = edgeBlacklistSb.toString();
+            CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(),
+                  edgeBlacklistStr);
+         }
       }
 
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
@@ -2537,33 +2559,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       try {
          ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
          Question question = mapper.readValue(questionText, Question.class);
-         JSONObject parameters = (JSONObject) parseQuestionParameters();
-         question.setJsonParameters(parameters);
          return question;
       }
       catch (IOException e) {
          throw new BatfishException("Could not parse JSON question", e);
-      }
-   }
-
-   private Object parseQuestionParameters() {
-      Path questionParametersPath = _settings.getQuestionParametersPath();
-      if (!Files.exists(questionParametersPath)) {
-         throw new BatfishException("Missing question parameters file: \""
-               + questionParametersPath + "\"");
-      }
-      _logger.info("Reading question parameters file: \""
-            + questionParametersPath + "\"...");
-      String questionText = CommonUtil.readFile(questionParametersPath);
-      _logger.info("OK\n");
-
-      try {
-         JSONObject jObj = (questionText.trim().isEmpty()) ? new JSONObject()
-               : new JSONObject(questionText);
-         return jObj;
-      }
-      catch (JSONException e) {
-         throw new BatfishException("Could not parse JSON parameters", e);
       }
    }
 

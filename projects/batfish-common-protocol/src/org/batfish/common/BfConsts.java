@@ -94,8 +94,7 @@ public class BfConsts {
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";
-   public static final String RELPATH_QUESTION_FILE = "question";
-   public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
+   public static final String RELPATH_QUESTION_FILE = "question.json";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";

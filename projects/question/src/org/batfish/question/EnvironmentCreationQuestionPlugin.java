@@ -1,26 +1,19 @@
 package org.batfish.question;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
 
@@ -39,7 +32,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
          boolean dp = false;
          return _batfish.createEnvironment(question.getEnvironmentName(),
                question.getNodeBlacklist(), question.getInterfaceBlacklist(),
-               dp);
+               question.getEdgeBlacklist(), dp);
       }
 
    }
@@ -50,12 +43,20 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
    public static class EnvironmentCreationQuestion extends Question
          implements IEnvironmentCreationQuestion {
 
+      private static final String EDGE_BLACKLIST_VAR = "edgeBlacklist";
+
       private static final String ENVIRONMENT_NAME_VAR = ENVIRONMENT_NAME_KEY;
+
       private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
+
       private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
 
+      private Topology _edgeBlacklist;
+
       private String _environmentName;
-      private Set<NodeInterfacePair> _interfaceBlacklist;
+
+      private SortedSet<NodeInterfacePair> _interfaceBlacklist;
+
       private NodeSet _nodeBlacklist;
 
       @JsonCreator
@@ -75,13 +76,18 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
+      @JsonProperty(EDGE_BLACKLIST_VAR)
+      public Topology getEdgeBlacklist() {
+         return _edgeBlacklist;
+      }
+
       @JsonProperty(ENVIRONMENT_NAME_VAR)
       public String getEnvironmentName() {
          return _environmentName;
       }
 
       @JsonProperty(INTERFACE_BLACKLIST_VAR)
-      public Set<NodeInterfacePair> getInterfaceBlacklist() {
+      public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
          return _interfaceBlacklist;
       }
 
@@ -100,55 +106,24 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      private void setEnvironmentName(String environmentName) {
+      @JsonProperty(EDGE_BLACKLIST_VAR)
+      public void setEdgeBlacklist(Topology edgeBlacklist) {
+         _edgeBlacklist = edgeBlacklist;
+      }
+
+      @JsonProperty(ENVIRONMENT_NAME_VAR)
+      public void setEnvironmentName(String environmentName) {
          _environmentName = environmentName;
       }
 
-      private void setInterfaceBlacklist(Set<NodeInterfacePair> blacklist) {
+      @JsonProperty(INTERFACE_BLACKLIST_VAR)
+      public void setInterfaceBlacklist(
+            SortedSet<NodeInterfacePair> blacklist) {
          _interfaceBlacklist = blacklist;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case ENVIRONMENT_NAME_VAR:
-                  setEnvironmentName(parameters.getString(paramKey));
-                  break;
-               case INTERFACE_BLACKLIST_VAR:
-                  setInterfaceBlacklist(
-                        new ObjectMapper().<Set<NodeInterfacePair>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<NodeInterfacePair>>() {
-                              }));
-                  break;
-               case NODE_BLACKLIST_VAR:
-                  setNodeBlacklist(new ObjectMapper().readValue(
-                        parameters.getString(paramKey), NodeSet.class));
-                  break;
-
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
-      private void setNodeBlacklist(NodeSet blacklist) {
+      @JsonProperty(NODE_BLACKLIST_VAR)
+      public void setNodeBlacklist(NodeSet blacklist) {
          _nodeBlacklist = blacklist;
       }
    }
