@@ -7,9 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,19 +15,15 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
+import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 import org.batfish.question.NodesQuestionPlugin.NodesAnswerer;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
@@ -55,25 +49,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() {
-         StringBuilder sb = new StringBuilder("Results for nodespath\n");
-
-         for (Integer index : _results.keySet()) {
-            JsonPathResult result = _results.get(index);
-            sb.append(String.format("  [%d]: %d results for %s\n", index,
-                  result.getNumResults(), result.getPath().toString()));
-            for (ConcreteJsonPath path : result.getResult().keySet()) {
-               JsonNode suffix = result.getResult().get(path);
-               if (suffix != null) {
-                  sb.append(String.format("    %s : %s\n", path.toString(),
-                        result.getResult().get(path).toString()));
-               }
-               else {
-                  sb.append(String.format("    %s\n", path.toString()));
-               }
-            }
-         }
-
-         return sb.toString();
+         return JsonPathQuestionPlugin.JsonPathAnswerElement
+               .prettyPrint(_results);
       }
 
       public void setResults(SortedMap<Integer, JsonPathResult> results) {
@@ -165,7 +142,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             nodePathResult.setNumResults(numResults);
             boolean includeSuffix = nodesPath.getSuffix();
             if (!nodesPath.getSummary()) {
-               SortedMap<ConcreteJsonPath, JsonNode> result = new TreeMap<>();
+               SortedMap<String, JsonPathResultEntry> result = new TreeMap<>();
                Iterator<JsonNode> p = prefixes.iterator();
                Iterator<JsonNode> s = suffixes.iterator();
                while (p.hasNext()) {
@@ -177,7 +154,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   }
                   ConcreteJsonPath concretePath = new ConcreteJsonPath(
                         prefixStr);
-                  result.put(concretePath, suffix);
+                  result.put(concretePath.toString(),
+                        new JsonPathResultEntry(concretePath, suffix));
                }
                nodePathResult.setResult(result);
             }
@@ -238,40 +216,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() {
-         StringBuilder sb = new StringBuilder();
-         _results.forEach((index, diff) -> {
-            SortedMap<ConcreteJsonPath, JsonNode> added = diff.getAdded();
-            SortedMap<ConcreteJsonPath, JsonNode> removed = diff.getRemoved();
-            sb.append(String.format("  [%d]: %d added and %d removed for %s\n",
-                  index, added.size(), removed.size(),
-                  diff.getPath().toString()));
-            SortedSet<ConcreteJsonPath> allKeys = CommonUtil
-                  .union(added.keySet(), removed.keySet(), TreeSet::new);
-            for (ConcreteJsonPath key : allKeys) {
-               if (removed.containsKey(key)) {
-                  JsonNode removedNode = removed.get(key);
-                  if (removedNode != null) {
-                     sb.append(String.format("-   %s : %s\n", key.toString(),
-                           removedNode.toString()));
-                  }
-                  else {
-                     sb.append(String.format("-   %s\n", key.toString()));
-                  }
-               }
-               if (added.containsKey(key)) {
-                  JsonNode addedNode = added.get(key);
-                  if (addedNode != null) {
-                     sb.append(String.format("+   %s : %s\n", key.toString(),
-                           addedNode.toString()));
-                  }
-                  else {
-                     sb.append(String.format("+   %s\n", key.toString()));
-                  }
-               }
-            }
-         });
-         String result = sb.toString();
-         return result;
+         return JsonPathQuestionPlugin.JsonPathDiffAnswerElement
+               .prettyPrint(_results);
       }
 
       public void setResults(SortedMap<Integer, JsonPathDiffResult> results) {
@@ -335,6 +281,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          return "nodespath";
       }
 
+      @JsonProperty(PATHS_VAR)
       public List<JsonPathQuery> getPaths() {
          return _paths;
       }
@@ -351,34 +298,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          return retString;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case PATHS_VAR:
-                  setPaths(new ObjectMapper().<List<JsonPathQuery>> readValue(
-                        parameters.getString(paramKey),
-                        new TypeReference<List<JsonPathQuery>>() {
-                        }));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(PATHS_VAR)
       public void setPaths(List<JsonPathQuery> paths) {
          _paths = paths;
       }

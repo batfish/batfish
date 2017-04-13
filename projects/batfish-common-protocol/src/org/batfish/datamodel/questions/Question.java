@@ -1,9 +1,7 @@
 package org.batfish.datamodel.questions;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -12,9 +10,6 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -22,7 +17,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -192,7 +186,12 @@ public abstract class Question implements IQuestion {
 
          @JsonProperty(VALUE_VAR)
          public void setValue(JsonNode value) {
-            _value = value;
+            if (value != null && value.isNull()) {
+               _value = null;
+            }
+            else {
+               _value = value;
+            }
          }
 
       }
@@ -352,51 +351,29 @@ public abstract class Question implements IQuestion {
       _instance = instance;
    }
 
-   @JsonIgnore
-   public void setJsonParameters(JSONObject parameters) {
-      Iterator<?> paramKeys = parameters.keys();
-
-      while (paramKeys.hasNext()) {
-         String paramKey = (String) paramKeys.next();
-
-         if (!isBaseParamKey(paramKey)) {
-            continue;
-         }
-
-         try {
-            switch (paramKey) {
-            case DIFF_VAR:
-               setDifferential(parameters.getBoolean(paramKey));
-               break;
-            case INSTANCE_VAR:
-               setInstance(new ObjectMapper().<InstanceData> readValue(
-                     parameters.getString(paramKey),
-                     new TypeReference<InstanceData>() {
-                     }));
-               break;
-            default:
-               throw new BatfishException("Unhandled base param key in "
-                     + getClass().getSimpleName() + ": " + paramKey);
-            }
-         }
-         catch (JSONException | IOException e) {
-            throw new BatfishException("JSONException in parameters", e);
-         }
-      }
-
-   }
-
    @Override
-   public String toFullJsonString() throws JsonProcessingException {
+   public String toFullJsonString() {
       ObjectMapper mapper = new BatfishObjectMapper();
       mapper.setSerializationInclusion(Include.ALWAYS);
-      return mapper.writeValueAsString(this);
+      try {
+         return mapper.writeValueAsString(this);
+      }
+      catch (JsonProcessingException e) {
+         throw new BatfishException(
+               "Failed to convert question to full JSON string", e);
+      }
    }
 
    @Override
-   public String toJsonString() throws JsonProcessingException {
+   public String toJsonString() {
       ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
+      try {
+         return mapper.writeValueAsString(this);
+      }
+      catch (JsonProcessingException e) {
+         throw new BatfishException("Failed to convert question to JSON string",
+               e);
+      }
    }
 
 }

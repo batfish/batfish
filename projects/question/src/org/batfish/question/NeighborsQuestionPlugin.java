@@ -1,7 +1,5 @@
 package org.batfish.question;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -26,13 +24,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NeighborsQuestionPlugin extends QuestionPlugin {
 
@@ -449,7 +441,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                return "Pretty printing failed. Printing Json\n"
                      + toJsonString();
             }
-            catch (JsonProcessingException e1) {
+            catch (BatfishException e1) {
                throw new BatfishException(
                      "Both pretty and json printing failed\n");
             }
@@ -457,52 +449,17 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case NODE1_REGEX_VAR:
-                  setNode1Regex(parameters.getString(paramKey));
-                  break;
-               case NEIGHBOR_TYPES_VAR:
-                  setNeighborTypes(new TreeSet<>(
-                        new ObjectMapper().<Set<NeighborType>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<NeighborType>>() {
-                              })));
-                  break;
-               case NODE2_REGEX_VAR:
-                  setNode2Regex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NEIGHBOR_TYPES_VAR)
       public void setNeighborTypes(SortedSet<NeighborType> neighborTypes) {
          _neighborTypes = neighborTypes;
       }
 
+      @JsonProperty(NODE1_REGEX_VAR)
       public void setNode1Regex(String regex) {
          _node1Regex = regex;
       }
 
+      @JsonProperty(NODE2_REGEX_VAR)
       public void setNode2Regex(String regex) {
          _node2Regex = regex;
       }

@@ -2,7 +2,6 @@ package org.batfish.question.assertion;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -20,11 +19,8 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 import org.batfish.question.NodesQuestionPlugin.NodesAnswerer;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
@@ -155,6 +151,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
          _assertions = new ArrayList<>();
       }
 
+      @JsonProperty(ASSERTIONS_VAR)
       public List<Assertion> getAssertions() {
          return _assertions;
       }
@@ -176,41 +173,14 @@ public class AssertQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() {
-         String retString = String.format("assert %sassertions=\"%s\"",
-               prettyPrintBase(), _assertions.toString());
+         String retString = String.format("assert %s%s=\"%s\"",
+               prettyPrintBase(), ASSERTIONS_VAR, _assertions.toString());
          return retString;
       }
 
+      @JsonProperty(ASSERTIONS_VAR)
       public void setAssertions(List<Assertion> assertions) {
          _assertions = assertions;
-      }
-
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case ASSERTIONS_VAR:
-                  setAssertions(new ObjectMapper().<List<Assertion>> readValue(
-                        parameters.getString(paramKey),
-                        new TypeReference<List<Assertion>>() {
-                        }));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
       }
 
    }

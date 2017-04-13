@@ -839,7 +839,7 @@ public class BfCoordWorkHelper {
    }
 
    public boolean uploadQuestion(String containerName, String testrigName,
-         String qName, String qFileName, String paramsFilename) {
+         String qName, String qFileName) {
       try {
 
          Client client = getClientBuilder().build();
@@ -857,15 +857,12 @@ public class BfCoordWorkHelper {
                testrigName);
          addTextMultiPart(multiPart, CoordConsts.SVC_QUESTION_NAME_KEY, qName);
          addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY, qFileName);
-         addFileMultiPart(multiPart, CoordConsts.SVC_FILE2_KEY, paramsFilename);
 
          return postData(webTarget, multiPart) != null;
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf(
-                  "File not found: %s (question file) or %s (temporary params file) \n",
-                  qFileName, paramsFilename);
+            _logger.errorf("File not found: %s (question file)\n", qFileName);
          }
          else {
             _logger.errorf(

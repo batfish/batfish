@@ -540,8 +540,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private String _questionName;
 
-   private Path _questionParametersPath;
-
    private Path _questionPath;
 
    private boolean _redFlagAsError;
@@ -844,10 +842,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public String getQuestionName() {
       return _questionName;
-   }
-
-   public Path getQuestionParametersPath() {
-      return _questionParametersPath;
    }
 
    public Path getQuestionPath() {
@@ -1514,10 +1508,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public void setPluginDirs(List<Path> pluginDirs) {
       _pluginDirs = pluginDirs;
-   }
-
-   public void setQuestionParametersPath(Path questionParametersPath) {
-      _questionParametersPath = questionParametersPath;
    }
 
    public void setQuestionPath(Path questionPath) {

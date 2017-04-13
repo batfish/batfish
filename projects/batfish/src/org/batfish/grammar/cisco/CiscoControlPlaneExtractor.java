@@ -2690,7 +2690,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          nextHopIp = nextHopPrefix.getAddress();
       }
       if (ctx.nexthopint != null) {
-         nextHopInterface = ctx.nexthopint.getText();
+         nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
       }
       if (ctx.distance != null) {
          distance = toInteger(ctx.distance);
@@ -4073,7 +4073,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             nextHopIp = new Ip(ctx.nhip.getText());
          }
          if (ctx.nhint != null) {
-            nextHopInterface = ctx.nhint.getText();
+            nextHopInterface = getCanonicalInterfaceName(ctx.nhint.getText());
          }
          int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
          if (ctx.distance != null) {

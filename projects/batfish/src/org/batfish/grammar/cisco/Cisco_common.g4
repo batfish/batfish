@@ -178,7 +178,7 @@ interface_name
    )
    |
    (
-      name = variable
+      name = variable_interface_name DEC?
       (
          (
             COLON
@@ -464,6 +464,11 @@ variable
 variable_hostname
 :
    ~( USE_VRF | NEWLINE | VRF )+
+;
+
+variable_interface_name
+:
+   ~( DEC | IP_ADDRESS | IP_PREFIX | NAME | NEWLINE | TAG | TRACK )
 ;
 
 variable_permissive
