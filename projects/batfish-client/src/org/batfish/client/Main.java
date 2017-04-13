@@ -2,6 +2,8 @@ package org.batfish.client;
 
 import java.util.LinkedList;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 public class Main {
 
    public static void main(String[] args) {
@@ -17,8 +19,9 @@ public class Main {
          _settings = new Settings(args);
       }
       catch (Exception e) {
-         System.err.println(
-               "org.batfish.client: Initialization failed: " + e.getMessage());
+         System.err
+               .println(Main.class.getName() + ": Initialization failed:\n");
+         System.err.print(ExceptionUtils.getFullStackTrace(e));
          System.exit(1);
       }
 
