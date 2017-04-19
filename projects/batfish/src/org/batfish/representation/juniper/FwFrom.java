@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public abstract class FwFrom implements Serializable {
 

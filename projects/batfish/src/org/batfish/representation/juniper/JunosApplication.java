@@ -8,7 +8,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 import org.batfish.representation.juniper.BaseApplication.Term;
 
 public enum JunosApplication implements Application {

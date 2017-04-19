@@ -25,3 +25,7 @@ RoleLexer*.java
 RoleParser*.java
 VyosLexer*.java
 VyosParser*.java
+EosRoutingTableLexer*.java
+EosRoutingTableParser*.java
+NxosRoutingTableLexer*.java
+NxosRoutingTableParser*.java

@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class MrvConfiguration extends VendorConfiguration {
 

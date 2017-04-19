@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public abstract class PsThen implements Serializable {
 

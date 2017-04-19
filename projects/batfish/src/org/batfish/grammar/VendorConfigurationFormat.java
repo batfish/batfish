@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import org.batfish.datamodel.ConfigurationFormat;
 
-public final class Format {
+public final class VendorConfigurationFormatDetector {
 
    public static final String BATFISH_FLATTENED_JUNIPER_HEADER = "####BATFISH FLATTENED JUNIPER CONFIG####\n";
 
@@ -13,7 +13,8 @@ public final class Format {
 
    public static ConfigurationFormat identifyConfigurationFormat(
          String fileText) {
-      return new Format(fileText).identifyConfigurationFormat();
+      return new VendorConfigurationFormatDetector(fileText)
+            .identifyConfigurationFormat();
    }
 
    private String _fileText;
@@ -22,7 +23,7 @@ public final class Format {
 
    private boolean _notJuniper;
 
-   private Format(String fileText) {
+   private VendorConfigurationFormatDetector(String fileText) {
       _fileText = fileText;
    }
 

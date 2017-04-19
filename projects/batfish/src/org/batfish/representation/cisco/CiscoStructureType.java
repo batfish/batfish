@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.representation.StructureType;
+import org.batfish.vendor.StructureType;
 
 public enum CiscoStructureType implements StructureType {
 

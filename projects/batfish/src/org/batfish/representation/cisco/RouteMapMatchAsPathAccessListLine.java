@@ -8,7 +8,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
 

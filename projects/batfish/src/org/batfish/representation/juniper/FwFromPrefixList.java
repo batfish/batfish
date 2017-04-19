@@ -7,7 +7,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class FwFromPrefixList extends FwFrom {
 

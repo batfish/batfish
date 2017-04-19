@@ -83,6 +83,8 @@ public class BfConsts {
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
+   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
+   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
@@ -96,6 +98,7 @@ public class BfConsts {
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUESTION_FILE = "question.json";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
+   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";

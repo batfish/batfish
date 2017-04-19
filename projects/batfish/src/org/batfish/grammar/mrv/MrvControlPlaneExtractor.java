@@ -7,9 +7,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvParser.*;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.mrv.MrvConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class MrvControlPlaneExtractor extends MrvParserBaseListener
       implements ControlPlaneExtractor {

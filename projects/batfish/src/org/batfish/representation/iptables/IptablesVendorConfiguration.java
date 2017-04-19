@@ -15,7 +15,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
 

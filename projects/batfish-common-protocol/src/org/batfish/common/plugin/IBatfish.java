@@ -2,6 +2,7 @@ package org.batfish.common.plugin;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
@@ -19,6 +20,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
+import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.GrammarSettings;
 
@@ -71,7 +74,7 @@ public interface IBatfish extends IPluginConsumer {
    void initBgpOriginationSpaceExplicit(
          Map<String, Configuration> configurations);
 
-   InitInfoAnswerElement initInfo(boolean summary);
+   InitInfoAnswerElement initInfo(boolean summary, boolean environmentRoutes);
 
    void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners);
@@ -88,6 +91,10 @@ public interface IBatfish extends IPluginConsumer {
    ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
 
    DataPlane loadDataPlane();
+
+   SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables();
+
+   ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement();
 
    ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
@@ -112,10 +119,15 @@ public interface IBatfish extends IPluginConsumer {
 
    void pushDeltaEnvironment();
 
+   String readExternalBgpAnnouncementsFile();
+
    AnswerElement reducedReachability(HeaderSpace headerSpace);
 
    void registerAnswerer(String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator);
+
+   void registerExternalBgpAdvertisementPlugin(
+         ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
    void resetTimer();
 

@@ -30,7 +30,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class VyosConfiguration extends VendorConfiguration {
 

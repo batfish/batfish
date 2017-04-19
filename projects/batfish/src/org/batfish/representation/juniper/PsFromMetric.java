@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class PsFromMetric extends PsFrom {
 

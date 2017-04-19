@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.representation.StructureType;
+import org.batfish.vendor.StructureType;
 
 public enum JuniperStructureType implements StructureType {
    BGP_GROUP("bgp group"),

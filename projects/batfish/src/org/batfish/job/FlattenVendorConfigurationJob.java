@@ -6,9 +6,9 @@ import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.grammar.Format;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.main.ParserBatfishException;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class FlattenVendorConfigurationJob
       extends BatfishJob<FlattenVendorConfigurationResult> {
@@ -35,17 +35,17 @@ public class FlattenVendorConfigurationJob
       long startTime = System.currentTimeMillis();
       long elapsedTime;
       String inputFileAsString = _inputFile.toAbsolutePath().toString();
-      ConfigurationFormat format = Format
+      ConfigurationFormat format = VendorConfigurationFormatDetector
             .identifyConfigurationFormat(_fileText);
 
       if (format == ConfigurationFormat.JUNIPER
             || format == ConfigurationFormat.VYOS) {
          String header = null;
          if (format == ConfigurationFormat.JUNIPER) {
-            header = Format.BATFISH_FLATTENED_JUNIPER_HEADER;
+            header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER;
          }
          if (format == ConfigurationFormat.VYOS) {
-            header = Format.BATFISH_FLATTENED_VYOS_HEADER;
+            header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER;
          }
          _logger.debug(
                "Flattening config: \"" + _inputFile.toString() + "\"...");

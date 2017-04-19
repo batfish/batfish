@@ -16,8 +16,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosParser.*;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.vyos.BgpNeighbor;
 import org.batfish.representation.vyos.BgpProcess;
 import org.batfish.representation.vyos.EspGroup;
@@ -37,6 +36,7 @@ import org.batfish.representation.vyos.RouteMapMatchPrefixList;
 import org.batfish.representation.vyos.RouteMapRule;
 import org.batfish.representation.vyos.StaticNextHopRoute;
 import org.batfish.representation.vyos.VyosConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
       implements ControlPlaneExtractor {

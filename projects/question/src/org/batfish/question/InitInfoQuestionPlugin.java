@@ -17,7 +17,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @Override
       public InitInfoAnswerElement answer() {
          InitInfoQuestion question = (InitInfoQuestion) _question;
-         return _batfish.initInfo(question._summary);
+         return _batfish.initInfo(question._summary,
+               question._environmentRoutes);
       }
    }
 
@@ -34,6 +35,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
       private static final String SUMMARY_VAR = "summary";
 
+      private boolean _environmentRoutes;
+
       private boolean _summary;
 
       public InitInfoQuestion() {
@@ -42,6 +45,10 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @Override
       public boolean getDataPlane() {
          return false;
+      }
+
+      public boolean getEnvironmentRoutes() {
+         return _environmentRoutes;
       }
 
       @Override
@@ -62,6 +69,10 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() {
          return getName() + " " + SUMMARY_VAR + "=" + _summary;
+      }
+
+      public void setEnvironmentRoutes(boolean environmentRoutes) {
+         _environmentRoutes = environmentRoutes;
       }
 
       @JsonProperty(SUMMARY_VAR)

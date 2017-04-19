@@ -1,4 +1,4 @@
-package org.batfish.representation;
+package org.batfish.vendor;
 
 public interface StructureUsage {
 

@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SortedMap;
@@ -19,10 +18,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RoutesQuestionPlugin extends QuestionPlugin {
@@ -31,10 +31,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       private transient boolean _diff;
 
-      private SortedMap<String, SortedSet<Route>> _routesByHostname;
+      private SortedMap<String, RoutesByVrf> _routesByHostname;
 
       @JsonCreator
       public RoutesAnswerElement() {
+         _routesByHostname = new TreeMap<>();
       }
 
       public RoutesAnswerElement(Map<String, Configuration> configurations,
@@ -46,17 +47,23 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                continue;
             }
             Configuration c = e.getValue();
-            SortedSet<Route> routes = c.getRoutes();
-            if (!protocols.isEmpty()) {
-               SortedSet<Route> filteredRoutes = new TreeSet<>();
-               for (Route route : routes) {
-                  if (protocols.contains(route.getProtocol())) {
-                     filteredRoutes.add(route);
+            RoutesByVrf routesByVrf = new RoutesByVrf();
+            _routesByHostname.put(hostname, routesByVrf);
+            for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
+               String vrfName = e2.getKey();
+               Vrf vrf = e2.getValue();
+               SortedSet<Route> routes = vrf.getRoutes();
+               if (!protocols.isEmpty()) {
+                  SortedSet<Route> filteredRoutes = new TreeSet<>();
+                  for (Route route : routes) {
+                     if (protocols.contains(route.getProtocol())) {
+                        filteredRoutes.add(route);
+                     }
                   }
+                  routes = filteredRoutes;
                }
-               routes = filteredRoutes;
+               routesByVrf.put(vrfName, routes);
             }
-            _routesByHostname.put(hostname, routes);
          }
       }
 
@@ -68,90 +75,158 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          hosts.addAll(base.getRoutesByHostname().keySet());
          hosts.addAll(delta.getRoutesByHostname().keySet());
          for (String host : hosts) {
-            SortedSet<Route> routes = new TreeSet<>();
-            _routesByHostname.put(host, routes);
-            SortedSet<Route> baseRoutes = base._routesByHostname.get(host);
-            SortedSet<Route> deltaRoutes = delta._routesByHostname.get(host);
-            if (baseRoutes == null) {
-               for (Route route : deltaRoutes) {
-                  route.setDiffSymbol("+");
-                  routes.add(route);
+            RoutesByVrf routesByVrf = new RoutesByVrf();
+            _routesByHostname.put(host, routesByVrf);
+            RoutesByVrf baseRoutesByVrf = base._routesByHostname.get(host);
+            RoutesByVrf deltaRoutesByVrf = delta._routesByHostname.get(host);
+            if (baseRoutesByVrf == null) {
+               for (Entry<String, SortedSet<Route>> e : deltaRoutesByVrf
+                     .entrySet()) {
+                  String vrfName = e.getKey();
+                  SortedSet<Route> deltaRoutes = e.getValue();
+                  SortedSet<Route> routes = new TreeSet<>();
+                  routesByVrf.put(vrfName, routes);
+                  for (Route deltaRoute : deltaRoutes) {
+                     deltaRoute.setDiffSymbol("+");
+                     routes.add(deltaRoute);
+                  }
                }
             }
-            else if (deltaRoutes == null) {
-               for (Route route : baseRoutes) {
-                  route.setDiffSymbol("-");
-                  routes.add(route);
+            else if (deltaRoutesByVrf == null) {
+               for (Entry<String, SortedSet<Route>> e : baseRoutesByVrf
+                     .entrySet()) {
+                  String vrfName = e.getKey();
+                  SortedSet<Route> baseRoutes = e.getValue();
+                  SortedSet<Route> routes = new TreeSet<>();
+                  routesByVrf.put(vrfName, routes);
+                  for (Route baseRoute : baseRoutes) {
+                     baseRoute.setDiffSymbol("-");
+                     routes.add(baseRoute);
+                  }
                }
             }
             else {
-               Set<Route> tmpBaseRoutes = new HashSet<>(baseRoutes);
-               baseRoutes.removeAll(deltaRoutes);
-               deltaRoutes.removeAll(tmpBaseRoutes);
-               for (Route route : baseRoutes) {
-                  route.setDiffSymbol("-");
-                  routes.add(route);
-               }
-               for (Route route : deltaRoutes) {
-                  route.setDiffSymbol("+");
-                  routes.add(route);
+               Set<String> vrfNames = new LinkedHashSet<>();
+               vrfNames.addAll(baseRoutesByVrf.keySet());
+               vrfNames.addAll(deltaRoutesByVrf.keySet());
+               for (String vrfName : vrfNames) {
+                  SortedSet<Route> routes = new TreeSet<>();
+                  routesByVrf.put(vrfName, routes);
+                  SortedSet<Route> baseRoutes = baseRoutesByVrf.get(vrfName);
+                  SortedSet<Route> deltaRoutes = deltaRoutesByVrf.get(vrfName);
+                  if (baseRoutes == null) {
+                     for (Route deltaRoute : deltaRoutes) {
+                        deltaRoute.setDiffSymbol("+");
+                        routes.add(deltaRoute);
+                     }
+                  }
+                  else if (deltaRoutes == null) {
+                     for (Route baseRoute : baseRoutes) {
+                        baseRoute.setDiffSymbol("-");
+                        routes.add(baseRoute);
+                     }
+                  }
+                  else {
+                     Set<Route> tmpBaseRoutes = new LinkedHashSet<>(baseRoutes);
+                     baseRoutes.removeAll(deltaRoutes);
+                     deltaRoutes.removeAll(tmpBaseRoutes);
+                     for (Route baseRoute : baseRoutes) {
+                        baseRoute.setDiffSymbol("-");
+                        routes.add(baseRoute);
+                     }
+                     for (Route deltaRoute : deltaRoutes) {
+                        deltaRoute.setDiffSymbol("+");
+                        routes.add(deltaRoute);
+                     }
+                  }
                }
             }
          }
       }
 
-      @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedSet<Route>> getRoutesByHostname() {
+      public RoutesAnswerElement(
+            SortedMap<String, RoutesByVrf> environmentRoutesByHostname,
+            Pattern nodeRegex, Set<RoutingProtocol> protocols) {
+         _routesByHostname = new TreeMap<>();
+         for (Entry<String, RoutesByVrf> e : environmentRoutesByHostname
+               .entrySet()) {
+            String hostname = e.getKey();
+            if (!nodeRegex.matcher(hostname).matches()) {
+               continue;
+            }
+            RoutesByVrf environmentRoutesByVrf = e.getValue();
+            RoutesByVrf routesByVrf = new RoutesByVrf();
+            _routesByHostname.put(hostname, routesByVrf);
+            for (Entry<String, SortedSet<Route>> e2 : environmentRoutesByVrf
+                  .entrySet()) {
+               String vrfName = e2.getKey();
+               SortedSet<Route> routes = e2.getValue();
+               if (!protocols.isEmpty()) {
+                  SortedSet<Route> filteredRoutes = new TreeSet<>();
+                  for (Route environmentRoute : routes) {
+                     if (protocols.contains(environmentRoute.getProtocol())) {
+                        filteredRoutes.add(environmentRoute);
+                     }
+                  }
+                  routes = filteredRoutes;
+               }
+               routesByVrf.put(vrfName, routes);
+            }
+         }
+      }
+
+      public SortedMap<String, RoutesByVrf> getRoutesByHostname() {
          return _routesByHostname;
       }
 
       @Override
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
-
-         for (Entry<String, SortedSet<Route>> e : _routesByHostname
-               .entrySet()) {
+         for (Entry<String, RoutesByVrf> e : _routesByHostname.entrySet()) {
             String node = e.getKey();
-            SortedSet<Route> routes = e.getValue();
-            for (Route route : routes) {
-               String nhnode = route.getNextHop();
-               Ip nextHopIp = route.getNextHopIp();
-               String nhip;
-               String tag;
-               int tagInt = route.getTag();
-               if (tagInt == Route.UNSET_ROUTE_TAG) {
-                  tag = "none";
-               }
-               else {
-                  tag = Integer.toString(tagInt);
-               }
-               String nhint = route.getNextHopInterface();
-               if (!nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
-                  // static interface
-                  if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-                     nhnode = "N/A";
-                     nhip = "N/A";
+            RoutesByVrf routesByVrf = e.getValue();
+            for (SortedSet<Route> routes : routesByVrf.values()) {
+               for (Route route : routes) {
+                  String nhnode = route.getNextHop();
+                  Ip nextHopIp = route.getNextHopIp();
+                  String nhip;
+                  String tag;
+                  int tagInt = route.getTag();
+                  if (tagInt == Route.UNSET_ROUTE_TAG) {
+                     tag = "none";
                   }
+                  else {
+                     tag = Integer.toString(tagInt);
+                  }
+                  String nhint = route.getNextHopInterface();
+                  if (!nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
+                     // static interface
+                     if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+                        nhnode = "N/A";
+                        nhip = "N/A";
+                     }
+                  }
+                  nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
+                  String vrf = route.getVrf();
+                  String net = route.getNetwork().toString();
+                  String admin = Integer
+                        .toString(route.getAdministrativeCost());
+                  String cost = Integer.toString(route.getMetric());
+                  String prot = route.getProtocol().protocolName();
+                  String diff = _diff ? route.getDiffSymbol() + " " : "";
+                  String routeStr = String.format(
+                        "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
+                        diff, node, vrf, net, nhip, nhint, nhnode, admin, cost,
+                        tag, prot);
+                  sb.append(routeStr);
                }
-               nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
-               String vrf = route.getVrf();
-               String net = route.getNetwork().toString();
-               String admin = Integer.toString(route.getAdministrativeCost());
-               String cost = Integer.toString(route.getMetric());
-               String prot = route.getProtocol().protocolName();
-               String diff = _diff ? route.getDiffSymbol() + " " : "";
-               String routeStr = String.format(
-                     "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
-                     diff, node, vrf, net, nhip, nhint, nhnode, admin, cost,
-                     tag, prot);
-               sb.append(routeStr);
             }
          }
          return sb.toString();
       }
 
       public void setRoutesByHostname(
-            SortedMap<String, SortedSet<Route>> routesByHostname) {
+            SortedMap<String, RoutesByVrf> routesByHostname) {
          _routesByHostname = routesByHostname;
       }
 
@@ -176,12 +251,22 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-         _batfish.checkDataPlaneQuestionDependencies();
-         Map<String, Configuration> configurations = _batfish
-               .loadConfigurations();
-         _batfish.initRoutes(configurations);
-         RoutesAnswerElement answerElement = new RoutesAnswerElement(
-               configurations, nodeRegex, question.getProtocols());
+         RoutesAnswerElement answerElement;
+         if (question._fromEnvironment) {
+            SortedMap<String, RoutesByVrf> environmentRoutes = _batfish
+                  .loadEnvironmentRoutingTables();
+            answerElement = new RoutesAnswerElement(environmentRoutes,
+                  nodeRegex, question._protocols);
+
+         }
+         else {
+            _batfish.checkDataPlaneQuestionDependencies();
+            Map<String, Configuration> configurations = _batfish
+                  .loadConfigurations();
+            _batfish.initRoutes(configurations);
+            answerElement = new RoutesAnswerElement(configurations, nodeRegex,
+                  question._protocols);
+         }
          return answerElement;
       }
 
@@ -216,9 +301,13 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     */
    public static class RoutesQuestion extends Question {
 
+      private static final String FROM_ENVIRONMENT_VAR = "fromEnvironment";
+
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
       private static final String PROTOCOLS_VAR = "protocols";
+
+      private boolean _fromEnvironment;
 
       private String _nodeRegex;
 
@@ -231,7 +320,12 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       @Override
       public boolean getDataPlane() {
-         return true;
+         return !_fromEnvironment;
+      }
+
+      @JsonProperty(FROM_ENVIRONMENT_VAR)
+      public boolean getFromEnvironment() {
+         return _fromEnvironment;
       }
 
       @Override
@@ -252,6 +346,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @Override
       public boolean getTraffic() {
          return false;
+      }
+
+      @JsonProperty(FROM_ENVIRONMENT_VAR)
+      public void setFromEnvironment(boolean fromEnvironment) {
+         _fromEnvironment = fromEnvironment;
       }
 
       @JsonProperty(NODE_REGEX_VAR)
