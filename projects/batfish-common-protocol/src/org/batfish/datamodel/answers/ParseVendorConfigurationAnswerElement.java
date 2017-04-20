@@ -110,4 +110,5 @@ public class ParseVendorConfigurationAnswerElement
    public void setWarnings(SortedMap<String, Warnings> warnings) {
       _warnings = warnings;
    }
+
 }

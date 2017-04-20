@@ -9,7 +9,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 

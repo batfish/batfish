@@ -1,6 +1,6 @@
 package org.batfish.representation.vyos;
 
-import org.batfish.representation.StructureUsage;
+import org.batfish.vendor.StructureUsage;
 
 public enum VyosStructureUsage implements StructureUsage {
 

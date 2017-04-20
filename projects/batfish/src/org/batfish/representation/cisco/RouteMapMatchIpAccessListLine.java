@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchIpAccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 

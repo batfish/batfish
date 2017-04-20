@@ -4,7 +4,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicySetOrigin extends RoutePolicySetStatement {
 

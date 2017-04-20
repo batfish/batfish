@@ -1,6 +1,4 @@
-package org.batfish.main;
-
-import org.batfish.common.BatfishException;
+package org.batfish.common;
 
 public class RedFlagBatfishException extends BatfishException {
 

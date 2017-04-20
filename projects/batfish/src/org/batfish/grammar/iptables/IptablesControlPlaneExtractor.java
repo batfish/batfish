@@ -21,13 +21,13 @@ import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext
 import org.batfish.grammar.iptables.IptablesParser.MatchContext;
 import org.batfish.grammar.iptables.IptablesParser.ProtocolContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.representation.iptables.IptablesConfiguration;
 import org.batfish.representation.iptables.IptablesMatch.MatchType;
 import org.batfish.representation.iptables.IptablesRule;
 import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
+import org.batfish.vendor.VendorConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 
 public class IptablesControlPlaneExtractor extends IptablesParserBaseListener

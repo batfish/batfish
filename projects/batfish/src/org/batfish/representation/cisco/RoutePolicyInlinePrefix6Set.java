@@ -5,7 +5,7 @@ import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.Prefix6SetExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicyInlinePrefix6Set extends RoutePolicyPrefixSet {
 

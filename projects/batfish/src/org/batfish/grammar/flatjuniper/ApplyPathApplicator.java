@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 import org.batfish.common.BatfishException;
 
 public class ApplyPathApplicator extends FlatJuniperParserBaseListener {

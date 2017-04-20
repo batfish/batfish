@@ -279,38 +279,38 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       }
 
-      private static final String NODES_VAR = "nodes";
+      private static final String NODES_SUMMARY_VAR = "nodesSummary";
 
-      private static final String SUMMARY_VAR = "summary";
+      private static final String NODES_VAR = "nodes";
 
       private final SortedMap<String, Configuration> _nodes;
 
-      private final SortedMap<String, NodeSummary> _summary;
+      private final SortedMap<String, NodeSummary> _nodesSummary;
 
       public NodesAnswerElement(SortedMap<String, Configuration> nodes,
             boolean summary) {
 
          if (summary) {
-            _summary = new TreeMap<>();
+            _nodesSummary = new TreeMap<>();
             for (Entry<String, Configuration> e : nodes.entrySet()) {
                String hostname = e.getKey();
                Configuration node = e.getValue();
-               _summary.put(hostname, new NodeSummary(node));
+               _nodesSummary.put(hostname, new NodeSummary(node));
             }
             _nodes = null;
          }
          else {
             _nodes = nodes;
-            _summary = null;
+            _nodesSummary = null;
          }
       }
 
       @JsonCreator
       public NodesAnswerElement(
             @JsonProperty(NODES_VAR) SortedMap<String, Configuration> nodes,
-            @JsonProperty(SUMMARY_VAR) SortedMap<String, NodeSummary> summary) {
+            @JsonProperty(NODES_SUMMARY_VAR) SortedMap<String, NodeSummary> nodesSummary) {
          _nodes = nodes;
-         _summary = summary;
+         _nodesSummary = nodesSummary;
       }
 
       @JsonProperty(NODES_VAR)
@@ -318,9 +318,9 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          return _nodes;
       }
 
-      @JsonProperty(SUMMARY_VAR)
-      public SortedMap<String, NodeSummary> getSummary() {
-         return _summary;
+      @JsonProperty(NODES_SUMMARY_VAR)
+      public SortedMap<String, NodeSummary> getNodesSummary() {
+         return _nodesSummary;
       }
 
    }
@@ -516,6 +516,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
                   + " identical elements not shown for readability.");
          }
       }
+
    }
 
    // <question_page_comment>

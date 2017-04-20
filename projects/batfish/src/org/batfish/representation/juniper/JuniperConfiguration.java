@@ -59,8 +59,8 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
 

@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.SubRange;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class FwFromFragmentOffset extends FwFrom {
 

@@ -8,9 +8,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class ConvertConfigurationJob
       extends BatfishJob<ConvertConfigurationResult> {

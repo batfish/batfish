@@ -213,6 +213,10 @@
          <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/GNS3TopologyParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/routing_table/eos/EosRoutingTableLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/routing_table/eos/EosRoutingTableParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/routing_table/nxos/NxosRoutingTableLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/routing_table/nxos/NxosRoutingTableParser*.java"/>
       </delete>
    </target>
 
@@ -243,12 +247,14 @@
          <antlr4lexer grammar.name="AssertionLexer" grammar.packagedir="org/batfish/grammar/assertion"/>
          <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="CiscoLexer" grammar.packagedir="org/batfish/grammar/cisco"/>
+         <antlr4lexer grammar.name="EosRoutingTableLexer" grammar.packagedir="org/batfish/grammar/routing_table/eos"/>
          <antlr4lexer grammar.name="FlatJuniperLexer" grammar.packagedir="org/batfish/grammar/flatjuniper"/>
          <antlr4lexer grammar.name="FlatVyosLexer" grammar.packagedir="org/batfish/grammar/flatvyos"/>
          <antlr4lexer grammar.name="GNS3TopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="IptablesLexer" grammar.packagedir="org/batfish/grammar/iptables"/>
          <antlr4lexer grammar.name="JuniperLexer" grammar.packagedir="org/batfish/grammar/juniper"/>
          <antlr4lexer grammar.name="MrvLexer" grammar.packagedir="org/batfish/grammar/mrv"/>
+         <antlr4lexer grammar.name="NxosRoutingTableLexer" grammar.packagedir="org/batfish/grammar/routing_table/nxos"/>
          <antlr4lexer grammar.name="RoleLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="VyosLexer" grammar.packagedir="org/batfish/grammar/vyos"/>
       </parallel>
@@ -298,6 +304,13 @@
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_routemap.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_static.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_snmp.g4"/>
+            </dependencies>
+         </antlr4parser>
+         <antlr4parser grammar.name="EosRoutingTableParser" grammar.packagedir="org/batfish/grammar/routing_table/eos">
+            <dependencies>
+               <fileset dir="src/org/batfish/grammar/routing_table/eos" includes="EosRoutingTableParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/routing_table/eos" includes="EosRoutingTableLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/routing_table/eos" includes="EosRoutingTableLexer.tokens"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="FlatJuniperParser" grammar.packagedir="org/batfish/grammar/flatjuniper">
@@ -366,6 +379,13 @@
                <fileset dir="src/org/batfish/grammar/mrv" includes="Mrv_interface.g4"/>
                <fileset dir="src/org/batfish/grammar/mrv" includes="Mrv_subscriber.g4"/>
                <fileset dir="src/org/batfish/grammar/mrv" includes="Mrv_system.g4"/>
+            </dependencies>
+         </antlr4parser>
+         <antlr4parser grammar.name="NxosRoutingTableParser" grammar.packagedir="org/batfish/grammar/routing_table/nxos">
+            <dependencies>
+               <fileset dir="src/org/batfish/grammar/routing_table/nxos" includes="NxosRoutingTableParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/routing_table/nxos" includes="NxosRoutingTableLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/routing_table/nxos" includes="NxosRoutingTableLexer.tokens"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="RoleParser" grammar.packagedir="org/batfish/grammar/topology">

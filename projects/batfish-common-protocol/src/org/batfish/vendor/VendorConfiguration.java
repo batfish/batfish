@@ -1,4 +1,4 @@
-package org.batfish.representation;
+package org.batfish.vendor;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -8,12 +8,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericConfigObject;
-import org.batfish.main.Warnings;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -175,22 +175,5 @@ public abstract class VendorConfiguration
       }
       lines.add(line);
    }
-
-   // protected void duplicate(String message, String type, String name) {
-   // _w.redFlag(message, UNUSED);
-   // String hostname = getHostname();
-   // SortedMap<String, SortedSet<String>> byHostname = _answerElement
-   // .getUnusedStructures().get(hostname);
-   // if (byHostname == null) {
-   // byHostname = new TreeMap<>();
-   // _answerElement.getUnusedStructures().put(hostname, byHostname);
-   // }
-   // SortedSet<String> byType = byHostname.get(type);
-   // if (byType == null) {
-   // byType = new TreeSet<>();
-   // byHostname.put(type, byType);
-   // }
-   // byType.add(name);
-   // }
 
 }

@@ -2,3 +2,4 @@
 /client
 /unit-tests
 .DS_Store
+*.testout

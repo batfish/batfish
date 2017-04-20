@@ -78,7 +78,10 @@ public class Answer {
       answer.setStatus(_status);
 
       for (AnswerElement ae : _answerElements) {
-         answer.addAnswerElement(new StringAnswerElement(ae.prettyPrint()));
+         String aePrettyStr = ae.prettyPrint();
+         AnswerElement prettyAnswerElement = new StringAnswerElement(
+               aePrettyStr);
+         answer.addAnswerElement(prettyAnswerElement);
       }
 
       return answer;

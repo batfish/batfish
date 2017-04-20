@@ -1,6 +1,6 @@
 package org.batfish.representation.vyos;
 
-import org.batfish.representation.StructureType;
+import org.batfish.vendor.StructureType;
 
 public enum VyosStructureType implements StructureType {
 
