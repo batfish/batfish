@@ -204,19 +204,21 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
    protected final void loadPlugins() {
       for (Path pluginDir : _pluginDirs) {
-         try {
-            Files.walkFileTree(pluginDir, new SimpleFileVisitor<Path>() {
-               @Override
-               public FileVisitResult visitFile(Path path,
-                     BasicFileAttributes attrs) throws IOException {
-                  loadPluginJar(path);
-                  return FileVisitResult.CONTINUE;
-               }
-            });
-         }
-         catch (IOException e) {
-            throw new BatfishException("Error walking through plugin dir: '"
-                  + pluginDir.toString() + "'", e);
+         if (Files.exists(pluginDir)) {
+            try {
+               Files.walkFileTree(pluginDir, new SimpleFileVisitor<Path>() {
+                  @Override
+                  public FileVisitResult visitFile(Path path,
+                        BasicFileAttributes attrs) throws IOException {
+                     loadPluginJar(path);
+                     return FileVisitResult.CONTINUE;
+                  }
+               });
+            }
+            catch (IOException e) {
+               throw new BatfishException("Error walking through plugin dir: '"
+                     + pluginDir.toString() + "'", e);
+            }
          }
       }
    }
