@@ -318,7 +318,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          return _nodes;
       }
 
-      @JsonProperty(SUMMARY_VAR)
+      @JsonProperty(NODES_SUMMARY_VAR)
       public SortedMap<String, NodeSummary> getNodesSummary() {
          return _nodesSummary;
       }
