@@ -219,9 +219,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .resolve(envName);
             envSettings.setEnvironmentBasePath(envPath);
             envSettings.setDataPlanePath(
-                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR));
+                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
             envSettings.setDataPlaneAnswerPath(
                   envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
+            envSettings.setParseEnvironmentRoutingTablesAnswerPath(envPath
+                  .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
+            envSettings
+                  .setSerializeEnvironmentRoutingTablesPath(envPath.resolve(
+                        BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
             Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
             envSettings.setEnvPath(envDirPath);
             envSettings.setNodeBlacklistPath(
@@ -236,11 +241,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
             envSettings.setExternalBgpAnnouncementsPath(envDirPath
                   .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
-            envSettings.setParseEnvironmentRoutingTablesAnswerPath(envDirPath
-                  .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
-            envSettings
-                  .setSerializeEnvironmentRoutingTablesPath(envDirPath.resolve(
-                        BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
             envSettings.setEnvironmentRoutingTablesPath(envDirPath
                   .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
             envSettings.setPrecomputedRoutesPath(
@@ -383,7 +383,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private TestrigSettings _baseTestrigSettings;
 
-   private final Map<TestrigSettings, Map<String, Configuration>> _cachedConfigurations;
+   private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
    private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
 
@@ -412,7 +412,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private long _timerCount;
 
    public Batfish(Settings settings,
-         Map<TestrigSettings, Map<String, Configuration>> cachedConfigurations,
+         Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
          Map<TestrigSettings, DataPlane> cachedDataPlanes,
          Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
@@ -1133,7 +1133,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return Files.exists(dpPath);
    }
 
-   public Map<String, Configuration> deserializeConfigurations(
+   public SortedMap<String, Configuration> deserializeConfigurations(
          Path serializedConfigPath) {
       _logger.info(
             "\n*** DESERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
@@ -1157,7 +1157,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      + serializedConfigPath.toString() + "'",
                e);
       }
-      Map<String, Configuration> configurations = deserializeObjects(
+      SortedMap<String, Configuration> configurations = deserializeObjects(
             namesByPath, Configuration.class);
       printElapsedTime();
       return configurations;
@@ -1670,6 +1670,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private SortedMap<String, RoutesByVrf> getEnvironmentRoutingTables(
          Path inputPath,
          ParseEnvironmentRoutingTablesAnswerElement answerElement) {
+      if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
+         return new TreeMap<>();
+      }
       SortedMap<Path, String> inputData = readFiles(inputPath,
             "Environment Routing Tables");
       SortedMap<String, RoutesByVrf> routingTables = parseEnvironmentRoutingTables(
@@ -2320,8 +2323,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public Map<String, Configuration> loadConfigurations() {
-      Map<String, Configuration> configurations = _cachedConfigurations
+   public SortedMap<String, Configuration> loadConfigurations() {
+      SortedMap<String, Configuration> configurations = _cachedConfigurations
             .get(_testrigSettings);
       if (configurations == null) {
          ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
@@ -2441,9 +2444,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement(
          boolean firstAttempt) {
+      Path answerPath = _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentRoutingTablesAnswerPath();
+      if (!Files.exists(answerPath)) {
+         repairEnvironmentRoutingTables();
+      }
       ParseEnvironmentRoutingTablesAnswerElement pertae = deserializeObject(
-            _testrigSettings.getEnvironmentSettings()
-                  .getParseEnvironmentRoutingTablesAnswerPath(),
+            answerPath,
             ParseEnvironmentRoutingTablesAnswerElement.class);
       if (!Version.isCompatibleVersion("Service",
             "Old processed environment routing tables", pertae.getVersion())) {
@@ -3325,9 +3332,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public void registerExternalBgpAdvertisementPlugin(
          ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      _externalBgpAdvertisementPlugins.add(externalBgpAdvertisementPlugin);
    }
 
    private void repairConfigurations() {
@@ -3422,8 +3427,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _dataPlanePlugin = new BdpDataPlanePlugin();
          _dataPlanePlugin.initialize(this);
       }
-      _externalBgpAdvertisementPlugins
-            .add(new JsonExternalBgpAdvertisementPlugin());
+      JsonExternalBgpAdvertisementPlugin jsonExternalBgpAdvertisementsPlugin = new JsonExternalBgpAdvertisementPlugin();
+      jsonExternalBgpAdvertisementsPlugin.initialize(this);
+      _externalBgpAdvertisementPlugins.add(jsonExternalBgpAdvertisementsPlugin);
       boolean action = false;
       Answer answer = new Answer();
 

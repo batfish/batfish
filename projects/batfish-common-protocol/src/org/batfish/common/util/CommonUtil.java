@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -113,6 +114,8 @@ public class CommonUtil {
    public static void delete(Path path) {
       try {
          Files.delete(path);
+      }
+      catch (NoSuchFileException e) {
       }
       catch (IOException e) {
          throw new BatfishException("Failed to delete file: " + path, e);

@@ -62,13 +62,11 @@ public class Driver {
 
    private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-   private static final Map<TestrigSettings, Map<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
+   private static final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
 
-   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1
-                                                                                // minute
+   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000;
 
-   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30
-                                                                     // seconds
+   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000;
 
    private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1
          * 1000; // 1
@@ -100,9 +98,9 @@ public class Driver {
                   MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
    }
 
-   private static synchronized Map<TestrigSettings, Map<String, Configuration>> buildTestrigCache() {
+   private static synchronized Map<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
       return Collections.synchronizedMap(
-            new LRUMap<TestrigSettings, Map<String, Configuration>>(
+            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(
                   MAX_CACHED_TESTRIGS));
 
    }

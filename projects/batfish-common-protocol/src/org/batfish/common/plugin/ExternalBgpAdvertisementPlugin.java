@@ -7,9 +7,9 @@ public abstract class ExternalBgpAdvertisementPlugin extends BatfishPlugin
       Comparable<ExternalBgpAdvertisementPlugin> {
 
    @Override
-   protected void batfishPluginInitialize() {
+   protected final void batfishPluginInitialize() {
       _batfish.registerExternalBgpAdvertisementPlugin(this);
-
+      externalBgpAdvertisementPluginInitialize();
    }
 
    @Override

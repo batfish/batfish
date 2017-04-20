@@ -86,7 +86,7 @@ public interface IBatfish extends IPluginConsumer {
 
    void initRoutes(Map<String, Configuration> configurations);
 
-   Map<String, Configuration> loadConfigurations();
+   SortedMap<String, Configuration> loadConfigurations();
 
    ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
 
