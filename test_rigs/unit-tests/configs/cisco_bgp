@@ -4,5 +4,9 @@ hostname cisco_bgp
 router bgp 1
  reconnect-interval 30
  no bgp fast-external-fallover
+ template peer-policy p1
+  inherit peer-policy p2
+  inherit peer-policy p3 10
+ exit-peer-policy
 !
 

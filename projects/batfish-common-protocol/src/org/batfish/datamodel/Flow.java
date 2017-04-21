@@ -28,6 +28,8 @@ public final class Flow implements Comparable<Flow> {
 
    private static final String IP_PROTOCOL_VAR = "ipProtocol";
 
+   private static final String PACKET_LENGTH_VAR = "packetLength";
+
    private static final String SRC_IP_VAR = "srcIp";
 
    private static final String SRC_PORT_VAR = "srcPort";
@@ -72,6 +74,8 @@ public final class Flow implements Comparable<Flow> {
 
    private final IpProtocol _ipProtocol;
 
+   private final int _packetLength;
+
    private final Ip _srcIp;
 
    private final int _srcPort;
@@ -107,6 +111,7 @@ public final class Flow implements Comparable<Flow> {
          @JsonProperty(FRAGMENT_OFFSET_VAR) int fragmentOffset,
          @JsonProperty(ICMP_TYPE_VAR) int icmpType,
          @JsonProperty(ICMP_CODE_VAR) int icmpCode,
+         @JsonProperty(PACKET_LENGTH_VAR) int packetLength,
          @JsonProperty(STATE_VAR) State state,
          @JsonProperty(TCP_FLAGS_CWR_VAR) int tcpFlagsCwr,
          @JsonProperty(TCP_FLAGS_ECE_VAR) int tcpFlagsEce,
@@ -129,6 +134,7 @@ public final class Flow implements Comparable<Flow> {
       _fragmentOffset = fragmentOffset;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
+      _packetLength = packetLength;
       _state = state;
       _tcpFlagsCwr = tcpFlagsCwr;
       _tcpFlagsEce = tcpFlagsEce;
@@ -189,6 +195,10 @@ public final class Flow implements Comparable<Flow> {
          return ret;
       }
       ret = Integer.compare(_icmpCode, rhs._icmpCode);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_packetLength, rhs._packetLength);
       if (ret != 0) {
          return ret;
       }
@@ -264,6 +274,9 @@ public final class Flow implements Comparable<Flow> {
          return false;
       }
       if (_icmpCode != other._icmpCode) {
+         return false;
+      }
+      if (_packetLength != other._packetLength) {
          return false;
       }
       if (_state != other._state) {
@@ -346,6 +359,11 @@ public final class Flow implements Comparable<Flow> {
       return _ipProtocol;
    }
 
+   @JsonProperty(PACKET_LENGTH_VAR)
+   public int getPacketLength() {
+      return _packetLength;
+   }
+
    @JsonProperty(SRC_IP_VAR)
    public Ip getSrcIp() {
       return _srcIp;
@@ -422,6 +440,7 @@ public final class Flow implements Comparable<Flow> {
       result = prime * result + _srcPort;
       result = prime * result + _icmpType;
       result = prime * result + _icmpCode;
+      result = prime * result + _packetLength;
       result = prime * result + _state.hashCode();
       result = prime * result + _tag.hashCode();
       result = prime * result + _tcpFlagsCwr;
@@ -460,10 +479,11 @@ public final class Flow implements Comparable<Flow> {
       String dscpStr = (_dscp != 0) ? " dscp:" + _dscp : "";
       String ecnStr = (_ecn != 0) ? " ecn:" + _ecn : "";
 
-      return prefixString + "Flow: ingress:" + _ingressNode + " " + "vrf:"
+      return prefixString + "Flow: ingress:" + _ingressNode + " vrf:"
             + _ingressVrf + " " + _srcIp + "->" + _dstIp + " " + _ipProtocol
             + srcPortStr + dstPortStr + dscpStr + ecnStr + icmpTypeStr
-            + icmpCodeStr + " state:" + _state + tcpFlagsStr;
+            + icmpCodeStr + " packetLength:" + _packetLength + " state:"
+            + _state + tcpFlagsStr;
    }
 
    @Override
@@ -493,7 +513,7 @@ public final class Flow implements Comparable<Flow> {
             + " srcIp:" + _srcIp + " dstIp:" + _dstIp + " ipProtocol:"
             + _ipProtocol + srcPortStr + dstPortStr + " dscp: " + _dscp
             + " ecn:" + _ecn + " fragmentOffset:" + _fragmentOffset
-            + icmpTypeStr + icmpCodeStr + " state:" + _state + tcpFlagsStr
-            + " tag:" + _tag + ">";
+            + icmpTypeStr + icmpCodeStr + " packetLength:" + _packetLength
+            + " state:" + _state + tcpFlagsStr + " tag:" + _tag + ">";
    }
 }

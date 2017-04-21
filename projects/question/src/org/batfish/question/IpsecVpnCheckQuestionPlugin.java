@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -17,9 +16,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -304,41 +300,12 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case NODE1_REGEX_VAR:
-                  setNode1Regex(parameters.getString(paramKey));
-                  break;
-               case NODE2_REGEX_VAR:
-                  setNode2Regex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE1_REGEX_VAR)
       public void setNode1Regex(String regex) {
          _node1Regex = regex;
       }
 
+      @JsonProperty(NODE2_REGEX_VAR)
       public void setNode2Regex(String regex) {
          _node2Regex = regex;
       }

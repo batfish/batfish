@@ -51,8 +51,6 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
    Topology _topology;
 
-   private String _version;
-
    @Override
    public FibMap getFibs() {
       FibMap fibs = new FibMap();
@@ -311,11 +309,6 @@ public class BdpDataPlane implements Serializable, DataPlane {
       return _topology.getEdges();
    }
 
-   @Override
-   public String getVersion() {
-      return _version;
-   }
-
    protected void initIpOwners(Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners) {
       setIpOwners(ipOwners);
@@ -346,10 +339,6 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
    public void setTopology(Topology topology) {
       _topology = topology;
-   }
-
-   public void setVersion(String version) {
-      _version = version;
    }
 
 }

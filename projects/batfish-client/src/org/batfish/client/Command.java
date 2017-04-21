@@ -38,6 +38,7 @@ public enum Command {
    LIST_ENVIRONMENTS("list-environments"),
    LIST_QUESTIONS("list-questions"),
    LIST_TESTRIGS("list-testrigs"),
+   LOAD_QUESTIONS("load-questions"),
    PROMPT("prompt"),
    PWD("pwd"),
    QUIT("quit"),
@@ -79,14 +80,14 @@ public enum Command {
       Map<Command, Pair<String, String>> descs = new TreeMap<>();
       descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> <option-value>",
             "Additional options to pass to Batfish"));
-      descs.put(ANSWER, new Pair<>(
-            "<question-file> [param1=value1 [param2=value2] ...]",
-            "Answer the question in the file for the default environment"));
       descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> [<option-value>]",
             "Additional options to pass to Batfish"));
-      descs.put(ANSWER_DELTA,
-            new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
-                  "Answer the question in the file for the delta environment"));
+      descs.put(ANSWER, new Pair<>(
+            "<question-name>  [param1=value1 [param2=value2] ...]",
+            "Answer the template question by name for the base environment"));
+      descs.put(ANSWER_DELTA, new Pair<>(
+            "<question-name>  [param1=value1 [param2=value2] ...]",
+            "Answer the template question by name for the delta environment"));
       descs.put(CAT,
             new Pair<>("<filename>", "Print the contents of the file"));
       descs.put(CHECK_API_KEY, new Pair<>("", "Check if API Key is valid"));
@@ -143,6 +144,9 @@ public enum Command {
             "List the questions under current container and testrig"));
       descs.put(LIST_TESTRIGS,
             new Pair<>("", "List the testrigs within the current container"));
+      descs.put(LOAD_QUESTIONS,
+            new Pair<>("<path to directory containing question json files",
+                  "Load questions from library directory"));
       descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
       descs.put(PWD, new Pair<>("", "Prints the working directory"));
       descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));

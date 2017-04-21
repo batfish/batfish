@@ -312,10 +312,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._candidateRemoteBgpNeighbors,
-            other._candidateRemoteBgpNeighbors)) {
-         return false;
-      }
       if (_clusterId == null) {
          if (other._clusterId != null) {
             return false;
@@ -350,10 +346,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       }
       // we will skip owner.
       if (!this._remoteAs.equals(other._remoteAs)) {
-         return false;
-      }
-      if (!CommonUtil.bothNullOrEqual(this._remoteBgpNeighbor,
-            other._remoteBgpNeighbor)) {
          return false;
       }
       if (this._routeReflectorClient != other._routeReflectorClient) {

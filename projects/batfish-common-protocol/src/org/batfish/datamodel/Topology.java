@@ -3,13 +3,24 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public class Topology implements Serializable {
 
    private static final long serialVersionUID = 1L;
+
+   @JsonCreator
+   private static Topology jacksonCreateTopology(SortedSet<Edge> edges) {
+      return new Topology(new EdgeSet(edges));
+   }
 
    private final EdgeSet _edges;
 
@@ -57,14 +68,17 @@ public class Topology implements Serializable {
       }
    }
 
+   @JsonIgnore
    public EdgeSet getEdges() {
       return _edges;
    }
 
+   @JsonIgnore
    public Map<NodeInterfacePair, EdgeSet> getInterfaceEdges() {
       return _interfaceEdges;
    }
 
+   @JsonIgnore
    public Map<String, EdgeSet> getNodeEdges() {
       return _nodeEdges;
    }
@@ -85,6 +99,11 @@ public class Topology implements Serializable {
       if (nodeEdges != null) {
          _edges.removeAll(nodeEdges);
       }
+   }
+
+   @JsonValue
+   public SortedSet<Edge> sortedEdges() {
+      return new TreeSet<>(_edges);
    }
 
 }

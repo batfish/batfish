@@ -1,9 +1,7 @@
 package org.batfish.question;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,12 +28,7 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpPair;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
 
@@ -400,43 +393,6 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       public void setForeignOspfNetworks(
             SortedSet<Prefix> foreignOspfNetworks) {
          _foreignOspfNetworks = foreignOspfNetworks;
-      }
-
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case FOREIGN_OSPF_NETWORKS_VAR:
-                  setForeignOspfNetworks(new TreeSet<>(new ObjectMapper()
-                        .<Set<Prefix>> readValue(parameters.getString(paramKey),
-                              new TypeReference<Set<Prefix>>() {
-                              })));
-                  break;
-               case NODE1_REGEX_VAR:
-                  setNode1Regex(parameters.getString(paramKey));
-                  break;
-               case NODE2_REGEX_VAR:
-                  setNode2Regex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
       }
 
       @JsonProperty(NODE1_REGEX_VAR)

@@ -15,6 +15,7 @@
           "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "IP",
+          "packetLength" : 0,
           "srcIp" : "2.128.1.101",
           "srcPort" : 0,
           "state" : "NEW",
@@ -30,10 +31,10 @@
         }
       ],
       "flowsByText" : {
-        "Flow<ingressNode:host2 ingressVrf:default srcIp:2.128.1.101 dstIp:1.0.1.1 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:BASE>" : 1
+        "Flow<ingressNode:host2 ingressVrf:default srcIp:2.128.1.101 dstIp:1.0.1.1 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : 1
       },
       "traces" : {
-        "Flow<ingressNode:host2 ingressVrf:default srcIp:2.128.1.101 dstIp:1.0.1.1 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:BASE>" : {
+        "Flow<ingressNode:host2 ingressVrf:default srcIp:2.128.1.101 dstIp:1.0.1.1 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",

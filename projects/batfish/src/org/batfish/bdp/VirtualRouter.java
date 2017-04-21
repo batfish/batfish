@@ -542,13 +542,6 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
    }
 
-   public void initOspfInterfaceCosts() {
-      OspfProcess proc = _vrf.getOspfProcess();
-      if (proc != null) {
-         proc.initInterfaceCosts();
-      }
-   }
-
    public void initRibs() {
       _bgpRib = new BgpRib(this);
       _connectedRib = new ConnectedRib(this);

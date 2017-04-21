@@ -37,7 +37,7 @@ public abstract class BaseSettings {
          _config.load();
       }
       catch (ConfigurationException e) {
-         throw new BatfishException("Error loading configuration");
+         throw new BatfishException("Error loading configuration", e);
       }
    }
 

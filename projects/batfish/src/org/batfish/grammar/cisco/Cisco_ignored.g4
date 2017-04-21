@@ -145,7 +145,6 @@ null_block
             | ROUTING
          )
       )
-      | KEY
       | KEYSTORE
       | KRON
       | L2TP_CLASS
@@ -235,7 +234,6 @@ null_block
       | SYSLOGD
       | SYSTEM_INIT
       | SYSTEM_MAX
-      | TABLE_MAP
       | TAG_TYPE
       | TASKGROUP
       | TCP
@@ -288,7 +286,6 @@ null_inner
       NO?
       (
          ACCEPT_DIALIN
-         | ACCEPT_LIFETIME
          | ACCOUNTING
          | ACTIVE
          | ADD_VLAN
@@ -331,9 +328,7 @@ null_inner
          | CONTEXT
          | CPU_SHARE
          | CREDENTIALS
-         | CRYPTOGRAPHIC_ALGORITHM
          | DEADTIME
-         | DEFAULT
          | DEFAULT_DOMAIN
          | DEFAULT_ROUTER
          | DENY
@@ -415,7 +410,6 @@ null_inner
          )
          | IPSEC_UDP
          | IPX
-         | KEY_STRING
          | KEYPATH
          | LACP_TIMEOUT
          | LEASE
@@ -427,7 +421,6 @@ null_inner
          | LOG
          | LPTS
          | MAC_ADDRESS
-         | MAP
          | MEDIA
          | MEMBER
          | MESH_GROUP
@@ -499,7 +492,6 @@ null_inner
          | SA_FILTER
          | SATELLITE
          | SECRET
-         | SEND_LIFETIME
          | SEQUENCE
          | SERVER
          | SERVERFARM
@@ -599,6 +591,7 @@ null_single
       | BOOT_START_MARKER
       | BRIDGE
       | BRIDGE_DOMAIN
+      | BUILDING_CONFIGURATION
       | CALL
       | CARD
       | CCM_MANAGER
@@ -610,6 +603,7 @@ null_single
       | CONFIG_REGISTER
       | CONSOLE
       | CTS
+      | CURRENT_CONFIGURATION
       | DEFAULT
       | DEVICE_SENSOR
       | DHCPD

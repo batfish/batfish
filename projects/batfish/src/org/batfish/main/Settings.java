@@ -16,6 +16,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public static final class EnvironmentSettings {
 
+      private Path _dataPlaneAnswerPath;
+
       private Path _dataPlanePath;
 
       private Path _deltaCompiledConfigurationsDir;
@@ -43,6 +45,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       private Path _serializedTopologyPath;
 
       private Path _trafficFactsDir;
+
+      public Path getDataPlaneAnswerPath() {
+         return _dataPlaneAnswerPath;
+      }
 
       public Path getDataPlanePath() {
          return _dataPlanePath;
@@ -98,6 +104,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       public Path getTrafficFactsDir() {
          return _trafficFactsDir;
+      }
+
+      public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
+         _dataPlaneAnswerPath = dataPlaneAnswerPath;
       }
 
       public void setDataPlanePath(Path path) {
@@ -530,8 +540,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private String _questionName;
 
-   private Path _questionParametersPath;
-
    private Path _questionPath;
 
    private boolean _redFlagAsError;
@@ -834,10 +842,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public String getQuestionName() {
       return _questionName;
-   }
-
-   public Path getQuestionParametersPath() {
-      return _questionParametersPath;
    }
 
    public Path getQuestionPath() {
@@ -1504,10 +1508,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public void setPluginDirs(List<Path> pluginDirs) {
       _pluginDirs = pluginDirs;
-   }
-
-   public void setQuestionParametersPath(Path questionParametersPath) {
-      _questionParametersPath = questionParametersPath;
    }
 
    public void setQuestionPath(Path questionPath) {

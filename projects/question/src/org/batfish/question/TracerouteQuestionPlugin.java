@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,12 +21,8 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.ITracerouteQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class TracerouteQuestionPlugin extends QuestionPlugin {
 
@@ -230,6 +225,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String IP_PROTOCOL_VAR = "ipProtocol";
 
+      private static final String PACKET_LENGTH_VAR = "packetLength";
+
       private static final String SRC_IP_VAR = "srcIp";
 
       private static final String SRC_PORT_VAR = "srcPort";
@@ -273,6 +270,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       private String _ingressVrf;
 
       private IpProtocol _ipProtocol;
+
+      private Integer _packetLength;
 
       private Ip _srcIp;
 
@@ -329,6 +328,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          }
          if (_ipProtocol != null) {
             flowBuilder.setIpProtocol(_ipProtocol);
+         }
+         if (_packetLength != null) {
+            flowBuilder.setPacketLength(_packetLength);
          }
          if (_srcIp != null) {
             flowBuilder.setSrcIp(_srcIp);
@@ -451,6 +453,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          return NAME;
       }
 
+      @JsonProperty(PACKET_LENGTH_VAR)
+      public Integer getPacketLength() {
+         return _packetLength;
+      }
+
       @JsonProperty(SRC_IP_VAR)
       public Ip getSrcIp() {
          return _srcIp;
@@ -552,6 +559,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                retString += String.format(" | %s=%s", IP_PROTOCOL_VAR,
                      _ipProtocol);
             }
+            if (_packetLength != null) {
+               retString += String.format(" | %s=%s", PACKET_LENGTH_VAR,
+                     _packetLength);
+            }
             if (_srcIp != null) {
                retString += String.format(" | %s=%s", SRC_IP_VAR, _srcIp);
             }
@@ -604,7 +615,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                return "Pretty printing failed. Printing Json\n"
                      + toJsonString();
             }
-            catch (JsonProcessingException e1) {
+            catch (BatfishException e1) {
                throw new BatfishException(
                      "Both pretty and json printing failed\n");
             }
@@ -665,96 +676,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          _ipProtocol = ipProtocol;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case DSCP_VAR:
-                  setDscp(parameters.getInt(paramKey));
-                  break;
-               case DST_IP_VAR:
-                  setDstIp(new Ip(parameters.getString(paramKey)));
-                  break;
-               case DST_PORT_VAR:
-                  setDstPort(parameters.getInt(paramKey));
-                  break;
-               case DST_PROTOCOL_VAR:
-                  setDstProtocol(
-                        Protocol.fromString(parameters.getString(paramKey)));
-                  break;
-               case ECN_VAR:
-                  setEcn(parameters.getInt(paramKey));
-                  break;
-               case ICMP_CODE_VAR:
-                  setIcmpCode(parameters.getInt(paramKey));
-                  break;
-               case ICMP_TYPE_VAR:
-                  setIcmpType(parameters.getInt(paramKey));
-                  break;
-               case INGRESS_NODE_VAR:
-                  setIngressNode(parameters.getString(paramKey));
-                  break;
-               case INGRESS_VRF_VAR:
-                  setIngressVrf(parameters.getString(paramKey));
-                  break;
-               case IP_PROTOCOL_VAR:
-                  setIpProtocol(
-                        IpProtocol.fromString(parameters.getString(paramKey)));
-                  break;
-               case SRC_IP_VAR:
-                  setSrcIp(new Ip(parameters.getString(paramKey)));
-                  break;
-               case SRC_PORT_VAR:
-                  setSrcPort(parameters.getInt(paramKey));
-                  break;
-               case SRC_PROTOCOL_VAR:
-                  setSrcProtocol(
-                        Protocol.fromString(parameters.getString(paramKey)));
-                  break;
-               case STATE_VAR:
-                  setState(State.fromString(parameters.getString(paramKey)));
-                  break;
-               case TCP_FLAGS_ACK_VAR:
-                  setTcpFlagsAck(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_CWR_VAR:
-                  setTcpFlagsCwr(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_ECE_VAR:
-                  setTcpFlagsEce(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_FIN_VAR:
-                  setTcpFlagsFin(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_PSH_VAR:
-                  setTcpFlagsPsh(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_RST_VAR:
-                  setTcpFlagsRst(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_SYN_VAR:
-                  setTcpFlagsSyn(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_URG_VAR:
-                  setTcpFlagsUrg(parameters.getBoolean(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
+      @JsonProperty(PACKET_LENGTH_VAR)
+      public void setPacketLength(Integer packetLength) {
+         _packetLength = packetLength;
       }
 
       @JsonProperty(SRC_IP_VAR)

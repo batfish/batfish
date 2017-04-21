@@ -247,7 +247,11 @@ extended_access_list_stanza
          (
             IP
             | IPV4
-         ) ACCESS_LIST name = variable_permissive
+         ) ACCESS_LIST
+         (
+            shortname = variable
+            | name = variable_permissive
+         )
       )
       |
       (

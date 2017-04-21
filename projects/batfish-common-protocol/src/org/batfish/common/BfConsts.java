@@ -76,6 +76,7 @@ public class BfConsts {
    public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
    public static final String RELPATH_DIFF = "diff";
@@ -93,8 +94,7 @@ public class BfConsts {
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";
-   public static final String RELPATH_QUESTION_FILE = "question";
-   public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
+   public static final String RELPATH_QUESTION_FILE = "question.json";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";

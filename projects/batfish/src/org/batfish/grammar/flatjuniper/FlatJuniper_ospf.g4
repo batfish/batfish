@@ -60,8 +60,10 @@ o_no_active_backbone
 o_null
 :
    (
-      OVERLOAD
+      NO_RFC_1583
+      | OVERLOAD
       | REFERENCE_BANDWIDTH
+      | SPF_OPTIONS
       | TRACEOPTIONS
    ) null_filler
 ;
@@ -83,9 +85,14 @@ o_traffic_engineering
 
 oa_area_range
 :
-   AREA_RANGE IP_PREFIX
+   AREA_RANGE
+   (
+      IP_PREFIX
+      | IPV6_PREFIX
+   )
    (
       apply
+      | oaa_override_metric
       | oaa_restrict
    )
 ;
@@ -152,6 +159,11 @@ oa_stub
    (
       oas_no_summaries
    )
+;
+
+oaa_override_metric
+:
+   OVERRIDE_METRIC DEC
 ;
 
 oaa_restrict

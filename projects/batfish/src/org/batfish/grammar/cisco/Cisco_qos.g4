@@ -13,11 +13,12 @@ cm_end_class_map
 
 cm_match
 :
-   MATCH
+   num = DEC? MATCH
    (
       cmm_access_group
       | cmm_access_list
       | cmm_any
+      | cmm_class_map
       | cmm_cos
       | cmm_default_inspection_traffic
       | cmm_dscp
@@ -64,6 +65,11 @@ cmm_access_list
 cmm_any
 :
    ANY NEWLINE
+;
+
+cmm_class_map
+:
+   CLASS_MAP name = variable NEWLINE
 ;
 
 cmm_cos
@@ -230,7 +236,17 @@ ogipa_host_info
 
 ogipa_ip_addresses
 :
-   IP_ADDRESS+ NEWLINE
+   (
+      IP_ADDRESS+
+      |
+      (
+         num = DEC
+         (
+            HOST IP_ADDRESS
+            | IP_PREFIX
+         )
+      )
+   ) NEWLINE
 ;
 
 ogit_group_object
@@ -394,7 +410,7 @@ os_service
 
 pm_class
 :
-   CLASS ~NEWLINE* NEWLINE
+   num = DEC? CLASS ~NEWLINE* NEWLINE
    (
       pmc_null
       | pmc_police
@@ -543,4 +559,22 @@ s_qos_mapping
    (
       qm_null
    )*
+;
+
+s_table_map
+:
+   TABLE_MAP name = variable NEWLINE
+   (
+      table_map_null
+   )*
+;
+
+table_map_null
+:
+   NO?
+   (
+      DEFAULT
+      | FROM
+      | MAP
+   ) ~NEWLINE* NEWLINE
 ;

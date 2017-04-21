@@ -127,6 +127,7 @@ ss_null
       | GLOBALENFORCEPRIV
       | GROUP
       | IFINDEX
+      | IFMIB
       | LOCATION
       | LOGGING
       | MANAGER

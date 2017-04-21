@@ -17,6 +17,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
@@ -51,7 +52,7 @@ public interface IBatfish extends IPluginConsumer {
 
    AnswerElement createEnvironment(String environmentName,
          NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
-         boolean dp);
+         Topology edgeBlacklist, boolean dp);
 
    Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
@@ -125,6 +126,6 @@ public interface IBatfish extends IPluginConsumer {
          String notIngressNodeRegexStr, String finalNodeRegexStr,
          String notFinalNodeRegexStr);
 
-   void writeDataPlane(DataPlane dp);
+   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 
 }

@@ -21,6 +21,7 @@ if_hsrp
    HSRP group = DEC NEWLINE
    (
       if_hsrp_ip_address
+      | if_hsrp_null
       | if_hsrp_preempt
       | if_hsrp_priority
       | if_hsrp_track
@@ -32,14 +33,25 @@ if_hsrp_ip_address
    IP ip = IP_ADDRESS NEWLINE
 ;
 
+if_hsrp_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | MAC_ADDRESS
+      | NAME
+      | TIMERS
+   ) ~NEWLINE* NEWLINE
+;
+
 if_hsrp_preempt
 :
-   PREEMPT NEWLINE
+   PREEMPT ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_priority
 :
-   PRIORITY value = DEC NEWLINE
+   PRIORITY value = DEC ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_track
@@ -107,6 +119,26 @@ if_ip_address_secondary
       )
       | prefix = IP_PREFIX
    ) SECONDARY NEWLINE
+;
+
+if_ip_address_virtual
+:
+   IP ADDRESS VIRTUAL prefix = IP_PREFIX NEWLINE
+;
+
+if_ip_igmp
+:
+   NO? IP IGMP
+   (
+      ifigmp_null
+      | ifigmp_static_group
+   )
+;
+
+if_ip_nat_destination
+:
+   IP NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
+   NEWLINE
 ;
 
 if_ip_nat_source
@@ -201,6 +233,11 @@ if_ip_verify
          )* acl = DEC?
       )
    ) NEWLINE
+;
+
+if_ip_virtual_router
+:
+   IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_isis_circuit_type
@@ -335,7 +372,13 @@ if_null_block
       | HOLD_QUEUE
       |
       (
-         HSRP VERSION
+         HSRP
+         (
+            BFD
+            | DELAY
+            | USE_BIA
+            | VERSION
+         )
       )
       | IGNORE
       |
@@ -365,7 +408,6 @@ if_null_block
             )
             | FLOW
             | HELPER_ADDRESS
-            | IGMP
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
@@ -426,6 +468,7 @@ if_null_block
             | VIRTUAL_REASSEMBLY
             | VIRTUAL_ROUTER
             | VRF
+            | WCCP
          )
       )
       |
@@ -495,15 +538,6 @@ if_null_block
          NO
          (
             DESCRIPTION
-            |
-            (
-               SWITCHPORT
-               (
-                  BLOCK
-                  | DOT1Q
-                  | PRIORITY
-               )
-            )
          )
       )
       |
@@ -557,6 +591,7 @@ if_null_block
       | SERVICE_MODULE
       | SERVICE_POLICY
       | SFLOW
+      | SHAPE
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
@@ -575,7 +610,10 @@ if_null_block
       (
          SWITCHPORT
          (
-            EMPTY
+            BACKUP
+            | BLOCK
+            | DOT1Q
+            | EMPTY
             |
             (
                MODE PRIVATE_VLAN
@@ -583,11 +621,16 @@ if_null_block
             | MONITOR
             | NONEGOTIATE
             | PORT_SECURITY
+            | PRIORITY
             | TAP
             | TOOL
             |
             (
-               TRUNK GROUP
+               TRUNK
+               (
+                  GROUP
+                  | PRUNING
+               )
             )
             | VOICE
             | VLAN
@@ -607,9 +650,12 @@ if_null_block
       | UDLD
       | UNTAGGED
       | VLT_PEER_LAG
+      | VMTRACER
       | VPC
       | VRRP
       | VRRP_GROUP
+      | VTP
+      | VXLAN
       | WEIGHTING
       | WRR_QUEUE
       | X25
@@ -753,6 +799,44 @@ if_vrf_member
    VRF MEMBER name = variable NEWLINE
 ;
 
+ifigmp_null
+:
+   (
+      HOST_PROXY
+      | LAST_MEMBER_QUERY_COUNT
+      | LAST_MEMBER_QUERY_INTERVAL
+      | QUERY_INTERVAL
+      | QUERY_MAX_RESPONSE_TIME
+      | ROUTER_ALERT
+      | SNOOPING
+      | STARTUP_QUERY_COUNT
+      | STARTUP_QUERY_INTERVAL
+      | VERSION
+   ) ~NEWLINE* NEWLINE
+;
+
+ifigmp_static_group
+:
+   STATIC_GROUP
+   (
+      ifigmpsg_acl
+      | ifigmpsg_null
+   )
+;
+
+ifigmpsg_acl
+:
+   ACL name = variable NEWLINE
+;
+
+ifigmpsg_null
+:
+   (
+      IP_ADDRESS
+      | RANGE
+   ) ~NEWLINE* NEWLINE
+;
+
 s_interface
 :
    INTERFACE PRECONFIGURE? iname = interface_name
@@ -771,6 +855,9 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
+      | if_ip_address_virtual
+      | if_ip_igmp
+      | if_ip_nat_destination
       | if_ip_nat_source
       | if_ip_ospf_area
       | if_ip_ospf_cost
@@ -782,6 +869,7 @@ s_interface
       | if_ip_policy
       | if_ip_router_isis
       | if_ip_router_ospf_area
+      | if_ip_virtual_router
       | if_isis_circuit_type
       | if_isis_enable
       | if_isis_hello_interval
@@ -792,7 +880,6 @@ s_interface
       | if_load_interval
       | if_mtu
       | if_no_ip_address
-      | if_null_block
       | if_port_security
       | if_shutdown
       | if_switchport
@@ -807,6 +894,9 @@ s_interface
       | if_vrf
       | if_vrf_forwarding
       | if_vrf_member
+      // do not rearrange items below
+
+      | if_null_block
       | unrecognized_line
    )*
 ;

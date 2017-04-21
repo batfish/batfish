@@ -18,6 +18,7 @@ route-map ijfw$%^&****(((([]grr permit 10
 !
 route-map MSDP-SA-RP-FILTER deny 10
  match ip route-source 124
+ match ip address test
 !
 route-map next-hop-null deny 15
  match ip next-hop null
@@ -34,4 +35,7 @@ route-map beeble permit 10
  set metric 0
  set local-preference 100
 !
-
+route-map multicaststuff permit 10
+ match ip multicast group 239.128.128.0/20
+!
+!

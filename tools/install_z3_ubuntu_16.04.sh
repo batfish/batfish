@@ -18,8 +18,10 @@ if ! which javac; then
    exit 1
 fi
 OLD_PWD=$PWD
+OLD_UMASK=$(umask)
 WORKING=$(mktemp -d)
 cd $WORKING || exit 1
+umask 0022 || exit 1
 VERSION=4.5.0
 wget https://github.com/Z3Prover/z3/archive/z3-${VERSION}.tar.gz || exit 1
 tar -xf z3-${VERSION}.tar.gz || exit 1
@@ -33,6 +35,6 @@ cd $INSTALL_PREFIX
 strip lib/libz3.so
 strip lib/libz3java.so
 strip bin/z3
+umask $OLD_UMASK || exit 1
 cd $OLD_PWD || exit 1
 rm -rf ${WORKING} || exit 1
-

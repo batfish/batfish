@@ -47,6 +47,11 @@ ACCEPT_DATA
    'accept-data'
 ;
 
+ACCEPTED_PREFIX_LIMIT
+:
+   'accepted-prefix-limit'
+;
+
 ACCESS
 :
    'access'
@@ -521,6 +526,11 @@ COMPATIBLE
    'compatible'
 ;
 
+COMPRESS_CONFIGURATION_FILES
+:
+   'compress-configuration-files'
+;
+
 CONDITION
 :
    'condition'
@@ -921,6 +931,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+EXTERNAL_ROUTER_ID
+:
+   'external-router-id'
+;
+
 EXTENSIONS
 :
    'extensions'
@@ -999,6 +1014,11 @@ FLOW_CONTROL
 FORCE_UP
 :
    'force-up'
+;
+
+FOREVER
+:
+   'forever'
 ;
 
 FORWARDING
@@ -1264,6 +1284,11 @@ IDENT
 IDENT_RESET
 :
    'ident-reset'
+;
+
+IDLE_TIMEOUT
+:
+   'idle-timeout'
 ;
 
 IGMP
@@ -2736,6 +2761,11 @@ LONGER
    'longer'
 ;
 
+LOOPBACK
+:
+   'loopback'
+;
+
 LOOPS
 :
    'loops'
@@ -2824,6 +2854,11 @@ MAX_CONFIGURATION_ROLLBACKS
 MAX_SESSION_NUMBER
 :
    'max-session-number'
+;
+
+MAXIMUM
+:
+   'maximum'
 ;
 
 MAXIMUM_LABELS
@@ -3196,6 +3231,11 @@ NO_RETAIN
    'no-retain'
 ;
 
+NO_RFC_1583
+:
+   'no-rfc-1583'
+;
+
 NO_NEIGHBOR_LEARN
 :
    'no-neighbor-learn'
@@ -3301,9 +3341,24 @@ OVERLOAD
    'overload'
 ;
 
+OVERRIDE_METRIC
+:
+   'override-metric'
+;
+
 P2P
 :
    'p2p'
+;
+
+PACKET_LENGTH
+:
+   'packet-length'
+;
+
+PACKET_LENGTH_EXCEPT
+:
+   'packet-length-except'
 ;
 
 PACKET_TOO_BIG
@@ -3526,6 +3581,11 @@ PREEMPT
    'preempt'
 ;
 
+PREFER
+:
+   'prefer'
+;
+
 PREFERENCE
 :
    'preference'
@@ -3614,6 +3674,11 @@ PROPOSAL_SET
 PROPOSALS
 :
    'proposals'
+;
+
+PROTECT
+:
+   'protect'
 ;
 
 PROTOCOL
@@ -4351,6 +4416,11 @@ TE_METRIC
    'te-metric'
 ;
 
+TEARDOWN
+:
+   'teardown'
+;
+
 TELNET
 :
    'telnet'
@@ -4549,6 +4619,11 @@ V1_ONLY
 VERSION
 :
    'version' -> pushMode ( M_Version )
+;
+
+VIEW
+:
+   'view'
 ;
 
 VIRTUAL_ADDRESS
@@ -4809,6 +4884,7 @@ DOUBLE_QUOTED_STRING
    '"' ~'"'* '"'
 ;
 
+/*
 FLOAT
 :
    F_PositiveDigit* F_Digit '.'
@@ -4817,7 +4893,7 @@ FLOAT
       | F_Digit* F_PositiveDigit
    )
 ;
-
+*/
 FORWARD_SLASH
 :
    '/'

@@ -10,9 +10,17 @@ class-map type network-qos match-any boppety
   match protocol fcoe mpls
   match protocol fcoe
 !
-class-map match-any cos_all
-  match cos  0  1  2  3  4  5  6  7    
+class-map type pbr match-any boop
+ 10 match ip access-group boop
 !
+class-map match-any cos_all
+  match class-map blip
+  match cos  0  1  2  3  4  5  6  7
+!
+object-group ip address BIPPETY
+ 10 1.2.3.0/24
+ 20 2.3.4.0/24
+ 30 host 3.4.5.6
 object network obj_any
  subnet 0.0.0.0 0.0.0.0
 object-group network dns_servers
@@ -46,12 +54,12 @@ policy-map type network-qos default-ploosh-policy
   end-policy-map
 policy-map type control-plane feefoo
  class fffoooddd
-  set cos 7 
+  set cos 7
   service-policy prioritize_backbone
-  police cir 36000 kbps bc 250 ms conform transmit violate drop 
-   conform-action transmit 
+  police cir 36000 kbps bc 250 ms conform transmit violate drop
+   conform-action transmit
    exceed-action set-dscp-transmit dscp table policed-dscp
-   violate-action drop 
+   violate-action drop
 policy-map type network-qos default-foob-policy
   class type network-qos c-foob-drop
     random-detect aggregate minimum-thresh 1024 maximum-thresh 2048 mark-prob 10
@@ -69,6 +77,10 @@ policy-map type network-qos default-foob-policy
     pause
     no congestion-control random-detect
     mtu 2112
+policy-map type pbr blorf
+ 10 class blerf
+  set nexthop 1.2.3.4
+!
 policy-map type queueing qqqqq
   class type queuing bleefee
     priority level 1
@@ -90,4 +102,8 @@ policy-map type network-qos default-fleep-policy
     congestion-control tail-drop
     no congestion-control random-detect
     mtu 1500
-
+table-map tablemap1
+ default copy
+ from 10,12 to 14
+ map from 0 to 8
+!

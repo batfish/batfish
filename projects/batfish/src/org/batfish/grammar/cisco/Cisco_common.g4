@@ -178,7 +178,7 @@ interface_name
    )
    |
    (
-      name = variable
+      name = variable_interface_name DEC?
       (
          (
             COLON
@@ -187,6 +187,12 @@ interface_name
          ) DEC
       )*
    )
+;
+
+ip_hostname
+:
+   IP_ADDRESS
+   | IPV6_ADDRESS
 ;
 
 isis_level
@@ -287,6 +293,7 @@ port
    | LPD
    | LOGIN
    | LOTUSNOTES
+   | MICROSOFT_DS
    | MLAG
    | MOBILE_IP
    | MSRPC
@@ -456,7 +463,12 @@ variable
 
 variable_hostname
 :
-   ~(USE_VRF | NEWLINE | VRF)+
+   ~( USE_VRF | NEWLINE | VRF )+
+;
+
+variable_interface_name
+:
+   ~( DEC | IP_ADDRESS | IP_PREFIX | NAME | NEWLINE | TAG | TRACK )
 ;
 
 variable_permissive
