@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.Format;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
@@ -26,9 +26,9 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.main.ParserBatfishException;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.host.HostConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationJob
       extends BatfishJob<ParseVendorConfigurationResult> {
@@ -112,7 +112,8 @@ public class ParseVendorConfigurationJob
             .getBasePath().relativize(_file).toString();
 
       if (format == ConfigurationFormat.UNKNOWN) {
-         format = Format.identifyConfigurationFormat(_fileText);
+         format = VendorConfigurationFormatDetector
+               .identifyConfigurationFormat(_fileText);
       }
       switch (format) {
 
@@ -176,7 +177,7 @@ public class ParseVendorConfigurationJob
             // spurious\n");
             _fileText = Batfish.flatten(_fileText, _logger, _settings,
                   ConfigurationFormat.VYOS,
-                  Format.BATFISH_FLATTENED_VYOS_HEADER);
+                  VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER);
          }
          else {
             elapsedTime = System.currentTimeMillis() - startTime;
@@ -209,7 +210,7 @@ public class ParseVendorConfigurationJob
             try {
                _fileText = Batfish.flatten(_fileText, _logger, _settings,
                      ConfigurationFormat.JUNIPER,
-                     Format.BATFISH_FLATTENED_JUNIPER_HEADER);
+                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
             }
             catch (BatfishException e) {
                String error = "Error flattening configuration file: '"

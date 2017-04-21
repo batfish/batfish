@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class PsFromRouteFilter extends PsFrom {
 

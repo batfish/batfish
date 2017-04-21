@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class PsFromFamilyInet extends PsFrom {
 

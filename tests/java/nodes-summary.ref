@@ -2,7 +2,7 @@
   "answerElements" : [
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
-      "summary" : {
+      "nodesSummary" : {
         "as1border1" : {
           "communityLists" : [
             "as1_community",

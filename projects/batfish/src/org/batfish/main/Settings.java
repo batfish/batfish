@@ -8,6 +8,9 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.PedanticBatfishException;
+import org.batfish.common.RedFlagBatfishException;
+import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 import org.batfish.grammar.GrammarSettings;
@@ -30,6 +33,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       private Path _environmentBasePath;
 
+      private Path _environmentRoutingTablesPath;
+
       private Path _envPath;
 
       private Path _externalBgpAnnouncementsPath;
@@ -40,11 +45,13 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       private Path _nodeBlacklistPath;
 
+      private Path _parseEnvironmentRoutingTablesAnswerPath;
+
       private Path _precomputedRoutesPath;
 
       private Path _serializedTopologyPath;
 
-      private Path _trafficFactsDir;
+      private Path _serializeEnvironmentRoutingTablesPath;
 
       public Path getDataPlaneAnswerPath() {
          return _dataPlaneAnswerPath;
@@ -74,6 +81,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _environmentBasePath;
       }
 
+      public Path getEnvironmentRoutingTablesPath() {
+         return _environmentRoutingTablesPath;
+      }
+
       public Path getEnvPath() {
          return _envPath;
       }
@@ -94,6 +105,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _nodeBlacklistPath;
       }
 
+      public Path getParseEnvironmentRoutingTablesAnswerPath() {
+         return _parseEnvironmentRoutingTablesAnswerPath;
+      }
+
       public Path getPrecomputedRoutesPath() {
          return _precomputedRoutesPath;
       }
@@ -102,8 +117,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _serializedTopologyPath;
       }
 
-      public Path getTrafficFactsDir() {
-         return _trafficFactsDir;
+      public Path getSerializeEnvironmentRoutingTablesPath() {
+         return _serializeEnvironmentRoutingTablesPath;
       }
 
       public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
@@ -136,6 +151,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          _environmentBasePath = environmentBasePath;
       }
 
+      public void setEnvironmentRoutingTablesPath(
+            Path environmentRoutingTablesPath) {
+         _environmentRoutingTablesPath = environmentRoutingTablesPath;
+      }
+
       public void setEnvPath(Path envPath) {
          _envPath = envPath;
       }
@@ -157,6 +177,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          _nodeBlacklistPath = nodeBlacklistPath;
       }
 
+      public void setParseEnvironmentRoutingTablesAnswerPath(
+            Path parseEnvironmentRoutingTablesAnswerPath) {
+         _parseEnvironmentRoutingTablesAnswerPath = parseEnvironmentRoutingTablesAnswerPath;
+      }
+
       public void setPrecomputedRoutesPath(Path writeRoutesPath) {
          _precomputedRoutesPath = writeRoutesPath;
       }
@@ -165,8 +190,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          _serializedTopologyPath = serializedTopologyPath;
       }
 
-      public void setTrafficFactsDir(Path trafficFactsDir) {
-         _trafficFactsDir = trafficFactsDir;
+      public void setSerializeEnvironmentRoutingTablesPath(
+            Path serializeEnvironmentRoutingTablesPath) {
+         _serializeEnvironmentRoutingTablesPath = serializeEnvironmentRoutingTablesPath;
       }
 
    }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +38,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.main.Settings.TestrigSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -57,13 +60,13 @@ public class Driver {
 
    private static final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
-   private static final Map<TestrigSettings, Map<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
+   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1
-                                                                                // minute
+   private static final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
 
-   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30
-                                                                     // seconds
+   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000;
+
+   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000;
 
    private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1
          * 1000; // 1
@@ -73,6 +76,8 @@ public class Driver {
          org.glassfish.grizzly.http.server.HttpServer.class.getName());
 
    private static final int MAX_CACHED_DATA_PLANES = 2;
+
+   private static final int MAX_CACHED_ENVIRONMENT_ROUTING_TABLES = 4;
 
    private static final int MAX_CACHED_TESTRIGS = 5;
 
@@ -87,9 +92,15 @@ public class Driver {
 
    }
 
-   private static synchronized Map<TestrigSettings, Map<String, Configuration>> buildTestrigCache() {
+   private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> buildEnvironmentRoutingTablesCache() {
       return Collections.synchronizedMap(
-            new LRUMap<TestrigSettings, Map<String, Configuration>>(
+            new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(
+                  MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
+   }
+
+   private static synchronized Map<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(
                   MAX_CACHED_TESTRIGS));
 
    }
@@ -323,7 +334,7 @@ public class Driver {
 
       try {
          final Batfish batfish = new Batfish(settings, CACHED_TESTRIGS,
-               CACHED_DATA_PLANES);
+               CACHED_DATA_PLANES, CACHED_ENVIRONMENT_ROUTING_TABLES);
 
          Thread thread = new Thread() {
             @Override

@@ -9,8 +9,8 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
+import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationResult extends
       BatfishJobResult<Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {

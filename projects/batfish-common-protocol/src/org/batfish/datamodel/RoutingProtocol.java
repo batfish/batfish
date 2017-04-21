@@ -487,6 +487,7 @@ public enum RoutingProtocol {
       switch (this) {
       case OSPF_IA:
          switch (vendor) {
+         case ARISTA:
          case CISCO_IOS:
          case CISCO_IOS_XR:
          case CISCO_NX:
@@ -495,7 +496,6 @@ public enum RoutingProtocol {
             return 254;
 
          case ALCATEL_AOS:
-         case ARISTA:
          case AWS_VPC:
          case BLADENETWORK:
          case EMPTY:

@@ -6,7 +6,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicySetIsisMetricType extends RoutePolicyStatement {
 

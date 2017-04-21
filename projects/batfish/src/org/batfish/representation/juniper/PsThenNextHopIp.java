@@ -8,7 +8,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class PsThenNextHopIp extends PsThen {
 

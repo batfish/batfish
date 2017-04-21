@@ -76,13 +76,15 @@ public class BfConsts {
    public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+   public static final String RELPATH_DATA_PLANE = "dp";
    public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
-   public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
    public static final String RELPATH_DIFF = "diff";
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
+   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
+   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
@@ -96,6 +98,7 @@ public class BfConsts {
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUESTION_FILE = "question.json";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
+   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";

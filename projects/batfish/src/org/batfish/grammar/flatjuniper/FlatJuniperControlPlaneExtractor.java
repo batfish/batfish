@@ -6,9 +6,9 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 

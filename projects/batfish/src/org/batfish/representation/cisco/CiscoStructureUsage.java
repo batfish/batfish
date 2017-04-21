@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.representation.StructureUsage;
+import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
 

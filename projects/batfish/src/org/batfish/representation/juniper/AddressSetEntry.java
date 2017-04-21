@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Prefix;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class AddressSetEntry extends ComparableStructure<String> {
 

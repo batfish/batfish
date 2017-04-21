@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public abstract class RoutePolicyCommunitySet implements Serializable {
 

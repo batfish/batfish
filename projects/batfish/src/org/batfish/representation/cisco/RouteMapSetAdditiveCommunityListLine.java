@@ -11,7 +11,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class RouteMapSetAdditiveCommunityListLine
       extends RouteMapSetLine {

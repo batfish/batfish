@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.representation.StructureUsage;
+import org.batfish.vendor.StructureUsage;
 
 public enum JuniperStructureUsage implements StructureUsage {
    BGP_EXPORT_POLICY("bgp export policy-statement"),

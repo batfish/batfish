@@ -3,9 +3,14 @@ package org.batfish.common;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -111,6 +116,8 @@ public class Warnings implements Serializable {
 
    }
 
+   private static final String MISCELLANEOUS = "MISCELLANEOUS";
+
    private static final String PEDANTIC_VAR = "Pedantic complaints";
 
    private static final String RED_FLAGS_VAR = "Red flags";
@@ -122,9 +129,23 @@ public class Warnings implements Serializable {
 
    private static final String UNIMPLEMENTED_VAR = "Unimplemented features";
 
+   private transient boolean _pedanticAsError;
+
+   private transient boolean _pedanticRecord;
+
    protected final List<Warning> _pedanticWarnings;
 
+   private transient boolean _printParseTree;
+
+   private transient boolean _redFlagAsError;
+
+   private transient boolean _redFlagRecord;
+
    protected final List<Warning> _redFlagWarnings;
+
+   private transient boolean _unimplementedAsError;
+
+   private transient boolean _unimplementedRecord;
 
    protected final List<Warning> _unimplementedWarnings;
 
@@ -133,6 +154,20 @@ public class Warnings implements Serializable {
       _redFlagWarnings = new ArrayList<>();
       _unimplementedWarnings = new ArrayList<>();
 
+   }
+
+   public Warnings(boolean pedanticAsError, boolean pedanticRecord,
+         boolean redFlagAsError, boolean redFlagRecord,
+         boolean unimplementedAsError, boolean unimplementedRecord,
+         boolean printParseTree) {
+      this();
+      _pedanticAsError = pedanticAsError;
+      _pedanticRecord = pedanticRecord;
+      _printParseTree = printParseTree;
+      _redFlagAsError = redFlagAsError;
+      _redFlagRecord = redFlagRecord;
+      _unimplementedAsError = unimplementedAsError;
+      _unimplementedRecord = unimplementedRecord;
    }
 
    public List<Warning> getPedanticWarnings() {
@@ -151,6 +186,88 @@ public class Warnings implements Serializable {
    public boolean isEmpty() {
       return _pedanticWarnings.isEmpty() && _redFlagWarnings.isEmpty()
             && _unimplementedWarnings.isEmpty();
+   }
+
+   public void pedantic(String msg) {
+      pedantic(msg, MISCELLANEOUS);
+   }
+
+   public void pedantic(String msg, String tag) {
+      if (_pedanticAsError) {
+         throw new PedanticBatfishException(msg);
+      }
+      else if (_pedanticRecord) {
+         _pedanticWarnings.add(new Warning(msg, tag));
+      }
+   }
+
+   public void redFlag(String msg) {
+      redFlag(msg, MISCELLANEOUS);
+   }
+
+   public void redFlag(String msg, String tag) {
+      if (_redFlagAsError) {
+         throw new RedFlagBatfishException(msg);
+      }
+      else if (_redFlagRecord) {
+         _redFlagWarnings.add(new Warning(msg, tag));
+      }
+   }
+
+   public void todo(ParserRuleContext ctx, String feature,
+         BatfishCombinedParser<?, ?> parser, String text) {
+      if (!_unimplementedRecord && !_unimplementedAsError) {
+         return;
+      }
+      String prefix = "WARNING: UNIMPLEMENTED: "
+            + (_unimplementedWarnings.size() + 1) + ": ";
+      StringBuilder sb = new StringBuilder();
+      List<String> ruleNames = Arrays.asList(parser.getParser().getRuleNames());
+      String ruleStack = ctx.toString(ruleNames);
+      sb.append(
+            prefix + "Missing implementation for top (leftmost) parser rule in stack: '"
+                  + ruleStack + "'.\n");
+      sb.append(prefix + "Unimplemented feature: " + feature + "\n");
+      sb.append(prefix + "Rule context follows:\n");
+      int start = ctx.start.getStartIndex();
+      int startLine = ctx.start.getLine();
+      int end = ctx.stop.getStopIndex();
+      String ruleText = text.substring(start, end + 1);
+      String[] ruleTextLines = ruleText.split("\\n");
+      for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
+         String contextPrefix = prefix + " line " + line + ": ";
+         sb.append(contextPrefix + ruleTextLines[i] + "\n");
+      }
+      if (_printParseTree) {
+         sb.append(prefix + "Parse tree follows:\n");
+         String parseTreePrefix = prefix + "PARSE TREE: ";
+         String parseTreeText = ParseTreePrettyPrinter.print(ctx, parser);
+         String[] parseTreeLines = parseTreeText.split("\n");
+         for (String parseTreeLine : parseTreeLines) {
+            sb.append(parseTreePrefix + parseTreeLine + "\n");
+         }
+      }
+      String warning = sb.toString();
+      if (_unimplementedAsError) {
+         throw new UnimplementedBatfishException(warning);
+      }
+      else {
+         _unimplementedWarnings
+               .add(new Warning(sb.toString(), "UNIMPLEMENTED"));
+      }
+   }
+
+   public void unimplemented(String msg) {
+      unimplemented(msg, MISCELLANEOUS);
+   }
+
+   public void unimplemented(String msg, String tag) {
+      if (_unimplementedAsError) {
+         throw new UnimplementedBatfishException(msg);
+      }
+      else if (_unimplementedRecord) {
+         _unimplementedWarnings.add(new Warning(msg, tag));
+      }
    }
 
 }

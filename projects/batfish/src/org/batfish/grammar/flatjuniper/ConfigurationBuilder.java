@@ -43,7 +43,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.VrrpGroup;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 import org.batfish.representation.juniper.*;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
