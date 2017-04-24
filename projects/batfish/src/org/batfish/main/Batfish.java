@@ -680,6 +680,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private void checkBaseDirExists() {
       Path baseDir = _testrigSettings.getBasePath();
+      if (baseDir == null) {
+         throw new BatfishException("Test rig directory not set");
+      }
       if (!Files.exists(baseDir)) {
          throw new CleanBatfishException("Test rig does not exist: \""
                + baseDir.getFileName().toString() + "\"");
