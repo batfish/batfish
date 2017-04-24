@@ -2450,8 +2450,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          repairEnvironmentRoutingTables();
       }
       ParseEnvironmentRoutingTablesAnswerElement pertae = deserializeObject(
-            answerPath,
-            ParseEnvironmentRoutingTablesAnswerElement.class);
+            answerPath, ParseEnvironmentRoutingTablesAnswerElement.class);
       if (!Version.isCompatibleVersion("Service",
             "Old processed environment routing tables", pertae.getVersion())) {
          if (firstAttempt) {

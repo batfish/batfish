@@ -1,6 +1,5 @@
 package org.batfish.common;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -29,10 +28,10 @@ public abstract class BaseSettings {
 
    protected final Options _options;
 
-   public BaseSettings(File configFile) {
+   public BaseSettings(Path configFile) {
       _options = new Options();
       _config = new PropertiesConfiguration();
-      _config.setFile(configFile);
+      _config.setFile(configFile.toFile());
       try {
          _config.load();
       }

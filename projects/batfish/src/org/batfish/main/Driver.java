@@ -178,8 +178,8 @@ public class Driver {
          httpServerLogger.setLevel(Level.WARNING);
       }
       catch (Exception e) {
-         System.err.println(
-               "batfish: Initialization failed. Reason: " + e.getMessage());
+         System.err.println("batfish: Initialization failed. Reason: "
+               + ExceptionUtils.getFullStackTrace(e));
          System.exit(1);
       }
    }
@@ -421,7 +421,7 @@ public class Driver {
       }
       catch (Exception e) {
          return Arrays.asList("failure",
-               "Initialization failed: " + e.getMessage());
+               "Initialization failed: " + ExceptionUtils.getFullStackTrace(e));
       }
 
       try {
