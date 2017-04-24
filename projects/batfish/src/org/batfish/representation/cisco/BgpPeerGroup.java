@@ -52,6 +52,8 @@ public abstract class BgpPeerGroup implements Serializable {
 
    private transient boolean _inherited;
 
+   private Boolean _nextHopSelf;
+
    protected String _outboundPrefixList;
 
    protected Integer _outboundPrefixListLine;
@@ -173,6 +175,10 @@ public abstract class BgpPeerGroup implements Serializable {
    }
 
    public abstract String getName();
+
+   public Boolean getNextHopSelf() {
+      return _nextHopSelf;
+   }
 
    public String getOutboundPrefixList() {
       return _outboundPrefixList;
@@ -316,6 +322,9 @@ public abstract class BgpPeerGroup implements Serializable {
          _inboundRoute6Map = pg.getInboundRoute6Map();
          _inboundRoute6MapLine = pg.getInboundRoute6MapLine();
       }
+      if (_nextHopSelf == null) {
+         _nextHopSelf = pg.getNextHopSelf();
+      }
       if (_outboundPrefixList == null) {
          _outboundPrefixList = pg.getOutboundPrefixList();
          _outboundPrefixListLine = pg.getOutboundPrefixListLine();
@@ -436,6 +445,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setInboundRouteMapLine(Integer inboundRouteMapLine) {
       _inboundRouteMapLine = inboundRouteMapLine;
+   }
+
+   public void setNextHopSelf(boolean nextHopSelf) {
+      _nextHopSelf = nextHopSelf;
    }
 
    public void setOutboundPrefixList(String listName) {

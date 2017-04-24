@@ -764,10 +764,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                   /*
                    * CREATE OUTGOING ROUTE
                    */
-                  Ip remoteLocalIp = remoteBgpNeighbor.getLocalIp();
+                  Ip localIp = neighbor.getLocalIp();
                   boolean acceptOutgoing = remoteExportPolicy.process(
-                        remoteRoute, transformedOutgoingRouteBuilder,
-                        remoteLocalIp, remoteVrfName);
+                        remoteRoute, transformedOutgoingRouteBuilder, localIp,
+                        remoteVrfName);
                   if (acceptOutgoing) {
                      BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder
                            .build();
@@ -804,7 +804,13 @@ public class VirtualRouter extends ComparableStructure<String> {
                            .setNetwork(remoteRoute.getNetwork());
 
                      // Incoming nextHopIp
-                     transformedIncomingRouteBuilder.setNextHopIp(nextHopIp);
+                     if (ebgp) {
+                        transformedIncomingRouteBuilder.setNextHopIp(nextHopIp);
+                     }
+                     else {
+                        transformedIncomingRouteBuilder.setNextHopIp(
+                              transformedOutgoingRoute.getNextHopIp());
+                     }
 
                      // Incoming localPreference
                      transformedIncomingRouteBuilder.setLocalPreference(

@@ -77,9 +77,11 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -1471,6 +1473,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
                peerExportPolicyName, c);
          if (lpg.getActive() && !lpg.getShutdown()) {
             c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         }
+         if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
+            peerExportPolicy.getStatements()
+                  .add(new SetNextHop(new SelfNextHop(), false));
          }
          If peerExportConditional = new If();
          peerExportConditional.setComment(

@@ -140,8 +140,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final String F_BGP_NEIGHBOR_DISTRIBUTE_LIST = "bgp - neighbor distribute-list";
 
-   private static final String F_BGP_NEXT_HOP_SELF = "bgp - (no) next-hop-self";
-
    private static final String F_BGP_REDISTRIBUTE_AGGREGATE = "bgp - redistribute aggregate";
 
    private static final String F_FRAGMENTS = "acl fragments";
@@ -3165,8 +3163,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
-      todo(ctx, F_BGP_NEXT_HOP_SELF);
-      // note that this rule matches "no next-hop-self"
+      boolean val = ctx.NO() == null;
+      _currentPeerGroup.setNextHopSelf(val);
    }
 
    @Override
