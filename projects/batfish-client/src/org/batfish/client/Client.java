@@ -81,6 +81,8 @@ public class Client extends AbstractClient implements IClient {
 
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
 
+   private static final String DIFF_NOT_READY_MSG = "Cannot ask differential question without first setting delta testrig/environment\n";
+
    private static final String ENV_HOME = "HOME";
 
    private static final String FLAG_FAILING_TEST = "-error";
@@ -270,6 +272,21 @@ public class Client extends AbstractClient implements IClient {
                e);
       }
       String modifiedQuestionStr = questionJson.toString();
+      boolean questionJsonDifferential;
+      // check whether question is valid modulo instance data
+      try {
+         questionJsonDifferential = questionJson.has(Question.DIFFERENTIAL_VAR)
+               && questionJson.getBoolean(Question.DIFFERENTIAL_VAR);
+      }
+      catch (JSONException e) {
+         throw new BatfishException(
+               "Could not find whether question is explicitly differential", e);
+      }
+      if (questionJsonDifferential
+            && (_currDeltaEnv == null || _currDeltaTestrig == null)) {
+         _logger.output(DIFF_NOT_READY_MSG);
+         return false;
+      }
       Path questionFile = createTempFile(BfConsts.RELPATH_QUESTION_FILE,
             modifiedQuestionStr);
       questionFile.toFile().deleteOnExit();
@@ -376,13 +393,20 @@ public class Client extends AbstractClient implements IClient {
       String modifiedQuestionJson = questionJson.toString();
       BatfishObjectMapper mapper = new BatfishObjectMapper(
             getCurrentClassLoader());
+      Question modifiedQuestion = null;
       try {
-         mapper.readValue(modifiedQuestionJson, Question.class);
+         modifiedQuestion = mapper.readValue(modifiedQuestionJson,
+               Question.class);
       }
       catch (IOException e) {
          throw new BatfishException(
                "Modified question is no longer valid, likely due to invalid parameters",
                e);
+      }
+      if (modifiedQuestion.getDifferential()
+            && (_currDeltaEnv == null || _currDeltaTestrig == null)) {
+         _logger.output(DIFF_NOT_READY_MSG);
+         return false;
       }
       // if no exception is thrown, then the modifiedQuestionJson is good
       Path questionFile = createTempFile("question", modifiedQuestionJson);
