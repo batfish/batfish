@@ -202,7 +202,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean answer(String questionTemplateName, String paramsLine,
-         boolean isDelta, FileWriter outWriter) throws Exception {
+         boolean isDelta, FileWriter outWriter) {
       String questionName = DEFAULT_QUESTION_PREFIX + "_"
             + UUID.randomUUID().toString();
       String questionContentUnmodified = _bfq
@@ -212,21 +212,45 @@ public class Client extends AbstractClient implements IClient {
                + questionTemplateName + "'");
       }
       Map<String, String> parameters = parseParams(paramsLine);
-      JSONObject questionJson = new JSONObject(questionContentUnmodified);
-      JSONObject instanceJson = questionJson
-            .getJSONObject(Question.INSTANCE_VAR);
+      JSONObject questionJson;
+      try {
+         questionJson = new JSONObject(questionContentUnmodified);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Question content is not valid JSON", e);
+      }
+      JSONObject instanceJson;
+      try {
+         instanceJson = questionJson.getJSONObject(Question.INSTANCE_VAR);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Question is missing instance data", e);
+      }
       String instanceDataStr = instanceJson.toString();
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      InstanceData instanceData = mapper.<InstanceData> readValue(
-            instanceDataStr, new TypeReference<InstanceData>() {
-            });
+      InstanceData instanceData;
+      try {
+         instanceData = mapper.<InstanceData> readValue(instanceDataStr,
+               new TypeReference<InstanceData>() {
+               });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Invalid instance data (JSON)", e);
+      }
       Map<String, Variable> variables = instanceData.getVariables();
       for (Entry<String, String> e : parameters.entrySet()) {
          String parameterName = e.getKey();
          String parameterValue = e.getValue();
          Variable variable = variables.get(parameterName);
          if (variable != null) {
-            JsonNode value = mapper.readTree(parameterValue);
+            JsonNode value;
+            try {
+               value = mapper.readTree(parameterValue);
+            }
+            catch (IOException e1) {
+               throw new BatfishException("Variable value is not valid JSON",
+                     e1);
+            }
             variable.setValue(value);
          }
          else {
@@ -234,9 +258,17 @@ public class Client extends AbstractClient implements IClient {
                   + "' in supplied question template");
          }
       }
-      String modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
-      JSONObject modifiedInstanceData = new JSONObject(modifiedInstanceDataStr);
-      questionJson.put(Question.INSTANCE_VAR, modifiedInstanceData);
+      String modifiedInstanceDataStr;
+      try {
+         modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
+         JSONObject modifiedInstanceData = new JSONObject(
+               modifiedInstanceDataStr);
+         questionJson.put(Question.INSTANCE_VAR, modifiedInstanceData);
+      }
+      catch (JSONException | JsonProcessingException e) {
+         throw new BatfishException("Could not process modified instance data",
+               e);
+      }
       String modifiedQuestionStr = questionJson.toString();
       Path questionFile = createTempFile(BfConsts.RELPATH_QUESTION_FILE,
             modifiedQuestionStr);
@@ -261,8 +293,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean answer(String[] words, FileWriter outWriter,
-         List<String> options, List<String> parameters, boolean isDelta)
-         throws Exception {
+         List<String> options, List<String> parameters, boolean isDelta) {
       if (!isSetTestrig() || !isSetContainer(true)
             || (isDelta && !isSetDeltaEnvironment())) {
          return false;
