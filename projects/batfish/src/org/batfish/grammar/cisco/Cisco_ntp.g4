@@ -132,7 +132,11 @@ ntp_server
       | prefer = PREFER
       |
       (
-         SOURCE src = variable
+         SOURCE
+         (
+            src_interface = interface_name
+            | src_interface_alias = variable
+         )
       )
       |
       (
