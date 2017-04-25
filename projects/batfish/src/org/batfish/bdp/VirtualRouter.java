@@ -887,11 +887,14 @@ public class VirtualRouter extends ComparableStructure<String> {
             String connectingInterfaceName = edge.getInt1();
             Interface connectingInterface = _vrf.getInterfaces()
                   .get(connectingInterfaceName);
+            if (connectingInterface == null) {
+               // wrong vrf, so skip
+               continue;
+            }
             String neighborName = edge.getNode2();
             Node neighbor = nodes.get(neighborName);
             String neighborInterfaceName = edge.getInt2();
-            OspfArea area = _vrf.getInterfaces().get(connectingInterfaceName)
-                  .getOspfArea();
+            OspfArea area = connectingInterface.getOspfArea();
             Configuration nc = neighbor._c;
             Interface neighborInterface = nc.getInterfaces()
                   .get(neighborInterfaceName);
@@ -964,11 +967,14 @@ public class VirtualRouter extends ComparableStructure<String> {
             String connectingInterfaceName = edge.getInt1();
             Interface connectingInterface = _vrf.getInterfaces()
                   .get(connectingInterfaceName);
+            if (connectingInterface == null) {
+               // wrong vrf, so skip
+               continue;
+            }
             String neighborName = edge.getNode2();
             Node neighbor = nodes.get(neighborName);
             String neighborInterfaceName = edge.getInt2();
-            OspfArea area = _vrf.getInterfaces().get(connectingInterfaceName)
-                  .getOspfArea();
+            OspfArea area = connectingInterface.getOspfArea();
             Configuration nc = neighbor._c;
             Interface neighborInterface = nc.getInterfaces()
                   .get(neighborInterfaceName);
