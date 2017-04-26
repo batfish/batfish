@@ -13,6 +13,7 @@
         "address_family" : "address_family",
         "aggAddress" : "ios_bgp_aggregate_address",
         "arista-event-handler" : "arista-event-handler",
+        "arista_bgp" : "arista_bgp",
         "arista_ip_route" : "arista_ip_route",
         "arista_logging" : "arista-logging",
         "arista_misc" : "arista_misc",
@@ -58,6 +59,7 @@
         "cisco_misc" : "cisco_misc",
         "cisco_mpls" : "cisco_mpls",
         "cisco_multicast" : "cisco_multicast",
+        "cisco_ntp" : "cisco_ntp",
         "cisco_ospf" : "cisco_ospf",
         "cisco_pim" : "cisco_pim",
         "cisco_platform" : "cisco_platform",
@@ -101,6 +103,7 @@
         "interface_exit" : "interface_exit",
         "interface_name" : "interface_name",
         "interface_sdr" : "interface_sdr",
+        "ios_bgp" : "ios_bgp",
         "ios_xr_acl" : "ios_xr_acl",
         "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
         "ios_xr_isis" : "ios_xr_isis",
@@ -182,6 +185,7 @@
         "address_family" : "PASSED",
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
+        "arista_bgp" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
@@ -227,6 +231,7 @@
         "cisco_misc" : "PASSED",
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
+        "cisco_ntp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -270,6 +275,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
@@ -355,6 +361,11 @@
         "cisco_style_acl2" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl2'\n"
+          }
+        },
+        "ios_bgp" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
           }
         },
         "ios_xr_ospf" : {
@@ -678,6 +689,15 @@
             "blob" : {
               "ssh ipv6 access-list" : [
                 32
+              ]
+            }
+          }
+        },
+        "ios_bgp" : {
+          "bgp group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp neighbor statement" : [
+                6
               ]
             }
           }
@@ -1009,6 +1029,13 @@
           "ipv6 prefix-list" : {
             "ScienceDMZ-networks" : [
               16
+            ]
+          }
+        },
+        "arista_bgp" : {
+          "bgp group" : {
+            "UNDEFINED_PEER_GROUP" : [
+              8
             ]
           }
         },
@@ -1490,6 +1517,7 @@
         "address_family" : "PASSED",
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
+        "arista_bgp" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
@@ -1535,6 +1563,7 @@
         "cisco_misc" : "PASSED",
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
+        "cisco_ntp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -1578,6 +1607,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",

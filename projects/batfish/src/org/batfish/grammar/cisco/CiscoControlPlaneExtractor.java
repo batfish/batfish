@@ -933,13 +933,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          int definitionLine = ctx.peergroup.getLine();
          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
          if (_currentNamedPeerGroup == null) {
-            if (create) {
+            if (create
+                  || _configuration.getVendor() == ConfigurationFormat.ARISTA) {
                proc.addNamedPeerGroup(name, definitionLine);
                _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
             }
             else {
-               throw new BatfishException(
-                     "reference to undeclared peer group: '" + name + "'");
+               int line = ctx.peergroup.getLine();
+               _configuration.getUndefinedPeerGroups().put(name, line);
+               _w.redFlag("reference to undeclared peer group: '" + name + "'");
             }
          }
          pushPeer(_currentNamedPeerGroup);

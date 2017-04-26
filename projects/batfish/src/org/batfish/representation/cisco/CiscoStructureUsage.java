@@ -12,6 +12,7 @@ public enum CiscoStructureUsage implements StructureUsage {
    BGP_INBOUND_ROUTE6_MAP("bgp inbound ipv6 route-map"),
    BGP_INHERITED_GROUP("inherited BGP group"),
    BGP_INHERITED_SESSION("inherited BGP peer-session"),
+   BGP_NEIGHBOR_STATEMENT("bgp neighbor statement"),
    BGP_NETWORK_ORIGINATION_ROUTE_MAP("bgp ipv4 network statement route-map"),
    BGP_NETWORK6_ORIGINATION_ROUTE_MAP("bgp ipv6 network statement route-map"),
    BGP_OUTBOUND_PREFIX_LIST("bgp outbound prefix-list"),

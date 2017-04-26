@@ -13,6 +13,7 @@
         "address_family" : "address_family",
         "aggAddress" : "ios_bgp_aggregate_address",
         "arista-event-handler" : "arista-event-handler",
+        "arista_bgp" : "arista_bgp",
         "arista_ip_route" : "arista_ip_route",
         "arista_logging" : "arista-logging",
         "arista_misc" : "arista_misc",
@@ -58,6 +59,7 @@
         "cisco_misc" : "cisco_misc",
         "cisco_mpls" : "cisco_mpls",
         "cisco_multicast" : "cisco_multicast",
+        "cisco_ntp" : "cisco_ntp",
         "cisco_ospf" : "cisco_ospf",
         "cisco_pim" : "cisco_pim",
         "cisco_platform" : "cisco_platform",
@@ -101,6 +103,7 @@
         "interface_exit" : "interface_exit",
         "interface_name" : "interface_name",
         "interface_sdr" : "interface_sdr",
+        "ios_bgp" : "ios_bgp",
         "ios_xr_acl" : "ios_xr_acl",
         "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
         "ios_xr_isis" : "ios_xr_isis",
@@ -182,6 +185,7 @@
         "address_family" : "PASSED",
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
+        "arista_bgp" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
@@ -227,6 +231,7 @@
         "cisco_misc" : "PASSED",
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
+        "cisco_ntp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -270,6 +275,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
@@ -1597,6 +1603,46 @@
             "      (null_block",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "arista_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'arista_bgp'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        BOOT:'boot'  <== mode:DEFAULT_MODE",
+            "        SYSTEM:'system'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'flash'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'fake.swi'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      DEC:'1'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "            (bgp_address_family",
+            "              IPV4:'ipv4'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (neighbor_flat_rb_stanza",
+            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'UNDEFINED_PEER_GROUP'  <== mode:M_NEIGHBOR",
+            "            (bgp_tail",
+            "              (activate_bgp_tail",
+            "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (address_family_footer)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -13207,6 +13253,50 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "cisco_ntp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'cisco_ntp'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'  <== mode:DEFAULT_MODE",
+            "      (ntp_common",
+            "        (ntp_server",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'some-vrf'  <== mode:DEFAULT_MODE)",
+            "          (variable",
+            "            IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE)",
+            "          SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "          (interface_name",
+            "            (variable_interface_name",
+            "              LOOPBACK:'loopback'  <== mode:DEFAULT_MODE)",
+            "            DEC:'0'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'  <== mode:DEFAULT_MODE",
+            "      (ntp_common",
+            "        (ntp_server",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'some-vrf'  <== mode:DEFAULT_MODE)",
+            "          (variable",
+            "            IP_ADDRESS:'2.3.4.5'  <== mode:DEFAULT_MODE)",
+            "          SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "          (interface_name",
+            "            (variable_interface_name",
+            "              VARIABLE:'loopback1'  <== mode:DEFAULT_MODE))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "cisco_ospf" : {
           "sentences" : [
             "(cisco_configuration",
@@ -19499,6 +19589,38 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "ios_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_bgp'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      DEC:'1'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "            (bgp_address_family",
+            "              IPV4:'ipv4'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (neighbor_flat_rb_stanza",
+            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'UNDEFINED_PEER_GROUP'  <== mode:M_NEIGHBOR",
+            "            (bgp_tail",
+            "              (activate_bgp_tail",
+            "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (address_family_footer)))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "ios_xr_acl" : {
           "sentences" : [
             "(cisco_configuration",
@@ -25636,8 +25758,9 @@
             "          VERSION:'version'  <== mode:DEFAULT_MODE",
             "          DEC:'2'  <== mode:DEFAULT_MODE",
             "          SOURCE:'source'  <== mode:DEFAULT_MODE",
-            "          (variable",
-            "            VARIABLE:'Management1'  <== mode:DEFAULT_MODE)",
+            "          (interface_name",
+            "            (variable_interface_name",
+            "              VARIABLE:'Management1'  <== mode:DEFAULT_MODE))",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_ntp",
@@ -25650,8 +25773,9 @@
             "          MINPOLL:'minpoll'  <== mode:DEFAULT_MODE",
             "          DEC:'10'  <== mode:DEFAULT_MODE",
             "          SOURCE:'source'  <== mode:DEFAULT_MODE",
-            "          (variable",
-            "            VARIABLE:'Loopback0'  <== mode:DEFAULT_MODE)",
+            "          (interface_name",
+            "            (variable_interface_name",
+            "              VARIABLE:'Loopback0'  <== mode:DEFAULT_MODE))",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -29668,6 +29792,11 @@
             "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl2'\n"
           }
         },
+        "ios_bgp" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: reference to undeclared peer group: 'UNDEFINED_PEER_GROUP'"
+          }
+        },
         "ios_xr_ospf" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether101' not declared before OSPF process",
@@ -29989,6 +30118,15 @@
             "blob" : {
               "ssh ipv6 access-list" : [
                 32
+              ]
+            }
+          }
+        },
+        "ios_bgp" : {
+          "bgp group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "bgp neighbor statement" : [
+                6
               ]
             }
           }
@@ -30320,6 +30458,13 @@
           "ipv6 prefix-list" : {
             "ScienceDMZ-networks" : [
               16
+            ]
+          }
+        },
+        "arista_bgp" : {
+          "bgp group" : {
+            "UNDEFINED_PEER_GROUP" : [
+              8
             ]
           }
         },
@@ -30801,6 +30946,7 @@
         "address_family" : "PASSED",
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
+        "arista_bgp" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
@@ -30846,6 +30992,7 @@
         "cisco_misc" : "PASSED",
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
+        "cisco_ntp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -30889,6 +31036,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",

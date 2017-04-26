@@ -229,6 +229,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private NavigableSet<String> _tacacsServers;
 
+   private final SortedMap<String, Integer> _undefinedPeerGroups;
+
    private transient Set<String> _unimplementedFeatures;
 
    private transient Map<String, Integer> _unusedPeerGroups;
@@ -284,6 +286,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
       _tacacsServers = new TreeSet<>();
+      _undefinedPeerGroups = new TreeMap<>();
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
       _vrfs = new TreeMap<>();
@@ -675,6 +678,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public NavigableSet<String> getTacacsServers() {
       return _tacacsServers;
+   }
+
+   public SortedMap<String, Integer> getUndefinedPeerGroups() {
+      return _undefinedPeerGroups;
    }
 
    @Override
@@ -3048,6 +3055,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
             c.getVrfs().get(vrfName).setBgpProcess(newBgpProcess);
          }
       });
+
+      // warn about references to undefined peer groups
+      for (Entry<String, Integer> e : _undefinedPeerGroups.entrySet()) {
+         String name = e.getKey();
+         int line = e.getValue();
+         undefined(CiscoStructureType.BGP_PEER_GROUP, name,
+               CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT, line);
+      }
 
       // mark references to IPv4/6 ACLs that may not appear in data model
       markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, c);
