@@ -77,9 +77,11 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -227,6 +229,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private NavigableSet<String> _tacacsServers;
 
+   private final SortedMap<String, Integer> _undefinedPeerGroups;
+
    private transient Set<String> _unimplementedFeatures;
 
    private transient Map<String, Integer> _unusedPeerGroups;
@@ -282,6 +286,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
       _tacacsServers = new TreeSet<>();
+      _undefinedPeerGroups = new TreeMap<>();
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
       _vrfs = new TreeMap<>();
@@ -673,6 +678,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public NavigableSet<String> getTacacsServers() {
       return _tacacsServers;
+   }
+
+   public SortedMap<String, Integer> getUndefinedPeerGroups() {
+      return _undefinedPeerGroups;
    }
 
    @Override
@@ -1471,6 +1480,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
                peerExportPolicyName, c);
          if (lpg.getActive() && !lpg.getShutdown()) {
             c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         }
+         if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
+            peerExportPolicy.getStatements()
+                  .add(new SetNextHop(new SelfNextHop(), false));
          }
          If peerExportConditional = new If();
          peerExportConditional.setComment(
@@ -3042,6 +3055,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
             c.getVrfs().get(vrfName).setBgpProcess(newBgpProcess);
          }
       });
+
+      // warn about references to undefined peer groups
+      for (Entry<String, Integer> e : _undefinedPeerGroups.entrySet()) {
+         String name = e.getKey();
+         int line = e.getValue();
+         undefined(CiscoStructureType.BGP_PEER_GROUP, name,
+               CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT, line);
+      }
 
       // mark references to IPv4/6 ACLs that may not appear in data model
       markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, c);

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.collections.CommunitySet;
@@ -65,6 +66,8 @@ public class BgpAdvertisement
 
    private static final String AS_PATH_VAR = "asPath";
 
+   private static final String CLUSTER_LIST_VAR = "clusterList";
+
    private static final String COMMUNITIES_VAR = "communities";
 
    private static final String DST_IP_VAR = "dstIp";
@@ -100,9 +103,17 @@ public class BgpAdvertisement
 
    private static final String TYPE_VAR = "type";
 
-   private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
+   public static final int UNSET_LOCAL_PREFERENCE = 0;
+
+   public static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
+
+   public static final int UNSET_WEIGHT = 0;
+
+   private static final String WEIGHT_VAR = "weight";
 
    private final AsPath _asPath;
+
+   private final SortedSet<Long> _clusterList;
 
    private final CommunitySet _communities;
 
@@ -134,6 +145,8 @@ public class BgpAdvertisement
 
    private final BgpAdvertisementType _type;
 
+   private final int _weight;
+
    @JsonCreator
    public BgpAdvertisement(@JsonProperty(TYPE_VAR) BgpAdvertisementType type,
          @JsonProperty(NETWORK_VAR) Prefix network,
@@ -150,7 +163,9 @@ public class BgpAdvertisement
          @JsonProperty(MED_VAR) int med,
          @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
          @JsonProperty(AS_PATH_VAR) AsPath asPath,
-         @JsonProperty(COMMUNITIES_VAR) CommunitySet communities) {
+         @JsonProperty(COMMUNITIES_VAR) CommunitySet communities,
+         @JsonProperty(CLUSTER_LIST_VAR) SortedSet<Long> clusterList,
+         @JsonProperty(WEIGHT_VAR) int weight) {
       _type = type;
       _network = network;
       _nextHopIp = nextHopIp;
@@ -167,6 +182,8 @@ public class BgpAdvertisement
       _originatorIp = originatorIp;
       _asPath = asPath;
       _communities = communities;
+      _clusterList = clusterList;
+      _weight = weight;
    }
 
    @Override
@@ -245,6 +262,14 @@ public class BgpAdvertisement
       if (ret != 0) {
          return ret;
       }
+      ret = _clusterList.toString().compareTo(rhs._clusterList.toString());
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_weight, rhs._weight);
+      if (ret != 0) {
+         return ret;
+      }
       return 0;
    }
 
@@ -258,6 +283,9 @@ public class BgpAdvertisement
          return false;
       }
       if (!_asPath.toString().equals(other._asPath.toString())) {
+         return false;
+      }
+      if (!_clusterList.toString().equals(other._clusterList.toString())) {
          return false;
       }
       if (!_communities.toString().equals(other._communities.toString())) {
@@ -307,12 +335,20 @@ public class BgpAdvertisement
       if (!_type.equals(other._type)) {
          return false;
       }
+      if (_weight != other._weight) {
+         return false;
+      }
       return true;
    }
 
    @JsonProperty(AS_PATH_VAR)
    public AsPath getAsPath() {
       return _asPath;
+   }
+
+   @JsonProperty(CLUSTER_LIST_VAR)
+   public SortedSet<Long> getClusterList() {
+      return _clusterList;
    }
 
    @JsonProperty(COMMUNITIES_VAR)
@@ -390,11 +426,17 @@ public class BgpAdvertisement
       return _type;
    }
 
+   @JsonProperty(WEIGHT_VAR)
+   public int getWeight() {
+      return _weight;
+   }
+
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
       result = prime * result + _asPath.hashCode();
+      result = prime * result + _clusterList.hashCode();
       result = prime * result + _communities.hashCode();
       result = prime * result + _dstIp.hashCode();
       result = prime * result + _dstNode.hashCode();
@@ -410,6 +452,7 @@ public class BgpAdvertisement
       result = prime * result + _srcProtocol.hashCode();
       result = prime * result + _srcVrf.hashCode();
       result = prime * result + _type.hashCode();
+      result = prime * result + _weight;
       return result;
    }
 

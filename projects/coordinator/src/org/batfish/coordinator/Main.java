@@ -1,8 +1,9 @@
 package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
-import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,19 +98,18 @@ public class Main {
 
          // first find the file as specified.
          // if that does not work, find it relative to the binary
-         File keystoreFile = new File(_settings.getSslKeystoreFilename());
-         if (!keystoreFile.exists()) {
-            keystoreFile = Paths
-                  .get(CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
-                        .getAbsolutePath(), _settings.getSslKeystoreFilename())
-                  .toFile();
-         }
+         Path keystoreFile = Paths.get(_settings.getSslKeystoreFilename())
+               .toAbsolutePath();
+         if (!Files.exists(keystoreFile)) {
+            keystoreFile = CommonUtil
+                  .getJarOrClassDir(ConfigurationLocator.class).toAbsolutePath()
+                  .resolve(_settings.getSslKeystoreFilename());
 
-         if (!keystoreFile.exists()) {
+         }
+         if (!Files.exists(keystoreFile)) {
             System.err.printf(
                   "org.batfish.coordinator: keystore file not found at %s or %s\n",
-                  _settings.getSslKeystoreFilename(),
-                  keystoreFile.getAbsolutePath());
+                  _settings.getSslKeystoreFilename(), keystoreFile.toString());
             System.exit(1);
          }
          /* Uncomment below to enable fine glassfish/grizzly ssl logging */
@@ -121,7 +121,7 @@ public class Main {
          // ch.setLevel(Level.ALL);
          // l.addHandler(ch);
          SSLContextConfigurator sslCon = new SSLContextConfigurator();
-         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath());
+         sslCon.setKeyStoreFile(keystoreFile.toString());
          sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
 
          GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
@@ -156,24 +156,23 @@ public class Main {
 
          // first find the file as specified.
          // if that does not work, find it relative to the binary
-         File keystoreFile = new File(_settings.getSslKeystoreFilename());
-         if (!keystoreFile.exists()) {
-            keystoreFile = Paths
-                  .get(CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
-                        .getAbsolutePath(), _settings.getSslKeystoreFilename())
-                  .toFile();
+         Path keystoreFile = Paths.get(_settings.getSslKeystoreFilename())
+               .toAbsolutePath();
+         if (!Files.exists(keystoreFile)) {
+            keystoreFile = CommonUtil
+                  .getJarOrClassDir(ConfigurationLocator.class).toAbsolutePath()
+                  .resolve(_settings.getSslKeystoreFilename());
          }
 
-         if (!keystoreFile.exists()) {
+         if (!Files.exists(keystoreFile)) {
             System.err.printf(
                   "org.batfish.coordinator: keystore file not found at %s or %s\n",
-                  _settings.getSslKeystoreFilename(),
-                  keystoreFile.getAbsolutePath());
+                  _settings.getSslKeystoreFilename(), keystoreFile.toString());
             System.exit(1);
          }
 
          SSLContextConfigurator sslCon = new SSLContextConfigurator();
-         sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath());
+         sslCon.setKeyStoreFile(keystoreFile.toString());
          sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
 
          GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork, true,

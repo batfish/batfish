@@ -81,6 +81,8 @@ public class Client extends AbstractClient implements IClient {
 
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
 
+   private static final String DIFF_NOT_READY_MSG = "Cannot ask differential question without first setting delta testrig/environment\n";
+
    private static final String ENV_HOME = "HOME";
 
    private static final String FLAG_FAILING_TEST = "-error";
@@ -202,7 +204,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean answer(String questionTemplateName, String paramsLine,
-         boolean isDelta, FileWriter outWriter) throws Exception {
+         boolean isDelta, FileWriter outWriter) {
       String questionName = DEFAULT_QUESTION_PREFIX + "_"
             + UUID.randomUUID().toString();
       String questionContentUnmodified = _bfq
@@ -212,21 +214,45 @@ public class Client extends AbstractClient implements IClient {
                + questionTemplateName + "'");
       }
       Map<String, String> parameters = parseParams(paramsLine);
-      JSONObject questionJson = new JSONObject(questionContentUnmodified);
-      JSONObject instanceJson = questionJson
-            .getJSONObject(Question.INSTANCE_VAR);
+      JSONObject questionJson;
+      try {
+         questionJson = new JSONObject(questionContentUnmodified);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Question content is not valid JSON", e);
+      }
+      JSONObject instanceJson;
+      try {
+         instanceJson = questionJson.getJSONObject(Question.INSTANCE_VAR);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Question is missing instance data", e);
+      }
       String instanceDataStr = instanceJson.toString();
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      InstanceData instanceData = mapper.<InstanceData> readValue(
-            instanceDataStr, new TypeReference<InstanceData>() {
-            });
+      InstanceData instanceData;
+      try {
+         instanceData = mapper.<InstanceData> readValue(instanceDataStr,
+               new TypeReference<InstanceData>() {
+               });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Invalid instance data (JSON)", e);
+      }
       Map<String, Variable> variables = instanceData.getVariables();
       for (Entry<String, String> e : parameters.entrySet()) {
          String parameterName = e.getKey();
          String parameterValue = e.getValue();
          Variable variable = variables.get(parameterName);
          if (variable != null) {
-            JsonNode value = mapper.readTree(parameterValue);
+            JsonNode value;
+            try {
+               value = mapper.readTree(parameterValue);
+            }
+            catch (IOException e1) {
+               throw new BatfishException("Variable value is not valid JSON",
+                     e1);
+            }
             variable.setValue(value);
          }
          else {
@@ -234,10 +260,33 @@ public class Client extends AbstractClient implements IClient {
                   + "' in supplied question template");
          }
       }
-      String modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
-      JSONObject modifiedInstanceData = new JSONObject(modifiedInstanceDataStr);
-      questionJson.put(Question.INSTANCE_VAR, modifiedInstanceData);
+      String modifiedInstanceDataStr;
+      try {
+         modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
+         JSONObject modifiedInstanceData = new JSONObject(
+               modifiedInstanceDataStr);
+         questionJson.put(Question.INSTANCE_VAR, modifiedInstanceData);
+      }
+      catch (JSONException | JsonProcessingException e) {
+         throw new BatfishException("Could not process modified instance data",
+               e);
+      }
       String modifiedQuestionStr = questionJson.toString();
+      boolean questionJsonDifferential;
+      // check whether question is valid modulo instance data
+      try {
+         questionJsonDifferential = questionJson.has(Question.DIFFERENTIAL_VAR)
+               && questionJson.getBoolean(Question.DIFFERENTIAL_VAR);
+      }
+      catch (JSONException e) {
+         throw new BatfishException(
+               "Could not find whether question is explicitly differential", e);
+      }
+      if (questionJsonDifferential
+            && (_currDeltaEnv == null || _currDeltaTestrig == null)) {
+         _logger.output(DIFF_NOT_READY_MSG);
+         return false;
+      }
       Path questionFile = createTempFile(BfConsts.RELPATH_QUESTION_FILE,
             modifiedQuestionStr);
       questionFile.toFile().deleteOnExit();
@@ -261,8 +310,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean answer(String[] words, FileWriter outWriter,
-         List<String> options, List<String> parameters, boolean isDelta)
-         throws Exception {
+         List<String> options, List<String> parameters, boolean isDelta) {
       if (!isSetTestrig() || !isSetContainer(true)
             || (isDelta && !isSetDeltaEnvironment())) {
          return false;
@@ -345,13 +393,20 @@ public class Client extends AbstractClient implements IClient {
       String modifiedQuestionJson = questionJson.toString();
       BatfishObjectMapper mapper = new BatfishObjectMapper(
             getCurrentClassLoader());
+      Question modifiedQuestion = null;
       try {
-         mapper.readValue(modifiedQuestionJson, Question.class);
+         modifiedQuestion = mapper.readValue(modifiedQuestionJson,
+               Question.class);
       }
       catch (IOException e) {
          throw new BatfishException(
                "Modified question is no longer valid, likely due to invalid parameters",
                e);
+      }
+      if (modifiedQuestion.getDifferential()
+            && (_currDeltaEnv == null || _currDeltaTestrig == null)) {
+         _logger.output(DIFF_NOT_READY_MSG);
+         return false;
       }
       // if no exception is thrown, then the modifiedQuestionJson is good
       Path questionFile = createTempFile("question", modifiedQuestionJson);

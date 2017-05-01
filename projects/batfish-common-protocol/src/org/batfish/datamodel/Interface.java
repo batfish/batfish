@@ -268,6 +268,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private Double _bandwidth;
 
+   private transient boolean _blacklisted;
+
    private String _description;
 
    private IpAccessList _inboundFilter;
@@ -460,6 +462,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonPropertyDescription("The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
    public Double getBandwidth() {
       return _bandwidth;
+   }
+
+   @JsonIgnore
+   public boolean getBlacklisted() {
+      return _blacklisted;
    }
 
    @JsonProperty(DESCRIPTION_VAR)
@@ -730,6 +737,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(BANDWIDTH_VAR)
    public void setBandwidth(Double bandwidth) {
       _bandwidth = bandwidth;
+   }
+
+   @JsonIgnore
+   public void setBlacklisted(boolean blacklisted) {
+      _blacklisted = blacklisted;
    }
 
    @JsonProperty(DESCRIPTION_VAR)

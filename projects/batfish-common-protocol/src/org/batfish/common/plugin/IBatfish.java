@@ -20,16 +20,19 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 
 public interface IBatfish extends IPluginConsumer {
@@ -49,7 +52,7 @@ public interface IBatfish extends IPluginConsumer {
          boolean differentialContext, Topology topology);
 
    Map<Ip, Set<String>> computeIpOwners(
-         Map<String, Configuration> configurations);
+         Map<String, Configuration> configurations, boolean excludeInactive);
 
    Topology computeTopology(Map<String, Configuration> configurations);
 
@@ -92,7 +95,11 @@ public interface IBatfish extends IPluginConsumer {
 
    DataPlane loadDataPlane();
 
+   SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
+
    SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables();
+
+   ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement();
 
    ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement();
 
@@ -125,6 +132,9 @@ public interface IBatfish extends IPluginConsumer {
 
    void registerAnswerer(String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator);
+
+   void registerBgpTablePlugin(BgpTableFormat format,
+         BgpTablePlugin bgpTablePlugin);
 
    void registerExternalBgpAdvertisementPlugin(
          ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);

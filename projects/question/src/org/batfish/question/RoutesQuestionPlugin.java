@@ -15,7 +15,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
@@ -39,7 +39,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       }
 
       public RoutesAnswerElement(Map<String, Configuration> configurations,
-            Pattern nodeRegex, Set<RoutingProtocol> protocols) {
+            Pattern nodeRegex, Set<RoutingProtocol> protocols,
+            PrefixSpace prefixSpace) {
          _routesByHostname = new TreeMap<>();
          for (Entry<String, Configuration> e : configurations.entrySet()) {
             String hostname = e.getKey();
@@ -53,16 +54,23 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                String vrfName = e2.getKey();
                Vrf vrf = e2.getValue();
                SortedSet<Route> routes = vrf.getRoutes();
-               if (!protocols.isEmpty()) {
-                  SortedSet<Route> filteredRoutes = new TreeSet<>();
+               SortedSet<Route> filteredRoutes;
+               if (protocols.isEmpty() && prefixSpace.isEmpty()) {
+                  filteredRoutes = routes;
+               }
+               else {
+                  filteredRoutes = new TreeSet<>();
                   for (Route route : routes) {
-                     if (protocols.contains(route.getProtocol())) {
+                     boolean matchProtocol = protocols.isEmpty()
+                           || protocols.contains(route.getProtocol());
+                     boolean matchPrefixSpace = prefixSpace.isEmpty()
+                           || prefixSpace.containsPrefix(route.getNetwork());
+                     if (matchProtocol && matchPrefixSpace) {
                         filteredRoutes.add(route);
                      }
                   }
-                  routes = filteredRoutes;
                }
-               routesByVrf.put(vrfName, routes);
+               routesByVrf.put(vrfName, filteredRoutes);
             }
          }
       }
@@ -183,41 +191,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
          for (Entry<String, RoutesByVrf> e : _routesByHostname.entrySet()) {
-            String node = e.getKey();
             RoutesByVrf routesByVrf = e.getValue();
             for (SortedSet<Route> routes : routesByVrf.values()) {
                for (Route route : routes) {
-                  String nhnode = route.getNextHop();
-                  Ip nextHopIp = route.getNextHopIp();
-                  String nhip;
-                  String tag;
-                  int tagInt = route.getTag();
-                  if (tagInt == Route.UNSET_ROUTE_TAG) {
-                     tag = "none";
-                  }
-                  else {
-                     tag = Integer.toString(tagInt);
-                  }
-                  String nhint = route.getNextHopInterface();
-                  if (!nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
-                     // static interface
-                     if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-                        nhnode = "N/A";
-                        nhip = "N/A";
-                     }
-                  }
-                  nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
-                  String vrf = route.getVrf();
-                  String net = route.getNetwork().toString();
-                  String admin = Integer
-                        .toString(route.getAdministrativeCost());
-                  String cost = Integer.toString(route.getMetric());
-                  String prot = route.getProtocol().protocolName();
-                  String diff = _diff ? route.getDiffSymbol() + " " : "";
-                  String routeStr = String.format(
-                        "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
-                        diff, node, vrf, net, nhip, nhint, nhnode, admin, cost,
-                        tag, prot);
+                  String routeStr = route.prettyPrint(_diff);
                   sb.append(routeStr);
                }
             }
@@ -265,7 +242,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   .loadConfigurations();
             _batfish.initRoutes(configurations);
             answerElement = new RoutesAnswerElement(configurations, nodeRegex,
-                  question._protocols);
+                  question._protocols, question._prefixSpace);
          }
          return answerElement;
       }
@@ -305,16 +282,21 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
+      private static final String PREFIX_SPACE_VAR = "prefixSpace";
+
       private static final String PROTOCOLS_VAR = "protocols";
 
       private boolean _fromEnvironment;
 
       private String _nodeRegex;
 
+      private PrefixSpace _prefixSpace;
+
       private SortedSet<RoutingProtocol> _protocols;
 
       public RoutesQuestion() {
          _nodeRegex = ".*";
+         _prefixSpace = new PrefixSpace();
          _protocols = new TreeSet<>();
       }
 
@@ -338,6 +320,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          return _nodeRegex;
       }
 
+      @JsonProperty(PREFIX_SPACE_VAR)
+      public PrefixSpace getPrefixSpace() {
+         return _prefixSpace;
+      }
+
       @JsonProperty(PROTOCOLS_VAR)
       public SortedSet<RoutingProtocol> getProtocols() {
          return _protocols;
@@ -356,6 +343,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
+      }
+
+      @JsonProperty(PREFIX_SPACE_VAR)
+      public void setPrefixSpace(PrefixSpace prefixSpace) {
+         _prefixSpace = prefixSpace;
       }
 
       @JsonProperty(PROTOCOLS_VAR)

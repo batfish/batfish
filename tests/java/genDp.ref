@@ -5,17 +5,17 @@
       "bgpRoutesByIteration" : {
         "1" : 16,
         "2" : 38,
-        "3" : 96,
-        "4" : 124,
-        "5" : 138,
-        "6" : 156,
-        "7" : 160,
-        "8" : 162
+        "3" : 82,
+        "4" : 104,
+        "5" : 118,
+        "6" : 132,
+        "7" : 134,
+        "8" : 136
       },
       "dependentRoutesIterations" : 8,
       "ospfInternalIterations" : 3,
       "totalRoutes" : 298,
-      "version" : "0.17.0"
+      "version" : "0.18.0"
     }
   ],
   "status" : "SUCCESS"

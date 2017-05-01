@@ -33,6 +33,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       private Path _environmentBasePath;
 
+      private Path _environmentBgpTablesPath;
+
       private Path _environmentRoutingTablesPath;
 
       private Path _envPath;
@@ -45,11 +47,15 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       private Path _nodeBlacklistPath;
 
+      private Path _parseEnvironmentBgpTablesAnswerPath;
+
       private Path _parseEnvironmentRoutingTablesAnswerPath;
 
       private Path _precomputedRoutesPath;
 
       private Path _serializedTopologyPath;
+
+      private Path _serializeEnvironmentBgpTablesPath;
 
       private Path _serializeEnvironmentRoutingTablesPath;
 
@@ -81,6 +87,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _environmentBasePath;
       }
 
+      public Path getEnvironmentBgpTablesPath() {
+         return _environmentBgpTablesPath;
+      }
+
       public Path getEnvironmentRoutingTablesPath() {
          return _environmentRoutingTablesPath;
       }
@@ -105,6 +115,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _nodeBlacklistPath;
       }
 
+      public Path getParseEnvironmentBgpTablesAnswerPath() {
+         return _parseEnvironmentBgpTablesAnswerPath;
+      }
+
       public Path getParseEnvironmentRoutingTablesAnswerPath() {
          return _parseEnvironmentRoutingTablesAnswerPath;
       }
@@ -115,6 +129,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       public Path getSerializedTopologyPath() {
          return _serializedTopologyPath;
+      }
+
+      public Path getSerializeEnvironmentBgpTablesPath() {
+         return _serializeEnvironmentBgpTablesPath;
       }
 
       public Path getSerializeEnvironmentRoutingTablesPath() {
@@ -151,6 +169,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          _environmentBasePath = environmentBasePath;
       }
 
+      public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
+         _environmentBgpTablesPath = environmentBgpTablesPath;
+      }
+
       public void setEnvironmentRoutingTablesPath(
             Path environmentRoutingTablesPath) {
          _environmentRoutingTablesPath = environmentRoutingTablesPath;
@@ -177,6 +199,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          _nodeBlacklistPath = nodeBlacklistPath;
       }
 
+      public void setParseEnvironmentBgpTablesAnswerPath(
+            Path parseEnvironmentBgpTablesAnswerPath) {
+         _parseEnvironmentBgpTablesAnswerPath = parseEnvironmentBgpTablesAnswerPath;
+      }
+
       public void setParseEnvironmentRoutingTablesAnswerPath(
             Path parseEnvironmentRoutingTablesAnswerPath) {
          _parseEnvironmentRoutingTablesAnswerPath = parseEnvironmentRoutingTablesAnswerPath;
@@ -188,6 +215,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       public void setSerializedTopologyPath(Path serializedTopologyPath) {
          _serializedTopologyPath = serializedTopologyPath;
+      }
+
+      public void setSerializeEnvironmentBgpTablesPath(
+            Path serializeEnvironmentBgpTablesPath) {
+         _serializeEnvironmentBgpTablesPath = serializeEnvironmentBgpTablesPath;
       }
 
       public void setSerializeEnvironmentRoutingTablesPath(
