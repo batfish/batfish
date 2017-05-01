@@ -50,7 +50,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     * Set to true to debug all iterations, including during oscillation. Ignores
     * max recorded iterations value.
     */
-   private static final boolean DEBUG_ALL_ITERATIONS = false;
+   private static boolean DEBUG_ALL_ITERATIONS = false;
 
    private static final int DEBUG_MAX_RECORDED_ITERATIONS = 12;
 
@@ -58,7 +58,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     * Set to true to debug oscillation. Make sure to set max recorded iterations
     * to minimum necessary value.
     */
-   private static final boolean DEBUG_REPEAT_ITERATIONS = false;
+   private static boolean DEBUG_REPEAT_ITERATIONS = false;
 
    private final Map<BdpDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
@@ -403,13 +403,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       // END DONE ONCE
 
       Map<Integer, Integer> iterationByHashCode = new HashMap<>();
-      Map<Integer, RouteSet> iterationRoutes;
+      Map<Integer, RouteSet> iterationRoutes = null;
       if (DEBUG_ALL_ITERATIONS) {
          iterationRoutes = new TreeMap<>();
       }
       else if (DEBUG_REPEAT_ITERATIONS && DEBUG_MAX_RECORDED_ITERATIONS > 1) {
-         iterationRoutes = new LRUMap<>(
-               DEBUG_MAX_RECORDED_ITERATIONS);
+         iterationRoutes = new LRUMap<>(DEBUG_MAX_RECORDED_ITERATIONS);
       }
       boolean[] dependentRoutesChanged = new boolean[] { true };
       int dependentRoutesIterations = 0;
