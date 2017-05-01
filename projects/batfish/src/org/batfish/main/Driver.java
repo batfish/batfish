@@ -38,6 +38,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.main.Settings.TestrigSettings;
@@ -60,6 +61,8 @@ public class Driver {
 
    private static final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
+   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
+
    private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
    private static final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
@@ -77,6 +80,8 @@ public class Driver {
 
    private static final int MAX_CACHED_DATA_PLANES = 2;
 
+   private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
+
    private static final int MAX_CACHED_ENVIRONMENT_ROUTING_TABLES = 4;
 
    private static final int MAX_CACHED_TESTRIGS = 5;
@@ -90,6 +95,12 @@ public class Driver {
       return Collections.synchronizedMap(
             new LRUMap<TestrigSettings, DataPlane>(MAX_CACHED_DATA_PLANES));
 
+   }
+
+   private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> buildEnvironmentBgpTablesCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(
+                  MAX_CACHED_ENVIRONMENT_BGP_TABLES));
    }
 
    private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> buildEnvironmentRoutingTablesCache() {
@@ -334,7 +345,8 @@ public class Driver {
 
       try {
          final Batfish batfish = new Batfish(settings, CACHED_TESTRIGS,
-               CACHED_DATA_PLANES, CACHED_ENVIRONMENT_ROUTING_TABLES);
+               CACHED_DATA_PLANES, CACHED_ENVIRONMENT_BGP_TABLES,
+               CACHED_ENVIRONMENT_ROUTING_TABLES);
 
          Thread thread = new Thread() {
             @Override

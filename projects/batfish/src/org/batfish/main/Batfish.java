@@ -50,6 +50,7 @@ import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
@@ -96,6 +97,7 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -104,6 +106,7 @@ import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.IbgpTopology;
@@ -123,6 +126,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.assertion.AssertionCombinedParser;
@@ -144,6 +148,8 @@ import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ConvertConfigurationResult;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationResult;
+import org.batfish.job.ParseEnvironmentBgpTableJob;
+import org.batfish.job.ParseEnvironmentBgpTableResult;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableResult;
 import org.batfish.job.ParseVendorConfigurationJob;
@@ -222,8 +228,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
             envSettings.setDataPlaneAnswerPath(
                   envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
+            envSettings.setParseEnvironmentBgpTablesAnswerPath(envPath
+                  .resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
             envSettings.setParseEnvironmentRoutingTablesAnswerPath(envPath
                   .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
+            envSettings.setSerializeEnvironmentBgpTablesPath(envPath
+                  .resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
             envSettings
                   .setSerializeEnvironmentRoutingTablesPath(envPath.resolve(
                         BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
@@ -241,6 +251,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
             envSettings.setExternalBgpAnnouncementsPath(envDirPath
                   .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+            envSettings.setEnvironmentBgpTablesPath(
+                  envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
             envSettings.setEnvironmentRoutingTablesPath(envDirPath
                   .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
             envSettings.setPrecomputedRoutesPath(
@@ -383,9 +395,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private TestrigSettings _baseTestrigSettings;
 
+   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
+
    private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
    private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
+
+   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> _cachedEnvironmentBgpTables;
 
    private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> _cachedEnvironmentRoutingTables;
 
@@ -414,10 +430,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public Batfish(Settings settings,
          Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
          Map<TestrigSettings, DataPlane> cachedDataPlanes,
+         Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
          Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
+      _bgpTablePlugins = new TreeMap<>();
       _cachedConfigurations = cachedConfigurations;
+      _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
       _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
       _cachedDataPlanes = cachedDataPlanes;
       _externalBgpAdvertisementPlugins = new TreeSet<>();
@@ -817,6 +836,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return _dataPlanePlugin.computeDataPlane(differentialContext);
    }
 
+   private void computeEnvironmentBgpTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      Path outputPath = envSettings.getSerializeEnvironmentBgpTablesPath();
+      Path inputPath = envSettings.getEnvironmentBgpTablesPath();
+      serializeEnvironmentBgpTables(inputPath, outputPath);
+   }
+
    private void computeEnvironmentRoutingTables() {
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -881,13 +908,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public Map<Ip, Set<String>> computeIpOwners(
-         Map<String, Configuration> configurations) {
+         Map<String, Configuration> configurations, boolean excludeInactive) {
       // TODO: confirm VRFs are handled correctly
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       Map<Pair<Prefix, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
       configurations.forEach((hostname, c) -> {
          for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive()) {
+            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
                // collect vrrp info
                i.getVrrpGroups().forEach((groupNum, vrrpGroup) -> {
                   Prefix prefix = vrrpGroup.getVirtualAddress();
@@ -1166,6 +1193,28 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurations;
    }
 
+   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
+         Path serializeEnvironmentBgpTablesPath) {
+      _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
+      resetTimer();
+      Map<Path, String> namesByPath = new TreeMap<>();
+      try (DirectoryStream<Path> serializedBgpTables = Files
+            .newDirectoryStream(serializeEnvironmentBgpTablesPath)) {
+         for (Path serializedBgpTable : serializedBgpTables) {
+            String name = serializedBgpTable.getFileName().toString();
+            namesByPath.put(serializedBgpTable, name);
+         }
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Error reading serialized BGP tables directory", e);
+      }
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = deserializeObjects(
+            namesByPath, BgpAdvertisementsByVrf.class);
+      printElapsedTime();
+      return bgpTables;
+   }
+
    private SortedMap<String, RoutesByVrf> deserializeEnvironmentRoutingTables(
          Path serializeEnvironmentRoutingTablesPath) {
       _logger.info("\n*** DESERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
@@ -1179,8 +1228,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       catch (IOException e) {
-         throw new BatfishException("Error reading vendor configs directory",
-               e);
+         throw new BatfishException(
+               "Error reading serialized routing tables directory", e);
       }
       SortedMap<String, RoutesByVrf> routingTables = deserializeObjects(
             namesByPath, RoutesByVrf.class);
@@ -1251,6 +1300,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                Interface bindInterface = vpn.getBindInterface();
                if (bindInterface != null) {
                   bindInterface.setActive(false);
+                  bindInterface.setBlacklisted(true);
                   String bindInterfaceName = bindInterface.getName();
                   _logger.warnf(
                         "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
@@ -1259,6 +1309,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             }
          }
       }
+   }
+
+   private boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
+      checkConfigurations();
+      Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
+      return Files.exists(answerPath);
    }
 
    private boolean environmentExists(TestrigSettings testrigSettings) {
@@ -1666,6 +1722,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return seconds;
    }
 
+   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
+         Path inputPath, ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
+         return new TreeMap<>();
+      }
+      SortedMap<Path, String> inputData = readFiles(inputPath,
+            "Environment BGP Tables");
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = parseEnvironmentBgpTables(
+            inputData, answerElement);
+      return bgpTables;
+   }
+
    public String getEnvironmentName() {
       return _testrigSettings.getEnvironmentSettings().getName();
    }
@@ -2054,6 +2122,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          // create environment required folders
          CommonUtil.createDirectories(envPath);
       }
+      if (!environmentBgpTablesExist(envSettings)) {
+         computeEnvironmentBgpTables();
+      }
       if (!environmentRoutingTablesExist(envSettings)) {
          computeEnvironmentRoutingTables();
       }
@@ -2420,6 +2491,25 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
+   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables = _cachedEnvironmentBgpTables
+            .get(envSettings);
+      if (environmentBgpTables == null) {
+         ParseEnvironmentBgpTablesAnswerElement ae = loadParseEnvironmentBgpTablesAnswerElement();
+         if (!Version.isCompatibleVersion("Service",
+               "Old processed environment BGP tables", ae.getVersion())) {
+            repairEnvironmentBgpTables();
+         }
+         environmentBgpTables = deserializeEnvironmentBgpTables(
+               envSettings.getSerializeEnvironmentBgpTablesPath());
+         _cachedEnvironmentBgpTables.put(envSettings, environmentBgpTables);
+      }
+      return environmentBgpTables;
+   }
+
+   @Override
    public SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables() {
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -2438,6 +2528,36 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                environmentRoutingTables);
       }
       return environmentRoutingTables;
+   }
+
+   @Override
+   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
+      return loadParseEnvironmentBgpTablesAnswerElement(true);
+   }
+
+   private ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+         boolean firstAttempt) {
+      Path answerPath = _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentBgpTablesAnswerPath();
+      if (!Files.exists(answerPath)) {
+         repairEnvironmentBgpTables();
+      }
+      ParseEnvironmentBgpTablesAnswerElement ae = deserializeObject(answerPath,
+            ParseEnvironmentBgpTablesAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed environment BGP tables", ae.getVersion())) {
+         if (firstAttempt) {
+            repairEnvironmentRoutingTables();
+            return loadParseEnvironmentBgpTablesAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing environment BGP tables for parse environment BGP tables answer element");
+         }
+      }
+      else {
+         return ae;
+      }
    }
 
    @Override
@@ -2638,6 +2758,42 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return config;
    }
 
+   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
+         SortedMap<Path, String> inputData,
+         ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
+      resetTimer();
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
+      List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
+      SortedMap<String, Configuration> configurations = loadConfigurations();
+      for (Path currentFile : inputData.keySet()) {
+         String hostname = currentFile.getFileName().toString();
+         if (!configurations.containsKey(hostname)) {
+            continue;
+         }
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+               _settings.getRedFlagAsError(),
+               _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         String fileText = inputData.get(currentFile);
+         ParseEnvironmentBgpTableJob job = new ParseEnvironmentBgpTableJob(
+               _settings, fileText, currentFile, warnings, _bgpTablePlugins);
+         jobs.add(job);
+      }
+      BatfishJobExecutor<ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement, ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>> executor = new BatfishJobExecutor<>(
+            _settings, _logger, _settings.getHaltOnParseError(),
+            "Parse environment BGP tables");
+      executor.executeJobs(jobs, bgpTables, answerElement);
+      printElapsedTime();
+      return bgpTables;
+   }
+
    private SortedMap<String, RoutesByVrf> parseEnvironmentRoutingTables(
          SortedMap<Path, String> inputData,
          ParseEnvironmentRoutingTablesAnswerElement answerElement) {
@@ -2645,7 +2801,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       SortedMap<String, RoutesByVrf> routingTables = new TreeMap<>();
       List<ParseEnvironmentRoutingTableJob> jobs = new ArrayList<>();
+      SortedMap<String, Configuration> configurations = loadConfigurations();
       for (Path currentFile : inputData.keySet()) {
+         String hostname = currentFile.getFileName().toString();
+         if (!configurations.containsKey(hostname)) {
+            continue;
+         }
          Warnings warnings = new Warnings(_settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
@@ -3148,9 +3309,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (blacklistInterfaces != null) {
          for (NodeInterfacePair p : blacklistInterfaces) {
             String hostname = p.getHostname();
-            String iface = p.getInterface();
+            String ifaceName = p.getInterface();
             Configuration node = configurations.get(hostname);
-            node.getInterfaces().get(iface).setActive(false);
+            Interface iface = node.getInterfaces().get(ifaceName);
+            iface.setActive(false);
+            iface.setBlacklisted(true);
          }
       }
    }
@@ -3332,6 +3495,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
+   public void registerBgpTablePlugin(BgpTableFormat format,
+         BgpTablePlugin bgpTablePlugin) {
+      _bgpTablePlugins.put(format, bgpTablePlugin);
+   }
+
+   @Override
    public void registerExternalBgpAdvertisementPlugin(
          ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin) {
       _externalBgpAdvertisementPlugins.add(externalBgpAdvertisementPlugin);
@@ -3357,6 +3526,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       CommonUtil.delete(dataPlanePath);
       CommonUtil.delete(dataPlaneAnswerPath);
       computeDataPlane(false);
+   }
+
+   private void repairEnvironmentBgpTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
+      Path bgpTablesOutputPath = envSettings
+            .getSerializeEnvironmentBgpTablesPath();
+      CommonUtil.delete(answerPath);
+      CommonUtil.deleteDirectory(bgpTablesOutputPath);
+      computeEnvironmentBgpTables();
    }
 
    private void repairEnvironmentRoutingTables() {
@@ -3577,6 +3757,37 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.debug("OK\n");
       printElapsedTime();
       return answer;
+   }
+
+   private Answer serializeEnvironmentBgpTables(Path inputPath,
+         Path outputPath) {
+      Answer answer = new Answer();
+      ParseEnvironmentBgpTablesAnswerElement answerElement = new ParseEnvironmentBgpTablesAnswerElement();
+      answerElement.setVersion(Version.getVersion());
+      answer.addAnswerElement(answerElement);
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = getEnvironmentBgpTables(
+            inputPath, answerElement);
+      serializeEnvironmentBgpTables(bgpTables, outputPath);
+      serializeObject(answerElement, _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentBgpTablesAnswerPath());
+      return answer;
+   }
+
+   private void serializeEnvironmentBgpTables(
+         SortedMap<String, BgpAdvertisementsByVrf> bgpTables, Path outputPath) {
+      if (bgpTables == null) {
+         throw new BatfishException("Exiting due to parsing error(s)");
+      }
+      _logger.info("\n*** SERIALIZING ENVIRONMENT BGP TABLES ***\n");
+      resetTimer();
+      outputPath.toFile().mkdirs();
+      SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
+      bgpTables.forEach((name, rt) -> {
+         Path currentOutputPath = outputPath.resolve(name);
+         output.put(currentOutputPath, rt);
+      });
+      serializeObjects(output);
+      printElapsedTime();
    }
 
    private Answer serializeEnvironmentRoutingTables(Path inputPath,

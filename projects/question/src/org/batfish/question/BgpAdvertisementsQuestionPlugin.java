@@ -186,11 +186,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-
          BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
-
          Pattern nodeRegex;
-
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
          }
@@ -200,17 +197,14 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-
          _batfish.checkDataPlaneQuestionDependencies();
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
          _batfish.initBgpAdvertisements(configurations);
-
          BgpAdvertisementsAnswerElement answerElement = new BgpAdvertisementsAnswerElement(
                configurations, nodeRegex, question.getEbgp(),
                question.getIbgp(), question.getPrefixSpace(),
                question.getReceived(), question.getSent());
-
          return answerElement;
       }
 

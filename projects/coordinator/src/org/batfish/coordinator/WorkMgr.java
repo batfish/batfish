@@ -75,8 +75,9 @@ public class WorkMgr {
       envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
       envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
       envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-      envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+      envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
       envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
+      envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
       return envFilenames;
    }
 

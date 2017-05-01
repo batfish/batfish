@@ -39,7 +39,7 @@ eos_routing_table
 
 gateway_header
 :
-   GATEWAY WORD+ COLON NEWLINE
+   GATEWAY WORD+ ~NEWLINE* NEWLINE
 ;
 
 identifier
