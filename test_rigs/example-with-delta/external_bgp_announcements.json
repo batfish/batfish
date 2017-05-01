@@ -16,7 +16,8 @@
       "asPath" : [ [ 1239 ], [7018, 7019]],
       "communities" : [ 262145 ],
       "srcVrf":"default",
-      "dstVrf":"default"
+      "dstVrf":"default",
+      "clusterList":[]
     }
 	]
 }
