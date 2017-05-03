@@ -36,6 +36,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Task;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.common.WorkItem;
@@ -301,6 +302,117 @@ public class WorkMgr {
       }
    }
 
+   public void configureAnalysis(String containerName, boolean newAnalysis, 
+         String aName, InputStream addQuestionsFileStream, String delQuestionsStr)
+         throws Exception {
+
+      File containerDir = Paths
+            .get(Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException(
+               "Container " + containerName + " does not exist");
+      }
+
+      File aDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR, aName).toFile();
+
+      if (aDir.exists() && newAnalysis) {
+         throw new FileExistsException(
+               "Analysis " + aName + " already exists for container " + containerName);
+      }
+
+      if (!aDir.exists()) {
+         if (!newAnalysis) {
+            throw new FileExistsException(
+                  "Analysis " + aName + " does not exists for container " + containerName);
+         }
+         if (!aDir.mkdirs()) {
+            throw new Exception(
+                  "failed to create analyses directory " + aDir.getAbsolutePath());
+         }
+      }
+
+      File questionsDir = Paths.get(aDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+
+      if (addQuestionsFileStream != null) {
+         ByteArrayOutputStream questions = new ByteArrayOutputStream();
+
+         int read = 0;
+         final byte[] buffer = new byte[1024];
+         while ((read = addQuestionsFileStream.read(buffer)) != -1) {
+            questions.write(buffer, 0, read);
+         }
+
+         JSONObject jObject = new JSONObject(questions.toString("UTF-8"));
+
+         Iterator<?> keys = jObject.keys();
+
+         while( keys.hasNext() ) {
+            String qName = (String) keys.next();
+            JSONObject qJson = jObject.getJSONObject(qName);
+
+            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName).toFile();
+
+            if (qDir.exists()) {
+               throw new FileExistsException(
+                     "Question " + qName + " already exists for analysis " + aName);
+            }
+
+            if (!qDir.mkdirs()) {
+               throw new Exception(
+                     "failed to create question directory " + qDir.getAbsolutePath());
+            }
+
+            File qFile = Paths
+                  .get(qDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
+                  .toFile();
+
+            FileUtils.writeStringToFile(qFile, qJson.toString(1));          
+         }
+      }
+      
+      if (delQuestionsStr != null && !delQuestionsStr.equals("")) {
+         JSONArray delQuestionsArray = new JSONArray(delQuestionsStr);
+         
+         for (int index=0; index < delQuestionsArray.length(); index++) {
+            String qName = delQuestionsArray.getString(index);
+            
+            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName).toFile();
+
+            if (!qDir.exists()) {
+               throw new FileExistsException(
+                     "Question " + qName + " does not exist for analysis " + aName);
+            }
+            
+            FileUtils.deleteDirectory(qDir);
+         }
+      }
+   }
+
+   public void delAnalysis(String containerName, String aName) throws Exception {
+
+      File containerDir = Paths
+            .get(Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException(
+               "Container " + containerName + " does not exist");
+      }
+
+      File aDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR, aName).toFile();
+
+      if (!aDir.exists()) {
+            throw new FileNotFoundException(
+                  "Analysis " + aName + " does not exists for container " + containerName);
+      }
+
+      FileUtils.deleteDirectory(aDir);
+   }
+
    public void delContainer(String containerName) throws Exception {
 
       File containerDir = Paths
@@ -394,6 +506,41 @@ public class WorkMgr {
       }
 
       FileUtils.deleteDirectory(testrigDir);
+   }
+
+   public String getAnalysisQuestion(String containerName, String analysisName, 
+         String questionName) throws Exception {
+
+      File containerDir = Paths
+            .get(Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException(
+               "Container " + containerName + " does not exist");
+      }
+
+      File analysisDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR, analysisName).toFile();
+      if (!analysisDir.exists()) {
+         throw new FileExistsException(
+               "Analysis " + analysisName + " does not exists for container " + containerName);
+      }
+
+      File questionDir = Paths.get(analysisDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR, questionName).toFile();
+      if (!questionDir.exists()) {
+         throw new FileExistsException(
+               "Question " + questionName + " does not exists for analysis " + analysisName);
+      }
+
+      Path qFile = Paths
+            .get(questionDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE);
+      if (!qFile.toFile().exists()) {
+         throw new FileExistsException(
+               "Question file not found for " + questionName);
+      }
+
+      return CommonUtil.readFile(qFile);            
    }
 
    public File getObject(String containerName, String testrigName,
@@ -538,6 +685,66 @@ public class WorkMgr {
    private boolean isEnvFile(File file) {
       String name = file.getName();
       return ENV_FILENAMES.contains(name);
+   }
+
+   public String[] listAnalyses(String containerName) throws Exception {
+
+      File containerDir = Paths
+            .get(Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException(
+               "Container " + containerName + " does not exist");
+      }
+
+      File analysesDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR).toFile();
+      if (!analysesDir.exists()) {
+         return new String[0];
+      }
+
+      String[] directories = analysesDir.list(new FilenameFilter() {
+         @Override
+         public boolean accept(File current, String name) {
+            return new File(current, name).isDirectory();
+         }
+      });
+      
+      return directories;
+   }
+
+   public String[] listAnalysisQuestions(String containerName, String analysisName) 
+         throws Exception {
+
+      File containerDir = Paths
+            .get(Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException(
+               "Container " + containerName + " does not exist");
+      }
+
+      File analysisDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR, analysisName).toFile();
+      if (!analysisDir.exists()) {
+         throw new FileExistsException(
+               "Analysis " + analysisName + " does not exists for container " + containerName);
+      }
+
+      File questionsDir = Paths.get(analysisDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+      if (!questionsDir.exists()) {
+         return new String[0];
+      }
+
+      String[] directories = questionsDir.list(new FilenameFilter() {
+         @Override
+         public boolean accept(File current, String name) {
+            return new File(current, name).isDirectory();
+         }
+      });
+
+      return directories;
    }
 
    public String[] listContainers(String apiKey) throws Exception {
@@ -770,76 +977,6 @@ public class WorkMgr {
 
    }
 
-   public void uploadAnalysis(String containerName, String aName,
-         InputStream fileStream)
-         throws Exception {
-
-      File containerDir = Paths
-            .get(Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
-
-      if (!containerDir.exists()) {
-         throw new FileNotFoundException(
-               "Container " + containerName + " does not exist");
-      }
-
-      File aDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_ANALYSES_DIR, aName).toFile();
-
-      if (aDir.exists()) {
-         throw new FileExistsException(
-               "Analysis " + aName + " exists for container " + containerName);
-      }
-
-      if (!aDir.mkdirs()) {
-         throw new Exception(
-               "failed to create analyses directory " + aDir.getAbsolutePath());
-      }
-
-      File questionsDir = Paths.get(aDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
-
-      if (!questionsDir.mkdirs()) {
-         throw new Exception(
-               "failed to create questions directory " + questionsDir.getAbsolutePath());
-      }
-
-      ByteArrayOutputStream questions = new ByteArrayOutputStream();
-      
-      int read = 0;
-      final byte[] buffer = new byte[1024];
-      while ((read = fileStream.read(buffer)) != -1) {
-          questions.write(buffer, 0, read);
-      }
-      
-      JSONObject jObject = new JSONObject(questions.toString("UTF-8"));
-
-      Iterator<?> keys = jObject.keys();
-
-      while( keys.hasNext() ) {
-          String qName = (String) keys.next();
-          JSONObject qJson = jObject.getJSONObject(qName);
-          
-          File qDir = Paths.get(questionsDir.getAbsolutePath(), qName).toFile();
-          
-          if (qDir.exists()) {
-             throw new FileExistsException(
-                   "Question " + qName + " already exists for analysis " + aName);
-          }
-          
-          if (!qDir.mkdirs()) {
-             throw new Exception(
-                   "failed to create question directory " + qDir.getAbsolutePath());
-          }
-          
-          File qFile = Paths
-                .get(qDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
-                .toFile();
-
-          FileUtils.writeStringToFile(qFile, qJson.toString(1));          
-      }
-
-   }
 
    public void uploadEnvironment(String containerName, String testrigName,
          String envName, InputStream fileStream) throws Exception {

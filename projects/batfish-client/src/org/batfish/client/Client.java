@@ -21,6 +21,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
@@ -466,6 +468,55 @@ public class Client extends AbstractClient implements IClient {
                e);
       }
       return tempFilePath;
+   }
+
+   private boolean delAnalysis(List<String> parameters) {
+      if (!isSetContainer(true)) {
+         return false;
+      }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.DEL_ANALYSIS);
+         return false;
+      }
+      
+      String analysisName = parameters.get(0);
+
+      boolean result = _workHelper.delAnalysis(_currContainerName, analysisName);
+
+      return result;
+   }
+
+   private boolean delAnalysisQuestions(List<String> parameters) {
+      if (!isSetContainer(true)) {
+         return false;
+      }
+      if (parameters.size() < 2) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.DEL_ANALYSIS_QUESTIONS);
+         return false;
+      }
+      
+      String analysisName = parameters.get(0);
+
+      String delQuestionsStr = "[]";
+      
+      try {
+         JSONArray delQuestionsArray = new JSONArray();
+         for (int index=1; index < parameters.size(); index++) {
+            delQuestionsArray.put(parameters.get(index));
+         }
+         delQuestionsStr = delQuestionsArray.toString(1);
+      } 
+      catch (JSONException e) {
+         throw new BatfishException(
+               "Failed to get JSONObject for analysis", e);
+      }
+      
+      boolean result = _workHelper.configureAnalysis(_currContainerName, false,
+            analysisName, null, delQuestionsStr);
+
+      return result;
    }
 
    private boolean delBatfishOption(List<String> parameters) {
@@ -901,7 +952,7 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-   private boolean initAnalysis(List<String> parameters) {
+   private boolean initOrAddAnalysis(List<String> parameters, boolean newAnalysis) {
       if (!isSetContainer(true)) {
          return false;
       }
@@ -936,8 +987,8 @@ public class Client extends AbstractClient implements IClient {
 
       Path analysisFile = createTempFile("analysis", analysisJsonString);
 
-      boolean result = _workHelper.uploadAnalysis(_currContainerName, analysisName, 
-            analysisFile.toAbsolutePath().toString());
+      boolean result = _workHelper.configureAnalysis(_currContainerName, newAnalysis,
+            analysisName, analysisFile.toAbsolutePath().toString(), null);
 
       if (analysisFile != null) {
          CommonUtil.delete(analysisFile);
@@ -1128,6 +1179,43 @@ public class Client extends AbstractClient implements IClient {
                "Specify testrig on command line (-%s <testrigdir>) or use command (%s <testrigdir>)\n",
                Settings.ARG_TESTRIG_DIR, Command.INIT_TESTRIG);
          return false;
+      }
+      return true;
+   }
+
+   private boolean listAnalyses() {
+      if (!isSetContainer(true)) {
+         return false;
+      }
+
+      JSONObject analysisList = _workHelper.listAnalyses(_currContainerName);
+      _logger.outputf("Found %d analyses\n", analysisList.length());
+      
+      if (analysisList != null) {
+         Iterator<?> aIterator = analysisList.keys();
+         while (aIterator.hasNext()) {
+            String aName = (String) aIterator.next();
+            _logger.outputf("Analysis: %s\n", aName);
+            
+            try {
+               JSONObject questionList = analysisList.getJSONObject(aName);
+               _logger.outputf("Found %d questions\n", questionList.length());
+
+               Iterator<?> qIterator = questionList.keys();
+               while (qIterator.hasNext()) {
+                  String qName = (String) qIterator.next();
+                  _logger.outputf("  Question: %s\n", qName);
+
+                  JSONObject questionJson = questionList.getJSONObject(qName);
+                  _logger.outputf("%s\n", questionJson.toString(1));
+               }
+
+            }
+            catch (JSONException e) {
+               throw new BatfishException("Failed to process analysis list", e);
+            }
+         }
+
       }
       return true;
    }
@@ -1386,6 +1474,8 @@ public class Client extends AbstractClient implements IClient {
          }
 
          switch (command) {
+         case ADD_ANALYSIS_QUESTIONS:
+            return initOrAddAnalysis(parameters, false);
          case ADD_BATFISH_OPTION:
             return addBatfishOption(words, options, parameters);
          case ANSWER:
@@ -1398,6 +1488,10 @@ public class Client extends AbstractClient implements IClient {
             return checkApiKey();
          case CLEAR_SCREEN:
             return clearScreen();
+         case DEL_ANALYSIS:
+            return delAnalysis(parameters);
+         case DEL_ANALYSIS_QUESTIONS:
+            return delAnalysisQuestions(parameters);
          case DEL_BATFISH_OPTION:
             return delBatfishOption(parameters);
          case DEL_CONTAINER:
@@ -1427,7 +1521,7 @@ public class Client extends AbstractClient implements IClient {
          case HELP:
             return help(parameters);
          case INIT_ANALYSIS:
-            return initAnalysis(parameters);
+            return initOrAddAnalysis(parameters, true);
          case INIT_CONTAINER:
             return initContainer(words);
          case INIT_DELTA_ENV:
@@ -1436,6 +1530,8 @@ public class Client extends AbstractClient implements IClient {
             return initTestrig(outWriter, parameters, true);
          case INIT_TESTRIG:
             return initTestrig(outWriter, parameters, false);
+         case LIST_ANALYSES:
+            return listAnalyses();
          case LIST_CONTAINERS:
             return listContainers();
          case LIST_ENVIRONMENTS:

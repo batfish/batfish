@@ -32,14 +32,18 @@ public class CoordConsts {
     * Constants for endpoints of various service calls
     */
 
+   public static final String SVC_ANALYSIS_LIST_KEY = "analysislist";
    public static final String SVC_ANALYSIS_NAME_KEY = "analysisname";
 
    public static final String SVC_CHECK_API_KEY_RSC = "checkapikey";
+   public static final String SVC_CONFIGURE_ANALYSIS_RSC = "configureanalysis";
 
    public static final String SVC_CONTAINER_LIST_KEY = "containerlist";
 
    public static final String SVC_CONTAINER_NAME_KEY = "container";
    public static final String SVC_CONTAINER_PREFIX_KEY = "containerprefix";
+   public static final String SVC_DEL_ANALYSIS_QUESTIONS_KEY = "delanalysisquestions";
+   public static final String SVC_DEL_ANALYSIS_RSC = "delanalysis";
    public static final String SVC_DEL_CONTAINER_RSC = "delcontainer";
    public static final String SVC_DEL_ENVIRONMENT_RSC = "delenvironment";
    public static final String SVC_DEL_QUESTION_RSC = "delquestion";
@@ -56,11 +60,13 @@ public class CoordConsts {
    public static final String SVC_GET_WORKSTATUS_RSC = "getworkstatus";
    public static final String SVC_GETSTATUS_RSC = "getstatus";
    public static final String SVC_INIT_CONTAINER_RSC = "initcontainer";
+   public static final String SVC_LIST_ANALYSES_RSC = "listanalyses";
    public static final String SVC_LIST_CONTAINERS_RSC = "listcontainers";
    public static final String SVC_LIST_ENVIRONMENTS_RSC = "listenvironments";
    public static final String SVC_LIST_QUESTIONS_RSC = "listquestions";
    public static final String SVC_LIST_TESTRIGS_RSC = "listtestrigs";
 
+   public static final String SVC_NEW_ANALYSIS_KEY = "newanalysis";   
    public static final String SVC_OBJECT_NAME_KEY = "objectname";
 
    public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";
@@ -75,7 +81,6 @@ public class CoordConsts {
    public static final String SVC_TESTRIG_INFO_KEY = "testriginfo";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
-   public static final String SVC_UPLOAD_ANALYSIS_RSC = "uploadanalysis";
    public static final String SVC_UPLOAD_ENV_RSC = "uploadenvironment";
    public static final String SVC_UPLOAD_QUESTION_RSC = "uploadquestion";
    public static final String SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";
