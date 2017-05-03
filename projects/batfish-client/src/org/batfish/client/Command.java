@@ -30,6 +30,7 @@ public enum Command {
    GET_DELTA("get-delta"),
    GET_QUESTION("get-question"),
    HELP("help"),
+   INIT_ANALYSIS("init-analysis"),
    INIT_CONTAINER("init-container"),
    INIT_DELTA_ENV("init-delta-environment"),
    INIT_DELTA_TESTRIG("init-delta-testrig"),
@@ -124,6 +125,8 @@ public enum Command {
             "Get the question and parameter files"));
       descs.put(HELP,
             new Pair<>("[command]", "Print the list of supported commands"));
+      descs.put(INIT_ANALYSIS, new Pair<>("<analysis-name> <question-directory>",
+            "Initialize a new analysis for the container"));
       descs.put(INIT_CONTAINER, new Pair<>("[<container-name-prefix>]",
             "Initialize a new container"));
       descs.put(INIT_DELTA_ENV,

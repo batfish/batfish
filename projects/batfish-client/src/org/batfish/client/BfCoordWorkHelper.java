@@ -2,6 +2,7 @@ package org.batfish.client;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +27,7 @@ import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -762,6 +764,41 @@ public class BfCoordWorkHelper {
       catch (Exception e) {
          _logger.errorf("exception: ");
          _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return false;
+      }
+   }
+
+   public boolean uploadAnalysis(String containerName, String analysisName,
+         String analysisFileName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_UPLOAD_ANALYSIS_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
+               analysisName);         
+         addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY, analysisFileName);
+
+         return postData(webTarget, multiPart) != null;
+      }
+      catch (Exception e) {
+         if (e.getMessage().contains("FileNotFoundException")) {
+            _logger.errorf("File not found: %s (analysis file)\n", analysisFileName);
+         }
+         else {
+            _logger.errorf(
+                  "Exception when uploading analysis to %s using (%s, %s, %s): %s\n",
+                  _coordWorkMgr, containerName, analysisName, analysisFileName,
+                  ExceptionUtils.getStackTrace(e));
+         }
          return false;
       }
    }

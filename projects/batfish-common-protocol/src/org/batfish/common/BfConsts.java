@@ -65,6 +65,8 @@ public class BfConsts {
 
    public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
 
+   public static final String RELPATH_ANALYSES_DIR = "analyses";
+   public static final String RELPATH_ANALYSIS_FILE = "analysis";
    public static final String RELPATH_ANSWER_HTML = "answer.html";
    public static final String RELPATH_ANSWER_JSON = "answer.json";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";

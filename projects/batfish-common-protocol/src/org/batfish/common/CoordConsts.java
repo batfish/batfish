@@ -32,6 +32,8 @@ public class CoordConsts {
     * Constants for endpoints of various service calls
     */
 
+   public static final String SVC_ANALYSIS_NAME_KEY = "analysisname";
+
    public static final String SVC_CHECK_API_KEY_RSC = "checkapikey";
 
    public static final String SVC_CONTAINER_LIST_KEY = "containerlist";
@@ -73,6 +75,7 @@ public class CoordConsts {
    public static final String SVC_TESTRIG_INFO_KEY = "testriginfo";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
+   public static final String SVC_UPLOAD_ANALYSIS_RSC = "uploadanalysis";
    public static final String SVC_UPLOAD_ENV_RSC = "uploadenvironment";
    public static final String SVC_UPLOAD_QUESTION_RSC = "uploadquestion";
    public static final String SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";

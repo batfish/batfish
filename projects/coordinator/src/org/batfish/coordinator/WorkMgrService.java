@@ -866,6 +866,62 @@ public class WorkMgrService {
     * @return
     */
    @POST
+   @Path(CoordConsts.SVC_UPLOAD_ANALYSIS_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray uploadAnalysis(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName,         
+         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream fileStream) {
+      try {
+         _logger.info("WMS:uploadAnalysis " + apiKey + " " + containerName 
+               + " " + analysisName);
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(analysisName, "Analysis name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         Main.getWorkMgr().uploadAnalysis(containerName, analysisName, fileStream);
+
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, (new JSONObject()
+                     .put("result", "successfully uploaded analysis"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException
+            | ZipException e) {
+         _logger.error(
+               "WMS:uploadAnalysis exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:uploadAnalysis exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   /**
+    * Uploads a new environment under the container, testrig
+    *
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param envName
+    * @param fileStream
+    * @return
+    */
+   @POST
    @Path(CoordConsts.SVC_UPLOAD_ENV_RSC)
    @Consumes(MediaType.MULTIPART_FORM_DATA)
    @Produces(MediaType.APPLICATION_JSON)

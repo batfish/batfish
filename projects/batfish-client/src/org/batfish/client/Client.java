@@ -901,6 +901,51 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
+   private boolean initAnalysis(List<String> parameters) {
+      if (!isSetContainer(true)) {
+         return false;
+      }
+      if (parameters.size() != 2) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.INIT_ANALYSIS);
+         return false;
+      }
+      
+      String analysisName = parameters.get(0);
+      String questionsPathStr = parameters.get(1);
+      
+      Map<String, String> questionMap = new TreeMap<>();
+      
+      if (!loadQuestions(null, questionsPathStr, questionMap)) {
+         return false;
+      }
+      
+      String analysisJsonString = "{}";
+      
+      try {
+         JSONObject jObject = new JSONObject();         
+         for (String qName : questionMap.keySet()) {
+            jObject.put(qName, new JSONObject(questionMap.get(qName)));
+         }
+         analysisJsonString = jObject.toString(1);
+      }
+      catch (JSONException e) {
+         throw new BatfishException(
+               "Failed to get JSONObject for analysis", e);
+      }
+
+      Path analysisFile = createTempFile("analysis", analysisJsonString);
+
+      boolean result = _workHelper.uploadAnalysis(_currContainerName, analysisName, 
+            analysisFile.toAbsolutePath().toString());
+
+      if (analysisFile != null) {
+         CommonUtil.delete(analysisFile);
+      }
+      
+      return result;
+   }
+
    private boolean initContainer(String[] words) {
       String containerPrefix = (words.length > 1) ? words[1]
             : DEFAULT_CONTAINER_PREFIX;
@@ -1127,7 +1172,7 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-   private String loadQuestion(Path file) {
+   private String loadQuestion(Path file, Map<String, String> bfq) {
       String questionText = CommonUtil.readFile(file);
       try {
          JSONObject questionObj = new JSONObject(questionText);
@@ -1143,7 +1188,7 @@ public class Client extends AbstractClient implements IClient {
                   });
             validateInstanceData(instanceData);
             String name = instanceData.getInstanceName();
-            _bfq.put(name.toLowerCase(), questionText);
+            bfq.put(name.toLowerCase(), questionText);
             return name;
          }
          else {
@@ -1157,13 +1202,18 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean loadQuestions(FileWriter outWriter,
-         List<String> parameters) {
+         List<String> parameters, Map<String,String> bfq) {
       if (parameters.size() != 1) {
          _logger.error("Invalid arguments: " + parameters.toString());
          printUsage(Command.LOAD_QUESTIONS);
          return false;
       }
       String questionsPathStr = parameters.get(0);
+      return loadQuestions(outWriter, questionsPathStr, bfq);
+  }
+
+   private boolean loadQuestions(FileWriter outWriter,
+            String questionsPathStr, Map<String,String> bfq) {
       Path questionsPath = Paths.get(questionsPathStr);
       int numLoaded = 0;
       Answer answer = new Answer();
@@ -1188,9 +1238,9 @@ public class Client extends AbstractClient implements IClient {
          throw new BatfishException("Failed to visit questions dir", e);
       }
       for (Path jsonQuestionFile : jsonQuestionFiles) {
-         int numBefore = _bfq.size();
-         String name = loadQuestion(jsonQuestionFile);
-         int numAfter = _bfq.size();
+         int numBefore = bfq.size();
+         String name = loadQuestion(jsonQuestionFile, bfq);
+         int numAfter = bfq.size();
          if (numBefore == numAfter) {
             ae.getReplaced().add(name);
          }
@@ -1376,6 +1426,8 @@ public class Client extends AbstractClient implements IClient {
             return getQuestion(parameters);
          case HELP:
             return help(parameters);
+         case INIT_ANALYSIS:
+            return initAnalysis(parameters);
          case INIT_CONTAINER:
             return initContainer(words);
          case INIT_DELTA_ENV:
@@ -1393,7 +1445,7 @@ public class Client extends AbstractClient implements IClient {
          case LIST_TESTRIGS:
             return listTestrigs();
          case LOAD_QUESTIONS:
-            return loadQuestions(outWriter, parameters);
+            return loadQuestions(outWriter, parameters, _bfq);
          case PROMPT:
             return prompt();
          case PWD:

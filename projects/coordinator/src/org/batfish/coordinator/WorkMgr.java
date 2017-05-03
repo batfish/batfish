@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -765,6 +767,77 @@ public class WorkMgr {
       Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
             new AssignWorkTask(), 0, Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
+
+   }
+
+   public void uploadAnalysis(String containerName, String aName,
+         InputStream fileStream)
+         throws Exception {
+
+      File containerDir = Paths
+            .get(Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException(
+               "Container " + containerName + " does not exist");
+      }
+
+      File aDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR, aName).toFile();
+
+      if (aDir.exists()) {
+         throw new FileExistsException(
+               "Analysis " + aName + " exists for container " + containerName);
+      }
+
+      if (!aDir.mkdirs()) {
+         throw new Exception(
+               "failed to create analyses directory " + aDir.getAbsolutePath());
+      }
+
+      File questionsDir = Paths.get(aDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+
+      if (!questionsDir.mkdirs()) {
+         throw new Exception(
+               "failed to create questions directory " + questionsDir.getAbsolutePath());
+      }
+
+      ByteArrayOutputStream questions = new ByteArrayOutputStream();
+      
+      int read = 0;
+      final byte[] buffer = new byte[1024];
+      while ((read = fileStream.read(buffer)) != -1) {
+          questions.write(buffer, 0, read);
+      }
+      
+      JSONObject jObject = new JSONObject(questions.toString("UTF-8"));
+
+      Iterator<?> keys = jObject.keys();
+
+      while( keys.hasNext() ) {
+          String qName = (String) keys.next();
+          JSONObject qJson = jObject.getJSONObject(qName);
+          
+          File qDir = Paths.get(questionsDir.getAbsolutePath(), qName).toFile();
+          
+          if (qDir.exists()) {
+             throw new FileExistsException(
+                   "Question " + qName + " already exists for analysis " + aName);
+          }
+          
+          if (!qDir.mkdirs()) {
+             throw new Exception(
+                   "failed to create question directory " + qDir.getAbsolutePath());
+          }
+          
+          File qFile = Paths
+                .get(qDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
+                .toFile();
+
+          FileUtils.writeStringToFile(qFile, qJson.toString(1));          
+      }
 
    }
 
