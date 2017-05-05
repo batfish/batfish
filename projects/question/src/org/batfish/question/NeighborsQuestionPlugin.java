@@ -329,7 +329,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             Map<String, Configuration> configurations) {
          if (!_remoteBgpNeighborsInitialized) {
             Map<Ip, Set<String>> ipOwners = _batfish
-                  .computeIpOwners(configurations);
+                  .computeIpOwners(configurations, true);
             batfish.initRemoteBgpNeighbors(configurations, ipOwners);
             _remoteBgpNeighborsInitialized = true;
          }
@@ -339,7 +339,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             Map<String, Configuration> configurations, Topology topology) {
          if (!_remoteOspfNeighborsInitialized) {
             Map<Ip, Set<String>> ipOwners = _batfish
-                  .computeIpOwners(configurations);
+                  .computeIpOwners(configurations, true);
             batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
             _remoteOspfNeighborsInitialized = true;
          }

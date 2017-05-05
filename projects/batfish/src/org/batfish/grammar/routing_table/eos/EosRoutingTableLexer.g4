@@ -80,6 +80,11 @@ COMMA
    ','
 ;
 
+COMMENT
+:
+   '!' F_NonNewline+ F_Newline+ -> channel ( HIDDEN )
+;
+
 DASH
 :
    '-'
@@ -144,6 +149,12 @@ fragment
 F_Newline
 :
    [\r\n]
+;
+
+fragment
+F_NonNewline
+:
+   ~[\r\n]
 ;
 
 fragment

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import org.batfish.common.BatfishException;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -37,6 +39,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -263,7 +266,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
    }
 
-   public void initBaseBgpRibs(AdvertisementSet externalAdverts) {
+   public void initBaseBgpRibs(AdvertisementSet externalAdverts,
+         Map<Ip, Set<String>> ipOwners) {
       _bgpRib = new BgpRib(this);
       _baseEbgpRib = new BgpRib(this);
       _baseIbgpRib = new BgpRib(this);
@@ -276,6 +280,12 @@ public class VirtualRouter extends ComparableStructure<String> {
 
          for (BgpAdvertisement advert : externalAdverts) {
             if (advert.getDstNode().equals(_c.getHostname())) {
+               Ip dstIp = advert.getDstIp();
+               Set<String> dstIpOwners = ipOwners.get(dstIp);
+               String hostname = _c.getHostname();
+               if (dstIpOwners == null || !dstIpOwners.contains(hostname)) {
+                  continue;
+               }
                Ip srcIp = advert.getSrcIp();
                // TODO: support passive bgp connections
                Prefix srcPrefix = new Prefix(srcIp, Prefix.MAX_PREFIX_LENGTH);
@@ -285,121 +295,180 @@ public class VirtualRouter extends ComparableStructure<String> {
                   BgpAdvertisementType type = advert.getType();
                   BgpRoute.Builder outgoingRouteBuilder = new BgpRoute.Builder();
                   boolean ebgp;
-                  if (type == BgpAdvertisementType.EBGP_SENT) {
+                  boolean received;
+                  switch (type) {
+
+                  case EBGP_RECEIVED:
                      ebgp = true;
-                  }
-                  else if (type == BgpAdvertisementType.IBGP_SENT) {
+                     received = true;
+                     break;
+
+                  case EBGP_SENT:
+                     ebgp = true;
+                     received = false;
+                     break;
+
+                  case IBGP_RECEIVED:
                      ebgp = false;
-                  }
-                  else {
+                     received = true;
+                     break;
+
+                  case IBGP_SENT:
+                     ebgp = false;
+                     received = false;
+                     break;
+
+                  case EBGP_ORIGINATED:
+                  case IBGP_ORIGINATED:
+                  default:
                      throw new BatfishException(
                            "Missing or invalid bgp advertisement type");
+
                   }
                   BgpRib targetRib = ebgp ? _baseEbgpRib : _baseIbgpRib;
-                  int localPreference;
-                  if (ebgp) {
-                     localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
-                  }
-                  else {
-                     localPreference = advert.getLocalPreference();
-                  }
                   RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP
                         : RoutingProtocol.IBGP;
-                  outgoingRouteBuilder.setAsPath(advert.getAsPath());
-                  outgoingRouteBuilder.setCommunities(advert.getCommunities());
-                  outgoingRouteBuilder.setLocalPreference(localPreference);
-                  outgoingRouteBuilder.setMetric(advert.getMed());
-                  outgoingRouteBuilder.setNetwork(advert.getNetwork());
-                  outgoingRouteBuilder.setNextHopIp(advert.getNextHopIp());
-                  outgoingRouteBuilder
-                        .setOriginatorIp(advert.getOriginatorIp());
-                  outgoingRouteBuilder.setOriginType(advert.getOriginType());
-                  outgoingRouteBuilder.setProtocol(targetProtocol);
-                  // TODO:
-                  // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
-                  outgoingRouteBuilder.setSrcProtocol(advert.getSrcProtocol());
-                  BgpRoute transformedOutgoingRoute = outgoingRouteBuilder
-                        .build();
-                  BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
 
-                  // Incoming originatorIp
-                  transformedIncomingRouteBuilder.setOriginatorIp(
-                        transformedOutgoingRoute.getOriginatorIp());
-
-                  // Incoming clusterList
-                  transformedIncomingRouteBuilder.getClusterList()
-                        .addAll(transformedOutgoingRoute.getClusterList());
-
-                  // Incoming receivedFromRouteReflectorClient
-                  transformedIncomingRouteBuilder
-                        .setReceivedFromRouteReflectorClient(
-                              transformedOutgoingRoute
-                                    .getReceivedFromRouteReflectorClient());
-
-                  // Incoming asPath
-                  transformedIncomingRouteBuilder.getAsPath()
-                        .addAll(transformedOutgoingRoute.getAsPath());
-
-                  // Incoming communities
-                  transformedIncomingRouteBuilder.getCommunities()
-                        .addAll(transformedOutgoingRoute.getCommunities());
-
-                  // Incoming protocol
-                  transformedIncomingRouteBuilder.setProtocol(targetProtocol);
-
-                  // Incoming network
-                  transformedIncomingRouteBuilder
-                        .setNetwork(transformedOutgoingRoute.getNetwork());
-
-                  // Incoming nextHopIp
-                  transformedIncomingRouteBuilder
-                        .setNextHopIp(transformedOutgoingRoute.getNextHopIp());
-
-                  // Incoming localPreference
-                  transformedIncomingRouteBuilder.setLocalPreference(
-                        transformedOutgoingRoute.getLocalPreference());
-
-                  // Incoming admin
-                  int admin = ebgp ? ebgpAdmin : ibgpAdmin;
-                  transformedIncomingRouteBuilder.setAdmin(admin);
-
-                  // Incoming metric
-                  transformedIncomingRouteBuilder
-                        .setMetric(transformedOutgoingRoute.getMetric());
-
-                  // Incoming srcProtocol
-                  transformedIncomingRouteBuilder
-                        .setSrcProtocol(targetProtocol);
-                  String importPolicyName = neighbor.getImportPolicy();
-                  // TODO: ensure there is always an import policy
-
-                  if (ebgp
-                        && transformedOutgoingRoute.getAsPath()
-                              .containsAs(neighbor.getLocalAs())
-                        && !neighbor.getAllowLocalAsIn()) {
-                     // skip routes containing peer's AS unless
-                     // disable-peer-as-check (getAllowRemoteAsOut) is set
-                     continue;
+                  if (received) {
+                     int admin = ebgp ? ebgpAdmin : ibgpAdmin;
+                     AsPath asPath = advert.getAsPath();
+                     SortedSet<Long> clusterList = advert.getClusterList();
+                     CommunitySet communities = advert.getCommunities();
+                     int localPreference = advert.getLocalPreference();
+                     int metric = advert.getMed();
+                     Prefix network = advert.getNetwork();
+                     Ip nextHopIp = advert.getNextHopIp();
+                     Ip originatorIp = advert.getOriginatorIp();
+                     OriginType originType = advert.getOriginType();
+                     RoutingProtocol srcProtocol = advert.getSrcProtocol();
+                     int weight = advert.getWeight();
+                     BgpRoute.Builder builder = new BgpRoute.Builder();
+                     builder.setAdmin(admin);
+                     builder.setAsPath(asPath);
+                     builder.setClusterList(clusterList);
+                     builder.setCommunities(communities);
+                     builder.setLocalPreference(localPreference);
+                     builder.setMetric(metric);
+                     builder.setNetwork(network);
+                     builder.setNextHopIp(nextHopIp);
+                     builder.setOriginatorIp(originatorIp);
+                     builder.setOriginType(originType);
+                     builder.setProtocol(targetProtocol);
+                     // TODO: support external route reflector clients
+                     builder.setReceivedFromRouteReflectorClient(false);
+                     builder.setSrcProtocol(srcProtocol);
+                     // TODO: possibly suppport setting tag
+                     builder.setWeight(weight);
+                     BgpRoute route = builder.build();
+                     targetRib.mergeRoute(route);
                   }
-
-                  /*
-                   * CREATE INCOMING ROUTE
-                   */
-                  boolean acceptIncoming = true;
-                  if (importPolicyName != null) {
-                     RoutingPolicy importPolicy = _c.getRoutingPolicies()
-                           .get(importPolicyName);
-                     if (importPolicy != null) {
-                        acceptIncoming = importPolicy.process(
-                              transformedOutgoingRoute,
-                              transformedIncomingRouteBuilder,
-                              advert.getSrcIp(), _key);
+                  else {
+                     int localPreference;
+                     if (ebgp) {
+                        localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
                      }
-                  }
-                  if (acceptIncoming) {
-                     BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder
+                     else {
+                        localPreference = advert.getLocalPreference();
+                     }
+                     outgoingRouteBuilder.setAsPath(advert.getAsPath());
+                     outgoingRouteBuilder
+                           .setCommunities(advert.getCommunities());
+                     outgoingRouteBuilder.setLocalPreference(localPreference);
+                     outgoingRouteBuilder.setMetric(advert.getMed());
+                     outgoingRouteBuilder.setNetwork(advert.getNetwork());
+                     outgoingRouteBuilder.setNextHopIp(advert.getNextHopIp());
+                     outgoingRouteBuilder
+                           .setOriginatorIp(advert.getOriginatorIp());
+                     outgoingRouteBuilder.setOriginType(advert.getOriginType());
+                     outgoingRouteBuilder.setProtocol(targetProtocol);
+                     // TODO:
+                     // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
+                     outgoingRouteBuilder
+                           .setSrcProtocol(advert.getSrcProtocol());
+                     BgpRoute transformedOutgoingRoute = outgoingRouteBuilder
                            .build();
-                     targetRib.mergeRoute(transformedIncomingRoute);
+                     BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
+
+                     // Incoming originatorIp
+                     transformedIncomingRouteBuilder.setOriginatorIp(
+                           transformedOutgoingRoute.getOriginatorIp());
+
+                     // Incoming clusterList
+                     transformedIncomingRouteBuilder.getClusterList()
+                           .addAll(transformedOutgoingRoute.getClusterList());
+
+                     // Incoming receivedFromRouteReflectorClient
+                     transformedIncomingRouteBuilder
+                           .setReceivedFromRouteReflectorClient(
+                                 transformedOutgoingRoute
+                                       .getReceivedFromRouteReflectorClient());
+
+                     // Incoming asPath
+                     transformedIncomingRouteBuilder.getAsPath()
+                           .addAll(transformedOutgoingRoute.getAsPath());
+
+                     // Incoming communities
+                     transformedIncomingRouteBuilder.getCommunities()
+                           .addAll(transformedOutgoingRoute.getCommunities());
+
+                     // Incoming protocol
+                     transformedIncomingRouteBuilder
+                           .setProtocol(targetProtocol);
+
+                     // Incoming network
+                     transformedIncomingRouteBuilder
+                           .setNetwork(transformedOutgoingRoute.getNetwork());
+
+                     // Incoming nextHopIp
+                     transformedIncomingRouteBuilder.setNextHopIp(
+                           transformedOutgoingRoute.getNextHopIp());
+
+                     // Incoming localPreference
+                     transformedIncomingRouteBuilder.setLocalPreference(
+                           transformedOutgoingRoute.getLocalPreference());
+
+                     // Incoming admin
+                     int admin = ebgp ? ebgpAdmin : ibgpAdmin;
+                     transformedIncomingRouteBuilder.setAdmin(admin);
+
+                     // Incoming metric
+                     transformedIncomingRouteBuilder
+                           .setMetric(transformedOutgoingRoute.getMetric());
+
+                     // Incoming srcProtocol
+                     transformedIncomingRouteBuilder
+                           .setSrcProtocol(targetProtocol);
+                     String importPolicyName = neighbor.getImportPolicy();
+                     // TODO: ensure there is always an import policy
+
+                     if (ebgp
+                           && transformedOutgoingRoute.getAsPath()
+                                 .containsAs(neighbor.getLocalAs())
+                           && !neighbor.getAllowLocalAsIn()) {
+                        // skip routes containing peer's AS unless
+                        // disable-peer-as-check (getAllowRemoteAsOut) is set
+                        continue;
+                     }
+
+                     /*
+                      * CREATE INCOMING ROUTE
+                      */
+                     boolean acceptIncoming = true;
+                     if (importPolicyName != null) {
+                        RoutingPolicy importPolicy = _c.getRoutingPolicies()
+                              .get(importPolicyName);
+                        if (importPolicy != null) {
+                           acceptIncoming = importPolicy.process(
+                                 transformedOutgoingRoute,
+                                 transformedIncomingRouteBuilder,
+                                 advert.getSrcIp(), _key);
+                        }
+                     }
+                     if (acceptIncoming) {
+                        BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder
+                              .build();
+                        targetRib.mergeRoute(transformedIncomingRoute);
+                     }
                   }
                }
             }
@@ -582,7 +651,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
    }
 
-   public int propagateBgpRoutes(Map<String, Node> nodes, Topology topology) {
+   public int propagateBgpRoutes(Map<String, Node> nodes,
+         Map<Ip, Set<String>> ipOwners) {
       int numRoutes = 0;
       if (_vrf.getBgpProcess() != null) {
          int ebgpAdmin = RoutingProtocol.BGP
@@ -592,6 +662,12 @@ public class VirtualRouter extends ComparableStructure<String> {
 
          for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors()
                .values()) {
+            Ip localIp = neighbor.getLocalIp();
+            Set<String> localIpOwners = ipOwners.get(localIp);
+            String hostname = _c.getHostname();
+            if (localIpOwners == null || !localIpOwners.contains(hostname)) {
+               continue;
+            }
             BgpNeighbor remoteBgpNeighbor = neighbor.getRemoteBgpNeighbor();
             if (remoteBgpNeighbor != null) {
                int localAs = neighbor.getLocalAs();
@@ -627,13 +703,29 @@ public class VirtualRouter extends ComparableStructure<String> {
 
                for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
                   BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
-
                   RoutingProtocol remoteRouteProtocol = remoteRoute
                         .getProtocol();
                   boolean remoteRouteIsBgp = remoteRouteProtocol == RoutingProtocol.IBGP
                         || remoteRouteProtocol == RoutingProtocol.BGP;
 
-                  // originatorIp, clusterList, receivedFromRouteReflectorClient
+                  // originatorIP
+                  Ip originatorIp = null;
+                  if (!ebgp) {
+                     Ip remoteOriginatorIp = null;
+                     if (remoteRouteIsBgp) {
+                        BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
+                        remoteOriginatorIp = bgpRemoteRoute.getOriginatorIp();
+                     }
+                     if (remoteRouteProtocol.equals(RoutingProtocol.IBGP)) {
+                        originatorIp = remoteOriginatorIp;
+                     }
+                     else {
+                        originatorIp = remoteVrf.getBgpProcess().getRouterId();
+                     }
+                  }
+                  transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
+
+                  // clusterList, receivedFromRouteReflectorClient
                   if (remoteRouteIsBgp) {
                      BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
                      if (ebgp
@@ -659,16 +751,6 @@ public class VirtualRouter extends ComparableStructure<String> {
                      }
                      if (remoteRouteProtocol.equals(RoutingProtocol.IBGP)
                            && !ebgp) {
-                        Ip originatorIp;
-                        if (remoteOriginatorIp != null) {
-                           originatorIp = remoteOriginatorIp;
-                        }
-                        else {
-                           originatorIp = remoteVrf.getBgpProcess()
-                                 .getRouterId();
-                        }
-                        transformedOutgoingRouteBuilder
-                              .setOriginatorIp(originatorIp);
                         boolean remoteRouteReceivedFromRouteReflectorClient = bgpRemoteRoute
                               .getReceivedFromRouteReflectorClient();
                         boolean sendingToRouteReflectorClient = remoteBgpNeighbor
@@ -764,10 +846,9 @@ public class VirtualRouter extends ComparableStructure<String> {
                   /*
                    * CREATE OUTGOING ROUTE
                    */
-                  Ip remoteLocalIp = remoteBgpNeighbor.getLocalIp();
                   boolean acceptOutgoing = remoteExportPolicy.process(
-                        remoteRoute, transformedOutgoingRouteBuilder,
-                        remoteLocalIp, remoteVrfName);
+                        remoteRoute, transformedOutgoingRouteBuilder, localIp,
+                        remoteVrfName);
                   if (acceptOutgoing) {
                      BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder
                            .build();
@@ -804,7 +885,13 @@ public class VirtualRouter extends ComparableStructure<String> {
                            .setNetwork(remoteRoute.getNetwork());
 
                      // Incoming nextHopIp
-                     transformedIncomingRouteBuilder.setNextHopIp(nextHopIp);
+                     if (ebgp) {
+                        transformedIncomingRouteBuilder.setNextHopIp(nextHopIp);
+                     }
+                     else {
+                        transformedIncomingRouteBuilder.setNextHopIp(
+                              transformedOutgoingRoute.getNextHopIp());
+                     }
 
                      // Incoming localPreference
                      transformedIncomingRouteBuilder.setLocalPreference(
@@ -881,11 +968,14 @@ public class VirtualRouter extends ComparableStructure<String> {
             String connectingInterfaceName = edge.getInt1();
             Interface connectingInterface = _vrf.getInterfaces()
                   .get(connectingInterfaceName);
+            if (connectingInterface == null) {
+               // wrong vrf, so skip
+               continue;
+            }
             String neighborName = edge.getNode2();
             Node neighbor = nodes.get(neighborName);
             String neighborInterfaceName = edge.getInt2();
-            OspfArea area = _vrf.getInterfaces().get(connectingInterfaceName)
-                  .getOspfArea();
+            OspfArea area = connectingInterface.getOspfArea();
             Configuration nc = neighbor._c;
             Interface neighborInterface = nc.getInterfaces()
                   .get(neighborInterfaceName);
@@ -958,11 +1048,14 @@ public class VirtualRouter extends ComparableStructure<String> {
             String connectingInterfaceName = edge.getInt1();
             Interface connectingInterface = _vrf.getInterfaces()
                   .get(connectingInterfaceName);
+            if (connectingInterface == null) {
+               // wrong vrf, so skip
+               continue;
+            }
             String neighborName = edge.getNode2();
             Node neighbor = nodes.get(neighborName);
             String neighborInterfaceName = edge.getInt2();
-            OspfArea area = _vrf.getInterfaces().get(connectingInterfaceName)
-                  .getOspfArea();
+            OspfArea area = connectingInterface.getOspfArea();
             Configuration nc = neighbor._c;
             Interface neighborInterface = nc.getInterfaces()
                   .get(neighborInterfaceName);

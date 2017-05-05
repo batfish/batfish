@@ -1,9 +1,9 @@
 package org.batfish.common.util;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -189,10 +189,10 @@ public class CommonUtil {
       }
    }
 
-   public static File getConfigProperties(Class<?> locatorClass,
+   public static Path getConfigProperties(Class<?> locatorClass,
          String propertiesFilename) {
-      File configDir = getJarOrClassDir(locatorClass);
-      return Paths.get(configDir.toString(), propertiesFilename).toFile();
+      Path configDir = getJarOrClassDir(locatorClass);
+      return configDir.resolve(propertiesFilename);
    }
 
    public static String getIndentedString(String str, int indentLevel) {
@@ -229,23 +229,26 @@ public class CommonUtil {
       return null;
    }
 
-   public static File getJarOrClassDir(Class<?> locatorClass) {
-      File locatorDirFile = null;
+   public static Path getJarOrClassDir(Class<?> locatorClass) {
+      Path locatorDirFile = null;
       URL locatorSourceURL = locatorClass.getProtectionDomain().getCodeSource()
             .getLocation();
       String locatorSourceString = locatorSourceURL.toString();
       if (locatorSourceString.startsWith("onejar:")) {
-         URL onejarSourceURL = null;
+         URI onejarSourceURI = null;
          try {
-            onejarSourceURL = Class.forName("com.simontuffs.onejar.Boot")
+            URL onejarSourceURL = Class.forName("com.simontuffs.onejar.Boot")
                   .getProtectionDomain().getCodeSource().getLocation();
+            onejarSourceURI = onejarSourceURL.toURI();
          }
          catch (ClassNotFoundException e) {
             throw new BatfishException("could not find onejar class");
          }
-         File jarDir = new File(
-               onejarSourceURL.toString().replaceAll("^file:\\\\*", ""))
-                     .getParentFile();
+         catch (URISyntaxException e) {
+            throw new BatfishException("Failed to convert onejar URL to URI",
+                  e);
+         }
+         Path jarDir = Paths.get(onejarSourceURI).getParent();
          return jarDir;
       }
       else {
@@ -253,7 +256,7 @@ public class CommonUtil {
          String locatorPackageResourceName = locatorClass.getPackage().getName()
                .replace('.', separator);
          try {
-            locatorDirFile = new File(locatorClass.getClassLoader()
+            locatorDirFile = Paths.get(locatorClass.getClassLoader()
                   .getResource(locatorPackageResourceName).toURI());
          }
          catch (URISyntaxException e) {

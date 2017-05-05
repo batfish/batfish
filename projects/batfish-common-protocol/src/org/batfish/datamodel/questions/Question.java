@@ -273,7 +273,7 @@ public abstract class Question implements IQuestion {
 
    }
 
-   private static final String DIFF_VAR = "differential";
+   public static final String DIFFERENTIAL_VAR = "differential";
 
    public static final String INNER_QUESTION_VAR = "innerQuestion";
 
@@ -290,7 +290,7 @@ public abstract class Question implements IQuestion {
    @JsonIgnore
    public abstract boolean getDataPlane();
 
-   @JsonProperty(DIFF_VAR)
+   @JsonProperty(DIFFERENTIAL_VAR)
    public boolean getDifferential() {
       return _differential;
    }
@@ -308,7 +308,7 @@ public abstract class Question implements IQuestion {
 
    protected boolean isBaseParamKey(String paramKey) {
       switch (paramKey) {
-      case DIFF_VAR:
+      case DIFFERENTIAL_VAR:
          return true;
       default:
          return false;
@@ -341,7 +341,7 @@ public abstract class Question implements IQuestion {
       }
    }
 
-   @JsonProperty(DIFF_VAR)
+   @JsonProperty(DIFFERENTIAL_VAR)
    public void setDifferential(boolean differential) {
       _differential = differential;
    }

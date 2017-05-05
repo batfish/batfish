@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -28,9 +29,12 @@ public class SelfNextHop extends NextHopExpr {
    @Override
    public Ip getNextHopIp(Environment environment) {
       // TODO: make work for dynamic sessions
-      return environment.getVrf().getBgpProcess().getNeighbors().get(
-            new Prefix(environment.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH))
-            .getLocalIp();
+      Prefix prefix = new Prefix(environment.getPeerAddress(),
+            Prefix.MAX_PREFIX_LENGTH);
+      BgpNeighbor neighbor = environment.getVrf().getBgpProcess().getNeighbors()
+            .get(prefix);
+      Ip localIp = neighbor.getLocalIp();
+      return localIp;
    }
 
    @Override

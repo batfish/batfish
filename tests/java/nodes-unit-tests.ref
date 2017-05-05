@@ -514,6 +514,91 @@
             }
           }
         },
+        "arista_bgp" : {
+          "name" : "arista_bgp",
+          "configurationFormat" : "ARISTA",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+            }
+          },
+          "routeFilterLists" : {
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
+            },
+            "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
+            }
+          },
+          "routingPolicies" : {
+            "~BGP_COMMON_EXPORT_POLICY:default~" : {
+              "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                          "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                          "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_bgp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "routerId" : "0.0.0.0"
+              }
+            }
+          }
+        },
         "arista_ip_route" : {
           "name" : "arista_ip_route",
           "configurationFormat" : "CISCO_NX",
@@ -3506,6 +3591,41 @@
             }
           }
         },
+        "cisco_ntp" : {
+          "name" : "cisco_ntp",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "ntpServers" : [
+            "1.2.3.4",
+            "2.3.4.5"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_ntp",
+              "ntp" : {
+                "servers" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4",
+                    "vrf" : "some-vrf"
+                  },
+                  "2.3.4.5" : {
+                    "name" : "2.3.4.5",
+                    "vrf" : "some-vrf"
+                  }
+                }
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            },
+            "some-vrf" : {
+              "name" : "some-vrf"
+            }
+          }
+        },
         "cisco_ospf" : {
           "name" : "cisco_ospf",
           "configurationFormat" : "CISCO_IOS",
@@ -5668,6 +5788,91 @@
               "interfaces" : [
                 "Loopback0"
               ]
+            }
+          }
+        },
+        "ios_bgp" : {
+          "name" : "ios_bgp",
+          "configurationFormat" : "CISCO_IOS",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+            }
+          },
+          "routeFilterLists" : {
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
+            },
+            "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
+            }
+          },
+          "routingPolicies" : {
+            "~BGP_COMMON_EXPORT_POLICY:default~" : {
+              "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                          "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                          "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "ios_bgp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "routerId" : "0.0.0.0"
+              }
             }
           }
         },

@@ -1,7 +1,8 @@
 package org.batfish.datamodel;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.batfish.datamodel.collections.CommunitySet;
 
@@ -11,7 +12,7 @@ public class BgpRoute extends AbstractRoute {
 
       private AsPath _asPath;
 
-      private final Set<Long> _clusterList;
+      private SortedSet<Long> _clusterList;
 
       private CommunitySet _communities;
 
@@ -32,7 +33,7 @@ public class BgpRoute extends AbstractRoute {
       public Builder() {
          _asPath = new AsPath();
          _communities = new CommunitySet();
-         _clusterList = new HashSet<>();
+         _clusterList = new TreeSet<>();
       }
 
       @Override
@@ -77,6 +78,10 @@ public class BgpRoute extends AbstractRoute {
 
       public void setAsPath(AsPath asPath) {
          _asPath = asPath;
+      }
+
+      public void setClusterList(SortedSet<Long> clusterList) {
+         _clusterList = clusterList;
       }
 
       public void setCommunities(CommunitySet communities) {
@@ -125,7 +130,7 @@ public class BgpRoute extends AbstractRoute {
 
    private final AsPath _asPath;
 
-   private final Set<Long> _clusterList;
+   private final SortedSet<Long> _clusterList;
 
    private final CommunitySet _communities;
 
@@ -147,7 +152,7 @@ public class BgpRoute extends AbstractRoute {
 
    public BgpRoute(Prefix network, Ip nextHopIp, int admin, AsPath asPath,
          CommunitySet communities, int localPreference, int med,
-         Ip originatorIp, Set<Long> clusterList,
+         Ip originatorIp, SortedSet<Long> clusterList,
          boolean receivedFromRouteReflectorClient, OriginType originType,
          RoutingProtocol protocol, RoutingProtocol srcProtocol, int weight) {
       super(network, nextHopIp);

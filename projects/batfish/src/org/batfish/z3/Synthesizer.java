@@ -363,7 +363,7 @@ public class Synthesizer {
       // not destination protocols
       if (notDstProtocols.size() > 0) {
          OrExpr matchesSomeProtocol = new OrExpr();
-         for (Protocol protocol : dstProtocols) {
+         for (Protocol protocol : notDstProtocols) {
             AndExpr matchProtocolAndPort = new AndExpr();
             int protocolNumber = protocol.getIpProtocol().number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
