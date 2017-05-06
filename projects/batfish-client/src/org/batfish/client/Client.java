@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -52,6 +53,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
@@ -60,6 +62,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
+import org.reflections.Reflections;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -73,6 +76,14 @@ import jline.console.history.FileHistory;
 
 public class Client extends AbstractClient implements IClient {
 
+   public class Shape {
+      
+   }
+   
+   public class Square extends Shape {
+      
+   }
+   
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
 
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
@@ -724,12 +735,38 @@ public class Client extends AbstractClient implements IClient {
    private void generateDatamodel() {
       try {
          ObjectMapper mapper = new BatfishObjectMapper();
-
          JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
          JsonNode schemaNew = schemaGenNew
                .generateJsonSchema(Configuration.class);
          _logger.output(mapper.writeValueAsString(schemaNew));
 
+//         Reflections reflections = new Reflections("org.batfish.datamodel");
+//         Set<Class<? extends AnswerElement>> classes = reflections.getSubTypesOf(AnswerElement.class);
+//         _logger.outputf("Found %d classes that inherit %s\n", classes.toArray().length, "AnswerElement");
+//        
+//         File dmDir = Paths.get(_settings.getDatamodelDir()).toFile();
+//         if (!dmDir.exists()) {
+//            if (!dmDir.mkdirs()) {
+//               throw new BatfishException("Could not create directory: " + dmDir.getAbsolutePath());
+//            }
+//         }
+//         
+//         for (Class c : classes) {
+//            String className = c.getCanonicalName()
+//                  .replaceAll("org\\.batfish\\.datamodel\\.", "")
+//                  .replaceAll("\\.", "-") 
+//                  + ".json";
+//            _logger.outputf("%s --> %s\n", c, className);
+//            Path file = Paths.get(dmDir.getAbsolutePath(), className);
+//            try (PrintWriter out = new PrintWriter(file.toAbsolutePath().toString())) {
+//               ObjectMapper mapper = new BatfishObjectMapper();
+//               JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+//               JsonNode schema = schemaGen.generateJsonSchema(c);
+//               String schemaString = mapper.writeValueAsString(schema);            
+//               out.println(schemaString);
+//            }
+//         }
+         
          // JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper,
          // true, JsonSchemaConfig.vanillaJsonSchemaDraft4());
          // JsonNode schemaNew =
