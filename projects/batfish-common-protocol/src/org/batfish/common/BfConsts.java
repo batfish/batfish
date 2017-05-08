@@ -105,6 +105,7 @@ public class BfConsts {
    public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
    public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
+   public static final String RELPATH_TESTRIGS_DIR = "";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";

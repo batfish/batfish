@@ -349,7 +349,7 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         Main.getWorkMgr().delQuestion(containerName, testrigName,
+         Main.getWorkMgr().delTestrigQuestion(containerName, testrigName,
                questionName);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
@@ -459,7 +459,7 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         File file = Main.getWorkMgr().getObject(containerName, testrigName,
+         File file = Main.getWorkMgr().getTestrigObject(containerName, testrigName,
                objectName);
 
          if (file == null) {
