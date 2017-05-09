@@ -2524,6 +2524,34 @@
               "staticRoutes" : [
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "Dialer1",
+                  "tag" : -1,
+                  "administrativeCost" : 250
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "Dialer2",
+                  "tag" : -1,
+                  "administrativeCost" : 300
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "Loopback66",
+                  "tag" : -1,
+                  "administrativeCost" : 100
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "Loopback99",
+                  "tag" : -1,
+                  "administrativeCost" : 150
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
                   "network" : "1.2.3.4/32",
                   "nextHopIp" : "2.3.4.5",
                   "tag" : -1,
