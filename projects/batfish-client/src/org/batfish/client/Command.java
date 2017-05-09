@@ -83,8 +83,9 @@ public enum Command {
 
    private static Map<Command, Pair<String, String>> buildUsageMap() {
       Map<Command, Pair<String, String>> descs = new TreeMap<>();
-      descs.put(ADD_ANALYSIS_QUESTIONS, new Pair<>("<analysis-name> <question-directory>",
-            "Add questions from the directory to the analysis"));
+      descs.put(ADD_ANALYSIS_QUESTIONS,
+            new Pair<>("<analysis-name> <question-directory>",
+                  "Add questions from the directory to the analysis"));
       descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> <option-value>",
             "Additional options to pass to Batfish"));
       descs.put(ANSWER, new Pair<>(
@@ -100,10 +101,11 @@ public enum Command {
       // + " <dirname>\n"
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
-      descs.put(DEL_ANALYSIS, new Pair<>("<analysis-name>",
-            "Delete the analysis completely"));
-      descs.put(DEL_ANALYSIS_QUESTIONS, new Pair<>("<analysis-name> qname1 [qname2 [qname3] ...]",
-            "Delete questions from the analysis"));
+      descs.put(DEL_ANALYSIS,
+            new Pair<>("<analysis-name>", "Delete the analysis completely"));
+      descs.put(DEL_ANALYSIS_QUESTIONS,
+            new Pair<>("<analysis-name> qname1 [qname2 [qname3] ...]",
+                  "Delete questions from the analysis"));
       descs.put(DEL_BATFISH_OPTION,
             new Pair<>("<option-key>", "Stop passing this option to Batfish"));
       descs.put(DEL_CONTAINER,
@@ -133,8 +135,9 @@ public enum Command {
             "Get the question and parameter files"));
       descs.put(HELP,
             new Pair<>("[command]", "Print the list of supported commands"));
-      descs.put(INIT_ANALYSIS, new Pair<>("<analysis-name> <question-directory>",
-            "Initialize a new analysis for the container"));
+      descs.put(INIT_ANALYSIS,
+            new Pair<>("<analysis-name> <question-directory>",
+                  "Initialize a new analysis for the container"));
       descs.put(INIT_CONTAINER, new Pair<>("[<container-name-prefix>]",
             "Initialize a new container"));
       descs.put(INIT_DELTA_ENV,

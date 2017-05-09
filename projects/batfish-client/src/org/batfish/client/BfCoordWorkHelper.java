@@ -81,8 +81,9 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public boolean configureAnalysis(String containerName, boolean newAnalysis, 
-         String analysisName, String addQuestionsFileName, String delQuestionsStr) {
+   public boolean configureAnalysis(String containerName, boolean newAnalysis,
+         String analysisName, String addQuestionsFileName,
+         String delQuestionsStr) {
       try {
 
          Client client = getClientBuilder().build();
@@ -97,27 +98,31 @@ public class BfCoordWorkHelper {
          addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
                containerName);
          if (newAnalysis) {
-            addTextMultiPart(multiPart, CoordConsts.SVC_NEW_ANALYSIS_KEY, "new");
+            addTextMultiPart(multiPart, CoordConsts.SVC_NEW_ANALYSIS_KEY,
+                  "new");
          }
          addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
-               analysisName);         
+               analysisName);
          if (addQuestionsFileName != null) {
-            addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY, addQuestionsFileName);
+            addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY,
+                  addQuestionsFileName);
          }
          if (delQuestionsStr != null) {
-            addTextMultiPart(multiPart, CoordConsts.SVC_DEL_ANALYSIS_QUESTIONS_KEY, delQuestionsStr);
+            addTextMultiPart(multiPart,
+                  CoordConsts.SVC_DEL_ANALYSIS_QUESTIONS_KEY, delQuestionsStr);
          }
 
          return postData(webTarget, multiPart) != null;
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf("File not found: %s (addQuestionsFile file)\n", addQuestionsFileName);
+            _logger.errorf("File not found: %s (addQuestionsFile file)\n",
+                  addQuestionsFileName);
          }
          else {
             _logger.errorf(
                   "Exception when configuring analysis to %s using (%s, %s, %s, %s, %s): %s\n",
-                  _coordWorkMgr, containerName, newAnalysis, analysisName, 
+                  _coordWorkMgr, containerName, newAnalysis, analysisName,
                   addQuestionsFileName, delQuestionsStr,
                   ExceptionUtils.getStackTrace(e));
          }
@@ -140,14 +145,14 @@ public class BfCoordWorkHelper {
          addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
                containerName);
          addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
-               analysisName);         
+               analysisName);
 
          return postData(webTarget, multiPart) != null;
       }
       catch (Exception e) {
          _logger.errorf(
                "Exception when deleting analysis to %s using (%s, %s): %s\n",
-               _coordWorkMgr, containerName, analysisName, 
+               _coordWorkMgr, containerName, analysisName,
                ExceptionUtils.getStackTrace(e));
          return false;
       }

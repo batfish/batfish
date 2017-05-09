@@ -21,19 +21,19 @@ public class CoordConsts {
     * Various constants used as keys on multi-part form data
     */
    public static final String SVC_ADD_WORKER_KEY = "addworker";
-   public static final String SVC_API_KEY = "apikey";
-   /**
-    * Constants for where and how services are hosted
-    */
-   public static final String SVC_BASE_POOL_MGR = "/batfishpoolmgr";
-   public static final String SVC_BASE_WORK_MGR = "/batfishworkmgr";
-
    /**
     * Constants for endpoints of various service calls
     */
 
    public static final String SVC_ANALYSIS_LIST_KEY = "analysislist";
    public static final String SVC_ANALYSIS_NAME_KEY = "analysisname";
+   public static final String SVC_API_KEY = "apikey";
+
+   /**
+    * Constants for where and how services are hosted
+    */
+   public static final String SVC_BASE_POOL_MGR = "/batfishpoolmgr";
+   public static final String SVC_BASE_WORK_MGR = "/batfishworkmgr";
 
    public static final String SVC_CHECK_API_KEY_RSC = "checkapikey";
    public static final String SVC_CONFIGURE_ANALYSIS_RSC = "configureanalysis";
@@ -66,7 +66,7 @@ public class CoordConsts {
    public static final String SVC_LIST_QUESTIONS_RSC = "listquestions";
    public static final String SVC_LIST_TESTRIGS_RSC = "listtestrigs";
 
-   public static final String SVC_NEW_ANALYSIS_KEY = "newanalysis";   
+   public static final String SVC_NEW_ANALYSIS_KEY = "newanalysis";
    public static final String SVC_OBJECT_NAME_KEY = "objectname";
 
    public static final String SVC_POOL_GETSTATUS_RSC = "getstatus";

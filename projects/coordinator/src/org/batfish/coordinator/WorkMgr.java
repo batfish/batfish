@@ -302,33 +302,34 @@ public class WorkMgr {
       }
    }
 
-   public void configureAnalysis(String containerName, boolean newAnalysis, 
-         String aName, InputStream addQuestionsFileStream, String delQuestionsStr)
-         throws Exception {
+   public void configureAnalysis(String containerName, boolean newAnalysis,
+         String aName, InputStream addQuestionsFileStream,
+         String delQuestionsStr) throws Exception {
 
       File containerDir = getExistingContainerDir(containerName);
-      
+
       File aDir = Paths.get(containerDir.getAbsolutePath(),
             BfConsts.RELPATH_ANALYSES_DIR, aName).toFile();
 
       if (aDir.exists() && newAnalysis) {
-         throw new FileExistsException(
-               "Analysis " + aName + " already exists for container " + containerName);
+         throw new FileExistsException("Analysis " + aName
+               + " already exists for container " + containerName);
       }
 
       if (!aDir.exists()) {
          if (!newAnalysis) {
-            throw new FileExistsException(
-                  "Analysis " + aName + " does not exists for container " + containerName);
+            throw new FileExistsException("Analysis " + aName
+                  + " does not exists for container " + containerName);
          }
          if (!aDir.mkdirs()) {
-            throw new Exception(
-                  "failed to create analyses directory " + aDir.getAbsolutePath());
+            throw new Exception("failed to create analyses directory "
+                  + aDir.getAbsolutePath());
          }
       }
 
-      File questionsDir = Paths.get(aDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+      File questionsDir = Paths
+            .get(aDir.getAbsolutePath(), BfConsts.RELPATH_QUESTIONS_DIR)
+            .toFile();
 
       if (addQuestionsFileStream != null) {
          ByteArrayOutputStream questions = new ByteArrayOutputStream();
@@ -343,49 +344,52 @@ public class WorkMgr {
 
          Iterator<?> keys = jObject.keys();
 
-         while( keys.hasNext() ) {
+         while (keys.hasNext()) {
             String qName = (String) keys.next();
             JSONObject qJson = jObject.getJSONObject(qName);
 
-            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName).toFile();
+            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName)
+                  .toFile();
 
             if (qDir.exists()) {
-               throw new FileExistsException(
-                     "Question " + qName + " already exists for analysis " + aName);
+               throw new FileExistsException("Question " + qName
+                     + " already exists for analysis " + aName);
             }
 
             if (!qDir.mkdirs()) {
-               throw new Exception(
-                     "failed to create question directory " + qDir.getAbsolutePath());
+               throw new Exception("failed to create question directory "
+                     + qDir.getAbsolutePath());
             }
 
             File qFile = Paths
                   .get(qDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
                   .toFile();
 
-            FileUtils.writeStringToFile(qFile, qJson.toString(1));          
+            FileUtils.writeStringToFile(qFile, qJson.toString(1));
          }
       }
-      
+
       if (delQuestionsStr != null && !delQuestionsStr.equals("")) {
          JSONArray delQuestionsArray = new JSONArray(delQuestionsStr);
-         
-         for (int index=0; index < delQuestionsArray.length(); index++) {
+
+         for (int index = 0; index < delQuestionsArray.length(); index++) {
             String qName = delQuestionsArray.getString(index);
-            
-            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName).toFile();
+
+            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName)
+                  .toFile();
 
             if (!qDir.exists()) {
-               throw new FileExistsException(
-                     "Question " + qName + " does not exist for analysis " + aName);
+               throw new FileExistsException("Question " + qName
+                     + " does not exist for analysis " + aName);
             }
-            
+
             FileUtils.deleteDirectory(qDir);
          }
       }
    }
 
-   public void delAnalysis(String containerName, String aName) throws Exception {
+   public void delAnalysis(String containerName, String aName)
+         throws Exception {
       File aDir = getExistingContainerAnalysisDir(containerName, aName);
       FileUtils.deleteDirectory(aDir);
    }
@@ -397,14 +401,9 @@ public class WorkMgr {
 
    public void delEnvironment(String containerName, String testrigName,
          String envName) throws Exception {
-      File envDir = getExistingEnvironmentDir(containerName, testrigName, envName);
+      File envDir = getExistingEnvironmentDir(containerName, testrigName,
+            envName);
       FileUtils.deleteDirectory(envDir);
-   }
-
-   public void delTestrigQuestion(String containerName, String testrigName,
-         String qName) throws Exception {
-      File qDir = getExistingTestrigQuestionDir(containerName, testrigName, qName);
-      FileUtils.deleteDirectory(qDir);
    }
 
    public void delTestrig(String containerName, String testrigName)
@@ -413,21 +412,58 @@ public class WorkMgr {
       FileUtils.deleteDirectory(testrigDir);
    }
 
-   public String getAnalysisQuestion(String containerName, String analysisName, 
+   public void delTestrigQuestion(String containerName, String testrigName,
+         String qName) throws Exception {
+      File qDir = getExistingTestrigQuestionDir(containerName, testrigName,
+            qName);
+      FileUtils.deleteDirectory(qDir);
+   }
+
+   public String getAnalysisQuestion(String containerName, String analysisName,
          String questionName) throws Exception {
 
-      File questionDir = getExistingAnalysisQuestionDir(containerName, analysisName, questionName);
+      File questionDir = getExistingAnalysisQuestionDir(containerName,
+            analysisName, questionName);
 
-      Path qFile = Paths
-            .get(questionDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE);
+      Path qFile = Paths.get(questionDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTION_FILE);
       if (!qFile.toFile().exists()) {
          throw new FileExistsException(
                "Question file not found for " + questionName);
       }
 
-      return CommonUtil.readFile(qFile);            
+      return CommonUtil.readFile(qFile);
    }
 
+   private File getExistingAnalysisQuestionDir(String containerName,
+         String analysisName, String qName) throws FileNotFoundException {
+      File analysisDir = getExistingContainerAnalysisDir(containerName,
+            analysisName);
+
+      File qDir = Paths.get(analysisDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR, qName).toFile();
+      if (!qDir.exists()) {
+         throw new FileNotFoundException(
+               "Question " + qName + " does not exist");
+      }
+
+      return qDir;
+   }
+
+   private File getExistingContainerAnalysisDir(String containerName,
+         String analysisName) throws FileNotFoundException {
+
+      File containerDir = getExistingContainerDir(containerName);
+
+      File aDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_ANALYSES_DIR, analysisName).toFile();
+      if (!aDir.exists()) {
+         throw new FileNotFoundException("Analysis " + analysisName
+               + " does not exists for container " + containerName);
+      }
+
+      return aDir;
+   }
 
    private File getExistingContainerDir(String containerName)
          throws FileNotFoundException {
@@ -441,45 +477,14 @@ public class WorkMgr {
 
       return containerDir;
    }
-   
-   private File getExistingAnalysisQuestionDir(String containerName, 
-         String analysisName, String qName) throws FileNotFoundException {
-      File analysisDir = getExistingContainerAnalysisDir(containerName, analysisName);
 
-      File qDir = Paths.get(analysisDir.getAbsolutePath(), 
-            BfConsts.RELPATH_QUESTIONS_DIR, qName)
-            .toFile();
-      if (!qDir.exists()) {
-         throw new FileNotFoundException(
-               "Question " + qName + " does not exist");
-      }
-      
-      return qDir;
-   }
-   
- private File getExistingContainerAnalysisDir(String containerName, 
-         String analysisName) throws FileNotFoundException {
-
-      File containerDir = getExistingContainerDir(containerName);
-
-      File aDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_ANALYSES_DIR, analysisName).toFile();
-      if (!aDir.exists()) {
-         throw new FileNotFoundException(
-               "Analysis " + analysisName + " does not exists for container " + containerName);
-      }
-      
-      return aDir;
-   }
-
-   private File getExistingEnvironmentDir(String containerName, String testrigName, String envName)
-         throws FileNotFoundException {
+   private File getExistingEnvironmentDir(String containerName,
+         String testrigName, String envName) throws FileNotFoundException {
 
       File testrigDir = getExistingTestrigDir(containerName, testrigName);
 
-      File envDir = Paths
-            .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_ENVIRONMENTS_DIR, envName)
-            .toFile();
+      File envDir = Paths.get(testrigDir.getAbsolutePath(),
+            BfConsts.RELPATH_ENVIRONMENTS_DIR, envName).toFile();
       if (!envDir.exists()) {
          throw new FileNotFoundException(
                "Environment " + envName + " does not exist");
@@ -488,12 +493,11 @@ public class WorkMgr {
       return envDir;
    }
 
-
    private File getExistingTestrigDir(String containerName, String testrigName)
          throws FileNotFoundException {
       File containerDir = getExistingContainerDir(containerName);
-      
-      File testrigDir = Paths.get(containerDir.getAbsolutePath(), 
+
+      File testrigDir = Paths.get(containerDir.getAbsolutePath(),
             BfConsts.RELPATH_TESTRIGS_DIR, testrigName).toFile();
       if (!testrigDir.exists()) {
          throw new FileNotFoundException(
@@ -503,21 +507,20 @@ public class WorkMgr {
       return testrigDir;
    }
 
-   private File getExistingTestrigQuestionDir(String containerName, 
+   private File getExistingTestrigQuestionDir(String containerName,
          String testrigName, String qName) throws FileNotFoundException {
       File testrigDir = getExistingTestrigDir(containerName, testrigName);
 
-      File qDir = Paths.get(testrigDir.getAbsolutePath(), 
-            BfConsts.RELPATH_QUESTIONS_DIR, qName)
-            .toFile();
+      File qDir = Paths.get(testrigDir.getAbsolutePath(),
+            BfConsts.RELPATH_QUESTIONS_DIR, qName).toFile();
       if (!qDir.exists()) {
          throw new FileNotFoundException(
                "Question " + qName + " does not exist");
       }
-      
+
       return qDir;
    }
-   
+
    public JSONObject getStatusJson() throws JSONException {
       return _workQueueMgr.getStatusJson();
    }
@@ -563,8 +566,7 @@ public class WorkMgr {
          String objectName) throws Exception {
 
       File testrigDir = getExistingTestrigDir(containerName, testrigName);
-      File file = Paths.get(testrigDir.getAbsolutePath(), 
-            objectName).toFile();
+      File file = Paths.get(testrigDir.getAbsolutePath(), objectName).toFile();
 
       // check if we got an object name outside of the testrig folder,
       // perhaps because of ".." in the name; disallow it
@@ -628,8 +630,9 @@ public class WorkMgr {
 
       File containerDir = getExistingContainerDir(containerName);
 
-      File analysesDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_ANALYSES_DIR).toFile();
+      File analysesDir = Paths
+            .get(containerDir.getAbsolutePath(), BfConsts.RELPATH_ANALYSES_DIR)
+            .toFile();
       if (!analysesDir.exists()) {
          return new String[0];
       }
@@ -640,16 +643,18 @@ public class WorkMgr {
             return new File(current, name).isDirectory();
          }
       });
-      
+
       return directories;
    }
 
-   public String[] listAnalysisQuestions(String containerName, String analysisName) 
-         throws Exception {
+   public String[] listAnalysisQuestions(String containerName,
+         String analysisName) throws Exception {
 
-      File analysisDir = getExistingContainerAnalysisDir(containerName, analysisName);
-      File questionsDir = Paths.get(analysisDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+      File analysisDir = getExistingContainerAnalysisDir(containerName,
+            analysisName);
+      File questionsDir = Paths
+            .get(analysisDir.getAbsolutePath(), BfConsts.RELPATH_QUESTIONS_DIR)
+            .toFile();
       if (!questionsDir.exists()) {
          return new String[0];
       }
@@ -688,9 +693,8 @@ public class WorkMgr {
          throws Exception {
 
       File testrigDir = getExistingTestrigDir(containerName, testrigName);
-      File environmentsDir = Paths
-            .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_ENVIRONMENTS_DIR)
-            .toFile();
+      File environmentsDir = Paths.get(testrigDir.getAbsolutePath(),
+            BfConsts.RELPATH_ENVIRONMENTS_DIR).toFile();
 
       if (!environmentsDir.exists()) {
          return new String[0];
@@ -731,8 +735,9 @@ public class WorkMgr {
    public String[] listTestrigs(String containerName) throws Exception {
 
       File containerDir = getExistingContainerDir(containerName);
-      File testrigsDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_TESTRIGS_DIR).toFile();
+      File testrigsDir = Paths
+            .get(containerDir.getAbsolutePath(), BfConsts.RELPATH_TESTRIGS_DIR)
+            .toFile();
       if (!testrigsDir.exists()) {
          return new String[0];
       }
@@ -844,12 +849,11 @@ public class WorkMgr {
 
    }
 
-
    public void uploadEnvironment(String containerName, String testrigName,
          String envName, InputStream fileStream) throws Exception {
 
       File testrigDir = getExistingTestrigDir(containerName, testrigName);
-      
+
       File envDir = Paths.get(testrigDir.getAbsolutePath(),
             BfConsts.RELPATH_ENVIRONMENTS_DIR, envName).toFile();
 
@@ -940,10 +944,9 @@ public class WorkMgr {
          InputStream fileStream) throws Exception {
 
       File containerDir = getExistingContainerDir(containerName);
-      
-      File testrigDir = Paths
-            .get(containerDir.getAbsolutePath(), BfConsts.RELPATH_TESTRIGS_DIR, testrigName)
-            .toFile();
+
+      File testrigDir = Paths.get(containerDir.getAbsolutePath(),
+            BfConsts.RELPATH_TESTRIGS_DIR, testrigName).toFile();
 
       if (testrigDir.exists()) {
          throw new FileExistsException(

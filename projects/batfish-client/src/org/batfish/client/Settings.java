@@ -103,7 +103,7 @@ public class Settings extends BaseSettings {
    public int getCoordinatorWorkPort() {
       return _coordinatorWorkPort;
    }
-   
+
    public String getDatamodelDir() {
       return _datamodelDir;
    }
@@ -192,7 +192,8 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_CONTAINER_ID, "container to attach to", "container_id");
 
-      addOption(ARG_DATAMODEL_DIR, "directory where datamodel should be dumped", "datamodel_dir");
+      addOption(ARG_DATAMODEL_DIR, "directory where datamodel should be dumped",
+            "datamodel_dir");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 

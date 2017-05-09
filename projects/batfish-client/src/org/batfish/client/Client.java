@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -53,7 +52,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
@@ -62,7 +60,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
-import org.reflections.Reflections;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -76,14 +73,6 @@ import jline.console.history.FileHistory;
 
 public class Client extends AbstractClient implements IClient {
 
-   public class Shape {
-      
-   }
-   
-   public class Square extends Shape {
-      
-   }
-   
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
 
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
@@ -490,10 +479,11 @@ public class Client extends AbstractClient implements IClient {
          printUsage(Command.DEL_ANALYSIS);
          return false;
       }
-      
+
       String analysisName = parameters.get(0);
 
-      boolean result = _workHelper.delAnalysis(_currContainerName, analysisName);
+      boolean result = _workHelper.delAnalysis(_currContainerName,
+            analysisName);
 
       return result;
    }
@@ -507,23 +497,22 @@ public class Client extends AbstractClient implements IClient {
          printUsage(Command.DEL_ANALYSIS_QUESTIONS);
          return false;
       }
-      
+
       String analysisName = parameters.get(0);
 
       String delQuestionsStr = "[]";
-      
+
       try {
          JSONArray delQuestionsArray = new JSONArray();
-         for (int index=1; index < parameters.size(); index++) {
+         for (int index = 1; index < parameters.size(); index++) {
             delQuestionsArray.put(parameters.get(index));
          }
          delQuestionsStr = delQuestionsArray.toString(1);
-      } 
-      catch (JSONException e) {
-         throw new BatfishException(
-               "Failed to get JSONObject for analysis", e);
       }
-      
+      catch (JSONException e) {
+         throw new BatfishException("Failed to get JSONObject for analysis", e);
+      }
+
       boolean result = _workHelper.configureAnalysis(_currContainerName, false,
             analysisName, null, delQuestionsStr);
 
@@ -740,33 +729,37 @@ public class Client extends AbstractClient implements IClient {
                .generateJsonSchema(Configuration.class);
          _logger.output(mapper.writeValueAsString(schemaNew));
 
-//         Reflections reflections = new Reflections("org.batfish.datamodel");
-//         Set<Class<? extends AnswerElement>> classes = reflections.getSubTypesOf(AnswerElement.class);
-//         _logger.outputf("Found %d classes that inherit %s\n", classes.toArray().length, "AnswerElement");
-//        
-//         File dmDir = Paths.get(_settings.getDatamodelDir()).toFile();
-//         if (!dmDir.exists()) {
-//            if (!dmDir.mkdirs()) {
-//               throw new BatfishException("Could not create directory: " + dmDir.getAbsolutePath());
-//            }
-//         }
-//         
-//         for (Class c : classes) {
-//            String className = c.getCanonicalName()
-//                  .replaceAll("org\\.batfish\\.datamodel\\.", "")
-//                  .replaceAll("\\.", "-") 
-//                  + ".json";
-//            _logger.outputf("%s --> %s\n", c, className);
-//            Path file = Paths.get(dmDir.getAbsolutePath(), className);
-//            try (PrintWriter out = new PrintWriter(file.toAbsolutePath().toString())) {
-//               ObjectMapper mapper = new BatfishObjectMapper();
-//               JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-//               JsonNode schema = schemaGen.generateJsonSchema(c);
-//               String schemaString = mapper.writeValueAsString(schema);            
-//               out.println(schemaString);
-//            }
-//         }
-         
+         // Reflections reflections = new Reflections("org.batfish.datamodel");
+         // Set<Class<? extends AnswerElement>> classes =
+         // reflections.getSubTypesOf(AnswerElement.class);
+         // _logger.outputf("Found %d classes that inherit %s\n",
+         // classes.toArray().length, "AnswerElement");
+         //
+         // File dmDir = Paths.get(_settings.getDatamodelDir()).toFile();
+         // if (!dmDir.exists()) {
+         // if (!dmDir.mkdirs()) {
+         // throw new BatfishException("Could not create directory: " +
+         // dmDir.getAbsolutePath());
+         // }
+         // }
+         //
+         // for (Class c : classes) {
+         // String className = c.getCanonicalName()
+         // .replaceAll("org\\.batfish\\.datamodel\\.", "")
+         // .replaceAll("\\.", "-")
+         // + ".json";
+         // _logger.outputf("%s --> %s\n", c, className);
+         // Path file = Paths.get(dmDir.getAbsolutePath(), className);
+         // try (PrintWriter out = new
+         // PrintWriter(file.toAbsolutePath().toString())) {
+         // ObjectMapper mapper = new BatfishObjectMapper();
+         // JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+         // JsonNode schema = schemaGen.generateJsonSchema(c);
+         // String schemaString = mapper.writeValueAsString(schema);
+         // out.println(schemaString);
+         // }
+         // }
+
          // JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper,
          // true, JsonSchemaConfig.vanillaJsonSchemaDraft4());
          // JsonNode schemaNew =
@@ -989,51 +982,6 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-   private boolean initOrAddAnalysis(List<String> parameters, boolean newAnalysis) {
-      if (!isSetContainer(true)) {
-         return false;
-      }
-      if (parameters.size() != 2) {
-         _logger.error("Invalid arguments: " + parameters.toString());
-         printUsage(Command.INIT_ANALYSIS);
-         return false;
-      }
-      
-      String analysisName = parameters.get(0);
-      String questionsPathStr = parameters.get(1);
-      
-      Map<String, String> questionMap = new TreeMap<>();
-      
-      if (!loadQuestions(null, questionsPathStr, questionMap)) {
-         return false;
-      }
-      
-      String analysisJsonString = "{}";
-      
-      try {
-         JSONObject jObject = new JSONObject();         
-         for (String qName : questionMap.keySet()) {
-            jObject.put(qName, new JSONObject(questionMap.get(qName)));
-         }
-         analysisJsonString = jObject.toString(1);
-      }
-      catch (JSONException e) {
-         throw new BatfishException(
-               "Failed to get JSONObject for analysis", e);
-      }
-
-      Path analysisFile = createTempFile("analysis", analysisJsonString);
-
-      boolean result = _workHelper.configureAnalysis(_currContainerName, newAnalysis,
-            analysisName, analysisFile.toAbsolutePath().toString(), null);
-
-      if (analysisFile != null) {
-         CommonUtil.delete(analysisFile);
-      }
-      
-      return result;
-   }
-
    private boolean initContainer(String[] words) {
       String containerPrefix = (words.length > 1) ? words[1]
             : DEFAULT_CONTAINER_PREFIX;
@@ -1123,6 +1071,52 @@ public class Client extends AbstractClient implements IClient {
             System.exit(1);
          }
       }
+   }
+
+   private boolean initOrAddAnalysis(List<String> parameters,
+         boolean newAnalysis) {
+      if (!isSetContainer(true)) {
+         return false;
+      }
+      if (parameters.size() != 2) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.INIT_ANALYSIS);
+         return false;
+      }
+
+      String analysisName = parameters.get(0);
+      String questionsPathStr = parameters.get(1);
+
+      Map<String, String> questionMap = new TreeMap<>();
+
+      if (!loadQuestions(null, questionsPathStr, questionMap)) {
+         return false;
+      }
+
+      String analysisJsonString = "{}";
+
+      try {
+         JSONObject jObject = new JSONObject();
+         for (String qName : questionMap.keySet()) {
+            jObject.put(qName, new JSONObject(questionMap.get(qName)));
+         }
+         analysisJsonString = jObject.toString(1);
+      }
+      catch (JSONException e) {
+         throw new BatfishException("Failed to get JSONObject for analysis", e);
+      }
+
+      Path analysisFile = createTempFile("analysis", analysisJsonString);
+
+      boolean result = _workHelper.configureAnalysis(_currContainerName,
+            newAnalysis, analysisName, analysisFile.toAbsolutePath().toString(),
+            null);
+
+      if (analysisFile != null) {
+         CommonUtil.delete(analysisFile);
+      }
+
+      return result;
    }
 
    private boolean initTestrig(FileWriter outWriter, List<String> parameters,
@@ -1227,13 +1221,13 @@ public class Client extends AbstractClient implements IClient {
 
       JSONObject analysisList = _workHelper.listAnalyses(_currContainerName);
       _logger.outputf("Found %d analyses\n", analysisList.length());
-      
+
       if (analysisList != null) {
          Iterator<?> aIterator = analysisList.keys();
          while (aIterator.hasNext()) {
             String aName = (String) aIterator.next();
             _logger.outputf("Analysis: %s\n", aName);
-            
+
             try {
                JSONObject questionList = analysisList.getJSONObject(aName);
                _logger.outputf("Found %d questions\n", questionList.length());
@@ -1326,8 +1320,8 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
-   private boolean loadQuestions(FileWriter outWriter,
-         List<String> parameters, Map<String,String> bfq) {
+   private boolean loadQuestions(FileWriter outWriter, List<String> parameters,
+         Map<String, String> bfq) {
       if (parameters.size() != 1) {
          _logger.error("Invalid arguments: " + parameters.toString());
          printUsage(Command.LOAD_QUESTIONS);
@@ -1335,10 +1329,10 @@ public class Client extends AbstractClient implements IClient {
       }
       String questionsPathStr = parameters.get(0);
       return loadQuestions(outWriter, questionsPathStr, bfq);
-  }
+   }
 
-   private boolean loadQuestions(FileWriter outWriter,
-            String questionsPathStr, Map<String,String> bfq) {
+   private boolean loadQuestions(FileWriter outWriter, String questionsPathStr,
+         Map<String, String> bfq) {
       Path questionsPath = Paths.get(questionsPathStr);
       int numLoaded = 0;
       Answer answer = new Answer();

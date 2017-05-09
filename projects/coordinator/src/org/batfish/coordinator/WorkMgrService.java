@@ -127,12 +127,13 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_NEW_ANALYSIS_KEY) String newAnalysisStr,
-         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName,         
+         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName,
          @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream addQuestionsStream,
          @FormDataParam(CoordConsts.SVC_DEL_ANALYSIS_QUESTIONS_KEY) String delQuestions) {
       try {
-         _logger.info("WMS:configureAnalysis " + apiKey + " " + containerName 
-               + " " + newAnalysisStr + " " + analysisName + " " + delQuestions + "\n");
+         _logger.info("WMS:configureAnalysis " + apiKey + " " + containerName
+               + " " + newAnalysisStr + " " + analysisName + " " + delQuestions
+               + "\n");
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
@@ -143,9 +144,11 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         boolean newAnalysis = (newAnalysisStr == null || newAnalysisStr.equals(""))? false : true;
-         
-         Main.getWorkMgr().configureAnalysis(containerName, newAnalysis, analysisName, addQuestionsStream, delQuestions);
+         boolean newAnalysis = (newAnalysisStr == null
+               || newAnalysisStr.equals("")) ? false : true;
+
+         Main.getWorkMgr().configureAnalysis(containerName, newAnalysis,
+               analysisName, addQuestionsStream, delQuestions);
 
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, (new JSONObject()
@@ -185,7 +188,7 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName) {
       try {
-         _logger.info("WMS:configureAnalysis " + apiKey + " " + containerName 
+         _logger.info("WMS:configureAnalysis " + apiKey + " " + containerName
                + " " + analysisName + "\n");
 
          checkStringParam(apiKey, "API key");
@@ -196,7 +199,7 @@ public class WorkMgrService {
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
-         
+
          Main.getWorkMgr().delAnalysis(containerName, analysisName);
 
          return new JSONArray(
@@ -459,8 +462,8 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         File file = Main.getWorkMgr().getTestrigObject(containerName, testrigName,
-               objectName);
+         File file = Main.getWorkMgr().getTestrigObject(containerName,
+               testrigName, objectName);
 
          if (file == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -636,17 +639,20 @@ public class WorkMgrService {
          checkContainerAccessibility(apiKey, containerName);
 
          JSONObject retObject = new JSONObject();
-         
-         for (String analysisName : Main.getWorkMgr().listAnalyses(containerName)) {   
-            
+
+         for (String analysisName : Main.getWorkMgr()
+               .listAnalyses(containerName)) {
+
             JSONObject analysisJson = new JSONObject();
 
-            for (String questionName : Main.getWorkMgr().listAnalysisQuestions(containerName, analysisName)) {
-               String questionText = Main.getWorkMgr().getAnalysisQuestion(containerName, analysisName, questionName);
-               
-               analysisJson.put(questionName, new JSONObject(questionText));               
+            for (String questionName : Main.getWorkMgr()
+                  .listAnalysisQuestions(containerName, analysisName)) {
+               String questionText = Main.getWorkMgr().getAnalysisQuestion(
+                     containerName, analysisName, questionName);
+
+               analysisJson.put(questionName, new JSONObject(questionText));
             }
-            
+
             retObject.put(analysisName, analysisJson);
          }
 
@@ -667,7 +673,6 @@ public class WorkMgrService {
                Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
-
 
    /**
     * List the containers that the specified API key can access
