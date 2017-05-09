@@ -81,6 +81,83 @@ public class BfCoordWorkHelper {
       }
    }
 
+   public boolean configureAnalysis(String containerName, boolean newAnalysis,
+         String analysisName, String addQuestionsFileName,
+         String delQuestionsStr) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_CONFIGURE_ANALYSIS_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         if (newAnalysis) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_NEW_ANALYSIS_KEY,
+                  "new");
+         }
+         addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
+               analysisName);
+         if (addQuestionsFileName != null) {
+            addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY,
+                  addQuestionsFileName);
+         }
+         if (delQuestionsStr != null) {
+            addTextMultiPart(multiPart,
+                  CoordConsts.SVC_DEL_ANALYSIS_QUESTIONS_KEY, delQuestionsStr);
+         }
+
+         return postData(webTarget, multiPart) != null;
+      }
+      catch (Exception e) {
+         if (e.getMessage().contains("FileNotFoundException")) {
+            _logger.errorf("File not found: %s (addQuestionsFile file)\n",
+                  addQuestionsFileName);
+         }
+         else {
+            _logger.errorf(
+                  "Exception when configuring analysis to %s using (%s, %s, %s, %s, %s): %s\n",
+                  _coordWorkMgr, containerName, newAnalysis, analysisName,
+                  addQuestionsFileName, delQuestionsStr,
+                  ExceptionUtils.getStackTrace(e));
+         }
+         return false;
+      }
+   }
+
+   public boolean delAnalysis(String containerName, String analysisName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_DEL_ANALYSIS_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
+               analysisName);
+
+         return postData(webTarget, multiPart) != null;
+      }
+      catch (Exception e) {
+         _logger.errorf(
+               "Exception when deleting analysis to %s using (%s, %s): %s\n",
+               _coordWorkMgr, containerName, analysisName,
+               ExceptionUtils.getStackTrace(e));
+         return false;
+      }
+   }
+
    public boolean delContainer(String containerName) {
       try {
          Client client = getClientBuilder().build();
@@ -507,6 +584,40 @@ public class BfCoordWorkHelper {
             return false;
          }
          throw e;
+      }
+   }
+
+   public JSONObject listAnalyses(String containerName) {
+      try {
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_LIST_ANALYSES_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+
+         JSONObject jObj = postData(webTarget, multiPart);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_ANALYSIS_LIST_KEY)) {
+            _logger.errorf("analysis list key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         return jObj.getJSONObject(CoordConsts.SVC_ANALYSIS_LIST_KEY);
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
       }
    }
 

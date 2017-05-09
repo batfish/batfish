@@ -109,6 +109,121 @@ public class WorkMgrService {
    }
 
    /**
+    * Configures an analysis for the container
+    *
+    * @param apiKey
+    * @param containerName
+    * @param newAnalysisStr
+    * @param addQuestionsStream
+    * @param delQuestions
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_CONFIGURE_ANALYSIS_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray configureAnalysis(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_NEW_ANALYSIS_KEY) String newAnalysisStr,
+         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName,
+         @FormDataParam(CoordConsts.SVC_FILE_KEY) InputStream addQuestionsStream,
+         @FormDataParam(CoordConsts.SVC_DEL_ANALYSIS_QUESTIONS_KEY) String delQuestions) {
+      try {
+         _logger.info("WMS:configureAnalysis " + apiKey + " " + containerName
+               + " " + newAnalysisStr + " " + analysisName + " " + delQuestions
+               + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(analysisName, "Analysis name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         boolean newAnalysis = (newAnalysisStr == null
+               || newAnalysisStr.equals("")) ? false : true;
+
+         Main.getWorkMgr().configureAnalysis(containerName, newAnalysis,
+               analysisName, addQuestionsStream, delQuestions);
+
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, (new JSONObject()
+                     .put("result", "successfully configured analysis"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException
+            | ZipException e) {
+         _logger.error(
+               "WMS:configureAnalysis exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:configureAnalysis exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   /**
+    * Deletes an analysis for the container
+    *
+    * @param apiKey
+    * @param containerName
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_DEL_ANALYSIS_RSC)
+   @Consumes(MediaType.MULTIPART_FORM_DATA)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray delAnalysis(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName) {
+      try {
+         _logger.info("WMS:configureAnalysis " + apiKey + " " + containerName
+               + " " + analysisName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(analysisName, "Analysis name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         Main.getWorkMgr().delAnalysis(containerName, analysisName);
+
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, (new JSONObject()
+                     .put("result", "successfully configured analysis"))));
+
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException
+            | ZipException e) {
+         _logger.error(
+               "WMS:configureAnalysis exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:configureAnalysis exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   /**
     * Deletes the specified container
     *
     * @param apiKey
@@ -237,7 +352,7 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         Main.getWorkMgr().delQuestion(containerName, testrigName,
+         Main.getWorkMgr().delTestrigQuestion(containerName, testrigName,
                questionName);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
@@ -347,8 +462,8 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         File file = Main.getWorkMgr().getObject(containerName, testrigName,
-               objectName);
+         File file = Main.getWorkMgr().getTestrigObject(containerName,
+               testrigName, objectName);
 
          if (file == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -492,6 +607,68 @@ public class WorkMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("WMS:initContainer exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   /**
+    * Lists the analyses under the specified container
+    *
+    * @param apiKey
+    * @param containerName
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_LIST_ANALYSES_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray listAnalyses(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
+      try {
+         _logger
+               .info("WMS:listAnalyses " + apiKey + " " + containerName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         JSONObject retObject = new JSONObject();
+
+         for (String analysisName : Main.getWorkMgr()
+               .listAnalyses(containerName)) {
+
+            JSONObject analysisJson = new JSONObject();
+
+            for (String questionName : Main.getWorkMgr()
+                  .listAnalysisQuestions(containerName, analysisName)) {
+               String questionText = Main.getWorkMgr().getAnalysisQuestion(
+                     containerName, analysisName, questionName);
+
+               analysisJson.put(questionName, new JSONObject(questionText));
+            }
+
+            retObject.put(analysisName, analysisJson);
+         }
+
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, (new JSONObject()
+                     .put(CoordConsts.SVC_ANALYSIS_LIST_KEY, retObject))));
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:listTestrig exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:listTestrig exception: " + stackTrace);
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }

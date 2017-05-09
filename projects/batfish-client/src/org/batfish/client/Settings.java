@@ -25,6 +25,7 @@ public class Settings extends BaseSettings {
    public static final String ARG_COMMAND_FILE = "cmdfile";
    public static final String ARG_CONTAINER_ID = "containerid";
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   public static final String ARG_DATAMODEL_DIR = "datamodeldir";
    private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
    public static final String ARG_LOG_FILE = "logfile";
@@ -50,6 +51,7 @@ public class Settings extends BaseSettings {
    private String _coordinatorHost;
    private int _coordinatorPoolPort;
    private int _coordinatorWorkPort;
+   private String _datamodelDir;
    private String _logFile;
    private String _logLevel;
    private long _periodCheckWorkMs;
@@ -100,6 +102,10 @@ public class Settings extends BaseSettings {
 
    public int getCoordinatorWorkPort() {
       return _coordinatorWorkPort;
+   }
+
+   public String getDatamodelDir() {
+      return _datamodelDir;
    }
 
    public String getLogFile() {
@@ -155,6 +161,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_BATFISH_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
+      setDefaultProperty(ARG_DATAMODEL_DIR, "datamodel");
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
@@ -184,6 +191,9 @@ public class Settings extends BaseSettings {
             "batfish_loglevel");
 
       addOption(ARG_CONTAINER_ID, "container to attach to", "container_id");
+
+      addOption(ARG_DATAMODEL_DIR, "directory where datamodel should be dumped",
+            "datamodel_dir");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
@@ -237,6 +247,7 @@ public class Settings extends BaseSettings {
       _batchCommandFile = getStringOptionValue(ARG_COMMAND_FILE);
       _batfishLogLevel = getStringOptionValue(ARG_BATFISH_LOG_LEVEL);
       _containerId = getStringOptionValue(ARG_CONTAINER_ID);
+      _datamodelDir = getStringOptionValue(ARG_DATAMODEL_DIR);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
