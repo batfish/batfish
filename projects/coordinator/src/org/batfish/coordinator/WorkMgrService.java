@@ -421,6 +421,66 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Get answer for a question that was previously asked
+    *
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param questionName
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_GET_ANSWER_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray getAnswer(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName) {
+      try {
+         _logger.info(
+               "WMS:getAnswer " + apiKey + " " + containerName + " " + testrigName 
+               + " " + questionName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(questionName, "Question name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         String answer = Main.getWorkMgr().getAnswer(containerName,
+               testrigName, questionName);
+
+         if (answer != null) {
+            return new JSONArray(Arrays.asList(
+                  CoordConsts.SVC_SUCCESS_KEY, 
+                  new JSONObject().put(CoordConsts.SVC_ANSWER_KEY, answer)));
+         }
+         else {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY, 
+                  "Answer not available"));            
+         }
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:getAnswer exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:getAnswer exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {

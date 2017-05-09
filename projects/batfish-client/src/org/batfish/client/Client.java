@@ -874,41 +874,17 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
-   private boolean getAnswer(List<String> options, List<String> parameters) {
+   private boolean getAnswer(List<String> parameters) {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
-
-      boolean formatJson = true;
-
-      if (options.size() == 1) {
-         if (options.get(0).equals("-html")) {
-            formatJson = false;
-         }
-         else {
-            _logger.outputf(
-                  "Unknown option: %s (note that json does not need a flag)\n",
-                  options.get(0));
-            return false;
-         }
-      }
-
+      
       String questionName = parameters.get(0);
 
-      String answerFileName = String.format("%s/%s/%s",
-            BfConsts.RELPATH_QUESTIONS_DIR, questionName,
-            (formatJson) ? BfConsts.RELPATH_ANSWER_JSON
-                  : BfConsts.RELPATH_ANSWER_HTML);
+      String answer = _workHelper.getAnswer(_currContainerName,
+            _currTestrig, questionName);
 
-      String downloadedAnsFile = _workHelper.getObject(_currContainerName,
-            _currTestrig, answerFileName);
-      if (downloadedAnsFile == null) {
-         _logger.errorf("Failed to get answer file %s\n", answerFileName);
-         return false;
-      }
-
-      String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
-      _logger.output(answerString);
+      _logger.output(answer);
       _logger.output("\n");
 
       return true;
@@ -1546,7 +1522,7 @@ public class Client extends AbstractClient implements IClient {
          case GET_DELTA:
             return get(words, outWriter, options, parameters, true);
          case GET_ANSWER:
-            return getAnswer(options, parameters);
+            return getAnswer(parameters);
          case GET_QUESTION:
             return getQuestion(parameters);
          case HELP:

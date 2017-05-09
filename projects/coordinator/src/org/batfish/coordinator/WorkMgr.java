@@ -435,6 +435,31 @@ public class WorkMgr {
       return CommonUtil.readFile(qFile);
    }
 
+   public String getAnswer(String containerName, String testrigName, 
+         String questionName) throws FileNotFoundException {
+    
+      File questionDir = getExistingTestrigQuestionDir(containerName, testrigName, questionName);
+      
+      File questionFile = Paths.get(questionDir.getAbsolutePath(), 
+            BfConsts.RELPATH_QUESTION_FILE).toFile();
+      if (!questionFile.exists()) {
+         throw new FileNotFoundException(
+               "Question file not found for " + questionName);
+      }
+      
+      File answerFile = Paths.get(questionDir.getAbsolutePath(), 
+            BfConsts.RELPATH_ANSWER_JSON).toFile();
+      if (!answerFile.exists()) {
+         return null;
+      }
+      
+      if (answerFile.lastModified() < questionFile.lastModified()) {
+         throw new FileNotFoundException("The answer file is stale");
+      }
+      
+      return CommonUtil.readFile(answerFile.toPath());
+   }
+   
    private File getExistingAnalysisQuestionDir(String containerName,
          String analysisName, String qName) throws FileNotFoundException {
       File analysisDir = getExistingContainerAnalysisDir(containerName,

@@ -321,6 +321,49 @@ public class BfCoordWorkHelper {
             .register(MultiPartFeature.class);
    }
 
+   public String getAnswer(String containerName, String testrigName,
+         String questionName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_GET_ANSWER_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
+               testrigName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_QUESTION_NAME_KEY,
+               questionName);
+
+         JSONObject jObj = postData(webTarget, multiPart);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_ANSWER_KEY)) {
+            _logger.errorf("answer key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         String answer = jObj.getString(CoordConsts.SVC_ANSWER_KEY);
+
+         return answer;
+
+      }
+      catch (Exception e) {
+         _logger.errorf("Exception in getAnswer from %s using (%s, %s)\n",
+               _coordWorkMgr, testrigName, questionName);
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+
    public String getObject(String containerName, String testrigName,
          String objectName) {
       try {

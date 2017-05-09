@@ -126,7 +126,7 @@ public enum Command {
       descs.put(GET,
             new Pair<>("<question-type>  [param1=value1 [param2=value2] ...]",
                   "Answer the question by type for the base environment"));
-      descs.put(GET_ANSWER, new Pair<>("[-html] <question-name>",
+      descs.put(GET_ANSWER, new Pair<>("<question-name>",
             "Get the answer for a previously answered question"));
       descs.put(GET_DELTA,
             new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
