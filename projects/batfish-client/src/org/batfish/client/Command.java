@@ -9,12 +9,15 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 
 public enum Command {
+   ADD_ANALYSIS_QUESTIONS("add-analysis-questions"),
    ADD_BATFISH_OPTION("add-batfish-option"),
    ANSWER("answer"),
    ANSWER_DELTA("answer-delta"),
    CAT("cat"),
    CHECK_API_KEY("checkapikey"),
    CLEAR_SCREEN("cls"),
+   DEL_ANALYSIS("del-analysis"),
+   DEL_ANALYSIS_QUESTIONS("del-analysis-questions"),
    DEL_BATFISH_OPTION("del-batfish-option"),
    DEL_CONTAINER("del-container"),
    DEL_ENVIRONMENT("del-environment"),
@@ -30,10 +33,12 @@ public enum Command {
    GET_DELTA("get-delta"),
    GET_QUESTION("get-question"),
    HELP("help"),
+   INIT_ANALYSIS("init-analysis"),
    INIT_CONTAINER("init-container"),
    INIT_DELTA_ENV("init-delta-environment"),
    INIT_DELTA_TESTRIG("init-delta-testrig"),
    INIT_TESTRIG("init-testrig"),
+   LIST_ANALYSES("list-analyses"),
    LIST_CONTAINERS("list-containers"),
    LIST_ENVIRONMENTS("list-environments"),
    LIST_QUESTIONS("list-questions"),
@@ -78,9 +83,9 @@ public enum Command {
 
    private static Map<Command, Pair<String, String>> buildUsageMap() {
       Map<Command, Pair<String, String>> descs = new TreeMap<>();
+      descs.put(ADD_ANALYSIS_QUESTIONS, new Pair<>("<analysis-name> <question-directory>",
+            "Add questions from the directory to the analysis"));
       descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> <option-value>",
-            "Additional options to pass to Batfish"));
-      descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> [<option-value>]",
             "Additional options to pass to Batfish"));
       descs.put(ANSWER, new Pair<>(
             "<question-name>  [param1=value1 [param2=value2] ...]",
@@ -95,6 +100,10 @@ public enum Command {
       // + " <dirname>\n"
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
+      descs.put(DEL_ANALYSIS, new Pair<>("<analysis-name>",
+            "Delete the analysis completely"));
+      descs.put(DEL_ANALYSIS_QUESTIONS, new Pair<>("<analysis-name> qname1 [qname2 [qname3] ...]",
+            "Delete questions from the analysis"));
       descs.put(DEL_BATFISH_OPTION,
             new Pair<>("<option-key>", "Stop passing this option to Batfish"));
       descs.put(DEL_CONTAINER,
@@ -124,6 +133,8 @@ public enum Command {
             "Get the question and parameter files"));
       descs.put(HELP,
             new Pair<>("[command]", "Print the list of supported commands"));
+      descs.put(INIT_ANALYSIS, new Pair<>("<analysis-name> <question-directory>",
+            "Initialize a new analysis for the container"));
       descs.put(INIT_CONTAINER, new Pair<>("[<container-name-prefix>]",
             "Initialize a new container"));
       descs.put(INIT_DELTA_ENV,
@@ -136,6 +147,8 @@ public enum Command {
       descs.put(INIT_TESTRIG,
             new Pair<>("<testrig zipfile or directory> [<environment name>]",
                   "Initialize the testrig with default environment"));
+      descs.put(LIST_ANALYSES,
+            new Pair<>("", "List the analyses and their configuration"));
       descs.put(LIST_CONTAINERS,
             new Pair<>("", "List the containers to which you have access"));
       descs.put(LIST_ENVIRONMENTS, new Pair<>("",

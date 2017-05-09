@@ -65,6 +65,8 @@ public class BfConsts {
 
    public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
 
+   public static final String RELPATH_ANALYSES_DIR = "analyses";
+   public static final String RELPATH_ANALYSIS_FILE = "analysis";
    public static final String RELPATH_ANSWER_HTML = "answer.html";
    public static final String RELPATH_ANSWER_JSON = "answer.json";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
@@ -103,6 +105,7 @@ public class BfConsts {
    public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
    public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
+   public static final String RELPATH_TESTRIGS_DIR = "";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
