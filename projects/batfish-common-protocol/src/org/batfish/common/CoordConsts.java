@@ -28,6 +28,7 @@ public class CoordConsts {
    public static final String SVC_ANALYSIS_LIST_KEY = "analysislist";
    public static final String SVC_ANALYSIS_NAME_KEY = "analysisname";
    public static final String SVC_ANSWER_KEY = "answer";
+   public static final String SVC_ANSWERS_KEY = "answers";
    public static final String SVC_API_KEY = "apikey";
 
    /**
@@ -57,6 +58,7 @@ public class CoordConsts {
    public static final String SVC_FILE_KEY = "file";
    public static final String SVC_FILE2_KEY = "file2";
    public static final String SVC_FILENAME_HDR = "FileName";
+   public static final String SVC_GET_ANALYSIS_ANSWERS_RSC = "getanalysisanswers";
    public static final String SVC_GET_ANSWER_RSC = "getanswer";
    public static final String SVC_GET_OBJECT_RSC = "getobject";
    public static final String SVC_GET_WORKSTATUS_RSC = "getworkstatus";

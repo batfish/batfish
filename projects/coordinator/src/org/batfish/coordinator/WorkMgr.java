@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -419,6 +421,79 @@ public class WorkMgr {
       FileUtils.deleteDirectory(qDir);
    }
 
+//   public String getAnswer(String containerName, String testrigName, 
+//         String analysisName, String questionName) throws FileNotFoundException {
+//    
+//      File questionDir = getExistingTestrigQuestionDir(containerName, 
+//            analysisName, questionName);
+//      
+//      File questionFile = Paths.get(questionDir.getAbsolutePath(), 
+//            BfConsts.RELPATH_QUESTION_FILE).toFile();
+//      if (!questionFile.exists()) {
+//         throw new FileNotFoundException(
+//               "Question file not found for " + questionName);
+//      }
+//      
+//      File answerDir = getExistingAnalysisAnswerDir(containerName, testrigName, 
+//            analysisName, questionName);
+//
+//      File answerFile = Paths.get(answerDir.getAbsolutePath(), 
+//            BfConsts.RELPATH_ANSWER_JSON).toFile();
+//      if (!answerFile.exists()) {
+//         return null;
+//      }
+//      
+//      if (answerFile.lastModified() < questionFile.lastModified()) {
+//         throw new FileNotFoundException("The answer file is stale");
+//      }
+//      
+//      return CommonUtil.readFile(answerFile.toPath());
+//   }
+
+   public Map<String,String> getAnalysisAnswers(String containerName, String testrigName, 
+         String analysisName) throws FileNotFoundException {
+    
+      File analysisDir = getExistingContainerAnalysisDir(containerName, analysisName);
+      File testrigDir = getExistingTestrigDir(containerName, testrigName);
+      String[] questions = listAnalysisQuestions(containerName, analysisName);
+      
+      Map<String, String> retMap = new TreeMap<>();
+            
+      for (String questionName : questions) {
+         
+         String answer = "unknown";
+         
+         File questionFile = Paths.get(analysisDir.getAbsolutePath(),
+               BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+               BfConsts.RELPATH_QUESTION_FILE).toFile();
+         if (!questionFile.exists()) {
+            throw new FileNotFoundException("Question file for question " 
+                                            + questionName + "not found");
+         }
+               
+         File answerFile = Paths.get(testrigDir.getAbsolutePath(),
+               BfConsts.RELPATH_ANALYSES_DIR, analysisName, 
+               BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+               BfConsts.RELPATH_ANSWER_JSON).toFile();
+
+         if (!answerFile.exists()) {
+            answer = "Not answered";
+         }
+         else {
+            if (questionFile.lastModified() > answerFile.lastModified()) {
+               answer = "Not fresh";
+            }
+            else {           
+               answer = CommonUtil.readFile(answerFile.toPath());
+            }
+         }
+
+         retMap.put(questionName, answer);
+      }
+      
+      return retMap;
+   }
+   
    public String getAnalysisQuestion(String containerName, String analysisName,
          String questionName) throws Exception {
 
@@ -438,7 +513,8 @@ public class WorkMgr {
    public String getAnswer(String containerName, String testrigName, 
          String questionName) throws FileNotFoundException {
     
-      File questionDir = getExistingTestrigQuestionDir(containerName, testrigName, questionName);
+      File questionDir = getExistingTestrigQuestionDir(containerName, 
+            testrigName, questionName);
       
       File questionFile = Paths.get(questionDir.getAbsolutePath(), 
             BfConsts.RELPATH_QUESTION_FILE).toFile();
@@ -449,15 +525,22 @@ public class WorkMgr {
       
       File answerFile = Paths.get(questionDir.getAbsolutePath(), 
             BfConsts.RELPATH_ANSWER_JSON).toFile();
+
+      String answer = "unknown";
+      
       if (!answerFile.exists()) {
-         return null;
+         answer = "Not answered";
+      }
+      else {
+         if (questionFile.lastModified() > answerFile.lastModified()) {
+            answer = "Not fresh";
+         }
+         else {           
+            answer = CommonUtil.readFile(answerFile.toPath());
+         }
       }
       
-      if (answerFile.lastModified() < questionFile.lastModified()) {
-         throw new FileNotFoundException("The answer file is stale");
-      }
-      
-      return CommonUtil.readFile(answerFile.toPath());
+      return answer;
    }
    
    private File getExistingAnalysisQuestionDir(String containerName,
@@ -673,7 +756,7 @@ public class WorkMgr {
    }
 
    public String[] listAnalysisQuestions(String containerName,
-         String analysisName) throws Exception {
+         String analysisName) throws FileNotFoundException {
 
       File analysisDir = getExistingContainerAnalysisDir(containerName,
             analysisName);
