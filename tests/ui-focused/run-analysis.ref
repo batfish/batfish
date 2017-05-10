@@ -1,0 +1,16 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+      "answer" : [
+        "org.batfish.common.BatfishException: Batfish job failed",
+        "   at org.batfish.main.Driver$1.run(Driver.java:388)",
+        "Caused by: java.lang.UnsupportedOperationException: no implementation for analyze() method",
+        "   at org.batfish.main.Batfish.analyze(Batfish.java:454)",
+        "   at org.batfish.main.Batfish.run(Batfish.java:3720)",
+        "   at org.batfish.main.Driver$1.run(Driver.java:356)"
+      ]
+    }
+  ],
+  "status" : "FAILURE"
+}

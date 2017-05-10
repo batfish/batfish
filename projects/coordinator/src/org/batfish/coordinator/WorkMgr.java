@@ -642,6 +642,10 @@ public class WorkMgr {
             .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_TEST_RIG_DIR)
             .toFile();
 
+      if (!submittedTestrigDir.exists()) {
+         return "Missing folder " + BfConsts.RELPATH_TEST_RIG_DIR + " for testrig " + testrigName + "\n"; 
+      }
+         
       StringBuilder retStringBuilder = new StringBuilder();
 
       for (File subFile : submittedTestrigDir.listFiles()) {

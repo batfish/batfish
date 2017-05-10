@@ -956,9 +956,11 @@ public class WorkMgrService {
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
 
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
 
          if (!_settings.getDefaultKeyListings()
                && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
@@ -966,33 +968,19 @@ public class WorkMgrService {
                   "Listing all testrigs is not allowed with Default API key");
          }
 
-         List<String> containerList = new LinkedList<>();
-
-         if (containerName == null || containerName.equals("")) {
-            containerList.addAll(
-                  Arrays.asList(Main.getWorkMgr().listContainers(apiKey)));
-         }
-         else {
-            checkContainerAccessibility(apiKey, containerName);
-            containerList.add(containerName);
-         }
-
          JSONArray retArray = new JSONArray();
 
-         for (String container : containerList) {
-            String[] testrigList = Main.getWorkMgr().listTestrigs(container);
+         String[] testrigList = Main.getWorkMgr().listTestrigs(containerName);
 
-            for (String testrig : testrigList) {
-               String testrigInfo = Main.getWorkMgr().getTestrigInfo(container,
-                     testrig);
+         for (String testrig : testrigList) {
+            String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName,
+                  testrig);
 
-               JSONObject jObject = new JSONObject()
-                     .put(CoordConsts.SVC_TESTRIG_NAME_KEY,
-                           container + "/" + testrig)
-                     .put(CoordConsts.SVC_TESTRIG_INFO_KEY, testrigInfo);
+            JSONObject jObject = new JSONObject()
+                  .put(CoordConsts.SVC_TESTRIG_NAME_KEY, testrig)
+                  .put(CoordConsts.SVC_TESTRIG_INFO_KEY, testrigInfo);
 
-               retArray.put(jObject);
-            }
+            retArray.put(jObject);
          }
 
          return new JSONArray(

@@ -14,8 +14,11 @@ batfish_build_all || exit 1
 echo -e "\n  ..... Running parsing tests"
 allinone -cmdfile test_rigs/parsing-tests/commands || exit 1
 
-echo -e "\n  ..... Running java client tests"
-allinone -cmdfile tests/java/commands || exit 1
+echo -e "\n  ..... Running basic client tests"
+allinone -cmdfile tests/basic/commands || exit 1
+
+echo -e "\n  ..... Running ui-focused client tests"
+allinone -cmdfile tests/ui-focused/commands -coordinatorargs "-allowdefaultkeylistings" || exit 1
 
 #Test running separately
 coordinator &
