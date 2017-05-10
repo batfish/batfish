@@ -478,6 +478,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private TestrigSettings _activeTestrigSettings;
 
+   private String _analysisName;
+
+   private boolean _analyze;
+
    private boolean _anonymize;
 
    private boolean _answer;
@@ -686,6 +690,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public TestrigSettings getActiveTestrigSettings() {
       return _activeTestrigSettings;
+   }
+
+   public String getAnalysisName() {
+      return _analysisName;
+   }
+
+   public boolean getAnalyze() {
+      return _analyze;
    }
 
    public boolean getAnonymize() {
@@ -1041,6 +1053,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    }
 
    private void initConfigDefaults() {
+      setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
       setDefaultProperty(ARG_ANONYMIZE, false);
       setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
       setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
@@ -1113,6 +1126,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
       setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
+      setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
       setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
@@ -1126,6 +1140,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    }
 
    private void initOptions() {
+
+      addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
 
       addBooleanOption(ARG_ANONYMIZE,
             "created anonymized versions of configs in test rig");
@@ -1344,6 +1360,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addBooleanOption(BfConsts.ARG_VERBOSE_PARSE,
             "(developer option) include parse/convert data in init-testrig answer");
 
+      addBooleanOption(BfConsts.COMMAND_ANALYZE, "run provided analysis");
+
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
       addBooleanOption(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
@@ -1389,6 +1407,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       // REGULAR OPTIONS
       _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
+      _analysisName = getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
+      _analyze = getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
       _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
       _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
       _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);

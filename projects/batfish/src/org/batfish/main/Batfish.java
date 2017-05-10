@@ -450,6 +450,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _questionMap = new TreeMap<>();
    }
 
+   private Answer analyze() {
+      throw new UnsupportedOperationException("no implementation for analyze() method"); // TODO Auto-generated method stub
+   }
+
    private void anonymizeConfigurations() {
       // TODO Auto-generated method stub
 
@@ -3709,6 +3713,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       if (_settings.getAnswer()) {
          answer.append(answer());
+         action = true;
+      }
+      
+      if (_settings.getAnalyze()) {
+         answer.append(analyze());
          action = true;
       }
 

@@ -874,18 +874,69 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
-   private boolean getAnswer(List<String> parameters) {
+   private boolean getAnalysisAnswers(FileWriter outWriter, List<String> parameters) {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.GET_ANALYSIS_ANSWERS);
+         return false;
+      }
+
+      String analysisName = parameters.get(0);
+
+      String answer = _workHelper.getAnalysisAnswers(_currContainerName,
+            _currTestrig, analysisName);
+
+      if (answer == null) {
+         return false;
+      }
       
+      if (outWriter == null) {
+         _logger.output(answer + "\n");
+      } 
+      else {
+         try {
+            outWriter.write(answer + "\n");
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to record response to output writer", e);
+         }
+      }
+
+      return true;
+   }
+
+
+   private boolean getAnswer(FileWriter outWriter, List<String> parameters) {
+      if (!isSetTestrig() || !isSetContainer(true)) {
+         return false;
+      }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.GET_ANSWER);
+         return false;
+      }
+
       String questionName = parameters.get(0);
 
       String answer = _workHelper.getAnswer(_currContainerName,
             _currTestrig, questionName);
 
-      _logger.output(answer);
-      _logger.output("\n");
+      if (outWriter == null) {
+         _logger.output(answer + "\n");
+      } 
+      else {
+         try {
+            outWriter.write(answer + "\n");
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to record response to output writer", e);
+         }
+      }
 
       return true;
    }
@@ -1521,8 +1572,10 @@ public class Client extends AbstractClient implements IClient {
             return get(words, outWriter, options, parameters, false);
          case GET_DELTA:
             return get(words, outWriter, options, parameters, true);
+         case GET_ANALYSIS_ANSWERS:
+            return getAnalysisAnswers(outWriter, parameters);
          case GET_ANSWER:
-            return getAnswer(parameters);
+            return getAnswer(outWriter, parameters);
          case GET_QUESTION:
             return getQuestion(parameters);
          case HELP:
@@ -1555,6 +1608,8 @@ public class Client extends AbstractClient implements IClient {
             return pwd();
          case REINIT_DELTA_TESTRIG:
             return reinitTestrig(outWriter, true);
+         case RUN_ANALYSIS:
+            return runAnalysis(outWriter, parameters);
          case REINIT_TESTRIG:
             return reinitTestrig(outWriter, false);
          case SET_BATFISH_LOGLEVEL:
@@ -1736,6 +1791,27 @@ public class Client extends AbstractClient implements IClient {
          System.exit(1);
       }
 
+   }
+
+   private boolean runAnalysis(FileWriter outWriter, List<String> parameters) {
+
+      if (!isSetContainer(true) || !isSetTestrig()) {
+         return false;
+      }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.RUN_ANALYSIS);
+         return false;
+      }
+
+      String analysisName = parameters.get(0);
+
+      // answer the question
+      WorkItem wItemAs = _workHelper.getWorkItemRunAnalysis(analysisName,
+            _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig,
+            _currDeltaEnv);
+
+      return execute(wItemAs, outWriter);
    }
 
    private void runBatchFile() {

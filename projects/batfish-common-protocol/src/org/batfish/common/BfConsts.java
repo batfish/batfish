@@ -17,6 +17,7 @@ public class BfConsts {
       Unscheduled;
    }
 
+   public static final String ARG_ANALYSIS_NAME = "analysisname";
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
    public static final String ARG_BLOCK_NAMES = "blocknames";
    public static final String ARG_CONTAINER_DIR = "containerdir";
@@ -49,6 +50,7 @@ public class BfConsts {
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
    public static final String ARG_VERBOSE_PARSE = "verboseparse";
 
+   public static final String COMMAND_ANALYZE = "analyze";
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
    public static final String COMMAND_DUMP_DP = "dp";
