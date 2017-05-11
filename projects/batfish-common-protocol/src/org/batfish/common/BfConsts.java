@@ -24,6 +24,7 @@ public class BfConsts {
    public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
    public static final String ARG_DELTA_TESTRIG = "deltatestrig";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
+   public static final String ARG_DIFFERENTIAL = "differential";
    public static final String ARG_ENVIRONMENT_NAME = "env";
    public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
    public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
@@ -71,9 +72,9 @@ public class BfConsts {
    public static final String RELPATH_ANALYSIS_FILE = "analysis";
    public static final String RELPATH_ANSWER_HTML = "answer.html";
    public static final String RELPATH_ANSWER_JSON = "answer.json";
+   public static final String RELPATH_ANSWER_PRETTY_JSON = "answer-pretty.json";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
    public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_vpc_configs";
-   public static final String RELPATH_BASE = "base";
    public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_BATFISH = "batfish.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
@@ -83,6 +84,7 @@ public class BfConsts {
    public static final String RELPATH_DATA_PLANE = "dp";
    public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
+   public static final String RELPATH_DELTA = "delta";
    public static final String RELPATH_DIFF = "diff";
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";

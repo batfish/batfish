@@ -18,7 +18,7 @@ echo -e "\n  ..... Running basic client tests"
 allinone -cmdfile tests/basic/commands || exit 1
 
 echo -e "\n  ..... Running ui-focused client tests"
-allinone -cmdfile tests/ui-focused/commands -coordinatorargs "-allowdefaultkeylistings" || exit 1
+allinone -cmdfile tests/ui-focused/commands || exit 1
 
 #Test running separately
 coordinator &

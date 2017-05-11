@@ -375,8 +375,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
-   private static final String ARG_DIFF_QUESTION = "diffquestion";
-
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
 
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
@@ -517,6 +515,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private TestrigSettings _deltaTestrigSettings;
 
    private boolean _diffActive;
+
+   private boolean _differential;
 
    private boolean _diffQuestion;
 
@@ -766,6 +766,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public boolean getDiffActive() {
       return _diffActive;
+   }
+
+   public boolean getDifferential() {
+      return _differential;
    }
 
    public boolean getDiffQuestion() {
@@ -1065,7 +1069,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
       setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
-      setDefaultProperty(ARG_DIFF_QUESTION, false);
+      setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
       setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
       setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
       setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
@@ -1180,7 +1184,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addBooleanOption(BfConsts.ARG_DIFF_ACTIVE,
             "make differential environment the active one for questions about a single environment");
 
-      addBooleanOption(ARG_DIFF_QUESTION,
+      addBooleanOption(BfConsts.ARG_DIFFERENTIAL,
             "force treatment of question as differential (to be used when not answering question)");
 
       addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION,
@@ -1425,7 +1429,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
             BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
       _deltaTestrig = getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
       _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
-      _diffQuestion = getBooleanOptionValue(ARG_DIFF_QUESTION);
+      _differential = getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
       _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
       _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
       _flatten = getBooleanOptionValue(ARG_FLATTEN);

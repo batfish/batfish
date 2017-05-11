@@ -314,7 +314,8 @@ public class BfCoordWorkHelper {
    // }
    // }
 
-   public String getAnalysisAnswers(String containerName, String testrigName,
+   public String getAnalysisAnswers(String containerName, String baseTestrig,
+         String baseEnvironment, String deltaTestrig, String deltaEnvironment,
          String analysisName) {
       try {
 
@@ -330,9 +331,19 @@ public class BfCoordWorkHelper {
          addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
                containerName);
          addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
-               testrigName);
+               baseTestrig);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ENV_NAME_KEY,
+               baseEnvironment);
+         if (deltaTestrig != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY,
+                  deltaTestrig);
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_ENV_NAME_KEY,
+                  deltaEnvironment);
+         }
          addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
                analysisName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_PRETTY_ANSWER_KEY,
+               Boolean.toString(false));
 
          JSONObject jObj = postData(webTarget, multiPart);
          if (jObj == null) {
@@ -350,13 +361,14 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          _logger.errorf("Exception in getAnswer from %s using (%s, %s)\n",
-               _coordWorkMgr, testrigName, analysisName);
+               _coordWorkMgr, baseTestrig, analysisName);
          _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
 
-   public String getAnswer(String containerName, String testrigName,
+   public String getAnswer(String containerName, String baseTestrig,
+         String baseEnv, String deltaTestrig, String deltaEnv,
          String questionName) {
       try {
 
@@ -372,9 +384,18 @@ public class BfCoordWorkHelper {
          addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
                containerName);
          addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
-               testrigName);
+               baseTestrig);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ENV_NAME_KEY, baseEnv);
+         if (deltaTestrig != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY,
+                  deltaTestrig);
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_ENV_NAME_KEY,
+                  deltaEnv);
+         }
          addTextMultiPart(multiPart, CoordConsts.SVC_QUESTION_NAME_KEY,
                questionName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_PRETTY_ANSWER_KEY,
+               Boolean.toString(false));
 
          JSONObject jObj = postData(webTarget, multiPart);
          if (jObj == null) {
@@ -393,7 +414,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          _logger.errorf("Exception in getAnswer from %s using (%s, %s)\n",
-               _coordWorkMgr, testrigName, questionName);
+               _coordWorkMgr, baseTestrig, questionName);
          _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
@@ -549,17 +570,23 @@ public class BfCoordWorkHelper {
 
    public WorkItem getWorkItemRunAnalysis(String analysisName,
          String containerName, String testrigName, String envName,
-         String deltaTestrig, String deltaEnvName) {
+         String deltaTestrig, String deltaEnvName, boolean delta,
+         boolean differential) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANALYZE, "");
       wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
+      wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      if (deltaEnvName != null) {
+      if (differential || delta) {
+         wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
          wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME,
                deltaEnvName);
       }
-      if (deltaTestrig != null) {
-         wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
+      if (delta) {
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+      }
+      if (differential) {
+         wItem.addRequestParam(BfConsts.ARG_DIFFERENTIAL, "");
       }
       return wItem;
    }
