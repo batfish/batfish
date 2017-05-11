@@ -962,12 +962,6 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         if (!_settings.getDefaultKeyListings()
-               && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
-            throw new AccessControlException(
-                  "Listing all testrigs is not allowed with Default API key");
-         }
-
          JSONArray retArray = new JSONArray();
 
          String[] testrigList = Main.getWorkMgr().listTestrigs(containerName);
