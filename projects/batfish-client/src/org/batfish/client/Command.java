@@ -29,7 +29,12 @@ public enum Command {
    GEN_DELTA_DP("generate-delta-dataplane"),
    GEN_DP("generate-dataplane"),
    GET("get"),
+   GET_ANALYSIS_ANSWERS("get-analysis-answers"),
+   GET_ANALYSIS_ANSWERS_DELTA("get-analysis-answers-delta"),
+   GET_ANALYSIS_ANSWERS_DIFFERENTIAL("get-analysis-answers-differential"),
    GET_ANSWER("get-answer"),
+   GET_ANSWER_DELTA("get-answer-delta"),
+   GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
    GET_DELTA("get-delta"),
    GET_QUESTION("get-question"),
    HELP("help"),
@@ -49,6 +54,9 @@ public enum Command {
    QUIT("quit"),
    REINIT_DELTA_TESTRIG("reinit-delta-testrig"),
    REINIT_TESTRIG("reinit-testrig"),
+   RUN_ANALYSIS("run-analysis"),
+   RUN_ANALYSIS_DELTA("run-analysis-delta"),
+   RUN_ANALYSIS_DIFFERENTIAL("run-analysis-differential"),
    SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
    SET_CONTAINER("set-container"),
    SET_DELTA_ENV("set-delta-environment"),
@@ -126,7 +134,9 @@ public enum Command {
       descs.put(GET,
             new Pair<>("<question-type>  [param1=value1 [param2=value2] ...]",
                   "Answer the question by type for the base environment"));
-      descs.put(GET_ANSWER, new Pair<>("[-html] <question-name>",
+      descs.put(GET_ANALYSIS_ANSWERS, new Pair<>("<analysis-name>",
+            "Get the answers for a previously run analysis"));
+      descs.put(GET_ANSWER, new Pair<>("<question-name>",
             "Get the answer for a previously answered question"));
       descs.put(GET_DELTA,
             new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
@@ -170,6 +180,8 @@ public enum Command {
             "Reinitialize the delta testrig with default environment"));
       descs.put(REINIT_TESTRIG, new Pair<>("",
             "Reinitialize the testrig with default environment"));
+      descs.put(RUN_ANALYSIS, new Pair<>("<analysis-name>",
+            "Run the (previously configured) analysis"));
       descs.put(SET_BATFISH_LOGLEVEL,
             new Pair<>("<debug|info|output|warn|error>",
                   "Set the batfish loglevel. Default is warn"));

@@ -874,42 +874,131 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
-   private boolean getAnswer(List<String> options, List<String> parameters) {
+   private boolean getAnalysisAnswers(FileWriter outWriter,
+         List<String> parameters, boolean delta, boolean differential) {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.GET_ANALYSIS_ANSWERS);
+         return false;
+      }
 
-      boolean formatJson = true;
+      String analysisName = parameters.get(0);
 
-      if (options.size() == 1) {
-         if (options.get(0).equals("-html")) {
-            formatJson = false;
+      String baseTestrig;
+      String baseEnvironment;
+      String deltaTestrig;
+      String deltaEnvironment;
+      if (differential) {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = _currDeltaTestrig;
+         deltaEnvironment = _currDeltaEnv;
+      }
+      else if (delta) {
+         baseTestrig = _currDeltaTestrig;
+         baseEnvironment = _currDeltaEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      else {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      String answer = _workHelper.getAnalysisAnswers(_currContainerName,
+            baseTestrig, baseEnvironment, deltaTestrig, deltaEnvironment,
+            analysisName);
+
+      if (answer == null) {
+         return false;
+      }
+
+      if (outWriter == null) {
+         _logger.output(answer + "\n");
+      }
+      else {
+         try {
+            outWriter.write(answer + "\n");
          }
-         else {
-            _logger.outputf(
-                  "Unknown option: %s (note that json does not need a flag)\n",
-                  options.get(0));
-            return false;
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to record response to output writer", e);
          }
+      }
+
+      return true;
+   }
+
+   private boolean getAnswer(FileWriter outWriter, List<String> parameters,
+         boolean delta, boolean differential) {
+      if (!isSetTestrig() || !isSetContainer(true)) {
+         return false;
+      }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.GET_ANSWER);
+         return false;
       }
 
       String questionName = parameters.get(0);
 
-      String answerFileName = String.format("%s/%s/%s",
-            BfConsts.RELPATH_QUESTIONS_DIR, questionName,
-            (formatJson) ? BfConsts.RELPATH_ANSWER_JSON
-                  : BfConsts.RELPATH_ANSWER_HTML);
+      String baseTestrig;
+      String baseEnvironment;
+      String deltaTestrig;
+      String deltaEnvironment;
+      if (differential) {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = _currDeltaTestrig;
+         deltaEnvironment = _currDeltaEnv;
+      }
+      else if (delta) {
+         baseTestrig = _currDeltaTestrig;
+         baseEnvironment = _currDeltaEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      else {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      String answerString = _workHelper.getAnswer(_currContainerName,
+            baseTestrig, baseEnvironment, deltaTestrig, deltaEnvironment,
+            questionName);
 
-      String downloadedAnsFile = _workHelper.getObject(_currContainerName,
-            _currTestrig, answerFileName);
-      if (downloadedAnsFile == null) {
-         _logger.errorf("Failed to get answer file %s\n", answerFileName);
-         return false;
+      String answerStringToPrint = answerString;
+      if (outWriter == null && _settings.getPrettyPrintAnswers()) {
+         ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+         Answer answer;
+         try {
+            answer = mapper.readValue(answerString, Answer.class);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Response does not appear to be valid JSON representation of "
+                        + Answer.class.getSimpleName());
+         }
+         answerStringToPrint = answer.prettyPrint();
       }
 
-      String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
-      _logger.output(answerString);
-      _logger.output("\n");
+      if (outWriter == null) {
+         _logger.output(answerStringToPrint);
+      }
+      else {
+         try {
+            outWriter.write(answerStringToPrint);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to record response to output writer", e);
+         }
+      }
 
       return true;
    }
@@ -1545,8 +1634,18 @@ public class Client extends AbstractClient implements IClient {
             return get(words, outWriter, options, parameters, false);
          case GET_DELTA:
             return get(words, outWriter, options, parameters, true);
+         case GET_ANALYSIS_ANSWERS:
+            return getAnalysisAnswers(outWriter, parameters, false, false);
+         case GET_ANALYSIS_ANSWERS_DELTA:
+            return getAnalysisAnswers(outWriter, parameters, true, false);
+         case GET_ANALYSIS_ANSWERS_DIFFERENTIAL:
+            return getAnalysisAnswers(outWriter, parameters, false, true);
          case GET_ANSWER:
-            return getAnswer(options, parameters);
+            return getAnswer(outWriter, parameters, false, false);
+         case GET_ANSWER_DELTA:
+            return getAnswer(outWriter, parameters, true, false);
+         case GET_ANSWER_DIFFERENTIAL:
+            return getAnswer(outWriter, parameters, false, true);
          case GET_QUESTION:
             return getQuestion(parameters);
          case HELP:
@@ -1579,6 +1678,12 @@ public class Client extends AbstractClient implements IClient {
             return pwd();
          case REINIT_DELTA_TESTRIG:
             return reinitTestrig(outWriter, true);
+         case RUN_ANALYSIS:
+            return runAnalysis(outWriter, parameters, false, false);
+         case RUN_ANALYSIS_DELTA:
+            return runAnalysis(outWriter, parameters, true, false);
+         case RUN_ANALYSIS_DIFFERENTIAL:
+            return runAnalysis(outWriter, parameters, false, true);
          case REINIT_TESTRIG:
             return reinitTestrig(outWriter, false);
          case SET_BATFISH_LOGLEVEL:
@@ -1760,6 +1865,28 @@ public class Client extends AbstractClient implements IClient {
          System.exit(1);
       }
 
+   }
+
+   private boolean runAnalysis(FileWriter outWriter, List<String> parameters,
+         boolean delta, boolean differential) {
+
+      if (!isSetContainer(true) || !isSetTestrig()) {
+         return false;
+      }
+      if (parameters.size() != 1) {
+         _logger.error("Invalid arguments: " + parameters.toString());
+         printUsage(Command.RUN_ANALYSIS);
+         return false;
+      }
+
+      String analysisName = parameters.get(0);
+
+      // answer the question
+      WorkItem wItemAs = _workHelper.getWorkItemRunAnalysis(analysisName,
+            _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig,
+            _currDeltaEnv, delta, differential);
+
+      return execute(wItemAs, outWriter);
    }
 
    private void runBatchFile() {

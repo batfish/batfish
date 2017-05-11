@@ -12,6 +12,7 @@ import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipException;
 
@@ -416,6 +417,129 @@ public class WorkMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("WMS:delTestrig exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   /**
+    * Get answers for an analysis (previously run)
+    *
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param analysisName
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_GET_ANALYSIS_ANSWERS_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray getAnalysisAnswers(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String baseEnv,
+         @FormDataParam(CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY) String deltaTestrig,
+         @FormDataParam(CoordConsts.SVC_DELTA_ENV_NAME_KEY) String deltaEnv,
+         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName,
+         @FormDataParam(CoordConsts.SVC_PRETTY_ANSWER_KEY) String prettyAnswer) {
+      try {
+         _logger.info("WMS:getAnswer " + apiKey + " " + containerName + " "
+               + testrigName + " " + analysisName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Base testrig name");
+         checkStringParam(baseEnv, "Base environment name");
+         checkStringParam(analysisName, "Analysis name");
+         checkStringParam(prettyAnswer, "Retrieve pretty-printed answers");
+         boolean pretty = Boolean.parseBoolean(prettyAnswer);
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         Map<String, String> answers = Main.getWorkMgr().getAnalysisAnswers(
+               containerName, testrigName, baseEnv, deltaTestrig, deltaEnv,
+               analysisName, pretty);
+
+         BatfishObjectMapper mapper = new BatfishObjectMapper();
+         String answersStr = mapper.writeValueAsString(answers);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               new JSONObject().put(CoordConsts.SVC_ANSWERS_KEY, answersStr)));
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error(
+               "WMS:getAnalysisAnswers exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:getAnswer exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+   }
+
+   /**
+    * Get answer for a question that was previously asked
+    *
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @param questionName
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_GET_ANSWER_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray getAnswer(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String baseEnv,
+         @FormDataParam(CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY) String deltaTestrig,
+         @FormDataParam(CoordConsts.SVC_DELTA_ENV_NAME_KEY) String deltaEnv,
+         @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName,
+         @FormDataParam(CoordConsts.SVC_PRETTY_ANSWER_KEY) String prettyAnswer) {
+      try {
+         _logger.info("WMS:getAnswer " + apiKey + " " + containerName + " "
+               + testrigName + " " + questionName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Base testrig name");
+         checkStringParam(baseEnv, "Base environment name");
+         checkStringParam(questionName, "Question name");
+         checkStringParam(prettyAnswer, "Retrieve pretty-printed answer");
+         boolean pretty = Boolean.parseBoolean(prettyAnswer);
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         String answer = Main.getWorkMgr().getAnswer(containerName, testrigName,
+               baseEnv, deltaTestrig, deltaEnv, questionName, pretty);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               new JSONObject().put(CoordConsts.SVC_ANSWER_KEY, answer)));
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:getAnswer exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:getAnswer exception: " + stackTrace);
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
