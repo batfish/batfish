@@ -874,7 +874,8 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
-   private boolean getAnalysisAnswers(FileWriter outWriter, List<String> parameters) {
+   private boolean getAnalysisAnswers(FileWriter outWriter,
+         List<String> parameters, boolean delta, boolean differential) {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
@@ -886,16 +887,39 @@ public class Client extends AbstractClient implements IClient {
 
       String analysisName = parameters.get(0);
 
+      String baseTestrig;
+      String baseEnvironment;
+      String deltaTestrig;
+      String deltaEnvironment;
+      if (differential) {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = _currDeltaTestrig;
+         deltaEnvironment = _currDeltaEnv;
+      }
+      else if (delta) {
+         baseTestrig = _currDeltaTestrig;
+         baseEnvironment = _currDeltaEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      else {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
       String answer = _workHelper.getAnalysisAnswers(_currContainerName,
-            _currTestrig, analysisName);
+            baseTestrig, baseEnvironment, deltaTestrig, deltaEnvironment,
+            analysisName);
 
       if (answer == null) {
          return false;
       }
-      
+
       if (outWriter == null) {
          _logger.output(answer + "\n");
-      } 
+      }
       else {
          try {
             outWriter.write(answer + "\n");
@@ -909,8 +933,8 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-
-   private boolean getAnswer(FileWriter outWriter, List<String> parameters) {
+   private boolean getAnswer(FileWriter outWriter, List<String> parameters,
+         boolean delta, boolean differential) {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
@@ -922,15 +946,53 @@ public class Client extends AbstractClient implements IClient {
 
       String questionName = parameters.get(0);
 
-      String answer = _workHelper.getAnswer(_currContainerName,
-            _currTestrig, questionName);
+      String baseTestrig;
+      String baseEnvironment;
+      String deltaTestrig;
+      String deltaEnvironment;
+      if (differential) {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = _currDeltaTestrig;
+         deltaEnvironment = _currDeltaEnv;
+      }
+      else if (delta) {
+         baseTestrig = _currDeltaTestrig;
+         baseEnvironment = _currDeltaEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      else {
+         baseTestrig = _currTestrig;
+         baseEnvironment = _currEnv;
+         deltaTestrig = null;
+         deltaEnvironment = null;
+      }
+      String answerString = _workHelper.getAnswer(_currContainerName,
+            baseTestrig, baseEnvironment, deltaTestrig, deltaEnvironment,
+            questionName);
+
+      String answerStringToPrint = answerString;
+      if (outWriter == null && _settings.getPrettyPrintAnswers()) {
+         ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+         Answer answer;
+         try {
+            answer = mapper.readValue(answerString, Answer.class);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Response does not appear to be valid JSON representation of "
+                        + Answer.class.getSimpleName());
+         }
+         answerStringToPrint = answer.prettyPrint();
+      }
 
       if (outWriter == null) {
-         _logger.output(answer + "\n");
-      } 
+         _logger.output(answerStringToPrint);
+      }
       else {
          try {
-            outWriter.write(answer + "\n");
+            outWriter.write(answerStringToPrint);
          }
          catch (IOException e) {
             throw new BatfishException(
@@ -1573,9 +1635,17 @@ public class Client extends AbstractClient implements IClient {
          case GET_DELTA:
             return get(words, outWriter, options, parameters, true);
          case GET_ANALYSIS_ANSWERS:
-            return getAnalysisAnswers(outWriter, parameters);
+            return getAnalysisAnswers(outWriter, parameters, false, false);
+         case GET_ANALYSIS_ANSWERS_DELTA:
+            return getAnalysisAnswers(outWriter, parameters, true, false);
+         case GET_ANALYSIS_ANSWERS_DIFFERENTIAL:
+            return getAnalysisAnswers(outWriter, parameters, false, true);
          case GET_ANSWER:
-            return getAnswer(outWriter, parameters);
+            return getAnswer(outWriter, parameters, false, false);
+         case GET_ANSWER_DELTA:
+            return getAnswer(outWriter, parameters, true, false);
+         case GET_ANSWER_DIFFERENTIAL:
+            return getAnswer(outWriter, parameters, false, true);
          case GET_QUESTION:
             return getQuestion(parameters);
          case HELP:
@@ -1609,7 +1679,11 @@ public class Client extends AbstractClient implements IClient {
          case REINIT_DELTA_TESTRIG:
             return reinitTestrig(outWriter, true);
          case RUN_ANALYSIS:
-            return runAnalysis(outWriter, parameters);
+            return runAnalysis(outWriter, parameters, false, false);
+         case RUN_ANALYSIS_DELTA:
+            return runAnalysis(outWriter, parameters, true, false);
+         case RUN_ANALYSIS_DIFFERENTIAL:
+            return runAnalysis(outWriter, parameters, false, true);
          case REINIT_TESTRIG:
             return reinitTestrig(outWriter, false);
          case SET_BATFISH_LOGLEVEL:
@@ -1793,7 +1867,8 @@ public class Client extends AbstractClient implements IClient {
 
    }
 
-   private boolean runAnalysis(FileWriter outWriter, List<String> parameters) {
+   private boolean runAnalysis(FileWriter outWriter, List<String> parameters,
+         boolean delta, boolean differential) {
 
       if (!isSetContainer(true) || !isSetTestrig()) {
          return false;
@@ -1809,7 +1884,7 @@ public class Client extends AbstractClient implements IClient {
       // answer the question
       WorkItem wItemAs = _workHelper.getWorkItemRunAnalysis(analysisName,
             _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig,
-            _currDeltaEnv);
+            _currDeltaEnv, delta, differential);
 
       return execute(wItemAs, outWriter);
    }

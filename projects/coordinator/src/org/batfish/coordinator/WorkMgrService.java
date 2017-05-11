@@ -438,37 +438,43 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
-         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,         
-         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName) {
+         @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
+         @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String baseEnv,
+         @FormDataParam(CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY) String deltaTestrig,
+         @FormDataParam(CoordConsts.SVC_DELTA_ENV_NAME_KEY) String deltaEnv,
+         @FormDataParam(CoordConsts.SVC_ANALYSIS_NAME_KEY) String analysisName,
+         @FormDataParam(CoordConsts.SVC_PRETTY_ANSWER_KEY) String prettyAnswer) {
       try {
-         _logger.info(
-               "WMS:getAnswer " + apiKey + " " + containerName + " " + testrigName 
-               + " " + analysisName + "\n");
+         _logger.info("WMS:getAnswer " + apiKey + " " + containerName + " "
+               + testrigName + " " + analysisName + "\n");
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
          checkStringParam(containerName, "Container name");
-         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(testrigName, "Base testrig name");
+         checkStringParam(baseEnv, "Base environment name");
          checkStringParam(analysisName, "Analysis name");
+         checkStringParam(prettyAnswer, "Retrieve pretty-printed answers");
+         boolean pretty = Boolean.parseBoolean(prettyAnswer);
 
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         Map<String, String> answers = Main.getWorkMgr().getAnalysisAnswers(containerName,
-               testrigName, analysisName);
+         Map<String, String> answers = Main.getWorkMgr().getAnalysisAnswers(
+               containerName, testrigName, baseEnv, deltaTestrig, deltaEnv,
+               analysisName, pretty);
 
          BatfishObjectMapper mapper = new BatfishObjectMapper();
-         String answersStr = mapper
-               .writeValueAsString(answers);
-               
-         return new JSONArray(Arrays.asList(
-                  CoordConsts.SVC_SUCCESS_KEY, 
-                  new JSONObject().put(CoordConsts.SVC_ANSWERS_KEY, answersStr)));
+         String answersStr = mapper.writeValueAsString(answers);
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+               new JSONObject().put(CoordConsts.SVC_ANSWERS_KEY, answersStr)));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:getAnalysisAnswers exception: " + e.getMessage() + "\n");
+         _logger.error(
+               "WMS:getAnalysisAnswers exception: " + e.getMessage() + "\n");
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
@@ -497,27 +503,32 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
-         @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName) {
+         @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String baseEnv,
+         @FormDataParam(CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY) String deltaTestrig,
+         @FormDataParam(CoordConsts.SVC_DELTA_ENV_NAME_KEY) String deltaEnv,
+         @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName,
+         @FormDataParam(CoordConsts.SVC_PRETTY_ANSWER_KEY) String prettyAnswer) {
       try {
-         _logger.info(
-               "WMS:getAnswer " + apiKey + " " + containerName + " " + testrigName 
-               + " " + questionName + "\n");
+         _logger.info("WMS:getAnswer " + apiKey + " " + containerName + " "
+               + testrigName + " " + questionName + "\n");
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
          checkStringParam(containerName, "Container name");
-         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(testrigName, "Base testrig name");
+         checkStringParam(baseEnv, "Base environment name");
          checkStringParam(questionName, "Question name");
+         checkStringParam(prettyAnswer, "Retrieve pretty-printed answer");
+         boolean pretty = Boolean.parseBoolean(prettyAnswer);
 
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         String answer = Main.getWorkMgr().getAnswer(containerName,
-               testrigName, questionName);
+         String answer = Main.getWorkMgr().getAnswer(containerName, testrigName,
+               baseEnv, deltaTestrig, deltaEnv, questionName, pretty);
 
-         return new JSONArray(Arrays.asList(
-               CoordConsts.SVC_SUCCESS_KEY, 
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                new JSONObject().put(CoordConsts.SVC_ANSWER_KEY, answer)));
       }
       catch (FileExistsException | FileNotFoundException

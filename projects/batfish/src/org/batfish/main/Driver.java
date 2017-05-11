@@ -392,7 +392,7 @@ public class Driver {
                }
                finally {
                   if (settings.getAnswerJsonPath() != null) {
-                     batfish.outputAnswer(answer);
+                     batfish.outputAnswerWithLog(answer);
                   }
                }
             }
