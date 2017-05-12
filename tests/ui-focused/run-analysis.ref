@@ -1,0 +1,285 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.RunAnalysisAnswerElement",
+      "answers" : {
+        "unusedstructures" : {
+          "answerElements" : [
+            {
+              "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
+              "problems" : {
+                "unused:bgp group:as1" : {
+                  "description" : "Unused structure of type: 'bgp group' with name: 'as1'",
+                  "files" : {
+                    "as2border2.cfg" : [
+                      82
+                    ],
+                    "as3border1.cfg" : [
+                      75
+                    ]
+                  }
+                },
+                "unused:bgp group:as2" : {
+                  "description" : "Unused structure of type: 'bgp group' with name: 'as2'",
+                  "files" : {
+                    "as1border2.cfg" : [
+                      80
+                    ],
+                    "as3border2.cfg" : [
+                      77
+                    ]
+                  }
+                },
+                "unused:bgp group:as3" : {
+                  "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
+                  "files" : {
+                    "as1border1.cfg" : [
+                      79
+                    ],
+                    "as2border1.cfg" : [
+                      88
+                    ]
+                  }
+                },
+                "unused:expanded community-list:as1_community" : {
+                  "description" : "Unused structure of type: 'expanded community-list' with name: 'as1_community'",
+                  "files" : {
+                    "as1border1.cfg" : [
+                      115
+                    ],
+                    "as1border2.cfg" : [
+                      116
+                    ]
+                  }
+                },
+                "unused:expanded community-list:as2_community" : {
+                  "description" : "Unused structure of type: 'expanded community-list' with name: 'as2_community'",
+                  "files" : {
+                    "as2border1.cfg" : [
+                      119
+                    ],
+                    "as2border2.cfg" : [
+                      117
+                    ]
+                  }
+                },
+                "unused:expanded community-list:as3_community" : {
+                  "description" : "Unused structure of type: 'expanded community-list' with name: 'as3_community'",
+                  "files" : {
+                    "as3border1.cfg" : [
+                      109
+                    ],
+                    "as3border2.cfg" : [
+                      109
+                    ]
+                  }
+                },
+                "unused:extended ip access-list:102" : {
+                  "description" : "Unused structure of type: 'extended ip access-list' with name: '102'",
+                  "files" : {
+                    "as2dist1.cfg" : [
+                      117
+                    ],
+                    "as2dist2.cfg" : [
+                      117
+                    ]
+                  }
+                },
+                "unused:extended ip access-list:105" : {
+                  "description" : "Unused structure of type: 'extended ip access-list' with name: '105'",
+                  "files" : {
+                    "as2dept1.cfg" : [
+                      118
+                    ]
+                  }
+                },
+                "unused:extended ip access-list:RESTRICT_HOST_TRAFFIC_OUT" : {
+                  "description" : "Unused structure of type: 'extended ip access-list' with name: 'RESTRICT_HOST_TRAFFIC_OUT'",
+                  "files" : {
+                    "as2dept1.cfg" : [
+                      104
+                    ]
+                  }
+                },
+                "unused:ipv4 prefix-list:inbound_route_filter" : {
+                  "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'inbound_route_filter'",
+                  "files" : {
+                    "as1border1.cfg" : [
+                      123
+                    ],
+                    "as1border2.cfg" : [
+                      125
+                    ],
+                    "as2border1.cfg" : [
+                      134
+                    ],
+                    "as2border2.cfg" : [
+                      132
+                    ],
+                    "as3border1.cfg" : [
+                      115
+                    ],
+                    "as3border2.cfg" : [
+                      115
+                    ]
+                  }
+                }
+              },
+              "unusedStructures" : {
+                "as1border1" : {
+                  "bgp group" : {
+                    "as3" : [
+                      79
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as1_community" : [
+                      115
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      123
+                    ]
+                  }
+                },
+                "as1border2" : {
+                  "bgp group" : {
+                    "as2" : [
+                      80
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as1_community" : [
+                      116
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      125
+                    ]
+                  }
+                },
+                "as2border1" : {
+                  "bgp group" : {
+                    "as3" : [
+                      88
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as2_community" : [
+                      119
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      134
+                    ]
+                  }
+                },
+                "as2border2" : {
+                  "bgp group" : {
+                    "as1" : [
+                      82
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as2_community" : [
+                      117
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      132
+                    ]
+                  }
+                },
+                "as2dept1" : {
+                  "extended ip access-list" : {
+                    "105" : [
+                      118
+                    ],
+                    "RESTRICT_HOST_TRAFFIC_OUT" : [
+                      104
+                    ]
+                  }
+                },
+                "as2dist1" : {
+                  "extended ip access-list" : {
+                    "102" : [
+                      117
+                    ]
+                  }
+                },
+                "as2dist2" : {
+                  "extended ip access-list" : {
+                    "102" : [
+                      117
+                    ]
+                  }
+                },
+                "as3border1" : {
+                  "bgp group" : {
+                    "as1" : [
+                      75
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as3_community" : [
+                      109
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      115
+                    ]
+                  }
+                },
+                "as3border2" : {
+                  "bgp group" : {
+                    "as2" : [
+                      77
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as3_community" : [
+                      109
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      115
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "question" : {
+            "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
+            "differential" : false,
+            "instance" : {
+              "description" : "Outputs cases where structures (e.g., ACL, routemaps) are defined but not used.",
+              "instanceName" : "unusedStructures",
+              "longDescription" : "Such occurrences could be configuration errors or leftover cruft.",
+              "tags" : [
+                "default"
+              ],
+              "variables" : {
+                "nodeRegex" : {
+                  "description" : "Only check nodes whose name matches this regex",
+                  "optional" : false,
+                  "type" : "javaRegex",
+                  "value" : ".*"
+                }
+              }
+            },
+            "nodeRegex" : ".*"
+          },
+          "status" : "SUCCESS"
+        }
+      }
+    }
+  ],
+  "status" : "SUCCESS"
+}

@@ -155,10 +155,10 @@ public enum Command {
                   "<environment zipfile or directory> [<environment-name>]",
                   "Initialize the delta environment"));
       descs.put(INIT_DELTA_TESTRIG,
-            new Pair<>("<testrig zipfile or directory> [<environment name>]",
+            new Pair<>("<testrig zipfile or directory> [<testrig-name>]",
                   "Initialize the delta testrig with default environment"));
       descs.put(INIT_TESTRIG,
-            new Pair<>("<testrig zipfile or directory> [<environment name>]",
+            new Pair<>("<testrig zipfile or directory> [<testrig-name>]",
                   "Initialize the testrig with default environment"));
       descs.put(LIST_ANALYSES,
             new Pair<>("", "List the analyses and their configuration"));

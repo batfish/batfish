@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -662,12 +663,21 @@ public class WorkMgr {
             .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_TEST_RIG_DIR)
             .toFile();
 
+      if (!submittedTestrigDir.exists()) {
+         return "Missing folder " + BfConsts.RELPATH_TEST_RIG_DIR + " for testrig " + testrigName + "\n"; 
+      }
+         
       StringBuilder retStringBuilder = new StringBuilder();
 
-      for (File subFile : submittedTestrigDir.listFiles()) {
+      File[] subFiles = submittedTestrigDir.listFiles();
+      Arrays.sort(subFiles);
+      
+      for (File subFile : subFiles) {
          retStringBuilder.append(subFile.getName());
          if (subFile.isDirectory()) {
             File[] subSubFiles = subFile.listFiles();
+            Arrays.sort(subSubFiles);
+            
             retStringBuilder.append("/\n");
 
             // now append a maximum of 10
@@ -806,7 +816,10 @@ public class WorkMgr {
 
       List<String> containers = new ArrayList<>();
 
-      for (File file : containersDir.listFiles()) {
+      File[] files = containersDir.listFiles();
+      Arrays.sort(files);
+      
+      for (File file : files) {
          if (file.isDirectory() && Main.getAuthorizer()
                .isAccessibleContainer(apiKey, file.getName(), false)) {
             containers.add(file.getName());
