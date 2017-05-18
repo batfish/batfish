@@ -30,6 +30,7 @@ import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -51,11 +52,13 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -313,6 +316,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
          _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
          peerExportPolicy.getStatements()
                .add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
+         If setOriginForNonBgp = new If();
+         Disjunction isBgp = new Disjunction();
+         isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
+         isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
+         setOriginForNonBgp.setGuard(isBgp);
+         setOriginForNonBgp.getTrueStatements()
+               .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
          List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
          ig.getExportPolicies()
                .forEach((exportPolicyName, exportPolicyLine) -> {

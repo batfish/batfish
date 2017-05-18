@@ -423,6 +423,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                      transformedIncomingRouteBuilder.setNextHopIp(
                            transformedOutgoingRoute.getNextHopIp());
 
+                     // Incoming originType
+                     transformedIncomingRouteBuilder.setOriginType(
+                           transformedOutgoingRoute.getOriginType());
+
                      // Incoming localPreference
                      transformedIncomingRouteBuilder.setLocalPreference(
                            transformedOutgoingRoute.getLocalPreference());
@@ -725,9 +729,12 @@ public class VirtualRouter extends ComparableStructure<String> {
                   }
                   transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
 
-                  // clusterList, receivedFromRouteReflectorClient
+                  // clusterList, receivedFromRouteReflectorClient, (originType
+                  // for bgp remote route)
                   if (remoteRouteIsBgp) {
                      BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
+                     transformedOutgoingRouteBuilder
+                           .setOriginType(bgpRemoteRoute.getOriginType());
                      if (ebgp
                            && bgpRemoteRoute.getAsPath()
                                  .containsAs(remoteBgpNeighbor.getRemoteAs())
@@ -904,6 +911,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                      // Incoming metric
                      transformedIncomingRouteBuilder
                            .setMetric(transformedOutgoingRoute.getMetric());
+
+                     // Incoming originType
+                     transformedIncomingRouteBuilder.setOriginType(
+                           transformedOutgoingRoute.getOriginType());
 
                      // Incoming srcProtocol
                      transformedIncomingRouteBuilder

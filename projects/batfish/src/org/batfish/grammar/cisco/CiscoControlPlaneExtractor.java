@@ -5736,7 +5736,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else if (ctx.as != null) {
          asNum = toInteger(ctx.as);
-         originType = OriginType.EGP;
+         originType = OriginType.IGP;
       }
       else {
          throw convError(OriginExpr.class, ctx);

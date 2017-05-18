@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -243,23 +244,30 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
             for (AbstractRoute route : remainingRoutes) {
                Ip currentNextHopIp = route.getNextHopIp();
-               Map<String, Set<AbstractRoute>> nextHopInterfaces = vr._fib
+               Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = vr._fib
                      .getNextHopInterfaces(currentNextHopIp);
-               nextHopInterfaces
-                     .forEach((nextHopInterface, nextHopInterfaceRoutes) -> {
-                        for (AbstractRoute nextHopInterfaceRoute : nextHopInterfaceRoutes) {
-                           Set<FibRow> currentInterfaceRouteRows = interfaceRouteRows
-                                 .get(nextHopInterfaceRoute);
-                           for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
-                              FibRow row = new FibRow(
-                                    route.getNetwork().getNetworkPrefix(),
-                                    interfaceRouteRow.getInterface(),
-                                    interfaceRouteRow.getNextHop(),
-                                    interfaceRouteRow.getNextHopInterface());
-                              fibSet.add(row);
-                           }
+               nextHopInterfaces.forEach((nextHopInterface,
+                     nextHopInterfaceRoutesByFinalNextHopIp) -> {
+                  if (nextHopInterfaceRoutesByFinalNextHopIp.size() > 1) {
+                     throw new BatfishException("Did not expect this");
+                  }
+                  for (Entry<Ip, Set<AbstractRoute>> e2 : nextHopInterfaceRoutesByFinalNextHopIp
+                        .entrySet()) {
+                     Set<AbstractRoute> nextHopInterfaceRoutes = e2.getValue();
+                     for (AbstractRoute nextHopInterfaceRoute : nextHopInterfaceRoutes) {
+                        Set<FibRow> currentInterfaceRouteRows = interfaceRouteRows
+                              .get(nextHopInterfaceRoute);
+                        for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
+                           FibRow row = new FibRow(
+                                 route.getNetwork().getNetworkPrefix(),
+                                 interfaceRouteRow.getInterface(),
+                                 interfaceRouteRow.getNextHop(),
+                                 interfaceRouteRow.getNextHopInterface());
+                           fibSet.add(row);
                         }
-                     });
+                     }
+                  }
+               });
             }
          });
       });

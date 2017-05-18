@@ -70,8 +70,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          Set<Edge> visitedEdges, List<FlowTraceHop> hopsSoFar,
          Set<FlowTrace> flowTraces, Flow flow) {
       Ip dstIp = flow.getDstIp();
-      Set<String> ipOwners = dp._ipOwners.get(dstIp);
-      if (ipOwners != null && ipOwners.contains(currentNodeName)) {
+      Set<String> dstIpOwners = dp._ipOwners.get(dstIp);
+      if (dstIpOwners != null && dstIpOwners.contains(currentNodeName)) {
          FlowTrace trace = new FlowTrace(FlowDisposition.ACCEPTED, hopsSoFar,
                FlowDisposition.ACCEPTED.toString());
          flowTraces.add(trace);
@@ -90,9 +90,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          }
          VirtualRouter currentVirtualRouter = currentNode._virtualRouters
                .get(vrfName);
-         Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = currentVirtualRouter._fib
+         Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute = currentVirtualRouter._fib
                .getNextHopInterfacesByRoute(dstIp);
-         Map<String, Set<AbstractRoute>> nextHopInterfacesWithRoutes = currentVirtualRouter._fib
+         Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfacesWithRoutes = currentVirtualRouter._fib
                .getNextHopInterfaces(dstIp);
          if (!nextHopInterfacesWithRoutes.isEmpty()) {
             for (String nextHopInterfaceName : nextHopInterfacesWithRoutes
@@ -103,20 +103,34 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                // .stream().map(ar -> ar.toString())
                // .collect(Collectors.toSet()));
                SortedSet<String> routesForThisNextHopInterface = new TreeSet<>();
-               boolean nextHopIpRoute = false;
-               for (Entry<AbstractRoute, Set<String>> e : nextHopInterfacesByRoute
+               Ip finalNextHopIp = null;
+               for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e : nextHopInterfacesByRoute
                      .entrySet()) {
                   AbstractRoute routeCandidate = e.getKey();
-                  Set<String> routeCandidateNextHopInterfaces = e.getValue();
+                  Map<String, Map<Ip, Set<AbstractRoute>>> routeCandidateNextHopInterfaces = e
+                        .getValue();
                   if (routeCandidateNextHopInterfaces
-                        .contains(nextHopInterfaceName)) {
+                        .containsKey(nextHopInterfaceName)) {
                      Ip nextHopIp = routeCandidate.getNextHopIp();
                      if (nextHopIp != null && !nextHopIp
                            .equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-                        nextHopIpRoute = true;
+                        Set<Ip> finalNextHopIps = routeCandidateNextHopInterfaces
+                              .get(nextHopInterfaceName).keySet();
+                        if (finalNextHopIps.size() > 1) {
+                           throw new BatfishException(
+                                 "Can not currently handle multiple final next hop ips across multiple routes leading to one next hop interface");
+                        }
+                        Ip newFinalNextHopIp = finalNextHopIps.iterator()
+                              .next();
+                        if (finalNextHopIp != null
+                              && !newFinalNextHopIp.equals(finalNextHopIp)) {
+                           throw new BatfishException(
+                                 "Can not currently handle multiple final next hop ips for same next hop interface");
+                        }
+                        finalNextHopIp = newFinalNextHopIp;
                      }
-                     routesForThisNextHopInterface
-                           .add(routeCandidate.toString());
+                     routesForThisNextHopInterface.add(routeCandidate.toString()
+                           + "_fnhip:" + finalNextHopIp);
                   }
                }
                NodeInterfacePair nextHopInterface = new NodeInterfacePair(
@@ -175,7 +189,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                          *
                          * AND
                          *
-                         * - Neighbor does not own dstIp
+                         * - Neighbor does not own arpIp
                          *
                          * AND EITHER
                          *
@@ -184,38 +198,46 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                          * - OR
                          *
                          * -- Subnet of neighbor's receiving-interface contains
-                         * dstIp
+                         * arpIp
                          */
-                        if (!nextHopIpRoute) {
-                           // using interface-only route
-                           String node2 = edge.getNode2();
-                           if (ipOwners == null || !ipOwners.contains(node2)) {
-                              // neighbor does not own dstIp
-                              String int2Name = edge.getInt2();
-                              Interface int2 = dp._nodes.get(node2)._c
-                                    .getInterfaces().get(int2Name);
-                              boolean neighborUnreachable = false;
-                              Boolean proxyArp = int2.getProxyArp();
-                              if (proxyArp == null || !proxyArp) {
-                                 // TODO: proxyArp probably shouldn't be null
-                                 neighborUnreachable = true;
-                              }
-                              else {
-                                 for (Prefix prefix : int2.getAllPrefixes()) {
-                                    if (prefix.getNetworkPrefix()
-                                          .contains(dstIp)) {
-                                       neighborUnreachable = true;
-                                       break;
-                                    }
+                        Ip arpIp;
+                        Set<String> arpIpOwners;
+                        if (finalNextHopIp == null) {
+                           arpIp = dstIp;
+                           arpIpOwners = dstIpOwners;
+                        }
+                        else {
+                           arpIp = finalNextHopIp;
+                           arpIpOwners = dp._ipOwners.get(arpIp);
+                        }
+                        // using interface-only route
+                        String node2 = edge.getNode2();
+                        if (arpIpOwners == null
+                              || !arpIpOwners.contains(node2)) {
+                           // neighbor does not own arpIp
+                           String int2Name = edge.getInt2();
+                           Interface int2 = dp._nodes.get(node2)._c
+                                 .getInterfaces().get(int2Name);
+                           boolean neighborUnreachable = false;
+                           Boolean proxyArp = int2.getProxyArp();
+                           if (proxyArp == null || !proxyArp) {
+                              // TODO: proxyArp probably shouldn't be null
+                              neighborUnreachable = true;
+                           }
+                           else {
+                              for (Prefix prefix : int2.getAllPrefixes()) {
+                                 if (prefix.getNetworkPrefix()
+                                       .contains(arpIp)) {
+                                    neighborUnreachable = true;
+                                    break;
                                  }
                               }
-                              if (neighborUnreachable) {
-                                 unreachableNeighbors++;
-                                 continue;
-                              }
+                           }
+                           if (neighborUnreachable) {
+                              unreachableNeighbors++;
+                              continue;
                            }
                         }
-
                         if (visitedEdges.contains(edge)) {
                            FlowTrace trace = new FlowTrace(FlowDisposition.LOOP,
                                  newHops, FlowDisposition.LOOP.toString());
