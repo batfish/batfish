@@ -40,7 +40,7 @@
         "testrig/iptables/host1.iptables" : "PASSED",
         "testrig/iptables/host2.iptables" : "PASSED"
       },
-      "version" : "0.18.0"
+      "version" : "0.19.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -59,17 +59,17 @@
         "as1border1" : {
           "bgp group" : {
             "as3" : [
-              77
+              79
             ]
           },
           "expanded community-list" : {
             "as1_community" : [
-              113
+              115
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              121
+              123
             ]
           }
         },
@@ -127,7 +127,10 @@
         "as2dept1" : {
           "extended ip access-list" : {
             "105" : [
-              120
+              118
+            ],
+            "RESTRICT_HOST_TRAFFIC_OUT" : [
+              104
             ]
           }
         },
@@ -148,17 +151,17 @@
         "as3border1" : {
           "bgp group" : {
             "as1" : [
-              74
+              75
             ]
           },
           "expanded community-list" : {
             "as3_community" : [
-              108
+              109
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              114
+              115
             ]
           }
         },
@@ -180,7 +183,7 @@
           }
         }
       },
-      "version" : "0.18.0",
+      "version" : "0.19.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {
