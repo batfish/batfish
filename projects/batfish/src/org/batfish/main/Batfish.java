@@ -769,17 +769,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   @Override
-   public void checkDataPlaneQuestionDependencies() {
-      checkDataPlaneQuestionDependencies(_testrigSettings);
-   }
-
-   public void checkDataPlaneQuestionDependencies(
-         TestrigSettings testrigSettings) {
-      checkConfigurations(testrigSettings);
-      checkDataPlane(testrigSettings);
-   }
-
    public void checkDiffEnvironmentExists() {
       checkDiffEnvironmentSpecified();
       checkEnvironmentExists(_deltaTestrigSettings);
@@ -2673,7 +2662,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _settings.setSequential(true);
       }
       Settings settings = getSettings();
-      checkDataPlaneQuestionDependencies();
       String tag = getFlowTag(_testrigSettings);
       Map<String, Configuration> configurations = loadConfigurations();
       Set<Flow> flows = null;
@@ -4246,7 +4234,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _settings.setSequential(true);
       }
       Settings settings = getSettings();
-      checkDataPlaneQuestionDependencies(_testrigSettings);
       String tag = getFlowTag(_testrigSettings);
       Map<String, Configuration> configurations = loadConfigurations();
       Set<Flow> flows = null;

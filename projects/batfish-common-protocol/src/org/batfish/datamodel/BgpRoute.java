@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.collections.CommunitySet;
 
 public class BgpRoute extends AbstractRoute {
@@ -38,6 +39,12 @@ public class BgpRoute extends AbstractRoute {
 
       @Override
       public BgpRoute build() {
+         if (_originatorIp == null) {
+            throw new BatfishException("Missing originatorIp");
+         }
+         if (_originType == null) {
+            throw new BatfishException("Missing originType");
+         }
          return new BgpRoute(_network, _nextHopIp, _admin, _asPath,
                _communities, _localPreference, _metric, _originatorIp,
                _clusterList, _receivedFromRouteReflectorClient, _originType,

@@ -47,7 +47,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:1.0.1.1"
                   ]
                 },
                 {
@@ -58,7 +58,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:10.12.11.2"
                   ]
                 },
                 {
@@ -69,7 +69,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.12.11.2"
                   ]
                 },
                 {
@@ -80,7 +80,7 @@
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:null>_fnhip:2.23.12.3"
                   ]
                 },
                 {
@@ -91,7 +91,7 @@
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:null>_fnhip:2.34.201.4"
                   ]
                 },
                 {
@@ -102,7 +102,7 @@
                     "node2interface" : "eth0"
                   },
                   "routes" : [
-                    "ConnectedRoute<2.128.0.0/24>"
+                    "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:FastEthernet1/0>_fnhip:null"
                   ]
                 }
               ],
@@ -119,7 +119,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:1.0.1.1"
                   ]
                 },
                 {
@@ -130,7 +130,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:10.12.11.2"
                   ]
                 },
                 {
@@ -141,7 +141,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.12.11.2"
                   ]
                 },
                 {
@@ -152,7 +152,7 @@
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.23.11.3"
                   ]
                 },
                 {
@@ -163,7 +163,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.34.101.4"
                   ]
                 },
                 {
@@ -174,7 +174,7 @@
                     "node2interface" : "eth0"
                   },
                   "routes" : [
-                    "ConnectedRoute<2.128.0.0/24>"
+                    "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:FastEthernet1/0>_fnhip:null"
                   ]
                 }
               ],
@@ -191,7 +191,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:1.0.1.1"
                   ]
                 },
                 {
@@ -202,7 +202,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:10.12.11.2"
                   ]
                 },
                 {
@@ -213,7 +213,7 @@
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.12.12.2"
                   ]
                 },
                 {
@@ -224,7 +224,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.23.21.3"
                   ]
                 },
                 {
@@ -235,7 +235,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.34.101.4"
                   ]
                 },
                 {
@@ -246,7 +246,7 @@
                     "node2interface" : "eth0"
                   },
                   "routes" : [
-                    "ConnectedRoute<2.128.0.0/24>"
+                    "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:FastEthernet1/0>_fnhip:null"
                   ]
                 }
               ],
@@ -263,7 +263,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:1.0.1.1"
                   ]
                 },
                 {
@@ -274,7 +274,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/16>"
+                    "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:null>_fnhip:10.12.11.2"
                   ]
                 },
                 {
@@ -285,7 +285,7 @@
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:null>_fnhip:2.12.12.2"
                   ]
                 },
                 {
@@ -296,7 +296,7 @@
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:null>_fnhip:2.23.22.3"
                   ]
                 },
                 {
@@ -307,7 +307,7 @@
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<2.128.0.0/24>"
+                    "BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:null>_fnhip:2.34.201.4"
                   ]
                 },
                 {
@@ -318,7 +318,7 @@
                     "node2interface" : "eth0"
                   },
                   "routes" : [
-                    "ConnectedRoute<2.128.0.0/24>"
+                    "ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:FastEthernet1/0>_fnhip:null"
                   ]
                 }
               ],

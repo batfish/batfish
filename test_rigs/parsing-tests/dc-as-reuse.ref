@@ -284,7 +284,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -708,7 +708,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -1164,7 +1164,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -1652,7 +1652,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -2140,7 +2140,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -2603,7 +2603,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -3066,7 +3066,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -3554,7 +3554,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -4042,7 +4042,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -4505,7 +4505,7 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
-            "          (null_bgp_tail",
+            "          (maximum_paths_bgp_tail",
             "            MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "            DEC:'64'  <== mode:DEFAULT_MODE",
             "            ECMP:'ecmp'  <== mode:DEFAULT_MODE",
@@ -4680,7 +4680,7 @@
           ]
         }
       },
-      "version" : "0.19.0"
+      "version" : "0.20.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -4836,7 +4836,7 @@
           }
         }
       },
-      "version" : "0.19.0"
+      "version" : "0.20.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

@@ -44,8 +44,6 @@ public interface IBatfish extends IPluginConsumer {
 
    void checkDataPlane();
 
-   void checkDataPlaneQuestionDependencies();
-
    void checkEnvironmentExists();
 
    InterfaceSet computeFlowSinks(Map<String, Configuration> configurations,

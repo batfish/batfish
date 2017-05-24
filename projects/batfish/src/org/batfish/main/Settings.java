@@ -672,7 +672,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public Settings(String[] args) {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
-            BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
+            BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH,
+            BfConsts.PROP_BATFISH_PROPERTIES_PATH));
       _baseTestrigSettings = new TestrigSettings();
       _deltaTestrigSettings = new TestrigSettings();
       initConfigDefaults();

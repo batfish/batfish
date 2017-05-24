@@ -38,7 +38,8 @@ public class Settings extends BaseSettings {
 
    public Settings(String[] args) throws Exception {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
-            BfConsts.RELPATH_CONFIG_FILE_NAME_ALLINONE));
+            BfConsts.RELPATH_CONFIG_FILE_NAME_ALLINONE,
+            BfConsts.PROP_ALLINONE_PROPERTIES_PATH));
 
       initConfigDefaults();
 

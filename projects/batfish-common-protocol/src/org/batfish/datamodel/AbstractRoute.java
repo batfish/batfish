@@ -87,7 +87,8 @@ public abstract class AbstractRoute implements Serializable {
 
    @Override
    public String toString() {
-      return this.getClass().getSimpleName() + "<" + _network.toString() + ">";
+      return this.getClass().getSimpleName() + "<" + _network.toString()
+            + ",nhip:" + _nextHopIp + ",nhint:" + getNextHopInterface() + ">";
    }
 
 }
