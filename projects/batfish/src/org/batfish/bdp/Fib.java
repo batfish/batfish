@@ -12,6 +12,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 
 public class Fib implements Serializable {
 
@@ -31,8 +32,8 @@ public class Fib implements Serializable {
       _nextHopInterfaces = new HashMap<>();
       for (AbstractRoute route : rib.getRoutes()) {
          Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = new TreeMap<>();
-         collectNextHopInterfaces(route, null, nextHopInterfaces,
-               new HashSet<>(), 0);
+         collectNextHopInterfaces(route, Route.UNSET_ROUTE_NEXT_HOP_IP,
+               nextHopInterfaces, new HashSet<>(), 0);
          _nextHopInterfaces.put(route, nextHopInterfaces);
       }
    }
@@ -52,7 +53,7 @@ public class Fib implements Serializable {
                "Exceeded max route recursion depth: " + MAX_DEPTH);
       }
       Ip nextHopIp = route.getNextHopIp();
-      if (nextHopIp != null) {
+      if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
          Set<AbstractRoute> nextHopLongestPrefixMatchRoutes = _rib
                .longestPrefixMatch(nextHopIp);
          for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {

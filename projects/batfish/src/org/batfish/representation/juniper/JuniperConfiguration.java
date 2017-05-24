@@ -34,6 +34,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -199,8 +200,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String vrfName = routingInstance.getName();
       Vrf vrf = _c.getVrfs().get(vrfName);
       BgpProcess proc = new BgpProcess();
-      proc.setRouterId(routingInstance.getRouterId());
+      Ip routerId = routingInstance.getRouterId();
+      if (routerId == null) {
+         routerId = _defaultRoutingInstance.getRouterId();
+         if (routerId == null) {
+            routerId = Ip.ZERO;
+         }
+      }
+      proc.setRouterId(routerId);
       BgpGroup mg = routingInstance.getMasterBgpGroup();
+      boolean multipathEbgp = false;
+      boolean multipathIbgp = false;
+      boolean multipathEbgpSet = false;
+      boolean multipathIbgpSet = false;
 
       if (mg.getLocalAs() == null) {
          Integer routingInstanceAs = routingInstance.getAs();
@@ -361,12 +373,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
             continue;
          }
 
-         // inherit peer-as, or use local-as if internal
+         /*
+          * inherit peer-as, or use local-as if internal
+          *
+          * Also set multipath
+          */
          if (ig.getType() == BgpGroupType.INTERNAL) {
             neighbor.setRemoteAs(ig.getLocalAs());
+            boolean currentGroupMultipathIbgp = ig.getMultipath();
+            if (multipathIbgpSet
+                  && currentGroupMultipathIbgp != multipathIbgp) {
+               _w.redFlag(
+                     "Currently do not support mixed iBGP multipath/non-multipath bgp groups on Juniper - FORCING NON-MULTIPATH IBGP");
+               multipathIbgp = false;
+            }
+            else {
+               multipathIbgp = currentGroupMultipathIbgp;
+               multipathIbgpSet = true;
+            }
          }
          else {
             neighbor.setRemoteAs(ig.getPeerAs());
+            boolean currentGroupMultipathEbgp = ig.getMultipath();
+            if (multipathEbgpSet
+                  && currentGroupMultipathEbgp != multipathEbgp) {
+               _w.redFlag(
+                     "Currently do not support mixed eBGP multipath/non-multipath bgp groups on Juniper - FORCING NON-MULTIPATH EBGP");
+               multipathEbgp = false;
+            }
+            else {
+               multipathEbgp = currentGroupMultipathEbgp;
+               multipathEbgpSet = true;
+            }
          }
 
          // TODO: implement better behavior than setting default metric to 0
@@ -413,6 +451,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
          }
       }
+      proc.setMultipathEbgp(multipathEbgpSet);
+      proc.setMultipathIbgp(multipathIbgp);
       return proc;
    }
 
@@ -1479,6 +1519,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
    private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
+      if (nextHopIp == null) {
+         nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+      }
       String nextHopInterface = route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();

@@ -5,5 +5,5 @@ COORDINATOR_JAR=$COORDINATOR_PATH/out/coordinator.jar
 if batfish_cygwin; then
    COORDINATOR_JAR="$(cygpath -w $COORDINATOR_JAR)"
 fi
-java -jar "$COORDINATOR_JAR" "$@"
+java $COORDINATOR_JAVA_ARGS -jar "$COORDINATOR_JAR" "$@"
 

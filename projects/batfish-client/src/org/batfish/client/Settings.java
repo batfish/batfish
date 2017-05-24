@@ -68,7 +68,8 @@ public class Settings extends BaseSettings {
 
    public Settings(String[] args) throws Exception {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
-            BfConsts.RELPATH_CONFIG_FILE_NAME_CLIENT));
+            BfConsts.RELPATH_CONFIG_FILE_NAME_CLIENT,
+            BfConsts.PROP_CLIENT_PROPERTIES_PATH));
 
       initConfigDefaults();
 

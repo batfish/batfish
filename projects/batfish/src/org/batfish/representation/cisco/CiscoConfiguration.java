@@ -1024,6 +1024,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
          BgpProcess proc, String vrfName) {
       org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
       org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+      Integer maximumPaths = proc.getMaximumPaths();
+      Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
+      Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
+      boolean multipathEbgp = false;
+      boolean multipathIbgp = false;
+      if (maximumPaths != null && maximumPaths > 1) {
+         multipathEbgp = true;
+         multipathIbgp = true;
+      }
+      if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+         multipathEbgp = true;
+      }
+      if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+         multipathIbgp = true;
+      }
+      newBgpProcess.setMultipathEbgp(multipathEbgp);
+      newBgpProcess.setMultipathIbgp(multipathIbgp);
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
       Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
@@ -1079,25 +1096,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
          // set attribute map for aggregate network
          String attributeMapName = aggNet.getAttributeMap();
+         Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
+         applyCurrentAggregateAttributesConditions.getConjuncts()
+               .add(new MatchPrefixSet(new DestinationNetwork(),
+                     new ExplicitPrefixSet(new PrefixSpace(Collections
+                           .singleton(new PrefixRange(prefix.toString()))))));
+         applyCurrentAggregateAttributesConditions.getConjuncts()
+               .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          if (attributeMapName != null) {
             int attributeMapLine = aggNet.getAttributeMapLine();
             RouteMap attributeMap = _routeMaps.get(attributeMapName);
             if (attributeMap != null) {
                // need to apply attribute changes if this specific route is
                // matched
-               Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
-               applyCurrentAggregateAttributesConditions.getConjuncts()
-                     .add(new MatchPrefixSet(new DestinationNetwork(),
-                           new ExplicitPrefixSet(
-                                 new PrefixSpace(Collections.singleton(
-                                       new PrefixRange(prefix.toString()))))));
-               applyCurrentAggregateAttributesConditions.getConjuncts()
-                     .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(attributeMapName), OriginType.IGP);
-               applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
-               attributeMapPrefilters
-                     .add(applyCurrentAggregateAttributesConditions);
+               weInterior = new CallExpr(attributeMapName);
                attributeMap.getReferers().put(aggNet,
                      "attribute-map of aggregate route: " + prefix.toString());
                gr.setAttributePolicy(attributeMapName);
@@ -1108,6 +1121,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      attributeMapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.IGP);
+         applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
+         attributeMapPrefilters.add(applyCurrentAggregateAttributesConditions);
       }
 
       // add generated routes for aggregate ipv6 addresses
@@ -1219,6 +1236,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
       if (redistributeStaticPolicy != null) {
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          Conjunction exportStaticConditions = new Conjunction();
          exportStaticConditions
                .setComment("Redistribute static routes into BGP");
@@ -1231,15 +1249,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
             if (redistributeStaticRouteMap != null) {
                redistributeStaticRouteMap.getReferers().put(proc,
                      "static redistribution route-map");
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(mapName), OriginType.INCOMPLETE);
-               exportStaticConditions.getConjuncts().add(we);
+               weInterior = new CallExpr(mapName);
             }
             else {
                undefined(CiscoStructureType.ROUTE_MAP, mapName,
                      CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP, mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.INCOMPLETE);
+         exportStaticConditions.getConjuncts().add(we);
          preFilterConditions.getDisjuncts().add(exportStaticConditions);
       }
 
@@ -1247,6 +1266,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpRedistributionPolicy redistributeConnectedPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
       if (redistributeConnectedPolicy != null) {
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          Conjunction exportConnectedConditions = new Conjunction();
          exportConnectedConditions
                .setComment("Redistribute connected routes into BGP");
@@ -1259,9 +1279,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             if (redistributeConnectedRouteMap != null) {
                redistributeConnectedRouteMap.getReferers().put(proc,
                      "connected redistribution route-map");
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(mapName), OriginType.INCOMPLETE);
-               exportConnectedConditions.getConjuncts().add(we);
+               weInterior = new CallExpr(mapName);
             }
             else {
                undefined(CiscoStructureType.ROUTE_MAP, mapName,
@@ -1269,6 +1287,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.INCOMPLETE);
+         exportConnectedConditions.getConjuncts().add(we);
          preFilterConditions.getDisjuncts().add(exportConnectedConditions);
       }
 

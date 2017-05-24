@@ -4,14 +4,14 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.RoutingProtocol;
 
-public class BgpRib extends AbstractRib<BgpRoute> {
+public class BgpMultipathRib extends AbstractRib<BgpRoute> {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public BgpRib(VirtualRouter owner) {
+   public BgpMultipathRib(VirtualRouter owner) {
       super(owner);
    }
 
@@ -75,8 +75,8 @@ public class BgpRib extends AbstractRib<BgpRoute> {
       }
 
       /*
-       * The remaining criteria only apply in non-multipath (or limited
-       * multipath) environments, which we do not yet support. So we end here.
+       * The remaining criteria only apply in non-multipath environments. So we
+       * end here.
        */
       return res;
    }

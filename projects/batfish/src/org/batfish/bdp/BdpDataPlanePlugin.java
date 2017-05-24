@@ -20,6 +20,7 @@ import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
@@ -112,8 +113,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   if (routeCandidateNextHopInterfaces
                         .containsKey(nextHopInterfaceName)) {
                      Ip nextHopIp = routeCandidate.getNextHopIp();
-                     if (nextHopIp != null && !nextHopIp
-                           .equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+                     if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
                         Set<Ip> finalNextHopIps = routeCandidateNextHopInterfaces
                               .get(nextHopInterfaceName).keySet();
                         if (finalNextHopIps.size() > 1) {
@@ -456,16 +456,27 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                vr._prevOspfExternalType2Rib = vr._ospfExternalType2Rib;
                vr._ospfExternalType2Rib = new OspfExternalType2Rib(vr);
 
-               vr._prevBgpRib = vr._bgpRib;
-               vr._bgpRib = new BgpRib(vr);
+               vr._prevBgpRib = vr._bgpMultipathRib;
+               vr._bgpMultipathRib = new BgpMultipathRib(vr);
 
-               vr._prevEbgpRib = vr._ebgpRib;
-               vr._ebgpRib = new BgpRib(vr);
-               vr.importRib(vr._ebgpRib, vr._baseEbgpRib);
+               vr._prevBgpBestPathRib = vr._bgpBestPathRib;
+               vr._bgpBestPathRib = new BgpBestPathRib(vr);
 
-               vr._prevIbgpRib = vr._ibgpRib;
-               vr._ibgpRib = new BgpRib(vr);
-               vr.importRib(vr._ibgpRib, vr._baseIbgpRib);
+               vr._prevEbgpRib = vr._ebgpMultipathRib;
+               vr._ebgpMultipathRib = new BgpMultipathRib(vr);
+               vr.importRib(vr._ebgpMultipathRib, vr._baseEbgpRib);
+
+               vr._prevEbgpBestPathRib = vr._ebgpBestPathRib;
+               vr._ebgpBestPathRib = new BgpBestPathRib(vr);
+               vr.importRib(vr._ebgpBestPathRib, vr._baseEbgpRib);
+
+               vr._prevIbgpBestPathRib = vr._ibgpBestPathRib;
+               vr._ibgpBestPathRib = new BgpBestPathRib(vr);
+               vr.importRib(vr._ibgpBestPathRib, vr._baseIbgpRib);
+
+               vr._prevIbgpRib = vr._ibgpMultipathRib;
+               vr._ibgpMultipathRib = new BgpMultipathRib(vr);
+               vr.importRib(vr._ibgpMultipathRib, vr._baseIbgpRib);
 
                /*
                 * RIBs not read from
@@ -475,8 +486,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                /*
                 * Staging RIBs
                 */
-               vr._ebgpStagingRib = new BgpRib(vr);
-               vr._ibgpStagingRib = new BgpRib(vr);
+               vr._ebgpStagingRib = new BgpMultipathRib(vr);
+               vr._ibgpStagingRib = new BgpMultipathRib(vr);
                vr._ospfExternalType1StagingRib = new OspfExternalType1Rib(vr);
                vr._ospfExternalType2StagingRib = new OspfExternalType2Rib(vr);
 
@@ -590,7 +601,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          // first let's initialize nodes-level generated/aggregate routes
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
-               vr.initBgpAggregateRoutes();
+               if (vr._vrf.getBgpProcess() != null) {
+                  vr.initBgpAggregateRoutes();
+               }
             }
          });
          AtomicInteger propagateBgpCompleted = _batfish.newBatch("Iteration "
@@ -614,9 +627,22 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                vr.unstageBgpRoutes();
-               vr.importRib(vr._bgpRib, vr._ebgpRib);
-               vr.importRib(vr._bgpRib, vr._ibgpRib);
-               vr.importRib(vr._mainRib, vr._bgpRib);
+               BgpProcess proc = vr._vrf.getBgpProcess();
+               if (proc != null && proc.getMultipathEbgp()) {
+                  vr.importRib(vr._bgpMultipathRib, vr._ebgpMultipathRib);
+               }
+               else {
+                  vr.importRib(vr._bgpMultipathRib, vr._ebgpBestPathRib);
+               }
+               if (proc != null && proc.getMultipathIbgp()) {
+                  vr.importRib(vr._bgpMultipathRib, vr._ibgpMultipathRib);
+               }
+               else {
+                  vr.importRib(vr._bgpMultipathRib, vr._ibgpBestPathRib);
+               }
+               vr.importRib(vr._bgpBestPathRib, vr._ebgpBestPathRib);
+               vr.importRib(vr._bgpBestPathRib, vr._ibgpBestPathRib);
+               vr.importRib(vr._mainRib, vr._bgpMultipathRib);
             }
             importBgpCompleted.incrementAndGet();
          });
@@ -719,15 +745,15 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                RouteBuilder rb = new RouteBuilder();
                rb.setNode(hostname);
                rb.setNetwork(route.getNetwork());
+               Ip nextHopIp = route.getNextHopIp();
                if (route.getProtocol() == RoutingProtocol.CONNECTED
                      || (route.getProtocol() == RoutingProtocol.STATIC
-                           && route.getNextHopIp() == null)
+                           && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
                      || Interface.NULL_INTERFACE_NAME
                            .equals(route.getNextHopInterface())) {
                   rb.setNextHop(Configuration.NODE_NONE_NAME);
                }
-               Ip nextHopIp = route.getNextHopIp();
-               if (nextHopIp != null) {
+               if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
                   rb.setNextHopIp(nextHopIp);
                   String nextHop = ipOwners.get(nextHopIp);
                   if (nextHop != null) {

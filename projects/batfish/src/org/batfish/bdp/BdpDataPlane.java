@@ -136,7 +136,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                   StaticRoute sr = (StaticRoute) route;
                   Ip srNextHopIp = sr.getNextHopIp();
                   String srNextHopInterface = sr.getNextHopInterface();
-                  if (srNextHopIp != null && srNextHopInterface != null) {
+                  if (!srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+                        && srNextHopInterface != null) {
                      // both nextHopIp and nextHopInterface; neighbor must not
                      // send
                      // nextHopIp back out receiving interface
@@ -170,7 +171,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                      }
                      break;
                   }
-                  else if (srNextHopIp == null && srNextHopInterface != null) {
+                  else if (!srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+                        && srNextHopInterface != null) {
                      // just nextHopInterface; neighbor must not send dstIp back
                      // out receiving interface
                      // TODO: implement above condition
@@ -203,7 +205,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                      }
                      break;
                   }
-                  else if (srNextHopIp == null && srNextHopInterface == null) {
+                  else if (srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+                        && srNextHopInterface == null) {
                      throw new BatfishException(
                            "Invalid static route; must have nextHopIp or nextHopInterface");
                   }

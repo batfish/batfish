@@ -53,6 +53,7 @@ import org.batfish.datamodel.Prefix6Range;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
@@ -2676,7 +2677,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          int prefixLength = mask.numSubnetBits();
          prefix = new Prefix(address, prefixLength);
       }
-      Ip nextHopIp = null;
+      Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
       String nextHopInterface = null;
       int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
       Integer tag = null;
@@ -3050,6 +3051,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       RouteMapMatchTagLine line = new RouteMapMatchTagLine(tags);
       _currentRouteMapClause.addMatchLine(line);
+   }
+
+   @Override
+   public void exitMaximum_paths_bgp_tail(Maximum_paths_bgp_tailContext ctx) {
+      int maximumPaths = toInteger(ctx.paths);
+      BgpProcess proc = currentVrf().getBgpProcess();
+      if (ctx.EBGP() != null) {
+         proc.setMaximumPathsEbgp(maximumPaths);
+      }
+      else if (ctx.IBGP() != null) {
+         proc.setMaximumPathsIbgp(maximumPaths);
+      }
+      else if (ctx.EIBGP() != null) {
+         proc.setMaximumPathsEibgp(maximumPaths);
+      }
+      else {
+         proc.setMaximumPaths(maximumPaths);
+      }
    }
 
    @Override
@@ -4067,7 +4086,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRs_route(Rs_routeContext ctx) {
       if (ctx.prefix != null) {
          Prefix prefix = new Prefix(ctx.prefix.getText());
-         Ip nextHopIp = null;
+         Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
          String nextHopInterface = null;
          if (ctx.nhip != null) {
             nextHopIp = new Ip(ctx.nhip.getText());

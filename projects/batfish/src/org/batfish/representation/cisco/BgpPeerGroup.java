@@ -52,6 +52,14 @@ public abstract class BgpPeerGroup implements Serializable {
 
    private transient boolean _inherited;
 
+   private Integer _maximumPaths;
+
+   private Integer _maximumPathsEbgp;
+
+   private Integer _maximumPathsEibgp;
+
+   private Integer _maximumPathsIbgp;
+
    private Boolean _nextHopSelf;
 
    protected String _outboundPrefixList;
@@ -172,6 +180,22 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public boolean getInherited() {
       return _inherited;
+   }
+
+   public Integer getMaximumPaths() {
+      return _maximumPaths;
+   }
+
+   public Integer getMaximumPathsEbgp() {
+      return _maximumPathsEbgp;
+   }
+
+   public Integer getMaximumPathsEibgp() {
+      return _maximumPathsEibgp;
+   }
+
+   public Integer getMaximumPathsIbgp() {
+      return _maximumPathsIbgp;
    }
 
    public abstract String getName();
@@ -322,6 +346,18 @@ public abstract class BgpPeerGroup implements Serializable {
          _inboundRoute6Map = pg.getInboundRoute6Map();
          _inboundRoute6MapLine = pg.getInboundRoute6MapLine();
       }
+      if (_maximumPaths == null) {
+         _maximumPaths = pg.getMaximumPaths();
+      }
+      if (_maximumPathsEbgp == null) {
+         _maximumPathsEbgp = pg.getMaximumPathsEbgp();
+      }
+      if (_maximumPathsEibgp == null) {
+         _maximumPathsEibgp = pg.getMaximumPathsEibgp();
+      }
+      if (_maximumPathsIbgp == null) {
+         _maximumPathsIbgp = pg.getMaximumPathsIbgp();
+      }
       if (_nextHopSelf == null) {
          _nextHopSelf = pg.getNextHopSelf();
       }
@@ -445,6 +481,22 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setInboundRouteMapLine(Integer inboundRouteMapLine) {
       _inboundRouteMapLine = inboundRouteMapLine;
+   }
+
+   public void setMaximumPaths(Integer maximumPaths) {
+      _maximumPaths = maximumPaths;
+   }
+
+   public void setMaximumPathsEbgp(Integer maximumPathsEbgp) {
+      _maximumPathsEbgp = maximumPathsEbgp;
+   }
+
+   public void setMaximumPathsEibgp(Integer maximumPathsEibgp) {
+      _maximumPathsEibgp = maximumPathsEibgp;
+   }
+
+   public void setMaximumPathsIbgp(Integer maximumPathsIbgp) {
+      _maximumPathsIbgp = maximumPathsIbgp;
    }
 
    public void setNextHopSelf(boolean nextHopSelf) {

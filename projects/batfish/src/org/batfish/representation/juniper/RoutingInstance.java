@@ -64,6 +64,7 @@ public class RoutingInstance implements Serializable {
       _interfaces = new TreeMap<>();
       _ipBgpGroups = new TreeMap<>();
       _masterBgpGroup = new BgpGroup();
+      _masterBgpGroup.setMultipath(false);
       _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME, -1);
       _globalMasterInterface.setRoutingInstance(name);
       _name = name;

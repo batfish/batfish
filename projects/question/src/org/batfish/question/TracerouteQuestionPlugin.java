@@ -34,7 +34,6 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-         _batfish.checkDataPlaneQuestionDependencies();
          String tag = _batfish.getFlowTag();
          Set<Flow> flows = getFlows(tag);
          _batfish.processFlows(flows);
