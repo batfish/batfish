@@ -66,6 +66,10 @@ public class BfConsts {
 
    public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
 
+   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
+   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
+   public static final String PROP_CLIENT_PROPERTIES_PATH = "batfishClientPropertiesPath";
+   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
    public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
 
    public static final String RELPATH_ANALYSES_DIR = "analyses";
@@ -127,4 +131,5 @@ public class BfConsts {
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
+
 }

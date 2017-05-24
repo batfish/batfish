@@ -20,6 +20,7 @@ import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
@@ -70,8 +71,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          Set<Edge> visitedEdges, List<FlowTraceHop> hopsSoFar,
          Set<FlowTrace> flowTraces, Flow flow) {
       Ip dstIp = flow.getDstIp();
-      Set<String> ipOwners = dp._ipOwners.get(dstIp);
-      if (ipOwners != null && ipOwners.contains(currentNodeName)) {
+      Set<String> dstIpOwners = dp._ipOwners.get(dstIp);
+      if (dstIpOwners != null && dstIpOwners.contains(currentNodeName)) {
          FlowTrace trace = new FlowTrace(FlowDisposition.ACCEPTED, hopsSoFar,
                FlowDisposition.ACCEPTED.toString());
          flowTraces.add(trace);
@@ -90,9 +91,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          }
          VirtualRouter currentVirtualRouter = currentNode._virtualRouters
                .get(vrfName);
-         Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = currentVirtualRouter._fib
+         Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute = currentVirtualRouter._fib
                .getNextHopInterfacesByRoute(dstIp);
-         Map<String, Set<AbstractRoute>> nextHopInterfacesWithRoutes = currentVirtualRouter._fib
+         Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfacesWithRoutes = currentVirtualRouter._fib
                .getNextHopInterfaces(dstIp);
          if (!nextHopInterfacesWithRoutes.isEmpty()) {
             for (String nextHopInterfaceName : nextHopInterfacesWithRoutes
@@ -103,20 +104,33 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                // .stream().map(ar -> ar.toString())
                // .collect(Collectors.toSet()));
                SortedSet<String> routesForThisNextHopInterface = new TreeSet<>();
-               boolean nextHopIpRoute = false;
-               for (Entry<AbstractRoute, Set<String>> e : nextHopInterfacesByRoute
+               Ip finalNextHopIp = null;
+               for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e : nextHopInterfacesByRoute
                      .entrySet()) {
                   AbstractRoute routeCandidate = e.getKey();
-                  Set<String> routeCandidateNextHopInterfaces = e.getValue();
+                  Map<String, Map<Ip, Set<AbstractRoute>>> routeCandidateNextHopInterfaces = e
+                        .getValue();
                   if (routeCandidateNextHopInterfaces
-                        .contains(nextHopInterfaceName)) {
+                        .containsKey(nextHopInterfaceName)) {
                      Ip nextHopIp = routeCandidate.getNextHopIp();
-                     if (nextHopIp != null && !nextHopIp
-                           .equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-                        nextHopIpRoute = true;
+                     if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+                        Set<Ip> finalNextHopIps = routeCandidateNextHopInterfaces
+                              .get(nextHopInterfaceName).keySet();
+                        if (finalNextHopIps.size() > 1) {
+                           throw new BatfishException(
+                                 "Can not currently handle multiple final next hop ips across multiple routes leading to one next hop interface");
+                        }
+                        Ip newFinalNextHopIp = finalNextHopIps.iterator()
+                              .next();
+                        if (finalNextHopIp != null
+                              && !newFinalNextHopIp.equals(finalNextHopIp)) {
+                           throw new BatfishException(
+                                 "Can not currently handle multiple final next hop ips for same next hop interface");
+                        }
+                        finalNextHopIp = newFinalNextHopIp;
                      }
-                     routesForThisNextHopInterface
-                           .add(routeCandidate.toString());
+                     routesForThisNextHopInterface.add(routeCandidate.toString()
+                           + "_fnhip:" + finalNextHopIp);
                   }
                }
                NodeInterfacePair nextHopInterface = new NodeInterfacePair(
@@ -175,7 +189,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                          *
                          * AND
                          *
-                         * - Neighbor does not own dstIp
+                         * - Neighbor does not own arpIp
                          *
                          * AND EITHER
                          *
@@ -184,38 +198,46 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                          * - OR
                          *
                          * -- Subnet of neighbor's receiving-interface contains
-                         * dstIp
+                         * arpIp
                          */
-                        if (!nextHopIpRoute) {
-                           // using interface-only route
-                           String node2 = edge.getNode2();
-                           if (ipOwners == null || !ipOwners.contains(node2)) {
-                              // neighbor does not own dstIp
-                              String int2Name = edge.getInt2();
-                              Interface int2 = dp._nodes.get(node2)._c
-                                    .getInterfaces().get(int2Name);
-                              boolean neighborUnreachable = false;
-                              Boolean proxyArp = int2.getProxyArp();
-                              if (proxyArp == null || !proxyArp) {
-                                 // TODO: proxyArp probably shouldn't be null
-                                 neighborUnreachable = true;
-                              }
-                              else {
-                                 for (Prefix prefix : int2.getAllPrefixes()) {
-                                    if (prefix.getNetworkPrefix()
-                                          .contains(dstIp)) {
-                                       neighborUnreachable = true;
-                                       break;
-                                    }
+                        Ip arpIp;
+                        Set<String> arpIpOwners;
+                        if (finalNextHopIp == null) {
+                           arpIp = dstIp;
+                           arpIpOwners = dstIpOwners;
+                        }
+                        else {
+                           arpIp = finalNextHopIp;
+                           arpIpOwners = dp._ipOwners.get(arpIp);
+                        }
+                        // using interface-only route
+                        String node2 = edge.getNode2();
+                        if (arpIpOwners == null
+                              || !arpIpOwners.contains(node2)) {
+                           // neighbor does not own arpIp
+                           String int2Name = edge.getInt2();
+                           Interface int2 = dp._nodes.get(node2)._c
+                                 .getInterfaces().get(int2Name);
+                           boolean neighborUnreachable = false;
+                           Boolean proxyArp = int2.getProxyArp();
+                           if (proxyArp == null || !proxyArp) {
+                              // TODO: proxyArp probably shouldn't be null
+                              neighborUnreachable = true;
+                           }
+                           else {
+                              for (Prefix prefix : int2.getAllPrefixes()) {
+                                 if (prefix.getNetworkPrefix()
+                                       .contains(arpIp)) {
+                                    neighborUnreachable = true;
+                                    break;
                                  }
                               }
-                              if (neighborUnreachable) {
-                                 unreachableNeighbors++;
-                                 continue;
-                              }
+                           }
+                           if (neighborUnreachable) {
+                              unreachableNeighbors++;
+                              continue;
                            }
                         }
-
                         if (visitedEdges.contains(edge)) {
                            FlowTrace trace = new FlowTrace(FlowDisposition.LOOP,
                                  newHops, FlowDisposition.LOOP.toString());
@@ -434,16 +456,27 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                vr._prevOspfExternalType2Rib = vr._ospfExternalType2Rib;
                vr._ospfExternalType2Rib = new OspfExternalType2Rib(vr);
 
-               vr._prevBgpRib = vr._bgpRib;
-               vr._bgpRib = new BgpRib(vr);
+               vr._prevBgpRib = vr._bgpMultipathRib;
+               vr._bgpMultipathRib = new BgpMultipathRib(vr);
 
-               vr._prevEbgpRib = vr._ebgpRib;
-               vr._ebgpRib = new BgpRib(vr);
-               vr.importRib(vr._ebgpRib, vr._baseEbgpRib);
+               vr._prevBgpBestPathRib = vr._bgpBestPathRib;
+               vr._bgpBestPathRib = new BgpBestPathRib(vr);
 
-               vr._prevIbgpRib = vr._ibgpRib;
-               vr._ibgpRib = new BgpRib(vr);
-               vr.importRib(vr._ibgpRib, vr._baseIbgpRib);
+               vr._prevEbgpRib = vr._ebgpMultipathRib;
+               vr._ebgpMultipathRib = new BgpMultipathRib(vr);
+               vr.importRib(vr._ebgpMultipathRib, vr._baseEbgpRib);
+
+               vr._prevEbgpBestPathRib = vr._ebgpBestPathRib;
+               vr._ebgpBestPathRib = new BgpBestPathRib(vr);
+               vr.importRib(vr._ebgpBestPathRib, vr._baseEbgpRib);
+
+               vr._prevIbgpBestPathRib = vr._ibgpBestPathRib;
+               vr._ibgpBestPathRib = new BgpBestPathRib(vr);
+               vr.importRib(vr._ibgpBestPathRib, vr._baseIbgpRib);
+
+               vr._prevIbgpRib = vr._ibgpMultipathRib;
+               vr._ibgpMultipathRib = new BgpMultipathRib(vr);
+               vr.importRib(vr._ibgpMultipathRib, vr._baseIbgpRib);
 
                /*
                 * RIBs not read from
@@ -453,8 +486,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                /*
                 * Staging RIBs
                 */
-               vr._ebgpStagingRib = new BgpRib(vr);
-               vr._ibgpStagingRib = new BgpRib(vr);
+               vr._ebgpStagingRib = new BgpMultipathRib(vr);
+               vr._ibgpStagingRib = new BgpMultipathRib(vr);
                vr._ospfExternalType1StagingRib = new OspfExternalType1Rib(vr);
                vr._ospfExternalType2StagingRib = new OspfExternalType2Rib(vr);
 
@@ -568,7 +601,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          // first let's initialize nodes-level generated/aggregate routes
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
-               vr.initBgpAggregateRoutes();
+               if (vr._vrf.getBgpProcess() != null) {
+                  vr.initBgpAggregateRoutes();
+               }
             }
          });
          AtomicInteger propagateBgpCompleted = _batfish.newBatch("Iteration "
@@ -592,9 +627,22 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                vr.unstageBgpRoutes();
-               vr.importRib(vr._bgpRib, vr._ebgpRib);
-               vr.importRib(vr._bgpRib, vr._ibgpRib);
-               vr.importRib(vr._mainRib, vr._bgpRib);
+               BgpProcess proc = vr._vrf.getBgpProcess();
+               if (proc != null && proc.getMultipathEbgp()) {
+                  vr.importRib(vr._bgpMultipathRib, vr._ebgpMultipathRib);
+               }
+               else {
+                  vr.importRib(vr._bgpMultipathRib, vr._ebgpBestPathRib);
+               }
+               if (proc != null && proc.getMultipathIbgp()) {
+                  vr.importRib(vr._bgpMultipathRib, vr._ibgpMultipathRib);
+               }
+               else {
+                  vr.importRib(vr._bgpMultipathRib, vr._ibgpBestPathRib);
+               }
+               vr.importRib(vr._bgpBestPathRib, vr._ebgpBestPathRib);
+               vr.importRib(vr._bgpBestPathRib, vr._ibgpBestPathRib);
+               vr.importRib(vr._mainRib, vr._bgpMultipathRib);
             }
             importBgpCompleted.incrementAndGet();
          });
@@ -697,15 +745,15 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                RouteBuilder rb = new RouteBuilder();
                rb.setNode(hostname);
                rb.setNetwork(route.getNetwork());
+               Ip nextHopIp = route.getNextHopIp();
                if (route.getProtocol() == RoutingProtocol.CONNECTED
                      || (route.getProtocol() == RoutingProtocol.STATIC
-                           && route.getNextHopIp() == null)
+                           && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
                      || Interface.NULL_INTERFACE_NAME
                            .equals(route.getNextHopInterface())) {
                   rb.setNextHop(Configuration.NODE_NONE_NAME);
                }
-               Ip nextHopIp = route.getNextHopIp();
-               if (nextHopIp != null) {
+               if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
                   rb.setNextHopIp(nextHopIp);
                   String nextHop = ipOwners.get(nextHopIp);
                   if (nextHop != null) {

@@ -19,6 +19,10 @@ public class BgpProcess implements Serializable {
 
    private static final String GENERATED_ROUTES_VAR = "generatedRoutes";
 
+   private static final String MULTIPATH_EBGP_VAR = "multipathEbgp";
+
+   private static final String MULTIPATH_IBGP_VAR = "multipathIbgp";
+
    private static final String NEIGHBORS_VAR = "neighbors";
 
    private static final String ROUTER_ID_VAR = "routerId";
@@ -34,6 +38,10 @@ public class BgpProcess implements Serializable {
     * policies
     */
    private SortedSet<GeneratedRoute> _generatedRoutes;
+
+   private boolean _multipathEbgp;
+
+   private boolean _multipathIbgp;
 
    /**
     * A map of all the bgp neighbors with which the router owning this process
@@ -62,6 +70,16 @@ public class BgpProcess implements Serializable {
       return _generatedRoutes;
    }
 
+   @JsonProperty(MULTIPATH_EBGP_VAR)
+   public boolean getMultipathEbgp() {
+      return _multipathEbgp;
+   }
+
+   @JsonProperty(MULTIPATH_IBGP_VAR)
+   public boolean getMultipathIbgp() {
+      return _multipathIbgp;
+   }
+
    /**
     * @return {@link #_neighbors}
     */
@@ -85,6 +103,16 @@ public class BgpProcess implements Serializable {
    @JsonProperty(GENERATED_ROUTES_VAR)
    public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
+   }
+
+   @JsonProperty(MULTIPATH_EBGP_VAR)
+   public void setMultipathEbgp(boolean multipathEbgp) {
+      _multipathEbgp = multipathEbgp;
+   }
+
+   @JsonProperty(MULTIPATH_IBGP_VAR)
+   public void setMultipathIbgp(boolean multipathIbgp) {
+      _multipathIbgp = multipathIbgp;
    }
 
    @JsonProperty(NEIGHBORS_VAR)

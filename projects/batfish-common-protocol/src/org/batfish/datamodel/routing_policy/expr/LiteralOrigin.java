@@ -22,6 +22,7 @@ public class LiteralOrigin extends OriginExpr {
 
    public LiteralOrigin(OriginType originType, Integer asNum) {
       _asNum = asNum;
+      _originType = originType;
    }
 
    @Override

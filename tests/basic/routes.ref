@@ -19,7 +19,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "1.0.2.0/24",
               "nextHop" : "as1core1",
               "nextHopInterface" : "dynamic",
@@ -43,7 +43,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "1.2.2.2/32",
               "nextHop" : "as1core1",
               "nextHopInterface" : "dynamic",
@@ -55,7 +55,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "1.10.1.1/32",
               "nextHop" : "as1core1",
               "nextHopInterface" : "dynamic",
@@ -143,7 +143,7 @@
           "default" : [
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "1.0.1.0/24",
               "nextHop" : "as1core1",
               "nextHopInterface" : "dynamic",
@@ -167,7 +167,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "1.1.1.1/32",
               "nextHop" : "as1core1",
               "nextHopInterface" : "dynamic",
@@ -191,7 +191,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "1.10.1.1/32",
               "nextHop" : "as1core1",
               "nextHopInterface" : "dynamic",
@@ -303,7 +303,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "1.1.1.1/32",
               "nextHop" : "as1border1",
               "nextHopInterface" : "dynamic",
@@ -315,7 +315,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "1.2.2.2/32",
               "nextHop" : "as1border2",
               "nextHopInterface" : "dynamic",
@@ -451,7 +451,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -463,7 +463,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -475,7 +475,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -487,7 +487,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -499,7 +499,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -511,7 +511,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -523,7 +523,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -535,7 +535,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -571,7 +571,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.21.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -583,7 +583,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.22.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -595,7 +595,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.11.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -607,7 +607,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.12.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -619,7 +619,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.21.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -631,7 +631,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.22.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -716,34 +716,10 @@
             {
               "administrativeCost" : 200,
               "metric" : 50,
-              "network" : "2.128.0.0/24",
-              "nextHop" : "as2dept1",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "2.34.201.4",
-              "node" : "as2border1",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            },
-            {
-              "administrativeCost" : 200,
-              "metric" : 50,
               "network" : "2.128.1.0/24",
               "nextHop" : "as2dept1",
               "nextHopInterface" : "dynamic",
               "nextHopIp" : "2.34.101.4",
-              "node" : "as2border1",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            },
-            {
-              "administrativeCost" : 200,
-              "metric" : 50,
-              "network" : "2.128.1.0/24",
-              "nextHop" : "as2dept1",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "2.34.201.4",
               "node" : "as2border1",
               "protocol" : "ibgp",
               "tag" : -1,
@@ -839,7 +815,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -851,7 +827,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -875,7 +851,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -887,7 +863,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -899,7 +875,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -911,7 +887,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -923,7 +899,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -935,7 +911,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -947,7 +923,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.11.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -959,7 +935,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.12.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -995,7 +971,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.11.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -1007,7 +983,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.12.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -1019,7 +995,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.21.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -1031,7 +1007,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.22.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -1116,34 +1092,10 @@
             {
               "administrativeCost" : 200,
               "metric" : 50,
-              "network" : "2.128.0.0/24",
-              "nextHop" : "as2dept1",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "2.34.201.4",
-              "node" : "as2border2",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            },
-            {
-              "administrativeCost" : 200,
-              "metric" : 50,
               "network" : "2.128.1.0/24",
               "nextHop" : "as2dept1",
               "nextHopInterface" : "dynamic",
               "nextHopIp" : "2.34.101.4",
-              "node" : "as2border2",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            },
-            {
-              "administrativeCost" : 200,
-              "metric" : 50,
-              "network" : "2.128.1.0/24",
-              "nextHop" : "as2dept1",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "2.34.201.4",
               "node" : "as2border2",
               "protocol" : "ibgp",
               "tag" : -1,
@@ -1239,7 +1191,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
@@ -1251,7 +1203,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2border2",
               "nextHopInterface" : "dynamic",
@@ -1275,7 +1227,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
@@ -1287,7 +1239,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2border2",
               "nextHopInterface" : "dynamic",
@@ -1299,7 +1251,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2dist1",
               "nextHopInterface" : "dynamic",
@@ -1311,7 +1263,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2dist2",
               "nextHopInterface" : "dynamic",
@@ -1323,7 +1275,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2dist1",
               "nextHopInterface" : "dynamic",
@@ -1335,7 +1287,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2dist2",
               "nextHopInterface" : "dynamic",
@@ -1359,7 +1311,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.12.0/24",
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
@@ -1383,7 +1335,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.22.0/24",
               "nextHop" : "as2border2",
               "nextHopInterface" : "dynamic",
@@ -1419,7 +1371,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.21.0/24",
               "nextHop" : "as2dist1",
               "nextHopInterface" : "dynamic",
@@ -1431,7 +1383,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.22.0/24",
               "nextHop" : "as2dist2",
               "nextHopInterface" : "dynamic",
@@ -1615,7 +1567,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
@@ -1627,7 +1579,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2border2",
               "nextHopInterface" : "dynamic",
@@ -1639,7 +1591,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
@@ -1651,7 +1603,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2border2",
               "nextHopInterface" : "dynamic",
@@ -1663,7 +1615,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2dist1",
               "nextHopInterface" : "dynamic",
@@ -1675,7 +1627,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2dist2",
               "nextHopInterface" : "dynamic",
@@ -1699,7 +1651,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2dist1",
               "nextHopInterface" : "dynamic",
@@ -1711,7 +1663,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2dist2",
               "nextHopInterface" : "dynamic",
@@ -1723,7 +1675,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.11.0/24",
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
@@ -1747,7 +1699,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.21.0/24",
               "nextHop" : "as2border2",
               "nextHopInterface" : "dynamic",
@@ -1771,7 +1723,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.11.0/24",
               "nextHop" : "as2dist1",
               "nextHopInterface" : "dynamic",
@@ -1783,7 +1735,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.12.0/24",
               "nextHop" : "as2dist2",
               "nextHopInterface" : "dynamic",
@@ -2151,7 +2103,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2163,7 +2115,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2175,7 +2127,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2187,7 +2139,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2199,7 +2151,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2211,7 +2163,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2235,7 +2187,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2247,7 +2199,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2259,7 +2211,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.11.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2271,7 +2223,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.12.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2283,7 +2235,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.21.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2295,7 +2247,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.22.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2319,7 +2271,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.12.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2343,7 +2295,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.22.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2396,18 +2348,6 @@
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
               "nextHopIp" : "2.1.1.1",
-              "node" : "as2dist1",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            },
-            {
-              "administrativeCost" : 200,
-              "metric" : 0,
-              "network" : "2.128.0.0/16",
-              "nextHop" : "(ambiguous)",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "2.1.1.2",
               "node" : "as2dist1",
               "protocol" : "ibgp",
               "tag" : -1,
@@ -2539,7 +2479,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2551,7 +2491,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.1/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2563,7 +2503,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2575,7 +2515,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.1.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2587,7 +2527,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2599,7 +2539,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "2.1.2.2/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2611,7 +2551,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2623,7 +2563,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "2.1.3.1/32",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2647,7 +2587,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.11.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2659,7 +2599,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.12.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2671,7 +2611,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.21.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2683,7 +2623,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.12.22.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2695,7 +2635,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.11.0/24",
               "nextHop" : "as2core1",
               "nextHopInterface" : "dynamic",
@@ -2719,7 +2659,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "2.23.21.0/24",
               "nextHop" : "as2core2",
               "nextHopInterface" : "dynamic",
@@ -2784,18 +2724,6 @@
               "nextHop" : "as2border1",
               "nextHopInterface" : "dynamic",
               "nextHopIp" : "2.1.1.1",
-              "node" : "as2dist2",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            },
-            {
-              "administrativeCost" : 200,
-              "metric" : 0,
-              "network" : "2.128.0.0/16",
-              "nextHop" : "(ambiguous)",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "2.1.1.2",
               "node" : "as2dist2",
               "protocol" : "ibgp",
               "tag" : -1,
@@ -2951,7 +2879,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "3.0.2.0/24",
               "nextHop" : "as3core1",
               "nextHopInterface" : "dynamic",
@@ -2975,7 +2903,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "3.2.2.2/32",
               "nextHop" : "as3core1",
               "nextHopInterface" : "dynamic",
@@ -2987,7 +2915,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "3.10.1.1/32",
               "nextHop" : "as3core1",
               "nextHopInterface" : "dynamic",
@@ -3063,7 +2991,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 20,
+              "metric" : 2,
               "network" : "3.0.1.0/24",
               "nextHop" : "as3core1",
               "nextHopInterface" : "dynamic",
@@ -3087,7 +3015,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 21,
+              "metric" : 3,
               "network" : "3.1.1.1/32",
               "nextHop" : "as3core1",
               "nextHopInterface" : "dynamic",
@@ -3111,7 +3039,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "3.10.1.1/32",
               "nextHop" : "as3core1",
               "nextHopInterface" : "dynamic",
@@ -3211,7 +3139,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "3.1.1.1/32",
               "nextHop" : "as3border1",
               "nextHopInterface" : "dynamic",
@@ -3223,7 +3151,7 @@
             },
             {
               "administrativeCost" : 110,
-              "metric" : 11,
+              "metric" : 2,
               "network" : "3.2.2.2/32",
               "nextHop" : "as3border2",
               "nextHopInterface" : "dynamic",
@@ -3346,7 +3274,8 @@
     "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion",
     "differential" : false,
     "fromEnvironment" : false,
-    "nodeRegex" : ".*"
+    "nodeRegex" : ".*",
+    "prefixSpace" : [ ]
   },
   "status" : "SUCCESS"
 }

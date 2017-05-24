@@ -24,6 +24,7 @@ public final class GeneratedRoute extends AbstractRoute
 
       public Builder() {
          _asPath = new AsPath();
+         _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
       }
 
       @Override
@@ -85,11 +86,11 @@ public final class GeneratedRoute extends AbstractRoute
 
    @JsonCreator
    public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix prefix) {
-      super(prefix, null);
+      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
    }
 
    public GeneratedRoute(Prefix prefix, int administrativeCost) {
-      super(prefix, null);
+      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
       _administrativeCost = administrativeCost;
    }
 

@@ -41,6 +41,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
@@ -72,6 +73,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -82,6 +84,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -296,15 +299,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
    }
 
    private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
-         BooleanExpr expr) {
+         BooleanExpr expr, OriginType originType) {
       WithEnvironmentExpr we = new WithEnvironmentExpr();
       we.setExpr(expr);
       we.getPreStatements().add(
             Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
-      we.getPostTrueStatements().add(
-            Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
       we.getPostStatements().add(
             Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement());
+      we.getPostTrueStatements().add(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
+      we.getPostTrueStatements()
+            .add(new SetOrigin(new LiteralOrigin(originType, null)));
       return we;
    }
 
@@ -1019,6 +1024,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
          BgpProcess proc, String vrfName) {
       org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
       org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+      Integer maximumPaths = proc.getMaximumPaths();
+      Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
+      Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
+      boolean multipathEbgp = false;
+      boolean multipathIbgp = false;
+      if (maximumPaths != null && maximumPaths > 1) {
+         multipathEbgp = true;
+         multipathIbgp = true;
+      }
+      if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+         multipathEbgp = true;
+      }
+      if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+         multipathIbgp = true;
+      }
+      newBgpProcess.setMultipathEbgp(multipathEbgp);
+      newBgpProcess.setMultipathIbgp(multipathIbgp);
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
       Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
@@ -1074,25 +1096,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
          // set attribute map for aggregate network
          String attributeMapName = aggNet.getAttributeMap();
+         Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
+         applyCurrentAggregateAttributesConditions.getConjuncts()
+               .add(new MatchPrefixSet(new DestinationNetwork(),
+                     new ExplicitPrefixSet(new PrefixSpace(Collections
+                           .singleton(new PrefixRange(prefix.toString()))))));
+         applyCurrentAggregateAttributesConditions.getConjuncts()
+               .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          if (attributeMapName != null) {
             int attributeMapLine = aggNet.getAttributeMapLine();
             RouteMap attributeMap = _routeMaps.get(attributeMapName);
             if (attributeMap != null) {
                // need to apply attribute changes if this specific route is
                // matched
-               Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
-               applyCurrentAggregateAttributesConditions.getConjuncts()
-                     .add(new MatchPrefixSet(new DestinationNetwork(),
-                           new ExplicitPrefixSet(
-                                 new PrefixSpace(Collections.singleton(
-                                       new PrefixRange(prefix.toString()))))));
-               applyCurrentAggregateAttributesConditions.getConjuncts()
-                     .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(attributeMapName));
-               applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
-               attributeMapPrefilters
-                     .add(applyCurrentAggregateAttributesConditions);
+               weInterior = new CallExpr(attributeMapName);
                attributeMap.getReferers().put(aggNet,
                      "attribute-map of aggregate route: " + prefix.toString());
                gr.setAttributePolicy(attributeMapName);
@@ -1103,6 +1121,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      attributeMapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.IGP);
+         applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
+         attributeMapPrefilters.add(applyCurrentAggregateAttributesConditions);
       }
 
       // add generated routes for aggregate ipv6 addresses
@@ -1214,6 +1236,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
       if (redistributeStaticPolicy != null) {
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          Conjunction exportStaticConditions = new Conjunction();
          exportStaticConditions
                .setComment("Redistribute static routes into BGP");
@@ -1226,15 +1249,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
             if (redistributeStaticRouteMap != null) {
                redistributeStaticRouteMap.getReferers().put(proc,
                      "static redistribution route-map");
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(mapName));
-               exportStaticConditions.getConjuncts().add(we);
+               weInterior = new CallExpr(mapName);
             }
             else {
                undefined(CiscoStructureType.ROUTE_MAP, mapName,
                      CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP, mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.INCOMPLETE);
+         exportStaticConditions.getConjuncts().add(we);
          preFilterConditions.getDisjuncts().add(exportStaticConditions);
       }
 
@@ -1242,6 +1266,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpRedistributionPolicy redistributeConnectedPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
       if (redistributeConnectedPolicy != null) {
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          Conjunction exportConnectedConditions = new Conjunction();
          exportConnectedConditions
                .setComment("Redistribute connected routes into BGP");
@@ -1254,9 +1279,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             if (redistributeConnectedRouteMap != null) {
                redistributeConnectedRouteMap.getReferers().put(proc,
                      "connected redistribution route-map");
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(mapName));
-               exportConnectedConditions.getConjuncts().add(we);
+               weInterior = new CallExpr(mapName);
             }
             else {
                undefined(CiscoStructureType.ROUTE_MAP, mapName,
@@ -1264,6 +1287,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.INCOMPLETE);
+         exportConnectedConditions.getConjuncts().add(we);
          preFilterConditions.getDisjuncts().add(exportConnectedConditions);
       }
 
@@ -1328,36 +1354,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create origination prefilter from listed advertised networks
-      String localFilterName = "~BGP_NETWORK_NETWORKS_FILTER:" + vrfName + "~";
-      RouteFilterList localFilter = new RouteFilterList(localFilterName);
       proc.getIpNetworks().forEach((prefix, bgpNetwork) -> {
-         int prefixLen = prefix.getPrefixLength();
-         RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
-               new SubRange(prefixLen, prefixLen));
-         localFilter.addLine(line);
          String mapName = bgpNetwork.getRouteMapName();
+         BooleanExpr weExpr = BooleanExprs.True.toStaticBooleanExpr();
          if (mapName != null) {
             int mapLine = bgpNetwork.getRouteMapLine();
             RouteMap routeMap = _routeMaps.get(mapName);
             if (routeMap != null) {
+               weExpr = new CallExpr(mapName);
                routeMap.getReferers().put(proc,
                      "bgp ipv4 advertised network route-map");
-               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(mapName));
-               Conjunction exportNetworkConditions = new Conjunction();
-               PrefixSpace space = new PrefixSpace();
-               space.addPrefix(prefix);
-               exportNetworkConditions.getConjuncts().add(new MatchPrefixSet(
-                     new DestinationNetwork(), new ExplicitPrefixSet(space)));
-               exportNetworkConditions.getConjuncts()
-                     .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
-               exportNetworkConditions.getConjuncts()
-                     .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-               // TODO: ban aggregates?
-               exportNetworkConditions.getConjuncts().add(
-                     new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
-               exportNetworkConditions.getConjuncts().add(we);
-               preFilterConditions.getDisjuncts().add(exportNetworkConditions);
             }
             else {
                undefined(CiscoStructureType.ROUTE_MAP, mapName,
@@ -1365,8 +1371,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr,
+               OriginType.IGP);
+         Conjunction exportNetworkConditions = new Conjunction();
+         PrefixSpace space = new PrefixSpace();
+         space.addPrefix(prefix);
+         exportNetworkConditions.getConjuncts().add(new MatchPrefixSet(
+               new DestinationNetwork(), new ExplicitPrefixSet(space)));
+         exportNetworkConditions.getConjuncts()
+               .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+         exportNetworkConditions.getConjuncts()
+               .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+         // TODO: ban aggregates?
+         exportNetworkConditions.getConjuncts()
+               .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+         exportNetworkConditions.getConjuncts().add(we);
+         preFilterConditions.getDisjuncts().add(exportNetworkConditions);
       });
-      c.getRouteFilterLists().put(localFilterName, localFilter);
       String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName
             + "~";
       Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
@@ -1383,7 +1404,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                routeMap.getReferers().put(proc,
                      "bgp ipv6 advertised network route-map");
                BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
-                     new CallExpr(mapName));
+                     new CallExpr(mapName), OriginType.IGP);
                Conjunction exportNetwork6Conditions = new Conjunction();
                Prefix6Space space6 = new Prefix6Space();
                space6.addPrefix6(prefix6);
@@ -1409,32 +1430,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       });
       c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
 
-      // add prefilter policy for explicitly advertised networks
-      preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
-            new DestinationNetwork(), new NamedPrefixSet(localFilterName)));
-
-      // create origination prefilter from listed aggregate advertiseed
-      // networks
-      String aggregateFilterName = "~BGP_AGGREGATE_NETWORKS_FILTER:" + vrfName
-            + "~";
-      RouteFilterList aggregateFilter = new RouteFilterList(
-            aggregateFilterName);
-      for (Prefix prefix : proc.getAggregateNetworks().keySet()) {
-         int prefixLen = prefix.getPrefixLength();
-         RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
-               new SubRange(prefixLen, prefixLen));
-         aggregateFilter.addLine(line);
-      }
-      c.getRouteFilterLists().put(aggregateFilterName, aggregateFilter);
-      preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
-            new DestinationNetwork(), new NamedPrefixSet(aggregateFilterName)));
       MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
       MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
       preFilterConditions.getDisjuncts().add(isEbgp);
       preFilterConditions.getDisjuncts().add(isIbgp);
-
-      Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<>();
-      aggregateRfLists.add(aggregateFilter);
 
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source

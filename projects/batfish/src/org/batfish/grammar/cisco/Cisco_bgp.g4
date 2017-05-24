@@ -267,24 +267,22 @@ local_as_bgp_tail
    )* NEWLINE
 ;
 
-maximum_ecmp_paths
-:
-   MAXIMUM_PATHS DEC ECMP DEC
-;
-
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
 ;
 
-maximum_paths_ebgp
-:
-   MAXIMUM_PATHS EBGP DEC
-;
-
 maximum_paths_bgp_tail
 :
-   MAXIMUM_PATHS DEC NEWLINE
+   MAXIMUM_PATHS
+   (
+      EBGP
+      | IBGP
+      | EIBGP
+   )? paths = DEC
+   (
+      ECMP ecmp_paths = DEC
+   )? SELECTIVE? NEWLINE
 ;
 
 maximum_prefix_bgp_tail
@@ -544,7 +542,6 @@ null_bgp_tail
       | GRACEFUL_RESTART
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
-      | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES

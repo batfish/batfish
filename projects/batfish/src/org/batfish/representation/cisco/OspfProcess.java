@@ -24,7 +24,7 @@ public class OspfProcess extends ComparableStructure<String> {
    /**
     * bits per second
     */
-   public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9;
+   public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E8;
 
    private static final long serialVersionUID = 1L;
 

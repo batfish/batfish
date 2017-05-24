@@ -1,7 +1,7 @@
 package org.batfish.bdp;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -32,6 +32,7 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -50,27 +51,33 @@ public class VirtualRouter extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
-   BgpRib _baseEbgpRib;
+   BgpMultipathRib _baseEbgpRib;
 
-   BgpRib _baseIbgpRib;
+   BgpMultipathRib _baseIbgpRib;
 
-   BgpRib _bgpRib;
+   BgpBestPathRib _bgpBestPathRib;
+
+   BgpMultipathRib _bgpMultipathRib;
 
    final Configuration _c;
 
    ConnectedRib _connectedRib;
 
-   BgpRib _ebgpRib;
+   BgpBestPathRib _ebgpBestPathRib;
 
-   BgpRib _ebgpStagingRib;
+   BgpMultipathRib _ebgpMultipathRib;
+
+   BgpMultipathRib _ebgpStagingRib;
 
    Fib _fib;
 
    Rib _generatedRib;
 
-   BgpRib _ibgpRib;
+   BgpBestPathRib _ibgpBestPathRib;
 
-   BgpRib _ibgpStagingRib;
+   BgpMultipathRib _ibgpMultipathRib;
+
+   BgpMultipathRib _ibgpStagingRib;
 
    Rib _independentRib;
 
@@ -96,11 +103,17 @@ public class VirtualRouter extends ComparableStructure<String> {
 
    OspfRib _ospfRib;
 
-   BgpRib _prevBgpRib;
+   BgpBestPathRib _prevBgpBestPathRib;
 
-   BgpRib _prevEbgpRib;
+   BgpMultipathRib _prevBgpRib;
 
-   BgpRib _prevIbgpRib;
+   BgpBestPathRib _prevEbgpBestPathRib;
+
+   BgpMultipathRib _prevEbgpRib;
+
+   BgpBestPathRib _prevIbgpBestPathRib;
+
+   BgpMultipathRib _prevIbgpRib;
 
    Rib _prevMainRib;
 
@@ -268,9 +281,9 @@ public class VirtualRouter extends ComparableStructure<String> {
 
    public void initBaseBgpRibs(AdvertisementSet externalAdverts,
          Map<Ip, Set<String>> ipOwners) {
-      _bgpRib = new BgpRib(this);
-      _baseEbgpRib = new BgpRib(this);
-      _baseIbgpRib = new BgpRib(this);
+      _bgpMultipathRib = new BgpMultipathRib(this);
+      _baseEbgpRib = new BgpMultipathRib(this);
+      _baseIbgpRib = new BgpMultipathRib(this);
 
       if (_vrf.getBgpProcess() != null) {
          int ebgpAdmin = RoutingProtocol.BGP
@@ -325,7 +338,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                            "Missing or invalid bgp advertisement type");
 
                   }
-                  BgpRib targetRib = ebgp ? _baseEbgpRib : _baseIbgpRib;
+                  BgpMultipathRib targetRib = ebgp ? _baseEbgpRib
+                        : _baseIbgpRib;
                   RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP
                         : RoutingProtocol.IBGP;
 
@@ -423,6 +437,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                      transformedIncomingRouteBuilder.setNextHopIp(
                            transformedOutgoingRoute.getNextHopIp());
 
+                     // Incoming originType
+                     transformedIncomingRouteBuilder.setOriginType(
+                           transformedOutgoingRoute.getOriginType());
+
                      // Incoming localPreference
                      transformedIncomingRouteBuilder.setLocalPreference(
                            transformedOutgoingRoute.getLocalPreference());
@@ -475,10 +493,17 @@ public class VirtualRouter extends ComparableStructure<String> {
          }
       }
 
-      _ebgpRib = new BgpRib(this);
-      importRib(_ebgpRib, _baseEbgpRib);
-      _ibgpRib = new BgpRib(this);
-      importRib(_ibgpRib, _baseIbgpRib);
+      _ebgpMultipathRib = new BgpMultipathRib(this);
+      _ibgpMultipathRib = new BgpMultipathRib(this);
+      _ebgpBestPathRib = new BgpBestPathRib(this);
+      _ibgpBestPathRib = new BgpBestPathRib(this);
+      _bgpBestPathRib = new BgpBestPathRib(this);
+      importRib(_ebgpMultipathRib, _baseEbgpRib);
+      importRib(_ebgpBestPathRib, _baseEbgpRib);
+      importRib(_bgpBestPathRib, _baseEbgpRib);
+      importRib(_ibgpMultipathRib, _baseIbgpRib);
+      importRib(_ibgpBestPathRib, _baseIbgpRib);
+      importRib(_bgpBestPathRib, _baseIbgpRib);
    }
 
    public void initBaseOspfRoutes() {
@@ -505,6 +530,13 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
    }
 
+   /**
+    * This function creates BGP routes from generated routes that go into the
+    * BGP RIB, but cannot be imported into the main RIB. The purpose of these
+    * routes is to prevent the local router from accepting advertisements less
+    * desirable than the local generated ones for the given network. They are
+    * not themselves advertised.
+    */
    public void initBgpAggregateRoutes() {
       // first import aggregates
       switch (_c.getConfigurationFormat()) {
@@ -525,9 +557,16 @@ public class VirtualRouter extends ComparableStructure<String> {
          b.setProtocol(RoutingProtocol.AGGREGATE);
          b.setNetwork(gr.getNetwork());
          b.setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE);
+         /**
+          * Note: Origin type and originator IP should get overwritten, but are
+          * needed initially
+          */
+         b.setOriginatorIp(_vrf.getBgpProcess().getRouterId());
+         b.setOriginType(OriginType.INCOMPLETE);
          BgpRoute br = b.build();
          br.setNonRouting(true);
-         _bgpRib.mergeRoute(br);
+         _bgpMultipathRib.mergeRoute(br);
+         _bgpBestPathRib.mergeRoute(br);
       }
 
    }
@@ -612,12 +651,12 @@ public class VirtualRouter extends ComparableStructure<String> {
    }
 
    public void initRibs() {
-      _bgpRib = new BgpRib(this);
+      _bgpMultipathRib = new BgpMultipathRib(this);
       _connectedRib = new ConnectedRib(this);
-      _ebgpRib = new BgpRib(this);
-      _ebgpStagingRib = new BgpRib(this);
-      _ibgpRib = new BgpRib(this);
-      _ibgpStagingRib = new BgpRib(this);
+      _ebgpMultipathRib = new BgpMultipathRib(this);
+      _ebgpStagingRib = new BgpMultipathRib(this);
+      _ibgpMultipathRib = new BgpMultipathRib(this);
+      _ibgpStagingRib = new BgpMultipathRib(this);
       _independentRib = new Rib(this);
       _mainRib = new Rib(this);
       _ospfExternalType1Rib = new OspfExternalType1Rib(this);
@@ -642,7 +681,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             continue;
          }
          // interface route
-         if (sr.getNextHopIp() == null) {
+         if (sr.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
             _staticInterfaceRib.addRoute(sr);
          }
          else {
@@ -681,24 +720,62 @@ public class VirtualRouter extends ComparableStructure<String> {
                RoutingPolicy remoteExportPolicy = remoteConfig
                      .getRoutingPolicies()
                      .get(remoteBgpNeighbor.getExportPolicy());
-               boolean ebgp = localAs != remoteAs;
-               BgpRib targetRib = ebgp ? _ebgpStagingRib : _ibgpStagingRib;
-               RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP
-                     : RoutingProtocol.IBGP;
-               List<AbstractRoute> remoteCandidateRoutes = new ArrayList<>();
-               remoteCandidateRoutes
-                     .addAll(remoteVirtualRouter._prevMainRib.getRoutes());
+               boolean ebgpSession = localAs != remoteAs;
+               BgpMultipathRib targetRib = ebgpSession ? _ebgpStagingRib
+                     : _ibgpStagingRib;
+               RoutingProtocol targetProtocol = ebgpSession
+                     ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+               Set<AbstractRoute> remoteCandidateRoutes = Collections
+                     .newSetFromMap(new IdentityHashMap<>());
 
-               // bgp advertise-external
-               if (!ebgp && remoteBgpNeighbor.getAdvertiseExternal()) {
-                  remoteCandidateRoutes
-                        .addAll(remoteVirtualRouter._prevEbgpRib.getRoutes());
+               /**
+                * Add IGP routes.
+                */
+               Set<AbstractRoute> activeRemoteRoutes = Collections
+                     .newSetFromMap(new IdentityHashMap<>());
+               activeRemoteRoutes
+                     .addAll(remoteVirtualRouter._prevMainRib.getRoutes());
+               for (AbstractRoute remoteCandidateRoute : activeRemoteRoutes) {
+                  if (remoteCandidateRoute.getProtocol() != RoutingProtocol.BGP
+                        && remoteCandidateRoute
+                              .getProtocol() != RoutingProtocol.IBGP) {
+                     remoteCandidateRoutes.add(remoteCandidateRoute);
+                  }
                }
 
-               // bgp advertise-inactive
-               if (remoteBgpNeighbor.getAdvertiseInactive()) {
-                  remoteCandidateRoutes
-                        .addAll(remoteVirtualRouter._prevBgpRib.getRoutes());
+               /*
+                * bgp advertise-external
+                *
+                * When this is set, add best eBGP path independently of whether
+                * it is preempted by an iBGP or IGP route. Only applicable to
+                * iBGP sessions.
+                */
+               boolean advertiseExternal = !ebgpSession
+                     && remoteBgpNeighbor.getAdvertiseExternal();
+               if (advertiseExternal) {
+                  remoteCandidateRoutes.addAll(
+                        remoteVirtualRouter._prevEbgpBestPathRib.getRoutes());
+               }
+
+               /*
+                * bgp advertise-inactive
+                *
+                * When this is set, add best BGP path independently of whether
+                * it is preempted by an IGP route. Only applicable to eBGP
+                * sessions.
+                */
+               boolean advertiseInactive = ebgpSession
+                     && remoteBgpNeighbor.getAdvertiseInactive();
+               /**
+                * Add best bgp paths if they are active, or if
+                * advertise-inactive
+                */
+               for (AbstractRoute remoteCandidateRoute : remoteVirtualRouter._prevBgpBestPathRib
+                     .getRoutes()) {
+                  if (advertiseInactive
+                        || activeRemoteRoutes.contains(remoteCandidateRoute)) {
+                     remoteCandidateRoutes.add(remoteCandidateRoute);
+                  }
                }
 
                for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
@@ -709,26 +786,24 @@ public class VirtualRouter extends ComparableStructure<String> {
                         || remoteRouteProtocol == RoutingProtocol.BGP;
 
                   // originatorIP
-                  Ip originatorIp = null;
-                  if (!ebgp) {
-                     Ip remoteOriginatorIp = null;
-                     if (remoteRouteIsBgp) {
-                        BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
-                        remoteOriginatorIp = bgpRemoteRoute.getOriginatorIp();
-                     }
-                     if (remoteRouteProtocol.equals(RoutingProtocol.IBGP)) {
-                        originatorIp = remoteOriginatorIp;
-                     }
-                     else {
-                        originatorIp = remoteVrf.getBgpProcess().getRouterId();
-                     }
+                  Ip originatorIp;
+                  if (!ebgpSession
+                        && remoteRouteProtocol.equals(RoutingProtocol.IBGP)) {
+                     BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
+                     originatorIp = bgpRemoteRoute.getOriginatorIp();
+                  }
+                  else {
+                     originatorIp = remoteVrf.getBgpProcess().getRouterId();
                   }
                   transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
 
-                  // clusterList, receivedFromRouteReflectorClient
+                  // clusterList, receivedFromRouteReflectorClient, (originType
+                  // for bgp remote route)
                   if (remoteRouteIsBgp) {
                      BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
-                     if (ebgp
+                     transformedOutgoingRouteBuilder
+                           .setOriginType(bgpRemoteRoute.getOriginType());
+                     if (ebgpSession
                            && bgpRemoteRoute.getAsPath()
                                  .containsAs(remoteBgpNeighbor.getRemoteAs())
                            && !remoteBgpNeighbor.getAllowRemoteAsOut()) {
@@ -750,7 +825,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                         continue;
                      }
                      if (remoteRouteProtocol.equals(RoutingProtocol.IBGP)
-                           && !ebgp) {
+                           && !ebgpSession) {
                         boolean remoteRouteReceivedFromRouteReflectorClient = bgpRemoteRoute
                               .getReceivedFromRouteReflectorClient();
                         boolean sendingToRouteReflectorClient = remoteBgpNeighbor
@@ -792,7 +867,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                               .addAll(bgpRemoteRoute.getCommunities());
                      }
                   }
-                  if (ebgp) {
+                  if (ebgpSession) {
                      AsSet newAsPathElement = new AsSet();
                      newAsPathElement.add(remoteAs);
                      transformedOutgoingRouteBuilder.getAsPath().add(0,
@@ -814,7 +889,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   // Outgoing localPreference
                   Ip nextHopIp;
                   int localPreference;
-                  if (ebgp || !remoteRouteIsBgp) {
+                  if (ebgpSession || !remoteRouteIsBgp) {
                      nextHopIp = remoteBgpNeighbor.getLocalIp();
                      localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
                   }
@@ -823,7 +898,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                      BgpRoute remoteIbgpRoute = (BgpRoute) remoteRoute;
                      localPreference = remoteIbgpRoute.getLocalPreference();
                   }
-                  if (nextHopIp == null) {
+                  if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
                      // should only happen for ibgp
                      String nextHopInterface = remoteRoute
                            .getNextHopInterface();
@@ -846,6 +921,12 @@ public class VirtualRouter extends ComparableStructure<String> {
                   /*
                    * CREATE OUTGOING ROUTE
                    */
+                  if (remoteRoute.getNetwork()
+                        .equals(new Prefix("2.128.0.0/16"))
+                        && hostname.equals("as1border1")
+                        && remoteHostname.equals("as2border1")) {
+                     assert Boolean.TRUE;
+                  }
                   boolean acceptOutgoing = remoteExportPolicy.process(
                         remoteRoute, transformedOutgoingRouteBuilder, localIp,
                         remoteVrfName);
@@ -885,7 +966,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                            .setNetwork(remoteRoute.getNetwork());
 
                      // Incoming nextHopIp
-                     if (ebgp) {
+                     if (ebgpSession) {
                         transformedIncomingRouteBuilder.setNextHopIp(nextHopIp);
                      }
                      else {
@@ -898,12 +979,16 @@ public class VirtualRouter extends ComparableStructure<String> {
                            transformedOutgoingRoute.getLocalPreference());
 
                      // Incoming admin
-                     int admin = ebgp ? ebgpAdmin : ibgpAdmin;
+                     int admin = ebgpSession ? ebgpAdmin : ibgpAdmin;
                      transformedIncomingRouteBuilder.setAdmin(admin);
 
                      // Incoming metric
                      transformedIncomingRouteBuilder
                            .setMetric(transformedOutgoingRoute.getMetric());
+
+                     // Incoming originType
+                     transformedIncomingRouteBuilder.setOriginType(
+                           transformedOutgoingRoute.getOriginType());
 
                      // Incoming srcProtocol
                      transformedIncomingRouteBuilder
@@ -911,7 +996,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                      String importPolicyName = neighbor.getImportPolicy();
                      // TODO: ensure there is always an import policy
 
-                     if (ebgp
+                     if (ebgpSession
                            && transformedOutgoingRoute.getAsPath()
                                  .containsAs(neighbor.getLocalAs())
                            && !neighbor.getAllowLocalAsIn()) {
@@ -1215,23 +1300,15 @@ public class VirtualRouter extends ComparableStructure<String> {
    }
 
    public void unstageBgpRoutes() {
-      for (BgpRoute route : _ebgpStagingRib.getRoutes()) {
-         _ebgpRib.mergeRoute(route);
-      }
-      for (BgpRoute route : _ibgpStagingRib.getRoutes()) {
-         _ibgpRib.mergeRoute(route);
-      }
+      importRib(_ebgpMultipathRib, _ebgpStagingRib);
+      importRib(_ebgpBestPathRib, _ebgpStagingRib);
+      importRib(_ibgpMultipathRib, _ibgpStagingRib);
+      importRib(_ibgpBestPathRib, _ibgpStagingRib);
    }
 
    public void unstageOspfExternalRoutes() {
-      for (OspfExternalType1Route route : _ospfExternalType1StagingRib
-            .getRoutes()) {
-         _ospfExternalType1Rib.mergeRoute(route);
-      }
-      for (OspfExternalType2Route route : _ospfExternalType2StagingRib
-            .getRoutes()) {
-         _ospfExternalType2Rib.mergeRoute(route);
-      }
+      importRib(_ospfExternalType1Rib, _ospfExternalType1StagingRib);
+      importRib(_ospfExternalType2Rib, _ospfExternalType2StagingRib);
    }
 
    public void unstageOspfInternalRoutes() {

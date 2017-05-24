@@ -12,6 +12,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 
 public class Fib implements Serializable {
 
@@ -22,7 +23,7 @@ public class Fib implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   private final Map<AbstractRoute, Map<String, Set<AbstractRoute>>> _nextHopInterfaces;
+   private final Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
 
    private final Rib _rib;
 
@@ -30,14 +31,16 @@ public class Fib implements Serializable {
       _rib = rib;
       _nextHopInterfaces = new HashMap<>();
       for (AbstractRoute route : rib.getRoutes()) {
-         Map<String, Set<AbstractRoute>> nextHopInterfaces = new TreeMap<>();
-         collectNextHopInterfaces(route, nextHopInterfaces, new HashSet<>(), 0);
+         Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = new TreeMap<>();
+         collectNextHopInterfaces(route, Route.UNSET_ROUTE_NEXT_HOP_IP,
+               nextHopInterfaces, new HashSet<>(), 0);
          _nextHopInterfaces.put(route, nextHopInterfaces);
       }
    }
 
    private void collectNextHopInterfaces(AbstractRoute route,
-         Map<String, Set<AbstractRoute>> nextHopInterfaces,
+         Ip mostRecentNextHopIp,
+         Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces,
          Set<Prefix> seenNetworks, int depth) {
       Prefix network = route.getNetwork();
       if (seenNetworks.contains(network)) {
@@ -50,22 +53,31 @@ public class Fib implements Serializable {
                "Exceeded max route recursion depth: " + MAX_DEPTH);
       }
       Ip nextHopIp = route.getNextHopIp();
-      if (nextHopIp != null) {
+      if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
          Set<AbstractRoute> nextHopLongestPrefixMatchRoutes = _rib
                .longestPrefixMatch(nextHopIp);
          for (AbstractRoute nextHopLongestPrefixMatchRoute : nextHopLongestPrefixMatchRoutes) {
-            collectNextHopInterfaces(nextHopLongestPrefixMatchRoute,
+            collectNextHopInterfaces(nextHopLongestPrefixMatchRoute, nextHopIp,
                   nextHopInterfaces, newSeenNetworks, depth + 1);
          }
       }
       else {
          String nextHopInterface = route.getNextHopInterface();
          if (nextHopInterface != null) {
-            Set<AbstractRoute> nextHopInterfaceRoutes = nextHopInterfaces
+
+            Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp = nextHopInterfaces
                   .get(nextHopInterface);
+            if (nextHopInterfaceRoutesByFinalNextHopIp == null) {
+               nextHopInterfaceRoutesByFinalNextHopIp = new HashMap<>();
+               nextHopInterfaces.put(nextHopInterface,
+                     nextHopInterfaceRoutesByFinalNextHopIp);
+            }
+            Set<AbstractRoute> nextHopInterfaceRoutes = nextHopInterfaceRoutesByFinalNextHopIp
+                  .get(mostRecentNextHopIp);
             if (nextHopInterfaceRoutes == null) {
                nextHopInterfaceRoutes = new TreeSet<>();
-               nextHopInterfaces.put(nextHopInterface, nextHopInterfaceRoutes);
+               nextHopInterfaceRoutesByFinalNextHopIp.put(mostRecentNextHopIp,
+                     nextHopInterfaceRoutes);
             }
             nextHopInterfaceRoutes.add(route);
          }
@@ -76,34 +88,35 @@ public class Fib implements Serializable {
       }
    }
 
-   public Map<String, Set<AbstractRoute>> getNextHopInterfaces(Ip ip) {
-      Map<String, Set<AbstractRoute>> nextHopInterfaces = new TreeMap<>();
+   public Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
+      Map<String, Map<Ip, Set<AbstractRoute>>> outputNextHopInterfaces = new TreeMap<>();
       Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(ip);
       for (AbstractRoute nextHopRoute : nextHopRoutes) {
-         Map<String, Set<AbstractRoute>> currentNextHopInterfaces = _nextHopInterfaces
+         Map<String, Map<Ip, Set<AbstractRoute>>> currentNextHopInterfaces = _nextHopInterfaces
                .get(nextHopRoute);
-         currentNextHopInterfaces
-               .forEach((nextHopInterface, currentNextHopInterfaceRoutes) -> {
-                  Set<AbstractRoute> nextHopInterfaceRoutes = nextHopInterfaces
+         currentNextHopInterfaces.forEach(
+               (nextHopInterface, nextHopInterfaceRoutesByFinalNextHopIp) -> {
+                  Map<Ip, Set<AbstractRoute>> outputNextHopInterfaceRoutesByFinalNextHopIp = outputNextHopInterfaces
                         .get(nextHopInterface);
-                  if (nextHopInterfaceRoutes == null) {
-                     nextHopInterfaceRoutes = new TreeSet<>();
-                     nextHopInterfaces.put(nextHopInterface,
-                           nextHopInterfaceRoutes);
+                  if (outputNextHopInterfaceRoutesByFinalNextHopIp == null) {
+                     outputNextHopInterfaceRoutesByFinalNextHopIp = new TreeMap<>();
+                     outputNextHopInterfaces.put(nextHopInterface,
+                           outputNextHopInterfaceRoutesByFinalNextHopIp);
                   }
-                  nextHopInterfaceRoutes.addAll(currentNextHopInterfaceRoutes);
+                  outputNextHopInterfaceRoutesByFinalNextHopIp
+                        .putAll(nextHopInterfaceRoutesByFinalNextHopIp);
                });
       }
-      return nextHopInterfaces;
+      return outputNextHopInterfaces;
    }
 
-   public Map<AbstractRoute, Set<String>> getNextHopInterfacesByRoute(
+   public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
          Ip dstIp) {
-      Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = new HashMap<>();
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute = new HashMap<>();
       Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(dstIp);
       for (AbstractRoute nextHopRoute : nextHopRoutes) {
-         Set<String> nextHopInterfaces = _nextHopInterfaces.get(nextHopRoute)
-               .keySet();
+         Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = _nextHopInterfaces
+               .get(nextHopRoute);
          nextHopInterfacesByRoute.put(nextHopRoute, nextHopInterfaces);
       }
       return nextHopInterfacesByRoute;

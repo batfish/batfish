@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -135,7 +136,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                   StaticRoute sr = (StaticRoute) route;
                   Ip srNextHopIp = sr.getNextHopIp();
                   String srNextHopInterface = sr.getNextHopInterface();
-                  if (srNextHopIp != null && srNextHopInterface != null) {
+                  if (!srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+                        && srNextHopInterface != null) {
                      // both nextHopIp and nextHopInterface; neighbor must not
                      // send
                      // nextHopIp back out receiving interface
@@ -169,7 +171,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                      }
                      break;
                   }
-                  else if (srNextHopIp == null && srNextHopInterface != null) {
+                  else if (!srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+                        && srNextHopInterface != null) {
                      // just nextHopInterface; neighbor must not send dstIp back
                      // out receiving interface
                      // TODO: implement above condition
@@ -202,7 +205,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                      }
                      break;
                   }
-                  else if (srNextHopIp == null && srNextHopInterface == null) {
+                  else if (srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
+                        && srNextHopInterface == null) {
                      throw new BatfishException(
                            "Invalid static route; must have nextHopIp or nextHopInterface");
                   }
@@ -243,23 +247,30 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
             for (AbstractRoute route : remainingRoutes) {
                Ip currentNextHopIp = route.getNextHopIp();
-               Map<String, Set<AbstractRoute>> nextHopInterfaces = vr._fib
+               Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = vr._fib
                      .getNextHopInterfaces(currentNextHopIp);
-               nextHopInterfaces
-                     .forEach((nextHopInterface, nextHopInterfaceRoutes) -> {
-                        for (AbstractRoute nextHopInterfaceRoute : nextHopInterfaceRoutes) {
-                           Set<FibRow> currentInterfaceRouteRows = interfaceRouteRows
-                                 .get(nextHopInterfaceRoute);
-                           for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
-                              FibRow row = new FibRow(
-                                    route.getNetwork().getNetworkPrefix(),
-                                    interfaceRouteRow.getInterface(),
-                                    interfaceRouteRow.getNextHop(),
-                                    interfaceRouteRow.getNextHopInterface());
-                              fibSet.add(row);
-                           }
+               nextHopInterfaces.forEach((nextHopInterface,
+                     nextHopInterfaceRoutesByFinalNextHopIp) -> {
+                  if (nextHopInterfaceRoutesByFinalNextHopIp.size() > 1) {
+                     throw new BatfishException("Did not expect this");
+                  }
+                  for (Entry<Ip, Set<AbstractRoute>> e2 : nextHopInterfaceRoutesByFinalNextHopIp
+                        .entrySet()) {
+                     Set<AbstractRoute> nextHopInterfaceRoutes = e2.getValue();
+                     for (AbstractRoute nextHopInterfaceRoute : nextHopInterfaceRoutes) {
+                        Set<FibRow> currentInterfaceRouteRows = interfaceRouteRows
+                              .get(nextHopInterfaceRoute);
+                        for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
+                           FibRow row = new FibRow(
+                                 route.getNetwork().getNetworkPrefix(),
+                                 interfaceRouteRow.getInterface(),
+                                 interfaceRouteRow.getNextHop(),
+                                 interfaceRouteRow.getNextHopInterface());
+                           fibSet.add(row);
                         }
-                     });
+                     }
+                  }
+               });
             }
          });
       });

@@ -197,7 +197,6 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-         _batfish.checkDataPlaneQuestionDependencies();
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
          _batfish.initBgpAdvertisements(configurations);
