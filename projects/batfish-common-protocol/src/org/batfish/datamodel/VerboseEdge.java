@@ -16,20 +16,27 @@ public class VerboseEdge
    private static final String NODE1_VAR = "node1";
 
    private static final String NODE2_VAR = "node2";
+   
+   private static final String EDGE_VAR = "edgesummary";
+   
+   protected final Edge edge;
 
    private static final long serialVersionUID = 1L;
 
-   public VerboseEdge(VerboseNodeInterfacePair p1, VerboseNodeInterfacePair p2) {
+   public VerboseEdge(VerboseNodeInterfacePair p1, VerboseNodeInterfacePair p2, Edge e) {
       super(p1, p2);
+      this.edge  = e;
    }
 
    @JsonCreator
    public VerboseEdge(@JsonProperty(NODE1_VAR) Configuration node1,
          @JsonProperty(INT1_VAR) Interface int1,
          @JsonProperty(NODE2_VAR) Configuration node2,
-         @JsonProperty(INT2_VAR) Interface int2) {
-      super(new VerboseNodeInterfacePair(node1, int1),
-            new VerboseNodeInterfacePair(node2, int2));
+         @JsonProperty(INT2_VAR) Interface int2,
+         @JsonProperty(EDGE_VAR) Edge e) {
+      this(new VerboseNodeInterfacePair(node1, int1),
+            new VerboseNodeInterfacePair(node2, int2),
+            e);
    }
 
    @JsonProperty(INT1_VAR)
@@ -62,6 +69,11 @@ public class VerboseEdge
       return _second.getHost();
    }
 
+   @JsonProperty(EDGE_VAR)
+   public Edge getEdgeSummary() {
+      return edge;
+   }   
+   
    @Override
    public String toString() {
       return "<" + getNode1() + ":" + getInt1() + ", " + getNode2() + ":"
