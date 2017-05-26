@@ -25,6 +25,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -548,10 +549,21 @@ public class WorkMgrService {
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
-      _logger.info("WMS:getInfo\n");
-      return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-            "Batfish coordinator v" + Version.getVersion()
-                  + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
+      _logger.info("WMS:getInfo\n");      
+      try {
+         JSONObject map = new JSONObject();
+         map.put("Service name", "Batfish coordinator");
+         map.put(CoordConsts.SVC_VERSION_KEY, Version.getVersion());
+         map.put("APIs", "Enter ../application.wadl (relative to your URL) to see supported methods");
+
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, map));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:getWorkQueueStatus exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+      }     
    }
 
    /**
