@@ -37,20 +37,20 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       private static final String IBGP_NEIGHBORS_VAR = "ibgpNeighbors";
 
       private final static String LAN_NEIGHBORS_VAR = "lanNeighbors";
-      
-      private final static String VERBOSE_LAN_NEIGHBORS_VAR = "verboseLanNeighbors";
 
       private final static String OSPF_NEIGHBORS_VAR = "ospfNeighbors";
+
+      private final static String VERBOSE_LAN_NEIGHBORS_VAR = "verboseLanNeighbors";
 
       private SortedSet<IpEdge> _ebgpNeighbors;
 
       private SortedSet<IpEdge> _ibgpNeighbors;
 
       private SortedSet<Edge> _lanNeighbors;
-      
-      private SortedSet<VerboseEdge> _verboseLanNeighbors;
 
       private SortedSet<IpEdge> _ospfNeighbors;
+
+      private SortedSet<VerboseEdge> _verboseLanNeighbors;
 
       public void addLanEdge(Edge edge) {
          _lanNeighbors.add(edge);
@@ -70,15 +70,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       public SortedSet<Edge> getLanNeighbors() {
          return _lanNeighbors;
       }
-      
-      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
-      public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
-         return _verboseLanNeighbors;
-      }      
 
       @JsonProperty(OSPF_NEIGHBORS_VAR)
       public SortedSet<IpEdge> getOspfNeighbors() {
          return _ospfNeighbors;
+      }
+
+      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+      public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
+         return _verboseLanNeighbors;
       }
 
       public void initEbgpNeighbors() {
@@ -93,12 +93,12 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _lanNeighbors = new TreeSet<>();
       }
 
-      public void initVerboseLanNeighbors() {
-         _verboseLanNeighbors = new TreeSet<>();
-      }
-      
       public void initOspfNeighbors() {
          _ospfNeighbors = new TreeSet<>();
+      }
+
+      public void initVerboseLanNeighbors() {
+         _verboseLanNeighbors = new TreeSet<>();
       }
 
       @Override
@@ -111,12 +111,12 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                sb.append("    " + edge.toString() + "\n");
             }
          }
-         
+
          if (_verboseLanNeighbors != null) {
             sb.append("  LAN neighbors\n");
             for (VerboseEdge edge : _verboseLanNeighbors) {
                sb.append("    " + edge.toString() + "\n");
-            }            
+            }
          }
 
          if (_ebgpNeighbors != null) {
@@ -158,14 +158,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _lanNeighbors = lanNeighbors;
       }
 
-      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
-      public void setVerboseLanNeighbors(SortedSet<VerboseEdge> verboseLanNeighbors) {
-         _verboseLanNeighbors = verboseLanNeighbors;
-      }
-      
       @JsonProperty(OSPF_NEIGHBORS_VAR)
       public void setOspfNeighbors(SortedSet<IpEdge> ospfNeighbors) {
          _ospfNeighbors = ospfNeighbors;
+      }
+
+      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+      public void setVerboseLanNeighbors(
+            SortedSet<VerboseEdge> verboseLanNeighbors) {
+         _verboseLanNeighbors = verboseLanNeighbors;
       }
 
    }
@@ -339,7 +340,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          if (question.getNeighborTypes().isEmpty()
                || question.getNeighborTypes().contains(NeighborType.LAN)) {
             initTopology(configurations);
-            SortedSet<Edge> matchingEdges = new TreeSet<Edge>();
+            SortedSet<Edge> matchingEdges = new TreeSet<>();
             for (Edge edge : _topology.getEdges()) {
                Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
                Matcher node2Matcher = node2Regex.matcher(edge.getNode2());
@@ -349,14 +350,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             }
             if (!question.getVerbose()) {
                answerElement.setLanNeighbors(matchingEdges);
-            } else {
-               SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<VerboseEdge>();
+            }
+            else {
+               SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
                for (Edge edge : matchingEdges) {
                   Configuration n1 = configurations.get(edge.getNode1());
                   Interface i1 = n1.getInterfaces().get(edge.getInt1());
                   Configuration n2 = configurations.get(edge.getNode2());
                   Interface i2 = n2.getInterfaces().get(edge.getInt2());
-                  vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge)); 
+                  vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge));
                }
                answerElement.setVerboseLanNeighbors(vMatchingEdges);
             }
@@ -411,10 +413,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     *           Regular expression to match the nodes names for the other end of
     *           the pair. Default is '.*' (all nodes).
     * @param verbose
-    *           Boolean indicating whether full information about the nodes/interfaces
-    *           that make up each neighbor pair is requested.  Default is false,
-    *           indicating that only the names of nodes/interfaces is returned.       
-    * 
+    *           Boolean indicating whether full information about the
+    *           nodes/interfaces that make up each neighbor pair is requested.
+    *           Default is false, indicating that only the names of
+    *           nodes/interfaces is returned.
+    *
     * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"]
     *          node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
     *          neighbor relationships between nodes that start with as1 and
@@ -428,7 +431,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       private static final String NODE1_REGEX_VAR = "node1Regex";
 
       private static final String NODE2_REGEX_VAR = "node2Regex";
-      
+
       private static final String VERBOSE_VAR = "verbose";
 
       private SortedSet<NeighborType> _neighborTypes;
@@ -436,7 +439,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       private String _node1Regex;
 
       private String _node2Regex;
-      
+
       private boolean _verbose;
 
       public NeighborsQuestion() {
@@ -470,25 +473,25 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       public String getNode2Regex() {
          return _node2Regex;
       }
-      
-      @JsonProperty(VERBOSE_VAR)
-      public boolean getVerbose() {
-         return _verbose;
-      }
 
       @Override
       public boolean getTraffic() {
          return false;
       }
 
+      @JsonProperty(VERBOSE_VAR)
+      public boolean getVerbose() {
+         return _verbose;
+      }
+
       @Override
       public String prettyPrint() {
          try {
             String retString = String.format(
-                  "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b", prettyPrintBase(),
-                  NODE1_REGEX_VAR, _node1Regex, NODE2_REGEX_VAR, _node2Regex,
-                  NEIGHBOR_TYPES_VAR, _neighborTypes.toString(),
-                  VERBOSE_VAR, _verbose);
+                  "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b",
+                  prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex,
+                  NODE2_REGEX_VAR, _node2Regex, NEIGHBOR_TYPES_VAR,
+                  _neighborTypes.toString(), VERBOSE_VAR, _verbose);
             return retString;
          }
          catch (Exception e) {
@@ -522,7 +525,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       @JsonProperty(VERBOSE_VAR)
       public void setVerbose(boolean verbose) {
          _verbose = verbose;
-      }      
+      }
    }
 
    @Override
