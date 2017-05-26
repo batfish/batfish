@@ -35,13 +35,13 @@ public class ParseEnvironmentBgpTableJob
    private Warnings _warnings;
 
    public ParseEnvironmentBgpTableJob(Settings settings, String fileText,
-         Path file, Warnings warnings,
+         String hostname, Path file, Warnings warnings,
          SortedMap<BgpTableFormat, BgpTablePlugin> bgpTablePlugins) {
       super(settings);
       _bgpTablePlugins = bgpTablePlugins;
       _fileText = fileText;
       _file = file;
-      _hostname = file.getFileName().toString();
+      _hostname = hostname;
       _ptSentences = new ParseTreeSentences();
       _warnings = warnings;
    }

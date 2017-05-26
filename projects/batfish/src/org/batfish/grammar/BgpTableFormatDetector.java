@@ -31,8 +31,15 @@ public final class BgpTableFormatDetector {
       Matcher eosMatcher = Pattern
             .compile("(?m)BGP routing table information for VRF")
             .matcher(_fileText);
+      Matcher detailMatcher = Pattern.compile("(?m)BGP routing table entry for")
+            .matcher(_fileText);
       if (eosMatcher.find()) {
-         return BgpTableFormat.EOS;
+         if (detailMatcher.find()) {
+            return BgpTableFormat.EOS_DETAIL;
+         }
+         else {
+            return BgpTableFormat.EOS;
+         }
       }
       return null;
    }

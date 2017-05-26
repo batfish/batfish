@@ -13,6 +13,7 @@ public enum BgpTableFormat {
 
    EMPTY("empty"),
    EOS("eos"),
+   EOS_DETAIL("eos_detail"),
    UNKNOWN("unknown");
 
    private final static Map<String, BgpTableFormat> _map = buildMap();
