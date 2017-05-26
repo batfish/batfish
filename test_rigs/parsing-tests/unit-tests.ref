@@ -2571,11 +2571,11 @@
             "              DISABLE:'disable'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
-            "            (null_bgp_tail",
+            "            (maximum_paths_bgp_tail",
             "              MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
             "              EBGP:'ebgp'  <== mode:DEFAULT_MODE",
             "              DEC:'4'  <== mode:DEFAULT_MODE",
-            "              VARIABLE:'selective'  <== mode:DEFAULT_MODE",
+            "              SELECTIVE:'selective'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
             "            (network6_bgp_tail",
@@ -25695,9 +25695,9 @@
             "              DEC:'32'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
-            "            (null_bgp_tail",
+            "            (maximum_paths_bgp_tail",
             "              MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
-            "              VARIABLE:'ibgp'  <== mode:DEFAULT_MODE",
+            "              IBGP:'ibgp'  <== mode:DEFAULT_MODE",
             "              DEC:'32'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
@@ -29838,7 +29838,7 @@
           ]
         }
       },
-      "version" : "0.19.0",
+      "version" : "0.21.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -30908,7 +30908,7 @@
           }
         }
       },
-      "version" : "0.19.0",
+      "version" : "0.21.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {

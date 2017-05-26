@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum OriginType {
-   EGP("egp"),
-   IGP("igp"),
-   INCOMPLETE("incomplete");
+   EGP("egp", 1),
+   IGP("igp", 2),
+   INCOMPLETE("incomplete", 0);
 
    private final static Map<String, OriginType> _map = buildMap();
 
@@ -34,15 +34,22 @@ public enum OriginType {
       return instance;
    }
 
-   private String _name;
+   private final String _name;
 
-   private OriginType(String originType) {
+   private final int _preference;
+
+   private OriginType(String originType, int preference) {
       _name = originType;
+      _preference = preference;
    }
 
    @JsonValue
    public String getOriginTypeName() {
       return _name;
+   }
+
+   public int getPreference() {
+      return _preference;
    }
 
 }

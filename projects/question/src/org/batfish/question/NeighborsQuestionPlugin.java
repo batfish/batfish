@@ -15,6 +15,8 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.OspfNeighbor;
@@ -38,6 +40,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private final static String OSPF_NEIGHBORS_VAR = "ospfNeighbors";
 
+      private final static String VERBOSE_LAN_NEIGHBORS_VAR = "verboseLanNeighbors";
+
       private SortedSet<IpEdge> _ebgpNeighbors;
 
       private SortedSet<IpEdge> _ibgpNeighbors;
@@ -45,6 +49,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       private SortedSet<Edge> _lanNeighbors;
 
       private SortedSet<IpEdge> _ospfNeighbors;
+
+      private SortedSet<VerboseEdge> _verboseLanNeighbors;
 
       public void addLanEdge(Edge edge) {
          _lanNeighbors.add(edge);
@@ -70,6 +76,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return _ospfNeighbors;
       }
 
+      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+      public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
+         return _verboseLanNeighbors;
+      }
+
       public void initEbgpNeighbors() {
          _ebgpNeighbors = new TreeSet<>();
       }
@@ -86,6 +97,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _ospfNeighbors = new TreeSet<>();
       }
 
+      public void initVerboseLanNeighbors() {
+         _verboseLanNeighbors = new TreeSet<>();
+      }
+
       @Override
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder("Results for neighbors\n");
@@ -93,6 +108,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          if (_lanNeighbors != null) {
             sb.append("  LAN neighbors\n");
             for (Edge edge : _lanNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
+         if (_verboseLanNeighbors != null) {
+            sb.append("  LAN neighbors\n");
+            for (VerboseEdge edge : _verboseLanNeighbors) {
                sb.append("    " + edge.toString() + "\n");
             }
          }
@@ -139,6 +161,12 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       @JsonProperty(OSPF_NEIGHBORS_VAR)
       public void setOspfNeighbors(SortedSet<IpEdge> ospfNeighbors) {
          _ospfNeighbors = ospfNeighbors;
+      }
+
+      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+      public void setVerboseLanNeighbors(
+            SortedSet<VerboseEdge> verboseLanNeighbors) {
+         _verboseLanNeighbors = verboseLanNeighbors;
       }
 
    }
@@ -311,14 +339,28 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
          if (question.getNeighborTypes().isEmpty()
                || question.getNeighborTypes().contains(NeighborType.LAN)) {
-            answerElement.initLanNeighbors();
             initTopology(configurations);
+            SortedSet<Edge> matchingEdges = new TreeSet<>();
             for (Edge edge : _topology.getEdges()) {
                Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
                Matcher node2Matcher = node2Regex.matcher(edge.getNode2());
                if (node1Matcher.matches() && node2Matcher.matches()) {
-                  answerElement.addLanEdge(edge);
+                  matchingEdges.add(edge);
                }
+            }
+            if (!question.getVerbose()) {
+               answerElement.setLanNeighbors(matchingEdges);
+            }
+            else {
+               SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
+               for (Edge edge : matchingEdges) {
+                  Configuration n1 = configurations.get(edge.getNode1());
+                  Interface i1 = n1.getInterfaces().get(edge.getInt1());
+                  Configuration n2 = configurations.get(edge.getNode2());
+                  Interface i2 = n2.getInterfaces().get(edge.getInt2());
+                  vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge));
+               }
+               answerElement.setVerboseLanNeighbors(vMatchingEdges);
             }
          }
 
@@ -370,6 +412,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     * @param node2Regex
     *           Regular expression to match the nodes names for the other end of
     *           the pair. Default is '.*' (all nodes).
+    * @param verbose
+    *           Boolean indicating whether full information about the
+    *           nodes/interfaces that make up each neighbor pair is requested.
+    *           Default is false, indicating that only the names of
+    *           nodes/interfaces is returned.
     *
     * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"]
     *          node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
@@ -385,16 +432,21 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE2_REGEX_VAR = "node2Regex";
 
+      private static final String VERBOSE_VAR = "verbose";
+
       private SortedSet<NeighborType> _neighborTypes;
 
       private String _node1Regex;
 
       private String _node2Regex;
 
+      private boolean _verbose;
+
       public NeighborsQuestion() {
          _node1Regex = ".*";
          _node2Regex = ".*";
          _neighborTypes = new TreeSet<>();
+         _verbose = false;
       }
 
       @Override
@@ -427,13 +479,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
+      @JsonProperty(VERBOSE_VAR)
+      public boolean getVerbose() {
+         return _verbose;
+      }
+
       @Override
       public String prettyPrint() {
          try {
             String retString = String.format(
-                  "neighbors %s%s=%s | %s=%s | %s=%s", prettyPrintBase(),
-                  NODE1_REGEX_VAR, _node1Regex, NODE2_REGEX_VAR, _node2Regex,
-                  NEIGHBOR_TYPES_VAR, _neighborTypes.toString());
+                  "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b",
+                  prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex,
+                  NODE2_REGEX_VAR, _node2Regex, NEIGHBOR_TYPES_VAR,
+                  _neighborTypes.toString(), VERBOSE_VAR, _verbose);
             return retString;
          }
          catch (Exception e) {
@@ -464,6 +522,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _node2Regex = regex;
       }
 
+      @JsonProperty(VERBOSE_VAR)
+      public void setVerbose(boolean verbose) {
+         _verbose = verbose;
+      }
    }
 
    @Override

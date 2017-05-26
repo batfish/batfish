@@ -19,6 +19,10 @@ public final class GeneratedRoute6 extends AbstractRoute6
 
       private String _nextHopInterface;
 
+      public Builder() {
+         _nextHopIp = Route6.UNSET_ROUTE_NEXT_HOP_IP;
+      }
+
       @Override
       public GeneratedRoute6 build() {
          GeneratedRoute6 gr = new GeneratedRoute6(_network, _nextHopIp);
@@ -78,11 +82,11 @@ public final class GeneratedRoute6 extends AbstractRoute6
 
    @JsonCreator
    public GeneratedRoute6(@JsonProperty(NETWORK_VAR) Prefix6 prefix6) {
-      super(prefix6, null);
+      super(prefix6, Route6.UNSET_ROUTE_NEXT_HOP_IP);
    }
 
    public GeneratedRoute6(Prefix6 prefix6, int administrativeCost) {
-      super(prefix6, null);
+      super(prefix6, Route6.UNSET_ROUTE_NEXT_HOP_IP);
       _administrativeCost = administrativeCost;
    }
 

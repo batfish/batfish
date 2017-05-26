@@ -44,6 +44,8 @@ public class BgpGroup implements Serializable {
 
    private Integer _loops;
 
+   private Boolean _multipath;
+
    private BgpGroup _parent;
 
    private Integer _peerAs;
@@ -96,6 +98,9 @@ public class BgpGroup implements Serializable {
          }
          if (_localAddress == null) {
             _localAddress = _parent._localAddress;
+         }
+         if (_multipath == null) {
+            _multipath = _parent._multipath;
          }
          if (_peerAs == null) {
             _peerAs = _parent._peerAs;
@@ -154,6 +159,10 @@ public class BgpGroup implements Serializable {
       return _loops;
    }
 
+   public Boolean getMultipath() {
+      return _multipath;
+   }
+
    public final BgpGroup getParent() {
       return _parent;
    }
@@ -204,6 +213,10 @@ public class BgpGroup implements Serializable {
 
    public void setLoops(int loops) {
       _loops = loops;
+   }
+
+   public void setMultipath(Boolean multipath) {
+      _multipath = multipath;
    }
 
    public final void setParent(BgpGroup parent) {

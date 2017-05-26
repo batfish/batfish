@@ -237,7 +237,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
          }
          else {
-            _batfish.checkDataPlaneQuestionDependencies();
             Map<String, Configuration> configurations = _batfish
                   .loadConfigurations();
             _batfish.initRoutes(configurations);

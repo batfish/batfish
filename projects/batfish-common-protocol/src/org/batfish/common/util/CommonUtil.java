@@ -190,9 +190,15 @@ public class CommonUtil {
    }
 
    public static Path getConfigProperties(Class<?> locatorClass,
-         String propertiesFilename) {
-      Path configDir = getJarOrClassDir(locatorClass);
-      return configDir.resolve(propertiesFilename);
+         String propertiesFilename, String propertiesJvmArg) {
+      String jvmArgPath = System.getProperty(propertiesJvmArg);
+      if (jvmArgPath != null) {
+         return Paths.get(jvmArgPath);
+      }
+      else {
+         Path configDir = getJarOrClassDir(locatorClass);
+         return configDir.resolve(propertiesFilename);
+      }
    }
 
    public static String getIndentedString(String str, int indentLevel) {

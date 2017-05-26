@@ -495,18 +495,20 @@ public enum RoutingProtocol {
          case FOUNDRY:
             return 254;
 
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 10;
+
          case ALCATEL_AOS:
          case AWS_VPC:
          case BLADENETWORK:
          case EMPTY:
          case F5:
-         case FLAT_JUNIPER:
          case FLAT_VYOS:
          case HOST:
          case IGNORED:
          case IPTABLES:
-         case JUNIPER:
-         case JUNIPER_SWITCH:
          case MRV:
          case MRV_COMMANDS:
          case MSS:

@@ -9,6 +9,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,17 +25,25 @@ public class HostInterface implements Serializable {
    private static final String OTHER_PREFIXES_VAR = "otherPrefixes";
 
    private static final String PREFIX_VAR = "prefix";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
+   private static final String VRF_VAR = "vrf";
+
    private Double _bandwidth = 1000 * 1000 * 1000.0; // default is 1 Gbps
+
    private Ip _gateway;
+
    private String _name;
+
    private Set<Prefix> _otherPrefixes;
 
    private Prefix _prefix;
+
+   private Vrf _vrf;
 
    @JsonCreator
    public HostInterface(@JsonProperty(NAME_VAR) String name) {
@@ -67,6 +76,11 @@ public class HostInterface implements Serializable {
       return _prefix;
    }
 
+   @JsonProperty(VRF_VAR)
+   public Vrf getVrf() {
+      return _vrf;
+   }
+
    @JsonProperty(BANDWIDTH_VAR)
    public void setBandwidth(Double bandwidth) {
       _bandwidth = bandwidth;
@@ -87,13 +101,19 @@ public class HostInterface implements Serializable {
       _prefix = prefix;
    }
 
+   @JsonProperty(VRF_VAR)
+   public void setVrf(Vrf vrf) {
+      _vrf = vrf;
+   }
+
    public Interface toInterface(Configuration configuration,
          Warnings warnings) {
-      Interface iFace = new Interface(_name, configuration);
-      iFace.setBandwidth(_bandwidth);
-      iFace.setPrefix(_prefix);
-      iFace.getAllPrefixes().add(_prefix);
-      iFace.getAllPrefixes().addAll(_otherPrefixes);
-      return iFace;
+      Interface iface = new Interface(_name, configuration);
+      iface.setBandwidth(_bandwidth);
+      iface.setPrefix(_prefix);
+      iface.getAllPrefixes().add(_prefix);
+      iface.getAllPrefixes().addAll(_otherPrefixes);
+      iface.setVrf(configuration.getDefaultVrf());
+      return iface;
    }
 }

@@ -2,10 +2,9 @@
 ALLINONE="${BASH_SOURCE[0]}"
 ALLINONE_PATH=$(dirname "$ALLINONE")
 ALLINONE_JAR="$ALLINONE_PATH/out/allinone.jar"
-ALLINONE_JAVA_ARGS=
 if batfish_cygwin; then
    ALLINONE_JAR="$(cygpath -w $ALLINONE_JAR)"
-   ALLINONE_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
+   ALLINONE_JAVA_ARGS="$ALLINONE_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
 fi
 if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then

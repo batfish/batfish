@@ -769,17 +769,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   @Override
-   public void checkDataPlaneQuestionDependencies() {
-      checkDataPlaneQuestionDependencies(_testrigSettings);
-   }
-
-   public void checkDataPlaneQuestionDependencies(
-         TestrigSettings testrigSettings) {
-      checkConfigurations(testrigSettings);
-      checkDataPlane(testrigSettings);
-   }
-
    public void checkDiffEnvironmentExists() {
       checkDiffEnvironmentSpecified();
       checkEnvironmentExists(_deltaTestrigSettings);
@@ -2673,7 +2662,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _settings.setSequential(true);
       }
       Settings settings = getSettings();
-      checkDataPlaneQuestionDependencies();
       String tag = getFlowTag(_testrigSettings);
       Map<String, Configuration> configurations = loadConfigurations();
       Set<Flow> flows = null;
@@ -2907,6 +2895,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       SortedMap<String, Configuration> configurations = loadConfigurations();
       for (Path currentFile : inputData.keySet()) {
          String hostname = currentFile.getFileName().toString();
+         String optionalSuffix = ".bgp";
+         if (hostname.endsWith(optionalSuffix)) {
+            hostname = hostname.substring(0,
+                  hostname.length() - optionalSuffix.length());
+         }
          if (!configurations.containsKey(hostname)) {
             continue;
          }
@@ -2922,7 +2915,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                _settings.printParseTree());
          String fileText = inputData.get(currentFile);
          ParseEnvironmentBgpTableJob job = new ParseEnvironmentBgpTableJob(
-               _settings, fileText, currentFile, warnings, _bgpTablePlugins);
+               _settings, fileText, hostname, currentFile, warnings,
+               _bgpTablePlugins);
          jobs.add(job);
       }
       BatfishJobExecutor<ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement, ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>> executor = new BatfishJobExecutor<>(
@@ -4246,7 +4240,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _settings.setSequential(true);
       }
       Settings settings = getSettings();
-      checkDataPlaneQuestionDependencies(_testrigSettings);
       String tag = getFlowTag(_testrigSettings);
       Map<String, Configuration> configurations = loadConfigurations();
       Set<Flow> flows = null;
