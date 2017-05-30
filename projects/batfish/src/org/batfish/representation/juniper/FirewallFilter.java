@@ -12,6 +12,8 @@ public final class FirewallFilter extends ReferenceCountedStructure {
     */
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private final Family _family;
 
    private final String _name;
@@ -20,10 +22,15 @@ public final class FirewallFilter extends ReferenceCountedStructure {
 
    private final Map<String, FwTerm> _terms;
 
-   public FirewallFilter(String name, Family family) {
+   public FirewallFilter(String name, Family family, int definitionLine) {
+      _definitionLine = definitionLine;
       _family = family;
       _name = name;
       _terms = new LinkedHashMap<>();
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public Family getFamily() {

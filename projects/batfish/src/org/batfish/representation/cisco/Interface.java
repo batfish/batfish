@@ -84,6 +84,8 @@ public class Interface extends ComparableStructure<String> {
 
    private String _incomingFilter;
 
+   private int _incomingFilterLine;
+
    private Integer _isisCost;
 
    private IsisInterfaceMode _isisInterfaceMode;
@@ -92,19 +94,29 @@ public class Interface extends ComparableStructure<String> {
 
    private int _nativeVlan;
 
+   private boolean _ospfActive;
+
+   private Long _ospfArea;
+
    private Integer _ospfCost;
 
    private int _ospfDeadInterval;
 
    private int _ospfHelloMultiplier;
 
+   private boolean _ospfPassive;
+
    private String _outgoingFilter;
+
+   private int _outgoingFilterLine;
 
    private Prefix _prefix;
 
-   private Boolean _proxyArp;
+   private boolean _proxyArp;
 
    private String _routingPolicy;
+
+   int _routingPolicyLine;
 
    private Set<Prefix> _secondaryPrefixes;
 
@@ -121,11 +133,11 @@ public class Interface extends ComparableStructure<String> {
    public Interface(String name) {
       super(name);
       _active = true;
-      _nativeVlan = 1;
-      _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<>();
-      _secondaryPrefixes = new LinkedHashSet<>();
       _isisInterfaceMode = IsisInterfaceMode.UNSET;
+      _nativeVlan = 1;
+      _secondaryPrefixes = new LinkedHashSet<>();
+      _switchportMode = SwitchportMode.NONE;
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -165,6 +177,10 @@ public class Interface extends ComparableStructure<String> {
       return _incomingFilter;
    }
 
+   public int getIncomingFilterLine() {
+      return _incomingFilterLine;
+   }
+
    public Integer getIsisCost() {
       return _isisCost;
    }
@@ -181,6 +197,14 @@ public class Interface extends ComparableStructure<String> {
       return _nativeVlan;
    }
 
+   public boolean getOspfActive() {
+      return _ospfActive;
+   }
+
+   public Long getOspfArea() {
+      return _ospfArea;
+   }
+
    public Integer getOspfCost() {
       return _ospfCost;
    }
@@ -193,20 +217,32 @@ public class Interface extends ComparableStructure<String> {
       return _ospfHelloMultiplier;
    }
 
+   public boolean getOspfPassive() {
+      return _ospfPassive;
+   }
+
    public String getOutgoingFilter() {
       return _outgoingFilter;
+   }
+
+   public int getOutgoingFilterLine() {
+      return _outgoingFilterLine;
    }
 
    public Prefix getPrefix() {
       return _prefix;
    }
 
-   public Boolean getProxyArp() {
+   public boolean getProxyArp() {
       return _proxyArp;
    }
 
    public String getRoutingPolicy() {
       return _routingPolicy;
+   }
+
+   public int getRoutingPolicyLine() {
+      return _routingPolicyLine;
    }
 
    public Set<Prefix> getSecondaryPrefixes() {
@@ -253,6 +289,10 @@ public class Interface extends ComparableStructure<String> {
       _incomingFilter = accessListName;
    }
 
+   public void setIncomingFilterLine(int incomingFilterLine) {
+      _incomingFilterLine = incomingFilterLine;
+   }
+
    public void setIsisCost(Integer isisCost) {
       _isisCost = isisCost;
    }
@@ -269,6 +309,14 @@ public class Interface extends ComparableStructure<String> {
       _nativeVlan = vlan;
    }
 
+   public void setOspfActive(boolean ospfActive) {
+      _ospfActive = ospfActive;
+   }
+
+   public void setOspfArea(Long ospfArea) {
+      _ospfArea = ospfArea;
+   }
+
    public void setOspfCost(int ospfCost) {
       _ospfCost = ospfCost;
    }
@@ -281,20 +329,32 @@ public class Interface extends ComparableStructure<String> {
       _ospfHelloMultiplier = multiplier;
    }
 
+   public void setOspfPassive(boolean ospfPassive) {
+      _ospfPassive = ospfPassive;
+   }
+
    public void setOutgoingFilter(String accessListName) {
       _outgoingFilter = accessListName;
+   }
+
+   public void setOutgoingFilterLine(int outgoingFilterLine) {
+      _outgoingFilterLine = outgoingFilterLine;
    }
 
    public void setPrefix(Prefix prefix) {
       _prefix = prefix;
    }
 
-   public void setProxyArp(Boolean proxyArp) {
+   public void setProxyArp(boolean proxyArp) {
       _proxyArp = proxyArp;
    }
 
    public void setRoutingPolicy(String routingPolicy) {
       _routingPolicy = routingPolicy;
+   }
+
+   public void setRoutingPolicyLine(int routingPolicyLine) {
+      _routingPolicyLine = routingPolicyLine;
    }
 
    public void setStandbyPrefix(Prefix standbyPrefix) {

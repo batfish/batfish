@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,6 +9,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowBuilder;
@@ -21,12 +21,8 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.ITracerouteQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class TracerouteQuestionPlugin extends QuestionPlugin {
 
@@ -38,7 +34,6 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-         _batfish.checkDataPlaneQuestionDependencies();
          String tag = _batfish.getFlowTag();
          Set<Flow> flows = getFlows(tag);
          _batfish.processFlows(flows);
@@ -215,6 +210,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String DST_PORT_VAR = "dstPort";
 
+      private static final String DST_PROTOCOL_VAR = "dstProtocol";
+
       private static final String ECN_VAR = "ecn";
 
       private static final String ICMP_CODE_VAR = "icmpCode";
@@ -227,9 +224,13 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String IP_PROTOCOL_VAR = "ipProtocol";
 
+      private static final String PACKET_LENGTH_VAR = "packetLength";
+
       private static final String SRC_IP_VAR = "srcIp";
 
       private static final String SRC_PORT_VAR = "srcPort";
+
+      private static final String SRC_PROTOCOL_VAR = "srcProtocol";
 
       private static final String STATE_VAR = "state";
 
@@ -255,6 +256,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private Integer _dstPort;
 
+      private Protocol _dstProtocol;
+
       private Integer _ecn;
 
       private Integer _icmpCode;
@@ -267,9 +270,13 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private IpProtocol _ipProtocol;
 
+      private Integer _packetLength;
+
       private Ip _srcIp;
 
       private Integer _srcPort;
+
+      private Protocol _srcProtocol;
 
       private State _state;
 
@@ -321,6 +328,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          if (_ipProtocol != null) {
             flowBuilder.setIpProtocol(_ipProtocol);
          }
+         if (_packetLength != null) {
+            flowBuilder.setPacketLength(_packetLength);
+         }
          if (_srcIp != null) {
             flowBuilder.setSrcIp(_srcIp);
          }
@@ -357,6 +367,23 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          if (_tcpFlagsUrg != null) {
             flowBuilder.setTcpFlagsUrg(_tcpFlagsUrg ? 1 : 0);
          }
+         // do not move src or dst protocol up
+         if (_srcProtocol != null) {
+            IpProtocol ipProtocol = _srcProtocol.getIpProtocol();
+            flowBuilder.setIpProtocol(ipProtocol);
+            Integer port = _srcProtocol.getPort();
+            if (port != null) {
+               flowBuilder.setSrcPort(port);
+            }
+         }
+         if (_dstProtocol != null) {
+            IpProtocol ipProtocol = _dstProtocol.getIpProtocol();
+            flowBuilder.setIpProtocol(ipProtocol);
+            Integer port = _dstProtocol.getPort();
+            if (port != null) {
+               flowBuilder.setDstPort(port);
+            }
+         }
          return flowBuilder;
       }
 
@@ -378,6 +405,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       @JsonProperty(DST_PORT_VAR)
       public Integer getDstPort() {
          return _dstPort;
+      }
+
+      @JsonProperty(DST_PROTOCOL_VAR)
+      public Protocol getDstProtocol() {
+         return _dstProtocol;
       }
 
       @JsonProperty(ECN_VAR)
@@ -420,6 +452,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          return NAME;
       }
 
+      @JsonProperty(PACKET_LENGTH_VAR)
+      public Integer getPacketLength() {
+         return _packetLength;
+      }
+
       @JsonProperty(SRC_IP_VAR)
       public Ip getSrcIp() {
          return _srcIp;
@@ -428,6 +465,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       @JsonProperty(SRC_PORT_VAR)
       public Integer getSrcPort() {
          return _srcPort;
+      }
+
+      @JsonProperty(SRC_PROTOCOL_VAR)
+      public Protocol getSrcProtocol() {
+         return _srcProtocol;
       }
 
       @JsonProperty(STATE_VAR)
@@ -487,61 +529,83 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                   prettyPrintBase(), _ingressNode);
             // we only print "interesting" values
             if (_ingressVrf != null) {
-               retString += String.format(" | ingressVrf=%s", _ingressVrf);
+               retString += String.format(" | %s=%s", INGRESS_VRF_VAR,
+                     _ingressVrf);
             }
             if (_dscp != null) {
-               retString += String.format(" | dscp=%s", _dscp);
+               retString += String.format(" | %s=%s", DSCP_VAR, _dscp);
             }
             if (_dstIp != null) {
-               retString += String.format(" | dstIp=%s", _dstIp);
+               retString += String.format(" | %s=%s", DST_IP_VAR, _dstIp);
             }
             if (_dstPort != null) {
-               retString += String.format(" | dstPort=%s", _dstPort);
+               retString += String.format(" | %S=%s", DST_PORT_VAR, _dstPort);
+            }
+            if (_dstProtocol != null) {
+               retString += String.format(" | %s=%s", DST_PROTOCOL_VAR,
+                     _dstProtocol);
             }
             if (_ecn != null) {
-               retString += String.format(" | ecn=%s", _ecn);
+               retString += String.format(" | %s=%s", ECN_VAR, _ecn);
             }
             if (_icmpCode != null) {
-               retString += String.format(" | icmpCode=%s", _icmpCode);
+               retString += String.format(" | %s=%s", ICMP_CODE_VAR, _icmpCode);
             }
             if (_icmpType != null) {
-               retString += String.format(" | icmpType=%s", _icmpType);
+               retString += String.format(" | %s=%s", ICMP_TYPE_VAR, _icmpType);
             }
             if (_ipProtocol != null) {
-               retString += String.format(" | ipProtocol=%s", _ipProtocol);
+               retString += String.format(" | %s=%s", IP_PROTOCOL_VAR,
+                     _ipProtocol);
+            }
+            if (_packetLength != null) {
+               retString += String.format(" | %s=%s", PACKET_LENGTH_VAR,
+                     _packetLength);
             }
             if (_srcIp != null) {
-               retString += String.format(" | srcIp=%s", _srcIp);
+               retString += String.format(" | %s=%s", SRC_IP_VAR, _srcIp);
             }
             if (_srcPort != null) {
-               retString += String.format(" | srcPort=%s", _srcPort);
+               retString += String.format(" | %s=%s", SRC_PORT_VAR, _srcPort);
+            }
+            if (_srcProtocol != null) {
+               retString += String.format(" | %s=%s", SRC_PROTOCOL_VAR,
+                     _srcProtocol);
             }
             if (_state != null) {
-               retString += String.format(" | state=%s", _state);
+               retString += String.format(" | %s=%s", STATE_VAR, _state);
             }
             if (_tcpFlagsAck != null) {
-               retString += String.format(" | tcpFlagsAck=%s", _tcpFlagsAck);
+               retString += String.format(" | %s=%s", TCP_FLAGS_ACK_VAR,
+                     _tcpFlagsAck);
             }
             if (_tcpFlagsCwr != null) {
-               retString += String.format(" | tcpFlagsCwr=%s", _tcpFlagsCwr);
+               retString += String.format(" | %s=%s", TCP_FLAGS_CWR_VAR,
+                     _tcpFlagsCwr);
             }
             if (_tcpFlagsEce != null) {
-               retString += String.format(" | tcpFlagsEce=%s", _tcpFlagsEce);
+               retString += String.format(" | %s=%s", TCP_FLAGS_ECE_VAR,
+                     _tcpFlagsEce);
             }
             if (_tcpFlagsFin != null) {
-               retString += String.format(" | tcpFlagsFin=%s", _tcpFlagsFin);
+               retString += String.format(" | %s=%s", TCP_FLAGS_FIN_VAR,
+                     _tcpFlagsFin);
             }
             if (_tcpFlagsPsh != null) {
-               retString += String.format(" | tcpFlagsPsh=%s", _tcpFlagsPsh);
+               retString += String.format(" | %s=%s", TCP_FLAGS_PSH_VAR,
+                     _tcpFlagsPsh);
             }
             if (_tcpFlagsRst != null) {
-               retString += String.format(" | tcpFlagsRst=%s", _tcpFlagsRst);
+               retString += String.format(" | %s=%s", TCP_FLAGS_RST_VAR,
+                     _tcpFlagsRst);
             }
             if (_tcpFlagsSyn != null) {
-               retString += String.format(" | tcpFlagsSyn=%s", _tcpFlagsSyn);
+               retString += String.format(" | %s=%s", TCP_FLAGS_SYN_VAR,
+                     _tcpFlagsSyn);
             }
             if (_tcpFlagsUrg != null) {
-               retString += String.format(" | tcpFlagsUrg=%s", _tcpFlagsUrg);
+               retString += String.format(" | %s=%s", TCP_FLAGS_URG_VAR,
+                     _tcpFlagsUrg);
             }
             return retString;
          }
@@ -550,178 +614,128 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                return "Pretty printing failed. Printing Json\n"
                      + toJsonString();
             }
-            catch (JsonProcessingException e1) {
+            catch (BatfishException e1) {
                throw new BatfishException(
                      "Both pretty and json printing failed\n");
             }
          }
       }
 
+      @JsonProperty(DSCP_VAR)
       public void setDscp(Integer dscp) {
          _dscp = dscp;
       }
 
       @Override
+      @JsonProperty(DST_IP_VAR)
       public void setDstIp(Ip dstIp) {
          _dstIp = dstIp;
       }
 
-      @Override
+      @JsonProperty(DST_PORT_VAR)
       public void setDstPort(Integer dstPort) {
          _dstPort = dstPort;
       }
 
+      @Override
+      @JsonProperty(DST_PROTOCOL_VAR)
+      public void setDstProtocol(Protocol dstProtocol) {
+         _dstProtocol = dstProtocol;
+      }
+
+      @JsonProperty(ECN_VAR)
       public void setEcn(Integer ecn) {
          _ecn = ecn;
       }
 
+      @JsonProperty(ICMP_CODE_VAR)
       public void setIcmpCode(Integer icmpCode) {
          _icmpCode = icmpCode;
       }
 
+      @JsonProperty(ICMP_TYPE_VAR)
       public void setIcmpType(Integer icmpType) {
          _icmpType = icmpType;
       }
 
       @Override
+      @JsonProperty(INGRESS_NODE_VAR)
       public void setIngressNode(String ingressNode) {
          _ingressNode = ingressNode;
       }
 
       @Override
+      @JsonProperty(INGRESS_VRF_VAR)
       public void setIngressVrf(String ingressVrf) {
          _ingressVrf = ingressVrf;
       }
 
-      @Override
+      @JsonProperty(IP_PROTOCOL_VAR)
       public void setIpProtocol(IpProtocol ipProtocol) {
          _ipProtocol = ipProtocol;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case DSCP_VAR:
-                  setDscp(parameters.getInt(paramKey));
-                  break;
-               case DST_IP_VAR:
-                  setDstIp(new Ip(parameters.getString(paramKey)));
-                  break;
-               case DST_PORT_VAR:
-                  setDstPort(parameters.getInt(paramKey));
-                  break;
-               case ECN_VAR:
-                  setEcn(parameters.getInt(paramKey));
-                  break;
-               case ICMP_CODE_VAR:
-                  setIcmpCode(parameters.getInt(paramKey));
-                  break;
-               case ICMP_TYPE_VAR:
-                  setIcmpType(parameters.getInt(paramKey));
-                  break;
-               case INGRESS_NODE_VAR:
-                  setIngressNode(parameters.getString(paramKey));
-                  break;
-               case INGRESS_VRF_VAR:
-                  setIngressVrf(parameters.getString(paramKey));
-                  break;
-               case IP_PROTOCOL_VAR:
-                  setIpProtocol(
-                        IpProtocol.fromString(parameters.getString(paramKey)));
-                  break;
-               case SRC_IP_VAR:
-                  setSrcIp(new Ip(parameters.getString(paramKey)));
-                  break;
-               case SRC_PORT_VAR:
-                  setSrcPort(parameters.getInt(paramKey));
-                  break;
-               case STATE_VAR:
-                  setState(State.fromString(parameters.getString(paramKey)));
-                  break;
-               case TCP_FLAGS_ACK_VAR:
-                  setTcpFlagsAck(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_CWR_VAR:
-                  setTcpFlagsCwr(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_ECE_VAR:
-                  setTcpFlagsEce(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_FIN_VAR:
-                  setTcpFlagsFin(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_PSH_VAR:
-                  setTcpFlagsPsh(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_RST_VAR:
-                  setTcpFlagsRst(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_SYN_VAR:
-                  setTcpFlagsSyn(parameters.getBoolean(paramKey));
-                  break;
-               case TCP_FLAGS_URG_VAR:
-                  setTcpFlagsUrg(parameters.getBoolean(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
+      @JsonProperty(PACKET_LENGTH_VAR)
+      public void setPacketLength(Integer packetLength) {
+         _packetLength = packetLength;
       }
 
+      @JsonProperty(SRC_IP_VAR)
       public void setSrcIp(Ip srcIp) {
          _srcIp = srcIp;
       }
 
+      @JsonProperty(SRC_PORT_VAR)
       public void setSrcPort(Integer srcPort) {
          _srcPort = srcPort;
       }
 
+      @JsonProperty(SRC_PROTOCOL_VAR)
+      public void setSrcProtocol(Protocol srcProtocol) {
+         _srcProtocol = srcProtocol;
+      }
+
+      @JsonProperty(STATE_VAR)
       public void setState(State state) {
          _state = state;
       }
 
+      @JsonProperty(TCP_FLAGS_ACK_VAR)
       public void setTcpFlagsAck(Boolean tcpFlagsAck) {
          _tcpFlagsAck = tcpFlagsAck;
       }
 
+      @JsonProperty(TCP_FLAGS_CWR_VAR)
       public void setTcpFlagsCwr(Boolean tcpFlagsCwr) {
          _tcpFlagsCwr = tcpFlagsCwr;
       }
 
+      @JsonProperty(TCP_FLAGS_ECE_VAR)
       public void setTcpFlagsEce(Boolean tcpFlagsEce) {
          _tcpFlagsEce = tcpFlagsEce;
       }
 
+      @JsonProperty(TCP_FLAGS_FIN_VAR)
       public void setTcpFlagsFin(Boolean tcpFlagsFin) {
          _tcpFlagsFin = tcpFlagsFin;
       }
 
+      @JsonProperty(TCP_FLAGS_PSH_VAR)
       public void setTcpFlagsPsh(Boolean tcpFlagsPsh) {
          _tcpFlagsPsh = tcpFlagsPsh;
       }
 
+      @JsonProperty(TCP_FLAGS_RST_VAR)
       public void setTcpFlagsRst(Boolean tcpFlagsRst) {
          _tcpFlagsRst = tcpFlagsRst;
       }
 
+      @JsonProperty(TCP_FLAGS_SYN_VAR)
       public void setTcpFlagsSyn(Boolean tcpFlagsSyn) {
          _tcpFlagsSyn = tcpFlagsSyn;
       }
 
+      @JsonProperty(TCP_FLAGS_URG_VAR)
       public void setTcpFlagsUrg(Boolean tcpFlagsUrg) {
          _tcpFlagsUrg = tcpFlagsUrg;
       }

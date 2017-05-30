@@ -2,7 +2,7 @@
 hostname rP
 !
 route-policy fooey_blackhole
-  if destination in barbar_blackhole_routes and community matches-any fooey_blackhole_community then
+  if destination in barbar_blackhole_routes and community matches-any fooey_blackhole_community and local-preference is 123 then
     set next-hop 1.2.3.4
     set origin igp
     set weight 0
@@ -162,6 +162,12 @@ route-policy doodlepop
   endif
 end-policy
 !
-
+route-policy routetype
+  if route-type is ospf-intra-area then
+    pass
+  else
+    drop
+  endif
+end-policy
 !
 end

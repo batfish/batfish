@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicyNextHopSelf extends RoutePolicyNextHop {
 

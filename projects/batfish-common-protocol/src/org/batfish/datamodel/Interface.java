@@ -3,18 +3,22 @@ package org.batfish.datamodel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public final class Interface extends ComparableStructure<String> {
 
@@ -64,8 +68,6 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String OUTGOING_FILTER_VAR = "outgoingFilter";
 
-   private static final String OWNER_VAR = "owner";
-
    private static final String PREFIX_VAR = "prefix";
 
    private static final String ROUTING_POLICY_VAR = "routingPolicy";
@@ -75,6 +77,10 @@ public final class Interface extends ComparableStructure<String> {
    private static final String SWITCHPORT_MODE_VAR = "switchportMode";
 
    private static final String SWITCHPORT_TRUNK_ENCAPSULATION_VAR = "switchportTrunkEncapsulation";
+
+   private static final String VRF_VAR = "vrf";
+
+   private static final String VRRP_GROUPS_VAR = "vrrpGroups";
 
    private static final String ZONE_VAR = "zone";
 
@@ -262,11 +268,17 @@ public final class Interface extends ComparableStructure<String> {
 
    private Double _bandwidth;
 
+   private transient boolean _blacklisted;
+
    private String _description;
 
    private IpAccessList _inboundFilter;
 
+   private transient String _inboundFilterName;
+
    private IpAccessList _incomingFilter;
+
+   private transient String _incomingFilterName;
 
    private Integer _isisCost;
 
@@ -280,6 +292,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private OspfArea _ospfArea;
 
+   private transient Long _ospfAreaName;
+
    private Integer _ospfCost;
 
    private int _ospfDeadInterval;
@@ -292,21 +306,31 @@ public final class Interface extends ComparableStructure<String> {
 
    private IpAccessList _outgoingFilter;
 
+   private transient String _outgoingFilterName;
+
    private Configuration _owner;
 
    private Prefix _prefix;
 
    private Boolean _proxyArp;
 
-   private String _routingPolicy;
+   private RoutingPolicy _routingPolicy;
+
+   private transient String _routingPolicyName;
 
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
-   private String _vrf;
+   private Vrf _vrf;
+
+   private transient String _vrfName;
+
+   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
    private Zone _zone;
+
+   private transient String _zoneName;
 
    @SuppressWarnings("unused")
    private Interface() {
@@ -330,6 +354,8 @@ public final class Interface extends ComparableStructure<String> {
       _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
       _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
       _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
+      _vrfName = Configuration.DEFAULT_VRF_NAME;
+      _vrrpGroups = new TreeMap<>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -364,13 +390,13 @@ public final class Interface extends ComparableStructure<String> {
       }
       // we check ACLs for name match only -- full ACL diff can be done
       // elsewhere.
-      if (!IpAccessList.bothNullOrSameName(this._inboundFilter,
-            other._inboundFilter)) {
+      if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(),
+            other.getInboundFilter())) {
          return false;
       }
 
-      if (!IpAccessList.bothNullOrSameName(this._incomingFilter,
-            other._incomingFilter)) {
+      if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(),
+            other.getIncomingFilter())) {
          return false;
       }
 
@@ -409,148 +435,249 @@ public final class Interface extends ComparableStructure<String> {
    }
 
    @JsonProperty(ACCESS_VLAN_VAR)
+   @JsonPropertyDescription("Number of access VLAN when switchport mode is ACCESS")
    public int getAccessVlan() {
       return _accessVlan;
    }
 
    @JsonProperty(ACTIVE_VAR)
+   @JsonPropertyDescription("Whether this interface is administratively active (true) or disabled (false)")
    public boolean getActive() {
       return _active;
    }
 
    @JsonProperty(ALLOWED_VLANS_VAR)
+   @JsonPropertyDescription("Ranges of allowed VLANs when switchport mode is TRUNK")
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
    }
 
    @JsonProperty(ALL_PREFIXES_VAR)
+   @JsonPropertyDescription("All IPV4 address/network assignments on this interface")
    public Set<Prefix> getAllPrefixes() {
       return _allPrefixes;
    }
 
    @JsonProperty(BANDWIDTH_VAR)
+   @JsonPropertyDescription("The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
    public Double getBandwidth() {
       return _bandwidth;
    }
 
+   @JsonIgnore
+   public boolean getBlacklisted() {
+      return _blacklisted;
+   }
+
    @JsonProperty(DESCRIPTION_VAR)
+   @JsonPropertyDescription("Description of this interface")
    public String getDescription() {
       return _description;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(INBOUND_FILTER_VAR)
+   @JsonIgnore
    public IpAccessList getInboundFilter() {
       return _inboundFilter;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(INCOMING_FILTER_VAR)
+   @JsonProperty(INBOUND_FILTER_VAR)
+   @JsonPropertyDescription("The IPV4 access-list used to filter traffic destined for this device on this interface.")
+   public String getInboundFilterName() {
+      if (_inboundFilter != null) {
+         return _inboundFilter.getName();
+      }
+      else {
+         return _inboundFilterName;
+      }
+   }
+
+   @JsonIgnore
    public IpAccessList getIncomingFilter() {
       return _incomingFilter;
    }
 
+   @JsonProperty(INCOMING_FILTER_VAR)
+   @JsonPropertyDescription("The IPV4 access-list used to filter traffic that arrives on this interface.")
+   public String getIncomingFilterName() {
+      if (_incomingFilter != null) {
+         return _incomingFilter.getName();
+      }
+      else {
+         return _incomingFilterName;
+      }
+   }
+
    @JsonProperty(ISIS_COST_VAR)
+   @JsonPropertyDescription("The IS-IS cost of this interface")
    public Integer getIsisCost() {
       return _isisCost;
    }
 
    @JsonProperty(ISIS_L1_INTERFACE_MODE_VAR)
+   @JsonPropertyDescription("Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS level 1")
    public IsisInterfaceMode getIsisL1InterfaceMode() {
       return _isisL1InterfaceMode;
    }
 
    @JsonProperty(ISIS_L2_INTERFACE_MODE_VAR)
+   @JsonPropertyDescription("Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS level 2")
    public IsisInterfaceMode getIsisL2InterfaceMode() {
       return _isisL2InterfaceMode;
    }
 
    @JsonProperty(MTU_VAR)
+   @JsonPropertyDescription("The maximum transmission unit (MTU) of this interface in bytes")
    public int getMtu() {
       return _mtu;
    }
 
    @JsonProperty(NATIVE_VLAN_VAR)
+   @JsonPropertyDescription("The native VLAN of this interface when switchport mode is TRUNK")
    public int getNativeVlan() {
       return _nativeVlan;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(OSPF_AREA_VAR)
+   @JsonIgnore
    public OspfArea getOspfArea() {
       return _ospfArea;
    }
 
+   @JsonProperty(OSPF_AREA_VAR)
+   @JsonPropertyDescription("The OSPF area to which this interface belongs.")
+   public Long getOspfAreaName() {
+      if (_ospfArea != null) {
+         return _ospfArea.getName();
+      }
+      else {
+         return _ospfAreaName;
+      }
+   }
+
    @JsonProperty(OSPF_COST_VAR)
+   @JsonPropertyDescription("The explicit OSPF cost of this interface. If unset, the cost is automatically calculated.")
    public Integer getOspfCost() {
       return _ospfCost;
    }
 
    @JsonProperty(OSPF_DEAD_INTERVAL_VAR)
+   @JsonPropertyDescription("Dead-interval in seconds for OSPF updates")
    public int getOspfDeadInterval() {
       return _ospfDeadInterval;
    }
 
    @JsonProperty(OSPF_ENABLED_VAR)
+   @JsonPropertyDescription("Whether or not OSPF is enabled at all on this interface (either actively or passively)")
    public boolean getOspfEnabled() {
       return _ospfEnabled;
    }
 
    @JsonProperty(OSPF_HELLO_MULTIPLIER_VAR)
+   @JsonPropertyDescription("Number of OSPF packets to send out during dead-interval period for fast OSPF updates")
    public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
    }
 
    @JsonProperty(OSPF_PASSIVE_VAR)
+   @JsonPropertyDescription("Whether or not OSPF is enabled passively on this interface. If passive, this interface is included in the OSPF RIB, but no OSPF packets are sent from it.")
    public boolean getOspfPassive() {
       return _ospfPassive;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(OUTGOING_FILTER_VAR)
+   @JsonIgnore
    public IpAccessList getOutgoingFilter() {
       return _outgoingFilter;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(OWNER_VAR)
+   @JsonProperty(OUTGOING_FILTER_VAR)
+   @JsonPropertyDescription("The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id")
+   public String getOutgoingFilterName() {
+      if (_outgoingFilter != null) {
+         return _outgoingFilter.getName();
+      }
+      else {
+         return _outgoingFilterName;
+      }
+   }
+
+   @JsonIgnore
    public Configuration getOwner() {
       return _owner;
    }
 
    @JsonProperty(PREFIX_VAR)
+   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
    public Prefix getPrefix() {
       return _prefix;
    }
 
+   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
    public Boolean getProxyArp() {
       return _proxyArp;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(ROUTING_POLICY_VAR)
-   public String getRoutingPolicy() {
+   @JsonIgnore
+   public RoutingPolicy getRoutingPolicy() {
       return _routingPolicy;
    }
 
+   @JsonProperty(ROUTING_POLICY_VAR)
+   @JsonPropertyDescription("The routing policy used on this interface for policy-routing (as opposed to destination-routing). Stored as @id")
+   public String getRoutingPolicyName() {
+      if (_routingPolicy != null) {
+         return _routingPolicy.getName();
+      }
+      else {
+         return _routingPolicyName;
+      }
+   }
+
    @JsonProperty(SWITCHPORT_MODE_VAR)
+   @JsonPropertyDescription("The switchport mode (if any) of this interface")
    public SwitchportMode getSwitchportMode() {
       return _switchportMode;
    }
 
    @JsonProperty(SWITCHPORT_TRUNK_ENCAPSULATION_VAR)
+   @JsonPropertyDescription("The switchport trunk encapsulation type of this interface. Only relevant when switchport mode is TRUNK")
    public SwitchportEncapsulationType getSwitchportTrunkEncapsulation() {
       return _switchportTrunkEncapsulation;
    }
 
-   public String getVrf() {
+   @JsonIgnore
+   public Vrf getVrf() {
       return _vrf;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(ZONE_VAR)
+   @JsonProperty(VRF_VAR)
+   @JsonPropertyDescription("The name of the VRF to which this interface belongs")
+   public String getVrfName() {
+      if (_vrf != null) {
+         return _vrf.getName();
+      }
+      else {
+         return _vrfName;
+      }
+   }
+
+   @JsonProperty(VRRP_GROUPS_VAR)
+   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
+      return _vrrpGroups;
+   }
+
+   @JsonIgnore
    public Zone getZone() {
       return _zone;
+   }
+
+   @JsonProperty(ZONE_VAR)
+   @JsonPropertyDescription("The firewall zone to which this interface belongs.")
+   public String getZoneName() {
+      if (_zone != null) {
+         return _zone.getName();
+      }
+      else {
+         return _zoneName;
+      }
    }
 
    public boolean isLoopback(ConfigurationFormat vendor) {
@@ -565,6 +692,26 @@ public final class Interface extends ComparableStructure<String> {
          return false;
       }
       return name.startsWith("lo");
+   }
+
+   public void resolveReferences(Configuration owner) {
+      _owner = owner;
+      _vrf = owner.getVrfs().get(_vrfName);
+      if (_inboundFilterName != null) {
+         _inboundFilter = owner.getIpAccessLists().get(_inboundFilterName);
+      }
+      if (_incomingFilterName != null) {
+         _incomingFilter = owner.getIpAccessLists().get(_incomingFilterName);
+      }
+      if (_outgoingFilterName != null) {
+         _outgoingFilter = owner.getIpAccessLists().get(_outgoingFilterName);
+      }
+      if (_ospfAreaName != null) {
+         OspfProcess ospfProc = _vrf.getOspfProcess();
+         if (ospfProc != null) {
+            _ospfArea = ospfProc.getAreas().get(_ospfAreaName);
+         }
+      }
    }
 
    @JsonProperty(ACCESS_VLAN_VAR)
@@ -592,19 +739,34 @@ public final class Interface extends ComparableStructure<String> {
       _bandwidth = bandwidth;
    }
 
+   @JsonIgnore
+   public void setBlacklisted(boolean blacklisted) {
+      _blacklisted = blacklisted;
+   }
+
    @JsonProperty(DESCRIPTION_VAR)
    public void setDescription(String description) {
       _description = description;
    }
 
-   @JsonProperty(INBOUND_FILTER_VAR)
+   @JsonIgnore
    public void setInboundFilter(IpAccessList inboundFilter) {
       _inboundFilter = inboundFilter;
    }
 
+   @JsonProperty(INBOUND_FILTER_VAR)
+   public void setInboundFilterName(String inboundFilterName) {
+      _inboundFilterName = inboundFilterName;
+   }
+
+   @JsonIgnore
+   public void setIncomingFilter(IpAccessList incomingFilter) {
+      _incomingFilter = incomingFilter;
+   }
+
    @JsonProperty(INCOMING_FILTER_VAR)
-   public void setIncomingFilter(IpAccessList filter) {
-      _incomingFilter = filter;
+   public void setIncomingFilterName(String incomingFilterName) {
+      _incomingFilterName = incomingFilterName;
    }
 
    @JsonProperty(ISIS_COST_VAR)
@@ -632,9 +794,14 @@ public final class Interface extends ComparableStructure<String> {
       _nativeVlan = vlan;
    }
 
-   @JsonProperty(OSPF_AREA_VAR)
+   @JsonIgnore
    public void setOspfArea(OspfArea ospfArea) {
       _ospfArea = ospfArea;
+   }
+
+   @JsonProperty(OSPF_AREA_VAR)
+   public void setOspfAreaName(Long ospfAreaName) {
+      _ospfAreaName = ospfAreaName;
    }
 
    @JsonProperty(OSPF_COST_VAR)
@@ -662,12 +829,17 @@ public final class Interface extends ComparableStructure<String> {
       _ospfPassive = passive;
    }
 
-   @JsonProperty(OUTGOING_FILTER_VAR)
-   public void setOutgoingFilter(IpAccessList filter) {
-      _outgoingFilter = filter;
+   @JsonIgnore
+   public void setOutgoingFilter(IpAccessList outgoingFilter) {
+      _outgoingFilter = outgoingFilter;
    }
 
-   @JsonProperty(OWNER_VAR)
+   @JsonProperty(OUTGOING_FILTER_VAR)
+   public void setOutgoingFilter(String outgoingFilterName) {
+      _outgoingFilterName = outgoingFilterName;
+   }
+
+   @JsonIgnore
    public void setOwner(Configuration owner) {
       _owner = owner;
    }
@@ -681,9 +853,14 @@ public final class Interface extends ComparableStructure<String> {
       _proxyArp = proxyArp;
    }
 
+   @JsonIgnore
+   public void setRoutingPolicy(RoutingPolicy routingPolicy) {
+      _routingPolicy = routingPolicy;
+   }
+
    @JsonProperty(ROUTING_POLICY_VAR)
-   public void setRoutingPolicy(String policy) {
-      _routingPolicy = policy;
+   public void setRoutingPolicy(String routingPolicyName) {
+      _routingPolicyName = routingPolicyName;
    }
 
    @JsonProperty(SWITCHPORT_MODE_VAR)
@@ -697,13 +874,32 @@ public final class Interface extends ComparableStructure<String> {
       _switchportTrunkEncapsulation = encapsulation;
    }
 
-   public void setVrf(String vrf) {
+   @JsonIgnore
+   public void setVrf(Vrf vrf) {
       _vrf = vrf;
+      if (vrf != null) {
+         _vrfName = vrf.getName();
+      }
+   }
+
+   @JsonProperty(VRF_VAR)
+   public void setVrfName(String vrfName) {
+      _vrfName = vrfName;
+   }
+
+   @JsonProperty(VRRP_GROUPS_VAR)
+   public void setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
+      _vrrpGroups = vrrpGroups;
+   }
+
+   @JsonIgnore
+   public void setZone(Zone zone) {
+      _zone = zone;
    }
 
    @JsonProperty(ZONE_VAR)
-   public void setZone(Zone zone) {
-      _zone = zone;
+   public void setZoneName(String zoneName) {
+      _zoneName = zoneName;
    }
 
    public JSONObject toJSONObject() throws JSONException {

@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchAsPath extends AbstractBooleanExpr {
+public class MatchAsPath extends BooleanExpr {
 
    /**
     *
@@ -15,11 +15,34 @@ public class MatchAsPath extends AbstractBooleanExpr {
    private AsPathSetExpr _expr;
 
    @JsonCreator
-   public MatchAsPath() {
+   private MatchAsPath() {
    }
 
    public MatchAsPath(AsPathSetExpr expr) {
       _expr = expr;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchAsPath other = (MatchAsPath) obj;
+      if (_expr == null) {
+         if (other._expr != null) {
+            return false;
+         }
+      }
+      else if (!_expr.equals(other._expr)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -32,6 +55,14 @@ public class MatchAsPath extends AbstractBooleanExpr {
 
    public AsPathSetExpr getExpr() {
       return _expr;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
+      return result;
    }
 
    public void setExpr(AsPathSetExpr expr) {

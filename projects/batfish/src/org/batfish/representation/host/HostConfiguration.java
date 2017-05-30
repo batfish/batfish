@@ -13,6 +13,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
@@ -20,9 +21,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -218,18 +219,28 @@ public class HostConfiguration extends VendorConfiguration {
          _w.unimplemented("Do not support complicated iptables rules yet");
       }
 
-      if (_staticRoutes.isEmpty()) {
-         for (String ifaceName : _c.getDefaultVrf().getInterfaces().keySet()) {
-            StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
-                  AbstractRoute.NO_TAG);
+      _c.getDefaultVrf().getStaticRoutes().addAll(_staticRoutes.stream()
+            .map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
+      Set<StaticRoute> staticRoutes = _c.getDefaultVrf().getStaticRoutes();
+      for (HostInterface iface : _hostInterfaces.values()) {
+         Ip gateway = iface.getGateway();
+         if (gateway != null) {
+            StaticRoute sr = new StaticRoute(Prefix.ZERO, gateway,
+                  iface.getName(), AbstractRoute.NO_TAG);
             sr.setAdministrativeCost(
                   HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
-            _c.getDefaultVrf().getStaticRoutes().add(sr);
+            staticRoutes.add(sr);
+            break;
          }
       }
-      else {
-         _c.getDefaultVrf().getStaticRoutes().addAll(_staticRoutes.stream()
-               .map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
+      if (_staticRoutes.isEmpty() && staticRoutes.isEmpty()
+            && !_c.getInterfaces().isEmpty()) {
+         String ifaceName = _c.getInterfaces().values().iterator().next()
+               .getName();
+         StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
+               AbstractRoute.NO_TAG);
+         sr.setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
+         _c.getDefaultVrf().getStaticRoutes().add(sr);
       }
       return _c;
    }

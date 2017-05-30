@@ -3,11 +3,11 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public class HeaderSpace implements Serializable {
 
@@ -41,6 +41,8 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _dstPorts;
 
+   private SortedSet<Protocol> _dstProtocols;
+
    private SortedSet<Integer> _ecns;
 
    private SortedSet<SubRange> _fragmentOffsets;
@@ -49,7 +51,7 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _icmpTypes;
 
-   private Set<IpProtocol> _ipProtocols;
+   private SortedSet<IpProtocol> _ipProtocols;
 
    private boolean _negate;
 
@@ -59,6 +61,8 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _notDstPorts;
 
+   private SortedSet<Protocol> _notDstProtocols;
+
    private SortedSet<Integer> _notEcns;
 
    private SortedSet<SubRange> _notFragmentOffsets;
@@ -67,11 +71,17 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _notIcmpTypes;
 
-   private Set<IpProtocol> _notIpProtocols;
+   private SortedSet<IpProtocol> _notIpProtocols;
+
+   private SortedSet<SubRange> _notPacketLengths;
 
    private SortedSet<IpWildcard> _notSrcIps;
 
    private SortedSet<SubRange> _notSrcPorts;
+
+   private SortedSet<Protocol> _notSrcProtocols;
+
+   private SortedSet<SubRange> _packetLengths;
 
    private SortedSet<IpWildcard> _srcIps;
 
@@ -79,9 +89,13 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _srcOrDstPorts;
 
+   private SortedSet<Protocol> _srcOrDstProtocols;
+
    private SortedSet<SubRange> _srcPorts;
 
-   private Set<State> _states;
+   private SortedSet<Protocol> _srcProtocols;
+
+   private SortedSet<State> _states;
 
    private List<TcpFlags> _tcpFlags;
 
@@ -89,27 +103,34 @@ public class HeaderSpace implements Serializable {
       _dscps = new TreeSet<>();
       _dstIps = new TreeSet<>();
       _dstPorts = new TreeSet<>();
+      _dstProtocols = new TreeSet<>();
       _ecns = new TreeSet<>();
       _fragmentOffsets = new TreeSet<>();
-      _ipProtocols = EnumSet.noneOf(IpProtocol.class);
+      _ipProtocols = new TreeSet<>();
+      _packetLengths = new TreeSet<>();
       _srcIps = new TreeSet<>();
       _srcOrDstIps = new TreeSet<>();
       _srcOrDstPorts = new TreeSet<>();
+      _srcOrDstProtocols = new TreeSet<>();
       _srcPorts = new TreeSet<>();
+      _srcProtocols = new TreeSet<>();
       _icmpTypes = new TreeSet<>();
       _icmpCodes = new TreeSet<>();
-      _states = EnumSet.noneOf(State.class);
+      _states = new TreeSet<>();
       _tcpFlags = new ArrayList<>();
       _notDscps = new TreeSet<>();
       _notDstIps = new TreeSet<>();
       _notDstPorts = new TreeSet<>();
+      _notDstProtocols = new TreeSet<>();
       _notEcns = new TreeSet<>();
       _notFragmentOffsets = new TreeSet<>();
       _notIcmpCodes = new TreeSet<>();
       _notIcmpTypes = new TreeSet<>();
-      _notIpProtocols = EnumSet.noneOf(IpProtocol.class);
+      _notIpProtocols = new TreeSet<>();
+      _notPacketLengths = new TreeSet<>();
       _notSrcIps = new TreeSet<>();
       _notSrcPorts = new TreeSet<>();
+      _notSrcProtocols = new TreeSet<>();
    }
 
    @Override
@@ -125,6 +146,9 @@ public class HeaderSpace implements Serializable {
          return false;
       }
       if (!_dstPorts.equals(other._dstPorts)) {
+         return false;
+      }
+      if (!_dstProtocols.equals(other._dstProtocols)) {
          return false;
       }
       if (!_ecns.equals(other._ecns)) {
@@ -154,6 +178,9 @@ public class HeaderSpace implements Serializable {
       if (!_notDstPorts.equals(other._notDstPorts)) {
          return false;
       }
+      if (!_notDstProtocols.equals(other._notDstProtocols)) {
+         return false;
+      }
       if (!_notEcns.equals(other._notEcns)) {
          return false;
       }
@@ -169,10 +196,19 @@ public class HeaderSpace implements Serializable {
       if (!_notIpProtocols.equals(other._notIpProtocols)) {
          return false;
       }
+      if (!_notPacketLengths.equals(other._notPacketLengths)) {
+         return false;
+      }
       if (!_notSrcIps.equals(other._notSrcIps)) {
          return false;
       }
       if (!_notSrcPorts.equals(other._notSrcPorts)) {
+         return false;
+      }
+      if (!_notSrcProtocols.equals(other._notSrcProtocols)) {
+         return false;
+      }
+      if (!_packetLengths.equals(other._packetLengths)) {
          return false;
       }
       if (!_srcIps.equals(other._srcIps)) {
@@ -184,7 +220,13 @@ public class HeaderSpace implements Serializable {
       if (!_srcOrDstPorts.equals(other._srcOrDstPorts)) {
          return false;
       }
+      if (!_srcOrDstProtocols.equals(other._srcOrDstProtocols)) {
+         return false;
+      }
       if (!_srcPorts.equals(other._srcPorts)) {
+         return false;
+      }
+      if (!_srcProtocols.equals(other._srcProtocols)) {
          return false;
       }
       if (!_states.equals(other._states)) {
@@ -196,102 +238,155 @@ public class HeaderSpace implements Serializable {
       return true;
    }
 
+   @JsonPropertyDescription("A set of acceptable DSCP values for a packet")
    public SortedSet<Integer> getDscps() {
       return _dscps;
    }
 
+   @JsonPropertyDescription("A space of acceptable destination IP addresses for a packet")
    public SortedSet<IpWildcard> getDstIps() {
       return _dstIps;
    }
 
+   @JsonPropertyDescription("A set of acceptable destination port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getDstPorts() {
       return _dstPorts;
    }
 
+   public SortedSet<Protocol> getDstProtocols() {
+      return _dstProtocols;
+   }
+
+   @JsonPropertyDescription("A set of acceptable ECN values for a packet")
    public SortedSet<Integer> getEcns() {
       return _ecns;
    }
 
+   @JsonPropertyDescription("A set of acceptable fragment offsets for a UDP packet")
    public SortedSet<SubRange> getFragmentOffsets() {
       return _fragmentOffsets;
    }
 
+   @JsonPropertyDescription("A set of acceptable ICMP code ranges for an ICMP packet")
    public SortedSet<SubRange> getIcmpCodes() {
       return _icmpCodes;
    }
 
+   @JsonPropertyDescription("A set of acceptable ICMP type ranges for an ICMP packet")
    public SortedSet<SubRange> getIcmpTypes() {
       return _icmpTypes;
    }
 
-   public Set<IpProtocol> getIpProtocols() {
+   @JsonPropertyDescription("A set of acceptable IP protocols for a packet")
+   public SortedSet<IpProtocol> getIpProtocols() {
       return _ipProtocols;
    }
 
+   @JsonPropertyDescription("Determines whether to match the complement of the stated criteria of this header space")
    public boolean getNegate() {
       return _negate;
    }
 
+   @JsonPropertyDescription("A set of unacceptable DSCP values for a packet")
    public SortedSet<Integer> getNotDscps() {
       return _notDscps;
    }
 
+   @JsonPropertyDescription("A space of unacceptable destination IP addresses for a packet")
    public SortedSet<IpWildcard> getNotDstIps() {
       return _notDstIps;
    }
 
+   @JsonPropertyDescription("A set of unacceptable destination port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getNotDstPorts() {
       return _notDstPorts;
    }
 
+   public SortedSet<Protocol> getNotDstProtocols() {
+      return _notDstProtocols;
+   }
+
+   @JsonPropertyDescription("A set of unacceptable ECN values for a packet")
    public SortedSet<Integer> getNotEcns() {
       return _notEcns;
    }
 
+   @JsonPropertyDescription("A set of unacceptable fragment offsets for a UDP packet")
    public SortedSet<SubRange> getNotFragmentOffsets() {
       return _notFragmentOffsets;
    }
 
+   @JsonPropertyDescription("A set of unacceptable ICMP code ranges for an ICMP packet")
    public SortedSet<SubRange> getNotIcmpCodes() {
       return _notIcmpCodes;
    }
 
+   @JsonPropertyDescription("A set of unacceptable ICMP type ranges for an ICMP packet")
    public SortedSet<SubRange> getNotIcmpTypes() {
       return _notIcmpTypes;
    }
 
-   public Set<IpProtocol> getNotIpProtocols() {
+   @JsonPropertyDescription("A set of unacceptable IP protocols for a packet")
+   public SortedSet<IpProtocol> getNotIpProtocols() {
       return _notIpProtocols;
    }
 
+   public SortedSet<SubRange> getNotPacketLengths() {
+      return _notPacketLengths;
+   }
+
+   @JsonPropertyDescription("A space of unacceptable source IP addresses for a packet")
    public SortedSet<IpWildcard> getNotSrcIps() {
       return _notSrcIps;
    }
 
+   @JsonPropertyDescription("A set of unacceptable source port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getNotSrcPorts() {
       return _notSrcPorts;
    }
 
+   public SortedSet<Protocol> getNotSrcProtocols() {
+      return _notSrcProtocols;
+   }
+
+   public SortedSet<SubRange> getPacketLengths() {
+      return _packetLengths;
+   }
+
+   @JsonPropertyDescription("A space of acceptable source IP addresses for a packet")
    public SortedSet<IpWildcard> getSrcIps() {
       return _srcIps;
    }
 
+   @JsonPropertyDescription("A space of IP addresses within which either the source or the destination IP of a packet must fall for acceptance")
    public SortedSet<IpWildcard> getSrcOrDstIps() {
       return _srcOrDstIps;
    }
 
+   @JsonPropertyDescription("A set of ranges within which either the source or the destination port of a TCP/UDP packet must fall for acceptance")
    public SortedSet<SubRange> getSrcOrDstPorts() {
       return _srcOrDstPorts;
    }
 
+   public SortedSet<Protocol> getSrcOrDstProtocols() {
+      return _srcOrDstProtocols;
+   }
+
+   @JsonPropertyDescription("A set of acceptable source port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getSrcPorts() {
       return _srcPorts;
    }
 
-   public Set<State> getStates() {
+   public SortedSet<Protocol> getSrcProtocols() {
+      return _srcProtocols;
+   }
+
+   @JsonPropertyDescription("A set of acceptable abstract firewall states for a packet to match")
+   public SortedSet<State> getStates() {
       return _states;
    }
 
+   @JsonPropertyDescription("A set of acceptable TCP flag bitmasks for a TCP packet to match")
    public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
    }
@@ -323,6 +418,39 @@ public class HeaderSpace implements Serializable {
       if (!_notDstPorts.isEmpty()
             && rangesContain(_notDstPorts, flow.getDstPort())) {
          return false;
+      }
+      if (!_dstProtocols.isEmpty()) {
+         boolean match = false;
+         for (Protocol dstProtocol : _dstProtocols) {
+            if (dstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
+               match = true;
+               Integer dstPort = dstProtocol.getPort();
+               if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
+                  match = false;
+               }
+               if (match) {
+                  break;
+               }
+            }
+         }
+         if (!match) {
+            return false;
+         }
+      }
+      if (!_notDstProtocols.isEmpty()) {
+         boolean match = false;
+         for (Protocol notDstProtocol : _notDstProtocols) {
+            if (notDstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
+               match = true;
+               Integer dstPort = notDstProtocol.getPort();
+               if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
+                  match = false;
+               }
+               if (match) {
+                  return false;
+               }
+            }
+         }
       }
       if (!_fragmentOffsets.isEmpty()
             && !rangesContain(_fragmentOffsets, flow.getFragmentOffset())) {
@@ -356,6 +484,14 @@ public class HeaderSpace implements Serializable {
             && _notIpProtocols.contains(flow.getIpProtocol())) {
          return false;
       }
+      if (!_packetLengths.isEmpty()
+            && !rangesContain(_packetLengths, flow.getPacketLength())) {
+         return false;
+      }
+      if (!_notPacketLengths.isEmpty()
+            && rangesContain(_notPacketLengths, flow.getPacketLength())) {
+         return false;
+      }
       if (!_srcOrDstIps.isEmpty()
             && !(wildcardsContain(_srcOrDstIps, flow.getSrcIp())
                   || wildcardsContain(_srcOrDstIps, flow.getDstIp()))) {
@@ -365,6 +501,25 @@ public class HeaderSpace implements Serializable {
             && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
                   || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
          return false;
+      }
+      if (!_srcOrDstProtocols.isEmpty()) {
+         boolean match = false;
+         for (Protocol protocol : _srcOrDstProtocols) {
+            if (protocol.getIpProtocol().equals(flow.getIpProtocol())) {
+               match = true;
+               Integer port = protocol.getPort();
+               if (port != null && !port.equals(flow.getDstPort())
+                     && !port.equals(flow.getSrcPort())) {
+                  match = false;
+               }
+               if (match) {
+                  break;
+               }
+            }
+         }
+         if (!match) {
+            return false;
+         }
       }
       if (!_srcIps.isEmpty() && !wildcardsContain(_srcIps, flow.getSrcIp())) {
          return false;
@@ -380,6 +535,39 @@ public class HeaderSpace implements Serializable {
       if (!_notSrcPorts.isEmpty()
             && rangesContain(_notSrcPorts, flow.getSrcPort())) {
          return false;
+      }
+      if (!_srcProtocols.isEmpty()) {
+         boolean match = false;
+         for (Protocol srcProtocol : _srcProtocols) {
+            if (srcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
+               match = true;
+               Integer srcPort = srcProtocol.getPort();
+               if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
+                  match = false;
+               }
+               if (match) {
+                  break;
+               }
+            }
+         }
+         if (!match) {
+            return false;
+         }
+      }
+      if (!_notSrcProtocols.isEmpty()) {
+         boolean match = false;
+         for (Protocol notSrcProtocol : _notSrcProtocols) {
+            if (notSrcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
+               match = true;
+               Integer srcPort = notSrcProtocol.getPort();
+               if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
+                  match = false;
+               }
+               if (match) {
+                  return false;
+               }
+            }
+         }
       }
       if (!_states.isEmpty() && !_states.contains(flow.getState())) {
          return false;
@@ -442,6 +630,10 @@ public class HeaderSpace implements Serializable {
       _dstPorts = dstPorts;
    }
 
+   public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
+      _dstProtocols = dstProtocols;
+   }
+
    public void setEcns(SortedSet<Integer> ecns) {
       _ecns = ecns;
    }
@@ -458,9 +650,8 @@ public class HeaderSpace implements Serializable {
       _icmpTypes = icmpTypes;
    }
 
-   public void setIpProtocols(Set<IpProtocol> ipProtocols) {
-      _ipProtocols.clear();
-      _ipProtocols.addAll(ipProtocols);
+   public void setIpProtocols(SortedSet<IpProtocol> ipProtocols) {
+      _ipProtocols = ipProtocols;
    }
 
    public void setNegate(boolean negate) {
@@ -479,6 +670,10 @@ public class HeaderSpace implements Serializable {
       _notDstPorts = notDstPorts;
    }
 
+   public void setNotDstProtocols(SortedSet<Protocol> notDstProtocols) {
+      _notDstProtocols = notDstProtocols;
+   }
+
    public void setNotEcns(SortedSet<Integer> notEcns) {
       _notEcns = notEcns;
    }
@@ -495,9 +690,12 @@ public class HeaderSpace implements Serializable {
       _notIcmpTypes = notIcmpTypes;
    }
 
-   public void setNotIpProtocols(Set<IpProtocol> notIpProtocols) {
-      _notIpProtocols.clear();
-      _notIpProtocols.addAll(notIpProtocols);
+   public void setNotIpProtocols(SortedSet<IpProtocol> notIpProtocols) {
+      _notIpProtocols = notIpProtocols;
+   }
+
+   public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
+      _notPacketLengths = notPacketLengths;
    }
 
    public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
@@ -506,6 +704,14 @@ public class HeaderSpace implements Serializable {
 
    public void setNotSrcPorts(SortedSet<SubRange> notSrcPorts) {
       _notSrcPorts = notSrcPorts;
+   }
+
+   public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
+      _notSrcProtocols = notSrcProtocols;
+   }
+
+   public void setPacketLengths(SortedSet<SubRange> packetLengths) {
+      _packetLengths = packetLengths;
    }
 
    public void setSrcIps(SortedSet<IpWildcard> srcIps) {
@@ -520,11 +726,19 @@ public class HeaderSpace implements Serializable {
       _srcOrDstPorts = srcOrDstPorts;
    }
 
+   public void setSrcOrDstProtocols(SortedSet<Protocol> srcOrDstProtocols) {
+      _srcOrDstProtocols = srcOrDstProtocols;
+   }
+
    public void setSrcPorts(SortedSet<SubRange> srcPorts) {
       _srcPorts = srcPorts;
    }
 
-   public void setStates(Set<State> states) {
+   public void setSrcProtocols(SortedSet<Protocol> srcProtocols) {
+      _srcProtocols = srcProtocols;
+   }
+
+   public void setStates(SortedSet<State> states) {
       _states = states;
    }
 
@@ -539,28 +753,37 @@ public class HeaderSpace implements Serializable {
             + ", NotDstIps:" + _notDstIps + ", SrcOrDstIps:" + _srcOrDstIps
             + ", SrcPorts:" + _srcPorts + ", NotSrcPorts:" + _notSrcPorts
             + ", DstPorts:" + _dstPorts + ", NotDstPorts:" + _notDstPorts
-            + ", SrcOrDstPorts:" + _srcOrDstPorts + ", Dscps: "
-            + _dscps.toString() + ", NotDscps: " + _notDscps.toString()
-            + ", Ecns: " + _ecns.toString() + ", NotEcns: "
-            + _notEcns.toString() + ", FragmentOffsets: "
+            + ", SrcOrDstPorts:" + _srcOrDstPorts + ", SrcProtocols:"
+            + _srcProtocols + ", NotSrcProtocols:" + _notSrcProtocols
+            + ", DstProtocols:" + _dstProtocols + ", NotDstProtocols:"
+            + _notDstProtocols + ", SrcOrDstProtocols:" + _srcOrDstProtocols
+            + ", Dscps: " + _dscps.toString() + ", NotDscps: "
+            + _notDscps.toString() + ", Ecns: " + _ecns.toString()
+            + ", NotEcns: " + _notEcns.toString() + ", FragmentOffsets: "
             + _fragmentOffsets.toString() + ", NotFragmentOffsets: "
             + _notFragmentOffsets.toString() + ", IcmpType:" + _icmpTypes
             + ", NotIcmpType:" + _notIcmpTypes + ", IcmpCode:" + _icmpCodes
-            + ", NotIcmpCode:" + _notIcmpCodes + ", States:"
-            + _states.toString() + ", TcpFlags:" + _tcpFlags.toString() + "]";
+            + ", NotIcmpCode:" + _notIcmpCodes + ", PacketLengths:"
+            + _packetLengths.toString() + ", NotPacketLengths:"
+            + _notPacketLengths + ", States:" + _states.toString()
+            + ", TcpFlags:" + _tcpFlags.toString() + "]";
    }
 
    public final boolean unrestricted() {
       boolean ret = _dscps.isEmpty() && _notDscps.isEmpty() && _dstIps.isEmpty()
             && _notDstIps.isEmpty() && _dstPorts.isEmpty()
-            && _notDstPorts.isEmpty() && _ecns.isEmpty() && _notEcns.isEmpty()
-            && _fragmentOffsets.isEmpty() && _notFragmentOffsets.isEmpty()
-            && _icmpCodes.isEmpty() && _notIcmpCodes.isEmpty()
-            && _icmpTypes.isEmpty() && _notIcmpTypes.isEmpty()
-            && _ipProtocols.isEmpty() && _notIpProtocols.isEmpty()
-            && _srcIps.isEmpty() && _notSrcIps.isEmpty()
-            && _srcOrDstIps.isEmpty() && _srcOrDstPorts.isEmpty()
+            && _notDstPorts.isEmpty() && _dstProtocols.isEmpty()
+            && _notDstProtocols.isEmpty() && _ecns.isEmpty()
+            && _notEcns.isEmpty() && _fragmentOffsets.isEmpty()
+            && _notFragmentOffsets.isEmpty() && _icmpCodes.isEmpty()
+            && _notIcmpCodes.isEmpty() && _icmpTypes.isEmpty()
+            && _notIcmpTypes.isEmpty() && _ipProtocols.isEmpty()
+            && _notIpProtocols.isEmpty() && _packetLengths.isEmpty()
+            && _notPacketLengths.isEmpty() && _srcIps.isEmpty()
+            && _notSrcIps.isEmpty() && _srcOrDstIps.isEmpty()
+            && _srcOrDstPorts.isEmpty() && _srcOrDstProtocols.isEmpty()
             && _srcPorts.isEmpty() && _notSrcPorts.isEmpty()
+            && _srcProtocols.isEmpty() && _notSrcProtocols.isEmpty()
             && _states.isEmpty() && _tcpFlags.isEmpty();
       return ret;
    }

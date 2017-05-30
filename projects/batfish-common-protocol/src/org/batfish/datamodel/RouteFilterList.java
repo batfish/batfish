@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +12,10 @@ import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("An access-list used to filter IPV4 routes")
 public class RouteFilterList extends ComparableStructure<String> {
 
    private static final String LINES_VAR = "lines";
@@ -43,6 +48,7 @@ public class RouteFilterList extends ComparableStructure<String> {
    }
 
    @JsonProperty(LINES_VAR)
+   @JsonPropertyDescription("The lines against which to check an IPV4 route")
    public List<RouteFilterLine> getLines() {
       return _lines;
    }
@@ -78,17 +84,20 @@ public class RouteFilterList extends ComparableStructure<String> {
    }
 
    public boolean permits(Prefix prefix) {
-      if (_permittedCache == null) {
-         _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-         _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-      }
-      else if (_deniedCache.contains(prefix)) {
+      if (_deniedCache.contains(prefix)) {
          return false;
       }
       else if (_permittedCache.contains(prefix)) {
          return true;
       }
       return newPermits(prefix);
+   }
+
+   private void readObject(ObjectInputStream in)
+         throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+      _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
    }
 
    @JsonProperty(LINES_VAR)

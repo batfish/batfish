@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.VrrpGroup;
 
 public class Interface extends ComparableStructure<String> {
 
@@ -47,11 +49,19 @@ public class Interface extends ComparableStructure<String> {
 
    private double _bandwidth;
 
+   private final int _definitionLine;
+
    private String _incomingFilter;
+
+   private int _incomingFilterLine;
+
+   private transient boolean _inherited;
 
    private final IsisInterfaceSettings _isisSettings;
 
    private IsoAddress _isoAddress;
+
+   private Integer _mtu;
 
    private int _nativeVlan;
 
@@ -67,6 +77,10 @@ public class Interface extends ComparableStructure<String> {
 
    private String _outgoingFilter;
 
+   private int _outgoingFilterLine;
+
+   private Interface _parent;
+
    private Prefix _preferredPrefix;
 
    private Prefix _primaryPrefix;
@@ -77,19 +91,22 @@ public class Interface extends ComparableStructure<String> {
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
-   private final Map<String, Interface> _units;
+   private final SortedMap<String, Interface> _units;
+
+   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
    @SuppressWarnings("unused")
    private Interface() {
-      this(null);
+      this(null, -1);
    }
 
-   public Interface(String name) {
+   public Interface(String name, int definitionLine) {
       super(name);
       _active = true;
       _allPrefixes = new LinkedHashSet<>();
       _allPrefixIps = new LinkedHashSet<>();
       _bandwidth = getDefaultBandwidthByName(name);
+      _definitionLine = definitionLine;
       _isisSettings = new IsisInterfaceSettings();
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
@@ -98,6 +115,7 @@ public class Interface extends ComparableStructure<String> {
       _ospfCost = null;
       _ospfPassiveAreas = new HashSet<>();
       _units = new TreeMap<>();
+      _vrrpGroups = new TreeMap<>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -128,8 +146,16 @@ public class Interface extends ComparableStructure<String> {
       return _bandwidth;
    }
 
+   public int getDefinitionLine() {
+      return _definitionLine;
+   }
+
    public String getIncomingFilter() {
       return _incomingFilter;
+   }
+
+   public int getIncomingFilterLine() {
+      return _incomingFilterLine;
    }
 
    public IsisInterfaceSettings getIsisSettings() {
@@ -138,6 +164,10 @@ public class Interface extends ComparableStructure<String> {
 
    public IsoAddress getIsoAddress() {
       return _isoAddress;
+   }
+
+   public Integer getMtu() {
+      return _mtu;
    }
 
    public int getNativeVlan() {
@@ -168,6 +198,14 @@ public class Interface extends ComparableStructure<String> {
       return _outgoingFilter;
    }
 
+   public int getOutgoingFilterLine() {
+      return _outgoingFilterLine;
+   }
+
+   public Interface getParent() {
+      return _parent;
+   }
+
    public Prefix getPreferredPrefix() {
       return _preferredPrefix;
    }
@@ -192,6 +230,22 @@ public class Interface extends ComparableStructure<String> {
       return _units;
    }
 
+   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
+      return _vrrpGroups;
+   }
+
+   public void inheritUnsetFields() {
+      if (_parent != null) {
+         if (!_inherited) {
+            _inherited = true;
+            _parent.inheritUnsetFields();
+            if (_mtu == null) {
+               _mtu = _parent._mtu;
+            }
+         }
+      }
+   }
+
    public void setAccessVlan(int vlan) {
       _accessVlan = vlan;
    }
@@ -208,8 +262,16 @@ public class Interface extends ComparableStructure<String> {
       _incomingFilter = accessListName;
    }
 
+   public void setIncomingFilterLine(int incomingFilterLine) {
+      _incomingFilterLine = incomingFilterLine;
+   }
+
    public void setIsoAddress(IsoAddress address) {
       _isoAddress = address;
+   }
+
+   public void setMtu(Integer mtu) {
+      _mtu = mtu;
    }
 
    public void setNativeVlan(int vlan) {
@@ -234,6 +296,14 @@ public class Interface extends ComparableStructure<String> {
 
    public void setOutgoingFilter(String accessListName) {
       _outgoingFilter = accessListName;
+   }
+
+   public void setOutgoingFilterLine(int outgoingFilterLine) {
+      _outgoingFilterLine = outgoingFilterLine;
+   }
+
+   public void setParent(Interface parent) {
+      _parent = parent;
    }
 
    public void setPreferredPrefix(Prefix prefix) {

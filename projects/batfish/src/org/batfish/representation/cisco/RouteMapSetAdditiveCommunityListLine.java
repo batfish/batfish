@@ -11,7 +11,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class RouteMapSetAdditiveCommunityListLine
       extends RouteMapSetLine {
@@ -23,8 +23,12 @@ public final class RouteMapSetAdditiveCommunityListLine
 
    private final Set<String> _communityLists;
 
-   public RouteMapSetAdditiveCommunityListLine(Set<String> communityLists) {
+   private final int _statementLine;
+
+   public RouteMapSetAdditiveCommunityListLine(Set<String> communityLists,
+         int statementLine) {
       _communityLists = communityLists;
+      _statementLine = statementLine;
    }
 
    @Override
@@ -56,8 +60,8 @@ public final class RouteMapSetAdditiveCommunityListLine
             }
          }
          else {
-            w.redFlag("Reference to undefined community list: \""
-                  + communityListName + "\"");
+            cc.undefined(CiscoStructureType.COMMUNITY_LIST, communityListName,
+                  CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY, _statementLine);
          }
       }
       statements.add(new AddCommunity(new InlineCommunitySet(communities)));

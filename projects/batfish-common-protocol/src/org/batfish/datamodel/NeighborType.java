@@ -12,7 +12,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum NeighborType {
    EBGP("ebgp"),
    IBGP("ibgp"),
-   LAN("lan");
+   LAN("lan"),
+   OSPF("ospf");
 
    private final static Map<String, NeighborType> _map = buildMap();
 

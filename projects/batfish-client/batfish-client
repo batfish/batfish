@@ -2,10 +2,9 @@
 BATFISH_CLIENT=${BASH_SOURCE[0]}
 BATFISH_CLIENT_PATH=$(dirname $BATFISH_CLIENT)
 BATFISH_CLIENT_JAR=$BATFISH_CLIENT_PATH/out/batfish-client.jar
-BATFISH_CLIENT_JAVA_ARGS=
 if batfish_cygwin; then
    BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
-   BATFISH_CLIENT_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
+   BATFISH_CLIENT_JAVA_ARGS="$BATFISH_CLIENT_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
 fi
 if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then

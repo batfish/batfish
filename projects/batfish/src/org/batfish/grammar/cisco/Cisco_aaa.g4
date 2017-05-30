@@ -14,7 +14,8 @@ aaa_accounting
       | aaa_accounting_connection
       | aaa_accounting_default
       | aaa_accounting_delay_start
-      | aaa_accounting_exec
+      | aaa_accounting_exec_line
+      | aaa_accounting_exec_stanza
       | aaa_accounting_nested
       | aaa_accounting_network
       | aaa_accounting_send
@@ -28,7 +29,7 @@ aaa_accounting_commands
    COMMANDS
    (
       ALL
-      | level = DEC
+      | levels = range
    )?
    (
       DEFAULT
@@ -79,13 +80,24 @@ aaa_accounting_delay_start
    )? NEWLINE
 ;
 
-aaa_accounting_exec
+aaa_accounting_exec_line
 :
    EXEC
    (
       DEFAULT
       | list = variable
    ) aaa_accounting_method NEWLINE
+;
+
+aaa_accounting_exec_stanza
+:
+   EXEC DEFAULT NEWLINE
+   (
+      (
+         ACTION_TYPE
+         | GROUP
+      ) ~NEWLINE* NEWLINE
+   )+
 ;
 
 aaa_accounting_method
@@ -209,10 +221,12 @@ aaa_authentication
       | aaa_authentication_http
       | aaa_authentication_include
       | aaa_authentication_login
+      | aaa_authentication_policy
       | aaa_authentication_ppp
       | aaa_authentication_serial
       | aaa_authentication_ssh
       | aaa_authentication_telnet
+      | aaa_authentication_username_prompt
    )
 ;
 
@@ -385,6 +399,16 @@ aaa_authentication_login_privilege_mode
    PRIVILEGE_MODE NEWLINE
 ;
 
+aaa_authentication_policy
+:
+   POLICY
+   (
+      LOCAL ALLOW_NOPASSWORD_REMOTE_LOGIN
+      | ON_FAILURE LOG
+      | ON_SUCCESS LOG
+   ) NEWLINE
+;
+
 aaa_authentication_ppp
 :
    PPP
@@ -409,6 +433,11 @@ aaa_authentication_telnet
    TELNET aaa_authentication_asa_console
 ;
 
+aaa_authentication_username_prompt
+:
+   USERNAME_PROMPT DOUBLE_QUOTE RAW_TEXT? DOUBLE_QUOTE NEWLINE
+;
+
 aaa_authorization
 :
    AUTHORIZATION
@@ -419,6 +448,7 @@ aaa_authorization
       | aaa_authorization_exec
       | aaa_authorization_include
       | aaa_authorization_network
+      | aaa_authorization_reverse_access
       | aaa_authorization_ssh_certificate
       | aaa_authorization_ssh_publickey
    )
@@ -490,6 +520,15 @@ aaa_authorization_method
 aaa_authorization_network
 :
    NETWORK
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_authorization_method
+;
+
+aaa_authorization_reverse_access
+:
+   REVERSE_ACCESS
    (
       DEFAULT
       | list = variable

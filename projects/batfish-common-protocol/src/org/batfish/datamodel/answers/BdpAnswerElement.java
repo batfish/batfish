@@ -1,12 +1,16 @@
 package org.batfish.datamodel.answers;
 
 import java.util.SortedMap;
+import java.util.TreeMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+public class BdpAnswerElement implements DataPlaneAnswerElement {
 
-public class BdpAnswerElement implements AnswerElement {
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
-   private SortedMap<Integer, Integer> _bgpIterations;
+   private SortedMap<Integer, Integer> _bgpRoutesByIteration;
 
    private int _dependentRoutesIterations;
 
@@ -14,8 +18,14 @@ public class BdpAnswerElement implements AnswerElement {
 
    private int _totalRoutes;
 
-   public SortedMap<Integer, Integer> getBgpIterations() {
-      return _bgpIterations;
+   private String _version;
+
+   public BdpAnswerElement() {
+      _bgpRoutesByIteration = new TreeMap<>();
+   }
+
+   public SortedMap<Integer, Integer> getBgpRoutesByIteration() {
+      return _bgpRoutesByIteration;
    }
 
    public int getDependentRoutesIterations() {
@@ -31,20 +41,27 @@ public class BdpAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String getVersion() {
+      return _version;
+   }
+
+   @Override
+   public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
       sb.append("Computation summary:\n");
       sb.append("   OSPF-internal iterations: " + _dependentRoutesIterations
             + "\n");
       sb.append("   Dependent-routes iterations: " + _dependentRoutesIterations
             + "\n");
-      sb.append("   BGP iterations: " + _dependentRoutesIterations + "\n");
+      sb.append("   BGP routes in each iteration: "
+            + _bgpRoutesByIteration.values().toString() + "\n");
       sb.append("   Total routes: " + _totalRoutes + "\n");
       return sb.toString();
    }
 
-   public void setBgpIterations(SortedMap<Integer, Integer> bgpIterations) {
-      _bgpIterations = bgpIterations;
+   public void setBgpRoutesByIteration(
+         SortedMap<Integer, Integer> bgpRoutesByIteration) {
+      _bgpRoutesByIteration = bgpRoutesByIteration;
    }
 
    public void setDependentRoutesIterations(int dependentRoutesIterations) {
@@ -57,6 +74,10 @@ public class BdpAnswerElement implements AnswerElement {
 
    public void setTotalRoutes(int totalRoutes) {
       _totalRoutes = totalRoutes;
+   }
+
+   public void setVersion(String version) {
+      _version = version;
    }
 
 }

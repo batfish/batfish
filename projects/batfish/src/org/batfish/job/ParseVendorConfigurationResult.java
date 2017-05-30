@@ -7,9 +7,10 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ParseTreeSentences;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
+import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationResult extends
       BatfishJobResult<Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
@@ -17,6 +18,8 @@ public class ParseVendorConfigurationResult extends
    private final Path _file;
 
    private ParseTreeSentences _parseTree;
+
+   private final ParseStatus _status;
 
    private VendorConfiguration _vc;
 
@@ -26,6 +29,7 @@ public class ParseVendorConfigurationResult extends
          BatfishLoggerHistory history, Path file, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _file = file;
+      _status = ParseStatus.FAILED;
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
@@ -36,12 +40,16 @@ public class ParseVendorConfigurationResult extends
       _parseTree = parseTree;
       _vc = vc;
       _warnings = warnings;
+      // parse status is determined from other fields
+      _status = null;
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, Path file, Warnings warnings) {
+         BatfishLoggerHistory history, Path file, Warnings warnings,
+         ParseStatus status) {
       super(elapsedTime, history);
       _file = file;
+      _status = status;
       _warnings = warnings;
    }
 
@@ -78,7 +86,20 @@ public class ParseVendorConfigurationResult extends
             if (!_parseTree.isEmpty()) {
                answerElement.getParseTrees().put(hostname, _parseTree);
             }
+            if (_vc.getUnrecognized()) {
+               answerElement.getParseStatus().put(hostname,
+                     ParseStatus.PARTIALLY_UNRECOGNIZED);
+            }
+            else {
+               answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
+               answerElement.getFileMap().put(hostname,
+                     _file.getFileName().toString());
+            }
          }
+      }
+      else {
+         String filename = _file.getFileName().toString();
+         answerElement.getParseStatus().put(filename, _status);
       }
    }
 

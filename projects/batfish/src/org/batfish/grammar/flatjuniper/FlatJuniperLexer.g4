@@ -47,6 +47,11 @@ ACCEPT_DATA
    'accept-data'
 ;
 
+ACCEPTED_PREFIX_LIMIT
+:
+   'accepted-prefix-limit'
+;
+
 ACCESS
 :
    'access'
@@ -257,6 +262,11 @@ APPLY_PATH
    'apply-path'
 ;
 
+ARCHIVE
+:
+   'archive'
+;
+
 AREA
 :
    'area'
@@ -342,6 +352,11 @@ AUTHENTICATION_TYPE
    'authentication-type'
 ;
 
+AUTHORIZATION
+:
+   'authorization'
+;
+
 AUTO_EXPORT
 :
    'auto-export'
@@ -397,6 +412,11 @@ BMP
    'bmp'
 ;
 
+BOOT_SERVER
+:
+   'boot-server'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -415,6 +435,16 @@ BRIDGE
 BRIDGE_DOMAINS
 :
    'bridge-domains'
+;
+
+BROADCAST_CLIENT
+:
+   'broadcast-client'
+;
+
+CATEGORIES
+:
+   'categories'
 ;
 
 CCC
@@ -445,6 +475,16 @@ CLASS_OF_SERVICE
 CLEAR
 :
    'clear'
+;
+
+CLIENT_LIST_NAME
+:
+   'client-list-name'
+;
+
+CLIENTS
+:
+   'clients'
 ;
 
 CLUSTER
@@ -486,6 +526,11 @@ COMPATIBLE
    'compatible'
 ;
 
+COMPRESS_CONFIGURATION_FILES
+:
+   'compress-configuration-files'
+;
+
 CONDITION
 :
    'condition'
@@ -499,6 +544,16 @@ CONNECTIONS
 CONNECTIONS_LIMIT
 :
    'connections-limit'
+;
+
+CONSOLE
+:
+   'console'
+;
+
+CONTACT
+:
+   'contact'
 ;
 
 COS_NEXT_HOP_MAP
@@ -524,6 +579,11 @@ CVSPSERVER
 CWR
 :
    'cwr'
+;
+
+DAEMON
+:
+   'daemon'
 ;
 
 DAMPING
@@ -836,6 +896,11 @@ EXP
    'exp'
 ;
 
+EXPLICIT_PRIORITY
+:
+   'explicit-priority'
+;
+
 EXPORT
 :
    'export'
@@ -866,6 +931,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+EXTERNAL_ROUTER_ID
+:
+   'external-router-id'
+;
+
 EXTENSIONS
 :
    'extensions'
@@ -879,6 +949,11 @@ FABRIC
 FABRIC_OPTIONS
 :
    'fabric-options'
+;
+
+FACILITY_OVERRIDE
+:
+   'facility-override'
 ;
 
 FAIL_FILTER
@@ -939,6 +1014,11 @@ FLOW_CONTROL
 FORCE_UP
 :
    'force-up'
+;
+
+FOREVER
+:
+   'forever'
 ;
 
 FORWARDING
@@ -1206,6 +1286,11 @@ IDENT_RESET
    'ident-reset'
 ;
 
+IDLE_TIMEOUT
+:
+   'idle-timeout'
+;
+
 IGMP
 :
    'igmp'
@@ -1374,6 +1459,11 @@ INSTANCE
 INSTANCE_TYPE
 :
    'instance-type'
+;
+
+INTERACTIVE_COMMANDS
+:
+   'interactive-commands'
 ;
 
 INTERCONNECT_DEVICE
@@ -2461,6 +2551,11 @@ KERBEROS_SEC
    'kerberos-sec'
 ;
 
+KERNEL
+:
+   'kernel'
+;
+
 KEYS
 :
    'keys'
@@ -2641,6 +2736,11 @@ LOG
    'log'
 ;
 
+LOG_PREFIX
+:
+   'log-prefix'
+;
+
 LOG_UPDOWN
 :
    'log-updown'
@@ -2659,6 +2759,11 @@ LOGIN
 LONGER
 :
    'longer'
+;
+
+LOOPBACK
+:
+   'loopback'
 ;
 
 LOOPS
@@ -2749,6 +2854,11 @@ MAX_CONFIGURATION_ROLLBACKS
 MAX_SESSION_NUMBER
 :
    'max-session-number'
+;
+
+MAXIMUM
+:
+   'maximum'
 ;
 
 MAXIMUM_LABELS
@@ -3121,6 +3231,11 @@ NO_RETAIN
    'no-retain'
 ;
 
+NO_RFC_1583
+:
+   'no-rfc-1583'
+;
+
 NO_NEIGHBOR_LEARN
 :
    'no-neighbor-learn'
@@ -3226,9 +3341,24 @@ OVERLOAD
    'overload'
 ;
 
+OVERRIDE_METRIC
+:
+   'override-metric'
+;
+
 P2P
 :
    'p2p'
+;
+
+PACKET_LENGTH
+:
+   'packet-length'
+;
+
+PACKET_LENGTH_EXCEPT
+:
+   'packet-length-except'
 ;
 
 PACKET_TOO_BIG
@@ -3286,7 +3416,7 @@ PER_PACKET
    'per-packet'
 ;
 
-PER__UNIT_SCHEDULER
+PER_UNIT_SCHEDULER
 :
    'per-unit-scheduler'
 ;
@@ -3451,6 +3581,11 @@ PREEMPT
    'preempt'
 ;
 
+PREFER
+:
+   'prefer'
+;
+
 PREFERENCE
 :
    'preference'
@@ -3541,6 +3676,11 @@ PROPOSALS
    'proposals'
 ;
 
+PROTECT
+:
+   'protect'
+;
+
 PROTOCOL
 :
    'protocol'
@@ -3614,6 +3754,16 @@ RAS
 REALAUDIO
 :
    'realaudio'
+;
+
+READ_ONLY
+:
+   'read-only'
+;
+
+READ_WRITE
+:
+   'read-write'
 ;
 
 READVERTISE
@@ -3896,6 +4046,11 @@ SCTP
    'sctp'
 ;
 
+SECRET
+:
+   'secret'
+;
+
 SECURITY
 :
    'security'
@@ -3904,6 +4059,11 @@ SECURITY
 SECURITY_ZONE
 :
    'security-zone'
+;
+
+SERVER
+:
+   'server'
 ;
 
 SERVICE
@@ -3969,6 +4129,11 @@ SHORTCUTS
 SIMPLE
 :
    'simple'
+;
+
+SINGLE_CONNECTION
+:
+   'single-connection'
 ;
 
 SIP
@@ -4211,6 +4376,11 @@ TARGETED_BROADCAST
    'targeted-broadcast'
 ;
 
+TARGETS
+:
+   'targets'
+;
+
 TCP
 :
    'tcp'
@@ -4246,6 +4416,11 @@ TE_METRIC
    'te-metric'
 ;
 
+TEARDOWN
+:
+   'teardown'
+;
+
 TELNET
 :
    'telnet'
@@ -4276,6 +4451,11 @@ THROUGH
    'through'
 ;
 
+TIME_FORMAT
+:
+   'time-format'
+;
+
 TIME_EXCEEDED
 :
    'time-exceeded'
@@ -4289,6 +4469,11 @@ TIME_ZONE
 TIMED
 :
    'timed'
+;
+
+TIMEOUT
+:
+   'timeout'
 ;
 
 TO
@@ -4319,6 +4504,21 @@ TRACK
 TRAFFIC_ENGINEERING
 :
    'traffic-engineering'
+;
+
+TRAP_DESTINATIONS
+:
+   'trap-destinations'
+;
+
+TRAP_GROUP
+:
+   'trap-group'
+;
+
+TRAP_OPTIONS
+:
+   'trap-options'
 ;
 
 TRAPS
@@ -4419,6 +4619,11 @@ V1_ONLY
 VERSION
 :
    'version' -> pushMode ( M_Version )
+;
+
+VIEW
+:
+   'view'
 ;
 
 VIRTUAL_ADDRESS
@@ -4679,6 +4884,7 @@ DOUBLE_QUOTED_STRING
    '"' ~'"'* '"'
 ;
 
+/*
 FLOAT
 :
    F_PositiveDigit* F_Digit '.'
@@ -4687,7 +4893,7 @@ FLOAT
       | F_Digit* F_PositiveDigit
    )
 ;
-
+*/
 FORWARD_SLASH
 :
    '/'

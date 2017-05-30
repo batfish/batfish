@@ -6,7 +6,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicyBooleanAsPathNeighborIs extends RoutePolicyBoolean {
 

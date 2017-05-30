@@ -3,7 +3,9 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchColor extends AbstractBooleanExpr {
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+public class MatchColor extends BooleanExpr {
 
    /**
     *
@@ -12,8 +14,30 @@ public class MatchColor extends AbstractBooleanExpr {
 
    private int _color;
 
+   @JsonCreator
+   private MatchColor() {
+   }
+
    public MatchColor(int color) {
       _color = color;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchColor other = (MatchColor) obj;
+      if (_color != other._color) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -25,6 +49,14 @@ public class MatchColor extends AbstractBooleanExpr {
 
    public int getColor() {
       return _color;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _color;
+      return result;
    }
 
    public void setColor(int color) {

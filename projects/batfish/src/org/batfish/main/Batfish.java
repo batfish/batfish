@@ -2,12 +2,14 @@ package org.batfish.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,12 +21,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -37,12 +41,18 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.bdp.BdpDataPlanePlugin;
+import org.batfish.bgp.JsonExternalBgpAdvertisementPlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.Directory;
 import org.batfish.common.Pair;
+import org.batfish.common.Version;
 import org.batfish.common.Warning;
+import org.batfish.common.Warnings;
+import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
@@ -67,28 +77,37 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
+import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.IbgpTopology;
@@ -102,9 +121,14 @@ import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
+import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Question.InstanceData;
+import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BgpTableFormat;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.assertion.AssertionCombinedParser;
 import org.batfish.grammar.assertion.AssertionExtractor;
@@ -125,14 +149,18 @@ import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.ConvertConfigurationResult;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationResult;
+import org.batfish.job.ParseEnvironmentBgpTableJob;
+import org.batfish.job.ParseEnvironmentBgpTableResult;
+import org.batfish.job.ParseEnvironmentRoutingTableJob;
+import org.batfish.job.ParseEnvironmentRoutingTableResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.main.Settings.TestrigSettings;
-import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
@@ -153,6 +181,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -196,7 +226,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .resolve(envName);
             envSettings.setEnvironmentBasePath(envPath);
             envSettings.setDataPlanePath(
-                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR));
+                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
+            envSettings.setDataPlaneAnswerPath(
+                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
+            envSettings.setParseEnvironmentBgpTablesAnswerPath(envPath
+                  .resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
+            envSettings.setParseEnvironmentRoutingTablesAnswerPath(envPath
+                  .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
+            envSettings.setSerializeEnvironmentBgpTablesPath(envPath
+                  .resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
+            envSettings
+                  .setSerializeEnvironmentRoutingTablesPath(envPath.resolve(
+                        BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
             Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
             envSettings.setEnvPath(envDirPath);
             envSettings.setNodeBlacklistPath(
@@ -211,6 +252,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
             envSettings.setExternalBgpAnnouncementsPath(envDirPath
                   .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+            envSettings.setEnvironmentBgpTablesPath(
+                  envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+            envSettings.setEnvironmentRoutingTablesPath(envDirPath
+                  .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
             envSettings.setPrecomputedRoutesPath(
                   envPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
             envSettings.setDeltaCompiledConfigurationsDir(envPath
@@ -251,14 +296,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public static void initQuestionSettings(Settings settings) {
       String questionName = settings.getQuestionName();
-      Path testrigDir = settings.getTestrigSettings().getBasePath();
+      Path testrigDir = settings.getActiveTestrigSettings().getBasePath();
       if (questionName != null) {
          Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR)
                .resolve(questionName);
          settings.setQuestionPath(
                questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
-         settings.setQuestionParametersPath(
-               questionPath.resolve(BfConsts.RELPATH_QUESTION_PARAM_FILE));
       }
    }
 
@@ -268,7 +311,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       String questionName = settings.getQuestionName();
       Path containerDir = settings.getContainerDir();
       if (testrig != null) {
-         applyBaseDir(settings.getTestrigSettings(), containerDir, testrig,
+         applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig,
                envName, questionName);
          String deltaTestrig = settings.getDeltaTestrig();
          String deltaEnvName = settings.getDeltaEnvironmentName();
@@ -291,7 +334,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .setActiveTestrigSettings(settings.getDeltaTestrigSettings());
          }
          else {
-            settings.setActiveTestrigSettings(settings.getTestrigSettings());
+            settings
+                  .setActiveTestrigSettings(settings.getBaseTestrigSettings());
          }
          initQuestionSettings(settings);
       }
@@ -352,15 +396,25 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private TestrigSettings _baseTestrigSettings;
 
-   private final Map<TestrigSettings, Map<String, Configuration>> _cachedConfigurations;
+   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
+
+   private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+
+   private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
+
+   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> _cachedEnvironmentBgpTables;
+
+   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> _cachedEnvironmentRoutingTables;
 
    private DataPlanePlugin _dataPlanePlugin;
 
-   private final Map<TestrigSettings, DataPlane> _dataPlanes;
-
    private TestrigSettings _deltaTestrigSettings;
 
+   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
+
    private BatfishLogger _logger;
+
+   private SortedMap<String, String> _questionMap;
 
    private Settings _settings;
 
@@ -374,18 +428,52 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private long _timerCount;
 
-   public Batfish(Settings settings) {
+   public Batfish(Settings settings,
+         Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+         Map<TestrigSettings, DataPlane> cachedDataPlanes,
+         Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
+         Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
-      _cachedConfigurations = new HashMap<>();
-      _dataPlanes = new HashMap<>();
+      _bgpTablePlugins = new TreeMap<>();
+      _cachedConfigurations = cachedConfigurations;
+      _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
+      _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
+      _cachedDataPlanes = cachedDataPlanes;
+      _externalBgpAdvertisementPlugins = new TreeSet<>();
       _testrigSettings = settings.getActiveTestrigSettings();
-      _baseTestrigSettings = settings.getTestrigSettings();
+      _baseTestrigSettings = settings.getBaseTestrigSettings();
       _deltaTestrigSettings = settings.getDeltaTestrigSettings();
       _logger = _settings.getLogger();
       _terminatedWithException = false;
       _answererCreators = new HashMap<>();
       _testrigSettingsStack = new ArrayList<>();
+      _questionMap = new TreeMap<>();
+   }
+
+   private Answer analyze() {
+      Answer answer = new Answer();
+      String analysisName = _settings.getAnalysisName();
+      Path analysisQuestionsDir = _settings.getContainerDir()
+            .resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName,
+                  BfConsts.RELPATH_QUESTIONS_DIR).toString());
+      if (!Files.exists(analysisQuestionsDir)) {
+         throw new BatfishException("Analysis questions dir does not exist: '"
+               + analysisQuestionsDir.toString() + "'");
+      }
+      RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
+      CommonUtil.list(analysisQuestionsDir).forEach(analysisQuestionDir -> {
+         String questionName = analysisQuestionDir.getFileName().toString();
+         Path analysisQuestionPath = analysisQuestionDir
+               .resolve(BfConsts.RELPATH_QUESTION_FILE);
+         _settings.setQuestionPath(analysisQuestionPath);
+         Answer currentAnswer = answer();
+         initAnalysisQuestionPath(analysisName, questionName);
+         outputAnswer(currentAnswer);
+         ae.getAnswers().put(questionName, currentAnswer);
+      });
+      answer.addAnswerElement(ae);
+      return answer;
    }
 
    private void anonymizeConfigurations() {
@@ -395,6 +483,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private Answer answer() {
       Question question = parseQuestion();
+      if (_settings.getDifferential()) {
+         question.setDifferential(true);
+      }
       boolean dp = question.getDataPlane();
       boolean diff = question.getDifferential();
       boolean diffActive = _settings.getDiffActive() && !diff;
@@ -637,6 +728,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private void checkBaseDirExists() {
       Path baseDir = _testrigSettings.getBasePath();
+      if (baseDir == null) {
+         throw new BatfishException("Test rig directory not set");
+      }
       if (!Files.exists(baseDir)) {
          throw new CleanBatfishException("Test rig does not exist: \""
                + baseDir.getFileName().toString() + "\"");
@@ -675,17 +769,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   @Override
-   public void checkDataPlaneQuestionDependencies() {
-      checkDataPlaneQuestionDependencies(_testrigSettings);
-   }
-
-   public void checkDataPlaneQuestionDependencies(
-         TestrigSettings testrigSettings) {
-      checkConfigurations(testrigSettings);
-      checkDataPlane(testrigSettings);
-   }
-
    public void checkDiffEnvironmentExists() {
       checkDiffEnvironmentSpecified();
       checkEnvironmentExists(_deltaTestrigSettings);
@@ -719,7 +802,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private void checkQuestionsDirExists() {
       checkBaseDirExists();
-      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+      Path questionsDir = _testrigSettings.getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       if (!Files.exists(questionsDir)) {
          throw new CleanBatfishException("questions dir does not exist: \""
@@ -760,7 +843,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "Composite NOD");
       executor.executeJobs(jobs, flows, answerElement);
       printElapsedTime();
       return flows;
@@ -769,6 +852,22 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private Answer computeDataPlane(boolean differentialContext) {
       checkEnvironmentExists();
       return _dataPlanePlugin.computeDataPlane(differentialContext);
+   }
+
+   private void computeEnvironmentBgpTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      Path outputPath = envSettings.getSerializeEnvironmentBgpTablesPath();
+      Path inputPath = envSettings.getEnvironmentBgpTablesPath();
+      serializeEnvironmentBgpTables(inputPath, outputPath);
+   }
+
+   private void computeEnvironmentRoutingTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      Path outputPath = envSettings.getSerializeEnvironmentRoutingTablesPath();
+      Path inputPath = envSettings.getEnvironmentRoutingTablesPath();
+      serializeEnvironmentRoutingTables(inputPath, outputPath);
    }
 
    @Override
@@ -827,12 +926,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public Map<Ip, Set<String>> computeIpOwners(
-         Map<String, Configuration> configurations) {
+         Map<String, Configuration> configurations, boolean excludeInactive) {
       // TODO: confirm VRFs are handled correctly
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
+      Map<Pair<Prefix, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
       configurations.forEach((hostname, c) -> {
          for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive()) {
+            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
+               // collect vrrp info
+               i.getVrrpGroups().forEach((groupNum, vrrpGroup) -> {
+                  Prefix prefix = vrrpGroup.getVirtualAddress();
+                  Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
+                  Set<Interface> candidates = vrrpGroups.get(key);
+                  if (candidates == null) {
+                     candidates = Collections.newSetFromMap(
+                           new IdentityHashMap<Interface, Boolean>());
+                     vrrpGroups.put(key, candidates);
+                  }
+                  candidates.add(i);
+               });
+               // collect prefixes
                i.getAllPrefixes().stream().map(p -> p.getAddress())
                      .forEach(ip -> {
                         Set<String> owners = ipOwners.get(ip);
@@ -845,6 +958,27 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             }
          }
       });
+      vrrpGroups.forEach((p, candidates) -> {
+         int groupNum = p.getSecond();
+         Prefix prefix = p.getFirst();
+         Ip ip = prefix.getAddress();
+         int lowestPriority = Integer.MAX_VALUE;
+         String bestCandidate = null;
+         for (Interface candidate : candidates) {
+            VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
+            int currentPriority = group.getPriority();
+            if (currentPriority < lowestPriority) {
+               currentPriority = lowestPriority;
+               bestCandidate = candidate.getOwner().getHostname();
+            }
+         }
+         Set<String> owners = ipOwners.get(ip);
+         if (owners == null) {
+            owners = new HashSet<>();
+            ipOwners.put(ip, owners);
+         }
+         owners.add(bestCandidate);
+      });
       return ipOwners;
    }
 
@@ -853,7 +987,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "NOD First-UNSAT");
       executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
       printElapsedTime();
    }
@@ -863,7 +997,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "NOD");
       // todo: do something with nod answer element
       executor.executeJobs(jobs, flows, new NodAnswerElement());
       printElapsedTime();
@@ -875,7 +1009,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "NOD SAT");
       executor.executeJobs(jobs, output, new NodSatAnswerElement());
       printElapsedTime();
    }
@@ -951,7 +1085,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, _settings.getHaltOnConvertError(),
+            "Convert configurations to vendor-independent format");
       executor.executeJobs(jobs, configurations, answerElement);
       printElapsedTime();
       return configurations;
@@ -960,7 +1095,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public EnvironmentCreationAnswerElement createEnvironment(String newEnvName,
          NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
-         boolean dp) {
+         Topology edgeBlacklist, boolean dp) {
       EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -972,11 +1107,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
-      applyBaseDir(_settings.getTestrigSettings(), _settings.getContainerDir(),
-            _settings.getTestrig(), newEnvName, _settings.getQuestionName());
+      applyBaseDir(_settings.getBaseTestrigSettings(),
+            _settings.getContainerDir(), _settings.getTestrig(), newEnvName,
+            _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
+      if (Files.exists(newEnvPath)) {
+         throw new BatfishException("Cannot create new environment '"
+               + newEnvName + "': environment with same name already exists");
+      }
       newEnvPath.toFile().mkdirs();
       try {
          FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
@@ -1008,6 +1148,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                interfaceBlacklistStr);
       }
 
+      // write edge blacklist from question
+      if (edgeBlacklist != null) {
+         SortedSet<Edge> edges = edgeBlacklist.sortedEdges();
+         if (!edges.isEmpty()) {
+            StringBuilder edgeBlacklistSb = new StringBuilder();
+            edgeBlacklistSb.append(BatfishTopologyCombinedParser.HEADER + "\n");
+            for (Edge edge : edges) {
+               String node1 = edge.getNode1();
+               String node2 = edge.getNode2();
+               String int1 = edge.getInt1();
+               String int2 = edge.getInt2();
+               edgeBlacklistSb.append("\"" + node1 + "\" : \"" + int1 + ", \""
+                     + node2 + "\" : \"" + int2 + "\"\n");
+            }
+            String edgeBlacklistStr = edgeBlacklistSb.toString();
+            CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(),
+                  edgeBlacklistStr);
+         }
+      }
+
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
          computeDataPlane(true);
       }
@@ -1016,11 +1176,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
       checkConfigurations();
-      Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlanePath();
+      Path dpPath = testrigSettings.getEnvironmentSettings()
+            .getDataPlaneAnswerPath();
       return Files.exists(dpPath);
    }
 
-   public Map<String, Configuration> deserializeConfigurations(
+   public SortedMap<String, Configuration> deserializeConfigurations(
          Path serializedConfigPath) {
       _logger.info(
             "\n*** DESERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
@@ -1044,10 +1205,85 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      + serializedConfigPath.toString() + "'",
                e);
       }
-      Map<String, Configuration> configurations = deserializeObjects(
+      SortedMap<String, Configuration> configurations = deserializeObjects(
             namesByPath, Configuration.class);
       printElapsedTime();
       return configurations;
+   }
+
+   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
+         Path serializeEnvironmentBgpTablesPath) {
+      _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
+      resetTimer();
+      Map<Path, String> namesByPath = new TreeMap<>();
+      try (DirectoryStream<Path> serializedBgpTables = Files
+            .newDirectoryStream(serializeEnvironmentBgpTablesPath)) {
+         for (Path serializedBgpTable : serializedBgpTables) {
+            String name = serializedBgpTable.getFileName().toString();
+            namesByPath.put(serializedBgpTable, name);
+         }
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Error reading serialized BGP tables directory", e);
+      }
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = deserializeObjects(
+            namesByPath, BgpAdvertisementsByVrf.class);
+      printElapsedTime();
+      return bgpTables;
+   }
+
+   private SortedMap<String, RoutesByVrf> deserializeEnvironmentRoutingTables(
+         Path serializeEnvironmentRoutingTablesPath) {
+      _logger.info("\n*** DESERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
+      resetTimer();
+      Map<Path, String> namesByPath = new TreeMap<>();
+      try (DirectoryStream<Path> serializedRoutingTables = Files
+            .newDirectoryStream(serializeEnvironmentRoutingTablesPath)) {
+         for (Path serializedRoutingTable : serializedRoutingTables) {
+            String name = serializedRoutingTable.getFileName().toString();
+            namesByPath.put(serializedRoutingTable, name);
+         }
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Error reading serialized routing tables directory", e);
+      }
+      SortedMap<String, RoutesByVrf> routingTables = deserializeObjects(
+            namesByPath, RoutesByVrf.class);
+      printElapsedTime();
+      return routingTables;
+   }
+
+   public <S extends Serializable> SortedMap<String, S> deserializeObjects(
+         Map<Path, String> namesByPath, Class<S> outputClass) {
+      String outputClassName = outputClass.getName();
+      BatfishLogger logger = getLogger();
+      Map<String, byte[]> dataByName = new TreeMap<>();
+      AtomicInteger readCompleted = newBatch(
+            "Reading and unpacking files containg '" + outputClassName
+                  + "' instances",
+            namesByPath.size());
+      namesByPath.forEach((inputPath, name) -> {
+         logger.debug("Reading and gunzipping: " + outputClassName + " '" + name
+               + "' from '" + inputPath.toString() + "'");
+         byte[] data = fromGzipFile(inputPath);
+         logger.debug(" ...OK\n");
+         dataByName.put(name, data);
+         readCompleted.incrementAndGet();
+      });
+      Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
+      AtomicInteger deserializeCompleted = newBatch(
+            "Deserializing '" + outputClassName + "' instances",
+            dataByName.size());
+      dataByName.keySet().parallelStream().forEach(name -> {
+         byte[] data = dataByName.get(name);
+         S object = deserializeObject(data, outputClass);
+         unsortedOutput.put(name, object);
+         deserializeCompleted.incrementAndGet();
+      });
+      SortedMap<String, S> output = new TreeMap<>(unsortedOutput);
+      return output;
    }
 
    public Map<String, GenericConfigObject> deserializeVendorConfigurations(
@@ -1082,6 +1318,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                Interface bindInterface = vpn.getBindInterface();
                if (bindInterface != null) {
                   bindInterface.setActive(false);
+                  bindInterface.setBlacklisted(true);
                   String bindInterfaceName = bindInterface.getName();
                   _logger.warnf(
                         "WARNING: Disabling unusable vpn interface because we cannot determine remote endpoint: \"%s:%s\"\n",
@@ -1090,6 +1327,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             }
          }
       }
+   }
+
+   private boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
+      checkConfigurations();
+      Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
+      return Files.exists(answerPath);
    }
 
    private boolean environmentExists(TestrigSettings testrigSettings) {
@@ -1101,6 +1344,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      + testrigSettings.getName());
       }
       return Files.exists(envPath);
+   }
+
+   private boolean environmentRoutingTablesExist(
+         EnvironmentSettings envSettings) {
+      checkConfigurations();
+      Path answerPath = envSettings
+            .getParseEnvironmentRoutingTablesAnswerPath();
+      return Files.exists(answerPath);
    }
 
    private void flatten(Path inputPath, Path outputPath) {
@@ -1132,7 +1383,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<Path, String>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger,
+            _settings.getFlatten() || _settings.getHaltOnParseError(),
+            "Flatten configurations");
       // todo: do something with answer element
       executor.executeJobs(jobs, outputConfigurationData,
             new FlattenVendorConfigurationAnswerElement());
@@ -1428,13 +1681,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             serializedVendorConfigPath);
       Map<String, Configuration> configurations = convertConfigurations(
             vendorConfigurations, answerElement);
+      postProcessConfigurations(configurations.values());
       return configurations;
-   }
-
-   @Override
-   public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement() {
-      return deserializeObject(_testrigSettings.getConvertAnswerPath(),
-            ConvertConfigurationAnswerElement.class);
    }
 
    public DataPlanePlugin getDataPlanePlugin() {
@@ -1492,8 +1740,33 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return seconds;
    }
 
+   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
+         Path inputPath, ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
+         return new TreeMap<>();
+      }
+      SortedMap<Path, String> inputData = readFiles(inputPath,
+            "Environment BGP Tables");
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = parseEnvironmentBgpTables(
+            inputData, answerElement);
+      return bgpTables;
+   }
+
    public String getEnvironmentName() {
       return _testrigSettings.getEnvironmentSettings().getName();
+   }
+
+   private SortedMap<String, RoutesByVrf> getEnvironmentRoutingTables(
+         Path inputPath,
+         ParseEnvironmentRoutingTablesAnswerElement answerElement) {
+      if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
+         return new TreeMap<>();
+      }
+      SortedMap<Path, String> inputData = readFiles(inputPath,
+            "Environment Routing Tables");
+      SortedMap<String, RoutesByVrf> routingTables = parseEnvironmentRoutingTables(
+            inputData, answerElement);
+      return routingTables;
    }
 
    @Override
@@ -1514,6 +1787,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       else {
          throw new BatfishException("Could not determine flow tag");
       }
+   }
+
+   @Override
+   public GrammarSettings getGrammarSettings() {
+      return _settings;
    }
 
    @Override
@@ -1579,16 +1857,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return blacklistNodes;
    }
 
-   public Path getPrecomputedRoutesPath() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getPrecomputedRoutesPath();
-   }
-
-   public Path getSerializedTopologyPath() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getSerializedTopologyPath();
-   }
-
    public Settings getSettings() {
       return _settings;
    }
@@ -1611,16 +1879,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return _terminatedWithException;
    }
 
+   @Override
+   public Directory getTestrigFileTree() {
+      Path trPath = _testrigSettings.getTestRigPath();
+      Directory dir = new Directory(trPath);
+      return dir;
+   }
+
    public String getTestrigName() {
       return _testrigSettings.getName();
    }
 
    public TestrigSettings getTestrigSettings() {
       return _testrigSettings;
-   }
-
-   public Path getTrafficFactsDir() {
-      return _testrigSettings.getEnvironmentSettings().getTrafficFactsDir();
    }
 
    @Override
@@ -1647,6 +1918,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          int count = histogram.count(feature);
          _logger.output(feature + ": " + count + "\n");
       }
+   }
+
+   private void initAnalysisQuestionPath(String analysisName,
+         String questionName) {
+      Path questionDir = _testrigSettings.getBasePath()
+            .resolve(Paths
+                  .get(BfConsts.RELPATH_ANALYSES_DIR, analysisName,
+                        BfConsts.RELPATH_QUESTIONS_DIR, questionName)
+                  .toString());
+      questionDir.toFile().mkdirs();
+      Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      _settings.setQuestionPath(questionPath);
    }
 
    @Override
@@ -1815,6 +2098,51 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // }
    }
 
+   @Override
+   public InitInfoAnswerElement initInfo(boolean summary,
+         boolean environmentRoutes) {
+      checkConfigurations();
+      InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
+      if (environmentRoutes) {
+         ParseEnvironmentRoutingTablesAnswerElement parseAnswer = loadParseEnvironmentRoutingTablesAnswerElement();
+         if (!summary) {
+            SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
+                  .getWarnings();
+            warnings.putAll(parseAnswer.getWarnings());
+         }
+         answerElement.setParseStatus(parseAnswer.getParseStatus());
+      }
+      else {
+         ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+         ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
+         if (!summary) {
+            SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
+                  .getWarnings();
+            warnings.putAll(parseAnswer.getWarnings());
+            convertAnswer.getWarnings().forEach((hostname, convertWarnings) -> {
+               org.batfish.common.Warnings combined = warnings.get(hostname);
+               if (combined == null) {
+                  warnings.put(hostname, convertWarnings);
+               }
+               else {
+                  combined.getPedanticWarnings()
+                        .addAll(convertWarnings.getPedanticWarnings());
+                  combined.getRedFlagWarnings()
+                        .addAll(convertWarnings.getRedFlagWarnings());
+                  combined.getUnimplementedWarnings()
+                        .addAll(convertWarnings.getUnimplementedWarnings());
+               }
+            });
+         }
+         answerElement.setParseStatus(parseAnswer.getParseStatus());
+         for (String failed : convertAnswer.getFailed()) {
+            answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
+         }
+      }
+      _logger.info(answerElement.prettyPrint());
+      return answerElement;
+   }
+
    private void initQuestionEnvironment(Question question, boolean dp,
          boolean differentialContext) {
       EnvironmentSettings envSettings = _testrigSettings
@@ -1823,6 +2151,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path envPath = envSettings.getEnvPath();
          // create environment required folders
          CommonUtil.createDirectories(envPath);
+      }
+      if (!environmentBgpTablesExist(envSettings)) {
+         computeEnvironmentBgpTables();
+      }
+      if (!environmentRoutingTablesExist(envSettings)) {
+         computeEnvironmentRoutingTables();
       }
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
          computeDataPlane(differentialContext);
@@ -1911,9 +2245,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<>();
       for (Configuration c : configurations.values()) {
          for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-            Ip remoteAddress = ipsecVpn.getGateway().getAddress();
+            Ip remoteAddress = ipsecVpn.getIkeGateway().getAddress();
             remoteAddresses.put(ipsecVpn, remoteAddress);
-            Set<Prefix> externalPrefixes = ipsecVpn.getGateway()
+            Set<Prefix> externalPrefixes = ipsecVpn.getIkeGateway()
                   .getExternalInterface().getAllPrefixes();
             for (Prefix externalPrefix : externalPrefixes) {
                Ip externalAddress = externalPrefix.getAddress();
@@ -1937,7 +2271,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (remoteIpsecVpnCandidates != null) {
             for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
                Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate
-                     .getGateway().getLocalAddress();
+                     .getIkeGateway().getLocalAddress();
                if (remoteIpsecVpnLocalAddress != null
                      && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
                   continue;
@@ -1951,6 +2285,111 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
                   ipsecVpn.getCandidateRemoteIpsecVpns()
                         .add(remoteIpsecVpnCandidate);
+               }
+            }
+         }
+      }
+   }
+
+   @Override
+   public void initRemoteOspfNeighbors(
+         Map<String, Configuration> configurations,
+         Map<Ip, Set<String>> ipOwners, Topology topology) {
+      for (Entry<String, Configuration> e : configurations.entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = e.getValue();
+         for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
+            Vrf vrf = e2.getValue();
+            OspfProcess proc = vrf.getOspfProcess();
+            if (proc != null) {
+               proc.setOspfNeighbors(new TreeMap<>());
+               if (proc != null) {
+                  String vrfName = e2.getKey();
+                  for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
+                     long areaNum = e3.getKey();
+                     OspfArea area = e3.getValue();
+                     for (Interface iface : area.getInterfaces()) {
+                        String ifaceName = iface.getName();
+                        EdgeSet ifaceEdges = topology.getInterfaceEdges()
+                              .get(new NodeInterfacePair(hostname, ifaceName));
+                        boolean hasNeighbor = false;
+                        Ip localIp = iface.getPrefix().getAddress();
+                        if (ifaceEdges != null) {
+                           for (Edge edge : ifaceEdges) {
+                              if (edge.getNode1().equals(hostname)) {
+                                 String remoteHostname = edge.getNode2();
+                                 String remoteIfaceName = edge.getInt2();
+                                 Configuration remoteNode = configurations
+                                       .get(remoteHostname);
+                                 Interface remoteIface = remoteNode
+                                       .getInterfaces().get(remoteIfaceName);
+                                 Vrf remoteVrf = remoteIface.getVrf();
+                                 String remoteVrfName = remoteVrf.getName();
+                                 OspfProcess remoteProc = remoteVrf
+                                       .getOspfProcess();
+                                 if (remoteProc.getOspfNeighbors() == null) {
+                                    remoteProc
+                                          .setOspfNeighbors(new TreeMap<>());
+                                 }
+                                 if (remoteProc != null) {
+                                    OspfArea remoteArea = remoteProc.getAreas()
+                                          .get(areaNum);
+                                    if (remoteArea != null
+                                          && remoteArea.getInterfaceNames()
+                                                .contains(remoteIfaceName)) {
+                                       Ip remoteIp = remoteIface.getPrefix()
+                                             .getAddress();
+                                       Pair<Ip, Ip> localKey = new Pair<>(
+                                             localIp, remoteIp);
+                                       OspfNeighbor neighbor = proc
+                                             .getOspfNeighbors().get(localKey);
+                                       if (neighbor == null) {
+                                          hasNeighbor = true;
+
+                                          // initialize local neighbor
+                                          neighbor = new OspfNeighbor(localKey);
+                                          neighbor.setArea(areaNum);
+                                          neighbor.setVrf(vrfName);
+                                          neighbor.setOwner(c);
+                                          neighbor.setInterface(iface);
+                                          proc.getOspfNeighbors().put(localKey,
+                                                neighbor);
+
+                                          // initialize remote neighbor
+                                          Pair<Ip, Ip> remoteKey = new Pair<>(
+                                                remoteIp, localIp);
+                                          OspfNeighbor remoteNeighbor = new OspfNeighbor(
+                                                remoteKey);
+                                          remoteNeighbor.setArea(areaNum);
+                                          remoteNeighbor.setVrf(remoteVrfName);
+                                          remoteNeighbor.setOwner(remoteNode);
+                                          remoteNeighbor
+                                                .setInterface(remoteIface);
+                                          remoteProc.getOspfNeighbors()
+                                                .put(remoteKey, remoteNeighbor);
+
+                                          // link neighbors
+                                          neighbor.setRemoteOspfNeighbor(
+                                                remoteNeighbor);
+                                          remoteNeighbor.setRemoteOspfNeighbor(
+                                                neighbor);
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                        if (!hasNeighbor) {
+                           Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
+                           OspfNeighbor neighbor = new OspfNeighbor(key);
+                           neighbor.setArea(areaNum);
+                           neighbor.setVrf(vrfName);
+                           neighbor.setOwner(c);
+                           neighbor.setInterface(iface);
+                           proc.getOspfNeighbors().put(key, neighbor);
+                        }
+                     }
+                  }
                }
             }
          }
@@ -1988,10 +2427,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public Map<String, Configuration> loadConfigurations() {
-      Map<String, Configuration> configurations = _cachedConfigurations
+   public SortedMap<String, Configuration> loadConfigurations() {
+      SortedMap<String, Configuration> configurations = _cachedConfigurations
             .get(_testrigSettings);
       if (configurations == null) {
+         ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
+         if (!Version.isCompatibleVersion("Service",
+               "Old processed configurations", ccae.getVersion())) {
+            repairConfigurations();
+         }
          configurations = deserializeConfigurations(
                _testrigSettings.getSerializeIndependentPath());
          _cachedConfigurations.put(_testrigSettings, configurations);
@@ -2004,15 +2448,202 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
+   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement() {
+      return loadConvertConfigurationAnswerElement(true);
+   }
+
+   private ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
+         boolean firstAttempt) {
+      ConvertConfigurationAnswerElement ccae = deserializeObject(
+            _testrigSettings.getConvertAnswerPath(),
+            ConvertConfigurationAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed configurations", ccae.getVersion())) {
+         if (firstAttempt) {
+            repairConfigurations();
+            return loadConvertConfigurationAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing configurations for convert configuration answer element");
+         }
+      }
+      else {
+         return ccae;
+      }
+   }
+
+   @Override
    public DataPlane loadDataPlane() {
-      DataPlane dp = _dataPlanes.get(_testrigSettings);
+      DataPlane dp = _cachedDataPlanes.get(_testrigSettings);
       if (dp == null) {
-         dp = deserializeObject(
-               _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
-               DataPlane.class);
-         _dataPlanes.put(_testrigSettings, dp);
+         /*
+          * Data plane should exist after loading answer element, as it triggers
+          * repair if necessary. However, it might not be cached if it was not
+          * repaired, so we still might need to load it from disk.
+          */
+         loadDataPlaneAnswerElement();
+         dp = _cachedDataPlanes.get(_testrigSettings);
+         if (dp == null) {
+            newBatch("Loading data plane from disk", 0);
+            dp = deserializeObject(
+                  _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
+                  DataPlane.class);
+            _cachedDataPlanes.put(_testrigSettings, dp);
+         }
       }
       return dp;
+   }
+
+   private DataPlaneAnswerElement loadDataPlaneAnswerElement() {
+      return loadDataPlaneAnswerElement(true);
+   }
+
+   private DataPlaneAnswerElement loadDataPlaneAnswerElement(
+         boolean firstAttempt) {
+      DataPlaneAnswerElement bae = deserializeObject(
+            _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath(),
+            DataPlaneAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service", "Old data plane",
+            bae.getVersion())) {
+         if (firstAttempt) {
+            repairDataPlane();
+            return loadDataPlaneAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing data plane for data plane answer element");
+         }
+      }
+      else {
+         return bae;
+      }
+   }
+
+   @Override
+   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables = _cachedEnvironmentBgpTables
+            .get(envSettings);
+      if (environmentBgpTables == null) {
+         ParseEnvironmentBgpTablesAnswerElement ae = loadParseEnvironmentBgpTablesAnswerElement();
+         if (!Version.isCompatibleVersion("Service",
+               "Old processed environment BGP tables", ae.getVersion())) {
+            repairEnvironmentBgpTables();
+         }
+         environmentBgpTables = deserializeEnvironmentBgpTables(
+               envSettings.getSerializeEnvironmentBgpTablesPath());
+         _cachedEnvironmentBgpTables.put(envSettings, environmentBgpTables);
+      }
+      return environmentBgpTables;
+   }
+
+   @Override
+   public SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      SortedMap<String, RoutesByVrf> environmentRoutingTables = _cachedEnvironmentRoutingTables
+            .get(envSettings);
+      if (environmentRoutingTables == null) {
+         ParseEnvironmentRoutingTablesAnswerElement pertae = loadParseEnvironmentRoutingTablesAnswerElement();
+         if (!Version.isCompatibleVersion("Service",
+               "Old processed environment routing tables",
+               pertae.getVersion())) {
+            repairEnvironmentRoutingTables();
+         }
+         environmentRoutingTables = deserializeEnvironmentRoutingTables(
+               envSettings.getSerializeEnvironmentRoutingTablesPath());
+         _cachedEnvironmentRoutingTables.put(envSettings,
+               environmentRoutingTables);
+      }
+      return environmentRoutingTables;
+   }
+
+   @Override
+   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
+      return loadParseEnvironmentBgpTablesAnswerElement(true);
+   }
+
+   private ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+         boolean firstAttempt) {
+      Path answerPath = _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentBgpTablesAnswerPath();
+      if (!Files.exists(answerPath)) {
+         repairEnvironmentBgpTables();
+      }
+      ParseEnvironmentBgpTablesAnswerElement ae = deserializeObject(answerPath,
+            ParseEnvironmentBgpTablesAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed environment BGP tables", ae.getVersion())) {
+         if (firstAttempt) {
+            repairEnvironmentRoutingTables();
+            return loadParseEnvironmentBgpTablesAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing environment BGP tables for parse environment BGP tables answer element");
+         }
+      }
+      else {
+         return ae;
+      }
+   }
+
+   @Override
+   public ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement() {
+      return loadParseEnvironmentRoutingTablesAnswerElement(true);
+   }
+
+   private ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement(
+         boolean firstAttempt) {
+      Path answerPath = _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentRoutingTablesAnswerPath();
+      if (!Files.exists(answerPath)) {
+         repairEnvironmentRoutingTables();
+      }
+      ParseEnvironmentRoutingTablesAnswerElement pertae = deserializeObject(
+            answerPath, ParseEnvironmentRoutingTablesAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed environment routing tables", pertae.getVersion())) {
+         if (firstAttempt) {
+            repairEnvironmentRoutingTables();
+            return loadParseEnvironmentRoutingTablesAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing environment routing tables for parse environment routing tables answer element");
+         }
+      }
+      else {
+         return pertae;
+      }
+   }
+
+   @Override
+   public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+      return loadParseVendorConfigurationAnswerElement(true);
+   }
+
+   private ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+         boolean firstAttempt) {
+      ParseVendorConfigurationAnswerElement pvcae = deserializeObject(
+            _testrigSettings.getParseAnswerPath(),
+            ParseVendorConfigurationAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed configurations", pvcae.getVersion())) {
+         if (firstAttempt) {
+            repairVendorConfigurations();
+            return loadParseVendorConfigurationAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing vendor configurations for parse configuration answer element");
+         }
+      }
+      else {
+         return pvcae;
+      }
    }
 
    public Topology loadTopology() {
@@ -2031,7 +2662,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _settings.setSequential(true);
       }
       Settings settings = getSettings();
-      checkDataPlaneQuestionDependencies();
       String tag = getFlowTag(_testrigSettings);
       Map<String, Configuration> configurations = loadConfigurations();
       Set<Flow> flows = null;
@@ -2057,27 +2687,136 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answerElement;
    }
 
+   @Override
+   public AtomicInteger newBatch(String description, int jobs) {
+      return Driver.newBatch(_settings, description, jobs);
+   }
+
    void outputAnswer(Answer answer) {
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
-         String jsonString = mapper
-               .writeValueAsString(_settings.prettyPrintAnswer()
-                     ? answer.prettyPrintAnswer() : answer);
-         _logger.debug(jsonString);
-         writeJsonAnswer(jsonString);
+         Answer structuredAnswer = answer;
+         Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
+         StringBuilder structuredAnswerSb = new StringBuilder();
+         String structuredAnswerRawString = mapper
+               .writeValueAsString(structuredAnswer);
+         structuredAnswerSb.append(structuredAnswerRawString);
+         structuredAnswerSb.append("\n");
+         String structuredAnswerString = structuredAnswerSb.toString();
+         StringBuilder prettyAnswerSb = new StringBuilder();
+         String prettyAnswerRawString = mapper.writeValueAsString(prettyAnswer);
+         prettyAnswerSb.append(prettyAnswerRawString);
+         prettyAnswerSb.append("\n");
+         String answerString;
+         String prettyAnswerString = prettyAnswerSb.toString();
+         if (_settings.prettyPrintAnswer()) {
+            answerString = prettyAnswerString;
+         }
+         else {
+            answerString = structuredAnswerString;
+         }
+         _logger.debug(answerString);
+         writeJsonAnswer(structuredAnswerString, prettyAnswerString);
       }
       catch (Exception e) {
          BatfishException be = new BatfishException("Error in sending answer",
                e);
-         Answer failureAnswer = Answer.failureAnswer(e.toString(),
-               answer.getQuestion());
-         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
          try {
-            String failureJsonString = mapper
-                  .writeValueAsString(_settings.prettyPrintAnswer()
-                        ? failureAnswer.prettyPrintAnswer() : failureAnswer);
-            _logger.error(failureJsonString);
-            writeJsonAnswer(failureJsonString);
+            Answer failureAnswer = Answer.failureAnswer(e.toString(),
+                  answer.getQuestion());
+            failureAnswer.addAnswerElement(be.getBatfishStackTrace());
+            Answer structuredAnswer = failureAnswer;
+            Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
+            StringBuilder structuredAnswerSb = new StringBuilder();
+            String structuredAnswerRawString = mapper
+                  .writeValueAsString(structuredAnswer);
+            structuredAnswerSb.append(structuredAnswerRawString);
+            structuredAnswerSb.append("\n");
+            String structuredAnswerString = structuredAnswerSb.toString();
+            StringBuilder prettyAnswerSb = new StringBuilder();
+            String prettyAnswerRawString = mapper
+                  .writeValueAsString(prettyAnswer);
+            prettyAnswerSb.append(prettyAnswerRawString);
+            prettyAnswerSb.append("\n");
+            String answerString;
+            String prettyAnswerString = prettyAnswerSb.toString();
+            if (_settings.prettyPrintAnswer()) {
+               answerString = prettyAnswerString;
+            }
+            else {
+               answerString = structuredAnswerString;
+            }
+            _logger.error(answerString);
+            writeJsonAnswer(structuredAnswerString, prettyAnswerString);
+         }
+         catch (Exception e1) {
+            String errorMessage = String.format(
+                  "Could not serialize failure answer.",
+                  ExceptionUtils.getStackTrace(e1));
+            _logger.error(errorMessage);
+         }
+         throw be;
+      }
+   }
+
+   void outputAnswerWithLog(Answer answer) {
+      ObjectMapper mapper = new BatfishObjectMapper();
+      try {
+         Answer structuredAnswer = answer;
+         Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
+         StringBuilder structuredAnswerSb = new StringBuilder();
+         String structuredAnswerRawString = mapper
+               .writeValueAsString(structuredAnswer);
+         structuredAnswerSb.append(structuredAnswerRawString);
+         structuredAnswerSb.append("\n");
+         String structuredAnswerString = structuredAnswerSb.toString();
+         StringBuilder prettyAnswerSb = new StringBuilder();
+         String prettyAnswerRawString = mapper.writeValueAsString(prettyAnswer);
+         prettyAnswerSb.append(prettyAnswerRawString);
+         prettyAnswerSb.append("\n");
+         String answerString;
+         String prettyAnswerString = prettyAnswerSb.toString();
+         if (_settings.prettyPrintAnswer()) {
+            answerString = prettyAnswerString;
+         }
+         else {
+            answerString = structuredAnswerString;
+         }
+         _logger.debug(answerString);
+         writeJsonAnswerWithLog(answerString, structuredAnswerString,
+               prettyAnswerString);
+      }
+      catch (Exception e) {
+         BatfishException be = new BatfishException("Error in sending answer",
+               e);
+         try {
+            Answer failureAnswer = Answer.failureAnswer(e.toString(),
+                  answer.getQuestion());
+            failureAnswer.addAnswerElement(be.getBatfishStackTrace());
+            Answer structuredAnswer = failureAnswer;
+            Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
+            StringBuilder structuredAnswerSb = new StringBuilder();
+            String structuredAnswerRawString = mapper
+                  .writeValueAsString(structuredAnswer);
+            structuredAnswerSb.append(structuredAnswerRawString);
+            structuredAnswerSb.append("\n");
+            String structuredAnswerString = structuredAnswerSb.toString();
+            StringBuilder prettyAnswerSb = new StringBuilder();
+            String prettyAnswerRawString = mapper
+                  .writeValueAsString(prettyAnswer);
+            prettyAnswerSb.append(prettyAnswerRawString);
+            prettyAnswerSb.append("\n");
+            String answerString;
+            String prettyAnswerString = prettyAnswerSb.toString();
+            if (_settings.prettyPrintAnswer()) {
+               answerString = prettyAnswerString;
+            }
+            else {
+               answerString = structuredAnswerString;
+            }
+            _logger.error(answerString);
+            writeJsonAnswerWithLog(answerString, structuredAnswerString,
+                  prettyAnswerString);
          }
          catch (Exception e1) {
             String errorMessage = String.format(
@@ -2146,6 +2885,84 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return config;
    }
 
+   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
+         SortedMap<Path, String> inputData,
+         ParseEnvironmentBgpTablesAnswerElement answerElement) {
+      _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
+      resetTimer();
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
+      List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
+      SortedMap<String, Configuration> configurations = loadConfigurations();
+      for (Path currentFile : inputData.keySet()) {
+         String hostname = currentFile.getFileName().toString();
+         String optionalSuffix = ".bgp";
+         if (hostname.endsWith(optionalSuffix)) {
+            hostname = hostname.substring(0,
+                  hostname.length() - optionalSuffix.length());
+         }
+         if (!configurations.containsKey(hostname)) {
+            continue;
+         }
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+               _settings.getRedFlagAsError(),
+               _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         String fileText = inputData.get(currentFile);
+         ParseEnvironmentBgpTableJob job = new ParseEnvironmentBgpTableJob(
+               _settings, fileText, hostname, currentFile, warnings,
+               _bgpTablePlugins);
+         jobs.add(job);
+      }
+      BatfishJobExecutor<ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement, ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>> executor = new BatfishJobExecutor<>(
+            _settings, _logger, _settings.getHaltOnParseError(),
+            "Parse environment BGP tables");
+      executor.executeJobs(jobs, bgpTables, answerElement);
+      printElapsedTime();
+      return bgpTables;
+   }
+
+   private SortedMap<String, RoutesByVrf> parseEnvironmentRoutingTables(
+         SortedMap<Path, String> inputData,
+         ParseEnvironmentRoutingTablesAnswerElement answerElement) {
+      _logger.info("\n*** PARSING ENVIRONMENT ROUTING TABLES ***\n");
+      resetTimer();
+      SortedMap<String, RoutesByVrf> routingTables = new TreeMap<>();
+      List<ParseEnvironmentRoutingTableJob> jobs = new ArrayList<>();
+      SortedMap<String, Configuration> configurations = loadConfigurations();
+      for (Path currentFile : inputData.keySet()) {
+         String hostname = currentFile.getFileName().toString();
+         if (!configurations.containsKey(hostname)) {
+            continue;
+         }
+         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+               _settings.getPedanticRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+               _settings.getRedFlagAsError(),
+               _settings.getRedFlagRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+               _settings.getUnimplementedAsError(),
+               _settings.getUnimplementedRecord()
+                     && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+               _settings.printParseTree());
+         String fileText = inputData.get(currentFile);
+         ParseEnvironmentRoutingTableJob job = new ParseEnvironmentRoutingTableJob(
+               _settings, fileText, currentFile, warnings);
+         jobs.add(job);
+      }
+      BatfishJobExecutor<ParseEnvironmentRoutingTableJob, ParseEnvironmentRoutingTablesAnswerElement, ParseEnvironmentRoutingTableResult, SortedMap<String, RoutesByVrf>> executor = new BatfishJobExecutor<>(
+            _settings, _logger, _settings.getHaltOnParseError(),
+            "Parse environment routing tables");
+      executor.executeJobs(jobs, routingTables, answerElement);
+      printElapsedTime();
+      return routingTables;
+   }
+
    private Set<NodeInterfacePair> parseInterfaceBlacklist(
          Path interfaceBlacklistPath) {
       Set<NodeInterfacePair> ifaces = new TreeSet<>();
@@ -2199,39 +3016,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private Question parseQuestion() {
       Path questionPath = _settings.getQuestionPath();
       _logger.info("Reading question file: \"" + questionPath + "\"...");
-      String questionText = CommonUtil.readFile(questionPath);
+      String rawQuestionText = CommonUtil.readFile(questionPath);
       _logger.info("OK\n");
-
+      String questionText = preprocessQuestion(rawQuestionText);
       try {
          ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
          Question question = mapper.readValue(questionText, Question.class);
-         JSONObject parameters = (JSONObject) parseQuestionParameters();
-         question.setJsonParameters(parameters);
          return question;
       }
       catch (IOException e) {
          throw new BatfishException("Could not parse JSON question", e);
-      }
-   }
-
-   private Object parseQuestionParameters() {
-      Path questionParametersPath = _settings.getQuestionParametersPath();
-      if (!Files.exists(questionParametersPath)) {
-         throw new BatfishException("Missing question parameters file: \""
-               + questionParametersPath + "\"");
-      }
-      _logger.info("Reading question parameters file: \""
-            + questionParametersPath + "\"...");
-      String questionText = CommonUtil.readFile(questionParametersPath);
-      _logger.info("OK\n");
-
-      try {
-         JSONObject jObj = (questionText.trim().isEmpty()) ? new JSONObject()
-               : new JSONObject(questionText);
-         return jObj;
-      }
-      catch (JSONException e) {
-         throw new BatfishException("Could not parse JSON parameters", e);
       }
    }
 
@@ -2293,8 +3087,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
-
+            _settings, _logger, _settings.getHaltOnParseError(),
+            "Parse configurations");
       executor.executeJobs(jobs, vendorConfigurations, answerElement);
       printElapsedTime();
       return vendorConfigurations;
@@ -2353,7 +3147,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String ingressNode = edge.getNode1();
          String outInterface = edge.getInt1();
          String vrf = diffConfigurations.get(ingressNode).getInterfaces()
-               .get(outInterface).getVrf();
+               .get(outInterface).getVrf().getName();
          ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
                ingressNode, vrf, edge, true, headerSpace);
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
@@ -2386,7 +3180,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String ingressNode = missingEdge.getNode1();
          String outInterface = missingEdge.getInt1();
          String vrf = diffConfigurations.get(ingressNode).getInterfaces()
-               .get(outInterface).getVrf();
+               .get(outInterface).getVrf().getName();
          if (diffConfigurations.containsKey(ingressNode)) {
             ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
                   ingressNode, vrf, missingEdge, true, headerSpace);
@@ -2436,6 +3230,104 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
+   private void postProcessConfigurations(
+         Collection<Configuration> configurations) {
+      // ComputeOSPF interface costs where they are missing
+      for (Configuration c : configurations) {
+         for (Vrf vrf : c.getVrfs().values()) {
+            OspfProcess proc = vrf.getOspfProcess();
+            if (proc != null) {
+               proc.initInterfaceCosts();
+            }
+         }
+      }
+   }
+
+   private String preprocessQuestion(String rawQuestionText) {
+      try {
+         JSONObject jobj = new JSONObject(rawQuestionText);
+         // first preprocess inner questions
+         if (jobj.has(Question.INNER_QUESTION_VAR)) {
+            JSONObject innerQuestion = jobj
+                  .getJSONObject(Question.INNER_QUESTION_VAR);
+            String innerQuestionStr = innerQuestion.toString();
+            String preprocessedInnerQuestionStr = preprocessQuestion(
+                  innerQuestionStr);
+            JSONObject preprocessedInnerQuestion = new JSONObject(
+                  preprocessedInnerQuestionStr);
+            jobj.put(Question.INNER_QUESTION_VAR, preprocessedInnerQuestion);
+         }
+         if (jobj.has(Question.INSTANCE_VAR)
+               && !jobj.isNull(Question.INSTANCE_VAR)) {
+            JSONObject instanceDataObj = jobj
+                  .getJSONObject(Question.INSTANCE_VAR);
+            String instanceDataStr = instanceDataObj.toString();
+            BatfishObjectMapper mapper = new BatfishObjectMapper();
+            InstanceData instanceData = mapper.<InstanceData> readValue(
+                  instanceDataStr, new TypeReference<InstanceData>() {
+                  });
+            for (Entry<String, Variable> e : instanceData.getVariables()
+                  .entrySet()) {
+               String varName = e.getKey();
+               Variable variable = e.getValue();
+               JsonNode value = variable.getValue();
+               boolean optional = variable.getOptional();
+               if (value == null && optional) {
+                  /*
+                   * For now we assume optional values are top-level variables
+                   * and single-line. Otherwise it's not really clear what to
+                   * do.
+                   */
+                  jobj.remove(varName);
+               }
+            }
+            String questionText = jobj.toString();
+            for (Entry<String, Variable> e : instanceData.getVariables()
+                  .entrySet()) {
+               String varName = e.getKey();
+               Variable variable = e.getValue();
+               JsonNode value = variable.getValue();
+               String valueJsonString = new ObjectMapper()
+                     .writeValueAsString(value);
+               boolean stringType = variable.getType().getStringType();
+               boolean setType = variable.getMinElements() != null;
+               if (value != null) {
+                  String topLevelVarNameRegex = Pattern
+                        .quote("\"${" + varName + "}\"");
+                  String inlineVarNameRegex = Pattern
+                        .quote("${" + varName + "}");
+                  String topLevelReplacement = valueJsonString;
+                  String inlineReplacement;
+                  if (stringType && !setType) {
+                     inlineReplacement = valueJsonString.substring(1,
+                           valueJsonString.length() - 1);
+                  }
+                  else {
+                     String quotedValueJsonString = JSONObject
+                           .quote(valueJsonString);
+                     inlineReplacement = quotedValueJsonString.substring(1,
+                           quotedValueJsonString.length() - 1);
+                  }
+                  String inlineReplacementRegex = Matcher
+                        .quoteReplacement(inlineReplacement);
+                  String topLevelReplacementRegex = Matcher
+                        .quoteReplacement(topLevelReplacement);
+                  questionText = questionText.replaceAll(topLevelVarNameRegex,
+                        topLevelReplacementRegex);
+                  questionText = questionText.replaceAll(inlineVarNameRegex,
+                        inlineReplacementRegex);
+               }
+            }
+            return questionText;
+         }
+         return rawQuestionText;
+      }
+      catch (JSONException | IOException e) {
+         throw new BatfishException(
+               "Could not convert raw question text to JSON", e);
+      }
+   }
+
    @Override
    public void printElapsedTime() {
       double seconds = getElapsedTime(_timerCount);
@@ -2470,47 +3362,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public AdvertisementSet processExternalBgpAnnouncements(
          Map<String, Configuration> configurations) {
       AdvertisementSet advertSet = new AdvertisementSet();
-      Path externalBgpAnnouncementsPath = _testrigSettings
-            .getEnvironmentSettings().getExternalBgpAnnouncementsPath();
-      if (Files.exists(externalBgpAnnouncementsPath)) {
-         String externalBgpAnnouncementsFileContents = CommonUtil
-               .readFile(externalBgpAnnouncementsPath);
-         // Populate advertSet with BgpAdvertisements that
-         // gets passed to populatePrecomputedBgpAdvertisements.
-         // See populatePrecomputedBgpAdvertisements for the things that get
-         // extracted from these advertisements.
-
-         try {
-            JSONObject jsonObj = new JSONObject(
-                  externalBgpAnnouncementsFileContents);
-
-            JSONArray announcements = jsonObj
-                  .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
-
-            ObjectMapper mapper = new ObjectMapper();
-
-            for (int index = 0; index < announcements.length(); index++) {
-               JSONObject announcement = new JSONObject();
-               announcement.put("@id", index);
-               JSONObject announcementSrc = announcements.getJSONObject(index);
-               for (Iterator<?> i = announcementSrc.keys(); i.hasNext();) {
-                  String key = (String) i.next();
-                  if (!key.equals("@id")) {
-                     announcement.put(key, announcementSrc.get(key));
-                  }
-               }
-               BgpAdvertisement bgpAdvertisement = mapper.readValue(
-                     announcement.toString(), BgpAdvertisement.class);
-               advertSet.add(bgpAdvertisement);
-            }
-
-         }
-         catch (JSONException | IOException e) {
-            throw new BatfishException("Problems parsing JSON in "
-                  + externalBgpAnnouncementsPath.toString(), e);
-         }
+      for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
+         AdvertisementSet currentAdvertisements = plugin
+               .loadExternalBgpAdvertisements();
+         advertSet.addAll(currentAdvertisements);
       }
       return advertSet;
+
    }
 
    /**
@@ -2584,9 +3442,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (blacklistInterfaces != null) {
          for (NodeInterfacePair p : blacklistInterfaces) {
             String hostname = p.getHostname();
-            String iface = p.getInterface();
+            String ifaceName = p.getInterface();
             Configuration node = configurations.get(hostname);
-            node.getInterfaces().get(iface).setActive(false);
+            Interface iface = node.getInterfaces().get(ifaceName);
+            iface.setActive(false);
+            iface.setBlacklisted(true);
          }
       }
    }
@@ -2628,15 +3488,55 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .filter(path -> !path.getFileName().toString().startsWith("."))
             .collect(Collectors.toList()).toArray(new Path[] {});
       Arrays.sort(configFilePaths);
+      AtomicInteger completed = newBatch("Reading network configuration files",
+            configFilePaths.length);
       for (Path file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
          String fileText = fileTextRaw
                + ((fileTextRaw.length() != 0) ? "\n" : "");
          configurationData.put(file, fileText);
+         completed.incrementAndGet();
       }
       printElapsedTime();
       return configurationData;
+   }
+
+   @Override
+   public String readExternalBgpAnnouncementsFile() {
+      Path externalBgpAnnouncementsPath = _testrigSettings
+            .getEnvironmentSettings().getExternalBgpAnnouncementsPath();
+      if (Files.exists(externalBgpAnnouncementsPath)) {
+         String externalBgpAnnouncementsFileContents = CommonUtil
+               .readFile(externalBgpAnnouncementsPath);
+         return externalBgpAnnouncementsFileContents;
+      }
+      else {
+         return null;
+      }
+   }
+
+   private SortedMap<Path, String> readFiles(Path directory,
+         String description) {
+      _logger.infof("\n*** READING FILES: %s ***\n", description);
+      resetTimer();
+      SortedMap<Path, String> fileData = new TreeMap<>();
+      Path[] filePaths = CommonUtil.list(directory)
+            .filter(path -> !path.getFileName().toString().startsWith("."))
+            .collect(Collectors.toList()).toArray(new Path[] {});
+      Arrays.sort(filePaths);
+      AtomicInteger completed = newBatch("Reading files: " + description,
+            filePaths.length);
+      for (Path file : filePaths) {
+         _logger.debug("Reading: \"" + file.toString() + "\"\n");
+         String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
+         String fileText = fileTextRaw
+               + ((fileTextRaw.length() != 0) ? "\n" : "");
+         fileData.put(file, fileText);
+         completed.incrementAndGet();
+      }
+      printElapsedTime();
+      return fileData;
    }
 
    @Override
@@ -2721,15 +3621,80 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void registerAnswerer(String questionClassName,
+   public void registerAnswerer(String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator) {
-      _answererCreators.put(questionClassName, answererCreator);
+      _questionMap.put(questionName, questionClassName);
+      _answererCreators.put(questionName, answererCreator);
+   }
+
+   @Override
+   public void registerBgpTablePlugin(BgpTableFormat format,
+         BgpTablePlugin bgpTablePlugin) {
+      _bgpTablePlugins.put(format, bgpTablePlugin);
+   }
+
+   @Override
+   public void registerExternalBgpAdvertisementPlugin(
+         ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin) {
+      _externalBgpAdvertisementPlugins.add(externalBgpAdvertisementPlugin);
+   }
+
+   private void repairConfigurations() {
+      Path outputPath = _testrigSettings.getSerializeIndependentPath();
+      CommonUtil.deleteDirectory(outputPath);
+      ParseVendorConfigurationAnswerElement pvcae = loadParseVendorConfigurationAnswerElement();
+      if (!Version.isCompatibleVersion("Service", "Old parsed configurations",
+            pvcae.getVersion())) {
+         repairVendorConfigurations();
+      }
+      Path inputPath = _testrigSettings.getSerializeVendorPath();
+      serializeIndependentConfigs(inputPath, outputPath);
+   }
+
+   private void repairDataPlane() {
+      Path dataPlanePath = _testrigSettings.getEnvironmentSettings()
+            .getDataPlanePath();
+      Path dataPlaneAnswerPath = _testrigSettings.getEnvironmentSettings()
+            .getDataPlaneAnswerPath();
+      CommonUtil.delete(dataPlanePath);
+      CommonUtil.delete(dataPlaneAnswerPath);
+      computeDataPlane(false);
+   }
+
+   private void repairEnvironmentBgpTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
+      Path bgpTablesOutputPath = envSettings
+            .getSerializeEnvironmentBgpTablesPath();
+      CommonUtil.delete(answerPath);
+      CommonUtil.deleteDirectory(bgpTablesOutputPath);
+      computeEnvironmentBgpTables();
+   }
+
+   private void repairEnvironmentRoutingTables() {
+      EnvironmentSettings envSettings = _testrigSettings
+            .getEnvironmentSettings();
+      Path answerPath = envSettings
+            .getParseEnvironmentRoutingTablesAnswerPath();
+      Path rtOutputPath = envSettings
+            .getSerializeEnvironmentRoutingTablesPath();
+      CommonUtil.delete(answerPath);
+      CommonUtil.deleteDirectory(rtOutputPath);
+      computeEnvironmentRoutingTables();
+   }
+
+   private void repairVendorConfigurations() {
+      Path outputPath = _testrigSettings.getSerializeVendorPath();
+      CommonUtil.deleteDirectory(outputPath);
+      Path testRigPath = _testrigSettings.getTestRigPath();
+      serializeVendorConfigs(testRigPath, outputPath);
    }
 
    private AnswerElement report() {
       ReportAnswerElement answerElement = new ReportAnswerElement();
       checkQuestionsDirExists();
-      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+      Path questionsDir = _settings.getActiveTestrigSettings().getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       ConcurrentMap<Path, String> answers = new ConcurrentHashMap<>();
       try {
@@ -2771,12 +3736,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    public Answer run() {
+      newBatch("Begin job", 0);
       loadPlugins();
       if (_dataPlanePlugin == null) {
          _dataPlanePlugin = new BdpDataPlanePlugin();
          _dataPlanePlugin.initialize(this);
       }
-
+      JsonExternalBgpAdvertisementPlugin jsonExternalBgpAdvertisementsPlugin = new JsonExternalBgpAdvertisementPlugin();
+      jsonExternalBgpAdvertisementsPlugin.initialize(this);
+      _externalBgpAdvertisementPlugins.add(jsonExternalBgpAdvertisementsPlugin);
       boolean action = false;
       Answer answer = new Answer();
 
@@ -2862,6 +3830,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          action = true;
       }
 
+      if (_settings.getInitInfo()) {
+         answer.addAnswerElement(initInfo(true, false));
+         action = true;
+      }
+
       if (_settings.getCompileEnvironment()) {
          answer.append(compileEnvironmentConfigurations(_testrigSettings));
          action = true;
@@ -2869,6 +3842,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       if (_settings.getAnswer()) {
          answer.append(answer());
+         action = true;
+      }
+
+      if (_settings.getAnalyze()) {
+         answer.append(analyze());
          action = true;
       }
 
@@ -2917,6 +3895,68 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.debug("OK\n");
       printElapsedTime();
       return answer;
+   }
+
+   private Answer serializeEnvironmentBgpTables(Path inputPath,
+         Path outputPath) {
+      Answer answer = new Answer();
+      ParseEnvironmentBgpTablesAnswerElement answerElement = new ParseEnvironmentBgpTablesAnswerElement();
+      answerElement.setVersion(Version.getVersion());
+      answer.addAnswerElement(answerElement);
+      SortedMap<String, BgpAdvertisementsByVrf> bgpTables = getEnvironmentBgpTables(
+            inputPath, answerElement);
+      serializeEnvironmentBgpTables(bgpTables, outputPath);
+      serializeObject(answerElement, _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentBgpTablesAnswerPath());
+      return answer;
+   }
+
+   private void serializeEnvironmentBgpTables(
+         SortedMap<String, BgpAdvertisementsByVrf> bgpTables, Path outputPath) {
+      if (bgpTables == null) {
+         throw new BatfishException("Exiting due to parsing error(s)");
+      }
+      _logger.info("\n*** SERIALIZING ENVIRONMENT BGP TABLES ***\n");
+      resetTimer();
+      outputPath.toFile().mkdirs();
+      SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
+      bgpTables.forEach((name, rt) -> {
+         Path currentOutputPath = outputPath.resolve(name);
+         output.put(currentOutputPath, rt);
+      });
+      serializeObjects(output);
+      printElapsedTime();
+   }
+
+   private Answer serializeEnvironmentRoutingTables(Path inputPath,
+         Path outputPath) {
+      Answer answer = new Answer();
+      ParseEnvironmentRoutingTablesAnswerElement answerElement = new ParseEnvironmentRoutingTablesAnswerElement();
+      answerElement.setVersion(Version.getVersion());
+      answer.addAnswerElement(answerElement);
+      SortedMap<String, RoutesByVrf> routingTables = getEnvironmentRoutingTables(
+            inputPath, answerElement);
+      serializeEnvironmentRoutingTables(routingTables, outputPath);
+      serializeObject(answerElement, _testrigSettings.getEnvironmentSettings()
+            .getParseEnvironmentRoutingTablesAnswerPath());
+      return answer;
+   }
+
+   private void serializeEnvironmentRoutingTables(
+         SortedMap<String, RoutesByVrf> routingTables, Path outputPath) {
+      if (routingTables == null) {
+         throw new BatfishException("Exiting due to parsing error(s)");
+      }
+      _logger.info("\n*** SERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
+      resetTimer();
+      outputPath.toFile().mkdirs();
+      SortedMap<Path, RoutesByVrf> output = new TreeMap<>();
+      routingTables.forEach((name, rt) -> {
+         Path currentOutputPath = outputPath.resolve(name);
+         output.put(currentOutputPath, rt);
+      });
+      serializeObjects(output);
+      printElapsedTime();
    }
 
    private void serializeHostConfigs(Path testRigPath, Path outputPath,
@@ -2986,8 +4026,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            String relativePathStr = _settings.getTestrigSettings()
-                  .getBasePath().relativize(path).toString();
+            String relativePathStr = _testrigSettings.getBasePath()
+                  .relativize(path).toString();
             if (!iptablesConfigurations.containsKey(relativePathStr)) {
                for (String key : iptablesConfigurations.keySet()) {
                   _logger.errorf("key : %s\n", key);
@@ -3027,9 +4067,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       outputPath.toFile().mkdirs();
       Map<Path, Configuration> output = new TreeMap<>();
-      configurations.forEach((name, vc) -> {
+      configurations.forEach((name, c) -> {
          Path currentOutputPath = outputPath.resolve(name);
-         output.put(currentOutputPath, vc);
+         output.put(currentOutputPath, c);
       });
       serializeObjects(output);
       printElapsedTime();
@@ -3039,7 +4079,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path outputPath) {
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
+      answerElement.setVersion(Version.getVersion());
+      if (_settings.getVerboseParse()) {
+         answer.addAnswerElement(answerElement);
+      }
       Map<String, Configuration> configurations = getConfigurations(
             vendorConfigPath, answerElement);
       serializeIndependentConfigs(configurations, outputPath);
@@ -3101,6 +4144,40 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       printElapsedTime();
    }
 
+   public <S extends Serializable> void serializeObjects(
+         Map<Path, S> objectsByPath) {
+      if (objectsByPath.isEmpty()) {
+         return;
+      }
+      BatfishLogger logger = getLogger();
+      Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+      int size = objectsByPath.size();
+      String className = objectsByPath.values().iterator().next().getClass()
+            .getName();
+      AtomicInteger serializeCompleted = newBatch(
+            "Serializing '" + className + "' instances", size);
+      objectsByPath.keySet().parallelStream().forEach(outputPath -> {
+         S object = objectsByPath.get(outputPath);
+         byte[] gzipData = toGzipData(object);
+         dataByPath.put(outputPath, gzipData);
+         serializeCompleted.incrementAndGet();
+      });
+      AtomicInteger writeCompleted = newBatch(
+            "Packing and writing '" + className + "' instances to disk", size);
+      dataByPath.forEach((outputPath, data) -> {
+         logger.debug("Writing: \"" + outputPath.toString() + "\"...");
+         try {
+            Files.write(outputPath, data);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to write: '" + outputPath.toString() + "'");
+         }
+         logger.debug("OK\n");
+         writeCompleted.incrementAndGet();
+      });
+   }
+
    private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
       Answer answer = new Answer();
       boolean configsFound = false;
@@ -3109,7 +4186,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
+      answerElement.setVersion(Version.getVersion());
+      if (_settings.getVerboseParse()) {
+         answer.addAnswerElement(answerElement);
+      }
       if (Files.exists(networkConfigsPath)) {
          serializeNetworkConfigs(testRigPath, outputPath, answerElement);
          configsFound = true;
@@ -3160,7 +4240,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _settings.setSequential(true);
       }
       Settings settings = getSettings();
-      checkDataPlaneQuestionDependencies(_testrigSettings);
       String tag = getFlowTag(_testrigSettings);
       Map<String, Configuration> configurations = loadConfigurations();
       Set<Flow> flows = null;
@@ -3287,7 +4366,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       EdgeSet edges = new EdgeSet();
       Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
       configurations.forEach((nodeName, node) -> {
-         node.getInterfaces().forEach((ifaceName, iface) -> {
+         for (Entry<String, Interface> e : node.getInterfaces().entrySet()) {
+            String ifaceName = e.getKey();
+            Interface iface = e.getValue();
             if (!iface.isLoopback(node.getConfigurationFormat())
                   && iface.getActive()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
@@ -3306,7 +4387,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   }
                }
             }
-         });
+         }
       });
       for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
          for (NodeInterfacePair p1 : bucket) {
@@ -3331,9 +4412,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void writeDataPlane(DataPlane dp) {
+   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
+      _cachedDataPlanes.put(_testrigSettings, dp);
       serializeObject(dp,
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
+      serializeObject(ae,
+            _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
    }
 
    private void writeIbgpNeighbors(Path ibgpTopologyPath) {
@@ -3345,22 +4429,75 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("OK\n");
    }
 
-   private void writeJsonAnswer(String jsonAnswer) {
+   private void writeJsonAnswer(String structuredAnswerString,
+         String prettyAnswerString) {
+      Path questionPath = _settings.getQuestionPath();
+      if (questionPath != null) {
+         Path questionDir = questionPath.getParent();
+         if (!Files.exists(questionDir)) {
+            throw new BatfishException(
+                  "Could not write JSON answer to question dir '"
+                        + questionDir.toString()
+                        + "' because it does not exist");
+         }
+         boolean diff = _settings.getDiffQuestion();
+         String baseEnvName = _testrigSettings.getEnvironmentSettings()
+               .getName();
+         Path answerDir = questionDir.resolve(Paths
+               .get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName).toString());
+         if (diff) {
+            String deltaTestrigName = _deltaTestrigSettings.getName();
+            String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings()
+                  .getName();
+            answerDir = answerDir.resolve(Paths
+                  .get(BfConsts.RELPATH_DELTA, deltaTestrigName, deltaEnvName)
+                  .toString());
+         }
+         Path structuredAnswerPath = answerDir
+               .resolve(BfConsts.RELPATH_ANSWER_JSON);
+         Path prettyAnswerPath = answerDir
+               .resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
+         answerDir.toFile().mkdirs();
+         CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+         CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
+      }
+   }
+
+   private void writeJsonAnswerWithLog(String answerString,
+         String structuredAnswerString, String prettyAnswerString) {
       Path jsonPath = _settings.getAnswerJsonPath();
       if (jsonPath != null) {
-         CommonUtil.writeFile(jsonPath, jsonAnswer);
+         CommonUtil.writeFile(jsonPath, answerString);
       }
       Path questionPath = _settings.getQuestionPath();
       if (questionPath != null) {
-         if (!Files.exists(questionPath)) {
+         Path questionDir = questionPath.getParent();
+         if (!Files.exists(questionDir)) {
             throw new BatfishException(
                   "Could not write JSON answer to question dir '"
-                        + questionPath.toString()
+                        + questionDir.toString()
                         + "' because it does not exist");
          }
-         Path answerPath = questionPath.getParent()
+         boolean diff = _settings.getDiffQuestion();
+         String baseEnvName = _testrigSettings.getEnvironmentSettings()
+               .getName();
+         Path answerDir = questionDir.resolve(Paths
+               .get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName).toString());
+         if (diff) {
+            String deltaTestrigName = _deltaTestrigSettings.getName();
+            String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings()
+                  .getName();
+            answerDir = answerDir.resolve(Paths
+                  .get(BfConsts.RELPATH_DELTA, deltaTestrigName, deltaEnvName)
+                  .toString());
+         }
+         Path structuredAnswerPath = answerDir
                .resolve(BfConsts.RELPATH_ANSWER_JSON);
-         CommonUtil.writeFile(answerPath, jsonAnswer);
+         Path prettyAnswerPath = answerDir
+               .resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
+         answerDir.toFile().mkdirs();
+         CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+         CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
       }
    }
 

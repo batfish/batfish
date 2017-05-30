@@ -8,7 +8,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class PsThenReject extends PsThen {
 
@@ -32,6 +32,7 @@ public final class PsThenReject extends PsThen {
             .singletonList(Statements.ReturnFalse.toStaticStatement()));
       ifStatement.setFalseStatements(Collections
             .singletonList(Statements.ExitReject.toStaticStatement()));
+      statements.add(ifStatement);
    }
 
 }

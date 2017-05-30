@@ -1,11 +1,14 @@
 package org.batfish.common.util;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -17,7 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -30,6 +34,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -106,12 +111,32 @@ public class CommonUtil {
       }
    }
 
-   public static Set<String> diff(Set<String> a, Set<String> b) {
-      Set<String> d = new TreeSet<>();
-      d.addAll(a);
-      d.addAll(b);
-      d.removeAll(intersection(a, b));
-      return d;
+   public static void delete(Path path) {
+      try {
+         Files.delete(path);
+      }
+      catch (NoSuchFileException e) {
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to delete file: " + path, e);
+      }
+   }
+
+   public static void deleteDirectory(Path path) {
+      try {
+         FileUtils.deleteDirectory(path.toFile());
+      }
+      catch (IOException | NullPointerException e) {
+         throw new BatfishException("Could not delete directory: " + path, e);
+      }
+   }
+
+   public static <S extends Set<T>, T> S difference(Set<T> minuendSet,
+         Set<T> subtrahendSet, Supplier<S> setConstructor) {
+      S differenceSet = setConstructor.get();
+      differenceSet.addAll(minuendSet);
+      differenceSet.removeAll(subtrahendSet);
+      return differenceSet;
    }
 
    public static String escape(String offendingTokenText) {
@@ -164,10 +189,16 @@ public class CommonUtil {
       }
    }
 
-   public static File getConfigProperties(Class<?> locatorClass,
-         String propertiesFilename) {
-      File configDir = getJarOrClassDir(locatorClass);
-      return Paths.get(configDir.toString(), propertiesFilename).toFile();
+   public static Path getConfigProperties(Class<?> locatorClass,
+         String propertiesFilename, String propertiesJvmArg) {
+      String jvmArgPath = System.getProperty(propertiesJvmArg);
+      if (jvmArgPath != null) {
+         return Paths.get(jvmArgPath);
+      }
+      else {
+         Path configDir = getJarOrClassDir(locatorClass);
+         return configDir.resolve(propertiesFilename);
+      }
    }
 
    public static String getIndentedString(String str, int indentLevel) {
@@ -204,23 +235,26 @@ public class CommonUtil {
       return null;
    }
 
-   public static File getJarOrClassDir(Class<?> locatorClass) {
-      File locatorDirFile = null;
+   public static Path getJarOrClassDir(Class<?> locatorClass) {
+      Path locatorDirFile = null;
       URL locatorSourceURL = locatorClass.getProtectionDomain().getCodeSource()
             .getLocation();
       String locatorSourceString = locatorSourceURL.toString();
       if (locatorSourceString.startsWith("onejar:")) {
-         URL onejarSourceURL = null;
+         URI onejarSourceURI = null;
          try {
-            onejarSourceURL = Class.forName("com.simontuffs.onejar.Boot")
+            URL onejarSourceURL = Class.forName("com.simontuffs.onejar.Boot")
                   .getProtectionDomain().getCodeSource().getLocation();
+            onejarSourceURI = onejarSourceURL.toURI();
          }
          catch (ClassNotFoundException e) {
             throw new BatfishException("could not find onejar class");
          }
-         File jarDir = new File(
-               onejarSourceURL.toString().replaceAll("^file:\\\\*", ""))
-                     .getParentFile();
+         catch (URISyntaxException e) {
+            throw new BatfishException("Failed to convert onejar URL to URI",
+                  e);
+         }
+         Path jarDir = Paths.get(onejarSourceURI).getParent();
          return jarDir;
       }
       else {
@@ -228,7 +262,7 @@ public class CommonUtil {
          String locatorPackageResourceName = locatorClass.getPackage().getName()
                .replace('.', separator);
          try {
-            locatorDirFile = new File(locatorClass.getClassLoader()
+            locatorDirFile = Paths.get(locatorClass.getClassLoader()
                   .getResource(locatorPackageResourceName).toURI());
          }
          catch (URISyntaxException e) {
@@ -274,27 +308,12 @@ public class CommonUtil {
       return time;
    }
 
-   public static Set<String> inAOnly(Set<String> a, Set<String> b) {
-      Set<String> i = intersection(a, b);
-      Set<String> inAOnly = new TreeSet<>();
-      inAOnly.addAll(a);
-      inAOnly.removeAll(i);
-      return inAOnly;
-   }
-
-   public static Set<String> inBOnly(Set<String> a, Set<String> b) {
-      Set<String> i = intersection(a, b);
-      Set<String> inBOnly = new TreeSet<>();
-      inBOnly.addAll(b);
-      inBOnly.removeAll(i);
-      return inBOnly;
-   }
-
-   public static Set<String> intersection(Set<String> a, Set<String> b) {
-      Set<String> i = new TreeSet<>();
-      i.addAll(a);
-      i.retainAll(b);
-      return i;
+   public static <S extends Set<T>, T> S intersection(Set<T> set1, Set<T> set2,
+         Supplier<S> setConstructor) {
+      S intersectionSet = setConstructor.get();
+      intersectionSet.addAll(set1);
+      intersectionSet.retainAll(set2);
+      return intersectionSet;
    }
 
    public static int intWidth(int n) {
@@ -314,23 +333,6 @@ public class CommonUtil {
    public static boolean isNullInterface(String ifaceName) {
       String lcIfaceName = ifaceName.toLowerCase();
       return lcIfaceName.startsWith("null");
-   }
-
-   public static String joinStrings(String delimiter, String[] parts) {
-      StringBuilder sb = new StringBuilder();
-      for (String part : parts) {
-         sb.append(part + delimiter);
-      }
-      String joined = sb.toString();
-      int joinedLength = joined.length();
-      String result;
-      if (joinedLength > 0) {
-         result = joined.substring(0, joinedLength - delimiter.length());
-      }
-      else {
-         result = joined;
-      }
-      return result;
    }
 
    public static Stream<Path> list(Path configsPath) {
@@ -358,13 +360,7 @@ public class CommonUtil {
          throw new BatfishException("Could not initialize md5 hasher", e);
       }
       byte[] plainTextBytes = null;
-      try {
-         plainTextBytes = saltedSecret.getBytes("UTF-8");
-      }
-      catch (UnsupportedEncodingException e) {
-         throw new BatfishException("Could not convert salted secret to bytes",
-               e);
-      }
+      plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
       byte[] digestBytes = digest.digest(plainTextBytes);
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < digestBytes.length; i++) {
@@ -390,6 +386,21 @@ public class CommonUtil {
       }
    }
 
+   public static void outputFileLines(Path downloadedFile,
+         Consumer<String> outputFunction) {
+      try (BufferedReader br = new BufferedReader(
+            new FileReader(downloadedFile.toFile()))) {
+         String line = null;
+         while ((line = br.readLine()) != null) {
+            outputFunction.accept(line + "\n");
+         }
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to read and output lines of file: '"
+               + downloadedFile.toString() + "'");
+      }
+   }
+
    public static String readFile(Path file) {
       String text = null;
       try {
@@ -400,6 +411,39 @@ public class CommonUtil {
                e);
       }
       return text;
+   }
+
+   public static String sha256Digest(String saltedSecret) {
+      MessageDigest digest = null;
+      try {
+         digest = MessageDigest.getInstance("SHA-256");
+      }
+      catch (NoSuchAlgorithmException e) {
+         throw new BatfishException("Could not initialize sha256 hasher", e);
+      }
+      byte[] plainTextBytes = null;
+      plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
+      byte[] digestBytes = digest.digest(plainTextBytes);
+      StringBuffer sb = new StringBuffer();
+      for (int i = 0; i < digestBytes.length; i++) {
+         int digestByteAsInt = 0xff & digestBytes[i];
+         if (digestByteAsInt < 0x10) {
+            sb.append('0');
+         }
+         sb.append(Integer.toHexString(digestByteAsInt));
+      }
+      String sha256 = sb.toString();
+      return sha256;
+   }
+
+   public static <S extends Set<T>, T> S symmetricDifference(Set<T> set1,
+         Set<T> set2, Supplier<S> constructor) {
+      S differenceSet = constructor.get();
+      differenceSet.addAll(set1);
+      differenceSet.addAll(set2);
+      S intersection = intersection(set1, set2, constructor);
+      differenceSet.removeAll(intersection);
+      return differenceSet;
    }
 
    public static SortedMap<Integer, String> toLineMap(String str) {
@@ -496,6 +540,14 @@ public class CommonUtil {
          sb.append(ch);
       }
       return sb.toString();
+   }
+
+   public static <S extends Set<T>, T> S union(Set<T> set1, Set<T> set2,
+         Supplier<S> setConstructor) {
+      S unionSet = setConstructor.get();
+      unionSet.addAll(set1);
+      unionSet.addAll(set2);
+      return unionSet;
    }
 
    public static void writeFile(Path outputPath, String output) {

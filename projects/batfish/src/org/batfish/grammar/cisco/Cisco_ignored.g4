@@ -52,7 +52,6 @@ null_block
       | DEVICE
       | DHCPRELAY
       | DO STOP
-      | DOMAIN
       | DOT1X
       | DOT1X_ENABLE
       | DUAL_MODE_DEFAULT_VLAN
@@ -102,12 +101,6 @@ null_block
             | ICMP_ERRORS
             | INSPECT
             | INTERNAL
-            | NAME_SERVER
-            |
-            (
-               OSPF NAME_LOOKUP
-            )
-            | PIM
             | POLICY_LIST
             | RATE_LIMIT
             | RECEIVE
@@ -152,7 +145,6 @@ null_block
             | ROUTING
          )
       )
-      | KEY
       | KEYSTORE
       | KRON
       | L2TP_CLASS
@@ -164,12 +156,10 @@ null_block
       | MAC_LEARN
       | MACRO
       | MANAGEMENT_ACCESS
-      | MAP_CLASS
       | MAP_LIST
       | MENU
       | MLAG
       | MODULE
-      | MONITOR
       | MONITOR_INTERFACE
       |
       (
@@ -204,6 +194,7 @@ null_block
       | PLATFORM
       | POLICY_MAP_INPUT
       | POLICY_MAP_OUTPUT
+      | POOL
       | PORT_PROFILE
       | POWEROFF
       | POWER_MGR
@@ -216,10 +207,12 @@ null_block
       | REMOVED
       | RMON
       | ROUTE_ONLY
-      | ROUTER
+      |
       (
-         LOG
-         | VRRP
+         ROUTER
+         (
+            LOG
+         )
       )
       | RP
       | RX_COS_SLOT
@@ -241,9 +234,6 @@ null_block
       | SYSLOGD
       | SYSTEM_INIT
       | SYSTEM_MAX
-      | TABLE_MAP
-      | TACACS
-      | TACACS_SERVER
       | TAG_TYPE
       | TASKGROUP
       | TCP
@@ -296,17 +286,16 @@ null_inner
       NO?
       (
          ACCEPT_DIALIN
-         | ACCEPT_LIFETIME
          | ACCOUNTING
          | ACTIVE
          | ADD_VLAN
          | ADDRESS
          | ADDRESS_POOLS
+         | ADDRESS_RANGE
          | ADMINISTRATIVE_WEIGHT
          | ADVERTISE
          | AESA
          | ALLOCATE
-         | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
          | APPLICATION
          | ARCHIVE_LENGTH
@@ -339,9 +328,7 @@ null_inner
          | CONTEXT
          | CPU_SHARE
          | CREDENTIALS
-         | CRYPTOGRAPHIC_ALGORITHM
          | DEADTIME
-         | DEFAULT
          | DEFAULT_DOMAIN
          | DEFAULT_ROUTER
          | DENY
@@ -359,7 +346,6 @@ null_inner
          | EGRESS
          | ENABLED
          | ENCAPSULATION
-         | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXIT
          | EXPECT
@@ -378,11 +364,10 @@ null_inner
          | FT
          | GATEWAY
          | GID
+         | GROUP
          | GROUP_ALIAS
          | GROUP_LOCK
          | GROUP_POLICY
-         | H225
-         | H323
          | HA_POLICY
          |
          (
@@ -409,6 +394,7 @@ null_inner
             INTERFACE POLICY
          )
          | INTERVAL
+         | INTERWORKING
          |
          (
             (
@@ -424,7 +410,6 @@ null_inner
          )
          | IPSEC_UDP
          | IPX
-         | KEY_STRING
          | KEYPATH
          | LACP_TIMEOUT
          | LEASE
@@ -436,7 +421,6 @@ null_inner
          | LOG
          | LPTS
          | MAC_ADDRESS
-         | MAP
          | MEDIA
          | MEMBER
          | MESH_GROUP
@@ -505,11 +489,9 @@ null_inner
          | ROUTE
          | ROUTE_TARGET
          | RP_ADDRESS
-         | RULE
          | SA_FILTER
          | SATELLITE
          | SECRET
-         | SEND_LIFETIME
          | SEQUENCE
          | SERVER
          | SERVERFARM
@@ -519,7 +501,6 @@ null_inner
          | SERVICE_TYPE
          | SESSION
          | SEVERITY
-         | SHUT
          | SIGNING
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
@@ -609,6 +590,8 @@ null_single
       | BOOT_END_MARKER
       | BOOT_START_MARKER
       | BRIDGE
+      | BRIDGE_DOMAIN
+      | BUILDING_CONFIGURATION
       | CALL
       | CARD
       | CCM_MANAGER
@@ -616,13 +599,22 @@ null_single
       | CFS
       | CLOCK
       | CNS
+      | CONFIG
       | CONFIG_REGISTER
       | CONSOLE
       | CTS
+      | CURRENT_CONFIGURATION
       | DEFAULT
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
+      |
+      (
+         DIALER
+         (
+            WATCH_LIST
+         )
+      )
       | DIALER_LIST
       | DNS
       | DNS_GUARD
@@ -630,6 +622,7 @@ null_single
       | DSP
       | DSS
       | ENVIRONMENT
+      | ENVIRONMENT_MONITOR
       | ERRDISABLE
       | ESCAPE_CHARACTER
       | EXCEPTION
@@ -669,7 +662,6 @@ null_single
             | CLASSLESS
             | DEFAULT_NETWORK
             | DEVICE
-            | DOMAIN
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
             | DVMRP
@@ -693,6 +685,13 @@ null_single
             | MSDP
             | MULTICAST
             | MULTICAST_ROUTING
+            |
+            (
+               OSPF
+               (
+                  NAME_LOOKUP
+               )
+            )
             | RADIUS
             | RCMD
             | ROUTING //might want to use this eventually
@@ -741,6 +740,7 @@ null_single
       | LICENSE
       | LLDP
       | LOAD_INTERVAL
+      | LOCALE
       | LOCATION
       |
       (
@@ -750,9 +750,11 @@ null_single
          )
       )
       | MAC_ADDRESS_TABLE
+      | MEMORY
       | MEMORY_SIZE
       | MGCP
       | MICROCODE
+      | MIRROR
       | MLS
       | MODEM
       | MON
@@ -791,7 +793,6 @@ null_single
                   AS_PATH
                )
             )
-            | LOGGING
             |
             (
                SNMP_SERVER
@@ -802,6 +803,13 @@ null_single
                )
             )
             | SSH
+         )
+      )
+      |
+      (
+         OSPFV3
+         (
+            NAME_LOOKUP
          )
       )
       | OWNER
@@ -840,6 +848,7 @@ null_single
       | SERVICE_POLICY
       | SETUP
       | SHELL
+      | SIP_UA
       | SMTP_SERVER
       | SNMP
       | SPD

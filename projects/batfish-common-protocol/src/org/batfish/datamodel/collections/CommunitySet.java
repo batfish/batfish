@@ -13,6 +13,13 @@ public class CommunitySet extends LinkedHashSet<Long> {
     */
    private static final long serialVersionUID = 1L;
 
+   public CommunitySet() {
+   }
+
+   public CommunitySet(CommunitySet communitySet) {
+      super(communitySet);
+   }
+
    public Set<String> asStringSet() {
       Set<Long> sortedCommunities = new TreeSet<>();
       sortedCommunities.addAll(this);

@@ -17,13 +17,17 @@ public class BfConsts {
       Unscheduled;
    }
 
+   public static final String ARG_ANALYSIS_NAME = "analysisname";
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
    public static final String ARG_BLOCK_NAMES = "blocknames";
    public static final String ARG_CONTAINER_DIR = "containerdir";
    public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
    public static final String ARG_DELTA_TESTRIG = "deltatestrig";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
+   public static final String ARG_DIFFERENTIAL = "differential";
    public static final String ARG_ENVIRONMENT_NAME = "env";
+   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
+   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
    public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
    public static final String ARG_LOG_FILE = "logfile";
    public static final String ARG_LOG_LEVEL = "loglevel";
@@ -45,10 +49,13 @@ public class BfConsts {
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
    public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
+   public static final String ARG_VERBOSE_PARSE = "verboseparse";
 
+   public static final String COMMAND_ANALYZE = "analyze";
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
    public static final String COMMAND_DUMP_DP = "dp";
+   public static final String COMMAND_INIT_INFO = "initinfo";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";
@@ -59,25 +66,37 @@ public class BfConsts {
 
    public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
 
+   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
+   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
+   public static final String PROP_CLIENT_PROPERTIES_PATH = "batfishClientPropertiesPath";
+   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
    public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
 
+   public static final String RELPATH_ANALYSES_DIR = "analyses";
+   public static final String RELPATH_ANALYSIS_FILE = "analysis";
    public static final String RELPATH_ANSWER_HTML = "answer.html";
    public static final String RELPATH_ANSWER_JSON = "answer.json";
+   public static final String RELPATH_ANSWER_PRETTY_JSON = "answer-pretty.json";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
    public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_vpc_configs";
-   public static final String RELPATH_BASE = "base";
    public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_BATFISH = "batfish.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
-   public static final String RELPATH_DATA_PLANE_DIR = "dp";
+   public static final String RELPATH_DATA_PLANE = "dp";
+   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
+   public static final String RELPATH_DELTA = "delta";
    public static final String RELPATH_DIFF = "diff";
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
+   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
+   public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
+   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
+   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
    public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
@@ -89,10 +108,12 @@ public class BfConsts {
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";
-   public static final String RELPATH_QUESTION_FILE = "question";
-   public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
+   public static final String RELPATH_QUESTION_FILE = "question.json";
    public static final String RELPATH_QUESTIONS_DIR = "questions";
+   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
+   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
+   public static final String RELPATH_TESTRIGS_DIR = "";
    public static final String RELPATH_TOPOLOGY_FILE = "topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
@@ -110,4 +131,5 @@ public class BfConsts {
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
+
 }

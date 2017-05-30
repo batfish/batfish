@@ -56,13 +56,18 @@ address_family_rb_stanza
       |
       {!_multilineBgpNeighbors}?
 
-      neighbor_rb_stanza
+      neighbor_flat_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
    )* address_family_footer
+;
+
+af_group_rb_stanza
+:
+   AF_GROUP name = variable ADDRESS_FAMILY bgp_address_family NEWLINE bgp_tail*
 ;
 
 aggregate_address_rb_stanza
@@ -229,6 +234,11 @@ ebgp_multihop_bgp_tail
    )? NEWLINE
 ;
 
+empty_neighbor_block_address_family
+:
+   address_family_header address_family_footer
+;
+
 filter_list_bgp_tail
 :
    FILTER_LIST num = DEC
@@ -240,7 +250,7 @@ filter_list_bgp_tail
 
 inherit_peer_policy_bgp_tail
 :
-   INHERIT PEER_POLICY name = variable NEWLINE
+   INHERIT PEER_POLICY name = variable num = DEC? NEWLINE
 ;
 
 inherit_peer_session_bgp_tail
@@ -257,24 +267,22 @@ local_as_bgp_tail
    )* NEWLINE
 ;
 
-maximum_ecmp_paths
-:
-   MAXIMUM_PATHS DEC ECMP DEC
-;
-
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
 ;
 
-maximum_paths_ebgp
-:
-   MAXIMUM_PATHS EBGP DEC
-;
-
 maximum_paths_bgp_tail
 :
-   MAXIMUM_PATHS DEC NEWLINE
+   MAXIMUM_PATHS
+   (
+      EBGP
+      | IBGP
+      | EIBGP
+   )? paths = DEC
+   (
+      ECMP ecmp_paths = DEC
+   )? SELECTIVE? NEWLINE
 ;
 
 maximum_prefix_bgp_tail
@@ -282,7 +290,55 @@ maximum_prefix_bgp_tail
    MAXIMUM_PREFIX DEC NEWLINE
 ;
 
-neighbor_rb_stanza
+neighbor_block_address_family
+:
+   address_family_header
+   (
+      bgp_tail
+      | use_af_group_bgp_tail
+   )+ address_family_footer
+;
+
+neighbor_block_inherit
+:
+   INHERIT PEER name = VARIABLE NEWLINE
+;
+
+neighbor_block_rb_stanza
+locals
+[java.util.Set<String> addressFamilies, java.util.Set<String> consumedAddressFamilies]
+@init {
+   $addressFamilies = new java.util.HashSet<String>();
+   $consumedAddressFamilies = new java.util.HashSet<String>();
+}
+:
+   NEIGHBOR
+   (
+      ip_address = IP_ADDRESS
+      | ipv6_address = IPV6_ADDRESS
+      | ip_prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX
+   )
+   (
+      REMOTE_AS asnum = DEC
+   )? NEWLINE
+   (
+      bgp_tail
+      | neighbor_block_inherit
+      | no_shutdown_rb_stanza
+      | remote_as_bgp_tail
+      | use_neighbor_group_bgp_tail
+      | use_session_group_bgp_tail
+   )*
+   (
+      (
+         empty_neighbor_block_address_family
+         | neighbor_block_address_family
+      )* neighbor_block_address_family
+   )?
+;
+
+neighbor_flat_rb_stanza
 :
    NEIGHBOR
    (
@@ -306,6 +362,8 @@ neighbor_group_rb_stanza
       address_family_rb_stanza
       | remote_as_bgp_tail
       | update_source_bgp_tail
+      | use_neighbor_group_bgp_tail
+      | use_session_group_bgp_tail
    )*
 ;
 
@@ -345,55 +403,7 @@ next_hop_self_bgp_tail
    NO? NEXT_HOP_SELF NEWLINE
 ;
 
-nexus_neighbor_address_family
-:
-   address_family_header bgp_tail+ address_family_footer
-;
-
-empty_nexus_neighbor_address_family
-:
-   address_family_header address_family_footer
-;
-
-nexus_neighbor_inherit
-:
-   INHERIT PEER name = VARIABLE NEWLINE
-;
-
-nexus_neighbor_rb_stanza
-locals
-[java.util.Set<String> addressFamilies, java.util.Set<String> consumedAddressFamilies]
-@init {
-   $addressFamilies = new java.util.HashSet<String>();
-   $consumedAddressFamilies = new java.util.HashSet<String>();
-}
-:
-   NEIGHBOR
-   (
-      ip_address = IP_ADDRESS
-      | ipv6_address = IPV6_ADDRESS
-      | ip_prefix = IP_PREFIX
-      | ipv6_prefix = IPV6_PREFIX
-   )
-   (
-      REMOTE_AS asnum = DEC
-   )? NEWLINE
-   (
-      bgp_tail
-      | nexus_neighbor_inherit
-      | no_shutdown_rb_stanza
-      | remote_as_bgp_tail
-      | use_neighbor_group_bgp_tail
-   )*
-   (
-      (
-         empty_nexus_neighbor_address_family
-         | nexus_neighbor_address_family
-      )* nexus_neighbor_address_family
-   )?
-;
-
-nexus_vrf_rb_stanza
+vrf_block_rb_stanza
 :
    VRF name = ~NEWLINE NEWLINE
    (
@@ -401,8 +411,8 @@ nexus_vrf_rb_stanza
       | always_compare_med_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
-      | neighbor_rb_stanza
-      | nexus_neighbor_rb_stanza
+      | neighbor_flat_rb_stanza
+      | neighbor_block_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | no_redistribute_connected_rb_stanza
@@ -499,6 +509,7 @@ null_bgp_tail
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
+            | FAST_EXTERNAL_FALLOVER
             | GRACEFUL_RESTART
             |
             (
@@ -531,7 +542,6 @@ null_bgp_tail
       | GRACEFUL_RESTART
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
-      | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
@@ -553,14 +563,19 @@ null_bgp_tail
       | RECONNECT_INTERVAL
       | SEND_LABEL
       | SESSION_OPEN_MODE
-      | SHUTDOWN
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
       | TABLE_MAP
       | TIMERS
       | TRANSPORT
-      | USE NEXTHOP_ATTRIBUTE
+      |
+      (
+         USE
+         (
+            NEXTHOP_ATTRIBUTE
+         )
+      )
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
@@ -581,7 +596,7 @@ peer_group_assignment_rb_stanza
    (
       address = IP_ADDRESS
       | address6 = IPV6_ADDRESS
-   ) PEER_GROUP name = VARIABLE NEWLINE
+   ) PEER_GROUP name = variable NEWLINE
 ;
 
 peer_group_creation_rb_stanza
@@ -668,6 +683,10 @@ redistribute_connected_bgp_tail
       )
       |
       (
+         ROUTE_POLICY policy = variable
+      )
+      |
+      (
          METRIC metric = DEC
       )
    )* NEWLINE
@@ -720,6 +739,7 @@ router_bgp_stanza
 router_bgp_stanza_tail
 :
    address_family_rb_stanza
+   | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
    | bgp_advertise_inactive_rb_stanza
@@ -728,13 +748,12 @@ router_bgp_stanza_tail
    | bgp_tail
    | cluster_id_rb_stanza
    | default_information_originate_rb_stanza
-   // Do not put nexus_neighbor_rb_stanza below neighbor_rb_stanza
-
    |
+   // do NOT put neighbor_block_rb_stanza under neighbor_flat_rb_stanza
    {_multilineBgpNeighbors}?
 
-   nexus_neighbor_rb_stanza
-   | neighbor_rb_stanza
+   neighbor_block_rb_stanza
+   | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
    | no_bgp_enforce_first_as_stanza
    | no_neighbor_activate_rb_stanza
@@ -744,13 +763,11 @@ router_bgp_stanza_tail
    | peer_group_assignment_rb_stanza
    | peer_group_creation_rb_stanza
    | router_id_rb_stanza
+   | session_group_rb_stanza
    | template_peer_rb_stanza
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
-   |
-   {_multilineBgpNeighbors}?
-
-   nexus_vrf_rb_stanza
+   | vrf_block_rb_stanza
    | unrecognized_line
 ;
 
@@ -767,18 +784,30 @@ router_id_rb_stanza
 send_community_bgp_tail
 :
    (
-      SEND_COMMUNITY EXTENDED? BOTH?
+      (
+         SEND_COMMUNITY EXTENDED? BOTH?
+      )
       | SEND_COMMUNITY_EBGP
-      | SEND_EXTENDED_COMMUNITY_EBGP
+      |
+      (
+         SEND_EXTENDED_COMMUNITY_EBGP INHERITANCE_DISABLE?
+      )
    ) NEWLINE
+;
+
+session_group_rb_stanza
+:
+   SESSION_GROUP name = variable NEWLINE
+   (
+      bgp_tail
+      | remote_as_bgp_tail
+      | use_session_group_bgp_tail
+   )*
 ;
 
 shutdown_bgp_tail
 :
-   (
-      SHUTDOWN
-      | SHUT
-   ) NEWLINE
+   SHUTDOWN NEWLINE
 ;
 
 subnet_bgp_tail
@@ -846,6 +875,7 @@ template_peer_policy_rb_stanza
    TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
    (
       bgp_tail
+      | inherit_peer_policy_bgp_tail
    )*
    (
       EXIT_PEER_POLICY NEWLINE
@@ -869,9 +899,19 @@ update_source_bgp_tail
    UPDATE_SOURCE source = interface_name NEWLINE
 ;
 
+use_af_group_bgp_tail
+:
+   USE AF_GROUP name = variable NEWLINE
+;
+
 use_neighbor_group_bgp_tail
 :
-   USE NEIGHBOR_GROUP name = VARIABLE NEWLINE
+   USE NEIGHBOR_GROUP name = variable NEWLINE
+;
+
+use_session_group_bgp_tail
+:
+   USE SESSION_GROUP name = variable NEWLINE
 ;
 
 weight_bgp_tail

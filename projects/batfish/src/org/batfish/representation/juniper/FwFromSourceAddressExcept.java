@@ -4,7 +4,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class FwFromSourceAddressExcept extends FwFrom {
 

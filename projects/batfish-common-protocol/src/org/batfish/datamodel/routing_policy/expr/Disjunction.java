@@ -6,7 +6,7 @@ import java.util.List;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class Disjunction extends AbstractBooleanExpr {
+public class Disjunction extends BooleanExpr {
 
    /**
    *
@@ -17,6 +17,29 @@ public class Disjunction extends AbstractBooleanExpr {
 
    public Disjunction() {
       _disjuncts = new ArrayList<>();
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      Disjunction other = (Disjunction) obj;
+      if (_disjuncts == null) {
+         if (other._disjuncts != null) {
+            return false;
+         }
+      }
+      else if (!_disjuncts.equals(other._disjuncts)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -38,6 +61,15 @@ public class Disjunction extends AbstractBooleanExpr {
 
    public List<BooleanExpr> getDisjuncts() {
       return _disjuncts;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_disjuncts == null) ? 0 : _disjuncts.hashCode());
+      return result;
    }
 
    public void setDisjuncts(List<BooleanExpr> disjuncts) {
@@ -79,6 +111,11 @@ public class Disjunction extends AbstractBooleanExpr {
          simple.setComment(getComment());
          return simple;
       }
+   }
+
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _disjuncts.toString() + ">";
    }
 
 }

@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
+import org.batfish.vendor.VendorConfiguration;
 
 public abstract class IptablesConfiguration extends VendorConfiguration {
 

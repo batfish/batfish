@@ -1,7 +1,0 @@
-{
-  "class" : "org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "nodeBlacklist" : [ ],
-  "nodeRegex" : ".*"
-}

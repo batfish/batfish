@@ -3,20 +3,20 @@ export BATFISH_SOURCED_SCRIPT="$BASH_SOURCE"
 export OLD_PWD="$PWD"
 
 architecture() {
-	local MACHINE=$(uname -m)
-	if [ "$MACHINE" = "x86_64" ]; then
-		local ARCHITECTURE=amd64
-	elif [ "$MACHINE" = "i386" ]; then
-		local ARCHITECTURE=i386
-	else
-		echo "Could not determine architecture from output of uname -m: $MACHINE"
-		exit 1
-	fi
-	echo $ARCHITECTURE
+   local MACHINE=$(uname -m)
+   if [ "$MACHINE" = "x86_64" ]; then
+      local ARCHITECTURE=amd64
+   elif [ "$MACHINE" = "i386" ]; then
+      local ARCHITECTURE=i386
+   else
+      echo "Could not determine architecture from output of uname -m: $MACHINE"
+      exit 1
+   fi
+   echo $ARCHITECTURE
 }
 
 ubuntu_version() {
-	head -n1 /etc/issue | cut -f2 -d' ' | cut -f1,2 -d'.'
+   head -n1 /etc/issue | cut -f2 -d' ' | cut -f1,2 -d'.'
 }
 
 install_z3() {
@@ -28,7 +28,7 @@ install_z3() {
       $BATFISH_TOOLS_PATH/install_z3_ubuntu_14.04.sh $USR_P
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 }
 
@@ -43,20 +43,20 @@ set_init_vars() {
       COORDINATOR_INIT_NAME=coordinator.conf
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 }
 
 reload_init_scripts() {
    if [ "${UBUNTU_VERSION}" = "16.04" ]; then
-		echo "systemctl enable $BATFISH_INIT_NAME || true"
-		echo "systemctl enable $COORDINATOR_INIT_NAME || true"
-		echo "systemctl daemon-reload"
+      echo "systemctl enable $BATFISH_INIT_NAME || true"
+      echo "systemctl enable $COORDINATOR_INIT_NAME || true"
+      echo "systemctl daemon-reload"
    elif [ "${UBUNTU_VERSION}" = "14.04" ]; then
-		echo "initctl reload-configuration"
+      echo "initctl reload-configuration"
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 }
 
@@ -75,7 +75,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -servicehost localhost -containerslocation $BATFISH_HOME
+ExecStart=/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'
 WorkingDirectory=$BATFISH_HOME
 PIDFile=$BATFISH_RUN_DIR/coordinator.pid
 Restart=always
@@ -108,7 +108,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'" $BATFISH_USER
 EOF
 
    cat > $COORDINATOR_INIT_P <<EOF
@@ -121,13 +121,13 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/usr/bin/java -jar $COORDINATOR_JAR -loglevel debug -logfile $COORDINATOR_LOG -servicehost localhost -containerslocation $BATFISH_HOME" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'" $BATFISH_USER
 EOF
    echo $BATFISH_INIT >> $CONFFILES_FILE
    echo $COORDINATOR_INIT >> $CONFFILES_FILE
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 
 }
@@ -138,14 +138,16 @@ package() {
    BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
    VERSION_FILE=$BATFISH_PATH/projects/batfish-common-protocol/src/org/batfish/common/Version.java
    BATFISH_VERSION=$(grep 'private static final String VERSION' $VERSION_FILE | sed -e 's/^[^"]*"\([^"]*\)".*$/\1/g')
-	ARCHITECTURE=$(architecture)
-	UBUNTU_VERSION=$(ubuntu_version)
-	VERSION="${BATFISH_VERSION}-ubuntu${UBUNTU_VERSION}"
-   TARGET="${OLD_PWD}/batfish_${VERSION}_${ARCHITECTURE}.deb"
+   SECONDARY_VERSION=$(echo $BATFISH_VERSION | cut -d'.' -f1,2)
+   ARCHITECTURE=$(architecture)
+   UBUNTU_VERSION=$(ubuntu_version)
+   VERSION="${BATFISH_VERSION}~ubuntu${UBUNTU_VERSION}"
+   PACKAGE_NAME="batfish-${SECONDARY_VERSION}"
+   DEB_NAME=${PACKAGE_NAME}_${VERSION}_${ARCHITECTURE}
+   TARGET="${OLD_PWD}/${DEB_NAME}.deb"
    WORKING=$(mktemp -d -t ${SCRIPT_NAME}.XXXXXXX)
-   PACKAGE_NAME="batfish-${VERSION}"
-   DPKG_DIR=$WORKING/$PACKAGE_NAME
-   PBASE=$DPKG_DIR/debian
+   DPKG_DIR=${WORKING}/${DEB_NAME}
+   PBASE=${DPKG_DIR}/debian
    USR=/usr
    USR_P=${PBASE}${USR}
    Z3=$USR/bin/z3
@@ -186,6 +188,8 @@ package() {
    COORDINATOR_JAR_SRC=$BATFISH_PATH/projects/coordinator/out/${COORDINATOR_JAR_NAME}
    COORDINATOR_JAR=${DATA_DIR}/$COORDINATOR_JAR_NAME
    COORDINATOR_JAR_P=${PBASE}$COORDINATOR_JAR
+   COORDINATOR_CLASSPATH_NAME=coordinator.classpath
+   COORDINATOR_CLASSPATH=${CONF_DIR}/${COORDINATOR_CLASSPATH_NAME}
    COORDINATOR_PROPERTIES_NAME=coordinator.properties
    COORDINATOR_PROPERTIES_SRC=${BATFISH_PATH}/projects/coordinator/out/${COORDINATOR_PROPERTIES_NAME}
    COORDINATOR_PROPERTIES_LINK=${DATA_DIR}/${COORDINATOR_PROPERTIES_NAME}
@@ -198,6 +202,8 @@ package() {
    COORDINATOR_KEYSTORE_LINK_P=${PBASE}${COORDINATOR_KEYSTORE_LINK}
    COORDINATOR_KEYSTORE=${CONF_DIR}/${COORDINATOR_KEYSTORE_NAME}
    COORDINATOR_KEYSTORE_P=${PBASE}${COORDINATOR_KEYSTORE}
+   EXTRA_PLUGIN_DIR=${CONF_DIR}/plugins
+   EXTRA_PLUGIN_DIR_P=${PBASE}${EXTRA_PLUGIN_DIR}
    PLUGIN_DIR=${DATA_DIR}/plugins
    PLUGIN_DIR_P=${PBASE}${PLUGIN_DIR}
    QUESTION_JAR_NAME=question.jar
@@ -212,8 +218,12 @@ package() {
    BATFISH_RUN_DIR=/var/run/batfish
    BATFISH_LOG_NAME=batfish.log
    BATFISH_LOG=$BATFISH_LOG_DIR/$BATFISH_LOG_NAME
+   BATFISH_JAVA_LOG_NAME=batfish-java.log
+   BATFISH_JAVA_LOG=$BATFISH_LOG_DIR/$BATFISH_JAVA_LOG_NAME
    COORDINATOR_LOG_NAME=coordinator.log
    COORDINATOR_LOG=$BATFISH_LOG_DIR/$COORDINATOR_LOG_NAME
+   COORDINATOR_JAVA_LOG_NAME=coordinator-java.log
+   COORDINATOR_JAVA_LOG=$BATFISH_LOG_DIR/$COORDINATOR_JAVA_LOG_NAME
    BATFISH_USER=batfish
    CHANGELOG_NAME=changelog.Debian.gz
    CHANGELOG=${DOC_DIR}/${CHANGELOG_NAME}
@@ -246,6 +256,7 @@ package() {
    mkdir -p $CONF_DIR_P
    mkdir -p $DATA_DIR_P
    mkdir -p $DOC_DIR_P
+   mkdir -p $EXTRA_PLUGIN_DIR_P
    mkdir -p $INIT_DIR_P
    mkdir -p $PLUGIN_DIR_P
    cp $BATFISH_JAR_SRC $BATFISH_JAR_P
@@ -264,7 +275,11 @@ package() {
    write_init_scripts
 
    cat > $CONTROL_FILE <<EOF
-Package: batfish
+Package: ${PACKAGE_NAME}
+Conflicts: batfish
+Replaces: batfish
+Provides: batfish
+Breaks: z3
 Version: $VERSION
 Section: web
 Priority: optional
@@ -280,7 +295,13 @@ Description: network configuration analysis tool
 EOF
 
    gzip --best > $CHANGELOG_P <<EOF
-batfish ($VERSION) trusty; urgency=low
+batfish (0.2.0-ubuntu${UBUNTU_VERSION}) trusty; urgency=low
+
+  * Second Release: second release
+
+ -- Ari Fogel <ari@intentionet.com>  Mon, 09 Jan 2017 15:36:00 -0700
+
+batfish (0.1.0-ubuntu${UBUNTU_VERSION}) trusty; urgency=low
 
   * Initial Release: initial release
 
@@ -292,7 +313,7 @@ EOF
 Name: batfish
 Maintainer: Ari Fogel <ari@intentionet.com>
 Source: https://github.com/arifogel/batfish
-Copyright: 2013-2016 Ari Fogel <ari@intentionet.com>
+Copyright: 2013-2017 Ari Fogel <ari@intentionet.com>
 License: Apache-2.0
  Internal components may have different licenses. Their license
  files may be extracted from the included jar files.
@@ -316,6 +337,8 @@ $(reload_init_scripts)
 
 chown root:$BATFISH_USER $CONF_DIR
 chmod 0770 $CONF_DIR
+chown root:$BATFISH_USER $EXTRA_PLUGIN_DIR
+chmod 0770 $EXTRA_PLUGIN_DIR
 chown root:$BATFISH_USER $BATFISH_PROPERTIES
 chmod 0660 $BATFISH_PROPERTIES
 chown root:$BATFISH_USER $CLIENT_PROPERTIES

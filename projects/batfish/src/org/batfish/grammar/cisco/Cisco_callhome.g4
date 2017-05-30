@@ -11,6 +11,7 @@ call_home_null
    NO?
    (
       ALERT_GROUP
+      | CONTACT
       | CONTACT_EMAIL_ADDR
       | CONTACT_NAME
       | CONTRACT_ID
@@ -18,6 +19,7 @@ call_home_null
       | MAIL_SERVER
       | PHONE_NUMBER
       | SENDER
+      | SERVICE
       | SITE_ID
       | SOURCE_INTERFACE
       | SOURCE_IP_ADDRESS

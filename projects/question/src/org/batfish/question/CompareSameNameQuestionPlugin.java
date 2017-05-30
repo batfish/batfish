@@ -1,18 +1,16 @@
 package org.batfish.question;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
@@ -30,13 +28,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
@@ -70,7 +62,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder(
                "Results for comparing same name structure\n");
          for (String name : _equivalenceSets.keySet()) {
@@ -185,7 +177,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     *
     * @type CompareSameName multifile
     *
-    * @param namedStructType
+    * @param namedStructTypes
     *           Set of structure types to analyze drawn from ( AsPathAccessList,
     *           CommunityList, IkeGateway, IkePolicies, IkeProposal,
     *           IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn,
@@ -202,11 +194,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     */
    public static final class CompareSameNameQuestion extends Question {
 
-      private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
+      private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
-      private Set<String> _namedStructTypes;
+      private static final String SINGLETONS_VAR = "singletons";
+
+      private SortedSet<String> _namedStructTypes;
 
       private String _nodeRegex;
 
@@ -227,8 +221,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          return "comparesamename";
       }
 
-      @JsonProperty(NAMED_STRUCT_TYPE_VAR)
-      public Set<String> getNamedStructTypes() {
+      @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+      public SortedSet<String> getNamedStructTypes() {
          return _namedStructTypes;
       }
 
@@ -237,6 +231,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          return _nodeRegex;
       }
 
+      @JsonProperty(SINGLETONS_VAR)
       public boolean getSingletons() {
          return _singletons;
       }
@@ -246,48 +241,17 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case NAMED_STRUCT_TYPE_VAR:
-                  setNamedStructTypes(new ObjectMapper()
-                        .<Set<String>> readValue(parameters.getString(paramKey),
-                              new TypeReference<Set<String>>() {
-                              }));
-                  break;
-               case NODE_REGEX_VAR:
-                  setNodeRegex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
-      public void setNamedStructTypes(Set<String> namedStructTypes) {
+      @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+      public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
          _namedStructTypes = namedStructTypes;
       }
 
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String regex) {
          _nodeRegex = regex;
       }
 
+      @JsonProperty(SINGLETONS_VAR)
       public void setSingletons(boolean singletons) {
          _singletons = singletons;
       }

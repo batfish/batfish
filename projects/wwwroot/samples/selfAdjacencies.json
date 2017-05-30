@@ -1,7 +1,0 @@
-{
-  "class" : "org.batfish.datamodel.questions.SelfAdjacenciesQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "nodeBlacklist" : [ ],
-  "nodeRegex" : ".*"
-}

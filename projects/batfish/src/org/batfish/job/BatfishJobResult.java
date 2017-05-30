@@ -8,7 +8,7 @@ public abstract class BatfishJobResult<Output, AE extends AnswerElement> {
 
    private final long _elapsedTime;
 
-   private final Throwable _failureCause;
+   protected final Throwable _failureCause;
 
    protected final BatfishLoggerHistory _history;
 

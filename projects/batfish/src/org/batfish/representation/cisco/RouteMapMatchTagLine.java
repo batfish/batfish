@@ -9,7 +9,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RouteMapMatchTagLine extends RouteMapMatchLine {
 

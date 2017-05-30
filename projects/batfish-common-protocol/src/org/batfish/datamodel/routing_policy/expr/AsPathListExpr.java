@@ -8,8 +8,19 @@ import org.batfish.datamodel.routing_policy.Environment;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public interface AsPathListExpr extends Serializable {
+public abstract class AsPathListExpr implements Serializable {
 
-   List<Integer> evaluate(Environment environment);
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
+
+   @Override
+   public abstract boolean equals(Object obj);
+
+   public abstract List<Integer> evaluate(Environment environment);
+
+   @Override
+   public abstract int hashCode();
 
 }

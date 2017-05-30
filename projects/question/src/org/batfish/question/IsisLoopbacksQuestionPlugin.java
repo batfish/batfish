@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -13,17 +12,11 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
@@ -96,13 +89,6 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
       public SortedMap<String, SortedSet<String>> getRunning() {
          return _running;
-      }
-
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
       }
 
       public void setInactive(SortedMap<String, SortedSet<String>> inactive) {
@@ -272,31 +258,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case NODE_REGEX_VAR:
-                  setNodeRegex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }

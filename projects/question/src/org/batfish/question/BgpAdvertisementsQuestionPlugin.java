@@ -1,7 +1,5 @@
 package org.batfish.question;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -16,23 +14,16 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
@@ -155,13 +146,6 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          return _sentIbgpAdvertisements;
       }
 
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
-      }
-
       @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
       public void setAllRequestedAdvertisements(
             SortedSet<BgpAdvertisement> allRequestedAdvertisements) {
@@ -202,11 +186,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-
          BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
-
          Pattern nodeRegex;
-
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
          }
@@ -216,17 +197,13 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-
-         _batfish.checkDataPlaneQuestionDependencies();
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
          _batfish.initBgpAdvertisements(configurations);
-
          BgpAdvertisementsAnswerElement answerElement = new BgpAdvertisementsAnswerElement(
                configurations, nodeRegex, question.getEbgp(),
                question.getIbgp(), question.getPrefixSpace(),
                question.getReceived(), question.getSent());
-
          return answerElement;
       }
 
@@ -271,7 +248,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
-      private static final String PREFIX_RANGE_VAR = "prefixRange";
+      private static final String PREFIX_SPACE_VAR = "prefixSpace";
 
       private static final String RECEIVED_VAR = "received";
 
@@ -324,6 +301,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          return _nodeRegex;
       }
 
+      @JsonProperty(PREFIX_SPACE_VAR)
       public PrefixSpace getPrefixSpace() {
          return _prefixSpace;
       }
@@ -343,69 +321,43 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
+      @Override
+      public String prettyPrint() {
+         String retString = String.format(
+               "%s %s%s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\"",
+               getName(), prettyPrintBase(), EBGP_VAR, _ebgp, IBGP_VAR, _ibgp,
+               NODE_REGEX_VAR, _nodeRegex, PREFIX_SPACE_VAR,
+               _prefixSpace.toString(), RECEIVED_VAR, _received, SENT_VAR,
+               _sent);
+         return retString;
+      }
+
+      @JsonProperty(EBGP_VAR)
       public void setEbgp(boolean ebgp) {
          _ebgp = ebgp;
       }
 
+      @JsonProperty(IBGP_VAR)
       public void setIbgp(boolean ibgp) {
          _ibgp = ibgp;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case EBGP_VAR:
-                  setEbgp(parameters.getBoolean(paramKey));
-                  break;
-               case IBGP_VAR:
-                  setIbgp(parameters.getBoolean(paramKey));
-                  break;
-               case NODE_REGEX_VAR:
-                  setNodeRegex(parameters.getString(paramKey));
-                  break;
-               case PREFIX_RANGE_VAR:
-                  setPrefixSpace(new ObjectMapper().<PrefixSpace> readValue(
-                        parameters.getString(paramKey),
-                        new TypeReference<PrefixSpace>() {
-                        }));
-                  break;
-               case RECEIVED_VAR:
-                  setReceived(parameters.getBoolean(paramKey));
-                  break;
-               case SENT_VAR:
-                  setSent(parameters.getBoolean(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("Exception in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }
 
+      @JsonProperty(PREFIX_SPACE_VAR)
       private void setPrefixSpace(PrefixSpace prefixSpace) {
          _prefixSpace = prefixSpace;
       }
 
+      @JsonProperty(RECEIVED_VAR)
       public void setReceived(boolean received) {
          _received = received;
       }
 
+      @JsonProperty(SENT_VAR)
       public void setSent(boolean sent) {
          _sent = sent;
       }

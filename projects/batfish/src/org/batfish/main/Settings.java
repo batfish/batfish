@@ -8,12 +8,18 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.PedanticBatfishException;
+import org.batfish.common.RedFlagBatfishException;
+import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
+import org.batfish.grammar.GrammarSettings;
 
-public final class Settings extends BaseSettings {
+public final class Settings extends BaseSettings implements GrammarSettings {
 
    public static final class EnvironmentSettings {
+
+      private Path _dataPlaneAnswerPath;
 
       private Path _dataPlanePath;
 
@@ -27,6 +33,10 @@ public final class Settings extends BaseSettings {
 
       private Path _environmentBasePath;
 
+      private Path _environmentBgpTablesPath;
+
+      private Path _environmentRoutingTablesPath;
+
       private Path _envPath;
 
       private Path _externalBgpAnnouncementsPath;
@@ -37,11 +47,21 @@ public final class Settings extends BaseSettings {
 
       private Path _nodeBlacklistPath;
 
+      private Path _parseEnvironmentBgpTablesAnswerPath;
+
+      private Path _parseEnvironmentRoutingTablesAnswerPath;
+
       private Path _precomputedRoutesPath;
 
       private Path _serializedTopologyPath;
 
-      private Path _trafficFactsDir;
+      private Path _serializeEnvironmentBgpTablesPath;
+
+      private Path _serializeEnvironmentRoutingTablesPath;
+
+      public Path getDataPlaneAnswerPath() {
+         return _dataPlaneAnswerPath;
+      }
 
       public Path getDataPlanePath() {
          return _dataPlanePath;
@@ -67,6 +87,14 @@ public final class Settings extends BaseSettings {
          return _environmentBasePath;
       }
 
+      public Path getEnvironmentBgpTablesPath() {
+         return _environmentBgpTablesPath;
+      }
+
+      public Path getEnvironmentRoutingTablesPath() {
+         return _environmentRoutingTablesPath;
+      }
+
       public Path getEnvPath() {
          return _envPath;
       }
@@ -87,6 +115,14 @@ public final class Settings extends BaseSettings {
          return _nodeBlacklistPath;
       }
 
+      public Path getParseEnvironmentBgpTablesAnswerPath() {
+         return _parseEnvironmentBgpTablesAnswerPath;
+      }
+
+      public Path getParseEnvironmentRoutingTablesAnswerPath() {
+         return _parseEnvironmentRoutingTablesAnswerPath;
+      }
+
       public Path getPrecomputedRoutesPath() {
          return _precomputedRoutesPath;
       }
@@ -95,8 +131,16 @@ public final class Settings extends BaseSettings {
          return _serializedTopologyPath;
       }
 
-      public Path getTrafficFactsDir() {
-         return _trafficFactsDir;
+      public Path getSerializeEnvironmentBgpTablesPath() {
+         return _serializeEnvironmentBgpTablesPath;
+      }
+
+      public Path getSerializeEnvironmentRoutingTablesPath() {
+         return _serializeEnvironmentRoutingTablesPath;
+      }
+
+      public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
+         _dataPlaneAnswerPath = dataPlaneAnswerPath;
       }
 
       public void setDataPlanePath(Path path) {
@@ -125,6 +169,15 @@ public final class Settings extends BaseSettings {
          _environmentBasePath = environmentBasePath;
       }
 
+      public void setEnvironmentBgpTablesPath(Path environmentBgpTablesPath) {
+         _environmentBgpTablesPath = environmentBgpTablesPath;
+      }
+
+      public void setEnvironmentRoutingTablesPath(
+            Path environmentRoutingTablesPath) {
+         _environmentRoutingTablesPath = environmentRoutingTablesPath;
+      }
+
       public void setEnvPath(Path envPath) {
          _envPath = envPath;
       }
@@ -146,6 +199,16 @@ public final class Settings extends BaseSettings {
          _nodeBlacklistPath = nodeBlacklistPath;
       }
 
+      public void setParseEnvironmentBgpTablesAnswerPath(
+            Path parseEnvironmentBgpTablesAnswerPath) {
+         _parseEnvironmentBgpTablesAnswerPath = parseEnvironmentBgpTablesAnswerPath;
+      }
+
+      public void setParseEnvironmentRoutingTablesAnswerPath(
+            Path parseEnvironmentRoutingTablesAnswerPath) {
+         _parseEnvironmentRoutingTablesAnswerPath = parseEnvironmentRoutingTablesAnswerPath;
+      }
+
       public void setPrecomputedRoutesPath(Path writeRoutesPath) {
          _precomputedRoutesPath = writeRoutesPath;
       }
@@ -154,8 +217,14 @@ public final class Settings extends BaseSettings {
          _serializedTopologyPath = serializedTopologyPath;
       }
 
-      public void setTrafficFactsDir(Path trafficFactsDir) {
-         _trafficFactsDir = trafficFactsDir;
+      public void setSerializeEnvironmentBgpTablesPath(
+            Path serializeEnvironmentBgpTablesPath) {
+         _serializeEnvironmentBgpTablesPath = serializeEnvironmentBgpTablesPath;
+      }
+
+      public void setSerializeEnvironmentRoutingTablesPath(
+            Path serializeEnvironmentRoutingTablesPath) {
+         _serializeEnvironmentRoutingTablesPath = serializeEnvironmentRoutingTablesPath;
       }
 
    }
@@ -306,8 +375,6 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
-   private static final String ARG_DIFF_QUESTION = "diffquestion";
-
    private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
 
    private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
@@ -409,11 +476,17 @@ public final class Settings extends BaseSettings {
 
    private TestrigSettings _activeTestrigSettings;
 
+   private String _analysisName;
+
+   private boolean _analyze;
+
    private boolean _anonymize;
 
    private boolean _answer;
 
    private Path _answerJsonPath;
+
+   private TestrigSettings _baseTestrigSettings;
 
    private List<String> _blockNames;
 
@@ -443,6 +516,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _diffActive;
 
+   private boolean _differential;
+
    private boolean _diffQuestion;
 
    private String _environmentName;
@@ -465,6 +540,10 @@ public final class Settings extends BaseSettings {
 
    private Path _genOspfTopologyPath;
 
+   private boolean _haltOnConvertError;
+
+   private boolean _haltOnParseError;
+
    private List<String> _helpPredicates;
 
    private boolean _histogram;
@@ -474,6 +553,8 @@ public final class Settings extends BaseSettings {
    private boolean _ignoreUnknown;
 
    private boolean _ignoreUnsupported;
+
+   private boolean _initInfo;
 
    private int _jobs;
 
@@ -521,8 +602,6 @@ public final class Settings extends BaseSettings {
 
    private String _questionName;
 
-   private Path _questionParametersPath;
-
    private Path _questionPath;
 
    private boolean _redFlagAsError;
@@ -553,11 +632,11 @@ public final class Settings extends BaseSettings {
 
    private boolean _synthesizeTopology;
 
+   private String _taskId;
+
    private String _taskPlugin;
 
    private String _testrig;
-
-   private TestrigSettings _testrigSettings;
 
    private boolean _throwOnLexerError;
 
@@ -579,6 +658,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _usePrecomputedRoutes;
 
+   private boolean _verboseParse;
+
    private boolean _writeBgpAdvertisements;
 
    private boolean _writeIbgpNeighbors;
@@ -591,8 +672,9 @@ public final class Settings extends BaseSettings {
 
    public Settings(String[] args) {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
-            BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
-      _testrigSettings = new TestrigSettings();
+            BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH,
+            BfConsts.PROP_BATFISH_PROPERTIES_PATH));
+      _baseTestrigSettings = new TestrigSettings();
       _deltaTestrigSettings = new TestrigSettings();
       initConfigDefaults();
       initOptions();
@@ -611,6 +693,14 @@ public final class Settings extends BaseSettings {
       return _activeTestrigSettings;
    }
 
+   public String getAnalysisName() {
+      return _analysisName;
+   }
+
+   public boolean getAnalyze() {
+      return _analyze;
+   }
+
    public boolean getAnonymize() {
       return _anonymize;
    }
@@ -621,6 +711,10 @@ public final class Settings extends BaseSettings {
 
    public Path getAnswerJsonPath() {
       return _answerJsonPath;
+   }
+
+   public TestrigSettings getBaseTestrigSettings() {
+      return _baseTestrigSettings;
    }
 
    public List<String> getBlockNames() {
@@ -675,6 +769,10 @@ public final class Settings extends BaseSettings {
       return _diffActive;
    }
 
+   public boolean getDifferential() {
+      return _differential;
+   }
+
    public boolean getDiffQuestion() {
       return _diffQuestion;
    }
@@ -715,12 +813,24 @@ public final class Settings extends BaseSettings {
       return _generateStubsRemoteAs;
    }
 
+   public boolean getHaltOnConvertError() {
+      return _haltOnConvertError;
+   }
+
+   public boolean getHaltOnParseError() {
+      return _haltOnParseError;
+   }
+
    public List<String> getHelpPredicates() {
       return _helpPredicates;
    }
 
    public boolean getHistogram() {
       return _histogram;
+   }
+
+   public boolean getInitInfo() {
+      return _initInfo;
    }
 
    public int getJobs() {
@@ -743,10 +853,12 @@ public final class Settings extends BaseSettings {
       return _logTee;
    }
 
+   @Override
    public int getMaxParserContextLines() {
       return _maxParserContextLines;
    }
 
+   @Override
    public int getMaxParserContextTokens() {
       return _maxParserContextTokens;
    }
@@ -807,10 +919,6 @@ public final class Settings extends BaseSettings {
       return _questionName;
    }
 
-   public Path getQuestionParametersPath() {
-      return _questionParametersPath;
-   }
-
    public Path getQuestionPath() {
       return _questionPath;
    }
@@ -867,6 +975,10 @@ public final class Settings extends BaseSettings {
       return _synthesizeTopology;
    }
 
+   public String getTaskId() {
+      return _taskId;
+   }
+
    public String getTaskPlugin() {
       return _taskPlugin;
    }
@@ -875,14 +987,12 @@ public final class Settings extends BaseSettings {
       return _testrig;
    }
 
-   public TestrigSettings getTestrigSettings() {
-      return _testrigSettings;
-   }
-
+   @Override
    public boolean getThrowOnLexerError() {
       return _throwOnLexerError;
    }
 
+   @Override
    public boolean getThrowOnParserError() {
       return _throwOnParserError;
    }
@@ -919,6 +1029,10 @@ public final class Settings extends BaseSettings {
       return _usePrecomputedRoutes;
    }
 
+   public boolean getVerboseParse() {
+      return _verboseParse;
+   }
+
    public boolean getWriteBgpAdvertisements() {
       return _writeBgpAdvertisements;
    }
@@ -944,6 +1058,7 @@ public final class Settings extends BaseSettings {
    }
 
    private void initConfigDefaults() {
+      setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
       setDefaultProperty(ARG_ANONYMIZE, false);
       setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
       setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
@@ -955,7 +1070,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
       setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
-      setDefaultProperty(ARG_DIFF_QUESTION, false);
+      setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
       setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
       setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
       setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
@@ -967,10 +1082,12 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
       setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
       setDefaultProperty(ARG_GENERATE_STUBS_REMOTE_AS, null);
+      setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
+      setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_HISTOGRAM, false);
-      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
-      setDefaultProperty(ARG_IGNORE_UNKNOWN, false);
+      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
+      setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
       setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
       setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
@@ -1007,15 +1124,18 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
-      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);
+      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+      setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
+      setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
       setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
+      setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
       setDefaultProperty(BfConsts.COMMAND_REPORT, false);
@@ -1025,6 +1145,8 @@ public final class Settings extends BaseSettings {
    }
 
    private void initOptions() {
+
+      addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
 
       addBooleanOption(ARG_ANONYMIZE,
             "created anonymized versions of configs in test rig");
@@ -1063,7 +1185,7 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_DIFF_ACTIVE,
             "make differential environment the active one for questions about a single environment");
 
-      addBooleanOption(ARG_DIFF_QUESTION,
+      addBooleanOption(BfConsts.ARG_DIFFERENTIAL,
             "force treatment of question as differential (to be used when not answering question)");
 
       addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION,
@@ -1085,6 +1207,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(ARG_FLATTEN_ON_THE_FLY,
             "flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)");
 
+      addBooleanOption(BfConsts.COMMAND_INIT_INFO,
+            "include parse/convert initialization info in answer");
+
       addOption(ARG_GEN_OSPF_TOPLOGY_PATH,
             "generate ospf configs from specified topology", ARGNAME_PATH);
 
@@ -1099,6 +1224,12 @@ public final class Settings extends BaseSettings {
 
       addOption(ARG_GENERATE_STUBS_REMOTE_AS,
             "autonomous system number of stubs to be generated", ARGNAME_AS);
+
+      addBooleanOption(BfConsts.ARG_HALT_ON_CONVERT_ERROR,
+            "Halt on conversion error instead of proceeding with successfully converted configs");
+
+      addBooleanOption(BfConsts.ARG_HALT_ON_PARSE_ERROR,
+            "Halt on parse error instead of proceeding with successfully parsed configs");
 
       addBooleanOption(ARG_HELP, "print this message");
 
@@ -1231,6 +1362,11 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES,
             "add precomputed routes to data plane model");
 
+      addBooleanOption(BfConsts.ARG_VERBOSE_PARSE,
+            "(developer option) include parse/convert data in init-testrig answer");
+
+      addBooleanOption(BfConsts.COMMAND_ANALYZE, "run provided analysis");
+
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
       addBooleanOption(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
@@ -1276,6 +1412,8 @@ public final class Settings extends BaseSettings {
 
       // REGULAR OPTIONS
       _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
+      _analysisName = getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
+      _analyze = getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
       _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
       _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
       _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
@@ -1292,7 +1430,7 @@ public final class Settings extends BaseSettings {
             BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
       _deltaTestrig = getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
       _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
-      _diffQuestion = getBooleanOptionValue(ARG_DIFF_QUESTION);
+      _differential = getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
       _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
       _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
       _flatten = getBooleanOptionValue(ARG_FLATTEN);
@@ -1306,11 +1444,16 @@ public final class Settings extends BaseSettings {
       _generateStubsRemoteAs = getIntegerOptionValue(
             ARG_GENERATE_STUBS_REMOTE_AS);
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
+      _haltOnConvertError = getBooleanOptionValue(
+            BfConsts.ARG_HALT_ON_CONVERT_ERROR);
+      _haltOnParseError = getBooleanOptionValue(
+            BfConsts.ARG_HALT_ON_PARSE_ERROR);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
       _ignoreFilesWithStrings = getStringListOptionValue(
             BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
       _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
+      _initInfo = getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
       _jobs = getIntOptionValue(ARG_JOBS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
       _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
@@ -1369,6 +1512,7 @@ public final class Settings extends BaseSettings {
             BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
       _usePrecomputedRoutes = getBooleanOptionValue(
             BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
+      _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
       _writeBgpAdvertisements = getBooleanOptionValue(
             BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
       _writeIbgpNeighbors = getBooleanOptionValue(
@@ -1380,6 +1524,7 @@ public final class Settings extends BaseSettings {
       return _prettyPrintAnswer;
    }
 
+   @Override
    public boolean printParseTree() {
       return _printParseTree;
    }
@@ -1412,6 +1557,18 @@ public final class Settings extends BaseSettings {
       _environmentName = envName;
    }
 
+   public void setHaltOnConvertError(boolean haltOnConvertError) {
+      _haltOnConvertError = haltOnConvertError;
+   }
+
+   public void setHaltOnParseError(boolean haltOnParseError) {
+      _haltOnParseError = haltOnParseError;
+   }
+
+   public void setInitInfo(boolean initInfo) {
+      _initInfo = initInfo;
+   }
+
    public void setLogger(BatfishLogger logger) {
       _logger = logger;
    }
@@ -1436,10 +1593,6 @@ public final class Settings extends BaseSettings {
       _pluginDirs = pluginDirs;
    }
 
-   public void setQuestionParametersPath(Path questionParametersPath) {
-      _questionParametersPath = questionParametersPath;
-   }
-
    public void setQuestionPath(Path questionPath) {
       _questionPath = questionPath;
    }
@@ -1452,12 +1605,22 @@ public final class Settings extends BaseSettings {
       _sequential = true;
    }
 
+   public void setTaskId(String taskId) {
+      _taskId = taskId;
+   }
+
+   @Override
    public void setThrowOnLexerError(boolean throwOnLexerError) {
       _throwOnLexerError = throwOnLexerError;
    }
 
+   @Override
    public void setThrowOnParserError(boolean throwOnParserError) {
       _throwOnParserError = throwOnParserError;
+   }
+
+   public void setVerboseParse(boolean verboseParse) {
+      _verboseParse = verboseParse;
    }
 
 }

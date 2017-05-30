@@ -3,26 +3,23 @@
   "title" : "Configuration",
   "type" : "object",
   "additionalProperties" : false,
+  "description" : "A Configuration represents an autonomous network device, such as a router, host, switch, or firewall.",
   "properties" : {
     "name" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Hostname of this node."
     },
     "asPathAccessLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/AsPathAccessList"
       },
-      "description" : "Ari: Key details go here."
-    },
-    "communities" : {
-      "type" : "array",
-      "items" : {
-        "type" : "integer"
-      }
+      "description" : "Dictionary of all AS-path access-lists for this node."
     },
     "communityLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/CommunityList"
-      }
+      },
+      "description" : "Dictionary of all community-lists for this node."
     },
     "configurationFormat" : {
       "type" : "string",
@@ -49,152 +46,182 @@
         "UNKNOWN",
         "VXWORKS",
         "VYOS"
-      ]
+      ],
+      "description" : "Best guess at vendor configuration format. Used for setting default values, protocol costs, etc."
     },
     "defaultCrossZoneAction" : {
       "type" : "string",
       "enum" : [
         "ACCEPT",
         "REJECT"
-      ]
+      ],
+      "description" : "Default forwarding action to take for traffic that crosses firewall zones."
     },
     "defaultInboundAction" : {
       "type" : "string",
       "enum" : [
         "ACCEPT",
         "REJECT"
-      ]
+      ],
+      "description" : "Default forwarding action to take for traffic destined for this device."
     },
     "domainName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Domain name of this node."
     },
     "ikeGateways" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeGateway"
-      }
+      },
+      "description" : "Dictionary of all IKE gateways for this node."
     },
     "ikePolicies" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IkePolicy"
-      }
+      },
+      "description" : "Dictionary of all IKE policies for this node."
     },
     "ikeProposals" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeProposal"
-      }
+      },
+      "description" : "Dictionary of all IKE proposals for this node."
     },
     "interfaces" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/Interface"
-      }
+      },
+      "description" : "Dictionary of all interfaces across all VRFs for this node."
     },
     "ip6AccessLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/Ip6AccessList"
-      }
+      },
+      "description" : "Dictionary of all IPV6 access-lists for this node."
     },
     "ipAccessLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IpAccessList"
-      }
+      },
+      "description" : "Dictionary of all IPV4 access-lists for this node."
     },
     "ipsecPolicies" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecPolicy"
-      }
+      },
+      "description" : "Dictionary of all IPSEC policies for this node."
     },
     "ipsecProposals" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecProposal"
-      }
+      },
+      "description" : "Dictionary of all IPSEC proposals for this node."
     },
     "ipsecVpns" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecVpn"
-      }
+      },
+      "description" : "Dictionary of all IPSEC VPNs for this node."
     },
     "roles" : {
       "type" : "array",
       "items" : {
         "type" : "string"
-      }
+      },
+      "description" : "Set of all roles in which this node serves."
     },
     "route6FilterLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/Route6FilterList"
-      }
+      },
+      "description" : "Dictionary of all IPV6 route filter lists for this node."
     },
     "routeFilterLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/RouteFilterList"
-      }
+      },
+      "description" : "Dictionary of all IPV4 route filter lists for this node."
     },
     "routingPolicies" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/RoutingPolicy"
-      }
+      },
+      "description" : "Dictionary of all routing policies for this node."
     },
     "vendorFamily" : {
-      "$ref" : "#/definitions/VendorFamily"
+      "$ref" : "#/definitions/VendorFamily",
+      "description" : "Object containing vendor-specific information for this node."
     },
     "vrfs" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/Vrf"
-      }
+      },
+      "description" : "Dictionary of all VRFs for this node."
     },
     "zones" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/Zone"
-      }
+      },
+      "description" : "Dictionary of all firewall zones for this node."
     }
   },
   "definitions" : {
     "AsPathAccessList" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An AsPathAccessList is used to filter e/iBGP routes according to their AS-path attribute.",
       "properties" : {
         "lines" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/AsPathAccessListLine"
-          }
+          },
+          "description" : "The list of lines against which a route's AS-path will be checked in order."
         },
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         }
       }
     },
     "AsPathAccessListLine" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A line in an AsPathAccessList",
       "properties" : {
         "action" : {
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "description" : "The action the underlying access-list will take when this line matches a route."
         },
         "regex" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The regex against which a route's AS-path will be compared"
         }
       }
     },
     "CommunityList" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "Represents a named access-list whose matching criteria is restricted to regexes on community attributes sent with a bgp advertisement",
       "properties" : {
         "lines" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/CommunityListLine"
-          }
+          },
+          "description" : "The list of lines that are checked in order against the community attribute(s) of a bgp advertisement"
         },
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "invertMatch" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Specifies whether or not lines should match the complement of their criteria (does not change whether a line permits or denies)."
         }
       },
       "required" : [
@@ -204,16 +231,19 @@
     "CommunityListLine" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A line in a CommunityList",
       "properties" : {
         "action" : {
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "description" : "The action the underlying access-list will take when this line matches a route."
         },
         "regex" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The regex against which a route's communities will be compared"
         }
       }
     },
@@ -222,25 +252,32 @@
       "additionalProperties" : false,
       "properties" : {
         "address" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Remote IP address of IKE gateway"
         },
         "externalInterface" : {
-          "$ref" : "#/definitions/Interface"
+          "$ref" : "#/definitions/Interface",
+          "description" : "Logical (non-VPN) interface from which to connect to IKE gateway. This interface is used to determine source-address for the connection."
         },
         "ikePolicy" : {
-          "$ref" : "#/definitions/IkePolicy"
+          "type" : "string",
+          "description" : "IKE policy to be used with this IKE gateway."
         },
         "localAddress" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Local IP address from which to connect to IKE gateway. Used instead of external interface."
         },
         "localId" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Local IKE ID used in connection to IKE gateway."
         },
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "remoteId" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Remote IKE ID of IKE gateway."
         }
       }
     },
@@ -249,40 +286,50 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "accessVlan" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Number of access VLAN when switchport mode is ACCESS"
         },
         "active" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether this interface is administratively active (true) or disabled (false)"
         },
         "allPrefixes" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "All IPV4 address/network assignments on this interface"
         },
         "allowedVlans" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "Ranges of allowed VLANs when switchport mode is TRUNK"
         },
         "bandwidth" : {
-          "type" : "number"
+          "type" : "number",
+          "description" : "The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations"
         },
         "description" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Description of this interface"
         },
         "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "type" : "string",
+          "description" : "The IPV4 access-list used to filter traffic destined for this device on this interface."
         },
         "incomingFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "type" : "string",
+          "description" : "The IPV4 access-list used to filter traffic that arrives on this interface."
         },
         "isisCost" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The IS-IS cost of this interface"
         },
         "isisL1InterfaceMode" : {
           "type" : "string",
@@ -290,7 +337,8 @@
             "active",
             "passive",
             "unset"
-          ]
+          ],
+          "description" : "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS level 1"
         },
         "isisL2InterfaceMode" : {
           "type" : "string",
@@ -298,46 +346,56 @@
             "active",
             "passive",
             "unset"
-          ]
+          ],
+          "description" : "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS level 2"
         },
         "mtu" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The maximum transmission unit (MTU) of this interface in bytes"
         },
         "nativeVlan" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The native VLAN of this interface when switchport mode is TRUNK"
         },
         "ospfArea" : {
-          "$ref" : "#/definitions/OspfArea"
+          "type" : "integer",
+          "description" : "The OSPF area to which this interface belongs."
         },
         "ospfCost" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The explicit OSPF cost of this interface. If unset, the cost is automatically calculated."
         },
         "ospfDeadInterval" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Dead-interval in seconds for OSPF updates"
         },
         "ospfEnabled" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not OSPF is enabled at all on this interface (either actively or passively)"
         },
         "ospfHelloMultiplier" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Number of OSPF packets to send out during dead-interval period for fast OSPF updates"
         },
         "ospfPassive" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not OSPF is enabled passively on this interface. If passive, this interface is included in the OSPF RIB, but no OSPF packets are sent from it."
         },
         "outgoingFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
-        },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "type" : "string",
+          "description" : "The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id"
         },
         "prefix" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The primary IPV4 address/network of this interface"
         },
         "proxyArp" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not proxy-ARP is enabled on this interface."
         },
         "routingPolicy" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The routing policy used on this interface for policy-routing (as opposed to destination-routing). Stored as @id"
         },
         "switchportMode" : {
           "type" : "string",
@@ -351,7 +409,8 @@
             "TAP",
             "TOOL",
             "TRUNK"
-          ]
+          ],
+          "description" : "The switchport mode (if any) of this interface"
         },
         "switchportTrunkEncapsulation" : {
           "type" : "string",
@@ -359,13 +418,21 @@
             "DOT1Q",
             "ISL",
             "NEGOTIATE"
-          ]
+          ],
+          "description" : "The switchport trunk encapsulation type of this interface. Only relevant when switchport mode is TRUNK"
         },
         "vrf" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of the VRF to which this interface belongs"
+        },
+        "vrrpGroups" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/VrrpGroup"
+          }
         },
         "zone" : {
-          "$ref" : "#/definitions/Zone"
+          "type" : "string",
+          "description" : "The firewall zone to which this interface belongs."
         }
       },
       "required" : [
@@ -379,31 +446,148 @@
         "ospfPassive"
       ]
     },
-    "IpAccessList" : {
+    "VrrpGroup" : {
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
         "name" : {
+          "type" : "integer",
+          "description" : "The name of this structure"
+        },
+        "preempt" : {
+          "type" : "boolean"
+        },
+        "priority" : {
+          "type" : "integer"
+        },
+        "virtualAddress" : {
           "type" : "string"
+        }
+      },
+      "required" : [
+        "preempt",
+        "priority"
+      ]
+    },
+    "IkePolicy" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "description" : "The name of this structure"
+        },
+        "preSharedKeyHash" : {
+          "type" : "string",
+          "description" : "SHA-256 hash of salted version of pre-shared-key stored in original configuration"
+        },
+        "proposals" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "Dictionary of IKE proposals attached to this policy. Each stored as @id"
+        }
+      }
+    },
+    "IkeProposal" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "description" : "The name of this structure"
+        },
+        "authenticationAlgorithm" : {
+          "type" : "string",
+          "enum" : [
+            "MD5",
+            "SHA_256",
+            "SHA_384",
+            "SHA_512",
+            "SHA1"
+          ],
+          "description" : "Authentication algorithm to use for connection to IKE gateway"
+        },
+        "authenticationMethod" : {
+          "type" : "string",
+          "enum" : [
+            "DSA_SIGNATURES",
+            "PRE_SHARED_KEYS",
+            "RSA_SIGNATURES",
+            "X509"
+          ],
+          "description" : "Authentication method to use for connection to IKE gateway"
+        },
+        "diffieHellmanGroup" : {
+          "type" : "string",
+          "enum" : [
+            "GROUP1",
+            "GROUP14",
+            "GROUP15",
+            "GROUP16",
+            "GROUP17",
+            "GROUP18",
+            "GROUP19",
+            "GROUP2",
+            "GROUP20",
+            "GROUP21",
+            "GROUP22",
+            "GROUP23",
+            "GROUP24",
+            "GROUP25",
+            "GROUP26",
+            "GROUP5"
+          ],
+          "description" : "Diffie-Hellman group to use for key exchange"
+        },
+        "encryptionAlgorithm" : {
+          "type" : "string",
+          "enum" : [
+            "AES_128_CBC",
+            "AES_192_CBC",
+            "AES_256_CBC",
+            "DES_CBC",
+            "THREEDES_CBC"
+          ],
+          "description" : "Encryption algorithm to use for IKE traffic"
+        },
+        "lifetimeSeconds" : {
+          "type" : "integer",
+          "description" : "Lifetime in seconds of connection to IKE gateway"
+        }
+      }
+    },
+    "Ip6AccessList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "description" : "An access-list used to filter IPV6 packets",
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "lines" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/IpAccessListLine"
-          }
+            "$ref" : "#/definitions/Ip6AccessListLine"
+          },
+          "description" : "The lines against which to check an IPV6 packet"
         }
       }
     },
-    "IpAccessListLine" : {
+    "Ip6AccessListLine" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A line in an Ip6AccessList",
       "properties" : {
         "action" : {
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "description" : "The action the underlying access-list will take when this line matches an IPV6 packet."
         },
         "dscps" : {
           "type" : "array",
@@ -713,7 +897,8 @@
           }
         },
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this line in the list"
         },
         "negate" : {
           "type" : "boolean"
@@ -1089,52 +1274,68 @@
       "additionalProperties" : false,
       "properties" : {
         "ack" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for ACK bit if used (true->1/false->0)"
         },
         "cwr" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for CWR bit if used (true->1/false->0)"
         },
         "ece" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for ECE bit if used (true->1/false->0)"
         },
         "fin" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for FIN bit if used (true->1/false->0)"
         },
         "psh" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for PSH bit if used (true->1/false->0)"
         },
         "rst" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for RST bit if used (true->1/false->0)"
         },
         "syn" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for SYN bit if used (true->1/false->0)"
         },
         "urg" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Value for URG bit if used (true->1/false->0)"
         },
         "useAck" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the ACK bit"
         },
         "useCwr" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the CWR bit"
         },
         "useEce" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the ECE bit"
         },
         "useFin" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the FIN bit"
         },
         "usePsh" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the PSH bit"
         },
         "useRst" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the RST bit"
         },
         "useSyn" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the SYN bit"
         },
         "useUrg" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to match against the URG bit"
         }
       },
       "required" : [
@@ -1156,316 +1357,85 @@
         "useUrg"
       ]
     },
-    "OspfArea" : {
+    "IpAccessList" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An access-list used to filter IPV4 packets",
       "properties" : {
         "name" : {
-          "type" : "integer"
-        },
-        "interfaces" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/Interface"
-          }
-        }
-      }
-    },
-    "Configuration" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "name" : {
-          "type" : "string"
-        },
-        "asPathAccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/AsPathAccessList"
-          },
-          "description" : "Ari: Key details go here."
-        },
-        "communities" : {
-          "type" : "array",
-          "items" : {
-            "type" : "integer"
-          }
-        },
-        "communityLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/CommunityList"
-          }
-        },
-        "configurationFormat" : {
           "type" : "string",
-          "enum" : [
-            "ALCATEL_AOS",
-            "ARISTA",
-            "AWS_VPC",
-            "BLADENETWORK",
-            "CISCO_IOS",
-            "CISCO_IOS_XR",
-            "CISCO_NX",
-            "EMPTY",
-            "FLAT_JUNIPER",
-            "FLAT_VYOS",
-            "FORCE10",
-            "FOUNDRY",
-            "HOST",
-            "IGNORED",
-            "IPTABLES",
-            "JUNIPER",
-            "JUNIPER_SWITCH",
-            "MRV",
-            "MSS",
-            "UNKNOWN",
-            "VXWORKS",
-            "VYOS"
-          ]
-        },
-        "defaultCrossZoneAction" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ]
-        },
-        "defaultInboundAction" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ]
-        },
-        "domainName" : {
-          "type" : "string"
-        },
-        "ikeGateways" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeGateway"
-          }
-        },
-        "ikePolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkePolicy"
-          }
-        },
-        "ikeProposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeProposal"
-          }
-        },
-        "interfaces" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Interface"
-          }
-        },
-        "ip6AccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Ip6AccessList"
-          }
-        },
-        "ipAccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
-          }
-        },
-        "ipsecPolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecPolicy"
-          }
-        },
-        "ipsecProposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecProposal"
-          }
-        },
-        "ipsecVpns" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecVpn"
-          }
-        },
-        "roles" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          }
-        },
-        "route6FilterLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Route6FilterList"
-          }
-        },
-        "routeFilterLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/RouteFilterList"
-          }
-        },
-        "routingPolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/RoutingPolicy"
-          }
-        },
-        "vendorFamily" : {
-          "$ref" : "#/definitions/VendorFamily"
-        },
-        "vrfs" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Vrf"
-          }
-        },
-        "zones" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Zone"
-          }
-        }
-      }
-    },
-    "IkePolicy" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "name" : {
-          "type" : "string"
-        },
-        "preSharedKeyHash" : {
-          "type" : "string"
-        },
-        "proposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeProposal"
-          }
-        }
-      }
-    },
-    "IkeProposal" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "name" : {
-          "type" : "string"
-        },
-        "authenticationAlgorithm" : {
-          "type" : "string",
-          "enum" : [
-            "MD5",
-            "SHA_256",
-            "SHA_384",
-            "SHA_512",
-            "SHA1"
-          ]
-        },
-        "authenticationMethod" : {
-          "type" : "string",
-          "enum" : [
-            "DSA_SIGNATURES",
-            "PRE_SHARED_KEYS",
-            "RSA_SIGNATURES",
-            "X509"
-          ]
-        },
-        "diffieHellmanGroup" : {
-          "type" : "string",
-          "enum" : [
-            "GROUP1",
-            "GROUP14",
-            "GROUP15",
-            "GROUP16",
-            "GROUP17",
-            "GROUP18",
-            "GROUP19",
-            "GROUP2",
-            "GROUP20",
-            "GROUP21",
-            "GROUP22",
-            "GROUP23",
-            "GROUP24",
-            "GROUP25",
-            "GROUP26",
-            "GROUP5"
-          ]
-        },
-        "encryptionAlgorithm" : {
-          "type" : "string",
-          "enum" : [
-            "AES_128_CBC",
-            "AES_192_CBC",
-            "AES_256_CBC",
-            "DES_CBC",
-            "THREEDES_CBC"
-          ]
-        },
-        "lifetimeSeconds" : {
-          "type" : "integer"
-        }
-      }
-    },
-    "Ip6AccessList" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "name" : {
-          "type" : "string"
+          "description" : "The name of this structure"
         },
         "lines" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/Ip6AccessListLine"
-          }
+            "$ref" : "#/definitions/IpAccessListLine"
+          },
+          "description" : "The lines against which to check an IPV4 packet"
         }
       }
     },
-    "Ip6AccessListLine" : {
+    "IpAccessListLine" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A line in an IpAccessList",
       "properties" : {
         "action" : {
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "description" : "The action the underlying access-list will take when this line matches an IPV4 packet."
         },
         "dscps" : {
           "type" : "array",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "description" : "A set of acceptable DSCP values for a packet"
         },
         "dstIps" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A space of acceptable destination IP addresses for a packet"
         },
         "dstPorts" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of acceptable destination port ranges for a TCP/UDP packet"
         },
         "ecns" : {
           "type" : "array",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "description" : "A set of acceptable ECN values for a packet"
         },
         "fragmentOffsets" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of acceptable fragment offsets for a UDP packet"
         },
         "icmpCodes" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of acceptable ICMP code ranges for an ICMP packet"
         },
         "icmpTypes" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of acceptable ICMP type ranges for an ICMP packet"
         },
         "ipProtocols" : {
           "type" : "array",
@@ -1730,55 +1700,65 @@
               "XNS_IDP",
               "XTP"
             ]
-          }
+          },
+          "description" : "A set of acceptable IP protocols for a packet"
         },
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this line in the list"
         },
         "negate" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Determines whether to match the complement of the stated criteria of this header space"
         },
         "notDscps" : {
           "type" : "array",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "description" : "A set of unacceptable DSCP values for a packet"
         },
         "notDstIps" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A space of unacceptable destination IP addresses for a packet"
         },
         "notDstPorts" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of unacceptable destination port ranges for a TCP/UDP packet"
         },
         "notEcns" : {
           "type" : "array",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "description" : "A set of unacceptable ECN values for a packet"
         },
         "notFragmentOffsets" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of unacceptable fragment offsets for a UDP packet"
         },
         "notIcmpCodes" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of unacceptable ICMP code ranges for an ICMP packet"
         },
         "notIcmpTypes" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of unacceptable ICMP type ranges for an ICMP packet"
         },
         "notIpProtocols" : {
           "type" : "array",
@@ -2043,43 +2023,50 @@
               "XNS_IDP",
               "XTP"
             ]
-          }
+          },
+          "description" : "A set of unacceptable IP protocols for a packet"
         },
         "notSrcIps" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A space of unacceptable source IP addresses for a packet"
         },
         "notSrcPorts" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of unacceptable source port ranges for a TCP/UDP packet"
         },
         "srcIps" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A space of acceptable source IP addresses for a packet"
         },
         "srcOrDstIps" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A space of IP addresses within which either the source or the destination IP of a packet must fall for acceptance"
         },
         "srcOrDstPorts" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of ranges within which either the source or the destination port of a TCP/UDP packet must fall for acceptance"
         },
         "srcPorts" : {
           "type" : "array",
           "items" : {
             "type" : "string"
-          }
+          },
+          "description" : "A set of acceptable source port ranges for a TCP/UDP packet"
         },
         "states" : {
           "type" : "array",
@@ -2091,13 +2078,15 @@
               "NEW",
               "RELATED"
             ]
-          }
+          },
+          "description" : "A set of acceptable abstract firewall states for a packet to match"
         },
         "tcpFlags" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/TcpFlags"
-          }
+          },
+          "description" : "A set of acceptable TCP flag bitmasks for a TCP packet to match"
         }
       },
       "required" : [
@@ -2109,7 +2098,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "pfsKeyGroup" : {
           "type" : "string",
@@ -2136,9 +2126,11 @@
           "type" : "boolean"
         },
         "proposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecProposal"
-          }
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "IPSEC proposals to try with this policy"
         }
       },
       "required" : [
@@ -2150,7 +2142,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "authenticationAlgorithm" : {
           "type" : "string",
@@ -2190,10 +2183,12 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "bindInterface" : {
-          "$ref" : "#/definitions/Interface"
+          "type" : "string",
+          "description" : "Tunnel interface on which the VPN will be bound"
         },
         "candidateRemoteIpsecVpns" : {
           "type" : "array",
@@ -2201,14 +2196,13 @@
             "$ref" : "#/definitions/IpsecVpn"
           }
         },
-        "gateway" : {
-          "$ref" : "#/definitions/IkeGateway"
+        "ikeGateway" : {
+          "type" : "string",
+          "description" : "Remote VPN gateway configuration"
         },
         "ipsecPolicy" : {
-          "$ref" : "#/definitions/IpsecPolicy"
-        },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "type" : "string",
+          "description" : "IPSEC policy for this VPN"
         },
         "remoteIpsecVpn" : {
           "$ref" : "#/definitions/IpsecVpn"
@@ -2218,143 +2212,168 @@
     "Route6FilterList" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An access-list used to filter IPV6 routes",
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "lines" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/Route6FilterLine"
-          }
+          },
+          "description" : "The lines against which to check an IPV6 route"
         }
       }
     },
     "Route6FilterLine" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A line in an Route6FilterList",
       "properties" : {
         "action" : {
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "description" : "The action the underlying access-list will take when this line matches an IPV6 route."
         },
         "lengthRange" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The range of acceptable prefix-lengths for a route."
         },
         "prefix" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The bits against which to compare a route's prefix. The length of this prefix is used to determine how many leading bits must match."
         }
       }
     },
     "RouteFilterList" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An access-list used to filter IPV4 routes",
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "lines" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/RouteFilterLine"
-          }
+          },
+          "description" : "The lines against which to check an IPV4 route"
         }
       }
     },
     "RouteFilterLine" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A line in an RouteFilterList",
       "properties" : {
         "action" : {
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "description" : "The action the underlying access-list will take when this line matches an IPV4 route."
         },
         "lengthRange" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The range of acceptable prefix-lengths for a route."
         },
         "prefix" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The bits against which to compare a route's prefix. The length of this prefix is used to determine how many leading bits must match."
         }
       }
     },
     "RoutingPolicy" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes",
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "statements" : {
           "type" : "array",
           "items" : {
-            "oneOf" : [
-              {
-                "$ref" : "#/definitions/CallStatement"
-              },
-              {
-                "$ref" : "#/definitions/If"
-              },
-              {
-                "$ref" : "#/definitions/RetainCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisLevel"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisMetricType"
-              },
-              {
-                "$ref" : "#/definitions/SetVarMetricType"
-              },
-              {
-                "$ref" : "#/definitions/BufferedStatement"
-              },
-              {
-                "$ref" : "#/definitions/SetWeight"
-              },
-              {
-                "$ref" : "#/definitions/SetNextHop"
-              },
-              {
-                "$ref" : "#/definitions/SetCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetOrigin"
-              },
-              {
-                "$ref" : "#/definitions/DeleteCommunity"
-              },
-              {
-                "$ref" : "#/definitions/PrependAsPath"
-              },
-              {
-                "$ref" : "#/definitions/AddCommunity"
-              },
-              {
-                "$ref" : "#/definitions/Comment"
-              },
-              {
-                "$ref" : "#/definitions/SetTag"
-              },
-              {
-                "$ref" : "#/definitions/SetLocalPreference"
-              },
-              {
-                "$ref" : "#/definitions/SetMetric"
-              },
-              {
-                "$ref" : "#/definitions/SetOspfMetricType"
-              }
-            ]
-          }
+            "$ref" : "#/definitions/Statement"
+          },
+          "description" : "The list of routing-policy statements to execute"
         }
       }
+    },
+    "Statement" : {
+      "properties" : {
+        "comment" : {
+          "type" : "string"
+        }
+      },
+      "oneOf" : [
+        {
+          "$ref" : "#/definitions/CallStatement"
+        },
+        {
+          "$ref" : "#/definitions/If"
+        },
+        {
+          "$ref" : "#/definitions/RetainCommunity"
+        },
+        {
+          "$ref" : "#/definitions/SetIsisLevel"
+        },
+        {
+          "$ref" : "#/definitions/SetIsisMetricType"
+        },
+        {
+          "$ref" : "#/definitions/SetVarMetricType"
+        },
+        {
+          "$ref" : "#/definitions/BufferedStatement"
+        },
+        {
+          "$ref" : "#/definitions/SetWeight"
+        },
+        {
+          "$ref" : "#/definitions/SetNextHop"
+        },
+        {
+          "$ref" : "#/definitions/SetCommunity"
+        },
+        {
+          "$ref" : "#/definitions/SetOrigin"
+        },
+        {
+          "$ref" : "#/definitions/DeleteCommunity"
+        },
+        {
+          "$ref" : "#/definitions/PrependAsPath"
+        },
+        {
+          "$ref" : "#/definitions/AddCommunity"
+        },
+        {
+          "$ref" : "#/definitions/Comment"
+        },
+        {
+          "$ref" : "#/definitions/SetTag"
+        },
+        {
+          "$ref" : "#/definitions/SetLocalPreference"
+        },
+        {
+          "$ref" : "#/definitions/SetMetric"
+        },
+        {
+          "$ref" : "#/definitions/SetOspfMetricType"
+        }
+      ]
     },
     "CallStatement" : {
       "type" : "object",
@@ -2396,65 +2415,7 @@
         "falseStatements" : {
           "type" : "array",
           "items" : {
-            "oneOf" : [
-              {
-                "$ref" : "#/definitions/CallStatement"
-              },
-              {
-                "$ref" : "#/definitions/If"
-              },
-              {
-                "$ref" : "#/definitions/RetainCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisLevel"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisMetricType"
-              },
-              {
-                "$ref" : "#/definitions/SetVarMetricType"
-              },
-              {
-                "$ref" : "#/definitions/BufferedStatement"
-              },
-              {
-                "$ref" : "#/definitions/SetWeight"
-              },
-              {
-                "$ref" : "#/definitions/SetNextHop"
-              },
-              {
-                "$ref" : "#/definitions/SetCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetOrigin"
-              },
-              {
-                "$ref" : "#/definitions/DeleteCommunity"
-              },
-              {
-                "$ref" : "#/definitions/PrependAsPath"
-              },
-              {
-                "$ref" : "#/definitions/AddCommunity"
-              },
-              {
-                "$ref" : "#/definitions/Comment"
-              },
-              {
-                "$ref" : "#/definitions/SetTag"
-              },
-              {
-                "$ref" : "#/definitions/SetLocalPreference"
-              },
-              {
-                "$ref" : "#/definitions/SetMetric"
-              },
-              {
-                "$ref" : "#/definitions/SetOspfMetricType"
-              }
-            ]
+            "$ref" : "#/definitions/Statement"
           }
         },
         "guard" : {
@@ -2463,66 +2424,28 @@
         "trueStatements" : {
           "type" : "array",
           "items" : {
-            "oneOf" : [
-              {
-                "$ref" : "#/definitions/CallStatement"
-              },
-              {
-                "$ref" : "#/definitions/If"
-              },
-              {
-                "$ref" : "#/definitions/RetainCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisLevel"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisMetricType"
-              },
-              {
-                "$ref" : "#/definitions/SetVarMetricType"
-              },
-              {
-                "$ref" : "#/definitions/BufferedStatement"
-              },
-              {
-                "$ref" : "#/definitions/SetWeight"
-              },
-              {
-                "$ref" : "#/definitions/SetNextHop"
-              },
-              {
-                "$ref" : "#/definitions/SetCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetOrigin"
-              },
-              {
-                "$ref" : "#/definitions/DeleteCommunity"
-              },
-              {
-                "$ref" : "#/definitions/PrependAsPath"
-              },
-              {
-                "$ref" : "#/definitions/AddCommunity"
-              },
-              {
-                "$ref" : "#/definitions/Comment"
-              },
-              {
-                "$ref" : "#/definitions/SetTag"
-              },
-              {
-                "$ref" : "#/definitions/SetLocalPreference"
-              },
-              {
-                "$ref" : "#/definitions/SetMetric"
-              },
-              {
-                "$ref" : "#/definitions/SetOspfMetricType"
-              }
-            ]
+            "$ref" : "#/definitions/Statement"
           }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "BooleanExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
         }
       },
       "title" : null,
@@ -2677,65 +2600,7 @@
           "type" : "string"
         },
         "statement" : {
-          "oneOf" : [
-            {
-              "$ref" : "#/definitions/CallStatement"
-            },
-            {
-              "$ref" : "#/definitions/If"
-            },
-            {
-              "$ref" : "#/definitions/RetainCommunity"
-            },
-            {
-              "$ref" : "#/definitions/SetIsisLevel"
-            },
-            {
-              "$ref" : "#/definitions/SetIsisMetricType"
-            },
-            {
-              "$ref" : "#/definitions/SetVarMetricType"
-            },
-            {
-              "$ref" : "#/definitions/BufferedStatement"
-            },
-            {
-              "$ref" : "#/definitions/SetWeight"
-            },
-            {
-              "$ref" : "#/definitions/SetNextHop"
-            },
-            {
-              "$ref" : "#/definitions/SetCommunity"
-            },
-            {
-              "$ref" : "#/definitions/SetOrigin"
-            },
-            {
-              "$ref" : "#/definitions/DeleteCommunity"
-            },
-            {
-              "$ref" : "#/definitions/PrependAsPath"
-            },
-            {
-              "$ref" : "#/definitions/AddCommunity"
-            },
-            {
-              "$ref" : "#/definitions/Comment"
-            },
-            {
-              "$ref" : "#/definitions/SetTag"
-            },
-            {
-              "$ref" : "#/definitions/SetLocalPreference"
-            },
-            {
-              "$ref" : "#/definitions/SetMetric"
-            },
-            {
-              "$ref" : "#/definitions/SetOspfMetricType"
-            }
-          ]
+          "$ref" : "#/definitions/Statement"
         }
       },
       "title" : null,
@@ -3092,23 +2957,6 @@
         "class"
       ]
     },
-    "BooleanExpr" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "class" : {
-          "type" : "string",
-          "enum" : [
-            null
-          ],
-          "default" : null
-        }
-      },
-      "title" : null,
-      "required" : [
-        "class"
-      ]
-    },
     "VendorFamily" : {
       "type" : "object",
       "additionalProperties" : false,
@@ -3263,7 +3111,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "execTimeoutMinutes" : {
           "type" : "integer"
@@ -3364,7 +3213,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         }
       }
     },
@@ -3384,7 +3234,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "vrf" : {
           "type" : "string"
@@ -3434,9 +3285,13 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "accessList" : {
+          "type" : "string"
+        },
+        "accessList6" : {
           "type" : "string"
         },
         "ro" : {
@@ -3456,7 +3311,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         }
       }
     },
@@ -3476,7 +3332,8 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "_version" : {
           "type" : "integer"
@@ -3498,47 +3355,58 @@
     "Vrf" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A virtual routing and forwarding (VRF) instance on a node.",
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "aggregateRoutes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "description" : "Generated IPV4 routes for this VRF"
         },
         "bgpProcess" : {
-          "$ref" : "#/definitions/BgpProcess"
+          "$ref" : "#/definitions/BgpProcess",
+          "description" : "BGP routing process for this VRF"
         },
         "generatedIpv6Routes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute6"
-          }
+          },
+          "description" : "Generated IPV6 routes for this VRF"
         },
         "interfaces" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Interface"
-          }
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "Interfaces assigned to this VRF"
         },
         "isisProcess" : {
-          "$ref" : "#/definitions/IsisProcess"
+          "$ref" : "#/definitions/IsisProcess",
+          "description" : "IS-IS routing process for this VRF"
         },
         "ospfProcess" : {
-          "$ref" : "#/definitions/OspfProcess"
+          "$ref" : "#/definitions/OspfProcess",
+          "description" : "OSPF routing process for this VRF"
         },
         "staticRoutes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/StaticRoute"
-          }
+          },
+          "description" : "Static routes for this VRF"
         }
       }
     },
     "GeneratedRoute" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A generated/aggregate IPV4 route.",
       "properties" : {
         "class" : {
           "type" : "string",
@@ -3548,10 +3416,12 @@
           "default" : null
         },
         "network" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "IPV4 network of this route"
         },
         "administrativeCost" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Administrative cost for this route (usually based on protocol)"
         },
         "asPath" : {
           "type" : "array",
@@ -3560,22 +3430,28 @@
             "items" : {
               "type" : "integer"
             }
-          }
+          },
+          "description" : "A BGP AS-path attribute to associate with this generated route"
         },
         "attributePolicy" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of the policy that sets attributes of this route"
         },
         "discard" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether this route is route is meant to discard all matching packets"
         },
         "generationPolicy" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of the policy that will generate this route if another route matches it"
         },
         "metric" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Protocol-specific cost for this route"
         },
         "nextHopInterface" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The explicit next-hop interface for this route"
         }
       },
       "title" : null,
@@ -3588,98 +3464,122 @@
     "BgpProcess" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A BGP routing process",
       "properties" : {
         "generatedRoutes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "description" : "IPV4 routes generated in the BGP RIB that are not imported into the main RIB for this VRF"
         },
         "neighbors" : {
           "additionalProperties" : {
             "$ref" : "#/definitions/BgpNeighbor"
-          }
+          },
+          "description" : "Neighbor relationships configured for this BGP process"
         },
         "routerId" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The configured router ID for this BGP process. Note that it can be overridden for individual neighbors."
         }
       }
     },
     "BgpNeighbor" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "A configured e/iBGP peering relationship",
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "address" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The IPV4 address of the remote peer if not dynamic (passive)"
         },
         "advertiseExternal" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether to advertise the best eBGP route for each network independently of whether it is the best BGP route for that network"
         },
         "advertiseInactive" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether to advertise the best BGP route for each network independently of whether it is the best overall route for that network"
         },
         "allowLocalAsIn" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether to allow reception of advertisements containing the local AS number in the AS-path"
         },
         "allowRemoteAsOut" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether to allow sending of advertisements containing the remote AS number in the AS-path"
         },
         "clusterId" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Route-reflection cluster-id for this peer"
         },
         "defaultMetric" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Default MED for routes sent to this neighbor"
         },
         "description" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Description of this peer"
         },
         "dynamic" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether this represents a connection to a specific peer (false) or a passive connection to a network of peers (true)"
         },
         "ebgpMultihop" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether to allow establishment of a multihop eBGP connection with this peer"
         },
         "exportPolicy" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The policy governing all advertisements sent to this peer"
         },
         "generatedRoutes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "description" : "Generated routes specific to this peer not otherwise imported into any of this node's RIBs"
         },
         "group" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Name of a group in the original vendor-specific configuration to which this peer is assigned"
         },
         "importPolicy" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "Routing policy governing all advertisements received from this peer"
         },
         "localAs" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The local autonomous sysem of this peering"
         },
         "localIp" : {
-          "type" : "string"
-        },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "type" : "string",
+          "description" : "The local (source) IPV4 address of this peering"
         },
         "remoteAs" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The remote autonomous sysem of this peering"
         },
         "remotePrefix" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The remote (destination) IPV4 address of this peering (when prefix-length is 32), or the network of peers allowed to connect on this peering (otherwise)"
         },
         "routeReflectorClient" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not this peer is a route-reflector client"
         },
         "sendCommunity" : {
-          "type" : "boolean"
+          "type" : "boolean",
+          "description" : "Whether or not to propagate the community attribute(s) of advertisements to this peer"
         },
         "vrf" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of the VRF containing the BGP process containing this peering"
         }
       },
       "required" : [
@@ -3746,12 +3646,14 @@
     "IsisProcess" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An IS-IS routing process",
       "properties" : {
         "generatedRoutes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "description" : "Generated IPV4 routes for the purpose of export into IS-IS. These routes are not imported into the main RIB."
         },
         "level" : {
           "type" : "string",
@@ -3759,46 +3661,61 @@
             "LEVEL_1",
             "LEVEL_1_2",
             "LEVEL_2"
-          ]
+          ],
+          "description" : "The IS-IS level(s) for this process"
         },
         "netAddress" : {
-          "type" : "string"
-        },
-        "policyExportLevels" : {
-          "additionalProperties" : {
-            "type" : "string",
-            "enum" : [
-              "LEVEL_1",
-              "LEVEL_1_2",
-              "LEVEL_2"
-            ]
-          }
+          "type" : "string",
+          "description" : "The net address is an ISO address representing the IS-IS router ID."
         }
       }
     },
     "OspfProcess" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An OSPF routing process",
       "properties" : {
         "areas" : {
           "additionalProperties" : {
             "$ref" : "#/definitions/OspfArea"
-          }
+          },
+          "description" : "The OSPF areas contained in this process"
         },
         "exportPolicy" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The routing policy applied to routes in the main RIB to determine which ones are to be exported into OSPF and how"
         },
         "generatedRoutes" : {
           "type" : "array",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "description" : "Generated IPV4 routes for the purpose of export into OSPF. These routes are not imported into the main RIB."
         },
         "referenceBandwidth" : {
-          "type" : "number"
+          "type" : "number",
+          "description" : "The reference bandwidth by which an interface's bandwidth is divided to determine its OSPF cost"
         },
         "routerId" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The router-id of this OSPF process"
+        }
+      }
+    },
+    "OspfArea" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "integer",
+          "description" : "The name of this structure"
+        },
+        "interfaces" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "The interfaces assigned to this OSPF area"
         }
       }
     },
@@ -3814,19 +3731,24 @@
           "default" : null
         },
         "network" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "IPV4 network of this route"
         },
         "nextHopInterface" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The explicit next-hop interface for this route"
         },
         "nextHopIp" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The IPV4 address of the next-hop router for this route"
         },
         "tag" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "The non-transitive tag attribute of this route"
         },
         "administrativeCost" : {
-          "type" : "integer"
+          "type" : "integer",
+          "description" : "Administrative cost for this route (usually based on protocol)"
         }
       },
       "title" : null,
@@ -3839,28 +3761,35 @@
     "Zone" : {
       "type" : "object",
       "additionalProperties" : false,
+      "description" : "An IPV4 firewall zone",
       "properties" : {
         "name" : {
-          "type" : "string"
+          "type" : "string",
+          "description" : "The name of this structure"
         },
         "fromHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "type" : "string",
+          "description" : "Filter applied against packets originating from an interface in this zone on this node"
         },
         "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "type" : "string",
+          "description" : "Filter applied against packets whose final destination is an interface in this zone that does not have its own inbound filter"
         },
         "inboundInterfaceFilters" : {
           "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
-          }
+            "type" : "string"
+          },
+          "description" : "Mapping of interfaces in this zone to their corresponding inbound filters: the filter applied against packets whose final destination is the interface whose name is the key in this mapping"
         },
         "toHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "type" : "string",
+          "description" : "Filter applied against packets whose final destination is an interface in this zone. If this filter exists, it is applied IN ADDITION to the interface-specific or default inbound filter."
         },
         "toZonePolicies" : {
           "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
-          }
+            "type" : "string"
+          },
+          "description" : "Maps names of destination zones to the corresponding filter applied against packets which are received on this zone and routed to the named zone"
         }
       }
     }

@@ -4,12 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.batfish.common.BatfishException.BatfishStackTrace;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CompositeBatfishException extends RuntimeException
       implements AnswerElement {
@@ -41,13 +38,6 @@ public class CompositeBatfishException extends RuntimeException
          return _contributingCauses;
       }
 
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
-      }
-
       public void setCause(BatfishStackTrace cause) {
          _cause = cause;
       }
@@ -76,10 +66,4 @@ public class CompositeBatfishException extends RuntimeException
       return _answerElement;
    }
 
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      // TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
-   }
 }

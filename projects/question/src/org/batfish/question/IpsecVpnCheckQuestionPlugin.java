@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -13,18 +12,12 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
 
@@ -145,13 +138,6 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
          return _preSharedKeyMismatch;
       }
 
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
-      }
-
       public void setIncompatibleIkeProposals(
             SortedMap<String, SortedSet<IpsecVpnPair>> incompatibleIkeProposals) {
          _incompatibleIkeProposals = incompatibleIkeProposals;
@@ -239,9 +225,9 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
                            answerElement.getIncompatibleIpsecProposals(), c,
                            ipsecVpn, remoteIpsecVpn);
                   }
-                  if (!ipsecVpn.getGateway().getIkePolicy()
+                  if (!ipsecVpn.getIkeGateway().getIkePolicy()
                         .getPreSharedKeyHash()
-                        .equals(remoteIpsecVpn.getGateway().getIkePolicy()
+                        .equals(remoteIpsecVpn.getIkeGateway().getIkePolicy()
                               .getPreSharedKeyHash())) {
                      answerElement.addIpsecVpnPair(
                            answerElement.getPreSharedKeyMismatch(), c, ipsecVpn,
@@ -314,41 +300,12 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case NODE1_REGEX_VAR:
-                  setNode1Regex(parameters.getString(paramKey));
-                  break;
-               case NODE2_REGEX_VAR:
-                  setNode2Regex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE1_REGEX_VAR)
       public void setNode1Regex(String regex) {
          _node1Regex = regex;
       }
 
+      @JsonProperty(NODE2_REGEX_VAR)
       public void setNode2Regex(String regex) {
          _node2Regex = regex;
       }

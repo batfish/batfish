@@ -1,5 +1,9 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+
+@JsonSchemaDescription("A line in an Ip6AccessList")
 public final class Ip6AccessListLine extends Header6Space {
 
    private static final long serialVersionUID = 1L;
@@ -23,10 +27,12 @@ public final class Ip6AccessListLine extends Header6Space {
       return true;
    }
 
+   @JsonPropertyDescription("The action the underlying access-list will take when this line matches an IPV6 packet.")
    public LineAction getAction() {
       return _action;
    }
 
+   @JsonSchemaDescription("The name of this line in the list")
    public String getName() {
       return _name;
    }

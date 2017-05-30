@@ -22,6 +22,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
@@ -77,6 +78,83 @@ public class BfCoordWorkHelper {
          _logger.errorf("exception: ");
          _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
+      }
+   }
+
+   public boolean configureAnalysis(String containerName, boolean newAnalysis,
+         String analysisName, String addQuestionsFileName,
+         String delQuestionsStr) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_CONFIGURE_ANALYSIS_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         if (newAnalysis) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_NEW_ANALYSIS_KEY,
+                  "new");
+         }
+         addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
+               analysisName);
+         if (addQuestionsFileName != null) {
+            addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY,
+                  addQuestionsFileName);
+         }
+         if (delQuestionsStr != null) {
+            addTextMultiPart(multiPart,
+                  CoordConsts.SVC_DEL_ANALYSIS_QUESTIONS_KEY, delQuestionsStr);
+         }
+
+         return postData(webTarget, multiPart) != null;
+      }
+      catch (Exception e) {
+         if (e.getMessage().contains("FileNotFoundException")) {
+            _logger.errorf("File not found: %s (addQuestionsFile file)\n",
+                  addQuestionsFileName);
+         }
+         else {
+            _logger.errorf(
+                  "Exception when configuring analysis to %s using (%s, %s, %s, %s, %s): %s\n",
+                  _coordWorkMgr, containerName, newAnalysis, analysisName,
+                  addQuestionsFileName, delQuestionsStr,
+                  ExceptionUtils.getStackTrace(e));
+         }
+         return false;
+      }
+   }
+
+   public boolean delAnalysis(String containerName, String analysisName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_DEL_ANALYSIS_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
+               analysisName);
+
+         return postData(webTarget, multiPart) != null;
+      }
+      catch (Exception e) {
+         _logger.errorf(
+               "Exception when deleting analysis to %s using (%s, %s): %s\n",
+               _coordWorkMgr, containerName, analysisName,
+               ExceptionUtils.getStackTrace(e));
+         return false;
       }
    }
 
@@ -236,6 +314,112 @@ public class BfCoordWorkHelper {
    // }
    // }
 
+   public String getAnalysisAnswers(String containerName, String baseTestrig,
+         String baseEnvironment, String deltaTestrig, String deltaEnvironment,
+         String analysisName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_GET_ANALYSIS_ANSWERS_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
+               baseTestrig);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ENV_NAME_KEY,
+               baseEnvironment);
+         if (deltaTestrig != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY,
+                  deltaTestrig);
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_ENV_NAME_KEY,
+                  deltaEnvironment);
+         }
+         addTextMultiPart(multiPart, CoordConsts.SVC_ANALYSIS_NAME_KEY,
+               analysisName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_PRETTY_ANSWER_KEY,
+               Boolean.toString(false));
+
+         JSONObject jObj = postData(webTarget, multiPart);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_ANSWERS_KEY)) {
+            _logger.errorf("answer key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         String answer = jObj.getString(CoordConsts.SVC_ANSWERS_KEY);
+
+         return answer;
+      }
+      catch (Exception e) {
+         _logger.errorf("Exception in getAnswer from %s using (%s, %s)\n",
+               _coordWorkMgr, baseTestrig, analysisName);
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+
+   public String getAnswer(String containerName, String baseTestrig,
+         String baseEnv, String deltaTestrig, String deltaEnv,
+         String questionName) {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_GET_ANSWER_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
+               baseTestrig);
+         addTextMultiPart(multiPart, CoordConsts.SVC_ENV_NAME_KEY, baseEnv);
+         if (deltaTestrig != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_TESTRIG_NAME_KEY,
+                  deltaTestrig);
+            addTextMultiPart(multiPart, CoordConsts.SVC_DELTA_ENV_NAME_KEY,
+                  deltaEnv);
+         }
+         addTextMultiPart(multiPart, CoordConsts.SVC_QUESTION_NAME_KEY,
+               questionName);
+         addTextMultiPart(multiPart, CoordConsts.SVC_PRETTY_ANSWER_KEY,
+               Boolean.toString(false));
+
+         JSONObject jObj = postData(webTarget, multiPart);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_ANSWER_KEY)) {
+            _logger.errorf("answer key not found in: %s\n", jObj.toString());
+            return null;
+         }
+
+         String answer = jObj.getString(CoordConsts.SVC_ANSWER_KEY);
+
+         return answer;
+
+      }
+      catch (Exception e) {
+         _logger.errorf("Exception in getAnswer from %s using (%s, %s)\n",
+               _coordWorkMgr, baseTestrig, questionName);
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+
    private ClientBuilder getClientBuilder() throws Exception {
       return CommonUtil
             .getClientBuilder(_settings.getUseSsl(),
@@ -269,7 +453,7 @@ public class BfCoordWorkHelper {
                .request(MediaType.APPLICATION_OCTET_STREAM)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         _logger.info(response.getStatus() + " " + response.getStatusInfo()
+         _logger.debug(response.getStatus() + " " + response.getStatusInfo()
                + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -371,15 +555,43 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemParse(String containerName, String testrigName) {
+   public WorkItem getWorkItemParse(String containerName, String testrigName,
+         boolean doDelta) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
+      wItem.addRequestParam(BfConsts.COMMAND_INIT_INFO, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
+      if (doDelta) {
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+      }
       return wItem;
    }
 
-   public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
+   public WorkItem getWorkItemRunAnalysis(String analysisName,
+         String containerName, String testrigName, String envName,
+         String deltaTestrig, String deltaEnvName, boolean delta,
+         boolean differential) {
+      WorkItem wItem = new WorkItem(containerName, testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_ANALYZE, "");
+      wItem.addRequestParam(BfConsts.ARG_ANALYSIS_NAME, analysisName);
+      wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      if (differential || delta) {
+         wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
+         wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME,
+               deltaEnvName);
+      }
+      if (delta) {
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+      }
+      if (differential) {
+         wItem.addRequestParam(BfConsts.ARG_DIFFERENTIAL, "");
+      }
+      return wItem;
+   }
+
+   public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
@@ -404,8 +616,16 @@ public class BfCoordWorkHelper {
             return null;
          }
 
-         return WorkStatusCode
+         WorkStatusCode workStatus = WorkStatusCode
                .valueOf(jObj.getString(CoordConsts.SVC_WORKSTATUS_KEY));
+
+         if (!jObj.has(CoordConsts.SVC_TASKSTATUS_KEY)) {
+            _logger.errorf("taskstatus key not found in: %s\n",
+                  jObj.toString());
+         }
+         String taskStr = jObj.getString(CoordConsts.SVC_TASKSTATUS_KEY);
+
+         return new Pair<>(workStatus, taskStr);
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
@@ -493,6 +713,40 @@ public class BfCoordWorkHelper {
             return false;
          }
          throw e;
+      }
+   }
+
+   public JSONObject listAnalyses(String containerName) {
+      try {
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_LIST_ANALYSES_RSC);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
+               _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+               containerName);
+
+         JSONObject jObj = postData(webTarget, multiPart);
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_ANALYSIS_LIST_KEY)) {
+            _logger.errorf("analysis list key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         return jObj.getJSONObject(CoordConsts.SVC_ANALYSIS_LIST_KEY);
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
       }
    }
 
@@ -685,7 +939,7 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         _logger.infof(response.getStatus() + " " + response.getStatusInfo()
+         _logger.debugf(response.getStatus() + " " + response.getStatusInfo()
                + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -695,7 +949,7 @@ public class BfCoordWorkHelper {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
+         _logger.debugf("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
@@ -825,7 +1079,7 @@ public class BfCoordWorkHelper {
    }
 
    public boolean uploadQuestion(String containerName, String testrigName,
-         String qName, String qFileName, String paramsFilename) {
+         String qName, String qFileName) {
       try {
 
          Client client = getClientBuilder().build();
@@ -843,15 +1097,12 @@ public class BfCoordWorkHelper {
                testrigName);
          addTextMultiPart(multiPart, CoordConsts.SVC_QUESTION_NAME_KEY, qName);
          addFileMultiPart(multiPart, CoordConsts.SVC_FILE_KEY, qFileName);
-         addFileMultiPart(multiPart, CoordConsts.SVC_FILE2_KEY, paramsFilename);
 
          return postData(webTarget, multiPart) != null;
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf(
-                  "File not found: %s (question file) or %s (temporary params file) \n",
-                  qFileName, paramsFilename);
+            _logger.errorf("File not found: %s (question file)\n", qFileName);
          }
          else {
             _logger.errorf(

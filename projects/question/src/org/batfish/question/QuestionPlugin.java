@@ -16,11 +16,14 @@ public abstract class QuestionPlugin extends Plugin implements IQuestionPlugin {
 
    @Override
    protected final void pluginInitialize() {
-      String questionName = createQuestion().getName();
+      Question question = createQuestion();
+      String questionName = question.getName();
+      String questionClassName = question.getClass().getCanonicalName();
       switch (_pluginConsumer.getType()) {
       case BATFISH: {
          IBatfish batfish = (IBatfish) _pluginConsumer;
-         batfish.registerAnswerer(questionName, this::createAnswerer);
+         batfish.registerAnswerer(questionName, questionClassName,
+               this::createAnswerer);
          break;
       }
       case CLIENT: {

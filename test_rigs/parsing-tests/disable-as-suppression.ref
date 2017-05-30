@@ -2,6 +2,16 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "as1r1" : "as1r1.cfg",
+        "as1r2" : "as1r2.cfg",
+        "as2r1" : "as2r1.cfg"
+      },
+      "parseStatus" : {
+        "as1r1" : "PASSED",
+        "as1r2" : "PASSED",
+        "as2r1" : "PASSED"
+      },
       "parseTrees" : {
         "as1r1" : {
           "sentences" : [
@@ -50,14 +60,14 @@
             "      DEC:'1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (router_bgp_stanza_tail",
-            "        (nexus_neighbor_rb_stanza",
+            "        (neighbor_block_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.12.11.2'  <== mode:M_NEIGHBOR",
             "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
             "          DEC:'2'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
-            "        (neighbor_rb_stanza",
+            "        (neighbor_flat_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.12.11.2'  <== mode:M_NEIGHBOR",
             "          (bgp_tail",
@@ -122,14 +132,14 @@
             "      DEC:'1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (router_bgp_stanza_tail",
-            "        (nexus_neighbor_rb_stanza",
+            "        (neighbor_block_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.12.21.2'  <== mode:M_NEIGHBOR",
             "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
             "          DEC:'2'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
-            "        (neighbor_rb_stanza",
+            "        (neighbor_flat_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.12.21.2'  <== mode:M_NEIGHBOR",
             "          (bgp_tail",
@@ -211,13 +221,13 @@
             "      DEC:'2'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (router_bgp_stanza_tail",
-            "        (nexus_neighbor_rb_stanza",
+            "        (neighbor_block_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.12.11.1'  <== mode:M_NEIGHBOR",
             "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
             "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "          (nexus_neighbor_address_family",
+            "          (neighbor_block_address_family",
             "            (address_family_header",
             "              ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
             "              (bgp_address_family",
@@ -230,13 +240,13 @@
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "            (address_family_footer))))",
             "      (router_bgp_stanza_tail",
-            "        (nexus_neighbor_rb_stanza",
+            "        (neighbor_block_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.12.21.1'  <== mode:M_NEIGHBOR",
             "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
             "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "          (nexus_neighbor_address_family",
+            "          (neighbor_block_address_family",
             "            (address_family_header",
             "              ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
             "              (bgp_address_family",
@@ -258,10 +268,20 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.21.0"
     },
     {
-      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement"
+      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "version" : "0.21.0"
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "parseStatus" : {
+        "as1r1" : "PASSED",
+        "as1r2" : "PASSED",
+        "as2r1" : "PASSED"
+      }
     }
   ],
   "status" : "SUCCESS"

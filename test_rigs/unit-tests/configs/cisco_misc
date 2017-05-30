@@ -32,6 +32,7 @@ tunnel-group 1.2.3.4 ipsec-attributes
 bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
 username abc
  group def
+ secret 5 $1$aaaa$bbbbbbbbbbbbbbbbbbbbbb
 username rancid attributes
  vpn-group-policy GroupPolicy_NOC-VPN
  group-lock value NOC-VPN
@@ -44,8 +45,6 @@ load-balance policies
     distribution symmetric-hash mac-ip
 no lldp run
 load-interval default 5
-ip domain-name my.domain.name
-domain-name my.domain.name
 nv
  satellite 100
   type asr9000v
@@ -122,7 +121,10 @@ voice service voip
  allow-connections h323 to h323
  h323
  h225 id-passthru 
+ fax protocol cisco 
+ shutdown
 !
+ip ospf name-lookup
 coap http enable
 !
 buffers small permanent 60
@@ -139,6 +141,17 @@ event manager applet Interface_Load
  event cli pattern ".*" sync no skip no
  action 1.0 syslog priority informational msg "$_cli_msg"
  set 2.0 _exit_status 1
+!
+event manager applet URLFilter_bw_safeguard
+ event interface name Tunnel9 parameter transmit_rate_bps entry-op ge entry-val 100000000 entry-type rate average-factor 2 poll-interval 60
+ action 1 syslog msg "Traffic rate to URLFilter pepper has exceeded 100Mbit/s over 2 minutes, shutting down Tunnel Interface..."
+ action 2 cli command "enable"
+ action 3 cli command "config t"
+ action 4 cli command "interface Tu9"
+ action 5 cli command "shutdown"
+ action 6 syslog msg "Interface Tunnel9 to URLfilter pepper has been shutdown. It needs to be manually unshut."
+ action 7 syslog msg "Interface \"Tunnel9\" to URLfilter pepper has been shutdown. It needs to be manually unshut."
+ action 8 syslog msg ""
 !
 dial-peer voice 1 voip
  codec transparent
@@ -232,3 +245,52 @@ xml agent tty
 sap cache-timeout 30
 ipv6 enable-acl-cam-sharing
 ipv6 global-mtu 1500
+locale CH
+monitor session 1 type erspan-source
+ shutdown
+ description ntp debugging
+ source cpu rp 
+ destination
+  erspan-id 1
+  mtu 1464
+  ip address 130.59.31.3
+  origin ip address 130.59.32.28
+!
+pseudowire-class atom-eth-iw
+ encapsulation mpls
+ interworking ethernet
+!
+memory reserve critical 8192
+!
+l2 vfi OPN-EPFL-backup manual
+ vpn id 706
+ neighbor 130.59.255.86 encapsulation mpls
+ neighbor 130.59.255.19 encapsulation mpls
+ neighbor 130.59.255.5 encapsulation mpls
+ bridge-domain 709
+ mtu 9014
+!
+bridge-domain 707
+!
+xconnect logging pseudowire status
+no environment-monitor shutdown temperature
+monitor-session RSPAN ethernet
+ destination pseudowire
+!
+lpts pifib hardware police
+  flow snmp rate 500
+!
+pool vrf default ipv4 mgmt-net
+  address-range 130.59.60.189 130.59.60.190
+!
+sip-ua
+mirror location 0/RSP0/CPU0 disk0:disk1:
+map-class dialer swiRZ2
+ dialer idle-timeout 360
+ dialer fast-idle 5
+!
+config-register 0x2102
+!
+dialer watch-list 76 ip 130.59.53.128 255.255.255.192
+!
+end

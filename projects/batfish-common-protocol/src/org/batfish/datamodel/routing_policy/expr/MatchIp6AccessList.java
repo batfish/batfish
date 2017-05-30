@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchIp6AccessList extends AbstractBooleanExpr {
+public class MatchIp6AccessList extends BooleanExpr {
 
    /**
     *
@@ -16,11 +16,34 @@ public class MatchIp6AccessList extends AbstractBooleanExpr {
    private String _list;
 
    @JsonCreator
-   public MatchIp6AccessList() {
+   private MatchIp6AccessList() {
    }
 
    public MatchIp6AccessList(String list) {
       _list = list;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchIp6AccessList other = (MatchIp6AccessList) obj;
+      if (_list == null) {
+         if (other._list != null) {
+            return false;
+         }
+      }
+      else if (!_list.equals(other._list)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -42,6 +65,14 @@ public class MatchIp6AccessList extends AbstractBooleanExpr {
 
    public String getList() {
       return _list;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_list == null) ? 0 : _list.hashCode());
+      return result;
    }
 
    public void setList(String list) {

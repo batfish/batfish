@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RouteMapMatchPrefixList implements RouteMapMatch {
 
@@ -17,8 +17,11 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
 
    private final String _prefixList;
 
-   public RouteMapMatchPrefixList(String prefixList) {
+   private final int _statementLine;
+
+   public RouteMapMatchPrefixList(String prefixList, int statementLine) {
       _prefixList = prefixList;
+      _statementLine = statementLine;
    }
 
    public String getPrefixList() {
@@ -35,9 +38,8 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
                new NamedPrefixSet(_prefixList));
       }
       else {
-         vc.undefined(
-               "Reference to undefined prefix-list: '" + _prefixList + "'",
-               VyosVendorConfiguration.PREFIX_LIST, _prefixList);
+         vc.undefined(VyosStructureType.PREFIX_LIST, _prefixList,
+               VyosStructureUsage.ROUTE_MAP_MATCH_PREFIX_LIST, _statementLine);
          // TODO: see if vyos treats as true, false, or disallows
          return BooleanExprs.True.toStaticBooleanExpr();
       }

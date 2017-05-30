@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public final class Node extends ComparableStructure<String> {
 
@@ -27,18 +26,14 @@ public final class Node extends ComparableStructure<String> {
       _nodes = nodes;
       _virtualRouters = new TreeMap<>();
       for (String vrfName : _c.getVrfs().keySet()) {
-         _virtualRouters.put(vrfName, new VirtualRouter(vrfName, _c, _nodes));
+         VirtualRouter vr = new VirtualRouter(vrfName, _c, _nodes);
+         vr.initRibs();
+         _virtualRouters.put(vrfName, vr);
       }
    }
 
    public Configuration getConfiguration() {
       return _c;
-   }
-
-   public void initPolicyOwners() {
-      for (RoutingPolicy policy : _c.getRoutingPolicies().values()) {
-         policy.setOwner(_c);
-      }
    }
 
 }

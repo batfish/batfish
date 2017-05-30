@@ -12,112 +12,11 @@
 Init'ed and set active container
 Uploaded testrig. Parsing now.
 Status: SUCCESS
-Question: null
-Results of parsing vendor configurations
+PARSING SUMMARY
+STATISTICS
+  Parsing results:
+    Parsed successfully: 17
 
-Results from converting vendor configurations
-
-  as1border1[Conversion warnings]
-    RedFlag MISCELLANEOUS : Could not determine update source for BGP neighbor: '3.2.2.2'
-    RedFlag MISCELLANEOUS : Could not determine update source for BGP neighbor: '5.6.7.8'
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as3'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as1_community'
-
-  as1border2[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as2'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as1_community'
-
-  as2border1[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as3'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as2_community'
-
-  as2border2[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as1'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as2_community'
-
-  as2core2[Conversion warnings]
-    RedFlag UNDEFINED : neighbor: '2.1.1.1': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-    RedFlag UNDEFINED : neighbor: '2.1.3.1': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-    RedFlag UNDEFINED : neighbor: '2.1.1.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-    RedFlag UNDEFINED : neighbor: '2.1.3.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-
-  as2dept1[Conversion warnings]
-    RedFlag UNUSED : Unused extended access-list: '105'
-    RedFlag UNUSED : Unused extended access-list: 'RESTRICT_HOST_TRAFFIC_OUT'
-
-  as2dist1[Conversion warnings]
-    RedFlag UNUSED : Unused extended access-list: '102'
-
-  as2dist2[Conversion warnings]
-    RedFlag UNUSED : Unused extended access-list: '102'
-
-  as3border1[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as1'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as3_community'
-
-  as3border2[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as2'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as3_community'
-
-  as2core2[Undefined references]
-    route-map: filter-bogons
-
-  as1border1[Unused structures]
-    bgp group: as3
-    community-list: as1_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as1border2[Unused structures]
-    bgp group: as2
-    community-list: as1_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as2border1[Unused structures]
-    bgp group: as3
-    community-list: as2_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as2border2[Unused structures]
-    bgp group: as1
-    community-list: as2_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as2dept1[Unused structures]
-    ip acl: 105
-    ip acl: RESTRICT_HOST_TRAFFIC_OUT
-
-  as2dist1[Unused structures]
-    ip acl: 102
-
-  as2dist2[Unused structures]
-    ip acl: 102
-
-  as3border1[Unused structures]
-    bgp group: as1
-    community-list: as3_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as3border2[Unused structures]
-    bgp group: as2
-    community-list: as3_community
-    ipv4 prefix-list: inbound_route_filter
-
-Generating dataplane now
-Status: SUCCESS
-Question: null
-Computation summary:
-   OSPF-internal iterations: 8
-   Dependent-routes iterations: 8
-   BGP iterations: 8
-   Total routes: 298
-
-Generated dataplane
 ################
 # The configurations are converted to JSON-based vendor-independent data model:
 Status: SUCCESS
@@ -131,92 +30,9 @@ Question: {
   "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
   "nodes" : {
     "as2border1" : {
-      "@id" : 1,
       "name" : "as2border1",
-      "aggregateRoutes" : [
-        {
-          "class" : "org.batfish.datamodel.GeneratedRoute",
-          "network" : "2.128.0.0/16",
-          "administrativeCost" : 200,
-          "discard" : true,
-          "generationPolicy" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~"
-        }
-      ],
-      "bgpProcess" : {
-        "neighbors" : {
-          "2.1.2.2/32" : {
-            "@id" : 2,
-            "name" : "2.1.2.2/32",
-            "address" : "2.1.2.2",
-            "advertiseExternal" : false,
-            "advertiseInactive" : false,
-            "allowLocalAsIn" : false,
-            "allowRemoteAsOut" : false,
-            "clusterId" : 33620225,
-            "defaultMetric" : 0,
-            "dynamic" : false,
-            "ebgpMultihop" : false,
-            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-            "group" : "as2",
-            "localAs" : 2,
-            "localIp" : "2.1.1.1",
-            "owner" : 1,
-            "remoteAs" : 2,
-            "remotePrefix" : "2.1.2.2/32",
-            "routeReflectorClient" : false,
-            "sendCommunity" : true
-          },
-          "10.12.11.1/32" : {
-            "@id" : 3,
-            "name" : "10.12.11.1/32",
-            "address" : "10.12.11.1",
-            "advertiseExternal" : false,
-            "advertiseInactive" : false,
-            "allowLocalAsIn" : false,
-            "allowRemoteAsOut" : false,
-            "clusterId" : 33620225,
-            "defaultMetric" : 0,
-            "dynamic" : false,
-            "ebgpMultihop" : false,
-            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.12.11.1~",
-            "group" : "as1",
-            "importPolicy" : "as1_to_as2",
-            "localAs" : 2,
-            "localIp" : "10.12.11.2",
-            "owner" : 1,
-            "remoteAs" : 1,
-            "remotePrefix" : "10.12.11.1/32",
-            "routeReflectorClient" : false,
-            "sendCommunity" : true
-          },
-          "2.1.2.1/32" : {
-            "@id" : 4,
-            "name" : "2.1.2.1/32",
-            "address" : "2.1.2.1",
-            "advertiseExternal" : false,
-            "advertiseInactive" : false,
-            "allowLocalAsIn" : false,
-            "allowRemoteAsOut" : false,
-            "clusterId" : 33620225,
-            "defaultMetric" : 0,
-            "dynamic" : false,
-            "ebgpMultihop" : false,
-            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-            "group" : "as2",
-            "localAs" : 2,
-            "localIp" : "2.1.1.1",
-            "owner" : 1,
-            "remoteAs" : 2,
-            "remotePrefix" : "2.1.2.1/32",
-            "routeReflectorClient" : false,
-            "sendCommunity" : true
-          }
-        },
-        "routerId" : "2.1.1.1"
-      },
       "communityLists" : {
         "as1_community" : {
-          "@id" : 5,
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -227,7 +43,6 @@ Question: {
           "invertMatch" : false
         },
         "as2_community" : {
-          "@id" : 6,
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -238,7 +53,6 @@ Question: {
           "invertMatch" : false
         },
         "as3_community" : {
-          "@id" : 7,
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -252,9 +66,9 @@ Question: {
       "configurationFormat" : "CISCO_IOS",
       "defaultCrossZoneAction" : "ACCEPT",
       "defaultInboundAction" : "ACCEPT",
+      "domainName" : "lab.local",
       "interfaces" : {
         "FastEthernet0/0" : {
-          "@id" : 8,
           "name" : "FastEthernet0/0",
           "accessVlan" : 0,
           "active" : true,
@@ -262,7 +76,7 @@ Question: {
             "10.12.11.2/24"
           ],
           "bandwidth" : 1.0E8,
-          "incomingFilter" : 9,
+          "incomingFilter" : "OUTSIDE_TO_INSIDE",
           "isisL1InterfaceMode" : "unset",
           "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
@@ -271,14 +85,14 @@ Question: {
           "ospfEnabled" : false,
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
-          "outgoingFilter" : 10,
-          "owner" : 1,
+          "outgoingFilter" : "INSIDE_TO_AS1",
           "prefix" : "10.12.11.2/24",
+          "proxyArp" : true,
           "switchportMode" : "NONE",
-          "switchportTrunkEncapsulation" : "DOT1Q"
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "vrf" : "default"
         },
         "FastEthernet0/1" : {
-          "@id" : 11,
           "name" : "FastEthernet0/1",
           "accessVlan" : 0,
           "active" : true,
@@ -290,18 +104,18 @@ Question: {
           "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
-          "ospfArea" : 12,
+          "ospfArea" : 1,
           "ospfDeadInterval" : 0,
           "ospfEnabled" : true,
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
-          "owner" : 1,
           "prefix" : "2.12.11.1/24",
+          "proxyArp" : true,
           "switchportMode" : "NONE",
-          "switchportTrunkEncapsulation" : "DOT1Q"
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "vrf" : "default"
         },
         "FastEthernet1/0" : {
-          "@id" : 13,
           "name" : "FastEthernet1/0",
           "accessVlan" : 0,
           "active" : true,
@@ -313,18 +127,18 @@ Question: {
           "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
-          "ospfArea" : 12,
+          "ospfArea" : 1,
           "ospfDeadInterval" : 0,
           "ospfEnabled" : true,
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
-          "owner" : 1,
           "prefix" : "2.12.12.1/24",
+          "proxyArp" : true,
           "switchportMode" : "NONE",
-          "switchportTrunkEncapsulation" : "DOT1Q"
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "vrf" : "default"
         },
         "Loopback0" : {
-          "@id" : 14,
           "name" : "Loopback0",
           "accessVlan" : 0,
           "active" : true,
@@ -336,20 +150,20 @@ Question: {
           "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
-          "ospfArea" : 12,
+          "ospfArea" : 1,
           "ospfDeadInterval" : 0,
           "ospfEnabled" : true,
           "ospfHelloMultiplier" : 0,
           "ospfPassive" : false,
-          "owner" : 1,
           "prefix" : "2.1.1.1/32",
+          "proxyArp" : true,
           "switchportMode" : "NONE",
-          "switchportTrunkEncapsulation" : "DOT1Q"
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "vrf" : "default"
         }
       },
       "ipAccessLists" : {
         "101" : {
-          "@id" : 15,
           "name" : "101",
           "lines" : [
             {
@@ -377,7 +191,6 @@ Question: {
           ]
         },
         "103" : {
-          "@id" : 16,
           "name" : "103",
           "lines" : [
             {
@@ -405,7 +218,6 @@ Question: {
           ]
         },
         "INSIDE_TO_AS1" : {
-          "@id" : 10,
           "name" : "INSIDE_TO_AS1",
           "lines" : [
             {
@@ -433,7 +245,6 @@ Question: {
           ]
         },
         "OUTSIDE_TO_INSIDE" : {
-          "@id" : 9,
           "name" : "OUTSIDE_TO_INSIDE",
           "lines" : [
             {
@@ -472,31 +283,13 @@ Question: {
           ]
         }
       },
-      "ospfProcess" : {
-        "areas" : {
-          "1" : {
-            "@id" : 12,
-            "name" : 1,
-            "interfaces" : [
-              11,
-              13,
-              14
-            ]
-          }
-        },
-        "exportPolicy" : "~OSPF_EXPORT_POLICY~",
-        "referenceBandwidth" : 1.0E9,
-        "routerId" : "2.1.1.1"
-      },
       "route6FilterLists" : {
-        "~BGP_NETWORK6_NETWORKS_FILTER~" : {
-          "@id" : 17,
-          "name" : "~BGP_NETWORK6_NETWORKS_FILTER~"
+        "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+          "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
         }
       },
       "routeFilterLists" : {
         "101" : {
-          "@id" : 18,
           "name" : "101",
           "lines" : [
             {
@@ -512,7 +305,6 @@ Question: {
           ]
         },
         "103" : {
-          "@id" : 19,
           "name" : "103",
           "lines" : [
             {
@@ -528,7 +320,6 @@ Question: {
           ]
         },
         "inbound_route_filter" : {
-          "@id" : 20,
           "name" : "inbound_route_filter",
           "lines" : [
             {
@@ -544,7 +335,6 @@ Question: {
           ]
         },
         "outbound_routes" : {
-          "@id" : 21,
           "name" : "outbound_routes",
           "lines" : [
             {
@@ -554,9 +344,8 @@ Question: {
             }
           ]
         },
-        "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-          "@id" : 22,
-          "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
+        "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
+          "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -565,13 +354,11 @@ Question: {
             }
           ]
         },
-        "~BGP_NETWORK_NETWORKS_FILTER~" : {
-          "@id" : 23,
-          "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
+        "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
+          "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
         },
-        "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
-          "@id" : 24,
-          "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~",
+        "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
+          "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
           "lines" : [
             {
               "action" : "ACCEPT",
@@ -583,11 +370,17 @@ Question: {
       },
       "routingPolicies" : {
         "as1_to_as2" : {
-          "@id" : 25,
           "name" : "as1_to_as2",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as1_to_as2~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -623,22 +416,71 @@ Question: {
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ExitAccept"
+                  "type" : "ReturnTrue"
                 }
               ]
-            },
-            {
-              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-              "type" : "ExitReject"
             }
           ]
         },
         "as2_to_as1" : {
-          "@id" : 26,
           "name" : "as2_to_as1",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as2_to_as1~2~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~as2_to_as1~3~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "103"
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                      "metric" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 50
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 2
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 1
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                }
+              ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "prefix" : {
@@ -677,66 +519,71 @@ Question: {
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ExitAccept"
+                  "type" : "ReturnTrue"
                 }
               ]
-            },
-            {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                "prefix" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                },
-                "prefixSet" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                  "name" : "103"
-                }
-              },
-              "trueStatements" : [
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                  "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                    "value" : 50
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                    "communities" : [
-                      {
-                        "prefix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                          "value" : 2
-                        },
-                        "suffix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                          "value" : 1
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ExitAccept"
-                }
-              ]
-            },
-            {
-              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-              "type" : "ExitReject"
             }
           ]
         },
         "as2_to_as3" : {
-          "@id" : 27,
           "name" : "as2_to_as3",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as2_to_as3~1~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~as2_to_as3~2~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "outbound_routes"
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                      "metric" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 50
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 2
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 3
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                }
+              ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "prefix" : {
@@ -775,66 +622,24 @@ Question: {
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ExitAccept"
+                  "type" : "ReturnTrue"
                 }
               ]
-            },
-            {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                "prefix" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                },
-                "prefixSet" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                  "name" : "outbound_routes"
-                }
-              },
-              "trueStatements" : [
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                  "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                    "value" : 50
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                    "communities" : [
-                      {
-                        "prefix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                          "value" : 2
-                        },
-                        "suffix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                          "value" : 3
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ExitAccept"
-                }
-              ]
-            },
-            {
-              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-              "type" : "ExitReject"
             }
           ]
         },
         "as3_to_as2" : {
-          "@id" : 28,
           "name" : "as3_to_as2",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as3_to_as2~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -870,19 +675,14 @@ Question: {
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ExitAccept"
+                  "type" : "ReturnTrue"
                 }
               ]
-            },
-            {
-              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-              "type" : "ExitReject"
             }
           ]
         },
-        "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~" : {
-          "@id" : 29,
-          "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
+        "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~" : {
+          "name" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -907,9 +707,8 @@ Question: {
             }
           ]
         },
-        "~BGP_COMMON_EXPORT_POLICY~" : {
-          "@id" : 30,
-          "name" : "~BGP_COMMON_EXPORT_POLICY~",
+        "~BGP_COMMON_EXPORT_POLICY:default~" : {
+          "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -921,7 +720,7 @@ Question: {
                 },
                 "prefixSet" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                  "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~"
+                  "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
                 }
               },
               "trueStatements" : [
@@ -943,7 +742,7 @@ Question: {
                     },
                     "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                      "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
+                      "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
                     }
                   },
                   {
@@ -953,7 +752,7 @@ Question: {
                     },
                     "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                      "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
+                      "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
                     }
                   },
                   {
@@ -979,9 +778,8 @@ Question: {
             }
           ]
         },
-        "~BGP_PEER_EXPORT_POLICY:10.12.11.1~" : {
-          "@id" : 31,
-          "name" : "~BGP_PEER_EXPORT_POLICY:10.12.11.1~",
+        "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~" : {
+          "name" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -997,7 +795,7 @@ Question: {
                 "conjuncts" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                    "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
+                    "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
@@ -1014,9 +812,8 @@ Question: {
             }
           ]
         },
-        "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-          "@id" : 32,
-          "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
+        "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~" : {
+          "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1029,7 +826,7 @@ Question: {
               ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
+                "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
               },
               "trueStatements" : [
                 {
@@ -1040,9 +837,8 @@ Question: {
             }
           ]
         },
-        "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-          "@id" : 33,
-          "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
+        "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~" : {
+          "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1055,7 +851,7 @@ Question: {
               ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
+                "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
               },
               "trueStatements" : [
                 {
@@ -1066,9 +862,8 @@ Question: {
             }
           ]
         },
-        "~OSPF_EXPORT_POLICY~" : {
-          "@id" : 34,
-          "name" : "~OSPF_EXPORT_POLICY~",
+        "~OSPF_EXPORT_POLICY:default~" : {
+          "name" : "~OSPF_EXPORT_POLICY:default~",
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -1107,36 +902,39 @@ Question: {
           "hostname" : "as2border1",
           "lines" : {
             "aux0" : {
-              "@id" : 35,
               "name" : "aux0",
               "execTimeoutMinutes" : 0,
               "execTimeoutSeconds" : 0
             },
             "con0" : {
-              "@id" : 36,
               "name" : "con0",
               "execTimeoutMinutes" : 0,
               "execTimeoutSeconds" : 0
             },
             "vty0" : {
-              "@id" : 37,
-              "name" : "vty0"
+              "name" : "vty0",
+              "execTimeoutMinutes" : 0,
+              "execTimeoutSeconds" : 0
             },
             "vty1" : {
-              "@id" : 38,
-              "name" : "vty1"
+              "name" : "vty1",
+              "execTimeoutMinutes" : 0,
+              "execTimeoutSeconds" : 0
             },
             "vty2" : {
-              "@id" : 39,
-              "name" : "vty2"
+              "name" : "vty2",
+              "execTimeoutMinutes" : 0,
+              "execTimeoutSeconds" : 0
             },
             "vty3" : {
-              "@id" : 40,
-              "name" : "vty3"
+              "name" : "vty3",
+              "execTimeoutMinutes" : 0,
+              "execTimeoutSeconds" : 0
             },
             "vty4" : {
-              "@id" : 41,
-              "name" : "vty4"
+              "name" : "vty4",
+              "execTimeoutMinutes" : 0,
+              "execTimeoutSeconds" : 0
             }
           },
           "services" : {
@@ -1176,6 +974,110 @@ Question: {
             }
           }
         }
+      },
+      "vrfs" : {
+        "default" : {
+          "name" : "default",
+          "aggregateRoutes" : [
+            {
+              "class" : "org.batfish.datamodel.GeneratedRoute",
+              "network" : "2.128.0.0/16",
+              "administrativeCost" : 200,
+              "discard" : true,
+              "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~"
+            }
+          ],
+          "bgpProcess" : {
+            "neighbors" : {
+              "2.1.2.1/32" : {
+                "name" : "2.1.2.1/32",
+                "address" : "2.1.2.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 33620225,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+                "group" : "as2",
+                "localAs" : 2,
+                "localIp" : "2.1.1.1",
+                "remoteAs" : 2,
+                "remotePrefix" : "2.1.2.1/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : true,
+                "vrf" : "default"
+              },
+              "2.1.2.2/32" : {
+                "name" : "2.1.2.2/32",
+                "address" : "2.1.2.2",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 33620225,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
+                "group" : "as2",
+                "localAs" : 2,
+                "localIp" : "2.1.1.1",
+                "remoteAs" : 2,
+                "remotePrefix" : "2.1.2.2/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : true,
+                "vrf" : "default"
+              },
+              "10.12.11.1/32" : {
+                "name" : "10.12.11.1/32",
+                "address" : "10.12.11.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 33620225,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
+                "group" : "as1",
+                "importPolicy" : "as1_to_as2",
+                "localAs" : 2,
+                "localIp" : "10.12.11.2",
+                "remoteAs" : 1,
+                "remotePrefix" : "10.12.11.1/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : true,
+                "vrf" : "default"
+              }
+            },
+            "routerId" : "2.1.1.1"
+          },
+          "interfaces" : [
+            "FastEthernet0/0",
+            "FastEthernet0/1",
+            "FastEthernet1/0",
+            "Loopback0"
+          ],
+          "ospfProcess" : {
+            "areas" : {
+              "1" : {
+                "name" : 1,
+                "interfaces" : [
+                  "FastEthernet0/1",
+                  "FastEthernet1/0",
+                  "Loopback0"
+                ]
+              }
+            },
+            "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+            "referenceBandwidth" : 1.0E9,
+            "routerId" : "2.1.1.1"
+          }
+        }
       }
     }
   }
@@ -1187,9 +1089,9 @@ Status: SUCCESS
 Question: nodespath paths="[{"path":"$.nodes[*].interfaces[*][?(@.mtu != 1500)].mtu","suffix":true,"summary":false}]"
 Results for nodespath
   [0]: 3 results for {"path":"$.nodes[*].interfaces[*][?(@.mtu != 1500)].mtu","suffix":true,"summary":false}
-    $['nodes']['as2core2']['interfaces']['FastEthernet0/0']['mtu'] : 1300
-    $['nodes']['as2core2']['interfaces']['FastEthernet0/1']['mtu'] : 1100
-    $['nodes']['as2core2']['interfaces']['FastEthernet2/0']['mtu'] : 1200
+    nodes', 'as2core2', 'interfaces', 'FastEthernet0/0', 'mtu' : 1300
+    nodes', 'as2core2', 'interfaces', 'FastEthernet0/1', 'mtu' : 1100
+    nodes', 'as2core2', 'interfaces', 'FastEthernet2/0', 'mtu' : 1200
 
 # We can also do checks on the data model using our more powerful assertion language:
 # Check that
@@ -1218,7 +1120,7 @@ Question: assert assertions="[{"asPathList":false,"assertion":"(eq 15 (pathsize 
 # we have many queries and can write more
 # for example, we can ask simple questions on adjacencies
 Status: SUCCESS
-Question: neighbors node1Regex=.* | node2Regex=.* | neighborType=[]
+Question: neighbors node1Regex=.* | node2Regex=.* | neighborTypes=[]
 Results for neighbors
   LAN neighbors
     <as1border1:FastEthernet0/0, as1core1:FastEthernet0/0>
@@ -1265,7 +1167,7 @@ Results for neighbors
 # --> can help ensure that adjacencies are as expected (i.e., interfaces are properly configured)
 # we can also ask for protocol-level adjacencies
 Status: SUCCESS
-Question: neighbors node1Regex=.* | node2Regex=.* | neighborType=[EBGP]
+Question: neighbors node1Regex=.* | node2Regex=.* | neighborTypes=[EBGP]
 Results for neighbors
   eBGP Neighbors
     <as1border1:10.12.11.1, as2border1:10.12.11.2>
@@ -1299,43 +1201,15 @@ Results for unique IP assignment check
 Status: SUCCESS
 Question: ospfLoopbacks nodeRegex=".*"
 Results for OSPF loopbacks check
-  Active loopbacks
-    as1border1 : Loopback0
-    as1border2 : Loopback0
-    as1core1 : Loopback0
-    as2border1 : Loopback0
-    as2border2 : Loopback0
-    as2core1 : Loopback0
-    as2core2 : Loopback0
-    as2dist1 : Loopback0
-    as2dist2 : Loopback0
-    as3border1 : Loopback0
-    as3border2 : Loopback0
-    as3core1 : Loopback0
-  Inactive loopbacks
-    as2dept1 : Loopback0
-  Running loopbacks
-    as1border1 : Loopback0
-    as1border2 : Loopback0
-    as1core1 : Loopback0
-    as2border1 : Loopback0
-    as2border2 : Loopback0
-    as2core1 : Loopback0
-    as2core2 : Loopback0
-    as2dist1 : Loopback0
-    as2dist2 : Loopback0
-    as3border1 : Loopback0
-    as3border2 : Loopback0
-    as3core1 : Loopback0
 
 ################
 # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
 # for example, we can see how host1 reaches a particular IP address
-# the query will take time if the dataplane has not been comptued before
+# the query will take time if the dataplane has not been computed before
 Status: SUCCESS
 Question: traceroute ingressNode=host1 | dstIp=1.0.2.2
 
-Flow: ingress:host1 2.128.0.101->1.0.2.2 IP state:NEW
+Flow: ingress:host1 vrf:default 2.128.0.101->1.0.2.2 IP state:NEW
   environment:BASE
     Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<1.0.2.0/24>]
@@ -1370,14 +1244,13 @@ Flow: ingress:host1 2.128.0.101->1.0.2.2 IP state:NEW
     ACCEPTED
 
 
-# (the macro above expands to "get traceroute ingressNode=host1 | dstIp=1.0.2.2")
 # --> unlike a regular traceroute we show multipath and interface information
 # suppose host1 (2.128.0.101) is running DNS and we want to ensure that the server is reachable
 # can easily do this using protocol-specific traceroutes
 Status: SUCCESS
-Question: traceroute ingressNode=as2border1 | dstIp=2.128.0.101 | dstPort=53 | ipProtocol=UDP
+Question: traceroute ingressNode=as2border1 | dstIp=2.128.0.101 | dstProtocol=DNS
 
-Flow: ingress:as2border1 2.1.1.1->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as2border1 vrf:default 2.1.1.1->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
@@ -1408,59 +1281,259 @@ Flow: ingress:as2border1 2.1.1.1->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state
 # while the above could be done using testing/emulation, we alone can be comprehensive
 # for example, find *all* (starting node, packet header) combinations where the DNS server is unreachable
 Status: SUCCESS
-Question: reachability actions=[DROP] | dstPorts=[[53,53]] | dstIps=[2.128.0.101] | ipProtocols=[UDP]
+Question: reachability actions=[DROP] | dstIps=[2.128.0.101] | dstProtocols=[DNS]
 
-Flow: ingress:as1border1 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as1border1 vrf:default 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:as1border2 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as1border2 vrf:default 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 3: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:as1core1 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as1core1 vrf:default 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:as3border1 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as3border1 vrf:default 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:as3border2 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as3border2 vrf:default 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
     Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:as3core1 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:as3core1 vrf:default 2.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:host2 0.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
+Flow: ingress:host2 vrf:default 0.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) state:NEW
   environment:BASE
     Hop 1: host2:eth0 -> (none):null_interface --- [StaticRoute<0.0.0.0/0>]
     DENIED_OUT{filter::OUTPUT}{line:0}
 
 
-# (macro expands to "get reachability dstPrefixes=["2.128.0.101/32"] | dstPortRange=["53-53"] | ipProtoRange=["17-17"] | actions=["drop"])
 # --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
 # --> but also shows that a bad ACL on host2 is blocking access (bad)
 # another example: host2 (2.128.1.101) is running SSH. we can run similar queries to learn who cannot reach it
 # but we can also ensure that non-ssh traffic can *never* reach host2
 Status: SUCCESS
-Question: reachability actions=[ACCEPT] | dstIps=[2.128.1.101] | notDstPorts=[[22,22]] | notIpProtocols=[TCP]
+Question: reachability actions=[ACCEPT] | dstIps=[2.128.1.101] | notDstProtocols=[SSH]
 
-Flow: ingress:host2 0.0.0.0->2.128.1.101 ICMP icmpType:255 icmpCode:255 state:NEW
+Flow: ingress:as2border1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core1:FastEthernet2/0 -> as2dist1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2border1:FastEthernet1/0 -> as2core2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2border1:FastEthernet1/0 -> as2core2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as2border2 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core1:FastEthernet2/0 -> as2dist1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as2core1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2core1:FastEthernet2/0 -> as2dist1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as2core2 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as2dept1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as2dist1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as2dist2 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 2: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as3border1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2core1:FastEthernet2/0 -> as2dist1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 3: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as3border2 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 4: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 7: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 4: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2core1:FastEthernet2/0 -> as2dist1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 7: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 4: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 7: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 4: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 7: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:as3core1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2core1:FastEthernet2/0 -> as2dist1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+    Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
+    Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
+    Hop 3: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 4: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0 --- [BgpRoute<2.128.1.0/24>]
+    Hop 5: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
+    Hop 6: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:host1 vrf:default 2.128.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet1/1 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24>]
+    ACCEPTED
+
+Flow: ingress:host2 vrf:default 0.0.0.0->2.128.1.101 ICMP icmpType:255 icmpCode:255 state:NEW
   environment:BASE
     ACCEPTED
 
@@ -1469,9 +1542,9 @@ Flow: ingress:host2 0.0.0.0->2.128.1.101 ICMP icmpType:255 icmpCode:255 state:NE
 # another example: we also want to ensure that outsiders can *never* reach the SSH server
 # we have ACLs on as2's border routers to prevent this. to test that things are correctly implemented:
 Status: SUCCESS
-Question: reachability actions=[ACCEPT] | dstPorts=[[22,22]] | dstIps=[2.128.1.101] | ingressNodeRegex=.* | ipProtocols=[TCP]
+Question: reachability actions=[ACCEPT] | dstIps=[2.128.1.101] | dstProtocols=[SSH] | ingressNodeRegex=.*
 
-Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3border1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
@@ -1508,122 +1581,16 @@ Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:
 # initialize the delta environment and generate its dataplane
 Active delta testrig->environment is set
 Status: SUCCESS
-Question: null
-Results of parsing vendor configurations
-
-Results from converting vendor configurations
-
-  as1border1[Conversion warnings]
-    RedFlag MISCELLANEOUS : Could not determine update source for BGP neighbor: '3.2.2.2'
-    RedFlag MISCELLANEOUS : Could not determine update source for BGP neighbor: '5.6.7.8'
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as3'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as1_community'
-
-  as1border2[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as2'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as1_community'
-
-  as2border1[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as3'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as2_community'
-
-  as2border2[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as1'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as2_community'
-
-  as2core2[Conversion warnings]
-    RedFlag UNDEFINED : neighbor: '2.1.1.1': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-    RedFlag UNDEFINED : neighbor: '2.1.3.1': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-    RedFlag UNDEFINED : neighbor: '2.1.1.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-    RedFlag UNDEFINED : neighbor: '2.1.3.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'
-
-  as2dept1[Conversion warnings]
-    RedFlag UNUSED : Unused extended access-list: '105'
-
-  as2dist1[Conversion warnings]
-    RedFlag UNUSED : Unused extended access-list: '102'
-
-  as2dist2[Conversion warnings]
-    RedFlag UNUSED : Unused extended access-list: '102'
-
-  as3border1[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as1'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as3_community'
-
-  as3border2[Conversion warnings]
-    RedFlag UNUSED : Unused bgp peer-group/template: 'as2'
-    RedFlag UNUSED : Unused ipv4 prefix-list: 'inbound_route_filter'
-    RedFlag UNUSED : Unused expanded community-list: 'as3_community'
-
-  as2core2[Undefined references]
-    route-map: filter-bogons
-
-  as1border1[Unused structures]
-    bgp group: as3
-    community-list: as1_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as1border2[Unused structures]
-    bgp group: as2
-    community-list: as1_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as2border1[Unused structures]
-    bgp group: as3
-    community-list: as2_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as2border2[Unused structures]
-    bgp group: as1
-    community-list: as2_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as2dept1[Unused structures]
-    ip acl: 105
-
-  as2dist1[Unused structures]
-    ip acl: 102
-
-  as2dist2[Unused structures]
-    ip acl: 102
-
-  as3border1[Unused structures]
-    bgp group: as1
-    community-list: as3_community
-    ipv4 prefix-list: inbound_route_filter
-
-  as3border2[Unused structures]
-    bgp group: as2
-    community-list: as3_community
-    ipv4 prefix-list: inbound_route_filter
-
-Generating delta dataplane
-Status: SUCCESS
-Question: null
-Computation summary:
-   OSPF-internal iterations: 8
-   Dependent-routes iterations: 8
-   BGP iterations: 8
-   Total routes: 301
-
-Generated delta dataplane
 # any earlier query can be executed differentially, to see if how behavior differs
 Status: SUCCESS
-Question: neighbors differential=true | node1Regex=.* | node2Regex=.* | neighborType=[]
-{
-  "class" : "org.batfish.datamodel.answers.JsonDiffAnswerElement",
-  "jsonDiff" : { }
-}
+Question: neighbors differential=true | node1Regex=.* | node2Regex=.* | neighborTypes=[]
+Difference between base and delta
+
 # a particularly powerful query: reachability diff between the two environments
 Status: SUCCESS
 Question: reachability differential=true | actions=[ACCEPT] | type=REDUCED_REACHABILITY
 
-Flow: ingress:as1border1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as1border1 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/24>]
@@ -1682,7 +1649,7 @@ Flow: ingress:as1border1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 5: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as1border2 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as1border2 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
@@ -1757,7 +1724,7 @@ Flow: ingress:as1border2 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 7: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as1core1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as1core1 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
@@ -1824,7 +1791,7 @@ Flow: ingress:as1core1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NE
     Hop 6: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2border1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2border1 vrf:default 125.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
@@ -1875,7 +1842,7 @@ Flow: ingress:as2border1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) stat
     Hop 4: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2border2 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2border2 vrf:default 125.63.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
@@ -1926,7 +1893,7 @@ Flow: ingress:as2border2 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) stat
     Hop 4: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2core1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2core1 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
@@ -1949,7 +1916,7 @@ Flow: ingress:as2core1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 3: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2core2 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2core2 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/24>]
@@ -1972,7 +1939,7 @@ Flow: ingress:as2core2 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 3: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2dept1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2dept1 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dept1:FastEthernet1/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24>]
     ACCEPTED
@@ -1981,7 +1948,7 @@ Flow: ingress:as2dept1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 1: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2dist1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2dist1 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dist1:FastEthernet1/0 -> as2dept1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2dept1:FastEthernet1/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24>]
@@ -1992,7 +1959,7 @@ Flow: ingress:as2dist1 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 2: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as2dist2 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as2dist2 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
     Hop 2: as2dept1:FastEthernet1/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24>]
@@ -2003,7 +1970,7 @@ Flow: ingress:as2dist2 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 2: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as3border1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3border1 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/24>]
@@ -2062,7 +2029,7 @@ Flow: ingress:as3border1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 5: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as3border2 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3border2 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
@@ -2137,7 +2104,7 @@ Flow: ingress:as3border2 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:
     Hop 7: as2dept1:FastEthernet1/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24>]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}
 
-Flow: ingress:as3core1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3core1 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
@@ -2212,7 +2179,7 @@ Flow: ingress:as3core1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NE
 Status: SUCCESS
 Question: {
   "class" : "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion",
-  "environmentName" : "env_76cd0962-4e84-4400-855f-3c0c2d85265d",
+  "environmentName" : "env_c5576e8e-ec09-4aa0-8f5d-1b8440d8804c",
   "interfaceBlacklist" : [
     {
       "hostname" : "as2border2",
@@ -2226,7 +2193,7 @@ Active delta testrig->environment is set
 Status: SUCCESS
 Question: reachability differential=true | actions=[ACCEPT] | type=REDUCED_REACHABILITY
 
-Flow: ingress:as2border1 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
+Flow: ingress:as2border1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
   environment:BASE
     Hop 1: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
     Hop 2: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
@@ -2246,28 +2213,29 @@ Flow: ingress:as2border1 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
     Hop 1: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as2border2 2.0.0.0->3.0.1.1 UDP sport:0 dport:0 state:NEW
+Flow: ingress:as2border2 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
   environment:BASE
-    Hop 1: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 1: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 2: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
+    Hop 3: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
     ACCEPTED
 
   environment:DELTA
-    Hop 1: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
-    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
-    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
+    Hop 1: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
+    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-    Hop 1: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<3.0.1.0/24>]
-    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
-    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
+    Hop 1: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as2core1 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
+Flow: ingress:as2core1 vrf:default 2.0.0.0->3.0.2.2 UDP sport:0 dport:0 state:NEW
   environment:BASE
     Hop 1: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
     Hop 2: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
     Hop 3: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    Hop 4: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
     ACCEPTED
 
   environment:DELTA
@@ -2275,7 +2243,7 @@ Flow: ingress:as2core1 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
     Hop 2: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as2core2 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
+Flow: ingress:as2core2 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
   environment:BASE
     Hop 1: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
     Hop 2: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
@@ -2288,7 +2256,7 @@ Flow: ingress:as2core2 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
     Hop 2: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as2dept1 2.0.0.0->3.0.1.1 UDP sport:0 dport:65484 state:NEW
+Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.1.1 UDP sport:0 dport:65484 state:NEW
   environment:BASE
     Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 2: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
@@ -2339,61 +2307,55 @@ Flow: ingress:as2dept1 2.0.0.0->3.0.1.1 UDP sport:0 dport:65484 state:NEW
     Hop 4: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as2dist1 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
+Flow: ingress:as2dist1 vrf:default 2.0.0.0->3.0.1.2 UDP sport:0 dport:0 state:NEW
   environment:BASE
-    Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    Hop 5: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 4: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [ConnectedRoute<3.0.1.0/24>]
     ACCEPTED
 
-    Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    Hop 5: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 4: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [ConnectedRoute<3.0.1.0/24>]
     ACCEPTED
 
   environment:DELTA
-    Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-    Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as2dist2 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 state:NEW
+Flow: ingress:as2dist2 vrf:default 2.0.0.0->3.0.1.1 UDP sport:0 dport:0 state:NEW
   environment:BASE
-    Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    Hop 5: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.1.0/24>]
     ACCEPTED
 
-    Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    Hop 5: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.1.0/24>]
     ACCEPTED
 
   environment:DELTA
-    Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-    Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
+    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
+    Hop 3: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3border1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [BgpRoute<2.128.1.0/24>]
@@ -2432,7 +2394,7 @@ Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:
     Hop 6: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip any host 2.128.1.101}
 
-Flow: ingress:as3border2 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3border2 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
@@ -2477,7 +2439,7 @@ Flow: ingress:as3border2 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:
     Hop 4: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip any host 2.128.1.101}
 
-Flow: ingress:as3core1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
+Flow: ingress:as3core1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1 --- [BgpRoute<2.128.0.0/16>]
     Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
@@ -2519,72 +2481,9 @@ Flow: ingress:as3core1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:NE
     Hop 5: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0 --- [BgpRoute<2.128.0.0/16>]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny ip any host 2.128.1.101}
 
-Flow: ingress:host1 2.128.0.0->3.0.2.2 UDP sport:0 dport:0 state:NEW
+Flow: ingress:host1 vrf:default 2.128.0.0->3.0.1.2 UDP sport:0 dport:0 state:NEW
   environment:BASE
     Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    ACCEPTED
-
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    ACCEPTED
-
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    ACCEPTED
-
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
-    ACCEPTED
-
-  environment:DELTA
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
-    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
-
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
-    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
-
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
-    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
-
-    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
-    Hop 4: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
-    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
-    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
-
-Flow: ingress:host2 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:255 state:NEW
-  environment:BASE
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
@@ -2592,7 +2491,7 @@ Flow: ingress:host2 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:255 state:NEW
     Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [ConnectedRoute<3.0.1.0/24>]
     ACCEPTED
 
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
@@ -2600,7 +2499,7 @@ Flow: ingress:host2 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:255 state:NEW
     Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [ConnectedRoute<3.0.1.0/24>]
     ACCEPTED
 
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
@@ -2608,7 +2507,7 @@ Flow: ingress:host2 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:255 state:NEW
     Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [ConnectedRoute<3.0.1.0/24>]
     ACCEPTED
 
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
@@ -2617,32 +2516,99 @@ Flow: ingress:host2 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:255 state:NEW
     ACCEPTED
 
   environment:DELTA
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
     Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
-    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.1.0/24>]
     Hop 4: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.1.0/24>]
     Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24>]
+    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
+
+Flow: ingress:host2 vrf:default 2.128.0.0->3.0.2.1 ICMP icmpType:255 icmpCode:255 state:NEW
+  environment:BASE
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
+    Hop 7: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
+    Hop 7: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
+    Hop 7: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
+    Hop 7: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0 --- [ConnectedRoute<3.0.2.0/24>]
+    ACCEPTED
+
+  environment:DELTA
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
+    DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border1:FastEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24>]
     DENIED_OUT{INSIDE_TO_AS1}{deny ip any any}
 
 
@@ -2690,7 +2656,7 @@ Results for comparing same name structure
 Status: SUCCESS
 Question: reachability actions=[ACCEPT] | type=MULTIPATH
 
-Flow: ingress:as2core2 0.0.0.0->2.1.2.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
+Flow: ingress:as2core2 vrf:default 0.0.0.0->2.1.2.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [OspfIntraAreaRoute<2.1.2.1/32>]
     Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1 --- [OspfIntraAreaRoute<2.1.2.1/32>]
@@ -2708,12 +2674,13 @@ Flow: ingress:as2core2 0.0.0.0->2.1.2.1 TCP sport:0 dport:TELNET(23) state:NEW t
     Hop 2: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [OspfIntraAreaRoute<2.1.2.1/32>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:as2dept1 2.0.0.0->1.0.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
+Flow: ingress:as2dept1 vrf:default 2.0.0.0->1.0.1.2 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     Hop 2: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     Hop 3: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     Hop 4: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1 --- [BgpRoute<1.0.1.0/24>]
+    Hop 5: as1border1:FastEthernet0/0 -> as1core1:FastEthernet0/0 --- [ConnectedRoute<1.0.1.0/24>]
     ACCEPTED
 
     Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
@@ -2724,13 +2691,14 @@ Flow: ingress:as2dept1 2.0.0.0->1.0.1.1 TCP sport:0 dport:TELNET(23) state:NEW t
     Hop 2: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<1.0.1.0/24>]
     Hop 3: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     Hop 4: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1 --- [BgpRoute<1.0.1.0/24>]
+    Hop 5: as1border1:FastEthernet0/0 -> as1core1:FastEthernet0/0 --- [ConnectedRoute<1.0.1.0/24>]
     ACCEPTED
 
     Hop 1: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     Hop 2: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:as2dist1 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
+Flow: ingress:as2dist1 vrf:default 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [OspfIntraAreaRoute<2.1.1.1/32>]
     Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [OspfIntraAreaRoute<2.1.1.1/32>]
@@ -2739,7 +2707,7 @@ Flow: ingress:as2dist1 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) state:NEW t
     Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [OspfIntraAreaRoute<2.1.1.1/32>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:as2dist2 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
+Flow: ingress:as2dist2 vrf:default 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [OspfIntraAreaRoute<2.1.1.1/32>]
     Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [OspfIntraAreaRoute<2.1.1.1/32>]
@@ -2748,7 +2716,7 @@ Flow: ingress:as2dist2 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) state:NEW t
     Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [OspfIntraAreaRoute<2.1.1.1/32>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:host1 2.128.0.0->1.0.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
+Flow: ingress:host1 vrf:default 2.128.0.0->1.0.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0 --- [StaticRoute<0.0.0.0/0>]
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
@@ -2774,30 +2742,32 @@ Flow: ingress:host1 2.128.0.0->1.0.1.1 TCP sport:0 dport:TELNET(23) state:NEW tc
     Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:host2 2.128.0.0->1.0.1.1 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
+Flow: ingress:host2 vrf:default 2.128.0.0->3.0.2.2 TCP sport:0 dport:TELNET(23) state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 5: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1 --- [BgpRoute<1.0.1.0/24>]
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<1.0.1.0/24>]
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
     Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 5: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1 --- [BgpRoute<1.0.1.0/24>]
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 4: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 5: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 6: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1 --- [OspfIntraAreaRoute<3.0.2.0/24>]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1 --- [StaticRoute<0.0.0.0/0>]
-    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
-    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<1.0.1.0/24>]
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
+    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0 --- [BgpRoute<3.0.2.0/24>]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
 

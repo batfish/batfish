@@ -7,7 +7,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MultipliedAs implements AsPathListExpr {
+public class MultipliedAs extends AsPathListExpr {
 
    /**
     *
@@ -19,12 +19,43 @@ public class MultipliedAs implements AsPathListExpr {
    private IntExpr _number;
 
    @JsonCreator
-   public MultipliedAs() {
+   private MultipliedAs() {
    }
 
    public MultipliedAs(AsExpr expr, IntExpr number) {
       _expr = expr;
       _number = number;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MultipliedAs other = (MultipliedAs) obj;
+      if (_expr == null) {
+         if (other._expr != null) {
+            return false;
+         }
+      }
+      else if (!_expr.equals(other._expr)) {
+         return false;
+      }
+      if (_number == null) {
+         if (other._number != null) {
+            return false;
+         }
+      }
+      else if (!_number.equals(other._number)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -44,6 +75,15 @@ public class MultipliedAs implements AsPathListExpr {
 
    public IntExpr getNumber() {
       return _number;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
+      result = prime * result + ((_number == null) ? 0 : _number.hashCode());
+      return result;
    }
 
    public void setExpr(AsExpr expr) {

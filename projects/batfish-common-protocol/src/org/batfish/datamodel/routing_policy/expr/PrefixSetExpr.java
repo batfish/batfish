@@ -8,8 +8,19 @@ import org.batfish.datamodel.routing_policy.Environment;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public interface PrefixSetExpr extends Serializable {
+public abstract class PrefixSetExpr implements Serializable {
 
-   boolean matches(Prefix prefix, Environment environment);
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
+
+   @Override
+   public abstract boolean equals(Object obj);
+
+   @Override
+   public abstract int hashCode();
+
+   public abstract boolean matches(Prefix prefix, Environment environment);
 
 }

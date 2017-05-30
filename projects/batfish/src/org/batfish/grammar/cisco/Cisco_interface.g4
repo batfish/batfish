@@ -21,6 +21,7 @@ if_hsrp
    HSRP group = DEC NEWLINE
    (
       if_hsrp_ip_address
+      | if_hsrp_null
       | if_hsrp_preempt
       | if_hsrp_priority
       | if_hsrp_track
@@ -32,14 +33,25 @@ if_hsrp_ip_address
    IP ip = IP_ADDRESS NEWLINE
 ;
 
+if_hsrp_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | MAC_ADDRESS
+      | NAME
+      | TIMERS
+   ) ~NEWLINE* NEWLINE
+;
+
 if_hsrp_preempt
 :
-   PREEMPT NEWLINE
+   PREEMPT ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_priority
 :
-   PRIORITY value = DEC NEWLINE
+   PRIORITY value = DEC ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_track
@@ -109,6 +121,43 @@ if_ip_address_secondary
    ) SECONDARY NEWLINE
 ;
 
+if_ip_address_virtual
+:
+   IP ADDRESS VIRTUAL prefix = IP_PREFIX NEWLINE
+;
+
+if_ip_igmp
+:
+   NO? IP IGMP
+   (
+      ifigmp_null
+      | ifigmp_static_group
+   )
+;
+
+if_ip_nat_destination
+:
+   IP NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
+   NEWLINE
+;
+
+if_ip_nat_source
+:
+   IP NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
+   (
+      OVERLOAD
+      |
+      (
+         POOL pool = variable
+      )
+   )* NEWLINE
+;
+
+if_ip_ospf_area
+:
+   IP OSPF procnum = DEC AREA area = DEC NEWLINE
+;
+
 if_ip_ospf_cost
 :
    IP OSPF COST cost = DEC NEWLINE
@@ -134,6 +183,11 @@ if_ip_ospf_passive_interface
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
 ;
 
+if_ip_pim_neighbor_filter
+:
+   IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
+;
+
 if_ip_policy
 :
    IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
@@ -147,6 +201,11 @@ if_ip_proxy_arp
 if_ip_router_isis
 :
    IP ROUTER ISIS NEWLINE
+;
+
+if_ip_router_ospf_area
+:
+   IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
 ;
 
 if_ip_verify
@@ -174,6 +233,11 @@ if_ip_verify
          )* acl = DEC?
       )
    ) NEWLINE
+;
+
+if_ip_virtual_router
+:
+   IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_isis_circuit_type
@@ -276,7 +340,9 @@ if_null_block
       | DELAY
       | DESTINATION
       | DIALER
+      | DIALER_GROUP
       | DFS
+      | DSL
       |
       (
          DSU BANDWIDTH
@@ -285,6 +351,7 @@ if_null_block
       | ENABLE
       | ENCAPSULATION
       | ENCRYPTION
+      | ETHERNET
       | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
@@ -305,7 +372,13 @@ if_null_block
       | HOLD_QUEUE
       |
       (
-         HSRP VERSION
+         HSRP
+         (
+            BFD
+            | DELAY
+            | USE_BIA
+            | VERSION
+         )
       )
       | IGNORE
       |
@@ -318,7 +391,12 @@ if_null_block
          IP
          (
             ACCOUNTING
+            | ADDRESS
+            (
+               NEGOTIATED
+            )
             | ARP
+            | BGP
             | BROADCAST_ADDRESS
             | CGMP
             | CONTROL_APPS_USE_MGMT_PORT
@@ -330,7 +408,6 @@ if_null_block
             )
             | FLOW
             | HELPER_ADDRESS
-            | IGMP
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
@@ -340,26 +417,48 @@ if_null_block
             | MULTICAST_BOUNDARY
             |
             (
+               NAT
+               (
+                  INSIDE
+                  | OUTSIDE
+               )
+            )
+            | NHRP
+            |
+            (
                OSPF
                (
                   AUTHENTICATION
                   | AUTHENTICATION_KEY
                   | BFD
+                  | DEMAND_CIRCUIT
                   | MESSAGE_DIGEST_KEY
                   | MTU_IGNORE
                   | NETWORK
                   | PRIORITY
                )
             )
-            | NAT
-            | PIM
+            |
+            (
+               PIM
+               (
+                  BORDER
+                  | BORDER_ROUTER
+                  | BSR_BORDER
+                  | DR_PRIORITY
+                  | PASSIVE
+                  | QUERY_INTERVAL
+                  | SNOOPING
+                  | SPARSE_DENSE_MODE
+                  | SPARSE_MODE
+               )
+            )
             | PIM_SPARSE
             | PORT_UNREACHABLE
             | REDIRECT
             | REDIRECTS
             | RIP
             | ROUTE_CACHE
-            | ROUTER
             | RSVP
             | SDR
             | TCP
@@ -369,13 +468,15 @@ if_null_block
             | VIRTUAL_REASSEMBLY
             | VIRTUAL_ROUTER
             | VRF
+            | WCCP
          )
       )
       |
       (
          IPV4
          (
-            MTU
+            ICMP
+            | MTU
             | POINT_TO_POINT
             | UNNUMBERED
             | UNREACHABLES
@@ -399,6 +500,7 @@ if_null_block
       | KEEPALIVE
       | L2_FILTER
       | L2PROTOCOL_TUNNEL
+      | L2TRANSPORT
       | LANE
       | LAPB
       | LACP
@@ -436,15 +538,6 @@ if_null_block
          NO
          (
             DESCRIPTION
-            |
-            (
-               SWITCHPORT
-               (
-                  BLOCK
-                  | DOT1Q
-                  | PRIORITY
-               )
-            )
          )
       )
       |
@@ -453,6 +546,7 @@ if_null_block
          (
             BROADCAST
             | DISABLE
+            | MULTICAST
          )
       )
       | NV
@@ -465,9 +559,11 @@ if_null_block
       | PEER
       | PFC PRIORITY
       | PHYSICAL_LAYER
+      | PLATFORM
       | PORT_CHANNEL
       | PORT_CHANNEL_PROTOCOL
       | PORT_NAME
+      | PORT_TYPE
       | PORTMODE
       | POS
       | POWER
@@ -476,21 +572,26 @@ if_null_block
       | PRIORITY
       | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
+      | PVC
       | QOS
+      | QUEUE_MONITOR
       | QUEUE_SET
       | RANDOM_DETECT
       | RATE_LIMIT
       | RATE_MODE
       | RCV_QUEUE
+      | REDIRECTS
       | REMOTE
       | ROUTE_CACHE
       | ROUTE_ONLY
       | SCRAMBLE
       | SECURITY_LEVEL
       | SERIAL
+      | SERVICE
       | SERVICE_MODULE
       | SERVICE_POLICY
       | SFLOW
+      | SHAPE
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
@@ -509,7 +610,10 @@ if_null_block
       (
          SWITCHPORT
          (
-            EMPTY
+            BACKUP
+            | BLOCK
+            | DOT1Q
+            | EMPTY
             |
             (
                MODE PRIVATE_VLAN
@@ -517,11 +621,16 @@ if_null_block
             | MONITOR
             | NONEGOTIATE
             | PORT_SECURITY
+            | PRIORITY
             | TAP
             | TOOL
             |
             (
-               TRUNK GROUP
+               TRUNK
+               (
+                  GROUP
+                  | PRUNING
+               )
             )
             | VOICE
             | VLAN
@@ -541,9 +650,12 @@ if_null_block
       | UDLD
       | UNTAGGED
       | VLT_PEER_LAG
+      | VMTRACER
       | VPC
       | VRRP
       | VRRP_GROUP
+      | VTP
+      | VXLAN
       | WEIGHTING
       | WRR_QUEUE
       | X25
@@ -556,10 +668,20 @@ if_null_inner
    NO?
    (
       ADDRESS
+      | BACKUP
+      | BRIDGE_DOMAIN
+      | DIALER
+      | ENCAPSULATION
+      | L2PROTOCOL
+      | MODE
       | PRIORITY
+      | PROPAGATE
+      | PROTOCOL
       | RECEIVE
       | REMOTE_PORTS
+      | REWRITE
       | SATELLITE_FABRIC_LINK
+      | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE
@@ -677,6 +799,44 @@ if_vrf_member
    VRF MEMBER name = variable NEWLINE
 ;
 
+ifigmp_null
+:
+   (
+      HOST_PROXY
+      | LAST_MEMBER_QUERY_COUNT
+      | LAST_MEMBER_QUERY_INTERVAL
+      | QUERY_INTERVAL
+      | QUERY_MAX_RESPONSE_TIME
+      | ROUTER_ALERT
+      | SNOOPING
+      | STARTUP_QUERY_COUNT
+      | STARTUP_QUERY_INTERVAL
+      | VERSION
+   ) ~NEWLINE* NEWLINE
+;
+
+ifigmp_static_group
+:
+   STATIC_GROUP
+   (
+      ifigmpsg_acl
+      | ifigmpsg_null
+   )
+;
+
+ifigmpsg_acl
+:
+   ACL name = variable NEWLINE
+;
+
+ifigmpsg_null
+:
+   (
+      IP_ADDRESS
+      | RANGE
+   ) ~NEWLINE* NEWLINE
+;
+
 s_interface
 :
    INTERFACE PRECONFIGURE? iname = interface_name
@@ -695,13 +855,21 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
+      | if_ip_address_virtual
+      | if_ip_igmp
+      | if_ip_nat_destination
+      | if_ip_nat_source
+      | if_ip_ospf_area
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
       | if_ip_ospf_dead_interval_minimal
       | if_ip_ospf_hello_interval
       | if_ip_ospf_passive_interface
+      | if_ip_pim_neighbor_filter
       | if_ip_policy
       | if_ip_router_isis
+      | if_ip_router_ospf_area
+      | if_ip_virtual_router
       | if_isis_circuit_type
       | if_isis_enable
       | if_isis_hello_interval
@@ -712,7 +880,6 @@ s_interface
       | if_load_interval
       | if_mtu
       | if_no_ip_address
-      | if_null_block
       | if_port_security
       | if_shutdown
       | if_switchport
@@ -727,6 +894,9 @@ s_interface
       | if_vrf
       | if_vrf_forwarding
       | if_vrf_member
+      // do not rearrange items below
+
+      | if_null_block
       | unrecognized_line
    )*
 ;

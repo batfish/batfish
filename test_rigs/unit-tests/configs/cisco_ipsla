@@ -188,6 +188,7 @@ ip sla 10
  history buckets-kept 25
  samples-of-history-kept 10
  history filter failures
+ udp-jitter 130.59.38.105 5000
 !
 
 !

@@ -4,7 +4,10 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A line in an RouteFilterList")
 public class RouteFilterLine implements Serializable {
 
    private static final String ACTION_VAR = "action";
@@ -49,16 +52,19 @@ public class RouteFilterLine implements Serializable {
    }
 
    @JsonProperty(ACTION_VAR)
+   @JsonPropertyDescription("The action the underlying access-list will take when this line matches an IPV4 route.")
    public LineAction getAction() {
       return _action;
    }
 
    @JsonProperty(LENGTH_RANGE_VAR)
+   @JsonPropertyDescription("The range of acceptable prefix-lengths for a route.")
    public SubRange getLengthRange() {
       return _lengthRange;
    }
 
    @JsonProperty(PREFIX_VAR)
+   @JsonPropertyDescription("The bits against which to compare a route's prefix. The length of this prefix is used to determine how many leading bits must match.")
    public Prefix getPrefix() {
       return _prefix;
    }

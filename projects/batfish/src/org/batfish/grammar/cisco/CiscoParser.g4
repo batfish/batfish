@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_logging, Cisco_mpls, Cisco_ospf, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -18,6 +18,12 @@ package org.batfish.grammar.cisco;
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
+   
+   @Override
+   public String getStateInfo() {
+      return "_multilineBgpNeighbors: " + _multilineBgpNeighbors + "\n";
+   }
+   
 }
 
 address_aiimgp_stanza
@@ -68,11 +74,6 @@ asa_comment_stanza
 banner_stanza
 :
    BANNER banner_type banner
-;
-
-certificate_stanza
-:
-   CERTIFICATE ~QUIT* QUIT NEWLINE
 ;
 
 cisco_configuration
@@ -173,43 +174,6 @@ cqg_null
    ) ~NEWLINE* NEWLINE
 ;
 
-crypto_null
-:
-   NO?
-   (
-      AUTHENTICATION
-      | CDP_URL
-      | CRL
-      | DESCRIPTION
-      | ENCR
-      | ENCRYPTION
-      | ENROLLMENT
-      | FQDN
-      | GROUP
-      | HASH
-      | INTEGRITY
-      | ISSUER_NAME
-      | KEYPAIR
-      | KEYRING
-      | LIFETIME
-      | MATCH
-      | MODE
-      | PRE_SHARED_KEY
-      | PRF
-      | PROTOCOL
-      | REVERSE_ROUTE
-      | REVOCATION_CHECK
-      | RSAKEYPAIR
-      | SERIAL_NUMBER
-      | SET
-      | SHUTDOWN
-      | SMTP
-      | SUBJECT_NAME
-      | VALIDATION_USAGE
-      | VRF
-   ) ~NEWLINE* NEWLINE
-;
-
 ctlf_null
 :
    NO?
@@ -264,16 +228,44 @@ del_stanza
    DEL ~NEWLINE* NEWLINE
 ;
 
-dhcp_stanza
+dhcp_null
 :
-   DHCP IPV4 NEWLINE dhcp_substanza+
+   NO?
+   (
+      INTERFACE
+   ) ~NEWLINE* NEWLINE
 ;
 
-dhcp_substanza
+dhcp_profile
 :
-   PROFILE ~NEWLINE+ NEWLINE
-   | HELPER_ADDRESS ~NEWLINE+ NEWLINE
-   | INTERFACE ~NEWLINE+ NEWLINE
+   NO? PROFILE ~NEWLINE* NEWLINE
+   (
+      dhcp_profile_null
+   )*
+;
+
+dhcp_profile_null
+:
+   NO?
+   (
+      DEFAULT_ROUTER
+      | DOMAIN_NAME
+      | DNS_SERVER
+      | HELPER_ADDRESS
+      | LEASE
+      | POOL
+      | SUBNET_MASK
+   ) ~NEWLINE* NEWLINE
+;
+
+domain_name
+:
+   NAME hostname = variable_hostname NEWLINE
+;
+
+domain_name_server
+:
+   NAME_SERVER hostname = variable_hostname NEWLINE
 ;
 
 dspf_null
@@ -292,6 +284,7 @@ eh_null
    NO?
    (
       ACTION
+      | ASYNCHRONOUS
       | DELAY
       | TRIGGER
    ) ~NEWLINE* NEWLINE
@@ -374,6 +367,7 @@ flowv_null
    NO?
    (
       OPTIONS
+      | TEMPLATE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -468,11 +462,34 @@ ip_dhcp_null
 :
    NO?
    (
-      DEFAULT_ROUTER
+      BOOTFILE
+      | CLIENT_IDENTIFIER
+      | CLIENT_NAME
+      | DEFAULT_ROUTER
       | DNS_SERVER
       | DOMAIN_NAME
+      | HARDWARE_ADDRESS
+      | HOST
       | LEASE
       | NETWORK
+      | NEXT_SERVER
+      | OPTION
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_domain_name
+:
+   NAME
+   (
+      VRF vrf = variable
+   )? hostname = variable_hostname NEWLINE
+;
+
+ip_domain_null
+:
+   (
+      LIST
+      | LOOKUP
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -482,19 +499,6 @@ ip_nat_null
    (
       RANGE
    ) ~NEWLINE* NEWLINE
-;
-
-ip_pim_tail
-:
-   pim_accept_register
-   | pim_accept_rp
-   | pim_null
-   | pim_rp_address
-   | pim_rp_announce_filter
-   | pim_rp_candidate
-   | pim_send_rp_announce
-   | pim_spt_threshold
-   | pim_ssm
 ;
 
 ip_route_stanza
@@ -519,7 +523,10 @@ ip_route_tail
    (
       nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
-      | distance = DEC
+      | nexthopint = interface_name
+   )*
+   (
+      distance = DEC
       |
       (
          TAG tag = DEC
@@ -533,9 +540,6 @@ ip_route_tail
       (
          NAME variable
       )
-      // do not move interface_name up
-
-      | nexthopint = interface_name
    )* NEWLINE
 ;
 
@@ -553,6 +557,7 @@ ip_sla_null
       | SAMPLES_OF_HISTORY_KEPT
       | TAG
       | TOS
+      | UDP_JITTER
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -560,10 +565,23 @@ ip_ssh_null
 :
    (
       AUTHENTICATION_RETRIES
+      | CLIENT
       | PORT
       | SOURCE_INTERFACE
       | TIME_OUT
    ) ~NEWLINE* NEWLINE
+;
+
+ip_ssh_pubkey_chain
+:
+   PUBKEY_CHAIN NEWLINE
+   (
+      (
+         KEY_HASH
+         | QUIT
+         | USERNAME
+      ) ~NEWLINE* NEWLINE
+   )+
 ;
 
 ip_ssh_version
@@ -699,94 +717,15 @@ ipslas_null
    ) ~NEWLINE* NEWLINE
 ;
 
-l_access_class
-:
-   IPV6? ACCESS_CLASS
-   (
-      (
-         (
-            EGRESS
-            | INGRESS
-         ) name = variable
-      )
-      |
-      (
-         name = variable
-         (
-            IN
-            | OUT
-         )?
-      )
-   ) VRF_ALSO? NEWLINE
-;
-
-l_exec_timeout
-:
-   EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
-;
-
-l_login
-:
-   LOGIN
-   (
-      l_login_authentication
-      | l_login_local
-   )
-;
-
-l_login_authentication
-:
-   AUTHENTICATION
-   (
-      DEFAULT
-      | name = variable
-   ) NEWLINE
-;
-
-l_login_local
-:
-   LOCAL NEWLINE
-;
-
-l_null
+l2_null
 :
    NO?
    (
-      ABSOLUTE_TIMEOUT
-      | ACTIVATION_CHARACTER
-      | AUTHORIZATION
-      | AUTOHANGUP
-      | AUTOSELECT
-      | DATABITS
-      | EXEC
-      | FLOWCONTROL
-      | FLUSH_AT_ACTIVATION
-      | HISTORY
-      | IPV6
-      | LOCATION
-      | LOGGING
-      | LOGOUT_WARNING
-      | MODEM
-      | NOTIFY
-      | PRIVILEGE
-      | ROTARY
-      | SESSION_DISCONNECT_WARNING
-      | SESSION_LIMIT
-      | SESSION_TIMEOUT
-      | STOPBITS
-      | TERMINAL_TYPE
-      | TIMESTAMP
+      BRIDGE_DOMAIN
+      | MTU
+      | NEIGHBOR
+      | VPN
    ) ~NEWLINE* NEWLINE
-;
-
-l_transport
-:
-   TRANSPORT
-   (
-      INPUT
-      | OUTPUT
-      | PREFERRED
-   ) prot += variable+ NEWLINE
 ;
 
 l2vpn_bridge_group
@@ -797,12 +736,32 @@ l2vpn_bridge_group
    )*
 ;
 
-l2vpn_stanza
+l2vpn_logging
 :
-   L2VPN NEWLINE
+   LOGGING NEWLINE
    (
-      l2vpn_bridge_group
-      | xconnect_stanza
+      (
+         BRIDGE_DOMAIN
+         | PSEUDOWIRE
+         | VFI
+      ) NEWLINE
+   )+
+;
+
+l2vpn_xconnect
+:
+   XCONNECT GROUP variable NEWLINE
+   (
+      l2vpn_xconnect_p2p
+   )*
+;
+
+l2vpn_xconnect_p2p
+:
+   NO? P2P ~NEWLINE* NEWLINE
+   (
+      lxp_neighbor
+      | lxp_null
    )*
 ;
 
@@ -810,7 +769,17 @@ lbg_bridge_domain
 :
    BRIDGE_DOMAIN name = variable NEWLINE
    (
-      lbgbd_null
+      lbgbd_mac
+      | lbgbd_null
+      | lbgbd_vfi
+   )*
+;
+
+lbgbd_mac
+:
+   NO? MAC ~NEWLINE* NEWLINE
+   (
+      lbgbdm_limit
    )*
 ;
 
@@ -819,7 +788,101 @@ lbgbd_null
    NO?
    (
       INTERFACE
+      | MTU
+      | NEIGHBOR
       | ROUTED
+   ) ~NEWLINE* NEWLINE
+;
+
+lbgbd_vfi
+:
+   NO? VFI ~NEWLINE* NEWLINE
+   (
+      lbgbdv_null
+   )*
+;
+
+lbgbdm_limit
+:
+   NO? LIMIT ~NEWLINE* NEWLINE
+   (
+      lbgbdml_null
+   )*
+;
+
+lbgbdml_null
+:
+   NO?
+   (
+      ACTION
+      | MAXIMUM
+   ) ~NEWLINE* NEWLINE
+;
+
+lbgbdv_null
+:
+   NO?
+   (
+      NEIGHBOR
+   ) ~NEWLINE* NEWLINE
+;
+
+lpts_null
+:
+   NO?
+   (
+      FLOW
+   ) ~NEWLINE* NEWLINE
+;
+
+lxp_neighbor
+:
+   NO? NEIGHBOR ~NEWLINE* NEWLINE
+   (
+      lxpn_l2tp
+      | lxpn_null
+   )*
+;
+
+lxp_null
+:
+   NO?
+   (
+      INTERFACE
+      | MONITOR_SESSION
+   ) ~NEWLINE* NEWLINE
+;
+
+lxpn_null
+:
+   NO?
+   (
+      SOURCE
+   ) ~NEWLINE* NEWLINE
+;
+
+lxpn_l2tp
+:
+   NO? L2TP ~NEWLINE* NEWLINE
+   (
+      lxpnl_null
+   )*
+;
+
+lxpnl_null
+:
+   NO?
+   (
+      LOCAL
+      | REMOTE
+   ) ~NEWLINE* NEWLINE
+;
+
+map_class_null
+:
+   NO?
+   (
+      DIALER
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -880,6 +943,44 @@ mgp_stanza
    inband_mgp_stanza
 ;
 
+monitor_destination
+:
+   NO? DESTINATION ~NEWLINE* NEWLINE
+   (
+      monitor_destination_null
+   )*
+;
+
+monitor_destination_null
+:
+   NO?
+   (
+      ERSPAN_ID
+      | IP
+      | MTU
+      | ORIGIN
+   ) ~NEWLINE* NEWLINE
+;
+
+monitor_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | DESTINATION
+      | SHUTDOWN
+      | SOURCE
+   ) ~NEWLINE* NEWLINE
+;
+
+monitor_session_null
+:
+   NO?
+   (
+      DESTINATION
+   ) ~NEWLINE* NEWLINE
+;
+
 mp_null
 :
    NO?
@@ -921,151 +1022,6 @@ no_failover
 no_ip_access_list_stanza
 :
    NO IP ACCESS_LIST ~NEWLINE* NEWLINE
-;
-
-ntp_access_group
-:
-   ACCESS_GROUP
-   (
-      IPV4
-      | IPV6
-      |
-      (
-         PEER
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         QUERY_ONLY
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         SERVE
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         SERVE_ONLY
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         VRF vrf = variable
-      )
-   )+ NEWLINE
-;
-
-ntp_authenticate
-:
-   AUTHENTICATE NEWLINE
-;
-
-ntp_clock_period
-:
-   CLOCK_PERIOD ~NEWLINE* NEWLINE
-;
-
-ntp_commit
-:
-   COMMIT NEWLINE
-;
-
-ntp_common
-:
-   ntp_access_group
-   | ntp_authenticate
-   | ntp_clock_period
-   | ntp_commit
-   | ntp_distribute
-   | ntp_logging
-   | ntp_max_associations
-   | ntp_master
-   | ntp_peer
-   | ntp_server
-   | ntp_source
-   | ntp_source_interface
-   | ntp_trusted_key
-   | ntp_update_calendar
-;
-
-ntp_distribute
-:
-   DISTRIBUTE NEWLINE
-;
-
-ntp_logging
-:
-   LOGGING NEWLINE
-;
-
-ntp_max_associations
-:
-   MAX_ASSOCIATIONS DEC NEWLINE
-;
-
-ntp_master
-:
-   MASTER NEWLINE
-;
-
-ntp_peer
-:
-   PEER ~NEWLINE* NEWLINE
-;
-
-ntp_server
-:
-   SERVER
-   (
-      VRF vrf = variable
-   )? hostname = variable
-   (
-      (
-         KEY key = DEC
-      )
-      | prefer = PREFER
-      |
-      (
-         SOURCE src = variable
-      )
-      |
-      (
-         USE_VRF vrf = variable
-      )
-      |
-      (
-         VERSION ver = DEC
-      )
-   )* NEWLINE
-;
-
-ntp_source
-:
-   SOURCE ~NEWLINE* NEWLINE
-;
-
-ntp_source_interface
-:
-   SOURCE_INTERFACE ~NEWLINE* NEWLINE
-;
-
-ntp_trusted_key
-:
-   TRUSTED_KEY DEC NEWLINE
-;
-
-ntp_update_calendar
-:
-   UPDATE_CALENDAR ~NEWLINE* NEWLINE
 ;
 
 null_af_multicast_tail
@@ -1123,11 +1079,6 @@ of_null
    ) ~NEWLINE* NEWLINE
 ;
 
-p2p_stanza
-:
-   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE* NEWLINE
-;
-
 peer_sa_filter
 :
    SA_FILTER
@@ -1162,126 +1113,6 @@ phone_proxy_null
       | TFTP_SERVER
       | TLS_PROXY
    ) ~NEWLINE* NEWLINE
-;
-
-pim_accept_register
-:
-   ACCEPT_REGISTER
-   (
-      (
-         LIST name = variable
-      )
-      |
-      (
-         ROUTE_MAP name = variable
-      )
-   ) NEWLINE
-;
-
-pim_accept_rp
-:
-   ACCEPT_RP
-   (
-      AUTO_RP
-      | IP_ADDRESS
-   )
-   (
-      name = variable
-   )? NEWLINE
-;
-
-pim_null
-:
-   (
-      AUTORP
-      | BIDIR_ENABLE
-      | BIDIR_OFFER_INTERVAL
-      | BIDIR_OFFER_LIMIT
-      | BSR_CANDIDATE
-      | DM_FALLBACK
-      | LOG_NEIGHBOR_CHANGES
-      | REGISTER_RATE_LIMIT
-      | REGISTER_SOURCE
-      | RPF_VECTOR
-      | SEND_RP_DISCOVERY
-      | SNOOPING
-      | V1_RP_REACHABILITY
-   ) ~NEWLINE* NEWLINE
-;
-
-pim_rp_address
-:
-   RP_ADDRESS IP_ADDRESS
-   (
-      GROUP_LIST prefix = IP_PREFIX
-      | OVERRIDE
-      | name = variable
-   )? NEWLINE
-;
-
-pim_rp_announce_filter
-:
-   RP_ANNOUNCE_FILTER
-   (
-      GROUP_LIST
-      | RP_LIST
-   ) name = variable NEWLINE
-;
-
-pim_rp_candidate
-:
-   RP_CANDIDATE interface_name
-   (
-      (
-         GROUP_LIST name = variable
-      )
-      |
-      (
-         INTERVAL DEC
-      )
-      |
-      (
-         PRIORITY DEC
-      )
-   )+ NEWLINE
-;
-
-pim_send_rp_announce
-:
-   SEND_RP_ANNOUNCE interface_name SCOPE ttl = DEC
-   (
-      (
-         GROUP_LIST name = variable
-      )
-      |
-      (
-         INTERVAL DEC
-      )
-   )+ NEWLINE
-;
-
-pim_spt_threshold
-:
-   SPT_THRESHOLD
-   (
-      DEC
-      | INFINITY
-   )
-   (
-      GROUP_LIST name = variable
-   )? NEWLINE
-;
-
-pim_ssm
-:
-   SSM
-   (
-      DEFAULT
-      |
-      (
-         RANGE name = variable
-      )
-   ) NEWLINE
 ;
 
 redundancy_main_cpu
@@ -1327,30 +1158,6 @@ role_null
       DESCRIPTION
       | RULE
    ) ~NEWLINE* NEWLINE
-;
-
-router_hsrp_stanza
-:
-   ROUTER HSRP NEWLINE router_hsrp_substanza+
-;
-
-router_hsrp_substanza
-:
-   INTERFACE interface_name NEWLINE ADDRESS_FAMILY IPV4 NEWLINE HSRP DEC?
-   (
-      VERSION DEC
-   )? NEWLINE router_hsrp_tail+
-;
-
-router_hsrp_tail
-:
-   (
-      ADDRESS IP_ADDRESS
-      | PREEMPT
-      | PRIORITY DEC
-      | TIMERS DEC+
-      | TRACK OBJECT ~NEWLINE+
-   ) NEWLINE
 ;
 
 router_multicast_stanza
@@ -1443,19 +1250,20 @@ s_cos_queue_group
    )*
 ;
 
-s_crypto
-:
-   NO? CRYPTO ~NEWLINE* NEWLINE
-   (
-      crypto_null
-   )*
-;
-
 s_ctl_file
 :
    NO? CTL_FILE ~NEWLINE* NEWLINE
    (
       ctlf_null
+   )*
+;
+
+s_dhcp
+:
+   NO? DHCP ~NEWLINE* NEWLINE
+   (
+      dhcp_null
+      | dhcp_profile
    )*
 ;
 
@@ -1481,12 +1289,21 @@ s_dial_peer
    )*
 ;
 
+s_domain
+:
+   DOMAIN
+   (
+      VRF vrf = variable
+   )?
+   (
+      domain_name
+      | domain_name_server
+   )
+;
+
 s_domain_name
 :
-   DOMAIN_NAME
-   (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
+   DOMAIN_NAME hostname = variable_hostname NEWLINE
 ;
 
 s_dot11
@@ -1557,8 +1374,10 @@ s_flow
    (
       EXPORTER
       | EXPORTER_MAP
+      | HARDWARE
       | MONITOR
       | MONITOR_MAP
+      | PLATFORM
       | RECORD
    ) ~NEWLINE* NEWLINE
    (
@@ -1614,25 +1433,50 @@ s_ip_dhcp
    )*
 ;
 
+s_ip_domain
+:
+   NO? IP DOMAIN
+   (
+      ip_domain_name
+      | ip_domain_null
+   )
+;
+
 s_ip_domain_name
 :
-   IP DOMAIN_NAME name = variable NEWLINE
+   IP DOMAIN_NAME hostname = variable_hostname
+   (
+      USE_VRF variable
+   )? NEWLINE
+;
+
+s_ip_name_server
+:
+   IP NAME_SERVER
+   (
+      VRF vrf = variable
+   )?
+   (
+      hostnames += ip_hostname
+   )+
+   (
+      USE_VRF vrf = variable
+   )? NEWLINE
 ;
 
 s_ip_nat
 :
-   NO? IP NAT ~NEWLINE* NEWLINE
+   NO? IP NAT
+   (
+      INSIDE
+      | LOG
+      | OUTSIDE
+      | POOL
+      | TRANSLATION
+   ) ~NEWLINE* NEWLINE
    (
       ip_nat_null
    )*
-;
-
-s_ip_pim
-:
-   IP PIM
-   (
-      VRF vrf = variable
-   )? ip_pim_tail
 ;
 
 s_ip_sla
@@ -1652,8 +1496,21 @@ s_ip_ssh
 :
    IP SSH
    (
-      ip_ssh_version
+      ip_ssh_pubkey_chain
+      | ip_ssh_version
       | ip_ssh_null
+   )
+;
+
+s_ip_wccp
+:
+   NO? IP WCCP
+   (
+      VRF vrf = variable
+   )?
+   (
+      wccp_id
+      | wccp_null
    )
 ;
 
@@ -1676,32 +1533,29 @@ s_ipsla
    )*
 ;
 
-s_line
+s_l2
 :
-   LINE line_type
+   NO? L2 ~NEWLINE* NEWLINE
    (
-      (
-         slot1 = DEC FORWARD_SLASH
-         (
-            port1 = DEC FORWARD_SLASH
-         )?
-      )? first = DEC
-      (
-         (
-            slot2 = DEC FORWARD_SLASH
-            (
-               port2 = DEC FORWARD_SLASH
-            )?
-         )? last = DEC
-      )?
-   )? NEWLINE
+      l2_null
+   )*
+;
+
+s_l2vpn
+:
+   NO? L2VPN ~NEWLINE* NEWLINE
    (
-      l_access_class
-      | l_exec_timeout
-      | l_login
-      | l_null
-      | l_transport
-      | description_line
+      l2vpn_bridge_group
+      | l2vpn_logging
+      | l2vpn_xconnect
+   )*
+;
+
+s_lpts
+:
+   NO? LPTS ~NEWLINE* NEWLINE
+   (
+      lpts_null
    )*
 ;
 
@@ -1721,11 +1575,36 @@ s_management_tail
    | mgmt_null
 ;
 
+s_map_class
+:
+   NO? MAP_CLASS ~NEWLINE* NEWLINE
+   (
+      map_class_null
+   )*
+;
+
 s_media_termination
 :
    NO? MEDIA_TERMINATION ~NEWLINE* NEWLINE
    (
       mt_null
+   )*
+;
+
+s_monitor
+:
+   NO? MONITOR ~NEWLINE* NEWLINE
+   (
+      monitor_destination
+      | monitor_null
+   )*
+;
+
+s_monitor_session
+:
+   NO? MONITOR_SESSION ~NEWLINE* NEWLINE
+   (
+      monitor_session_null
    )*
 ;
 
@@ -1747,18 +1626,6 @@ s_no_access_list_extended
 s_no_access_list_standard
 :
    NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
-;
-
-s_ntp
-:
-   NTP
-   (
-      ntp_common
-      |
-      (
-         NEWLINE ntp_common*
-      )
-   )
 ;
 
 s_nv
@@ -1817,6 +1684,14 @@ s_role
    )*
 ;
 
+s_router_vrrp
+:
+   NO? ROUTER VRRP NEWLINE
+   (
+      vrrp_interface
+   )*
+;
+
 s_sccp
 :
    NO? SCCP ~NEWLINE* NEWLINE
@@ -1842,24 +1717,10 @@ s_spanning_tree
 :
    NO? SPANNING_TREE
    (
-      (
-         BACKBONEFAST
-         | BRIDGE
-         | DISPUTE
-         | ETHERCHANNEL
-         | EXTEND
-         | FCOE
-         | LOGGING
-         | LOOPGUARD
-         | MODE
-         | OPTIMIZE
-         | PATHCOST
-         | PORT
-         | PORTFAST
-         | UPLINKFAST
-         | VLAN
-      ) ~NEWLINE*
-   )? NEWLINE
+      spanning_tree_mst
+      | spanning_tree_pseudo_information
+      | spanning_tree_null
+   )
 ;
 
 s_ssh
@@ -1906,6 +1767,24 @@ s_switchport
    ) NEWLINE
 ;
 
+s_tacacs
+:
+   TACACS
+   (
+      t_null
+      | t_server
+   )
+;
+
+s_tacacs_server
+:
+   NO? TACACS_SERVER
+   (
+      ts_host
+      | ts_null
+   )
+;
+
 s_tap
 :
    NO? TAP ~NEWLINE* NEWLINE
@@ -1932,13 +1811,21 @@ s_tunnel_group
 
 s_vlan
 :
-   VLAN
+   NO? VLAN
    (
       ACCESS_MAP
       | DEC
    ) ~NEWLINE* NEWLINE
    (
       vlan_null
+   )*
+;
+
+s_voice
+:
+   NO? VOICE ~NEWLINE* NEWLINE
+   (
+      voice_null
    )*
 ;
 
@@ -1980,6 +1867,7 @@ s_vrf_context
    VRF CONTEXT name = variable NEWLINE
    (
       vrfc_ip_route
+      | vrfc_null
    )*
 ;
 
@@ -2011,6 +1899,11 @@ s_wsma
    )*
 ;
 
+s_xconnect_logging
+:
+   NO? XCONNECT LOGGING ~NEWLINE* NEWLINE
+;
+
 sccp_null
 :
    NO?
@@ -2028,6 +1921,60 @@ sntp_server
    (
       VERSION version = DEC
    )? NEWLINE
+;
+
+spanning_tree_mst
+:
+   MST ~NEWLINE* NEWLINE spanning_tree_mst_null*
+;
+
+spanning_tree_mst_null
+:
+   NO?
+   (
+      INSTANCE
+      | NAME
+      | REVISION
+   ) ~NEWLINE* NEWLINE
+;
+
+spanning_tree_pseudo_information
+:
+   PSEUDO_INFORMATION NEWLINE
+   (
+      spti_null
+   )*
+;
+
+spanning_tree_null
+:
+   (
+   // intentional blank
+
+      | BACKBONEFAST
+      | BRIDGE
+      | DISPUTE
+      | ETHERCHANNEL
+      | EXTEND
+      | FCOE
+      | LOGGING
+      | LOOPGUARD
+      | MODE
+      | OPTIMIZE
+      | PATHCOST
+      | PORT
+      | PORTFAST
+      | UPLINKFAST
+      | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+spti_null
+:
+   NO?
+   (
+      MST
+   ) ~NEWLINE* NEWLINE
 ;
 
 srlg_interface_numeric_stanza
@@ -2101,10 +2048,8 @@ stanza
    | asa_comment_stanza
    | as_path_set_stanza
    | banner_stanza
-   | certificate_stanza
    | community_set_stanza
    | del_stanza
-   | dhcp_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_access_list_stanza
@@ -2116,12 +2061,9 @@ stanza
    | ip_route_stanza
    | ipv6_prefix_list_stanza
    | ipx_sap_access_list_stanza
-   | l2vpn_stanza
    | mgmt_api_stanza
    | mgmt_egress_iface_stanza
    | multicast_routing_stanza
-   | mpls_ldp_stanza
-   | mpls_traffic_eng_stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_access_list_stanza
@@ -2136,7 +2078,6 @@ stanza
    | router_isis_stanza
    | router_multicast_stanza
    | router_rip_stanza
-   | router_static_stanza
    | rsvp_stanza
    | s_aaa
    | s_archive
@@ -2150,7 +2091,9 @@ stanza
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
+   | s_dhcp
    | s_dial_peer
+   | s_domain
    | s_domain_name
    | s_dot11
    | s_dspfarm
@@ -2168,21 +2111,34 @@ stanza
    | s_hostname
    | s_interface
    | s_ip_dhcp
+   | s_ip_domain
    | s_ip_domain_name
+   | s_ip_name_server
    | s_ip_nat
    | s_ip_pim
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
+   | s_ip_wccp
    | s_ipc
    | s_ipv6_router_ospf
    | s_ipsla
+   | s_key
+   | s_l2
+   | s_l2vpn
    | s_line
    | s_logging
+   | s_lpts
    | s_management
    | s_mac_access_list
    | s_mac_access_list_extended
+   | s_map_class
    | s_media_termination
+   | s_monitor
+   | s_monitor_session
+   | s_mpls_label_range
+   | s_mpls_ldp
+   | s_mpls_traffic_eng
    | s_mtu
    | s_name
    | s_no_access_list_extended
@@ -2202,6 +2158,8 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_static
+   | s_router_vrrp
    | s_sccp
    | s_service
    | s_snmp_server
@@ -2211,10 +2169,14 @@ stanza
    | s_statistics
    | s_stcapp
    | s_switchport
+   | s_table_map
+   | s_tacacs
+   | s_tacacs_server
    | s_tap
    | s_track
    | s_tunnel_group
    | s_vlan
+   | s_voice
    | s_voice_port
    | s_vpc
    | s_vpdn_group
@@ -2223,6 +2185,7 @@ stanza
    | s_vrf_definition
    | s_webvpn
    | s_wsma
+   | s_xconnect_logging
    | srlg_stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
@@ -2242,6 +2205,50 @@ statistics_null
 switching_mode_stanza
 :
    SWITCHING_MODE ~NEWLINE* NEWLINE
+;
+
+t_null
+:
+   (
+      SOURCE_INTERFACE
+   ) ~NEWLINE* NEWLINE
+;
+
+t_server
+:
+   SERVER hostname = variable_hostname NEWLINE
+   (
+      t_server_address
+      | t_key
+      | t_server_null
+   )*
+;
+
+t_server_address
+:
+   ADDRESS
+   (
+      (
+         IPV4 IP_ADDRESS
+      )
+      |
+      (
+         IPV6 IPV6_ADDRESS
+      )
+   ) NEWLINE
+;
+
+t_server_null
+:
+   NO?
+   (
+      SINGLE_CONNECTION
+   ) ~NEWLINE* NEWLINE
+;
+
+t_key
+:
+   KEY DEC? variable_permissive NEWLINE
 ;
 
 tap_null
@@ -2277,6 +2284,55 @@ track_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ts_host
+:
+   HOST hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) ~NEWLINE* NEWLINE t_key?
+;
+
+ts_null
+:
+   (
+      DEADTIME
+      | DIRECTED_REQUEST
+      | KEY
+      | RETRANSMIT
+      | TEST
+      | TIMEOUT
+   ) ~NEWLINE* NEWLINE
+;
+
+vi_address_family
+:
+   NO? ADDRESS_FAMILY ~NEWLINE* NEWLINE
+   (
+      viaf_vrrp
+   )*
+;
+
+viaf_vrrp
+:
+   NO? VRRP ~NEWLINE* NEWLINE
+   (
+      viafv_null
+   )*
+;
+
+viafv_null
+:
+   NO?
+   (
+      ADDRESS
+      | PREEMPT
+      | PRIORITY
+      | TIMERS
+      | TRACK
+   ) ~NEWLINE* NEWLINE
+;
+
 vlan_null
 :
    NO?
@@ -2285,6 +2341,7 @@ vlan_null
       | BACKUPCRF
       | BRIDGE
       | MATCH
+      | MEDIA
       | MTU
       | MULTICAST
       | NAME
@@ -2298,9 +2355,23 @@ vlan_null
       | STATISTICS
       | STP
       | TAGGED
+      | TRUNK
       | TB_VLAN1
       | TB_VLAN2
       | UNTAGGED
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_null
+:
+   NO?
+   (
+      ALLOW_CONNECTIONS
+      | FAX
+      | H225
+      | H323
+      | RULE
+      | SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2373,6 +2444,20 @@ vrfc_ip_route
    IP ROUTE ip_route_tail
 ;
 
+vrfc_null
+:
+   NO?
+   (
+      (
+         IP
+         (
+            PIM
+         )
+      )
+      | MDT
+   ) ~NEWLINE* NEWLINE
+;
+
 vrfd_address_family
 :
    ADDRESS_FAMILY
@@ -2408,6 +2493,55 @@ vrfd_null
    ) ~NEWLINE* NEWLINE
 ;
 
+vrrp_interface
+:
+   NO? INTERFACE interface_name NEWLINE
+   (
+      vi_address_family
+   )* NEWLINE?
+;
+
+wccp_id
+:
+   id = DEC
+   (
+      (
+         GROUP_LIST group_list = variable
+      )
+      |
+      (
+         MODE
+         (
+            CLOSED
+            | OPEN
+         )
+      )
+      |
+      (
+         PASSWORD DEC? password = variable
+      )
+      |
+      (
+         REDIRECT_LIST redirect_list = variable
+      )
+      |
+      (
+         SERVICE_LIST service_list = variable
+      )
+   )* NEWLINE
+;
+
+wccp_null
+:
+   (
+      CHECK
+      | OUTBOUND_ACL_CHECK
+      | SOURCE_INTERFACE
+      | VERSION
+      | WEB_CACHE
+   ) ~NEWLINE* NEWLINE
+;
+
 webvpn_null
 :
    NO?
@@ -2431,9 +2565,4 @@ wsma_null
       PROFILE
       | TRANSPORT
    ) ~NEWLINE* NEWLINE
-;
-
-xconnect_stanza
-:
-   XCONNECT GROUP variable NEWLINE p2p_stanza*
 ;

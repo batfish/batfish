@@ -38,7 +38,7 @@ get neighbors
 echo # --> can help ensure that adjacencies are as expected (i.e., interfaces are properly configured)
 
 echo # we can also ask for protocol-level adjacencies 
-get neighbors neighborType=["ebgp"]
+get neighbors neighborTypes=["ebgp"]
 echo # --> can help ensure that protocol sessions are configured correctly
 
 echo ##############
@@ -54,9 +54,8 @@ echo ################
 echo # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
 
 echo # for example, we can see how host1 reaches a particular IP address 
-echo # the query will take time if the dataplane has not been comptued before
+echo # the query will take time if the dataplane has not been computed before
 get #traceroute host1 1.0.2.2
-echo # (the macro above expands to "get traceroute ingressNode=host1 | dstIp=1.0.2.2")
 echo # --> unlike a regular traceroute we show multipath and interface information
 
 echo # suppose host1 (2.128.0.101) is running DNS and we want to ensure that the server is reachable 
@@ -68,7 +67,6 @@ echo # while the above could be done using testing/emulation, we alone can be co
 
 echo # for example, find *all* (starting node, packet header) combinations where the DNS server is unreachable
 get #checkreachability 2.128.0.101 dns
-echo # (macro expands to "get reachability dstPrefixes=["2.128.0.101/32"] | dstPortRange=["53-53"] | ipProtoRange=["17-17"] | actions=["drop"])
 echo # --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
 echo # --> but also shows that a bad ACL on host2 is blocking access (bad)
 

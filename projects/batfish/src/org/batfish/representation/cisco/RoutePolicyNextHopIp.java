@@ -6,7 +6,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
 

@@ -1,0 +1,11 @@
+#
+set system host-name juniper_tacplus
+#
+set system tacplus-server 1.2.3.4 apply-groups bippety
+set system tacplus-server 1.2.3.4 port 12345
+set system tacplus-server 1.2.3.4 secret "$9$IRDRcl8LNwYoKMgJ"
+set system tacplus-server 1.2.3.4 single-connection
+set system tacplus-server 1.2.3.4 source-address 2.3.4.5
+set system tacplus-server 1.2.3.4 timeout 20
+#
+

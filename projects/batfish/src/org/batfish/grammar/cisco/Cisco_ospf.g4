@@ -8,7 +8,7 @@ options {
 
 ro_address_family
 :
-   ADDRESS_FAMILY IPV4 UNICAST NEWLINE ro_common*
+   ADDRESS_FAMILY IPV4 UNICAST? NEWLINE ro_common*
 ;
 
 ro_area_nssa
@@ -22,6 +22,11 @@ ro_area_nssa
       NO_SUMMARY
       | DEFAULT_INFORMATION_ORIGINATE
    )* NEWLINE
+;
+
+ro_area_range
+:
+   AREA area = IP_ADDRESS RANGE area_range = IP_PREFIX NEWLINE
 ;
 
 ro_area_stub
@@ -45,7 +50,9 @@ ro_area
    ) NEWLINE
    (
       ro_common
+      | roa_cost
       | roa_interface
+      | roa_network_null
       | roa_range
    )*
 ;
@@ -147,10 +154,12 @@ ro_null
       )
       | AUTO_COST
       | BFD
-      | COST
+      | DEAD_INTERVAL
       | DISCARD_ROUTE
       | DISTRIBUTE_LIST
+      | FAST_REROUTE
       | GRACEFUL_RESTART
+      | HELLO_INTERVAL
       |
       (
          IP
@@ -177,6 +186,7 @@ ro_null
       | NSF
       | NSR
       | RFC1583COMPATIBILITY
+      | SNMP
       | TIMERS
    ) ~NEWLINE* NEWLINE
 ;
@@ -232,6 +242,7 @@ ro_redistribute_connected
       |
       (
          ROUTE_MAP map = VARIABLE
+         | ROUTE_POLICY policy = VARIABLE
       )
       | subnets = SUBNETS
       |
@@ -244,6 +255,11 @@ ro_redistribute_connected
 ro_redistribute_rip
 :
    REDISTRIBUTE RIP ~NEWLINE* NEWLINE
+;
+
+ro_redistribute_ospf_null
+:
+   REDISTRIBUTE OSPF ~NEWLINE* NEWLINE
 ;
 
 ro_redistribute_static
@@ -260,6 +276,7 @@ ro_redistribute_static
       |
       (
          ROUTE_MAP map = VARIABLE
+         | ROUTE_POLICY policy = VARIABLE
       )
       | subnets = SUBNETS
       |
@@ -300,9 +317,18 @@ ro6_distance
    DISTANCE value = DEC NEWLINE
 ;
 
+ro6_distribute_list
+:
+   DISTRIBUTE_LIST PREFIX_LIST variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
+;
+
 ro6_log_adjacency_changes
 :
-   LOG_ADJACENCY_CHANGES NEWLINE
+   LOG_ADJACENCY_CHANGES DETAIL? NEWLINE
 ;
 
 ro6_maximum_paths
@@ -314,6 +340,14 @@ ro6_maximum_paths
          MAXIMUM PATHS
       )
    ) DEC NEWLINE
+;
+
+ro6_null
+:
+   NO?
+   (
+      TIMERS
+   ) ~NEWLINE* NEWLINE
 ;
 
 ro6_passive_interface
@@ -331,11 +365,17 @@ ro6_redistribute
    REDISTRIBUTE ~NEWLINE* NEWLINE
 ;
 
+roa_cost
+:
+   COST cost = DEC NEWLINE
+;
+
 roa_interface
 :
    INTERFACE iname = interface_name NEWLINE
    (
       ro_common
+      | roi_cost
       | roi_network
       | roi_priority
       | roi_passive
@@ -344,7 +384,21 @@ roa_interface
 
 roa_range
 :
-   RANGE ~NEWLINE* NEWLINE
+   RANGE prefix = IP_PREFIX
+   (
+      ADVERTISE
+      | NOT_ADVERTISE
+   ) NEWLINE
+;
+
+roa_network_null
+:
+   NETWORK POINT_TO_POINT NEWLINE
+;
+
+roi_cost
+:
+   COST cost = DEC NEWLINE
 ;
 
 roi_network
@@ -377,7 +431,10 @@ roi_priority
 
 rov3_address_family
 :
-   ADDRESS_FAMILY IPV6 UNICAST NEWLINE rov3_common*
+   ADDRESS_FAMILY IPV6 UNICAST? NEWLINE rov3_common*
+   (
+      EXIT_ADDRESS_FAMILY NEWLINE
+   )?
 ;
 
 rov3_common
@@ -397,11 +454,13 @@ rov3_null
       | DEFAULT_INFORMATION
       | DISCARD_ROUTE
       | DISTANCE
+      | FAST_REROUTE
       | GRACEFUL_RESTART
       | HELLO_INTERVAL
       | INTERFACE
       | LOG
       | LOG_ADJACENCY_CHANGES
+      | MAX_METRIC
       | MAXIMUM
       | MAXIMUM_PATHS
       | MTU_IGNORE
@@ -410,6 +469,7 @@ rov3_null
       | NSR
       | OSPFV3
       | PASSIVE
+      | PASSIVE_INTERFACE
       | PRIORITY
       | RANGE
       | REDISTRIBUTE
@@ -426,8 +486,10 @@ s_ipv6_router_ospf
       | ro6_auto_cost
       | ro6_default_information
       | ro6_distance
+      | ro6_distribute_list
       | ro6_log_adjacency_changes
       | ro6_maximum_paths
+      | ro6_null
       | ro6_passive_interface
       | ro6_redistribute
       | ro6_router_id
@@ -436,15 +498,16 @@ s_ipv6_router_ospf
 
 s_router_ospf
 :
-   ROUTER OSPF procnum = DEC
+   ROUTER OSPF name = variable
    (
       VRF vrf = variable
    )? NEWLINE
    (
       ro_address_family
-      | ro_area_nssa
-      | ro_area_stub
       | ro_area
+      | ro_area_nssa
+      | ro_area_range
+      | ro_area_stub
       | ro_common
       | ro_default_information
       | ro_distance
@@ -454,6 +517,7 @@ s_router_ospf
       | ro_passive_interface
       | ro_redistribute_bgp
       | ro_redistribute_connected
+      | ro_redistribute_ospf_null
       | ro_redistribute_rip
       | ro_redistribute_static
       | ro_router_id

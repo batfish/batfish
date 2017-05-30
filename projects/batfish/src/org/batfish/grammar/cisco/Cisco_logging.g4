@@ -6,9 +6,68 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+logging_address
+:
+   hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
+   (
+      VRF vrf = variable
+      | SEVERITY severity = variable
+      | DISCRIMINATOR descr = variable
+      | PORT
+      (
+         DEFAULT
+         | DEC
+      )
+   )* NEWLINE
+;
+
+logging_archive
+:
+   ARCHIVE ~NEWLINE* NEWLINE
+   (
+      logging_archive_null
+   )*
+;
+
+logging_archive_null
+:
+   NO?
+   (
+      ARCHIVE_LENGTH
+      | DEVICE
+      | FREQUENCY
+   ) ~NEWLINE* NEWLINE
+;
+
 logging_buffered
 :
-   BUFFERED size = DEC? logging_severity? NEWLINE
+   BUFFERED
+   (
+      (
+         DISCRIMINATOR descr = variable
+      )? size = DEC? logging_severity?
+   ) NEWLINE
+;
+
+logging_common
+:
+   logging_address
+   | logging_archive
+   | logging_buffered
+   | logging_console
+   | logging_enable
+   | logging_format
+   | logging_host
+   | logging_null
+   | logging_on
+   | logging_server
+   | logging_source_interface
+   | logging_suppress
+   | logging_trap
 ;
 
 logging_console
@@ -53,38 +112,50 @@ logging_host
 :
    HOST iname = variable? hostname = variable
    (
-      VRF variable
-   )? NEWLINE
+      (
+         VRF vrf = variable
+      )?
+      (
+         DISCRIMINATOR descr = variable
+      )?
+      (
+         PORT
+         (
+            DEFAULT
+            | DEC
+         )
+      )?
+   ) NEWLINE
 ;
 
 logging_null
 :
    (
-      ASDM
+      ALARM
+      | ASDM
       | ASDM_BUFFER_SIZE
       | BUFFER_SIZE
       | DEBUG_TRACE
+      | DISCRIMINATOR
       | ESM
       | EVENT
       | EVENTS
       | FACILITY
       | HISTORY
-      | IP_ADDRESS
       | IP
       | LEVEL
       | LINECARD
       | LOGFILE
+      | MESSAGE_COUNTER
       | MONITOR
       | PERMIT_HOSTDOWN
       | QUEUE_LIMIT
       | RATE_LIMIT
       | SEQUENCE_NUMS
-      | SERVER
       | SERVER_ARP
       | SNMP_AUTHFAIL
       | SYNCHRONOUS
       | TIMESTAMP
-      | VRF
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -106,12 +177,39 @@ logging_severity
    | WARNINGS
 ;
 
+logging_server
+:
+   SERVER hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
 logging_source_interface
 :
    SOURCE_INTERFACE interface_name
    (
-      VRF variable
+      VRF vrf = variable
    )? NEWLINE
+;
+
+logging_suppress
+:
+   SUPPRESS ~NEWLINE* NEWLINE
+   (
+      logging_suppress_null
+   )*
+;
+
+logging_suppress_null
+:
+   NO?
+   (
+      ALARM
+      | ALL_ALARMS
+      | ALL_OF_ROUTER
+   ) ~NEWLINE* NEWLINE
 ;
 
 logging_trap
@@ -119,18 +217,16 @@ logging_trap
    TRAP logging_severity? NEWLINE
 ;
 
+logging_vrf
+:
+   VRF vrf = variable logging_common
+;
+
 s_logging
 :
-   LOGGING
+   NO? LOGGING
    (
-      logging_buffered
-      | logging_console
-      | logging_enable
-      | logging_format
-      | logging_host
-      | logging_null
-      | logging_on
-      | logging_source_interface
-      | logging_trap
+      logging_common
+      | logging_vrf
    )
 ;

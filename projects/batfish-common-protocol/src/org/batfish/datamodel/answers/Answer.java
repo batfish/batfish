@@ -58,18 +58,16 @@ public class Answer {
       return _status;
    }
 
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder string = new StringBuilder();
-
-      string.append("Status: " + _status + "\n");
-      if (_question != null) {
-         string.append("Question: " + _question.prettyPrint());
+      if (_status != null) {
+         string.append("Status: " + _status + "\n");
       }
-      else {
-         string.append("Question: null");
+      if (_question != null) {
+         string.append("Question: " + _question.prettyPrint() + "\n");
       }
       for (AnswerElement ae : _answerElements) {
-         string.append("\n" + ae.prettyPrint());
+         string.append(ae.prettyPrint() + "\n");
       }
       return string.toString();
    }
@@ -80,7 +78,10 @@ public class Answer {
       answer.setStatus(_status);
 
       for (AnswerElement ae : _answerElements) {
-         answer.addAnswerElement(new StringAnswerElement(ae.prettyPrint()));
+         String aePrettyStr = ae.prettyPrint();
+         AnswerElement prettyAnswerElement = new StringAnswerElement(
+               aePrettyStr);
+         answer.addAnswerElement(prettyAnswerElement);
       }
 
       return answer;

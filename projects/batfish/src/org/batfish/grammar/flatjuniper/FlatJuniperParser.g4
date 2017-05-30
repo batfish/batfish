@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniper_applications, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security;
+FlatJuniper_applications, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security, FlatJuniper_snmp, FlatJuniper_system;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -30,8 +30,14 @@ flat_juniper_configuration
    NEWLINE?
    (
       deactivate_line
+      | protect_line
       | set_line
    )+ NEWLINE? EOF
+;
+
+protect_line
+:
+   PROTECT ~NEWLINE* NEWLINE
 ;
 
 statement
@@ -43,7 +49,7 @@ statement
 s_common
 :
    s_applications
-   | s_apply_groups
+   | apply_groups
    | s_fabric
    | s_firewall
    | s_interfaces
@@ -53,6 +59,7 @@ s_common
    | s_routing_instances
    | s_routing_options
    | s_security
+   | s_snmp
    | s_system
    | s_vlans
 ;
@@ -101,20 +108,9 @@ s_null
          | POE
          | SWITCH_OPTIONS
          | VIRTUAL_CHASSIS
-      ) s_null_filler
+      ) null_filler
    )
-   | rit_null
-;
-
-s_system
-:
-   SYSTEM
-   (
-      sy_default_address_selection
-      | sy_domain_name
-      | sy_host_name
-      | sy_null
-   )
+   | ri_null
 ;
 
 s_version
@@ -154,59 +150,6 @@ set_line_tail
    s_groups
    | statement
    | s_version
-;
-
-sy_default_address_selection
-:
-   DEFAULT_ADDRESS_SELECTION
-;
-
-sy_domain_name
-:
-   DOMAIN_NAME variable
-;
-
-sy_host_name
-:
-   HOST_NAME variable
-;
-
-sy_null
-:
-   (
-      ACCOUNTING
-      | ALLOW_V4MAPPED_PACKETS
-      | ARP
-      | AUTHENTICATION_ORDER
-      | BACKUP_ROUTER
-      | COMMIT
-      | DDOS_PROTECTION
-      | DOMAIN_SEARCH
-      | EXTENSIONS
-      | INTERNET_OPTIONS
-      | LICENSE
-      | LOCATION
-      | LOGIN
-      | MAX_CONFIGURATIONS_ON_FLASH
-      | MAX_CONFIGURATION_ROLLBACKS
-      | NAME_RESOLUTION
-      | NAME_SERVER
-      | NO_REDIRECTS
-      | NTP
-      | PORTS
-      | PROCESSES
-      | RADIUS_OPTIONS
-      | RADIUS_SERVER
-      | ROOT_AUTHENTICATION
-      | SAVED_CORE_CONTEXT
-      | SAVED_CORE_FILES
-      | SCRIPTS
-      | SERVICES
-      | SWITCHOVER_ON_ROUTING_CRASH
-      | SYSLOG
-      | TACPLUS_SERVER
-      | TIME_ZONE
-   ) s_null_filler
 ;
 
 vlt_description

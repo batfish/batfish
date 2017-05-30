@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -15,7 +14,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -25,13 +23,8 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
@@ -89,13 +82,6 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
       public SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> getSelfAdjacencies() {
          return _selfAdjacencies;
-      }
-
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
       }
 
       public void setSelfAdjacencies(
@@ -170,7 +156,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     * Outputs cases where two interfaces on the same node are in the same
     * subnet.
     * <p>
-    * This occurrence likely indicates an error in IP address announcement.
+    * This occurrence likely indicates an error in IP address assignment.
     *
     * @type SelfAdjacencies onefile
     *
@@ -211,31 +197,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case NODE_REGEX_VAR:
-                  setNodeRegex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }

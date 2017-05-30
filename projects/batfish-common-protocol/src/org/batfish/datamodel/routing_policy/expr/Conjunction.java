@@ -6,7 +6,7 @@ import java.util.List;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class Conjunction extends AbstractBooleanExpr {
+public class Conjunction extends BooleanExpr {
 
    /**
     *
@@ -17,6 +17,29 @@ public class Conjunction extends AbstractBooleanExpr {
 
    public Conjunction() {
       _conjuncts = new ArrayList<>();
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      Conjunction other = (Conjunction) obj;
+      if (_conjuncts == null) {
+         if (other._conjuncts != null) {
+            return false;
+         }
+      }
+      else if (!_conjuncts.equals(other._conjuncts)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -38,6 +61,15 @@ public class Conjunction extends AbstractBooleanExpr {
 
    public List<BooleanExpr> getConjuncts() {
       return _conjuncts;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_conjuncts == null) ? 0 : _conjuncts.hashCode());
+      return result;
    }
 
    public void setConjuncts(List<BooleanExpr> conjuncts) {
@@ -78,6 +110,11 @@ public class Conjunction extends AbstractBooleanExpr {
          simple.setComment(getComment());
          return simple;
       }
+   }
+
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _conjuncts.toString() + ">";
    }
 
 }

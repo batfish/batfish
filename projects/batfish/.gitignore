@@ -19,11 +19,13 @@ IptablesLexer*.java
 IptablesParser*.java
 JuniperLexer*.java
 JuniperParser*.java
-LogiQLLexer*.java
-LogiQLParser*.java
 MrvLexer*.java
 MrvParser*.java
 RoleLexer*.java
 RoleParser*.java
 VyosLexer*.java
 VyosParser*.java
+EosRoutingTableLexer*.java
+EosRoutingTableParser*.java
+NxosRoutingTableLexer*.java
+NxosRoutingTableParser*.java

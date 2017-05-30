@@ -10,15 +10,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
@@ -37,6 +41,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
@@ -50,12 +55,14 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -66,60 +73,66 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vendor_family.cisco.Aaa;
+import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.Line;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.vendor.StructureUsage;
+import org.batfish.vendor.VendorConfiguration;
 
-public class CiscoConfiguration extends VendorConfiguration {
-
-   static final String AS_PATH_ACCESS_LIST = "as-path acl";
-
-   static final String BGP_PEER_GROUP = "bgp group";
-
-   private static final String BGP_PEER_SESSION = "bgp session";
+public final class CiscoConfiguration extends VendorConfiguration {
 
    private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
-
-   static final String COMMUNITY_LIST = "community-list";
-
-   private static final String INTERFACE = "interface";
-
-   static final String IP_ACCESS_LIST = "ip acl";
-
-   static final String IPV6_ACCESS_LIST = "ipv6 acl";
 
    public static final String MANAGEMENT_VRF_NAME = "management";
 
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
-   static final String PREFIX_LIST = "ipv4 prefix-list";
-
-   static final String PREFIX6_LIST = "ipv6 prefix-list";
-
-   private static final String ROUTE_MAP = "route-map";
-
    private static final long serialVersionUID = 1L;
 
    public static final String VENDOR_NAME = "cisco";
 
-   private static String toJavaRegex(String ciscoRegex) {
+   private static String getRouteMapClausePolicyName(RouteMap map,
+         int continueTarget) {
+      String mapName = map.getName();
+      String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget
+            + "~";
+      return clausePolicyName;
+   }
+
+   static String toJavaRegex(String ciscoRegex) {
+      String withoutQuotes;
+      if (ciscoRegex.charAt(0) == '"'
+            && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+         withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+      }
+      else {
+         withoutQuotes = ciscoRegex;
+      }
       String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-      String output = ciscoRegex.replaceAll("_", underscoreReplacement);
+      String output = withoutQuotes.replaceAll("_", underscoreReplacement);
       return output;
    }
 
    private final Map<String, IpAsPathAccessList> _asPathAccessLists;
+
+   private final Map<String, AsPathSet> _asPathSets;
 
    private final Set<String> _bgpVrfAggregateAddressRouteMaps;
 
@@ -132,6 +145,10 @@ public class CiscoConfiguration extends VendorConfiguration {
    private final Set<String> _classMapAccessGroups;
 
    private final Set<String> _controlPlaneAccessGroups;
+
+   private final Set<String> _cryptoAcls;
+
+   private NavigableSet<String> _dnsServers;
 
    private String _domainName;
 
@@ -161,13 +178,21 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private String _hostname;
 
+   private final Set<String> _igmpAcls;
+
    private final Map<String, Interface> _interfaces;
+
+   private final Set<String> _ipNatDestinationAccessLists;
+
+   private final Set<String> _ipNatSourceAccessLists;
+
+   private final Set<String> _ipPimNeighborFilters;
 
    private final Set<String> _lineAccessClassLists;
 
    private final Set<String> _lineIpv6AccessClassLists;
 
-   private final Set<String> _macAccessLists;
+   private final Map<String, MacAccessList> _macAccessLists;
 
    private final Set<String> _managementAccessGroups;
 
@@ -193,6 +218,8 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _snmpAccessLists;
 
+   private SnmpServer _snmpServer;
+
    private final Set<String> _sshAcls;
 
    private final Set<String> _sshIpv6Acls;
@@ -203,11 +230,15 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
 
+   private NavigableSet<String> _tacacsServers;
+
+   private final SortedMap<String, Integer> _undefinedPeerGroups;
+
    private transient Set<String> _unimplementedFeatures;
 
-   private transient Set<String> _unusedPeerGroups;
+   private transient Map<String, Integer> _unusedPeerGroups;
 
-   private transient Set<String> _unusedPeerSessions;
+   private transient Map<String, Integer> _unusedPeerSessions;
 
    private ConfigurationFormat _vendor;
 
@@ -215,22 +246,31 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Map<String, Vrf> _vrfs;
 
+   private final Set<String> _wccpAcls;
+
    public CiscoConfiguration(Set<String> unimplementedFeatures) {
       _asPathAccessLists = new TreeMap<>();
+      _asPathSets = new TreeMap<>();
       _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
       _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
       _controlPlaneAccessGroups = new TreeSet<>();
+      _cryptoAcls = new TreeSet<>();
+      _dnsServers = new TreeSet<>();
       _expandedCommunityLists = new TreeMap<>();
       _extendedAccessLists = new TreeMap<>();
       _extendedIpv6AccessLists = new TreeMap<>();
       _failoverInterfaces = new TreeMap<>();
       _failoverPrimaryPrefixes = new TreeMap<>();
       _failoverStandbyPrefixes = new TreeMap<>();
+      _igmpAcls = new TreeSet<>();
       _interfaces = new TreeMap<>();
+      _ipNatDestinationAccessLists = new TreeSet<>();
+      _ipNatSourceAccessLists = new TreeSet<>();
+      _ipPimNeighborFilters = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
       _lineIpv6AccessClassLists = new TreeSet<>();
-      _macAccessLists = new TreeSet<>();
+      _macAccessLists = new TreeMap<>();
       _managementAccessGroups = new TreeSet<>();
       _msdpPeerSaLists = new TreeSet<>();
       _ntpAccessGroups = new TreeSet<>();
@@ -248,21 +288,35 @@ public class CiscoConfiguration extends VendorConfiguration {
       _standardAccessLists = new TreeMap<>();
       _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
+      _tacacsServers = new TreeSet<>();
+      _undefinedPeerGroups = new TreeMap<>();
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
       _vrfs = new TreeMap<>();
       _vrfs.put(Configuration.DEFAULT_VRF_NAME,
             new Vrf(Configuration.DEFAULT_VRF_NAME));
+      _wccpAcls = new TreeSet<>();
+   }
+
+   private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+         BooleanExpr expr, OriginType originType) {
+      WithEnvironmentExpr we = new WithEnvironmentExpr();
+      we.setExpr(expr);
+      we.getPreStatements().add(
+            Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
+      we.getPostStatements().add(
+            Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement());
+      we.getPostTrueStatements().add(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
+      we.getPostTrueStatements()
+            .add(new SetOrigin(new LiteralOrigin(originType, null)));
+      return we;
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
       if (mapName != null) {
          RouteMap currentMap = _routeMaps.get(mapName);
-         if (currentMap == null) {
-            undefined("Reference to undefined to route-map: " + mapName,
-                  ROUTE_MAP, mapName);
-         }
-         else {
+         if (currentMap != null) {
             for (RouteMapClause clause : currentMap.getClauses().values()) {
                for (RouteMapMatchLine matchLine : clause.getMatchList()) {
                   if (matchLine instanceof RouteMapMatchIpAccessListLine) {
@@ -283,11 +337,7 @@ public class CiscoConfiguration extends VendorConfiguration {
    private boolean containsIpv6AccessList(String eaListName, String mapName) {
       if (mapName != null) {
          RouteMap currentMap = _routeMaps.get(mapName);
-         if (currentMap == null) {
-            undefined("Reference to undefined to route-map: " + mapName,
-                  ROUTE_MAP, mapName);
-         }
-         else {
+         if (currentMap != null) {
             for (RouteMapClause clause : currentMap.getClauses().values()) {
                for (RouteMapMatchLine matchLine : clause.getMatchList()) {
                   if (matchLine instanceof RouteMapMatchIpv6AccessListLine) {
@@ -323,6 +373,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
+   }
+
+   public Map<String, AsPathSet> getAsPathSets() {
+      return _asPathSets;
    }
 
    private Ip getBgpRouterId(final Configuration c, String vrfName,
@@ -383,6 +437,18 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _controlPlaneAccessGroups;
    }
 
+   public Set<String> getCryptoAcls() {
+      return _cryptoAcls;
+   }
+
+   public Vrf getDefaultVrf() {
+      return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+   }
+
+   public NavigableSet<String> getDnsServers() {
+      return _dnsServers;
+   }
+
    public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
       return _expandedCommunityLists;
    }
@@ -436,8 +502,24 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _hostname;
    }
 
+   public Set<String> getIgmpAcls() {
+      return _igmpAcls;
+   }
+
    public final Map<String, Interface> getInterfaces() {
       return _interfaces;
+   }
+
+   public Set<String> getIpNatDestinationAccessLists() {
+      return _ipNatDestinationAccessLists;
+   }
+
+   public Set<String> getIpNatSourceAccessLists() {
+      return _ipNatSourceAccessLists;
+   }
+
+   public Set<String> getIpPimNeighborFilters() {
+      return _ipPimNeighborFilters;
    }
 
    public Set<String> getLineAccessClassLists() {
@@ -448,7 +530,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _lineIpv6AccessClassLists;
    }
 
-   public Set<String> getMacAccessLists() {
+   public Map<String, MacAccessList> getMacAccessLists() {
       return _macAccessLists;
    }
 
@@ -507,7 +589,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (ospfProcess != null) {
             for (OspfRedistributionPolicy rp : ospfProcess
                   .getRedistributionPolicies().values()) {
-               currentMapName = rp.getMap();
+               currentMapName = rp.getRouteMap();
                if (currentMapName != null) {
                   currentMap = _routeMaps.get(currentMapName);
                   if (currentMap != null) {
@@ -528,7 +610,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (bgpProcess != null) {
             for (BgpRedistributionPolicy rp : bgpProcess
                   .getRedistributionPolicies().values()) {
-               currentMapName = rp.getMap();
+               currentMapName = rp.getRouteMap();
                if (currentMapName != null) {
                   currentMap = _routeMaps.get(currentMapName);
                   if (currentMap != null) {
@@ -575,6 +657,10 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _snmpAccessLists;
    }
 
+   public SnmpServer getSnmpServer() {
+      return _snmpServer;
+   }
+
    public Set<String> getSshAcls() {
       return _sshAcls;
    }
@@ -593,6 +679,14 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
       return _standardIpv6AccessLists;
+   }
+
+   public NavigableSet<String> getTacacsServers() {
+      return _tacacsServers;
+   }
+
+   public SortedMap<String, Integer> getUndefinedPeerGroups() {
+      return _undefinedPeerGroups;
    }
 
    @Override
@@ -621,10 +715,10 @@ public class CiscoConfiguration extends VendorConfiguration {
                }
             }
             else {
-               undefined(
-                     "reference to undefined update source interface: '"
-                           + updateSourceInterface + "'",
-                     INTERFACE, updateSourceInterface);
+               int updateSourceInterfaceLine = lpg.getUpdateSourceLine();
+               undefined(CiscoStructureType.INTERFACE, updateSourceInterface,
+                     CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
+                     updateSourceInterfaceLine);
             }
          }
          else {
@@ -648,6 +742,10 @@ public class CiscoConfiguration extends VendorConfiguration {
       return updateSource;
    }
 
+   public ConfigurationFormat getVendor() {
+      return _vendor;
+   }
+
    public Set<String> getVerifyAccessLists() {
       return _verifyAccessLists;
    }
@@ -656,103 +754,142 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _vrfs;
    }
 
-   private void markAcls(Set<String> acls, String type, Configuration c) {
-      for (String listName : acls) {
-         boolean exists = _extendedAccessLists.containsKey(listName)
-               || _standardAccessLists.containsKey(listName)
-               || _extendedIpv6AccessLists.containsKey(listName)
-               || _standardIpv6AccessLists.containsKey(listName)
-               || _macAccessLists.contains(listName);
-         if (exists) {
-            String msg = type;
-            ExtendedAccessList extendedAccessList = _extendedAccessLists
-                  .get(listName);
-            if (extendedAccessList != null) {
-               extendedAccessList.getReferers().put(this, msg);
+   public Set<String> getWccpAcls() {
+      return _wccpAcls;
+   }
+
+   private void markAcls(CiscoStructureUsage usage, Configuration c) {
+      SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName = _structureReferences
+            .get(CiscoStructureType.IP_ACCESS_LIST);
+      if (byName != null) {
+         byName.forEach((listName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+               boolean exists = _extendedAccessLists.containsKey(listName)
+                     || _standardAccessLists.containsKey(listName)
+                     || _extendedIpv6AccessLists.containsKey(listName)
+                     || _standardIpv6AccessLists.containsKey(listName)
+                     || _macAccessLists.containsKey(listName);
+               if (exists) {
+                  String msg = usage.getDescription();
+                  ExtendedAccessList extendedAccessList = _extendedAccessLists
+                        .get(listName);
+                  if (extendedAccessList != null) {
+                     extendedAccessList.getReferers().put(this, msg);
+                  }
+                  StandardAccessList standardAccessList = _standardAccessLists
+                        .get(listName);
+                  if (standardAccessList != null) {
+                     standardAccessList.getReferers().put(this, msg);
+                  }
+                  ExtendedIpv6AccessList extendedAccessList6 = _extendedIpv6AccessLists
+                        .get(listName);
+                  if (extendedAccessList6 != null) {
+                     extendedAccessList6.getReferers().put(this, msg);
+                  }
+                  StandardIpv6AccessList standardAccessList6 = _standardIpv6AccessLists
+                        .get(listName);
+                  if (standardAccessList6 != null) {
+                     standardAccessList6.getReferers().put(this, msg);
+                  }
+               }
+               else {
+                  for (int line : lines) {
+                     undefined(CiscoStructureType.IP_ACCESS_LIST, listName,
+                           usage, line);
+                  }
+               }
             }
-            StandardAccessList standardAccessList = _standardAccessLists
-                  .get(listName);
-            if (standardAccessList != null) {
-               standardAccessList.getReferers().put(this, msg);
-            }
-            ExtendedIpv6AccessList extendedAccessList6 = _extendedIpv6AccessLists
-                  .get(listName);
-            if (extendedAccessList6 != null) {
-               extendedAccessList6.getReferers().put(this, msg);
-            }
-            StandardIpv6AccessList standardAccessList6 = _standardIpv6AccessLists
-                  .get(listName);
-            if (standardAccessList6 != null) {
-               standardAccessList6.getReferers().put(this, msg);
-            }
-         }
-         else {
-            undefined("Reference to undefined " + type + ": " + listName, type,
-                  listName);
-         }
+         });
       }
    }
 
-   private void markIpv4Acls(Set<String> acls, String type, Configuration c) {
-      for (String listName : acls) {
-         boolean exists = _extendedAccessLists.containsKey(listName)
-               || _standardAccessLists.containsKey(listName);
-         if (exists) {
-            String msg = type;
-            ExtendedAccessList extendedAccessList = _extendedAccessLists
-                  .get(listName);
-            if (extendedAccessList != null) {
-               extendedAccessList.getReferers().put(this, msg);
+   private void markIpv4Acls(CiscoStructureUsage usage, Configuration c) {
+      SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName = _structureReferences
+            .get(CiscoStructureType.IPV4_ACCESS_LIST);
+      if (byName != null) {
+         byName.forEach((listName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+               boolean exists = _extendedAccessLists.containsKey(listName)
+                     || _standardAccessLists.containsKey(listName);
+               if (exists) {
+                  String msg = usage.getDescription();
+                  ExtendedAccessList extendedAccessList = _extendedAccessLists
+                        .get(listName);
+                  if (extendedAccessList != null) {
+                     extendedAccessList.getReferers().put(this, msg);
+                  }
+                  StandardAccessList standardAccessList = _standardAccessLists
+                        .get(listName);
+                  if (standardAccessList != null) {
+                     standardAccessList.getReferers().put(this, msg);
+                  }
+               }
+               else {
+                  for (int line : lines) {
+                     undefined(CiscoStructureType.IPV4_ACCESS_LIST, listName,
+                           usage, line);
+                  }
+               }
             }
-            StandardAccessList standardAccessList = _standardAccessLists
-                  .get(listName);
-            if (standardAccessList != null) {
-               standardAccessList.getReferers().put(this, msg);
-            }
-         }
-         else {
-            undefined("Reference to undefined " + type + ": " + listName, type,
-                  listName);
-         }
+         });
       }
    }
 
-   private void markIpv6Acls(Set<String> acls, String type, Configuration c) {
-      for (String listName : acls) {
-         boolean exists = _extendedIpv6AccessLists.containsKey(listName)
-               || _standardIpv6AccessLists.containsKey(listName);
-         if (exists) {
-            String msg = type;
-            ExtendedIpv6AccessList extendedAccessList = _extendedIpv6AccessLists
-                  .get(listName);
-            if (extendedAccessList != null) {
-               extendedAccessList.getReferers().put(this, msg);
+   private void markIpv6Acls(CiscoStructureUsage usage, Configuration c) {
+      SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName = _structureReferences
+            .get(CiscoStructureType.IPV6_ACCESS_LIST);
+      if (byName != null) {
+         byName.forEach((listName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+               boolean exists = _extendedIpv6AccessLists.containsKey(listName)
+                     || _standardIpv6AccessLists.containsKey(listName);
+               if (exists) {
+                  String msg = usage.getDescription();
+                  ExtendedIpv6AccessList extendedAccessList = _extendedIpv6AccessLists
+                        .get(listName);
+                  if (extendedAccessList != null) {
+                     extendedAccessList.getReferers().put(this, msg);
+                  }
+                  StandardIpv6AccessList standardAccessList = _standardIpv6AccessLists
+                        .get(listName);
+                  if (standardAccessList != null) {
+                     standardAccessList.getReferers().put(this, msg);
+                  }
+               }
+               else {
+                  for (int line : lines) {
+                     undefined(CiscoStructureType.IPV6_ACCESS_LIST, listName,
+                           usage, line);
+                  }
+               }
             }
-            StandardIpv6AccessList standardAccessList = _standardIpv6AccessLists
-                  .get(listName);
-            if (standardAccessList != null) {
-               standardAccessList.getReferers().put(this, msg);
-            }
-         }
-         else {
-            undefined("Reference to undefined " + type + ": " + listName, type,
-                  listName);
-         }
+         });
       }
    }
 
-   private void markRouteMaps(Set<String> routeMaps, String type,
-         Configuration c) {
-      for (String routeMapName : routeMaps) {
-         RouteMap routeMap = _routeMaps.get(routeMapName);
-         if (routeMap != null) {
-            String msg = type;
-            routeMap.getReferers().put(this, msg);
-         }
-         else {
-            undefined("Reference to undefined " + type + ": " + routeMapName,
-                  type, routeMapName);
-         }
+   private void markRouteMaps(CiscoStructureUsage usage, Configuration c) {
+      SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName = _structureReferences
+            .get(CiscoStructureType.ROUTE_MAP);
+      if (byName != null) {
+         byName.forEach((routeMapName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+               RouteMap routeMap = _routeMaps.get(routeMapName);
+               if (routeMap != null) {
+                  String msg = usage.getDescription();
+                  routeMap.getReferers().put(this, msg);
+               }
+               else {
+                  for (int line : lines) {
+                     undefined(CiscoStructureType.ROUTE_MAP, routeMapName,
+                           usage, line);
+                  }
+               }
+            }
+         });
       }
    }
 
@@ -846,9 +983,23 @@ public class CiscoConfiguration extends VendorConfiguration {
       _roles.addAll(roles);
    }
 
+   public void setSnmpServer(SnmpServer snmpServer) {
+      _snmpServer = snmpServer;
+   }
+
    @Override
    public void setVendor(ConfigurationFormat format) {
       _vendor = format;
+   }
+
+   private AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
+      String name = asPathSet.getName();
+      AsPathAccessList list = new AsPathAccessList(name);
+      for (AsPathSetElem elem : asPathSet.getElements()) {
+         AsPathAccessListLine line = toAsPathAccessListLine(elem);
+         list.getLines().add(line);
+      }
+      return list;
    }
 
    private AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
@@ -860,10 +1011,36 @@ public class CiscoConfiguration extends VendorConfiguration {
       return newList;
    }
 
+   private AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
+      String rawRegex = elem.regex();
+      String regex = toJavaRegex(rawRegex);
+      AsPathAccessListLine line = new AsPathAccessListLine();
+      line.setAction(LineAction.ACCEPT);
+      line.setRegex(regex);
+      return line;
+   }
+
    private org.batfish.datamodel.BgpProcess toBgpProcess(final Configuration c,
          BgpProcess proc, String vrfName) {
       org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
       org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+      Integer maximumPaths = proc.getMaximumPaths();
+      Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
+      Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
+      boolean multipathEbgp = false;
+      boolean multipathIbgp = false;
+      if (maximumPaths != null && maximumPaths > 1) {
+         multipathEbgp = true;
+         multipathIbgp = true;
+      }
+      if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+         multipathEbgp = true;
+      }
+      if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+         multipathIbgp = true;
+      }
+      newBgpProcess.setMultipathEbgp(multipathEbgp);
+      newBgpProcess.setMultipathIbgp(multipathIbgp);
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
       Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
@@ -881,6 +1058,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
       Set<BgpAggregateIpv6Network> summaryOnlyIpv6Networks = new HashSet<>();
 
+      List<BooleanExpr> attributeMapPrefilters = new ArrayList<>();
+
       // add generated routes for aggregate ipv4 addresses
       for (Entry<Prefix, BgpAggregateIpv4Network> e : proc
             .getAggregateNetworks().entrySet()) {
@@ -897,7 +1076,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + vrfName + ":"
                + prefix.toString() + "~";
          RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
-               generationPolicyName);
+               generationPolicyName, c);
          If currentGeneratedRouteConditional = new If();
          currentGeneratedRoutePolicy.getStatements()
                .add(currentGeneratedRouteConditional);
@@ -917,20 +1096,35 @@ public class CiscoConfiguration extends VendorConfiguration {
 
          // set attribute map for aggregate network
          String attributeMapName = aggNet.getAttributeMap();
+         Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
+         applyCurrentAggregateAttributesConditions.getConjuncts()
+               .add(new MatchPrefixSet(new DestinationNetwork(),
+                     new ExplicitPrefixSet(new PrefixSpace(Collections
+                           .singleton(new PrefixRange(prefix.toString()))))));
+         applyCurrentAggregateAttributesConditions.getConjuncts()
+               .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          if (attributeMapName != null) {
+            int attributeMapLine = aggNet.getAttributeMapLine();
             RouteMap attributeMap = _routeMaps.get(attributeMapName);
             if (attributeMap != null) {
+               // need to apply attribute changes if this specific route is
+               // matched
+               weInterior = new CallExpr(attributeMapName);
                attributeMap.getReferers().put(aggNet,
                      "attribute-map of aggregate route: " + prefix.toString());
                gr.setAttributePolicy(attributeMapName);
             }
             else {
-               undefined(
-                     "Reference to undefined route-map used as attribute-map: '"
-                           + attributeMapName + "'",
-                     ROUTE_MAP, attributeMapName);
+               undefined(CiscoStructureType.ROUTE_MAP, attributeMapName,
+                     CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
+                     attributeMapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.IGP);
+         applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
+         attributeMapPrefilters.add(applyCurrentAggregateAttributesConditions);
       }
 
       // add generated routes for aggregate ipv6 addresses
@@ -950,7 +1144,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":"
                + prefix6.toString() + "~";
          RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
-               generationPolicyName);
+               generationPolicyName, c);
          If currentGeneratedRouteConditional = new If();
          currentGeneratedRoutePolicy.getStatements()
                .add(currentGeneratedRouteConditional);
@@ -971,6 +1165,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          // set attribute map for aggregate network
          String attributeMapName = aggNet.getAttributeMap();
          if (attributeMapName != null) {
+            int attributeMapLine = aggNet.getAttributeMapLine();
             RouteMap attributeMap = _routeMaps.get(attributeMapName);
             if (attributeMap != null) {
                attributeMap.getReferers().put(aggNet,
@@ -979,10 +1174,9 @@ public class CiscoConfiguration extends VendorConfiguration {
                gr.setAttributePolicy(attributeMapName);
             }
             else {
-               undefined(
-                     "Reference to undefined route-map used as attribute-map: '"
-                           + attributeMapName + "'",
-                     ROUTE_MAP, attributeMapName);
+               undefined(CiscoStructureType.ROUTE_MAP, attributeMapName,
+                     CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
+                     attributeMapLine);
             }
          }
       }
@@ -995,7 +1189,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       String bgpCommonExportPolicyName = "~BGP_COMMON_EXPORT_POLICY:" + vrfName
             + "~";
       RoutingPolicy bgpCommonExportPolicy = new RoutingPolicy(
-            bgpCommonExportPolicyName);
+            bgpCommonExportPolicyName, c);
       c.getRoutingPolicies().put(bgpCommonExportPolicyName,
             bgpCommonExportPolicy);
       List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy
@@ -1035,31 +1229,36 @@ public class CiscoConfiguration extends VendorConfiguration {
       preFilter.getTrueStatements()
             .add(Statements.ReturnTrue.toStaticStatement());
 
+      preFilterConditions.getDisjuncts().addAll(attributeMapPrefilters);
+
       // create redistribution origination policies
       // redistribute static
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
       if (redistributeStaticPolicy != null) {
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          Conjunction exportStaticConditions = new Conjunction();
          exportStaticConditions
                .setComment("Redistribute static routes into BGP");
          exportStaticConditions.getConjuncts()
                .add(new MatchProtocol(RoutingProtocol.STATIC));
-         String mapName = redistributeStaticPolicy.getMap();
+         String mapName = redistributeStaticPolicy.getRouteMap();
          if (mapName != null) {
+            int mapLine = redistributeStaticPolicy.getRouteMapLine();
             RouteMap redistributeStaticRouteMap = _routeMaps.get(mapName);
             if (redistributeStaticRouteMap != null) {
                redistributeStaticRouteMap.getReferers().put(proc,
                      "static redistribution route-map");
-               exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
+               weInterior = new CallExpr(mapName);
             }
             else {
-               undefined(
-                     "Reference to undefined route-map for static-to-bgp route redistribution: '"
-                           + mapName + "'",
-                     ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, mapName,
+                     CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP, mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.INCOMPLETE);
+         exportStaticConditions.getConjuncts().add(we);
          preFilterConditions.getDisjuncts().add(exportStaticConditions);
       }
 
@@ -1067,27 +1266,30 @@ public class CiscoConfiguration extends VendorConfiguration {
       BgpRedistributionPolicy redistributeConnectedPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
       if (redistributeConnectedPolicy != null) {
+         BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
          Conjunction exportConnectedConditions = new Conjunction();
          exportConnectedConditions
                .setComment("Redistribute connected routes into BGP");
          exportConnectedConditions.getConjuncts()
                .add(new MatchProtocol(RoutingProtocol.CONNECTED));
-         String mapName = redistributeConnectedPolicy.getMap();
+         String mapName = redistributeConnectedPolicy.getRouteMap();
          if (mapName != null) {
+            int mapLine = redistributeConnectedPolicy.getRouteMapLine();
             RouteMap redistributeConnectedRouteMap = _routeMaps.get(mapName);
             if (redistributeConnectedRouteMap != null) {
                redistributeConnectedRouteMap.getReferers().put(proc,
                      "connected redistribution route-map");
-               exportConnectedConditions.getConjuncts()
-                     .add(new CallExpr(mapName));
+               weInterior = new CallExpr(mapName);
             }
             else {
-               undefined(
-                     "Reference to undefined route-map for connected-to-bgp route redistribution: '"
-                           + mapName + "'",
-                     ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, mapName,
+                     CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
+                     mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
+               OriginType.INCOMPLETE);
+         exportConnectedConditions.getConjuncts().add(we);
          preFilterConditions.getDisjuncts().add(exportConnectedConditions);
       }
 
@@ -1101,7 +1303,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       for (LeafBgpPeerGroup lpg : leafGroups) {
          lpg.inheritUnsetFields(proc, this);
       }
-      _unusedPeerGroups = new TreeSet<>();
+      _unusedPeerGroups = new TreeMap<>();
       int fakePeerCounter = -1;
       // peer groups / peer templates
       for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
@@ -1109,7 +1311,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          String name = e.getKey();
          NamedBgpPeerGroup namedPeerGroup = e.getValue();
          if (!namedPeerGroup.getInherited()) {
-            _unusedPeerGroups.add(name);
+            _unusedPeerGroups.put(name, namedPeerGroup.getDefinitionLine());
             Ip fakeIp = new Ip(fakePeerCounter);
             IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
             fakePg.setGroupName(name);
@@ -1122,7 +1324,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          namedPeerGroup.inheritUnsetFields(proc, this);
       }
       // separate because peer sessions can inherit from other peer sessions
-      _unusedPeerSessions = new TreeSet<>();
+      _unusedPeerSessions = new TreeMap<>();
       int fakeGroupCounter = 1;
       for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
          namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc,
@@ -1133,10 +1335,10 @@ public class CiscoConfiguration extends VendorConfiguration {
          String name = e.getKey();
          NamedBgpPeerGroup namedPeerGroup = e.getValue();
          if (!namedPeerGroup.getInherited()) {
-            _unusedPeerSessions.add(name);
+            _unusedPeerSessions.put(name, namedPeerGroup.getDefinitionLine());
             String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
             NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(
-                  fakeNamedPgName);
+                  fakeNamedPgName, -1);
             fakeNamedPg.setPeerSession(name);
             proc.getNamedPeerGroups().put(fakeNamedPgName, fakeNamedPg);
             Ip fakeIp = new Ip(fakePeerCounter);
@@ -1152,85 +1354,88 @@ public class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create origination prefilter from listed advertised networks
-      String localFilterName = "~BGP_NETWORK_NETWORKS_FILTER:" + vrfName + "~";
-      RouteFilterList localFilter = new RouteFilterList(localFilterName);
-      proc.getIpNetworks().forEach((prefix, mapName) -> {
-         int prefixLen = prefix.getPrefixLength();
-         RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
-               new SubRange(prefixLen, prefixLen));
-         localFilter.addLine(line);
+      proc.getIpNetworks().forEach((prefix, bgpNetwork) -> {
+         String mapName = bgpNetwork.getRouteMapName();
+         BooleanExpr weExpr = BooleanExprs.True.toStaticBooleanExpr();
          if (mapName != null) {
+            int mapLine = bgpNetwork.getRouteMapLine();
             RouteMap routeMap = _routeMaps.get(mapName);
             if (routeMap != null) {
+               weExpr = new CallExpr(mapName);
                routeMap.getReferers().put(proc,
                      "bgp ipv4 advertised network route-map");
-               // TODO: implement instead of advertising unconditionally
-               _w.unimplemented("bgp ipv4 advertised network route-map");
             }
             else {
-               undefined("Reference to bgp ipv4 advertised network route-map: '"
-                     + mapName + "'", ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, mapName,
+                     CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
+                     mapLine);
             }
          }
+         BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr,
+               OriginType.IGP);
+         Conjunction exportNetworkConditions = new Conjunction();
+         PrefixSpace space = new PrefixSpace();
+         space.addPrefix(prefix);
+         exportNetworkConditions.getConjuncts().add(new MatchPrefixSet(
+               new DestinationNetwork(), new ExplicitPrefixSet(space)));
+         exportNetworkConditions.getConjuncts()
+               .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+         exportNetworkConditions.getConjuncts()
+               .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+         // TODO: ban aggregates?
+         exportNetworkConditions.getConjuncts()
+               .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+         exportNetworkConditions.getConjuncts().add(we);
+         preFilterConditions.getDisjuncts().add(exportNetworkConditions);
       });
-      c.getRouteFilterLists().put(localFilterName, localFilter);
       String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName
             + "~";
       Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
-      proc.getIpv6Networks().forEach((prefix6, mapName) -> {
+      proc.getIpv6Networks().forEach((prefix6, bgpNetwork6) -> {
          int prefixLen = prefix6.getPrefixLength();
          Route6FilterLine line = new Route6FilterLine(LineAction.ACCEPT,
                prefix6, new SubRange(prefixLen, prefixLen));
          localFilter6.addLine(line);
+         String mapName = bgpNetwork6.getRouteMapName();
          if (mapName != null) {
+            int mapLine = bgpNetwork6.getRouteMapLine();
             RouteMap routeMap = _routeMaps.get(mapName);
             if (routeMap != null) {
                routeMap.getReferers().put(proc,
                      "bgp ipv6 advertised network route-map");
-               // TODO: implement instead of advertising unconditionally
-               _w.unimplemented("bgp ipv6 advertised network route-map");
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName), OriginType.IGP);
+               Conjunction exportNetwork6Conditions = new Conjunction();
+               Prefix6Space space6 = new Prefix6Space();
+               space6.addPrefix6(prefix6);
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new MatchPrefix6Set(new DestinationNetwork6(),
+                           new ExplicitPrefix6Set(space6)));
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+               // TODO: ban aggregates?
+               exportNetwork6Conditions.getConjuncts().add(
+                     new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+               exportNetwork6Conditions.getConjuncts().add(we);
+               preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
             }
             else {
-               undefined("Reference to bgp ipv6 advertised network route-map: '"
-                     + mapName + "'", ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, mapName,
+                     CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
+                     mapLine);
             }
          }
       });
       c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
 
-      // add prefilter policy for explicitly advertised networks
-      Set<RouteFilterList> localRfLists = new LinkedHashSet<>();
-      localRfLists.add(localFilter);
-      preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
-            new DestinationNetwork(), new NamedPrefixSet(localFilterName)));
-
-      // create origination prefilter from listed aggregate advertiseed
-      // networks
-      String aggregateFilterName = "~BGP_AGGREGATE_NETWORKS_FILTER:" + vrfName
-            + "~";
-      RouteFilterList aggregateFilter = new RouteFilterList(
-            aggregateFilterName);
-      for (Prefix prefix : proc.getAggregateNetworks().keySet()) {
-         int prefixLen = prefix.getPrefixLength();
-         RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
-               new SubRange(prefixLen, prefixLen));
-         aggregateFilter.addLine(line);
-      }
-      c.getRouteFilterLists().put(aggregateFilterName, aggregateFilter);
-      preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
-            new DestinationNetwork(), new NamedPrefixSet(aggregateFilterName)));
       MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
       MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
       preFilterConditions.getDisjuncts().add(isEbgp);
       preFilterConditions.getDisjuncts().add(isIbgp);
 
-      Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<>();
-      aggregateRfLists.add(aggregateFilter);
-
       for (LeafBgpPeerGroup lpg : leafGroups) {
-         if (lpg.getName().equals("1.1.1.1")) {
-            assert Boolean.TRUE;
-         }
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
          boolean ipv4 = lpg.getNeighborPrefix() != null;
@@ -1239,16 +1444,12 @@ public class CiscoConfiguration extends VendorConfiguration {
          RoutingPolicy importPolicy = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {
+            int inboundRouteMapLine = lpg.getInboundRouteMapLine();
             importPolicy = c.getRoutingPolicies().get(inboundRouteMapName);
             if (importPolicy == null) {
-               String msg = "neighbor: '" + lpg.getName() + "': ";
-               String groupName = lpg.getGroupName();
-               if (groupName != null) {
-                  msg += "group: '" + groupName + "': ";
-               }
-               msg += "undefined reference to inbound route-map: '"
-                     + inboundRouteMapName + "'";
-               undefined(msg, ROUTE_MAP, inboundRouteMapName);
+               undefined(CiscoStructureType.ROUTE_MAP, inboundRouteMapName,
+                     CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
+                     inboundRouteMapLine);
             }
             else {
                RouteMap inboundRouteMap = _routeMaps.get(inboundRouteMapName);
@@ -1259,16 +1460,12 @@ public class CiscoConfiguration extends VendorConfiguration {
          String inboundRoute6MapName = lpg.getInboundRoute6Map();
          RoutingPolicy importPolicy6 = null;
          if (inboundRoute6MapName != null) {
+            int inboundRoute6MapLine = lpg.getInboundRoute6MapLine();
             importPolicy6 = c.getRoutingPolicies().get(inboundRoute6MapName);
             if (importPolicy6 == null) {
-               String msg = "neighbor: '" + lpg.getName() + "': ";
-               String groupName = lpg.getGroupName();
-               if (groupName != null) {
-                  msg += "group: '" + groupName + "': ";
-               }
-               msg += "undefined reference to inbound ipv6 route-map: '"
-                     + inboundRoute6MapName + "'";
-               undefined(msg, ROUTE_MAP, inboundRoute6MapName);
+               undefined(CiscoStructureType.ROUTE_MAP, inboundRoute6MapName,
+                     CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP,
+                     inboundRoute6MapLine);
             }
             else {
                RouteMap inboundRouteMap = _routeMaps.get(inboundRoute6MapName);
@@ -1279,9 +1476,13 @@ public class CiscoConfiguration extends VendorConfiguration {
          String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:" + vrfName
                + ":" + lpg.getName() + "~";
          RoutingPolicy peerExportPolicy = new RoutingPolicy(
-               peerExportPolicyName);
+               peerExportPolicyName, c);
          if (lpg.getActive() && !lpg.getShutdown()) {
             c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         }
+         if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
+            peerExportPolicy.getStatements()
+                  .add(new SetNextHop(new SelfNextHop(), false));
          }
          If peerExportConditional = new If();
          peerExportConditional.setComment(
@@ -1299,16 +1500,12 @@ public class CiscoConfiguration extends VendorConfiguration {
                .add(new CallExpr(bgpCommonExportPolicyName));
          String outboundRouteMapName = lpg.getOutboundRouteMap();
          if (outboundRouteMapName != null) {
+            int outboundRouteMapLine = lpg.getOutboundRouteMapLine();
             RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
             if (outboundRouteMap == null) {
-               String msg = "neighbor: '" + lpg.getName() + "': ";
-               String groupName = lpg.getGroupName();
-               if (groupName != null) {
-                  msg += "group: '" + groupName + "': ";
-               }
-               msg += "undefined reference to outbound route-map: '"
-                     + outboundRouteMapName + "'";
-               undefined(msg, ROUTE_MAP, outboundRouteMapName);
+               undefined(CiscoStructureType.ROUTE_MAP, outboundRouteMapName,
+                     CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
+                     outboundRouteMapLine);
             }
             else {
                outboundRouteMap.getReferers().put(lpg,
@@ -1320,16 +1517,15 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          String outboundRoute6MapName = lpg.getOutboundRoute6Map();
          if (outboundRoute6MapName != null) {
+            int outboundRoute6MapLine = lpg.getOutboundRoute6MapLine();
             RouteMap outboundRoute6Map = _routeMaps.get(outboundRoute6MapName);
             if (outboundRoute6Map == null) {
-               String msg = "neighbor: '" + lpg.getName() + "': ";
                String groupName = lpg.getGroupName();
                if (groupName != null) {
-                  msg += "group: '" + groupName + "': ";
                }
-               msg += "undefined reference to outbound ipv6 route-map: '"
-                     + outboundRoute6MapName + "'";
-               undefined(msg, ROUTE_MAP, outboundRoute6MapName);
+               undefined(CiscoStructureType.ROUTE_MAP, outboundRoute6MapName,
+                     CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
+                     outboundRoute6MapLine);
             }
             else {
                outboundRoute6Map.getReferers().put(lpg,
@@ -1356,13 +1552,14 @@ public class CiscoConfiguration extends VendorConfiguration {
             String defaultOriginateMapName = lpg.getDefaultOriginateMap();
             if (defaultOriginateMapName != null) { // originate contingent on
                                                    // generation policy
+               int defaultOriginateMapLine = lpg.getDefaultOriginateMapLine();
                RoutingPolicy defaultRouteGenerationPolicy = c
                      .getRoutingPolicies().get(defaultOriginateMapName);
                if (defaultRouteGenerationPolicy == null) {
-                  undefined(
-                        "undefined reference to generated route policy: "
-                              + defaultOriginateMapName,
-                        ROUTE_MAP, defaultOriginateMapName);
+                  undefined(CiscoStructureType.ROUTE_MAP,
+                        defaultOriginateMapName,
+                        CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
+                        defaultOriginateMapLine);
                }
                else {
                   RouteMap defaultRouteGenerationRouteMap = _routeMaps
@@ -1377,7 +1574,7 @@ public class CiscoConfiguration extends VendorConfiguration {
                String defaultRouteGenerationPolicyName = "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:"
                      + vrfName + ":" + lpg.getName() + "~";
                RoutingPolicy defaultRouteGenerationPolicy = new RoutingPolicy(
-                     defaultRouteGenerationPolicyName);
+                     defaultRouteGenerationPolicyName, c);
                If defaultRouteGenerationConditional = new If();
                defaultRouteGenerationPolicy.getStatements()
                      .add(defaultRouteGenerationConditional);
@@ -1417,6 +1614,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          boolean disablePeerAsCheck = lpg.getDisablePeerAsCheck();
          String inboundPrefixListName = lpg.getInboundPrefixList();
          if (inboundPrefixListName != null) {
+            int inboundPrefixListLine = lpg.getInboundPrefixListLine();
             ReferenceCountedStructure inboundPrefixList;
             if (ipv4) {
                inboundPrefixList = _prefixLists.get(inboundPrefixListName);
@@ -1431,23 +1629,22 @@ public class CiscoConfiguration extends VendorConfiguration {
             }
             else {
                if (ipv4) {
-                  undefined(
-                        "Reference to undefined inbound prefix-list: '"
-                              + inboundPrefixListName + "' at neighbor: '"
-                              + lpg.getName() + "'",
-                        PREFIX_LIST, inboundPrefixListName);
+                  undefined(CiscoStructureType.PREFIX_LIST,
+                        inboundPrefixListName,
+                        CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
+                        inboundPrefixListLine);
                }
                else {
-                  undefined(
-                        "Reference to undefined inbound ipv6 prefix-list: '"
-                              + inboundPrefixListName + "' at neighbor: '"
-                              + lpg.getName() + "'",
-                        PREFIX6_LIST, inboundPrefixListName);
+                  undefined(CiscoStructureType.PREFIX6_LIST,
+                        inboundPrefixListName,
+                        CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
+                        inboundPrefixListLine);
                }
             }
          }
          String outboundPrefixListName = lpg.getOutboundPrefixList();
          if (outboundPrefixListName != null) {
+            int outboundPrefixListLine = lpg.getOutboundPrefixListLine();
             ReferenceCountedStructure outboundPrefixList;
             if (ipv4) {
                outboundPrefixList = _prefixLists.get(outboundPrefixListName);
@@ -1462,19 +1659,16 @@ public class CiscoConfiguration extends VendorConfiguration {
             }
             else {
                if (ipv4) {
-                  undefined(
-                        "Reference to undefined outbound prefix-list: '"
-                              + outboundPrefixListName + "' at neighbor: '"
-                              + lpg.getName() + "'",
-                        PREFIX_LIST, outboundPrefixListName);
+                  undefined(CiscoStructureType.PREFIX_LIST,
+                        outboundPrefixListName,
+                        CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+                        outboundPrefixListLine);
                }
                else {
-                  undefined(
-                        "Reference to undefined outbound ipv6 prefix-list: '"
-                              + outboundPrefixListName + "' at neighbor: '"
-                              + lpg.getName() + "'",
-                        PREFIX6_LIST, outboundPrefixListName);
-
+                  undefined(CiscoStructureType.PREFIX6_LIST,
+                        outboundPrefixListName,
+                        CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
+                        outboundPrefixListLine);
                }
             }
          }
@@ -1551,13 +1745,18 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private org.batfish.datamodel.Interface toInterface(Interface iface,
          Map<String, IpAccessList> ipAccessLists, Configuration c) {
+      String name = iface.getName();
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
-            iface.getName(), c);
+            name, c);
       String vrfName = iface.getVrf();
       Vrf vrf = _vrfs.get(vrfName);
+      if (vrf == null) {
+         vrf = new Vrf(vrfName);
+         _vrfs.put(vrfName, vrf);
+      }
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
-      newIface.setVrf(iface.getVrf());
+      newIface.setVrf(c.getVrfs().get(vrfName));
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
       newIface.setProxyArp(iface.getProxyArp());
@@ -1566,6 +1765,29 @@ public class CiscoConfiguration extends VendorConfiguration {
          newIface.getAllPrefixes().add(iface.getPrefix());
       }
       newIface.getAllPrefixes().addAll(iface.getSecondaryPrefixes());
+      Long ospfAreaLong = iface.getOspfArea();
+
+      if (ospfAreaLong != null) {
+         OspfProcess proc = vrf.getOspfProcess();
+         if (iface.getOspfActive()) {
+            proc.getActiveInterfaceList().add(name);
+         }
+         if (iface.getOspfPassive()) {
+            proc.getPassiveInterfaceList().add(name);
+         }
+         if (proc != null) {
+            for (Prefix prefix : newIface.getAllPrefixes()) {
+               Prefix networkPrefix = prefix.getNetworkPrefix();
+               OspfNetwork ospfNetwork = new OspfNetwork(networkPrefix,
+                     ospfAreaLong);
+               proc.getNetworks().add(ospfNetwork);
+            }
+         }
+         else {
+            _w.redFlag("Interface: '" + name
+                  + "' contains OSPF settings, but there is no OSPF process");
+         }
+      }
       boolean level1 = false;
       boolean level2 = false;
       IsisProcess _isisProcess = vrf.getIsisProcess();
@@ -1617,11 +1839,12 @@ public class CiscoConfiguration extends VendorConfiguration {
 
       String incomingFilterName = iface.getIncomingFilter();
       if (incomingFilterName != null) {
+         int incomingFilterLine = iface.getIncomingFilterLine();
          IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
          if (incomingFilter == null) {
-            _w.redFlag("Interface: '" + iface.getName()
-                  + "' configured with non-existent incoming acl '"
-                  + incomingFilterName + "'");
+            undefined(CiscoStructureType.IP_ACCESS_LIST, incomingFilterName,
+                  CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
+                  incomingFilterLine);
          }
          else {
             String msg = "incoming acl for interface: " + iface.getName();
@@ -1640,11 +1863,12 @@ public class CiscoConfiguration extends VendorConfiguration {
       }
       String outgoingFilterName = iface.getOutgoingFilter();
       if (outgoingFilterName != null) {
+         int outgoingFilterLine = iface.getOutgoingFilterLine();
          IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
          if (outgoingFilter == null) {
-            _w.redFlag("Interface: '" + iface.getName()
-                  + "' configured with non-existent outgoing acl '"
-                  + outgoingFilterName + "'");
+            undefined(CiscoStructureType.IP_ACCESS_LIST, outgoingFilterName,
+                  CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
+                  outgoingFilterLine);
          }
          else {
             String msg = "outgoing acl for interface: " + iface.getName();
@@ -1663,11 +1887,12 @@ public class CiscoConfiguration extends VendorConfiguration {
       }
       String routingPolicyName = iface.getRoutingPolicy();
       if (routingPolicyName != null) {
+         int routingPolicyLine = iface.getRoutingPolicyLine();
          RouteMap routingPolicyRouteMap = _routeMaps.get(routingPolicyName);
          if (routingPolicyRouteMap == null) {
-            _w.redFlag("Interface: '" + iface.getName()
-                  + "' configured with non-existent policy-routing route-map '"
-                  + routingPolicyName + "'");
+            undefined(CiscoStructureType.ROUTE_MAP, routingPolicyName,
+                  CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
+                  routingPolicyLine);
          }
          else {
             routingPolicyRouteMap.getReferers().put(iface,
@@ -2089,18 +2314,53 @@ public class CiscoConfiguration extends VendorConfiguration {
                newArea.getInterfaces().add(i);
                i.setOspfArea(newArea);
                i.setOspfEnabled(true);
-               boolean passive = proc.getInterfaceBlacklist()
+               boolean passive = proc.getPassiveInterfaceList()
                      .contains(i.getName())
                      || (proc.getPassiveInterfaceDefault() && !proc
-                           .getInterfaceWhitelist().contains(i.getName()));
+                           .getActiveInterfaceList().contains(i.getName()));
                i.setOspfPassive(passive);
                break;
             }
          }
       }
 
+      // create summarization filters for inter-area routes
+      for (Entry<Long, Map<Prefix, Boolean>> e1 : proc.getSummaries()
+            .entrySet()) {
+         long areaLong = e1.getKey();
+         Map<Prefix, Boolean> summaries = e1.getValue();
+         OspfArea area = areas.get(areaLong);
+         String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":"
+               + areaLong + "~";
+         RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
+         c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+         if (area == null) {
+            area = new OspfArea(areaLong);
+            areas.put(areaLong, area);
+         }
+         area.setSummaryFilter(summaryFilterName);
+         for (Entry<Prefix, Boolean> e2 : summaries.entrySet()) {
+            Prefix prefix = e2.getKey();
+            boolean advertise = e2.getValue();
+            int prefixLength = prefix.getPrefixLength();
+            int filterMinPrefixLength = advertise
+                  ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                  : prefixLength;
+            summaryFilter.addLine(
+                  new RouteFilterLine(LineAction.REJECT, prefix, new SubRange(
+                        filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+            area.getSummaries().put(prefix, advertise);
+            if (!advertise) {
+
+            }
+         }
+         summaryFilter.addLine(new RouteFilterLine(LineAction.ACCEPT,
+               Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+      }
+
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
-      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName);
+      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName,
+            c);
       c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
       List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
       newProcess.setExportPolicy(ospfExportPolicyName);
@@ -2122,24 +2382,28 @@ public class CiscoConfiguration extends VendorConfiguration {
          OspfMetricType metricType = proc.getDefaultInformationMetricType();
          ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
          // add default export map with metric
-         String mapName = proc.getDefaultInformationOriginateMap();
+         String defaultOriginateMapName = proc
+               .getDefaultInformationOriginateMap();
          boolean useAggregateDefaultOnly;
-         if (mapName != null) {
+         if (defaultOriginateMapName != null) {
+            int defaultOriginateMapLine = proc
+                  .getDefaultInformationOriginateMapLine();
             useAggregateDefaultOnly = true;
             RoutingPolicy ospfDefaultGenerationPolicy = c.getRoutingPolicies()
-                  .get(mapName);
+                  .get(defaultOriginateMapName);
             if (ospfDefaultGenerationPolicy == null) {
-               undefined(
-                     "undefined reference to generation route-map: " + mapName,
-                     ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, defaultOriginateMapName,
+                     CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
+                     defaultOriginateMapLine);
             }
             else {
-               RouteMap generationRouteMap = _routeMaps.get(mapName);
+               RouteMap generationRouteMap = _routeMaps
+                     .get(defaultOriginateMapName);
                generationRouteMap.getReferers().put(proc,
                      "ospf default-originate route-map");
                GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
                      MAX_ADMINISTRATIVE_COST);
-               route.setGenerationPolicy(mapName);
+               route.setGenerationPolicy(defaultOriginateMapName);
                newProcess.getGeneratedRoutes().add(route);
             }
          }
@@ -2187,18 +2451,22 @@ public class CiscoConfiguration extends VendorConfiguration {
          ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
          ospfExportStatements.add(ospfExportConnected);
          // add default export map with metric
-         String mapName = rcp.getMap();
-         if (mapName != null) {
-            RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
+         String exportConnectedRouteMapName = rcp.getRouteMap();
+         if (exportConnectedRouteMapName != null) {
+            int exportConnectedRouteMapLine = rcp.getRouteMapLine();
+            RouteMap exportConnectedRouteMap = _routeMaps
+                  .get(exportConnectedRouteMapName);
             if (exportConnectedRouteMap == null) {
-               undefined("undefined reference to route-map: " + mapName,
-                     ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP,
+                     exportConnectedRouteMapName,
+                     CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
+                     exportConnectedRouteMapLine);
             }
             else {
                exportConnectedRouteMap.getReferers().put(proc,
                      "ospf redistribute connected route-map");
                ospfExportConnectedConditions.getConjuncts()
-                     .add(new CallExpr(mapName));
+                     .add(new CallExpr(exportConnectedRouteMapName));
             }
          }
          ospfExportConnectedStatements
@@ -2234,18 +2502,21 @@ public class CiscoConfiguration extends VendorConfiguration {
          ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
          ospfExportStatements.add(ospfExportStatic);
          // add export map with metric
-         String mapName = rsp.getMap();
-         if (mapName != null) {
-            RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
+         String exportStaticRouteMapName = rsp.getRouteMap();
+         if (exportStaticRouteMapName != null) {
+            int exportStaticRouteMapLine = rsp.getRouteMapLine();
+            RouteMap exportStaticRouteMap = _routeMaps
+                  .get(exportStaticRouteMapName);
             if (exportStaticRouteMap == null) {
-               undefined("undefined reference to route-map: " + mapName,
-                     ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, exportStaticRouteMapName,
+                     CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
+                     exportStaticRouteMapLine);
             }
             else {
                exportStaticRouteMap.getReferers().put(proc,
                      "ospf redistribute static route-map");
                ospfExportStaticConditions.getConjuncts()
-                     .add(new CallExpr(mapName));
+                     .add(new CallExpr(exportStaticRouteMapName));
             }
          }
          ospfExportStaticStatements
@@ -2280,18 +2551,20 @@ public class CiscoConfiguration extends VendorConfiguration {
          ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
          ospfExportStatements.add(ospfExportBgp);
          // add export map with metric
-         String mapName = rbp.getMap();
-         if (mapName != null) {
-            RouteMap exportBgpRouteMap = _routeMaps.get(mapName);
+         String exportBgpRouteMapName = rbp.getRouteMap();
+         if (exportBgpRouteMapName != null) {
+            int exportBgpRouteMapLine = rbp.getRouteMapLine();
+            RouteMap exportBgpRouteMap = _routeMaps.get(exportBgpRouteMapName);
             if (exportBgpRouteMap == null) {
-               undefined("undefined reference to route-map: " + mapName,
-                     ROUTE_MAP, mapName);
+               undefined(CiscoStructureType.ROUTE_MAP, exportBgpRouteMapName,
+                     CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
+                     exportBgpRouteMapLine);
             }
             else {
                exportBgpRouteMap.getReferers().put(proc,
                      "ospf redistribute bgp route-map");
                ospfExportBgpConditions.getConjuncts()
-                     .add(new CallExpr(mapName));
+                     .add(new CallExpr(exportBgpRouteMapName));
             }
          }
          ospfExportBgpStatements.add(Statements.ExitAccept.toStaticStatement());
@@ -2307,7 +2580,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          for (Entry<String, Interface> e : allInterfaces.entrySet()) {
             String ifaceName = e.getKey();
             Interface iface = e.getValue();
-            if (ifaceName.toLowerCase().startsWith("loopback")) {
+            if (ifaceName.toLowerCase().startsWith("loopback")
+                  && iface.getActive() && iface.getPrefix() != null) {
                loopbackInterfaces.put(ifaceName, iface);
             }
          }
@@ -2319,13 +2593,14 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          Ip highestIp = Ip.ZERO;
          for (Interface iface : interfacesToCheck.values()) {
-            Prefix prefix = iface.getPrefix();
-            if (prefix == null) {
+            if (!iface.getActive()) {
                continue;
             }
-            Ip ip = prefix.getAddress();
-            if (highestIp.asLong() < ip.asLong()) {
-               highestIp = ip;
+            for (Prefix prefix : iface.getAllPrefixes()) {
+               Ip ip = prefix.getAddress();
+               if (highestIp.asLong() < ip.asLong()) {
+                  highestIp = ip;
+               }
             }
          }
          if (highestIp == Ip.ZERO) {
@@ -2422,40 +2697,108 @@ public class CiscoConfiguration extends VendorConfiguration {
    }
 
    private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
-      RoutingPolicy output = new RoutingPolicy(map.getName());
+      RoutingPolicy output = new RoutingPolicy(map.getName(), c);
       List<Statement> statements = output.getStatements();
-      for (RouteMapClause rmClause : map.getClauses().values()) {
+      Map<Integer, If> clauses = new HashMap<>();
+      // descend map so continue targets are available
+      If followingClause = null;
+      Integer followingClauseNumber = null;
+      for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap()
+            .entrySet()) {
+         int clauseNumber = e.getKey();
+         RouteMapClause rmClause = e.getValue();
+         String clausePolicyName = getRouteMapClausePolicyName(map,
+               clauseNumber);
          Conjunction conj = new Conjunction();
+         // match ipv4s must be disjoined with match ipv6
+         Disjunction matchIpOrPrefix = new Disjunction();
          for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
             BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
-            conj.getConjuncts().add(matchExpr);
+            if (rmMatch instanceof RouteMapMatchIpAccessListLine
+                  || rmMatch instanceof RouteMapMatchIpPrefixListLine
+                  || rmMatch instanceof RouteMapMatchIpv6AccessListLine
+                  || rmMatch instanceof RouteMapMatchIpv6PrefixListLine) {
+               matchIpOrPrefix.getDisjuncts().add(matchExpr);
+            }
+            else {
+               conj.getConjuncts().add(matchExpr);
+            }
+         }
+         if (!matchIpOrPrefix.getDisjuncts().isEmpty()) {
+            conj.getConjuncts().add(matchIpOrPrefix);
          }
          If ifExpr = new If();
+         clauses.put(clauseNumber, ifExpr);
+         ifExpr.setComment(clausePolicyName);
          ifExpr.setGuard(conj);
          List<Statement> matchStatements = ifExpr.getTrueStatements();
          for (RouteMapSetLine rmSet : rmClause.getSetList()) {
             rmSet.applyTo(matchStatements, this, c, _w);
          }
+         RouteMapContinue continueStatement = rmClause.getContinueLine();
+         Integer continueTarget = null;
+         If continueTargetIf = null;
+         if (continueStatement != null) {
+            continueTarget = continueStatement.getTarget();
+            int statementLine = continueStatement.getStatementLine();
+            if (continueTarget == null) {
+               continueTarget = followingClauseNumber;
+            }
+            if (continueTarget != null) {
+               if (continueTarget <= clauseNumber) {
+                  throw new BatfishException(
+                        "Can only continue to later clause");
+               }
+               continueTargetIf = clauses.get(continueTarget);
+               if (continueTargetIf == null) {
+                  String name = "clause: '" + continueTarget
+                        + "' in route-map: '" + map.getName() + "'";
+                  undefined(CiscoStructureType.ROUTE_MAP_CLAUSE, name,
+                        CiscoStructureUsage.ROUTE_MAP_CONTINUE, statementLine);
+                  continueStatement = null;
+               }
+            }
+            else {
+               continueStatement = null;
+            }
+         }
          switch (rmClause.getAction()) {
          case ACCEPT:
-            matchStatements.add(Statements.ReturnTrue.toStaticStatement());
+            if (continueStatement == null) {
+               matchStatements.add(Statements.ReturnTrue.toStaticStatement());
+            }
+            else {
+               matchStatements.add(Statements.SetLocalDefaultActionAccept
+                     .toStaticStatement());
+               matchStatements.add(continueTargetIf);
+            }
             break;
+
          case REJECT:
             matchStatements.add(Statements.ReturnFalse.toStaticStatement());
             break;
+
          default:
             throw new BatfishException("Invalid action");
          }
-         statements.add(ifExpr);
+         if (followingClause != null) {
+            ifExpr.getFalseStatements().add(followingClause);
+         }
+         else {
+            ifExpr.getFalseStatements()
+                  .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
+         }
+         followingClause = ifExpr;
+         followingClauseNumber = clauseNumber;
       }
-      statements.add(Statements.ReturnFalse.toStaticStatement());
+      statements.add(followingClause);
       return output;
    }
 
    private RoutingPolicy toRoutingPolicy(Configuration c,
          RoutePolicy routePolicy) {
       String name = routePolicy.getName();
-      RoutingPolicy rp = new RoutingPolicy(name);
+      RoutingPolicy rp = new RoutingPolicy(name, c);
       List<Statement> statements = rp.getStatements();
       for (RoutePolicyStatement routePolicyStatement : routePolicy
             .getStatements()) {
@@ -2493,6 +2836,16 @@ public class CiscoConfiguration extends VendorConfiguration {
    }
 
    @Override
+   public String toString() {
+      if (_hostname != null) {
+         return getClass().getSimpleName() + "<" + _hostname + ">";
+      }
+      else {
+         return super.toString();
+      }
+   }
+
+   @Override
    public Configuration toVendorIndependentConfiguration() {
       final Configuration c = new Configuration(_hostname);
       c.setConfigurationFormat(_vendor);
@@ -2501,18 +2854,60 @@ public class CiscoConfiguration extends VendorConfiguration {
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+      c.setDnsServers(_dnsServers);
+      c.setTacacsServers(_tacacsServers);
+      if (_cf.getNtp() != null) {
+         c.setNtpServers(new TreeSet<>(_cf.getNtp().getServers().keySet()));
+      }
+      if (_cf.getLogging() != null) {
+         c.setLoggingServers(
+               new TreeSet<>(_cf.getLogging().getHosts().keySet()));
+      }
 
       processLines();
       processFailoverSettings();
+
+      // remove line login authentication lists if they don't exist
+      for (Line line : _cf.getLines().values()) {
+         String list = line.getLoginAuthentication();
+         boolean found = false;
+         Aaa aaa = _cf.getAaa();
+         if (aaa != null) {
+            AaaAuthentication authentication = aaa.getAuthentication();
+            if (authentication != null) {
+               AaaAuthenticationLogin login = authentication.getLogin();
+               if (login != null) {
+                  if (login.getLists().containsKey(list)) {
+                     found = true;
+                  }
+               }
+            }
+         }
+         if (!found) {
+            line.setLoginAuthentication(null);
+         }
+      }
 
       // initialize vrfs
       for (String vrfName : _vrfs.keySet()) {
          c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
       }
 
+      // snmp server
+      if (_snmpServer != null) {
+         String snmpServerVrf = _snmpServer.getVrf();
+         c.getVrfs().get(snmpServerVrf).setSnmpServer(_snmpServer);
+      }
+
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
          AsPathAccessList apList = toAsPathAccessList(pathList);
+         c.getAsPathAccessLists().put(apList.getName(), apList);
+      }
+
+      // convert as-path-sets to vendor independent format
+      for (AsPathSet asPathSet : _asPathSets.values()) {
+         AsPathAccessList apList = toAsPathAccessList(asPathSet);
          c.getAsPathAccessLists().put(apList.getName(), apList);
       }
 
@@ -2623,6 +3018,13 @@ public class CiscoConfiguration extends VendorConfiguration {
       // convert routing processes
       _vrfs.forEach((vrfName, vrf) -> {
          org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
+
+         // add snmp trap servers to main list
+         if (newVrf.getSnmpServer() != null) {
+            c.getSnmpTrapServers()
+                  .addAll(newVrf.getSnmpServer().getHosts().keySet());
+         }
+
          // convert static routes
          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
             newVrf.getStaticRoutes().add(toStaticRoute(c, staticRoute));
@@ -2653,34 +3055,68 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
       });
 
-      markIpv4Acls(_lineAccessClassLists, "line access-class list", c);
-      markIpv6Acls(_lineIpv6AccessClassLists, "line access-class list", c);
-      markAcls(_classMapAccessGroups, "class-map access-group", c);
-      markIpv4Acls(_ntpAccessGroups, "ntp access-group", c);
-      markIpv4Acls(_pimAcls, "pim acl", c);
-      markIpv4Acls(_controlPlaneAccessGroups, "control-plane ip access-group",
-            c);
-      markIpv4Acls(_managementAccessGroups, "management ip access-group", c);
-      markIpv4Acls(_msdpPeerSaLists, "msdp peer sa-list", c);
-      markAcls(_snmpAccessLists, "snmp access-list", c);
-      markIpv4Acls(_sshAcls, "ssh ipv4 access-list", c);
-      markIpv4Acls(_sshIpv6Acls, "ssh ipv6 access-list", c);
-      markIpv4Acls(_verifyAccessLists, "interface ip verify access-list", c);
-      markRouteMaps(_pimRouteMaps, "pim route-map", c);
-      markRouteMaps(_bgpVrfAggregateAddressRouteMaps,
-            "bgp vrf aggregate-address route-map", c);
-      markRouteMaps(_referencedRouteMaps, "bgp otherwise in/outbound route-map",
-            c);
+      // warn about references to undefined peer groups
+      for (Entry<String, Integer> e : _undefinedPeerGroups.entrySet()) {
+         String name = e.getKey();
+         int line = e.getValue();
+         undefined(CiscoStructureType.BGP_PEER_GROUP, name,
+               CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT, line);
+      }
+
+      // mark references to IPv4/6 ACLs that may not appear in data model
+      markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, c);
+      markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP, c);
+      markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST, c);
+      markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER, c);
+      markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST, c);
+      markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST, c);
+      markIpv4Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST, c);
+      markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6, c);
+      markIpv4Acls(CiscoStructureUsage.MANAGEMENT_ACCESS_GROUP, c);
+      markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST, c);
+      markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_RP_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_RP_ADDRESS_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL, c);
+      markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL, c);
+      markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, c);
+      markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4, c);
+      markIpv6Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6, c);
+      markAcls(CiscoStructureUsage.SSH_ACL, c);
+      markIpv4Acls(CiscoStructureUsage.SSH_IPV4_ACL, c);
+      markIpv6Acls(CiscoStructureUsage.SSH_IPV6_ACL, c);
+      markAcls(CiscoStructureUsage.WCCP_GROUP_LIST, c);
+      markAcls(CiscoStructureUsage.WCCP_REDIRECT_LIST, c);
+      markAcls(CiscoStructureUsage.WCCP_SERVICE_LIST, c);
+
+      // mark references to mac-ACLs that may not appear in data model
+      // TODO: fill in
+
+      // mark references to route-maps that may not appear in data model
+      markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER, c);
+      markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP, c);
+      markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP, c);
+
       // warn about unreferenced data structures
+      warnUnusedAsPathSets();
+      warnUnusedCommunityLists();
+      warnUnusedIpAsPathAccessLists();
+      warnUnusedIpAccessLists();
+      warnUnusedIpv6AccessLists();
+      warnUnusedMacAccessLists();
+      warnUnusedPrefixLists();
+      warnUnusedPrefix6Lists();
       warnUnusedPeerGroups();
       warnUnusedPeerSessions();
       warnUnusedRouteMaps();
-      warnUnusedIpAccessLists();
-      warnUnusedIpv6AccessLists();
-      warnUnusedPrefixLists();
-      warnUnusedPrefix6Lists();
-      warnUnusedIpAsPathAccessLists();
-      warnUnusedCommunityLists();
       c.simplifyRoutingPolicies();
       return c;
    }
@@ -2694,7 +3130,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (ospfProcess != null) {
             for (OspfRedistributionPolicy rp : ospfProcess
                   .getRedistributionPolicies().values()) {
-               currentMapName = rp.getMap();
+               currentMapName = rp.getRouteMap();
                if (containsIpAccessList(eaListName, currentMapName)) {
                   return true;
                }
@@ -2709,7 +3145,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (bgpProcess != null) {
             for (BgpRedistributionPolicy rp : bgpProcess
                   .getRedistributionPolicies().values()) {
-               currentMapName = rp.getMap();
+               currentMapName = rp.getRouteMap();
                if (containsIpAccessList(eaListName, currentMapName)) {
                   return true;
                }
@@ -2742,7 +3178,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (ospfProcess != null) {
             for (OspfRedistributionPolicy rp : ospfProcess
                   .getRedistributionPolicies().values()) {
-               currentMapName = rp.getMap();
+               currentMapName = rp.getRouteMap();
                if (containsIpv6AccessList(eaListName, currentMapName)) {
                   return true;
                }
@@ -2757,7 +3193,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (bgpProcess != null) {
             for (BgpRedistributionPolicy rp : bgpProcess
                   .getRedistributionPolicies().values()) {
-               currentMapName = rp.getMap();
+               currentMapName = rp.getRouteMap();
                if (containsIpv6AccessList(eaListName, currentMapName)) {
                   return true;
                }
@@ -2789,6 +3225,20 @@ public class CiscoConfiguration extends VendorConfiguration {
       return false;
    }
 
+   private void warnUnusedAsPathSets() {
+      for (Entry<String, AsPathSet> e : _asPathSets.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         AsPathSet asPathSet = e.getValue();
+         if (asPathSet.isUnused()) {
+            unused(CiscoStructureType.AS_PATH_SET, name,
+                  asPathSet.getDefinitionLine());
+         }
+      }
+   }
+
    private void warnUnusedCommunityLists() {
       for (Entry<String, ExpandedCommunityList> e : _expandedCommunityLists
             .entrySet()) {
@@ -2798,8 +3248,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          ExpandedCommunityList list = e.getValue();
          if (list.isUnused()) {
-            unused("Unused expanded community-list: '" + name + "'",
-                  COMMUNITY_LIST, name);
+            unused(CiscoStructureType.COMMUNITY_LIST_EXPANDED, name,
+                  list.getDefinitionLine());
          }
       }
       for (Entry<String, StandardCommunityList> e : _standardCommunityLists
@@ -2810,8 +3260,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          StandardCommunityList list = e.getValue();
          if (list.isUnused()) {
-            unused("Unused standard community-list: '" + name + "'",
-                  COMMUNITY_LIST, name);
+            unused(CiscoStructureType.COMMUNITY_LIST_STANDARD, name,
+                  list.getDefinitionLine());
          }
       }
    }
@@ -2825,8 +3275,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          ExtendedAccessList acl = e.getValue();
          if (acl.isUnused()) {
-            unused("Unused extended access-list: '" + name + "'",
-                  IP_ACCESS_LIST, name);
+            unused(CiscoStructureType.IP_ACCESS_LIST_EXTENDED, name,
+                  acl.getDefinitionLine());
          }
       }
       for (Entry<String, StandardAccessList> e : _standardAccessLists
@@ -2837,8 +3287,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          StandardAccessList acl = e.getValue();
          if (acl.isUnused()) {
-            unused("Unused standard access-list: '" + name + "'",
-                  IP_ACCESS_LIST, name);
+            unused(CiscoStructureType.IP_ACCESS_LIST_STANDARD, name,
+                  acl.getDefinitionLine());
          }
       }
    }
@@ -2852,8 +3302,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          IpAsPathAccessList asPathAccessList = e.getValue();
          if (asPathAccessList.isUnused()) {
-            unused("Unused as-path access-list: '" + name + "'",
-                  AS_PATH_ACCESS_LIST, name);
+            unused(CiscoStructureType.AS_PATH_ACCESS_LIST, name,
+                  asPathAccessList.getDefinitionLine());
          }
       }
    }
@@ -2867,8 +3317,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          ExtendedIpv6AccessList acl = e.getValue();
          if (acl.isUnused()) {
-            unused("Unused extended ipv6 access-list: '" + name + "'",
-                  IPV6_ACCESS_LIST, name);
+            unused(CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED, name,
+                  acl.getDefinitionLine());
          }
       }
       for (Entry<String, StandardIpv6AccessList> e : _standardIpv6AccessLists
@@ -2879,27 +3329,40 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          StandardIpv6AccessList acl = e.getValue();
          if (acl.isUnused()) {
-            unused("Unused standard ipv6 access-list: '" + name + "'",
-                  IPV6_ACCESS_LIST, name);
+            unused(CiscoStructureType.IPV6_ACCESS_LIST_STANDARD, name,
+                  acl.getDefinitionLine());
+         }
+      }
+   }
+
+   private void warnUnusedMacAccessLists() {
+      for (Entry<String, MacAccessList> e : _macAccessLists.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         MacAccessList macAccessList = e.getValue();
+         if (macAccessList.isUnused()) {
+            unused(CiscoStructureType.MAC_ACCESS_LIST, name,
+                  macAccessList.getDefinitionLine());
          }
       }
    }
 
    private void warnUnusedPeerGroups() {
       if (_unusedPeerGroups != null) {
-         for (String name : _unusedPeerGroups) {
-            unused("Unused bgp peer-group/template: '" + name + "'",
-                  BGP_PEER_GROUP, name);
-         }
+         _unusedPeerGroups.forEach((name, line) -> {
+            unused(CiscoStructureType.BGP_PEER_GROUP, name, line);
+         });
       }
    }
 
    private void warnUnusedPeerSessions() {
       if (_unusedPeerSessions != null) {
-         for (String name : _unusedPeerSessions) {
-            unused("Unused bgp peer-session: '" + name + "'", BGP_PEER_SESSION,
-                  name);
-         }
+         _unusedPeerSessions.forEach((name, line) -> {
+            unused(CiscoStructureType.BGP_PEER_SESSION, name, line);
+         });
+
       }
    }
 
@@ -2911,8 +3374,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          Prefix6List prefixList = e.getValue();
          if (prefixList.isUnused()) {
-            unused("Unused ipv6 prefix-list: '" + name + "'", PREFIX6_LIST,
-                  name);
+            unused(CiscoStructureType.PREFIX6_LIST, name,
+                  prefixList.getDefinitionLine());
          }
       }
    }
@@ -2925,8 +3388,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          PrefixList prefixList = e.getValue();
          if (prefixList.isUnused()) {
-            unused("Unused ipv4 prefix-list: '" + name + "'", PREFIX_LIST,
-                  name);
+            unused(CiscoStructureType.PREFIX_LIST, name,
+                  prefixList.getDefinitionLine());
          }
       }
    }
@@ -2939,7 +3402,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          RouteMap routeMap = e.getValue();
          if (routeMap.isUnused()) {
-            unused("Unused route-map: '" + name + "'", ROUTE_MAP, name);
+            unused(CiscoStructureType.ROUTE_MAP, name,
+                  routeMap.getDefinitionLine());
          }
       }
    }

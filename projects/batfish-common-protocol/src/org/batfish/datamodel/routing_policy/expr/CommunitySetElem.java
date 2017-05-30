@@ -19,7 +19,7 @@ public class CommunitySetElem implements Serializable {
    private CommunitySetElemHalfExpr _suffix;
 
    @JsonCreator
-   public CommunitySetElem() {
+   private CommunitySetElem() {
    }
 
    public CommunitySetElem(CommunitySetElemHalfExpr prefix,
@@ -49,12 +49,52 @@ public class CommunitySetElem implements Serializable {
       }
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      CommunitySetElem other = (CommunitySetElem) obj;
+      if (_prefix == null) {
+         if (other._prefix != null) {
+            return false;
+         }
+      }
+      else if (!_prefix.equals(other._prefix)) {
+         return false;
+      }
+      if (_suffix == null) {
+         if (other._suffix != null) {
+            return false;
+         }
+      }
+      else if (!_suffix.equals(other._suffix)) {
+         return false;
+      }
+      return true;
+   }
+
    public CommunitySetElemHalfExpr getPrefix() {
       return _prefix;
    }
 
    public CommunitySetElemHalfExpr getSuffix() {
       return _suffix;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_prefix == null) ? 0 : _prefix.hashCode());
+      result = prime * result + ((_suffix == null) ? 0 : _suffix.hashCode());
+      return result;
    }
 
    public void setPrefix(CommunitySetElemHalfExpr prefix) {

@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
@@ -23,10 +24,11 @@ import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.main.ParserBatfishException;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.host.HostConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationJob
       extends BatfishJob<ParseVendorConfigurationResult> {
@@ -106,28 +108,26 @@ public class ParseVendorConfigurationJob
          }
       }
 
-      String relativePathStr = _settings.getTestrigSettings().getBasePath()
-            .relativize(_file).toString();
+      String relativePathStr = _settings.getActiveTestrigSettings()
+            .getBasePath().relativize(_file).toString();
 
       if (format == ConfigurationFormat.UNKNOWN) {
-         format = Format.identifyConfigurationFormat(_fileText);
+         format = VendorConfigurationFormatDetector
+               .identifyConfigurationFormat(_fileText);
       }
-      boolean empty = false;
       switch (format) {
+
       case EMPTY:
-         empty = true;
-      case IGNORED:
-         String emptyOrIgnoredError = "Empty or ignored file: '" + currentPath
-               + "'\n";
-         if (empty) {
-            _warnings.redFlag(emptyOrIgnoredError);
-         }
-         else {
-            _warnings.pedantic(emptyOrIgnoredError);
-         }
+         _warnings.redFlag("Empty file: '" + currentPath + "'\n");
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, _warnings);
+               _logger.getHistory(), _file, _warnings, ParseStatus.EMPTY);
+
+      case IGNORED:
+         _warnings.pedantic("Ignored file: '" + currentPath + "'\n");
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new ParseVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _file, _warnings, ParseStatus.IGNORED);
 
       case ARISTA:
       case CISCO_IOS:
@@ -155,7 +155,7 @@ public class ParseVendorConfigurationJob
                _settings, format);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser,
-               _warnings, _settings.getUnrecognizedAsRedFlag());
+               format, _warnings, _settings.getUnrecognizedAsRedFlag());
          break;
 
       case HOST:
@@ -177,7 +177,7 @@ public class ParseVendorConfigurationJob
             // spurious\n");
             _fileText = Batfish.flatten(_fileText, _logger, _settings,
                   ConfigurationFormat.VYOS,
-                  Format.BATFISH_FLATTENED_VYOS_HEADER);
+                  VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER);
          }
          else {
             elapsedTime = System.currentTimeMillis() - startTime;
@@ -210,7 +210,7 @@ public class ParseVendorConfigurationJob
             try {
                _fileText = Batfish.flatten(_fileText, _logger, _settings,
                      ConfigurationFormat.JUNIPER,
-                     Format.BATFISH_FLATTENED_JUNIPER_HEADER);
+                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
             }
             catch (BatfishException e) {
                String error = "Error flattening configuration file: '"
@@ -257,7 +257,9 @@ public class ParseVendorConfigurationJob
       case ALCATEL_AOS:
       case AWS_VPC:
       case BLADENETWORK:
+      case F5:
       case JUNIPER_SWITCH:
+      case MRV_COMMANDS:
       case MSS:
       case VXWORKS:
          String unsupportedError = "Unsupported configuration format: '"
@@ -272,7 +274,8 @@ public class ParseVendorConfigurationJob
             _warnings.unimplemented(unsupportedError);
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file, _warnings);
+                  _logger.getHistory(), _file, _warnings,
+                  ParseStatus.UNSUPPORTED);
          }
 
       case UNKNOWN:
@@ -289,7 +292,7 @@ public class ParseVendorConfigurationJob
             _warnings.unimplemented(unknownError);
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file, _warnings);
+                  _logger.getHistory(), _file, _warnings, ParseStatus.UNKNOWN);
          }
       }
 
@@ -323,6 +326,7 @@ public class ParseVendorConfigurationJob
       }
       vc = extractor.getVendorConfiguration();
       vc.setVendor(format);
+      vc.setFilename(_file.getFileName().toString());
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {

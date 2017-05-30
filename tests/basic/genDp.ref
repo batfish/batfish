@@ -1,0 +1,22 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
+      "bgpRoutesByIteration" : {
+        "1" : 16,
+        "2" : 38,
+        "3" : 70,
+        "4" : 92,
+        "5" : 106,
+        "6" : 114,
+        "7" : 116,
+        "8" : 118
+      },
+      "dependentRoutesIterations" : 8,
+      "ospfInternalIterations" : 3,
+      "totalRoutes" : 286,
+      "version" : "0.21.0"
+    }
+  ],
+  "status" : "SUCCESS"
+}

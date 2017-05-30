@@ -3,7 +3,7 @@
 
 Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
 
-**Batfish does not require access to network devices.** It only needs off line configuration files, e.g., pulled from RANCID or template authoring tools.
+**Batfish does not require access to network devices.** It only needs offline configuration files, e.g., pulled from RANCID or template authoring tools.
 
 The developers of Batfish include researchers from Intentionet, University of California Los Angeles, University of Southern California, and Microsoft Research. See [www.batfish.org] (http://www.batfish.org) for technical information on how it works.
 
@@ -41,11 +41,11 @@ Batfish supports many types of correctness checks, including
   - Planned ACL changes have no collateral damage, e.g., relative to the current configuration, only flows that are intended to be (un)blocked are (un)blocked; no other flow is impacted.
   - Two configurations, potentially from different vendors, are semantically equivalent
 
-These checks are performed by asking questions about configruations. See [here] (https://github.com/intentionet/batfish/wiki/Questions) for the list of questions.
+These checks are performed by asking questions about configurations. See [here] (https://github.com/batfish/batfish/wiki/Questions) for the list of questions.
 
 ## How do I get started?
 
-If you are a DIYer, go to [Batfish Wiki] (https://github.com/arifogel/batfish/wiki)
+If you are a DIYer, go to [Batfish Wiki] (https://github.com/batfish/batfish/wiki)
 
 If you'd like a hosted service, drop a line to info@intentionet.com.
 

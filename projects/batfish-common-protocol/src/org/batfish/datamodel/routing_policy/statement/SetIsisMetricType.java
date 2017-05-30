@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class SetIsisMetricType extends AbstractStatement {
+public class SetIsisMetricType extends Statement {
 
    /**
     *
@@ -16,11 +16,29 @@ public class SetIsisMetricType extends AbstractStatement {
    private IsisMetricType _metricType;
 
    @JsonCreator
-   public SetIsisMetricType() {
+   private SetIsisMetricType() {
    }
 
    public SetIsisMetricType(IsisMetricType metricType) {
       _metricType = metricType;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      SetIsisMetricType other = (SetIsisMetricType) obj;
+      if (_metricType != other._metricType) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -32,6 +50,15 @@ public class SetIsisMetricType extends AbstractStatement {
 
    public IsisMetricType getMetricType() {
       return _metricType;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_metricType == null) ? 0 : _metricType.hashCode());
+      return result;
    }
 
    public void setMetricType(IsisMetricType metricType) {

@@ -1,9 +1,0 @@
-{
-  "class" : "org.batfish.datamodel.questions.NodesQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "nodeBlacklist" : [ ],
-  "nodeRegex" : ".*",
-  "nodeType" : [ ],
-  "summary" : true
-}

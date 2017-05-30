@@ -8,7 +8,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class SetOspfMetricType extends AbstractStatement {
+public class SetOspfMetricType extends Statement {
 
    /**
     *
@@ -18,7 +18,7 @@ public class SetOspfMetricType extends AbstractStatement {
    private OspfMetricType _metricType;
 
    @JsonCreator
-   public SetOspfMetricType() {
+   private SetOspfMetricType() {
    }
 
    public SetOspfMetricType(OspfMetricType metricType) {
@@ -26,6 +26,24 @@ public class SetOspfMetricType extends AbstractStatement {
       if (_metricType == null) {
          throw new BatfishException("Cannot set null ospf metric type");
       }
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      SetOspfMetricType other = (SetOspfMetricType) obj;
+      if (_metricType != other._metricType) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -39,6 +57,15 @@ public class SetOspfMetricType extends AbstractStatement {
 
    public OspfMetricType getMetricType() {
       return _metricType;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_metricType == null) ? 0 : _metricType.hashCode());
+      return result;
    }
 
    public void setMetricType(OspfMetricType metricType) {

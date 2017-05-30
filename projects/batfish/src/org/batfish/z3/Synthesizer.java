@@ -27,6 +27,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
@@ -121,6 +122,8 @@ public class Synthesizer {
    public static final String ICMP_TYPE_VAR = "icmp_type";
    public static final int IP_BITS = 32;
    public static final String IP_PROTOCOL_VAR = "ip_prot";
+   public static final int PACKET_LENGTH_BITS = 16;
+   public static final String PACKET_LENGTH_VAR = "packet_length";
    public static final Map<String, Integer> PACKET_VAR_SIZES = initPacketVarSizes();
    public static final List<String> PACKET_VARS = getPacketVars();
    public static final int PORT_BITS = 16;
@@ -170,6 +173,7 @@ public class Synthesizer {
       vars.add(FRAGMENT_OFFSET_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
+      vars.add(PACKET_LENGTH_VAR);
       vars.add(STATE_VAR);
       vars.add(TCP_FLAGS_CWR_VAR);
       vars.add(TCP_FLAGS_ECE_VAR);
@@ -230,6 +234,7 @@ public class Synthesizer {
       varSizes.put(FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
+      varSizes.put(PACKET_LENGTH_VAR, PACKET_LENGTH_BITS);
       varSizes.put(STATE_VAR, STATE_BITS);
       varSizes.put(TCP_FLAGS_CWR_VAR, TCP_FLAGS_CWR_BITS);
       varSizes.put(TCP_FLAGS_ECE_VAR, TCP_FLAGS_ECE_BITS);
@@ -258,8 +263,8 @@ public class Synthesizer {
       Set<IpWildcard> dstIpWildcards = headerSpace.getDstIps();
       Set<IpWildcard> dstIpWildcardsBlacklist = headerSpace.getNotDstIps();
 
-      Set<IpProtocol> protocols = headerSpace.getIpProtocols();
-      Set<IpProtocol> notProtocols = headerSpace.getNotIpProtocols();
+      Set<IpProtocol> ipProtocols = headerSpace.getIpProtocols();
+      Set<IpProtocol> notIpProtocols = headerSpace.getNotIpProtocols();
 
       Set<SubRange> srcPortRanges = new LinkedHashSet<>();
       srcPortRanges.addAll(headerSpace.getSrcPorts());
@@ -274,6 +279,12 @@ public class Synthesizer {
       Set<SubRange> notDstPortRanges = new LinkedHashSet<>();
       notDstPortRanges.addAll(headerSpace.getNotDstPorts());
 
+      Set<Protocol> dstProtocols = headerSpace.getDstProtocols();
+      Set<Protocol> notDstProtocols = headerSpace.getNotDstProtocols();
+      Set<Protocol> srcProtocols = headerSpace.getSrcProtocols();
+      Set<Protocol> notSrcProtocols = headerSpace.getNotSrcProtocols();
+      Set<Protocol> srcOrDstProtocols = headerSpace.getSrcOrDstProtocols();
+
       Set<SubRange> fragmentOffsetRanges = new LinkedHashSet<>();
       fragmentOffsetRanges.addAll(headerSpace.getFragmentOffsets());
       Set<SubRange> notFragmentOffsetRanges = new LinkedHashSet<>();
@@ -285,6 +296,9 @@ public class Synthesizer {
       Set<SubRange> icmpCodes = headerSpace.getIcmpCodes();
       Set<SubRange> notIcmpCodes = headerSpace.getNotIcmpCodes();
 
+      Set<SubRange> packetLengths = headerSpace.getPacketLengths();
+      Set<SubRange> notPacketLengths = headerSpace.getNotPacketLengths();
+
       Set<State> states = headerSpace.getStates();
 
       List<TcpFlags> tcpFlags = headerSpace.getTcpFlags();
@@ -295,10 +309,10 @@ public class Synthesizer {
       Set<Integer> ecns = headerSpace.getEcns();
       Set<Integer> notEcns = headerSpace.getEcns();
 
-      // match protocols
-      if (protocols.size() > 0) {
+      // match ipProtocols
+      if (ipProtocols.size() > 0) {
          OrExpr matchesSomeProtocol = new OrExpr();
-         for (IpProtocol protocol : protocols) {
+         for (IpProtocol protocol : ipProtocols) {
             int protocolNumber = protocol.number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
             LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
@@ -309,10 +323,10 @@ public class Synthesizer {
          match.addConjunct(matchesSomeProtocol);
       }
 
-      // don't match notProtocols
-      if (notProtocols.size() > 0) {
+      // don't match notIpProtocols
+      if (notIpProtocols.size() > 0) {
          OrExpr matchesSomeProtocol = new OrExpr();
-         for (IpProtocol protocol : notProtocols) {
+         for (IpProtocol protocol : notIpProtocols) {
             int protocolNumber = protocol.number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
             LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
@@ -321,6 +335,128 @@ public class Synthesizer {
             matchesSomeProtocol.addDisjunct(matchProtocol);
          }
          match.addConjunct(new NotExpr(matchesSomeProtocol));
+      }
+
+      // destination protocols
+      if (dstProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : dstProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(DST_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         match.addConjunct(matchesSomeProtocol);
+      }
+
+      // not destination protocols
+      if (notDstProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : notDstProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(DST_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         NotExpr notMatch = new NotExpr(matchesSomeProtocol);
+         match.addConjunct(notMatch);
+      }
+
+      // source protocols
+      if (srcProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : srcProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(SRC_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         match.addConjunct(matchesSomeProtocol);
+      }
+
+      // not source protocols
+      if (notSrcProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : notSrcProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr portVar = new VarIntExpr(SRC_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchPort = new EqExpr(portVar, portLit);
+               matchProtocolAndPort.addConjunct(matchPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         NotExpr notMatch = new NotExpr(matchesSomeProtocol);
+         match.addConjunct(notMatch);
+      }
+
+      // source or destination protocols
+      if (srcOrDstProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (Protocol protocol : srcOrDstProtocols) {
+            AndExpr matchProtocolAndPort = new AndExpr();
+            int protocolNumber = protocol.getIpProtocol().number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchProtocolAndPort.addConjunct(matchProtocol);
+            Integer port = protocol.getPort();
+            if (port != null) {
+               VarIntExpr dstPortVar = new VarIntExpr(DST_PORT_VAR);
+               VarIntExpr srcPortVar = new VarIntExpr(SRC_PORT_VAR);
+               LitIntExpr portLit = new LitIntExpr(port, PORT_BITS);
+               EqExpr matchDstPort = new EqExpr(dstPortVar, portLit);
+               EqExpr matchSrcPort = new EqExpr(srcPortVar, portLit);
+               OrExpr matchSrcOrDstPort = new OrExpr();
+               matchSrcOrDstPort.addDisjunct(matchDstPort);
+               matchSrcOrDstPort.addDisjunct(matchSrcPort);
+               matchProtocolAndPort.addConjunct(matchSrcOrDstPort);
+            }
+            matchesSomeProtocol.addDisjunct(matchProtocolAndPort);
+         }
+         match.addConjunct(matchesSomeProtocol);
       }
 
       // match srcIp
@@ -708,6 +844,20 @@ public class Synthesizer {
       if (notIcmpCodes != null && notIcmpCodes.size() > 0) {
          BooleanExpr matchRange = new RangeMatchExpr(ICMP_CODE_VAR,
                ICMP_CODE_BITS, notIcmpCodes);
+         match.addConjunct(new NotExpr(matchRange));
+      }
+
+      // match packetLengths
+      if (packetLengths != null && packetLengths.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(PACKET_LENGTH_VAR,
+               PACKET_LENGTH_BITS, packetLengths);
+         match.addConjunct(matchRange);
+      }
+
+      // don't match notPacketLengths
+      if (notPacketLengths != null && notPacketLengths.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(PACKET_LENGTH_VAR,
+               PACKET_LENGTH_BITS, notPacketLengths);
          match.addConjunct(new NotExpr(matchRange));
       }
 
@@ -1166,7 +1316,7 @@ public class Synthesizer {
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
          for (Interface i : c.getInterfaces().values()) {
             String ifaceName = i.getName();
-            String vrf = i.getVrf();
+            String vrf = i.getVrfName();
             InboundInterfaceExpr inboundInterface = new InboundInterfaceExpr(
                   hostname, ifaceName);
             // deal with origination totally independently of zone stuff
@@ -1190,7 +1340,7 @@ public class Synthesizer {
                }
                String inboundFilterName;
                IpAccessList inboundInterfaceFilter = inboundZone
-                     .getInboundInterfaceFilters().get(i);
+                     .getInboundInterfaceFilters().get(ifaceName);
                if (inboundInterfaceFilter != null) {
                   inboundFilterName = inboundInterfaceFilter.getName();
                }
@@ -1283,7 +1433,7 @@ public class Synthesizer {
                }
                String inboundFilterName;
                IpAccessList inboundInterfaceFilter = inboundZone
-                     .getInboundInterfaceFilters().get(i);
+                     .getInboundInterfaceFilters().get(ifaceName);
                if (inboundInterfaceFilter != null) {
                   inboundFilterName = inboundInterfaceFilter.getName();
                }
@@ -1359,7 +1509,7 @@ public class Synthesizer {
                if (iface.getPrefix() != null) {
                   IpAccessList aclIn = iface.getIncomingFilter();
                   IpAccessList aclOut = iface.getOutgoingFilter();
-                  String routePolicy = iface.getRoutingPolicy();
+                  String routePolicy = iface.getRoutingPolicyName();
                   if (aclIn != null) {
                      String name = aclIn.getName();
                      aclMap.put(name, aclIn);
@@ -1566,7 +1716,7 @@ public class Synthesizer {
             String ifaceName = iface.getName();
             // PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
             // hostname, ifaceName);
-            String p = iface.getRoutingPolicy();
+            String p = iface.getRoutingPolicyName();
             if (p != null) {
                throw new BatfishException(
                      "Currently do not support interface routing-policy: '"
@@ -1619,7 +1769,7 @@ public class Synthesizer {
                // forwardConditions.addConjunct(postInInterface);
                // forwardConditions.addConjunct(preOut);
                // forwardConditions.addConjunct(match);
-               // if (CommonUtil.isNullInterface(outInterface)) {
+               // if (isNullInterface(outInterface)) {
                // NodeDropExpr nodeDrop = new NodeDropExpr(
                // hostname);
                // RuleExpr dropRule = new RuleExpr(
@@ -1778,7 +1928,7 @@ public class Synthesizer {
          Set<Interface> interfaces = e.getValue();
          UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
          for (Interface i : interfaces) {
-            String vrfName = i.getVrf();
+            String vrfName = i.getVrfName();
             String ifaceName = i.getName();
             PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
                   ifaceName);
@@ -2140,7 +2290,7 @@ public class Synthesizer {
             AndExpr receivedDestRouteConditions = new AndExpr();
             receivedDestRouteConditions.addConjunct(postInInterface);
             receivedDestRouteConditions.addConjunct(preOut);
-            String policyName = i.getRoutingPolicy();
+            String policyName = i.getRoutingPolicyName();
             if (policyName != null) {
                PolicyDenyExpr policyDeny = new PolicyDenyExpr(hostname,
                      policyName);

@@ -19,8 +19,12 @@ export BATFISH_DOCS_DATAMODEL="$BATFISH_DOCS_ROOT/datamodel.json"
 export BATFISH_WIKI_ROOT="$BATFISH_ROOT/../batfish.wiki"
 export BATFISH_WIKI_DATAMODEL="$BATFISH_WIKI_ROOT/Datamodel.md"
 export BATFISH_WIKI_QUESTIONS="$BATFISH_WIKI_ROOT/Questions.md"
-export BATFISH_DATAMODEL_PAGE_SCRIPT="${BATFISH_TOOLS_PATH}/datamodel_page.py"
-export BATFISH_QUESTIONS_PAGE_SCRIPT="${BATFISH_TOOLS_PATH}/questions_page.py"
+
+if [ -d "$BATFISH_ROOT/../pybatfish" ]; then
+   export PYBATFISH_ROOT="$BATFISH_ROOT/../pybatfish"
+   export BATFISH_DATAMODEL_PAGE_SCRIPT="${PYBATFISH_ROOT}/datamodel_page.py"
+   export BATFISH_QUESTIONS_PAGE_SCRIPT="${PYBATFISH_ROOT}/questions_page.py"
+fi
 
 export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
@@ -34,7 +38,10 @@ export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 export QUESTION_PATH="$BATFISH_ROOT/projects/question"
 export BATFISH_QUESTION_PLUGIN_DIR="$BATFISH_ROOT/projects/question/out"
 
-export PYBATFISH_PATH="$BATFISH_ROOT/projects/pybatfish"
+export ALLINONE_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-allinone.tmp
+export BATFISH_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish.tmp
+export BATFISH_CLIENT_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish-client.tmp
+export COORDINATOR_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-coordinator.tmp
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -59,7 +66,7 @@ batfish() {
    if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
       echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
    fi
-   $BATFISH $BATFISH_COMMON_ARGS "$@"
+   "$BATFISH" $BATFISH_COMMON_ARGS "$@"
 }
 export -f batfish
 
@@ -84,8 +91,9 @@ export -f batfish_answer_example_cp
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
-      echo -n "Generating bash completion file.."
-      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo -n "Generating bash completion file (after batfish_build) ..."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
+      . "${BATFISH_TOOLS_PATH}/completion-batfish.sh"
       echo "OK"
    fi
 }
@@ -93,16 +101,32 @@ export -f batfish_build
 
 _batfish_build() {
    common_build || return 1
-   cd $BATFISH_PATH
+   cd "$BATFISH_PATH"
    ant "$@" || return 1
 }
 export -f _batfish_build
 
 batfish_build_all() {
    bash -c '_batfish_build_all "$@"' _batfish_build_all "$@" || return 1
+   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/out/allinone.jar" -a -e "$ALLINONE_PATH/out/allinone.jar" ]; then
+      echo -n "Generating bash completion file for allinone (via batfish_build_all) ..."
+      BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$ALLINONE_COMPLETION_FILE"
+      . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
+      echo "OK"
+   fi
    if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
-      echo -n "Generating bash completion file.."
-      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > $BATFISH_COMPLETION_FILE
+      echo -n "Generating bash completion file for batfish (via batfish_build_all) ..."
+      BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
+      echo "OK"
+   fi
+   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/out/batfish-client.jar" -a -e "$BATFISH_CLIENT_PATH/out/batfish-client.jar" ]; then
+      echo -n "Generating bash completion file for batfish-client (via batfish_build_all) ..."
+      BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
+      echo "OK"
+   fi
+   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/out/coordinator.jar" -a -e "$COORDINATOR_PATH/out/coordinator.jar" ]; then
+      echo -n "Generating bash completion file for coordinator (via batfish_build_all) ..."
+      BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$COORDINATOR_COMPLETION_FILE"
       echo "OK"
    fi
 }
@@ -110,15 +134,15 @@ export -f batfish_build_all
 
 _batfish_build_all() {
    common_build "$@" || return 1
-   cd $BATFISH_PATH
+   cd "$BATFISH_PATH"
    ant "$@" || return 1
-   cd $COORDINATOR_PATH
+   cd "$COORDINATOR_PATH"
    ant "$@" || return 1
-   cd $BATFISH_CLIENT_PATH
+   cd "$BATFISH_CLIENT_PATH"
    ant "$@" || return 1
-   cd $QUESTION_PATH
+   cd "$QUESTION_PATH"
    ant "$@" || return 1  
-   cd $ALLINONE_PATH
+   cd "$ALLINONE_PATH"
    ant "$@" || return 1  
 }
 export -f _batfish_build_all
@@ -558,7 +582,7 @@ _batfish_replace_symlinks() {
    if [[ "$CYGWIN" =~ .*winsymlinks:native.* ]]; then
       return
    fi
-   cd $BATFISH_ROOT
+   cd "$BATFISH_ROOT"
    if [ -d ".git" ]; then
       echo "(Cygwin workaround) Updating git index to ignore changes to symlinks"
       git update-index --assume-unchanged $($GNU_FIND projects -type l) || return 1
@@ -582,11 +606,6 @@ _batfish_replace_symlink() {
    cp -a "$ABSOLUTE_TARGET" "$SYMLINK" || return 1
 }
 export -f _batfish_replace_symlink
-
-batfish_scrubber() {
-   $BATFISH_ROOT/projects/pybatfish/bin/batfish_scrubber "$@"
-}
-export -f batfish_scrubber
 
 batfish_serialize_independent() {
    batfish_date
@@ -630,7 +649,7 @@ batfish_unit_tests_parser() {
    batfish_date
    echo ": START UNIT TEST: Vendor configuration parser"
    batfish_prepare_test_rig $UNIT_TEST_DIR $PWD $UNIT_TEST_NAME
-   batfish -containerdir $PWD -testrig $UNIT_TEST_NAME -sv "$@"
+   batfish -containerdir $PWD -testrig $UNIT_TEST_NAME -sv "$@" -haltonparseerror -haltonconverterror -urf false
    batfish_date
    echo ": END UNIT TEST: Vendor configuration parser"
 }
@@ -638,16 +657,16 @@ export -f batfish_unit_tests_parser
 
 batfish_datamodel() {
    echo "Generating datamodel to " $BATFISH_DOCS_DATAMODEL
-   batfish_client -runmode gendatamodel > $BATFISH_DOCS_DATAMODEL
+   batfish_client -runmode gendatamodel > "$BATFISH_DOCS_DATAMODEL"
 
    echo "Generating wiki page to " $BATFISH_WIKI_DATAMODEL
-   pybatfish $BATFISH_DATAMODEL_PAGE_SCRIPT $BATFISH_DOCS_DATAMODEL > $BATFISH_WIKI_DATAMODEL
+   python "$BATFISH_DATAMODEL_PAGE_SCRIPT" "$BATFISH_DOCS_DATAMODEL" > "$BATFISH_WIKI_DATAMODEL"
 }
 export -f batfish_datamodel
 
 batfish_wiki_questions() {
    echo "Generating questions to " $BATFISH_WIKI_QUESTIONS
-   pybatfish $BATFISH_QUESTIONS_PAGE_SCRIPT "$QUESTION_PATH/src" > $BATFISH_WIKI_QUESTIONS
+   python "$BATFISH_QUESTIONS_PAGE_SCRIPT" "$QUESTION_PATH/src" > "$BATFISH_WIKI_QUESTIONS"
 }
 export -f batfish_wiki_questions
 
@@ -728,30 +747,15 @@ export -f client_build
 
 _client_build() {
    common_build || return 1
-   cd $BATFISH_CLIENT_PATH
+   cd "$BATFISH_CLIENT_PATH"
    ant "$@" || return 1
+   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/out/batfish-client.jar" -a -e "$BATFISH_CLIENT_PATH/out/batfish-client.jar" ]; then
+      echo -n "Generating bash completion file for batfish-client (via client_build) ..."
+      BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
+      echo "OK"
+   fi
 }
 export -f _client_build
-
-pybatfish() {
-   bash -c '_pybatfish "$@"' _pybatfish "$@" || return 1
-}
-export -f pybatfish
-
-_pybatfish() {
-   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" python2.7 "$@" || return 1
-}
-export -f _pybatfish
-
-ipybatfish() {
-   bash -c '_ipybatfish "$@"' _ipybatfish "$@" || return 1
-}
-export -f ipybatfish
-
-_ipybatfish() {
-   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" ipython2 "$@" || return 1
-}
-export -f _ipybatfish
 
 allinone() {
    # if cygwin, shift and replace each parameter
@@ -767,7 +771,7 @@ allinone() {
    if [ "$ALLINONE_PRINT_CMDLINE" = "yes" ]; then
       echo "$ALLINONE $ALLINONE_COMMON_ARGS $@"
    fi
-   $ALLINONE $ALLINONE_COMMON_ARGS "$@"
+   "$ALLINONE" $ALLINONE_COMMON_ARGS "$@"
 }
 export -f allinone
 
@@ -777,14 +781,20 @@ allinone_build() {
 
 _allinone_build() {
    common_build || return 1
-   cd $BATFISH_PATH
+   cd "$BATFISH_PATH"
    ant "$@" || return 1
-   cd $COORDINATOR_PATH
+   cd "$COORDINATOR_PATH"
    ant "$@" || return 1
-   cd $BATFISH_CLIENT_PATH
+   cd "$BATFISH_CLIENT_PATH"
    ant "$@" || return 1
-   cd $ALLINONE_PATH
+   cd "$ALLINONE_PATH"
    ant "$@" || return 1
+   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/out/allinone.jar" -a -e "$ALLINONE_PATH/out/allinone.jar" ]; then
+      echo -n "Generating bash completion file for allinone (via allinone_build) ..."
+      BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$ALLINONE_COMPLETION_FILE"
+      . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
+      echo "OK"
+   fi
 }
 export -f _allinone_build
 
@@ -795,8 +805,13 @@ export -f coordinator_build
 
 _coordinator_build() {
    common_build || return 1
-   cd $COORDINATOR_PATH
+   cd "$COORDINATOR_PATH"
    ant "$@" || return 1
+   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/out/coordinator.jar" -a -e "$COORDINATOR_PATH/out/coordinator.jar" ]; then
+      echo -n "Generating bash completion file for coordinator (via coordinator_build) ..."
+      BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$COORDINATOR_COMPLETION_FILE"
+      echo "OK"
+   fi
 }
 export -f _coordinator_build
 
@@ -807,7 +822,7 @@ export -f common_build
 
 _common_build() {
    batfish_replace_symlinks || return 1
-   cd $COMMON_PATH
+   cd "$COMMON_PATH"
    ant "$@" || return 1
 }
 export -f _common_build
@@ -818,7 +833,7 @@ batfish_tests_update() {
 export -f batfish_tests_update
 
 _batfish_tests_update() {
-   cd $BATFISH_ROOT
+   cd "$BATFISH_ROOT"
    find -name '*.testout' | while read f; do mv $f "$(dirname "$f")/$(basename "$f" .testout)"; done
 }
 export -f _batfish_tests_update

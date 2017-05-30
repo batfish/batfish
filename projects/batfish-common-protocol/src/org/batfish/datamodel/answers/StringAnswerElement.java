@@ -1,13 +1,12 @@
 package org.batfish.datamodel.answers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class StringAnswerElement implements AnswerElement {
 
    private String _answer;
 
    public StringAnswerElement() {
-
    }
 
    public StringAnswerElement(String answer) {
@@ -15,12 +14,13 @@ public class StringAnswerElement implements AnswerElement {
       setAnswer(answer);
    }
 
+   @JsonInclude(JsonInclude.Include.NON_NULL)
    public String getAnswer() {
       return _answer;
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       return _answer;
    }
 

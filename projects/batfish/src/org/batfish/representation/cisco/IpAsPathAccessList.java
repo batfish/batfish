@@ -9,15 +9,22 @@ public class IpAsPathAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private List<IpAsPathAccessListLine> _lines;
 
-   public IpAsPathAccessList(String name) {
+   public IpAsPathAccessList(String name, int definitionLine) {
       super(name);
+      _definitionLine = definitionLine;
       _lines = new ArrayList<>();
    }
 
    public void addLine(IpAsPathAccessListLine line) {
       _lines.add(line);
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public List<IpAsPathAccessListLine> getLines() {

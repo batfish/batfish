@@ -3,7 +3,10 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute
       implements Comparable<GeneratedRoute> {
 
@@ -18,6 +21,11 @@ public final class GeneratedRoute extends AbstractRoute
       private String _generationPolicy;
 
       private String _nextHopInterface;
+
+      public Builder() {
+         _asPath = new AsPath();
+         _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+      }
 
       @Override
       public GeneratedRoute build() {
@@ -78,11 +86,11 @@ public final class GeneratedRoute extends AbstractRoute
 
    @JsonCreator
    public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix prefix) {
-      super(prefix, null);
+      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
    }
 
    public GeneratedRoute(Prefix prefix, int administrativeCost) {
-      super(prefix, null);
+      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
       _administrativeCost = administrativeCost;
    }
 
@@ -107,19 +115,23 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @JsonProperty(AS_PATH_VAR)
+   @JsonPropertyDescription("A BGP AS-path attribute to associate with this generated route")
    public AsPath getAsPath() {
       return _asPath;
    }
 
+   @JsonPropertyDescription("The name of the policy that sets attributes of this route")
    public String getAttributePolicy() {
       return _attributePolicy;
    }
 
    @JsonProperty(DISCARD_VAR)
+   @JsonPropertyDescription("Whether this route is route is meant to discard all matching packets")
    public boolean getDiscard() {
       return _discard;
    }
 
+   @JsonPropertyDescription("The name of the policy that will generate this route if another route matches it")
    public String getGenerationPolicy() {
       return _generationPolicy;
    }

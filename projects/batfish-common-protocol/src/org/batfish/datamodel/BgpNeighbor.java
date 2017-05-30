@@ -7,14 +7,16 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
 /**
  * Represents a peering with a single router (by ip address) acting as a bgp
  * peer to the router whose configuration's BGP process contains this object
  */
+@JsonSchemaDescription("A configured e/iBGP peering relationship")
 public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    public static final class BgpNeighborSummary
@@ -310,11 +312,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._candidateRemoteBgpNeighbors,
-            other._candidateRemoteBgpNeighbors)) {
-         return false;
+      if (_clusterId == null) {
+         if (other._clusterId != null) {
+            return false;
+         }
       }
-      if (!this._clusterId.equals(other._clusterId)) {
+      else if (!this._clusterId.equals(other._clusterId)) {
          return false;
       }
       if (this._defaultMetric != other._defaultMetric) {
@@ -345,10 +348,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (!this._remoteAs.equals(other._remoteAs)) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._remoteBgpNeighbor,
-            other._remoteBgpNeighbor)) {
-         return false;
-      }
       if (this._routeReflectorClient != other._routeReflectorClient) {
          return false;
       }
@@ -362,6 +361,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_address}
     */
    @JsonProperty(ADDRESS_VAR)
+   @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
    public Ip getAddress() {
       if (_key != null && _key.getPrefixLength() == 32) {
          return _key.getAddress();
@@ -372,21 +372,25 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    }
 
    @JsonProperty(ADVERTISE_EXTERNAL_VAR)
+   @JsonPropertyDescription("Whether to advertise the best eBGP route for each network independently of whether it is the best BGP route for that network")
    public boolean getAdvertiseExternal() {
       return _advertiseExternal;
    }
 
    @JsonProperty(ADVERTISE_INACTIVE_VAR)
+   @JsonPropertyDescription("Whether to advertise the best BGP route for each network independently of whether it is the best overall route for that network")
    public boolean getAdvertiseInactive() {
       return _advertiseInactive;
    }
 
    @JsonProperty(ALLOW_LOCAL_AS_IN_VAR)
+   @JsonPropertyDescription("Whether to allow reception of advertisements containing the local AS number in the AS-path")
    public boolean getAllowLocalAsIn() {
       return _allowLocalAsIn;
    }
 
    @JsonProperty(ALLOW_REMOTE_AS_OUT_VAR)
+   @JsonPropertyDescription("Whether to allow sending of advertisements containing the remote AS number in the AS-path")
    public boolean getAllowRemoteAsOut() {
       return _allowRemoteAsOut;
    }
@@ -400,6 +404,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_clusterId}
     */
    @JsonProperty(CLUSTER_ID_VAR)
+   @JsonPropertyDescription("Route-reflection cluster-id for this peer")
    public Long getClusterId() {
       return _clusterId;
    }
@@ -408,25 +413,30 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_defaultMetric}
     */
    @JsonProperty(DEFAULT_METRIC_VAR)
+   @JsonPropertyDescription("Default MED for routes sent to this neighbor")
    public int getDefaultMetric() {
       return _defaultMetric;
    }
 
    @JsonProperty(DESCRIPTION_VAR)
+   @JsonPropertyDescription("Description of this peer")
    public String getDescription() {
       return _description;
    }
 
    @JsonProperty(DYNAMIC_VAR)
+   @JsonPropertyDescription("Whether this represents a connection to a specific peer (false) or a passive connection to a network of peers (true)")
    public boolean getDynamic() {
       return _key != null && _key.getPrefixLength() < 32;
    }
 
    @JsonProperty(EBGP_MULTIHOP_VAR)
+   @JsonPropertyDescription("Whether to allow establishment of a multihop eBGP connection with this peer")
    public boolean getEbgpMultihop() {
       return _ebgpMultihop;
    }
 
+   @JsonPropertyDescription("The policy governing all advertisements sent to this peer")
    public String getExportPolicy() {
       return _exportPolicy;
    }
@@ -435,6 +445,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_generatedRoutes}
     */
    @JsonProperty(GENERATED_ROUTES_VAR)
+   @JsonPropertyDescription("Generated routes specific to this peer not otherwise imported into any of this node's RIBs")
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
@@ -443,10 +454,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_group}
     */
    @JsonProperty(GROUP_VAR)
+   @JsonPropertyDescription("Name of a group in the original vendor-specific configuration to which this peer is assigned")
    public String getGroup() {
       return _group;
    }
 
+   @JsonPropertyDescription("Routing policy governing all advertisements received from this peer")
    public String getImportPolicy() {
       return _importPolicy;
    }
@@ -455,6 +468,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_localAs}
     */
    @JsonProperty(LOCAL_AS_VAR)
+   @JsonPropertyDescription("The local autonomous sysem of this peering")
    public Integer getLocalAs() {
       return _localAs;
    }
@@ -463,12 +477,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_localIp}
     */
    @JsonProperty(LOCAL_IP_VAR)
+   @JsonPropertyDescription("The local (source) IPV4 address of this peering")
    public Ip getLocalIp() {
       return _localIp;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(OWNER_VAR)
+   @JsonIgnore
    public Configuration getOwner() {
       return _owner;
    }
@@ -477,6 +491,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_network}
     */
    @JsonProperty(REMOTE_PREFIX_VAR)
+   @JsonPropertyDescription("The remote (destination) IPV4 address of this peering (when prefix-length is 32), or the network of peers allowed to connect on this peering (otherwise)")
    public Prefix getPrefix() {
       return _key;
    }
@@ -485,6 +500,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_remoteAs}
     */
    @JsonProperty(REMOTE_AS_VAR)
+   @JsonPropertyDescription("The remote autonomous sysem of this peering")
    public Integer getRemoteAs() {
       return _remoteAs;
    }
@@ -494,6 +510,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return _remoteBgpNeighbor;
    }
 
+   @JsonPropertyDescription("Whether or not this peer is a route-reflector client")
    public boolean getRouteReflectorClient() {
       return _routeReflectorClient;
    }
@@ -502,16 +519,22 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_sendCommunity}
     */
    @JsonProperty(SEND_COMMUNITY_VAR)
+   @JsonPropertyDescription("Whether or not to propagate the community attribute(s) of advertisements to this peer")
    public boolean getSendCommunity() {
       return _sendCommunity;
    }
 
+   @JsonPropertyDescription("The name of the VRF containing the BGP process containing this peering")
    public String getVrf() {
       return _vrf;
    }
 
    public void initCandidateRemoteBgpNeighbors() {
       _candidateRemoteBgpNeighbors = new LinkedHashSet<>();
+   }
+
+   public void resolveReferences(Configuration owner) {
+      _owner = owner;
    }
 
    @JsonProperty(ADDRESS_VAR)

@@ -6,93 +6,246 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-implst_stanza
+mldp_address_family
 :
-   null_implst_stanza
-   | null_mplst_stanza
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   ) NEWLINE
+   (
+      mldpaf_label
+      | mldpaf_null
+   )*
 ;
 
-interface_mplst_stanza
+mldp_interface
 :
-   INTERFACE name = interface_name NEWLINE implst_stanza*
+   INTERFACE ~NEWLINE* NEWLINE
 ;
 
-mpls_ldp_stanza
+mldp_log
+:
+   NO? LOG ~NEWLINE* NEWLINE
+   (
+      mlpdl_null
+   )*
+;
+
+mldp_neighbor
+:
+   NO? NEIGHBOR ~NEWLINE* NEWLINE
+   (
+      mldpn_null
+   )*
+;
+
+mldp_null
+:
+   NO?
+   (
+      NSR
+      | IGP
+   ) ~NEWLINE* NEWLINE
+;
+
+mldp_router_id
+:
+   ROUTER_ID IP_ADDRESS NEWLINE
+;
+
+mldpaf_label
+:
+   LABEL NEWLINE
+   (
+      mldpafl_local
+   )*
+;
+
+mldpaf_null
+:
+   NO?
+   (
+      DISCOVERY
+   ) ~NEWLINE* NEWLINE
+;
+
+mldpafl_local
+:
+   LOCAL NEWLINE
+   (
+      mldpafll_advertise
+      | mldpafll_null
+   )*
+;
+
+mldpafll_advertise
+:
+   ADVERTISE NEWLINE
+   (
+      mldpaflla_null
+   )*
+;
+
+mldpafll_null
+:
+   NO?
+   (
+      ALLOCATE
+   ) ~NEWLINE* NEWLINE
+;
+
+mldpaflla_null
+:
+   NO?
+   (
+      | DISABLE
+      | EXPLICIT_NULL
+      | FOR
+   ) ~NEWLINE* NEWLINE
+;
+
+mlpdl_null
+:
+   NO?
+   (
+      ADJACENCY
+      | NEIGHBOR
+      | NSR
+      | SESSION_PROTECTION
+   ) ~NEWLINE* NEWLINE
+;
+
+mldpn_null
+:
+   NO?
+   (
+      PASSWORD
+   ) ~NEWLINE* NEWLINE
+;
+
+s_mpls_ldp
 :
    MPLS
    (
       LABEL PROTOCOL
-   )? LDP NEWLINE mplsl_stanza*
+   )? LDP NEWLINE
+   (
+      mldp_router_id
+      | mldp_address_family
+      | mldp_interface
+      | mldp_log
+      | mldp_neighbor
+      | mldp_null
+   )*
 ;
 
-mpls_traffic_eng_stanza
+s_mpls_label_range
 :
-   MPLS TRAFFIC_ENG NEWLINE mplst_stanza*
+   MPLS LABEL RANGE DEC+ NEWLINE
 ;
 
-mplsl_stanza
+s_mpls_traffic_eng
 :
-   null_mplsl_stanza
+   MPLS TRAFFIC_ENG NEWLINE
+   (
+      mte_attribute_set
+      | mte_auto_tunnel
+      | mte_interface
+      | mte_null
+      | mte_soft_preemption
+   )*
 ;
 
-mplst_stanza
+mte_attribute_set
 :
-   interface_mplst_stanza
-   | null_mplst_stanza
+   NO? ATTRIBUTE_SET ~NEWLINE* NEWLINE
+   (
+      mteas_null
+   )*
 ;
 
-null_implst_stanza
+mte_auto_tunnel
+:
+   NO? AUTO_TUNNEL ~NEWLINE* NEWLINE
+   (
+      mteat_null
+   )*
+;
+
+mte_interface
+:
+   INTERFACE name = interface_name NEWLINE
+   (
+      mtei_auto_tunnel
+      | mtei_null
+   )*
+;
+
+mte_null
+:
+   NO?
+   (
+      AFFINITY_MAP
+      | LOGGING
+      | REOPTIMIZE
+   ) ~NEWLINE* NEWLINE
+;
+
+mte_soft_preemption
+:
+   SOFT_PREEMPTION ~NEWLINE* NEWLINE
+   (
+      mtes_null
+   )*
+;
+
+mteas_null
+:
+   NO?
+   (
+      AFFINITY
+   ) ~NEWLINE* NEWLINE
+;
+
+mteat_null
+:
+   NO?
+   (
+      TUNNEL_ID
+   ) ~NEWLINE* NEWLINE
+;
+
+mtei_auto_tunnel
+:
+   NO? AUTO_TUNNEL ~NEWLINE* NEWLINE
+   (
+      mteiat_null
+   )*
+;
+
+mtei_null
 :
    NO?
    (
       ATTRIBUTE_NAMES
-      | ATTRIBUTE_SET
-      | AUTO_TUNNEL
+   ) ~NEWLINE* NEWLINE
+;
+
+mteiat_null
+:
+   NO?
+   (
+      ATTRIBUTE_SET
       | EXCLUDE
       | NHOP_ONLY
    ) ~NEWLINE* NEWLINE
 ;
 
-null_mplsl_stanza
+mtes_null
 :
    NO?
-   (
-      ADJACENCY
-      | ADDRESS_FAMILY
-      | ALLOCATE
-      | DISCOVERY
-      | IGP
-      | INTERFACE
-      | LABEL
-      | LOCAL
-      | LOG
-      | NEIGHBOR
-      | NSR
-      | PASSWORD
-      | ROUTER_ID
-      | SESSION_PROTECTION
-   ) ~NEWLINE* NEWLINE
-;
-
-null_mplst_stanza
-:
-   NO?
-   (
-      AFFINITY
-      | AFFINITY_MAP
-      | ATTRIBUTE_SET
-      | AUTO_TUNNEL
-      | LOGGING
-      | REOPTIMIZE
-      | SOFT_PREEMPTION
-      | TUNNEL_ID
-   ) ~NEWLINE* NEWLINE null_mplst_substanza*
-;
-
-null_mplst_substanza
-:
    (
       TIMEOUT
    ) ~NEWLINE* NEWLINE
 ;
-

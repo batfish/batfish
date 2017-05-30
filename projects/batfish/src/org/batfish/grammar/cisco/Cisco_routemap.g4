@@ -98,6 +98,11 @@ boolean_destination_rp_stanza
    DESTINATION IN rp_prefix_set
 ;
 
+boolean_local_preference_rp_stanza
+:
+   LOCAL_PREFERENCE int_comp rhs = int_expr
+;
+
 boolean_med_rp_stanza
 :
    MED int_comp rhs = int_expr
@@ -119,6 +124,11 @@ boolean_rib_has_route_rp_stanza
    RIB_HAS_ROUTE IN rp_prefix_set
 ;
 
+boolean_route_type_is_rp_stanza
+:
+   ROUTE_TYPE IS type = rp_route_type
+;
+
 boolean_rp_stanza
 :
    boolean_and_rp_stanza
@@ -136,15 +146,22 @@ boolean_simple_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
+   | boolean_local_preference_rp_stanza
    | boolean_med_rp_stanza
    | boolean_next_hop_in_rp_stanza
    | boolean_rib_has_route_rp_stanza
+   | boolean_route_type_is_rp_stanza
    | boolean_tag_is_rp_stanza
 ;
 
 boolean_tag_is_rp_stanza
 :
    TAG int_comp int_expr
+;
+
+continue_rm_stanza
+:
+   CONTINUE DEC? NEWLINE
 ;
 
 delete_rp_stanza
@@ -246,11 +263,7 @@ match_ip_access_list_rm_stanza
 :
    MATCH IP ADDRESS
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable_access_list
    )+ NEWLINE
 ;
 
@@ -258,12 +271,13 @@ match_ipv6_access_list_rm_stanza
 :
    MATCH IPV6 ADDRESS
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable_access_list
    )+ NEWLINE
+;
+
+match_ip_multicast_rm_stanza
+:
+   MATCH IP MULTICAST ~NEWLINE* NEWLINE
 ;
 
 match_ip_next_hop_rm_stanza_null
@@ -308,6 +322,11 @@ match_policy_list_rm_stanza
    )+ NEWLINE
 ;
 
+match_route_type_rm_stanza
+:
+   MATCH ROUTE_TYPE variable NEWLINE
+;
+
 match_rm_stanza
 :
    match_as_path_access_list_rm_stanza
@@ -316,6 +335,7 @@ match_rm_stanza
    | match_extcommunity_rm_stanza
    | match_interface_rm_stanza
    | match_ip_access_list_rm_stanza
+   | match_ip_multicast_rm_stanza
    | match_ip_next_hop_rm_stanza_null
    | match_ip_prefix_list_rm_stanza
    | match_ip_route_source_rm_stanza
@@ -323,6 +343,7 @@ match_rm_stanza
    | match_ipv6_prefix_list_rm_stanza
    | match_length_rm_stanza
    | match_policy_list_rm_stanza
+   | match_route_type_rm_stanza
    | match_tag_rm_stanza
 ;
 
@@ -345,7 +366,6 @@ null_rm_stanza
    (
       DESCRIPTION
       | SUB_ROUTE_MAP
-      | CONTINUE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -374,7 +394,8 @@ prepend_as_path_rp_stanza
 
 rm_stanza
 :
-   match_rm_stanza
+   continue_rm_stanza
+   | match_rm_stanza
    | null_rm_stanza
    | set_rm_stanza
 ;
@@ -445,6 +466,26 @@ rp_prefix_set
    (
       COMMA elems += prefix_set_elem
    )* PAREN_RIGHT
+;
+
+rp_route_type
+:
+   LOCAL
+   | INTERAREA
+   | INTERNAL
+   | LEVEL_1
+   | LEVEL_1_2
+   | LEVEL_2
+   | LOCAL
+   | OSPF_EXTERNAL_TYPE_1
+   | OSPF_EXTERNAL_TYPE_2
+   | OSPF_INTER_AREA
+   | OSPF_INTRA_AREA
+   | OSPF_NSSA_TYPE_1
+   | OSPF_NSSA_TYPE_2
+   | RP_VARIABLE
+   | TYPE_1
+   | TYPE_2
 ;
 
 rp_stanza
@@ -710,4 +751,9 @@ set_rp_stanza
    | set_origin_rp_stanza
    | set_tag_rp_stanza
    | set_weight_rp_stanza
+;
+
+variable_access_list
+:
+   ~( IP | IPV6 | NEWLINE | PREFIX_LIST )
 ;

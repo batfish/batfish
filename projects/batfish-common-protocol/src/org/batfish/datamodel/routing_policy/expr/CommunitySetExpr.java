@@ -8,11 +8,25 @@ import org.batfish.datamodel.routing_policy.Environment;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public interface CommunitySetExpr extends Serializable {
+public abstract class CommunitySetExpr implements Serializable {
 
-   CommunitySet communities(Environment environment);
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
-   boolean matchSingleCommunity(Environment environment,
+   public abstract CommunitySet communities(Environment environment);
+
+   public abstract CommunitySet communities(Environment environment,
+         CommunitySet communityCandidates);
+
+   @Override
+   public abstract boolean equals(Object obj);
+
+   @Override
+   public abstract int hashCode();
+
+   public abstract boolean matchSingleCommunity(Environment environment,
          CommunitySet communities);
 
 }

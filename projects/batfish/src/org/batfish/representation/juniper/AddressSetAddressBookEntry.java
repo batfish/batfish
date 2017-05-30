@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.batfish.datamodel.Prefix;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public final class AddressSetAddressBookEntry extends AddressBookEntry {
 

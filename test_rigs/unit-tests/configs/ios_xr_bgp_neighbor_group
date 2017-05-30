@@ -1,7 +1,22 @@
 !
-hostname xrBGP_Neighbor_Group
+hostname ios_xr_bgp_neighbor_group
 !
 router bgp 5555
+ af-group blappety address-family ipv4 unicast                                               
+  send-community-ebgp
+  remove-private-AS
+  soft-reconfiguration inbound always
+ !
+ af-group blabbety address-family ipv6 unicast                                               
+  send-community-ebgp
+  remove-private-AS
+  soft-reconfiguration inbound always
+ !
+ session-group blibber
+  remote-as 12345
+  use session-group blabber
+  description Blibber
+ !
  neighbor-group BGPMonitor
   remote-as 65202
   update-source Loopback0
@@ -15,6 +30,8 @@ router bgp 5555
   !
  !
  neighbor-group foobar-iBGP_ipv4
+  use neighbor-group BGPMonitor
+  use session-group bippety
   remote-as 5555
   update-source Loopback0
   session-open-mode both
@@ -59,6 +76,7 @@ router bgp 5555
  !
  neighbor 1.2.1.1
   use neighbor-group foobar-iBGP_ipv4
+  send-extended-community-ebgp inheritance-disable
   description htegiofnoirwejhg
  !
  neighbor 1.2.1.2
@@ -67,7 +85,13 @@ router bgp 5555
  !
  neighbor 1.2.1.3
   use neighbor-group foobar-iBGP_border_ipv4
+  use session-group excellect-group
   timers 30 90
   description bafjewoifj
+ !
+ session-group OLA
+  remote-as 21
+  use session-group CIAO
+  description OLA CIAO
  !
 end

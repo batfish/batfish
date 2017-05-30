@@ -9,21 +9,19 @@ options {
 
 s_protocols
 :
-   PROTOCOLS s_protocols_tail
+   PROTOCOLS
+   (
+      p_bgp
+      | p_connections
+      | p_isis
+      | p_mpls
+      | p_null
+      | p_ospf
+      | p_ospf3
+   )
 ;
 
-s_protocols_tail
-:
-   s_protocols_bgp
-   | s_protocols_connections
-   | s_protocols_isis
-   | s_protocols_mpls
-   | s_protocols_null
-   | s_protocols_ospf
-   | s_protocols_ospf3
-;
-
-s_protocols_null
+ p_null
 :
    (
       BFD
@@ -52,6 +50,6 @@ s_protocols_null
       | STP
       | VRRP
       | VSTP
-   ) s_null_filler
+   ) null_filler
 ;
 

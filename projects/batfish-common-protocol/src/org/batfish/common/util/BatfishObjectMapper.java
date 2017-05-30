@@ -26,13 +26,11 @@ public class BatfishObjectMapper extends ObjectMapper {
       protected JsonGenerator _createGenerator(Writer out, IOContext ctxt)
             throws IOException {
          return super._createGenerator(out, ctxt)
-               .setPrettyPrinter(PrettyPrinter.instance);
+               .setPrettyPrinter(new PrettyPrinter());
       }
    }
 
    private static class PrettyPrinter extends DefaultPrettyPrinter {
-
-      public static final PrettyPrinter instance = new PrettyPrinter();
 
       /**
        *

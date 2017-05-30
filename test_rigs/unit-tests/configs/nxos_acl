@@ -1,0 +1,12 @@
+!
+hostname nxos_acl
+!
+! 'extended' is the name
+ip access-list extended
+! 'standard' is the name
+ip access-list standard
+!
+ip access-list blah
+ 10 permit ip any any
+!
+

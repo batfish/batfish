@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -20,6 +19,8 @@ public class BgpProcess extends ComparableStructure<Integer> {
    private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
 
    private static final long serialVersionUID = 1L;
+
+   private Map<String, NamedBgpPeerGroup> _afGroups;
 
    private Map<Prefix6, BgpAggregateIpv6Network> _aggregateIpv6Networks;
 
@@ -39,15 +40,23 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    private Map<Prefix6, DynamicIpv6BgpPeerGroup> _dynamicIpv6PeerGroups;
 
-   private Map<Prefix, String> _ipNetworks;
+   private Map<Prefix, BgpNetwork> _ipNetworks;
 
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
 
-   private Map<Prefix6, String> _ipv6Networks;
+   private Map<Prefix6, BgpNetwork6> _ipv6Networks;
 
    private Map<Ip6, Ipv6BgpPeerGroup> _ipv6PeerGroups;
 
    private MasterBgpPeerGroup _masterBgpPeerGroup;
+
+   private Integer _maximumPaths;
+
+   private Integer _maximumPathsEbgp;
+
+   private Integer _maximumPathsEibgp;
+
+   private Integer _maximumPathsIbgp;
 
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
 
@@ -59,6 +68,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    public BgpProcess(int procnum) {
       super(procnum);
+      _afGroups = new HashMap<>();
       _aggregateNetworks = new HashMap<>();
       _aggregateIpv6Networks = new HashMap<>();
       _allPeerGroups = new HashSet<>();
@@ -99,24 +109,6 @@ public class BgpProcess extends ComparableStructure<Integer> {
       _allPeerGroups.add(pg);
    }
 
-   public void addIpPeerGroupMember(Ip address, String namedPeerGroupName) {
-      NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
-            .get(namedPeerGroupName);
-      if (namedPeerGroup != null) {
-         namedPeerGroup.addNeighborIpAddress(address);
-         IpBgpPeerGroup ipPeerGroup = _ipPeerGroups.get(address);
-         if (ipPeerGroup == null) {
-            addIpPeerGroup(address);
-            ipPeerGroup = _ipPeerGroups.get(address);
-         }
-         ipPeerGroup.setGroupName(namedPeerGroupName);
-      }
-      else {
-         throw new BatfishException(
-               "Peer group: \"" + namedPeerGroupName + "\" does not exist!");
-      }
-   }
-
    public void addIpv6PeerGroup(Ip6 ip6) {
       Ipv6BgpPeerGroup pg = new Ipv6BgpPeerGroup(ip6);
       if (_defaultIpv6Activate) {
@@ -126,34 +118,20 @@ public class BgpProcess extends ComparableStructure<Integer> {
       _allPeerGroups.add(pg);
    }
 
-   public void addIpv6PeerGroupMember(Ip6 address, String namedPeerGroupName) {
-      NamedBgpPeerGroup namedPeerGroup = _namedPeerGroups
-            .get(namedPeerGroupName);
-      if (namedPeerGroup != null) {
-         namedPeerGroup.addNeighborIpv6Address(address);
-         Ipv6BgpPeerGroup ipv6PeerGroup = _ipv6PeerGroups.get(address);
-         if (ipv6PeerGroup == null) {
-            addIpv6PeerGroup(address);
-            ipv6PeerGroup = _ipv6PeerGroups.get(address);
-         }
-         ipv6PeerGroup.setGroupName(namedPeerGroupName);
-      }
-      else {
-         throw new BatfishException(
-               "Peer group: \"" + namedPeerGroupName + "\" does not exist!");
-      }
-   }
-
-   public void addNamedPeerGroup(String name) {
-      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
+   public void addNamedPeerGroup(String name, int definitionLine) {
+      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name, definitionLine);
       _namedPeerGroups.put(name, pg);
       _allPeerGroups.add(pg);
    }
 
-   public void addPeerSession(String name) {
-      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
+   public void addPeerSession(String name, int definitionLine) {
+      NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name, definitionLine);
       _peerSessions.put(name, pg);
       _allPeerGroups.add(pg);
+   }
+
+   public Map<String, NamedBgpPeerGroup> getAfGroups() {
+      return _afGroups;
    }
 
    public Map<Prefix6, BgpAggregateIpv6Network> getAggregateIpv6Networks() {
@@ -188,7 +166,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
       return _dynamicIpv6PeerGroups;
    }
 
-   public Map<Prefix, String> getIpNetworks() {
+   public Map<Prefix, BgpNetwork> getIpNetworks() {
       return _ipNetworks;
    }
 
@@ -196,7 +174,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
       return _ipPeerGroups;
    }
 
-   public Map<Prefix6, String> getIpv6Networks() {
+   public Map<Prefix6, BgpNetwork6> getIpv6Networks() {
       return _ipv6Networks;
    }
 
@@ -206,6 +184,22 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    public MasterBgpPeerGroup getMasterBgpPeerGroup() {
       return _masterBgpPeerGroup;
+   }
+
+   public Integer getMaximumPaths() {
+      return _maximumPaths;
+   }
+
+   public Integer getMaximumPathsEbgp() {
+      return _maximumPathsEbgp;
+   }
+
+   public Integer getMaximumPathsEibgp() {
+      return _maximumPathsEibgp;
+   }
+
+   public Integer getMaximumPathsIbgp() {
+      return _maximumPathsIbgp;
    }
 
    public Map<String, NamedBgpPeerGroup> getNamedPeerGroups() {
@@ -230,6 +224,22 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    public void setClusterId(Ip clusterId) {
       _clusterId = clusterId;
+   }
+
+   public void setMaximumPaths(Integer maximumPaths) {
+      _maximumPaths = maximumPaths;
+   }
+
+   public void setMaximumPathsEbgp(Integer maximumPathsEbgp) {
+      _maximumPathsEbgp = maximumPathsEbgp;
+   }
+
+   public void setMaximumPathsEibgp(Integer maximumPathsEibgp) {
+      _maximumPathsEibgp = maximumPathsEibgp;
+   }
+
+   public void setMaximumPathsIbgp(Integer maximumPathsIbgp) {
+      _maximumPathsIbgp = maximumPathsIbgp;
    }
 
    public void setRouterId(Ip routerId) {

@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -23,11 +22,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
 
@@ -37,7 +33,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
 
       private SortedMap<String, SortedSet<String>> _exported;
 
-      private SortedMap<String, SortedSet<String>> _inactive;
+      private SortedMap<String, SortedSet<String>> _missing;
 
       private SortedMap<String, SortedSet<String>> _passive;
 
@@ -46,7 +42,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
       public OspfLoopbacksAnswerElement() {
          _active = new TreeMap<>();
          _exported = new TreeMap<>();
-         _inactive = new TreeMap<>();
+         _missing = new TreeMap<>();
          _passive = new TreeMap<>();
          _running = new TreeMap<>();
       }
@@ -61,22 +57,26 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
          interfacesByHostname.add(interfaceName);
       }
 
+      @JsonIgnore
       public SortedMap<String, SortedSet<String>> getActive() {
          return _active;
       }
 
+      @JsonIgnore
       public SortedMap<String, SortedSet<String>> getExported() {
          return _exported;
       }
 
-      public SortedMap<String, SortedSet<String>> getInactive() {
-         return _inactive;
+      public SortedMap<String, SortedSet<String>> getMissing() {
+         return _missing;
       }
 
+      @JsonIgnore
       public SortedMap<String, SortedSet<String>> getPassive() {
          return _passive;
       }
 
+      @JsonIgnore
       public SortedMap<String, SortedSet<String>> getRunning() {
          return _running;
       }
@@ -93,46 +93,49 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder(
                "Results for OSPF loopbacks check\n");
-         if (_active.size() > 0) {
-            sb.append(interfacesToString("  ", "Active loopbacks", _active));
+         // if (_active.size() > 0) {
+         // sb.append(interfacesToString(" ", "Active loopbacks", _active));
+         // }
+         // if (_exported.size() > 0) {
+         // sb.append(
+         // interfacesToString(" ", "Exported loopbacks", _exported));
+         // }
+         if (_missing.size() > 0) {
+            sb.append(interfacesToString("  ", "Missing loopbacks", _missing));
          }
-         if (_exported.size() > 0) {
-            sb.append(
-                  interfacesToString("  ", "Exported loopbacks", _exported));
-         }
-         if (_inactive.size() > 0) {
-            sb.append(
-                  interfacesToString("  ", "Inactive loopbacks", _inactive));
-         }
-         if (_passive.size() > 0) {
-            sb.append(interfacesToString("  ", "Passive loopbacks", _passive));
-         }
-         if (_running.size() > 0) {
-            sb.append(interfacesToString("  ", "Running loopbacks", _running));
-         }
+         // if (_passive.size() > 0) {
+         // sb.append(interfacesToString(" ", "Passive loopbacks", _passive));
+         // }
+         // if (_running.size() > 0) {
+         // sb.append(interfacesToString(" ", "Running loopbacks", _running));
+         // }
          return sb.toString();
 
       }
 
+      @JsonIgnore
       public void setActive(SortedMap<String, SortedSet<String>> active) {
          _active = active;
       }
 
+      @JsonIgnore
       public void setExported(SortedMap<String, SortedSet<String>> exported) {
          _exported = exported;
       }
 
-      public void setInactive(SortedMap<String, SortedSet<String>> inactive) {
-         _inactive = inactive;
+      public void setMissing(SortedMap<String, SortedSet<String>> missing) {
+         _missing = missing;
       }
 
+      @JsonIgnore
       public void setPassive(SortedMap<String, SortedSet<String>> passive) {
          _passive = passive;
       }
 
+      @JsonIgnore
       public void setRunning(SortedMap<String, SortedSet<String>> running) {
          _running = running;
       }
@@ -204,7 +207,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                                  for (Prefix prefix : iface.getAllPrefixes()) {
                                     ConnectedRoute route = new ConnectedRoute(
                                           prefix, interfaceName);
-                                    if (exportPolicy.process(route, null,
+                                    if (exportPolicy.process(route,
                                           new OspfExternalRoute.Builder(), null,
                                           vrf.getName())) {
                                        exported = true;
@@ -212,16 +215,15 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                                  }
                               }
                            }
-                        }
-
-                        if (exported) {
-                           answerElement.add(answerElement.getExported(),
-                                 hostname, interfaceName);
-                        }
-                        else {
-                           // not exported, so should be inactive
-                           answerElement.add(answerElement.getInactive(),
-                                 hostname, interfaceName);
+                           if (exported) {
+                              answerElement.add(answerElement.getExported(),
+                                    hostname, interfaceName);
+                           }
+                           else {
+                              // not exported, so should be inactive
+                              answerElement.add(answerElement.getMissing(),
+                                    hostname, interfaceName);
+                           }
                         }
                      }
                   }
@@ -288,31 +290,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
          return retString;
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-         Iterator<?> paramKeys = parameters.keys();
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-            try {
-               switch (paramKey) {
-               case NODE_REGEX_VAR:
-                  setNodeRegex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
-      }
-
+      @JsonProperty(NODE_REGEX_VAR)
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }

@@ -8,7 +8,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Prefix6SetExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicyBooleanDestination extends RoutePolicyBoolean {
 

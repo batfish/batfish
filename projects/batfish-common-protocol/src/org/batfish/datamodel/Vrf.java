@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -10,7 +11,10 @@ import org.batfish.common.util.ComparableStructure;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A virtual routing and forwarding (VRF) instance on a node.")
 public class Vrf extends ComparableStructure<String> {
 
    private static final String BGP_PROCESS_VAR = "bgpProcess";
@@ -38,6 +42,8 @@ public class Vrf extends ComparableStructure<String> {
 
    private NavigableSet<GeneratedRoute> _generatedRoutes;
 
+   private transient SortedSet<String> _interfaceNames;
+
    private NavigableMap<String, Interface> _interfaces;
 
    private IsisProcess _isisProcess;
@@ -64,6 +70,8 @@ public class Vrf extends ComparableStructure<String> {
 
    private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
+   private SnmpServer _snmpServer;
+
    private NavigableSet<StaticRoute> _staticRoutes;
 
    @JsonCreator
@@ -81,25 +89,40 @@ public class Vrf extends ComparableStructure<String> {
    }
 
    @JsonProperty(BGP_PROCESS_VAR)
+   @JsonPropertyDescription("BGP routing process for this VRF")
    public BgpProcess getBgpProcess() {
       return _bgpProcess;
    }
 
+   @JsonPropertyDescription("Generated IPV6 routes for this VRF")
    public NavigableSet<GeneratedRoute6> getGeneratedIpv6Routes() {
       return _generatedIpv6Routes;
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
+   @JsonPropertyDescription("Generated IPV4 routes for this VRF")
    public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
 
    @JsonProperty(INTERFACES_VAR)
+   @JsonPropertyDescription("Interfaces assigned to this VRF")
+   public SortedSet<String> getInterfaceNames() {
+      if (_interfaces != null && !_interfaces.isEmpty()) {
+         return new TreeSet<>(_interfaces.keySet());
+      }
+      else {
+         return _interfaceNames;
+      }
+   }
+
+   @JsonIgnore
    public NavigableMap<String, Interface> getInterfaces() {
       return _interfaces;
    }
 
    @JsonProperty(ISIS_PROCESS_VAR)
+   @JsonPropertyDescription("IS-IS routing process for this VRF")
    public IsisProcess getIsisProcess() {
       return _isisProcess;
    }
@@ -119,6 +142,7 @@ public class Vrf extends ComparableStructure<String> {
       return _originatedIbgpAdvertisements;
    }
 
+   @JsonPropertyDescription("OSPF routing process for this VRF")
    @JsonProperty(OSPF_PROCESS_VAR)
    public OspfProcess getOspfProcess() {
       return _ospfProcess;
@@ -159,6 +183,11 @@ public class Vrf extends ComparableStructure<String> {
       return _sentIbgpAdvertisements;
    }
 
+   public SnmpServer getSnmpServer() {
+      return _snmpServer;
+   }
+
+   @JsonPropertyDescription("Static routes for this VRF")
    @JsonProperty(STATIC_ROUTES_VAR)
    public NavigableSet<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
@@ -181,6 +210,14 @@ public class Vrf extends ComparableStructure<String> {
       _routes = new TreeSet<>();
    }
 
+   public void resolveReferences(Configuration owner) {
+      if (_interfaceNames != null) {
+         for (String ifaceName : _interfaceNames) {
+            _interfaces.put(ifaceName, owner.getInterfaces().get(ifaceName));
+         }
+      }
+   }
+
    @JsonProperty(BGP_PROCESS_VAR)
    public void setBgpProcess(BgpProcess process) {
       _bgpProcess = process;
@@ -198,6 +235,11 @@ public class Vrf extends ComparableStructure<String> {
    }
 
    @JsonProperty(INTERFACES_VAR)
+   public void setInterfaceNames(SortedSet<String> interfaceNames) {
+      _interfaceNames = interfaceNames;
+   }
+
+   @JsonIgnore
    public void setInterfaces(NavigableMap<String, Interface> interfaces) {
       _interfaces = interfaces;
    }
@@ -210,6 +252,10 @@ public class Vrf extends ComparableStructure<String> {
    @JsonProperty(OSPF_PROCESS_VAR)
    public void setOspfProcess(OspfProcess process) {
       _ospfProcess = process;
+   }
+
+   public void setSnmpServer(SnmpServer snmpServer) {
+      _snmpServer = snmpServer;
    }
 
    @JsonProperty(STATIC_ROUTES_VAR)

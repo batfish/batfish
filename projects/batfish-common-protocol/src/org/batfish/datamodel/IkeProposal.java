@@ -7,7 +7,9 @@ import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public final class IkeProposal extends ComparableStructure<String> {
 
@@ -97,6 +99,8 @@ public final class IkeProposal extends ComparableStructure<String> {
 
    private IkeAuthenticationMethod _authenticationMethod;
 
+   private final int _definitionLine;
+
    private DiffieHellmanGroup _diffieHellmanGroup;
 
    private EncryptionAlgorithm _encryptionAlgorithm;
@@ -104,8 +108,14 @@ public final class IkeProposal extends ComparableStructure<String> {
    private Integer _lifetimeSeconds;
 
    @JsonCreator
-   public IkeProposal(@JsonProperty(NAME_VAR) String name) {
+   private IkeProposal(@JsonProperty(NAME_VAR) String name) {
       super(name);
+      _definitionLine = -1;
+   }
+
+   public IkeProposal(String name, int definitionLine) {
+      super(name);
+      _definitionLine = definitionLine;
    }
 
    public boolean compatibleWith(IkeProposal rhs) {
@@ -115,22 +125,32 @@ public final class IkeProposal extends ComparableStructure<String> {
             && _encryptionAlgorithm == rhs._encryptionAlgorithm;
    }
 
+   @JsonPropertyDescription("Authentication algorithm to use for connection to IKE gateway")
    public IkeAuthenticationAlgorithm getAuthenticationAlgorithm() {
       return _authenticationAlgorithm;
    }
 
+   @JsonPropertyDescription("Authentication method to use for connection to IKE gateway")
    public IkeAuthenticationMethod getAuthenticationMethod() {
       return _authenticationMethod;
    }
 
+   @JsonIgnore
+   public int getDefinitionLine() {
+      return _definitionLine;
+   }
+
+   @JsonPropertyDescription("Diffie-Hellman group to use for key exchange")
    public DiffieHellmanGroup getDiffieHellmanGroup() {
       return _diffieHellmanGroup;
    }
 
+   @JsonPropertyDescription("Encryption algorithm to use for IKE traffic")
    public EncryptionAlgorithm getEncryptionAlgorithm() {
       return _encryptionAlgorithm;
    }
 
+   @JsonPropertyDescription("Lifetime in seconds of connection to IKE gateway")
    public Integer getLifetimeSeconds() {
       return _lifetimeSeconds;
    }

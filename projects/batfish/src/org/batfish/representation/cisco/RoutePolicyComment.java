@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class RoutePolicyComment extends RoutePolicySetStatement {
 

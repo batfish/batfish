@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 import org.batfish.common.BatfishException;
 
 public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
@@ -43,7 +43,8 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterInterface_id(Interface_idContext ctx) {
-      if (_enablePathRecording && ctx.unit != null) {
+      if (_enablePathRecording
+            && (ctx.unit != null || ctx.suffix != null || ctx.node != null)) {
          _enablePathRecording = false;
          _reenablePathRecording = true;
          String text = ctx.getText();
@@ -52,7 +53,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterPlt_apply_path(Plt_apply_pathContext ctx) {
+   public void enterPoplt_apply_path(Poplt_apply_pathContext ctx) {
       HierarchyPath applyPathPath = new HierarchyPath();
       String pathQuoted = ctx.path.getText();
       String pathWithoutQuotes = pathQuoted.substring(1,

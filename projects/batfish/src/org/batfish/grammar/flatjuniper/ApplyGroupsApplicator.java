@@ -9,9 +9,9 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.common.BatfishException;
-import org.batfish.main.PartialGroupMatchBatfishException;
+import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
-import org.batfish.main.Warnings;
+import org.batfish.common.Warnings;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
@@ -42,25 +42,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<>();
-      _newConfigurationLines.addAll(ctx.children);
-   }
-
-   @Override
-   public void enterInterface_id(Interface_idContext ctx) {
-      if (_enablePathRecording && ctx.unit != null) {
-         _enablePathRecording = false;
-         _reenablePathRecording = true;
-         String text = ctx.getText();
-         _currentPath.addNode(text);
-      }
-   }
-
-   @Override
-   public void enterS_apply_groups(S_apply_groupsContext ctx) {
+   public void enterApply_groups(Apply_groupsContext ctx) {
       if (_inGroup) {
          return;
       }
@@ -71,7 +53,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
          int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
          _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
       }
-      catch (PartialGroupMatchBatfishException e) {
+      catch (PartialGroupMatchException e) {
          String message = "Exception processing apply-groups statement at path: \""
                + _currentPath.pathString() + "\" with group \"" + groupName
                + "\": " + e.getMessage() + ": caused by: "
@@ -96,12 +78,31 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterS_apply_groups_except(S_apply_groups_exceptContext ctx) {
+   public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
       if (_inGroup) {
          _w.redFlag(
                "Do not know how to handle apply-groups-except occcurring within group statement");
       }
       _newConfigurationLines.remove(_currentSetLine);
+   }
+
+   @Override
+   public void enterFlat_juniper_configuration(
+         Flat_juniper_configurationContext ctx) {
+      _configurationContext = ctx;
+      _newConfigurationLines = new ArrayList<>();
+      _newConfigurationLines.addAll(ctx.children);
+   }
+
+   @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording
+            && (ctx.unit != null || ctx.suffix != null || ctx.node != null)) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
+      }
    }
 
    @Override

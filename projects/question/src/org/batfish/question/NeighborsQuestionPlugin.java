@@ -1,8 +1,5 @@
 package org.batfish.question;
 
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -18,20 +15,18 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
+import org.batfish.datamodel.OspfNeighbor;
+import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NeighborsQuestionPlugin extends QuestionPlugin {
 
@@ -43,11 +38,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private final static String LAN_NEIGHBORS_VAR = "lanNeighbors";
 
+      private final static String OSPF_NEIGHBORS_VAR = "ospfNeighbors";
+
+      private final static String VERBOSE_LAN_NEIGHBORS_VAR = "verboseLanNeighbors";
+
       private SortedSet<IpEdge> _ebgpNeighbors;
 
       private SortedSet<IpEdge> _ibgpNeighbors;
 
       private SortedSet<Edge> _lanNeighbors;
+
+      private SortedSet<IpEdge> _ospfNeighbors;
+
+      private SortedSet<VerboseEdge> _verboseLanNeighbors;
 
       public void addLanEdge(Edge edge) {
          _lanNeighbors.add(edge);
@@ -68,6 +71,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return _lanNeighbors;
       }
 
+      @JsonProperty(OSPF_NEIGHBORS_VAR)
+      public SortedSet<IpEdge> getOspfNeighbors() {
+         return _ospfNeighbors;
+      }
+
+      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+      public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
+         return _verboseLanNeighbors;
+      }
+
       public void initEbgpNeighbors() {
          _ebgpNeighbors = new TreeSet<>();
       }
@@ -80,13 +93,28 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _lanNeighbors = new TreeSet<>();
       }
 
+      public void initOspfNeighbors() {
+         _ospfNeighbors = new TreeSet<>();
+      }
+
+      public void initVerboseLanNeighbors() {
+         _verboseLanNeighbors = new TreeSet<>();
+      }
+
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder("Results for neighbors\n");
 
          if (_lanNeighbors != null) {
             sb.append("  LAN neighbors\n");
             for (Edge edge : _lanNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
+         if (_verboseLanNeighbors != null) {
+            sb.append("  LAN neighbors\n");
+            for (VerboseEdge edge : _verboseLanNeighbors) {
                sb.append("    " + edge.toString() + "\n");
             }
          }
@@ -101,6 +129,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          if (_ibgpNeighbors != null) {
             sb.append("  iBGP Neighbors\n");
             for (IpEdge ipEdge : _ibgpNeighbors) {
+               sb.append("    " + ipEdge.toString() + "\n");
+            }
+         }
+
+         if (_ospfNeighbors != null) {
+            sb.append("  OSPF Neighbors\n");
+            for (IpEdge ipEdge : _ospfNeighbors) {
                sb.append("    " + ipEdge.toString() + "\n");
             }
          }
@@ -122,11 +157,27 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       public void setLanNeighbors(SortedSet<Edge> lanNeighbors) {
          _lanNeighbors = lanNeighbors;
       }
+
+      @JsonProperty(OSPF_NEIGHBORS_VAR)
+      public void setOspfNeighbors(SortedSet<IpEdge> ospfNeighbors) {
+         _ospfNeighbors = ospfNeighbors;
+      }
+
+      @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+      public void setVerboseLanNeighbors(
+            SortedSet<VerboseEdge> verboseLanNeighbors) {
+         _verboseLanNeighbors = verboseLanNeighbors;
+      }
+
    }
 
    public static class NeighborsAnswerer extends Answerer {
 
       private boolean _remoteBgpNeighborsInitialized;
+
+      private boolean _remoteOspfNeighborsInitialized;
+
+      Topology _topology;
 
       public NeighborsAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
@@ -172,6 +223,41 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          //
          // }
          // }
+
+         if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
+            answerElement.initOspfNeighbors();
+            initTopology(configurations);
+            initRemoteOspfNeighbors(_batfish, configurations, _topology);
+            for (Configuration c : configurations.values()) {
+               String hostname = c.getHostname();
+               for (Vrf vrf : c.getVrfs().values()) {
+                  OspfProcess proc = vrf.getOspfProcess();
+                  if (proc != null) {
+                     for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors()
+                           .values()) {
+                        OspfNeighbor remoteOspfNeighbor = ospfNeighbor
+                              .getRemoteOspfNeighbor();
+                        if (remoteOspfNeighbor != null) {
+                           Configuration remoteHost = remoteOspfNeighbor
+                                 .getOwner();
+                           String remoteHostname = remoteHost.getHostname();
+                           Matcher node1Matcher = node1Regex.matcher(hostname);
+                           Matcher node2Matcher = node2Regex
+                                 .matcher(remoteHostname);
+                           if (node1Matcher.matches()
+                                 && node2Matcher.matches()) {
+                              Ip localIp = ospfNeighbor.getLocalIp();
+                              Ip remoteIp = remoteOspfNeighbor.getLocalIp();
+                              answerElement.getOspfNeighbors()
+                                    .add(new IpEdge(hostname, localIp,
+                                          remoteHostname, remoteIp));
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
 
          if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
             answerElement.initEbgpNeighbors();
@@ -253,15 +339,28 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
          if (question.getNeighborTypes().isEmpty()
                || question.getNeighborTypes().contains(NeighborType.LAN)) {
-            answerElement.initLanNeighbors();
-            Topology topology = _batfish.computeTopology(configurations);
-
-            for (Edge edge : topology.getEdges()) {
+            initTopology(configurations);
+            SortedSet<Edge> matchingEdges = new TreeSet<>();
+            for (Edge edge : _topology.getEdges()) {
                Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
                Matcher node2Matcher = node2Regex.matcher(edge.getNode2());
                if (node1Matcher.matches() && node2Matcher.matches()) {
-                  answerElement.addLanEdge(edge);
+                  matchingEdges.add(edge);
                }
+            }
+            if (!question.getVerbose()) {
+               answerElement.setLanNeighbors(matchingEdges);
+            }
+            else {
+               SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
+               for (Edge edge : matchingEdges) {
+                  Configuration n1 = configurations.get(edge.getNode1());
+                  Interface i1 = n1.getInterfaces().get(edge.getInt1());
+                  Configuration n2 = configurations.get(edge.getNode2());
+                  Interface i2 = n2.getInterfaces().get(edge.getInt2());
+                  vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge));
+               }
+               answerElement.setVerboseLanNeighbors(vMatchingEdges);
             }
          }
 
@@ -272,11 +371,28 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             Map<String, Configuration> configurations) {
          if (!_remoteBgpNeighborsInitialized) {
             Map<Ip, Set<String>> ipOwners = _batfish
-                  .computeIpOwners(configurations);
+                  .computeIpOwners(configurations, true);
             batfish.initRemoteBgpNeighbors(configurations, ipOwners);
             _remoteBgpNeighborsInitialized = true;
          }
       }
+
+      private void initRemoteOspfNeighbors(IBatfish batfish,
+            Map<String, Configuration> configurations, Topology topology) {
+         if (!_remoteOspfNeighborsInitialized) {
+            Map<Ip, Set<String>> ipOwners = _batfish
+                  .computeIpOwners(configurations, true);
+            batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+            _remoteOspfNeighborsInitialized = true;
+         }
+      }
+
+      private void initTopology(Map<String, Configuration> configurations) {
+         if (_topology == null) {
+            _topology = _batfish.computeTopology(configurations);
+         }
+      }
+
    }
 
    // <question_page_comment>
@@ -296,6 +412,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     * @param node2Regex
     *           Regular expression to match the nodes names for the other end of
     *           the pair. Default is '.*' (all nodes).
+    * @param verbose
+    *           Boolean indicating whether full information about the
+    *           nodes/interfaces that make up each neighbor pair is requested.
+    *           Default is false, indicating that only the names of
+    *           nodes/interfaces is returned.
     *
     * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"]
     *          node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
@@ -305,22 +426,27 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     */
    public static class NeighborsQuestion extends Question {
 
-      private static final String NEIGHBOR_TYPE_VAR = "neighborType";
+      private static final String NEIGHBOR_TYPES_VAR = "neighborTypes";
 
       private static final String NODE1_REGEX_VAR = "node1Regex";
 
       private static final String NODE2_REGEX_VAR = "node2Regex";
 
-      private Set<NeighborType> _neighborTypes;
+      private static final String VERBOSE_VAR = "verbose";
+
+      private SortedSet<NeighborType> _neighborTypes;
 
       private String _node1Regex;
 
       private String _node2Regex;
 
+      private boolean _verbose;
+
       public NeighborsQuestion() {
          _node1Regex = ".*";
          _node2Regex = ".*";
-         _neighborTypes = EnumSet.noneOf(NeighborType.class);
+         _neighborTypes = new TreeSet<>();
+         _verbose = false;
       }
 
       @Override
@@ -333,8 +459,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return "neighbors";
       }
 
-      @JsonProperty(NEIGHBOR_TYPE_VAR)
-      public Set<NeighborType> getNeighborTypes() {
+      @JsonProperty(NEIGHBOR_TYPES_VAR)
+      public SortedSet<NeighborType> getNeighborTypes() {
          return _neighborTypes;
       }
 
@@ -353,13 +479,19 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
+      @JsonProperty(VERBOSE_VAR)
+      public boolean getVerbose() {
+         return _verbose;
+      }
+
       @Override
       public String prettyPrint() {
          try {
             String retString = String.format(
-                  "neighbors %s%s=%s | %s=%s | %s=%s", prettyPrintBase(),
-                  NODE1_REGEX_VAR, _node1Regex, NODE2_REGEX_VAR, _node2Regex,
-                  NEIGHBOR_TYPE_VAR, _neighborTypes.toString());
+                  "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b",
+                  prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex,
+                  NODE2_REGEX_VAR, _node2Regex, NEIGHBOR_TYPES_VAR,
+                  _neighborTypes.toString(), VERBOSE_VAR, _verbose);
             return retString;
          }
          catch (Exception e) {
@@ -367,7 +499,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                return "Pretty printing failed. Printing Json\n"
                      + toJsonString();
             }
-            catch (JsonProcessingException e1) {
+            catch (BatfishException e1) {
                throw new BatfishException(
                      "Both pretty and json printing failed\n");
             }
@@ -375,56 +507,25 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       }
 
-      @Override
-      public void setJsonParameters(JSONObject parameters) {
-         super.setJsonParameters(parameters);
-
-         Iterator<?> paramKeys = parameters.keys();
-
-         while (paramKeys.hasNext()) {
-            String paramKey = (String) paramKeys.next();
-            if (isBaseParamKey(paramKey)) {
-               continue;
-            }
-
-            try {
-               switch (paramKey) {
-               case NODE1_REGEX_VAR:
-                  setNode1Regex(parameters.getString(paramKey));
-                  break;
-               case NEIGHBOR_TYPE_VAR:
-                  setNeighborTypes(
-                        new ObjectMapper().<Set<NeighborType>> readValue(
-                              parameters.getString(paramKey),
-                              new TypeReference<Set<NeighborType>>() {
-                              }));
-                  break;
-               case NODE2_REGEX_VAR:
-                  setNode2Regex(parameters.getString(paramKey));
-                  break;
-               default:
-                  throw new BatfishException("Unknown key in "
-                        + getClass().getSimpleName() + ": " + paramKey);
-               }
-            }
-            catch (JSONException | IOException e) {
-               throw new BatfishException("JSONException in parameters", e);
-            }
-         }
+      @JsonProperty(NEIGHBOR_TYPES_VAR)
+      public void setNeighborTypes(SortedSet<NeighborType> neighborTypes) {
+         _neighborTypes = neighborTypes;
       }
 
-      public void setNeighborTypes(Set<NeighborType> neighborType) {
-         _neighborTypes = neighborType;
-      }
-
+      @JsonProperty(NODE1_REGEX_VAR)
       public void setNode1Regex(String regex) {
          _node1Regex = regex;
       }
 
+      @JsonProperty(NODE2_REGEX_VAR)
       public void setNode2Regex(String regex) {
          _node2Regex = regex;
       }
 
+      @JsonProperty(VERBOSE_VAR)
+      public void setVerbose(boolean verbose) {
+         _verbose = verbose;
+      }
    }
 
    @Override

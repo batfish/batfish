@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class IncrementLocalPreference implements IntExpr {
+public class IncrementLocalPreference extends IntExpr {
 
    /**
     *
@@ -15,11 +15,29 @@ public class IncrementLocalPreference implements IntExpr {
    private int _addend;
 
    @JsonCreator
-   public IncrementLocalPreference() {
+   private IncrementLocalPreference() {
    }
 
    public IncrementLocalPreference(int addend) {
       _addend = addend;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      IncrementLocalPreference other = (IncrementLocalPreference) obj;
+      if (_addend != other._addend) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -32,6 +50,14 @@ public class IncrementLocalPreference implements IntExpr {
 
    public int getAddend() {
       return _addend;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _addend;
+      return result;
    }
 
    public void setAddend(int addend) {

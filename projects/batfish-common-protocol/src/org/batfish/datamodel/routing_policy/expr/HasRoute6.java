@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class HasRoute6 extends AbstractBooleanExpr {
+public class HasRoute6 extends BooleanExpr {
 
    /**
     *
@@ -15,11 +15,34 @@ public class HasRoute6 extends AbstractBooleanExpr {
    private Prefix6SetExpr _expr;
 
    @JsonCreator
-   public HasRoute6() {
+   private HasRoute6() {
    }
 
    public HasRoute6(Prefix6SetExpr expr) {
       _expr = expr;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      HasRoute6 other = (HasRoute6) obj;
+      if (_expr == null) {
+         if (other._expr != null) {
+            return false;
+         }
+      }
+      else if (!_expr.equals(other._expr)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -31,6 +54,14 @@ public class HasRoute6 extends AbstractBooleanExpr {
 
    public Prefix6SetExpr getExpr() {
       return _expr;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
+      return result;
    }
 
    public void setExpr(Prefix6SetExpr expr) {

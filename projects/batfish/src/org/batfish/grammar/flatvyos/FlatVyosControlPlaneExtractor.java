@@ -16,8 +16,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosParser.*;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
+import org.batfish.common.Warnings;
 import org.batfish.representation.vyos.BgpNeighbor;
 import org.batfish.representation.vyos.BgpProcess;
 import org.batfish.representation.vyos.EspGroup;
@@ -37,7 +36,7 @@ import org.batfish.representation.vyos.RouteMapMatchPrefixList;
 import org.batfish.representation.vyos.RouteMapRule;
 import org.batfish.representation.vyos.StaticNextHopRoute;
 import org.batfish.representation.vyos.VyosConfiguration;
-import org.batfish.representation.vyos.VyosVendorConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
       implements ControlPlaneExtractor {
@@ -173,7 +172,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
    private final Set<String> _unimplementedFeatures;
 
-   private VyosVendorConfiguration _vendorConfiguration;
+   private VyosConfiguration _vendorConfiguration;
 
    private final Warnings _w;
 
@@ -208,7 +207,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    @Override
    public void enterFlat_vyos_configuration(
          Flat_vyos_configurationContext ctx) {
-      _vendorConfiguration = new VyosVendorConfiguration();
+      _vendorConfiguration = new VyosConfiguration();
       _configuration = _vendorConfiguration;
    }
 
@@ -612,7 +611,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    public void exitRmmt_ip_address_prefix_list(
          Rmmt_ip_address_prefix_listContext ctx) {
       String name = ctx.name.getText();
-      RouteMapMatch match = new RouteMapMatchPrefixList(name);
+      int statementLine = ctx.name.getStart().getLine();
+      RouteMapMatch match = new RouteMapMatchPrefixList(name, statementLine);
       _currentRouteMapRule.getMatches().add(match);
    }
 
@@ -663,7 +663,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    public void exitS2sat_pre_shared_secret(S2sat_pre_shared_secretContext ctx) {
       String secret = ctx.secret.getText();
       String saltedSecret = secret + SALT;
-      String secretHash = CommonUtil.md5Digest(saltedSecret);
+      String secretHash = CommonUtil.sha256Digest(saltedSecret);
       _currentIpsecPeer.setAuthenticationPreSharedSecretHash(secretHash);
    }
 

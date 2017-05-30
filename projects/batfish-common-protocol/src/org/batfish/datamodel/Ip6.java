@@ -2,7 +2,12 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.BitSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.batfish.common.BatfishException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,8 +16,12 @@ import com.google.common.net.InetAddresses;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
+   private static Map<Ip6, BitSet> _addressBitsCache = new ConcurrentHashMap<>();
+
    public static final Ip6 MAX = new Ip6(
          new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
+
+   private static final int NUM_BYTES = 16;
 
    private static final long serialVersionUID = 1L;
 
@@ -86,6 +95,23 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
    public boolean equals(Object o) {
       Ip6 rhs = (Ip6) o;
       return _ip6.equals(rhs._ip6);
+   }
+
+   public BitSet getAddressBits() {
+      BitSet bits = _addressBitsCache.get(this);
+      if (bits == null) {
+         ByteBuffer b = ByteBuffer.allocate(NUM_BYTES);
+         byte[] ip6Bytes = _ip6.toByteArray();
+         ArrayUtils.reverse(ip6Bytes);
+         b.put(ip6Bytes);
+         BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
+         bits = new BitSet(Prefix6.MAX_PREFIX_LENGTH);
+         for (int i = Prefix6.MAX_PREFIX_LENGTH - 1, j = 0; i >= 0; i--, j++) {
+            bits.set(j, bitsWithHighestMostSignificant.get(i));
+         }
+         _addressBitsCache.put(this, bits);
+      }
+      return bits;
    }
 
    public Ip6 getNetworkAddress(int subnetBits) {

@@ -2,9 +2,14 @@ package org.batfish.main;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -23,11 +29,19 @@ import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
+import org.batfish.common.Task;
+import org.batfish.common.Task.Batch;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.Version;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.main.Settings.EnvironmentSettings;
+import org.batfish.main.Settings.TestrigSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -43,13 +57,19 @@ public class Driver {
 
    private static Settings _mainSettings = null;
 
-   private static HashMap<String, Task> _taskLog;
+   private static ConcurrentMap<String, Task> _taskLog;
 
-   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1
-                                                                                // minute
+   private static final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
-   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30
-                                                                     // seconds
+   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
+
+   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
+
+   private static final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
+
+   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000;
+
+   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000;
 
    private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1
          * 1000; // 1
@@ -58,9 +78,43 @@ public class Driver {
    static Logger httpServerLogger = Logger.getLogger(
          org.glassfish.grizzly.http.server.HttpServer.class.getName());
 
+   private static final int MAX_CACHED_DATA_PLANES = 2;
+
+   private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
+
+   private static final int MAX_CACHED_ENVIRONMENT_ROUTING_TABLES = 4;
+
+   private static final int MAX_CACHED_TESTRIGS = 5;
+
    static Logger networkListenerLogger = Logger
          .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
+
    private static final String SERVICE_URL = "http://0.0.0.0";
+
+   private static synchronized Map<TestrigSettings, DataPlane> buildDataPlaneCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<TestrigSettings, DataPlane>(MAX_CACHED_DATA_PLANES));
+
+   }
+
+   private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> buildEnvironmentBgpTablesCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(
+                  MAX_CACHED_ENVIRONMENT_BGP_TABLES));
+   }
+
+   private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> buildEnvironmentRoutingTablesCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(
+                  MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
+   }
+
+   private static synchronized Map<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
+      return Collections.synchronizedMap(
+            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(
+                  MAX_CACHED_TESTRIGS));
+
+   }
 
    private static synchronized boolean claimIdle() {
       if (_idle) {
@@ -80,7 +134,20 @@ public class Driver {
       return _mainLogger;
    }
 
-   synchronized static Task getTaskkFromLog(String taskId) {
+   private synchronized static Task getTask(Settings settings) {
+      String taskId = settings.getTaskId();
+      if (taskId == null) {
+         return null;
+      }
+      else if (!_taskLog.containsKey(taskId)) {
+         return null;
+      }
+      else {
+         return _taskLog.get(taskId);
+      }
+   }
+
+   public synchronized static Task getTaskFromLog(String taskId) {
       if (_taskLog.containsKey(taskId)) {
          return _taskLog.get(taskId);
       }
@@ -114,7 +181,7 @@ public class Driver {
    }
 
    private static void mainInit(String[] args) {
-      _taskLog = new HashMap<>();
+      _taskLog = new ConcurrentHashMap<>();
 
       try {
          _mainSettings = new Settings(args);
@@ -122,8 +189,8 @@ public class Driver {
          httpServerLogger.setLevel(Level.WARNING);
       }
       catch (Exception e) {
-         System.err.println(
-               "batfish: Initialization failed. Reason: " + e.getMessage());
+         System.err.println("batfish: Initialization failed. Reason: "
+               + ExceptionUtils.getFullStackTrace(e));
          System.exit(1);
       }
    }
@@ -188,6 +255,20 @@ public class Driver {
 
    private static synchronized void makeIdle() {
       _idle = true;
+   }
+
+   public static synchronized AtomicInteger newBatch(Settings settings,
+         String description, int jobs) {
+      Batch batch = null;
+      Task task = getTask(settings);
+      if (task != null) {
+         batch = task.newBatch(description);
+         batch.setSize(jobs);
+         return batch.getCompleted();
+      }
+      else {
+         return new AtomicInteger();
+      }
    }
 
    private static boolean registerWithCoordinator(String poolRegUrl) {
@@ -263,7 +344,9 @@ public class Driver {
       final BatfishLogger logger = settings.getLogger();
 
       try {
-         final Batfish batfish = new Batfish(settings);
+         final Batfish batfish = new Batfish(settings, CACHED_TESTRIGS,
+               CACHED_DATA_PLANES, CACHED_ENVIRONMENT_BGP_TABLES,
+               CACHED_ENVIRONMENT_ROUTING_TABLES);
 
          Thread thread = new Thread() {
             @Override
@@ -297,7 +380,7 @@ public class Driver {
                   answer.addAnswerElement(e.getAnswerElement());
                   batfish.setTerminatedWithException(true);
                }
-               catch (Exception e) {
+               catch (Exception | StackOverflowError e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
                   logger.error(stackTrace);
                   answer = new Answer();
@@ -309,7 +392,7 @@ public class Driver {
                }
                finally {
                   if (settings.getAnswerJsonPath() != null) {
-                     batfish.outputAnswer(answer);
+                     batfish.outputAnswerWithLog(answer);
                   }
                }
             }
@@ -338,17 +421,19 @@ public class Driver {
       }
    }
 
-   public static List<String> RunBatfishThroughService(String taskId,
+   public static List<String> RunBatfishThroughService(final String taskId,
          String[] args) {
       final Settings settings;
       try {
          settings = new Settings(args);
          // inherit pluginDir passed to service on startup
          settings.setPluginDirs(_mainSettings.getPluginDirs());
+         // assign taskId for status updates, termination requests
+         settings.setTaskId(taskId);
       }
       catch (Exception e) {
          return Arrays.asList("failure",
-               "Initialization failed: " + e.getMessage());
+               "Initialization failed: " + ExceptionUtils.getFullStackTrace(e));
       }
 
       try {

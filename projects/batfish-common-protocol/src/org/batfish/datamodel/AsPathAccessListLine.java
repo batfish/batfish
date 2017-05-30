@@ -2,6 +2,10 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+
+@JsonSchemaDescription("A line in an AsPathAccessList")
 public final class AsPathAccessListLine
       implements Serializable, Comparable<AsPathAccessListLine> {
 
@@ -32,10 +36,12 @@ public final class AsPathAccessListLine
       return true;
    }
 
+   @JsonPropertyDescription("The action the underlying access-list will take when this line matches a route.")
    public LineAction getAction() {
       return _action;
    }
 
+   @JsonPropertyDescription("The regex against which a route's AS-path will be compared")
    public String getRegex() {
       return _regex;
    }

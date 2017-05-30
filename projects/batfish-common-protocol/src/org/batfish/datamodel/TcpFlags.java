@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+
 public final class TcpFlags implements Serializable {
 
    public static final int ACK = 0x10;
@@ -71,66 +73,82 @@ public final class TcpFlags implements Serializable {
       }
    }
 
+   @JsonPropertyDescription("Value for ACK bit if used (true->1/false->0)")
    public boolean getAck() {
       return _ack;
    }
 
+   @JsonPropertyDescription("Value for CWR bit if used (true->1/false->0)")
    public boolean getCwr() {
       return _cwr;
    }
 
+   @JsonPropertyDescription("Value for ECE bit if used (true->1/false->0)")
    public boolean getEce() {
       return _ece;
    }
 
+   @JsonPropertyDescription("Value for FIN bit if used (true->1/false->0)")
    public boolean getFin() {
       return _fin;
    }
 
+   @JsonPropertyDescription("Value for PSH bit if used (true->1/false->0)")
    public boolean getPsh() {
       return _psh;
    }
 
+   @JsonPropertyDescription("Value for RST bit if used (true->1/false->0)")
    public boolean getRst() {
       return _rst;
    }
 
+   @JsonPropertyDescription("Value for SYN bit if used (true->1/false->0)")
    public boolean getSyn() {
       return _syn;
    }
 
+   @JsonPropertyDescription("Value for URG bit if used (true->1/false->0)")
    public boolean getUrg() {
       return _urg;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the ACK bit")
    public boolean getUseAck() {
       return _useAck;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the CWR bit")
    public boolean getUseCwr() {
       return _useCwr;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the ECE bit")
    public boolean getUseEce() {
       return _useEce;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the FIN bit")
    public boolean getUseFin() {
       return _useFin;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the PSH bit")
    public boolean getUsePsh() {
       return _usePsh;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the RST bit")
    public boolean getUseRst() {
       return _useRst;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the SYN bit")
    public boolean getUseSyn() {
       return _useSyn;
    }
 
+   @JsonPropertyDescription("Whether or not to match against the URG bit")
    public boolean getUseUrg() {
       return _useUrg;
    }

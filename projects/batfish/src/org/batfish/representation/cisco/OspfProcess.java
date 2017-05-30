@@ -1,20 +1,21 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
-public class OspfProcess implements Serializable {
+public class OspfProcess extends ComparableStructure<String> {
 
    private static final int DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
 
@@ -23,29 +24,44 @@ public class OspfProcess implements Serializable {
    /**
     * bits per second
     */
-   public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E9;
+   public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E8;
 
    private static final long serialVersionUID = 1L;
 
    private int _defaultInformationMetric;
+
    private OspfMetricType _defaultInformationMetricType;
+
    private boolean _defaultInformationOriginate;
+
    private boolean _defaultInformationOriginateAlways;
+
    private String _defaultInformationOriginateMap;
+
+   private Integer _defaultInformationOriginateMapLine;
+
    private Set<String> _interfaceBlacklist;
+
    private Set<String> _interfaceWhitelist;
+
    private Set<OspfNetwork> _networks;
+
    private Map<Integer, Boolean> _nssas;
+
    private boolean _passiveInterfaceDefault;
-   private int _pid;
+
    private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
+
    private double _referenceBandwidth;
+
    private Ip _routerId;
+
+   private Map<Long, Map<Prefix, Boolean>> _summaries;
 
    private Set<OspfWildcardNetwork> _wildcardNetworks;
 
-   public OspfProcess(int procnum) {
-      _pid = procnum;
+   public OspfProcess(String name) {
+      super(name);
       _referenceBandwidth = DEFAULT_REFERENCE_BANDWIDTH;
       _networks = new TreeSet<>();
       _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
@@ -55,6 +71,7 @@ public class OspfProcess implements Serializable {
       _interfaceWhitelist = new HashSet<>();
       _wildcardNetworks = new TreeSet<>();
       _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+      _summaries = new TreeMap<>();
    }
 
    public void computeNetworks(Collection<Interface> interfaces) {
@@ -83,6 +100,10 @@ public class OspfProcess implements Serializable {
       }
    }
 
+   public Set<String> getActiveInterfaceList() {
+      return _interfaceWhitelist;
+   }
+
    public int getDefaultInformationMetric() {
       return _defaultInformationMetric;
    }
@@ -103,12 +124,8 @@ public class OspfProcess implements Serializable {
       return _defaultInformationOriginateMap;
    }
 
-   public Set<String> getInterfaceBlacklist() {
-      return _interfaceBlacklist;
-   }
-
-   public Set<String> getInterfaceWhitelist() {
-      return _interfaceWhitelist;
+   public Integer getDefaultInformationOriginateMapLine() {
+      return _defaultInformationOriginateMapLine;
    }
 
    public Set<OspfNetwork> getNetworks() {
@@ -123,8 +140,8 @@ public class OspfProcess implements Serializable {
       return _passiveInterfaceDefault;
    }
 
-   public int getPid() {
-      return _pid;
+   public Set<String> getPassiveInterfaceList() {
+      return _interfaceBlacklist;
    }
 
    public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
@@ -137,6 +154,10 @@ public class OspfProcess implements Serializable {
 
    public Ip getRouterId() {
       return _routerId;
+   }
+
+   public Map<Long, Map<Prefix, Boolean>> getSummaries() {
+      return _summaries;
    }
 
    public Set<OspfWildcardNetwork> getWildcardNetworks() {
@@ -161,6 +182,11 @@ public class OspfProcess implements Serializable {
 
    public void setDefaultInformationOriginateMap(String name) {
       _defaultInformationOriginateMap = name;
+   }
+
+   public void setDefaultInformationOriginateMapLine(
+         Integer defaultInformationOriginateMapLine) {
+      _defaultInformationOriginateMapLine = defaultInformationOriginateMapLine;
    }
 
    public void setPassiveInterfaceDefault(boolean b) {

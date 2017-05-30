@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchProtocol extends AbstractBooleanExpr {
+public class MatchProtocol extends BooleanExpr {
 
    /**
     *
@@ -16,11 +16,29 @@ public class MatchProtocol extends AbstractBooleanExpr {
    private RoutingProtocol _protocol;
 
    @JsonCreator
-   public MatchProtocol() {
+   private MatchProtocol() {
    }
 
    public MatchProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchProtocol other = (MatchProtocol) obj;
+      if (_protocol != other._protocol) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -36,8 +54,22 @@ public class MatchProtocol extends AbstractBooleanExpr {
       return _protocol;
    }
 
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_protocol == null) ? 0 : _protocol.hashCode());
+      return result;
+   }
+
    public void setProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
+   }
+
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _protocol.protocolName() + ">";
    }
 
 }
