@@ -152,19 +152,19 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                         FlowDisposition.NULL_ROUTED.toString());
                   flowTraces.add(nullRouteTrace);
                }
-               else if (dp._flowSinks.contains(nextHopInterface)) {
-                  List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
-                  Edge newEdge = new Edge(nextHopInterface,
-                        new NodeInterfacePair(Configuration.NODE_NONE_NAME,
-                              Interface.FLOW_SINK_TERMINATION_NAME));
-                  FlowTraceHop newHop = new FlowTraceHop(newEdge,
-                        routesForThisNextHopInterface);
-                  newHops.add(newHop);
-                  FlowTrace flowSinkTrace = new FlowTrace(
-                        FlowDisposition.ACCEPTED, newHops,
-                        FlowDisposition.ACCEPTED.toString());
-                  flowTraces.add(flowSinkTrace);
-               }
+               // else if (dp._flowSinks.contains(nextHopInterface)) {
+               // List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+               // Edge newEdge = new Edge(nextHopInterface,
+               // new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+               // Interface.FLOW_SINK_TERMINATION_NAME));
+               // FlowTraceHop newHop = new FlowTraceHop(newEdge,
+               // routesForThisNextHopInterface);
+               // newHops.add(newHop);
+               // FlowTrace flowSinkTrace = new FlowTrace(
+               // FlowDisposition.ACCEPTED, newHops,
+               // FlowDisposition.ACCEPTED.toString());
+               // flowTraces.add(flowSinkTrace);
+               // }
                else {
                   EdgeSet edges = dp._topology.getInterfaceEdges()
                         .get(nextHopInterface);
@@ -180,11 +180,41 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                      }
                   }
                   else {
-                     // Should only get here for delta environment where
-                     // non-flow-sink interface from base has no edges in delta
-                     FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
-                           nextHopInterface, routesForThisNextHopInterface);
-                     flowTraces.add(trace);
+                     /*
+                      * Should only get here for delta environment where
+                      * non-flow-sink interface from base has no edges in delta
+                      */
+                     Edge neighborUnreachbleEdge = new Edge(nextHopInterface,
+                           new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+                                 Interface.NULL_INTERFACE_NAME));
+                     FlowTraceHop neighborUnreachableHop = new FlowTraceHop(
+                           neighborUnreachbleEdge,
+                           routesForThisNextHopInterface);
+                     List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+                     newHops.add(neighborUnreachableHop);
+                     /**
+                      * Check if denied out. If not, make standard
+                      * neighbor-unreachable trace.
+                      */
+                     IpAccessList outFilter = dp._nodes
+                           .get(nextHopInterface.getHostname())._c
+                                 .getInterfaces()
+                                 .get(nextHopInterface.getInterface())
+                                 .getOutgoingFilter();
+                     boolean denied = false;
+                     if (outFilter != null) {
+                        FlowDisposition disposition = FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
+                        denied = flowTraceDeniedHelper(flowTraces, flow,
+                              newHops, outFilter, disposition);
+                     }
+                     if (!denied) {
+                        FlowTrace trace = new FlowTrace(
+                              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                              newHops,
+                              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+                                    .toString());
+                        flowTraces.add(trace);
+                     }
                   }
                }
             }
@@ -706,7 +736,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    private boolean flowTraceDeniedHelper(Set<FlowTrace> flowTraces, Flow flow,
          List<FlowTraceHop> newHops, IpAccessList filter,
          FlowDisposition disposition) {
-      boolean out = disposition == FlowDisposition.DENIED_OUT;
+      boolean out = disposition == FlowDisposition.DENIED_OUT
+            || disposition == FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
       FilterResult outResult = filter.filter(flow);
       boolean denied = outResult.getAction() == LineAction.REJECT;
       if (denied) {
