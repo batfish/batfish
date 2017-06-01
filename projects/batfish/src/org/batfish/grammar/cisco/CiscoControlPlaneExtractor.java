@@ -1056,7 +1056,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       int procNum = (ctx.procnum == null) ? 0 : toInteger(ctx.procnum);
-      BgpProcess proc = new BgpProcess(procNum);
+      BgpProcess proc = new BgpProcess(_format, procNum);
       _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME)
             .setBgpProcess(proc);
       _dummyPeerGroup = new MasterBgpPeerGroup();
@@ -1462,7 +1462,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentVrf = ctx.name.getText();
       int procNum = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME)
             .getBgpProcess().getName();
-      BgpProcess proc = new BgpProcess(procNum);
+      BgpProcess proc = new BgpProcess(_format, procNum);
       currentVrf().setBgpProcess(proc);
       pushPeer(proc.getMasterBgpPeerGroup());
       _currentBlockNeighborAddressFamilies.clear();
