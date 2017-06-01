@@ -547,12 +547,13 @@ public class WorkMgrService {
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
-      _logger.info("WMS:getInfo\n");      
+      _logger.info("WMS:getInfo\n");
       try {
          JSONObject map = new JSONObject();
          map.put("Service name", "Batfish coordinator");
          map.put(CoordConsts.SVC_VERSION_KEY, Version.getVersion());
-         map.put("APIs", "Enter ../application.wadl (relative to your URL) to see supported methods");
+         map.put("APIs",
+               "Enter ../application.wadl (relative to your URL) to see supported methods");
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, map));
       }
@@ -561,7 +562,7 @@ public class WorkMgrService {
          _logger.error("WMS:getWorkQueueStatus exception: " + stackTrace);
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
-      }     
+      }
    }
 
    /**

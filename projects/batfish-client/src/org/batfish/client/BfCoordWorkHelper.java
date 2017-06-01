@@ -458,25 +458,24 @@ public class BfCoordWorkHelper {
 
          JSONObject jObject = array.getJSONObject(1);
          Iterator<?> keys = jObject.keys();
-         
+
          Map<String, String> retMap = new HashMap<>();
 
-         while( keys.hasNext() ) {
-             String key = (String)keys.next();
-             String value = jObject.getString(key);
-             retMap.put(key, value);
+         while (keys.hasNext()) {
+            String key = (String) keys.next();
+            String value = jObject.getString(key);
+            retMap.put(key, value);
          }
-         
+
          return retMap;
       }
       catch (Exception e) {
-         _logger.errorf("Exception in getInfo from %s\n",
-               _coordWorkMgr);
+         _logger.errorf("Exception in getInfo from %s\n", _coordWorkMgr);
          _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }
    }
-   
+
    public String getObject(String containerName, String testrigName,
          String objectName) {
       try {

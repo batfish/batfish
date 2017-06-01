@@ -2084,15 +2084,16 @@ public class Client extends AbstractClient implements IClient {
    private boolean showVersion() {
       _logger.outputf("Client version is %s\n", Version.getVersion());
 
-      Map<String,String> map = _workHelper.getInfo();
-      
+      Map<String, String> map = _workHelper.getInfo();
+
       if (!map.containsKey(CoordConsts.SVC_VERSION_KEY)) {
-         _logger.errorf("key '%s' not found in Info\n", CoordConsts.SVC_VERSION_KEY);         
+         _logger.errorf("key '%s' not found in Info\n",
+               CoordConsts.SVC_VERSION_KEY);
          return false;
       }
 
       String version = map.get(CoordConsts.SVC_VERSION_KEY);
-      _logger.outputf("Service version is %s\n", version);    
+      _logger.outputf("Service version is %s\n", version);
       return true;
    }
 

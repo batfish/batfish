@@ -24,7 +24,6 @@ public class Settings extends BaseSettings {
    private static final String ARG_RUN_MODE = org.batfish.client.Settings.ARG_RUN_MODE;
    private static final String ARG_TESTRIG_DIR = org.batfish.client.Settings.ARG_TESTRIG_DIR;
    private static final String ARG_VERSION = "version";
-   
 
    private static final String EXECUTABLE_NAME = "allinone";
 
@@ -140,8 +139,9 @@ public class Settings extends BaseSettings {
       addOption(BfConsts.ARG_PLUGIN_DIRS,
             "plugin directories to be passed to batfish and client processes",
             "paths");
-      
-      addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
+
+      addBooleanOption(ARG_VERSION,
+            "print the version number of the code and exit");
    }
 
    private void parseCommandLine(String[] args) {
