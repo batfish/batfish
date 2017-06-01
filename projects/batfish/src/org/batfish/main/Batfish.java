@@ -3456,7 +3456,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       NodeSet blacklistNodes = getNodeBlacklist();
       if (blacklistNodes != null) {
          for (String hostname : blacklistNodes) {
-            configurations.remove(hostname);
+            Configuration node = configurations.get(hostname);
+            if (node != null) {
+               for (Interface iface : node.getInterfaces().values()) {
+                  iface.setActive(false);
+                  iface.setBlacklisted(true);
+               }
+            }
          }
       }
    }
