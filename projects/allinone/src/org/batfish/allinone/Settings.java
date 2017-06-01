@@ -8,6 +8,7 @@ import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 
 public class Settings extends BaseSettings {
@@ -22,6 +23,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_RUN_CLIENT = "runclient";
    private static final String ARG_RUN_MODE = org.batfish.client.Settings.ARG_RUN_MODE;
    private static final String ARG_TESTRIG_DIR = org.batfish.client.Settings.ARG_TESTRIG_DIR;
+   private static final String ARG_VERSION = "version";
 
    private static final String EXECUTABLE_NAME = "allinone";
 
@@ -103,13 +105,14 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_RUN_MODE, "batch");
       setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
             Collections.<String> emptyList());
+      setDefaultProperty(ARG_VERSION, false);
    }
 
    private void initOptions() {
       addOption(ARG_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
 
-      addBooleanOption(ARG_HELP, "print this message");
+      addBooleanOption(ARG_HELP, "print help message and exit");
 
       addOption(ARG_LOG_FILE, "send output to specified log file", "logfile");
 
@@ -136,6 +139,9 @@ public class Settings extends BaseSettings {
       addOption(BfConsts.ARG_PLUGIN_DIRS,
             "plugin directories to be passed to batfish and client processes",
             "paths");
+
+      addBooleanOption(ARG_VERSION,
+            "print the version number of the code and exit");
    }
 
    private void parseCommandLine(String[] args) {
@@ -143,6 +149,11 @@ public class Settings extends BaseSettings {
 
       if (getBooleanOptionValue(ARG_HELP)) {
          printHelp(EXECUTABLE_NAME);
+         System.exit(0);
+      }
+
+      if (getBooleanOptionValue(ARG_VERSION)) {
+         System.out.printf("Batfish version: %s\n", Version.getVersion());
          System.exit(0);
       }
 

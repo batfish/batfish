@@ -29,19 +29,23 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
    public static class RoutesAnswerElement implements AnswerElement {
 
-      private transient boolean _diff;
+      private SortedSet<Route> _added;
+
+      private SortedSet<Route> _removed;
 
       private SortedMap<String, RoutesByVrf> _routesByHostname;
 
       @JsonCreator
       public RoutesAnswerElement() {
          _routesByHostname = new TreeMap<>();
+         _added = new TreeSet<>();
+         _removed = new TreeSet<>();
       }
 
       public RoutesAnswerElement(Map<String, Configuration> configurations,
             Pattern nodeRegex, Set<RoutingProtocol> protocols,
             PrefixSpace prefixSpace) {
-         _routesByHostname = new TreeMap<>();
+         this();
          for (Entry<String, Configuration> e : configurations.entrySet()) {
             String hostname = e.getKey();
             if (!nodeRegex.matcher(hostname).matches()) {
@@ -77,8 +81,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       public RoutesAnswerElement(RoutesAnswerElement base,
             RoutesAnswerElement delta) {
-         _diff = true;
-         _routesByHostname = new TreeMap<>();
+         this();
          Set<String> hosts = new LinkedHashSet<>();
          hosts.addAll(base.getRoutesByHostname().keySet());
          hosts.addAll(delta.getRoutesByHostname().keySet());
@@ -95,7 +98,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   SortedSet<Route> routes = new TreeSet<>();
                   routesByVrf.put(vrfName, routes);
                   for (Route deltaRoute : deltaRoutes) {
-                     deltaRoute.setDiffSymbol("+");
+                     _added.add(deltaRoute);
                      routes.add(deltaRoute);
                   }
                }
@@ -108,7 +111,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   SortedSet<Route> routes = new TreeSet<>();
                   routesByVrf.put(vrfName, routes);
                   for (Route baseRoute : baseRoutes) {
-                     baseRoute.setDiffSymbol("-");
+                     _removed.add(baseRoute);
                      routes.add(baseRoute);
                   }
                }
@@ -124,13 +127,13 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   SortedSet<Route> deltaRoutes = deltaRoutesByVrf.get(vrfName);
                   if (baseRoutes == null) {
                      for (Route deltaRoute : deltaRoutes) {
-                        deltaRoute.setDiffSymbol("+");
+                        _added.add(deltaRoute);
                         routes.add(deltaRoute);
                      }
                   }
                   else if (deltaRoutes == null) {
                      for (Route baseRoute : baseRoutes) {
-                        baseRoute.setDiffSymbol("-");
+                        _removed.add(baseRoute);
                         routes.add(baseRoute);
                      }
                   }
@@ -139,11 +142,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                      baseRoutes.removeAll(deltaRoutes);
                      deltaRoutes.removeAll(tmpBaseRoutes);
                      for (Route baseRoute : baseRoutes) {
-                        baseRoute.setDiffSymbol("-");
+                        _removed.add(baseRoute);
                         routes.add(baseRoute);
                      }
                      for (Route deltaRoute : deltaRoutes) {
-                        deltaRoute.setDiffSymbol("+");
+                        _added.add(deltaRoute);
                         routes.add(deltaRoute);
                      }
                   }
@@ -183,6 +186,14 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          }
       }
 
+      public SortedSet<Route> getAdded() {
+         return _added;
+      }
+
+      public SortedSet<Route> getRemoved() {
+         return _removed;
+      }
+
       public SortedMap<String, RoutesByVrf> getRoutesByHostname() {
          return _routesByHostname;
       }
@@ -194,12 +205,27 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             RoutesByVrf routesByVrf = e.getValue();
             for (SortedSet<Route> routes : routesByVrf.values()) {
                for (Route route : routes) {
-                  String routeStr = route.prettyPrint(_diff);
+                  String diffSymbol = null;
+                  if (_added.contains(route)) {
+                     diffSymbol = "+";
+                  }
+                  else if (_removed.contains(route)) {
+                     diffSymbol = "-";
+                  }
+                  String routeStr = route.prettyPrint(diffSymbol);
                   sb.append(routeStr);
                }
             }
          }
          return sb.toString();
+      }
+
+      public void setAdded(SortedSet<Route> added) {
+         _added = added;
+      }
+
+      public void setRemoved(SortedSet<Route> removed) {
+         _removed = removed;
       }
 
       public void setRoutesByHostname(

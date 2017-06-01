@@ -22,6 +22,8 @@ public final class Flow implements Comparable<Flow> {
 
    private static final String ICMP_TYPE_VAR = "icmpVar";
 
+   private static final String INGRESS_INTERFACE_VAR = "ingressInterface";
+
    private static final String INGRESS_NODE_VAR = "ingressNode";
 
    private static final String INGRESS_VRF_VAR = "ingressVrf";
@@ -68,6 +70,8 @@ public final class Flow implements Comparable<Flow> {
 
    private final int _icmpType;
 
+   private String _ingressInterface;
+
    private final String _ingressNode;
 
    private final String _ingressVrf;
@@ -102,6 +106,7 @@ public final class Flow implements Comparable<Flow> {
 
    @JsonCreator
    public Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
+         @JsonProperty(INGRESS_INTERFACE_VAR) String ingressInterface,
          @JsonProperty(INGRESS_VRF_VAR) String ingressVrf,
          @JsonProperty(SRC_IP_VAR) Ip srcIp, @JsonProperty(DST_IP_VAR) Ip dstIp,
          @JsonProperty(SRC_PORT_VAR) int srcPort,
@@ -123,6 +128,7 @@ public final class Flow implements Comparable<Flow> {
          @JsonProperty(TCP_FLAGS_FIN_VAR) int tcpFlagsFin,
          @JsonProperty(TAG_VAR) String tag) {
       _ingressNode = ingressNode;
+      _ingressInterface = ingressInterface;
       _ingressVrf = ingressVrf;
       _srcIp = srcIp;
       _dstIp = dstIp;
@@ -344,6 +350,11 @@ public final class Flow implements Comparable<Flow> {
       return _icmpType;
    }
 
+   @JsonProperty(INGRESS_INTERFACE_VAR)
+   public String getIngressInterface() {
+      return _ingressInterface;
+   }
+
    @JsonProperty(INGRESS_NODE_VAR)
    public String getIngressNode() {
       return _ingressNode;
@@ -484,6 +495,11 @@ public final class Flow implements Comparable<Flow> {
             + srcPortStr + dstPortStr + dscpStr + ecnStr + icmpTypeStr
             + icmpCodeStr + " packetLength:" + _packetLength + " state:"
             + _state + tcpFlagsStr;
+   }
+
+   @JsonProperty(INGRESS_INTERFACE_VAR)
+   public void setIngressInterface(String ingressInterface) {
+      _ingressInterface = ingressInterface;
    }
 
    @Override

@@ -218,6 +218,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String ICMP_TYPE_VAR = "icmpType";
 
+      private static final String INGRESS_INTERFACE_VAR = "ingressInterface";
+
       private static final String INGRESS_NODE_VAR = "ingressNode";
 
       private static final String INGRESS_VRF_VAR = "ingressVrf";
@@ -263,6 +265,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       private Integer _icmpCode;
 
       private Integer _icmpType;
+
+      private String _ingressInterface;
 
       private String _ingressNode;
 
@@ -321,6 +325,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          }
          if (_ingressNode != null) {
             flowBuilder.setIngressNode(_ingressNode);
+         }
+         if (_ingressInterface != null) {
+            flowBuilder.setIngressInterface(_ingressInterface);
          }
          if (_ingressVrf != null) {
             flowBuilder.setIngressVrf(_ingressVrf);
@@ -432,6 +439,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          return _icmpType;
       }
 
+      @JsonProperty(INGRESS_INTERFACE_VAR)
+      public String getIngressInterface() {
+         return _ingressInterface;
+      }
+
       @JsonProperty(INGRESS_NODE_VAR)
       public String getIngressNode() {
          return _ingressNode;
@@ -528,6 +540,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             String retString = String.format("traceroute %singressNode=%s",
                   prettyPrintBase(), _ingressNode);
             // we only print "interesting" values
+            if (_ingressInterface != null) {
+               retString += String.format(" | %s=%s", INGRESS_INTERFACE_VAR,
+                     _ingressInterface);
+            }
             if (_ingressVrf != null) {
                retString += String.format(" | %s=%s", INGRESS_VRF_VAR,
                      _ingressVrf);
@@ -656,6 +672,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       @JsonProperty(ICMP_TYPE_VAR)
       public void setIcmpType(Integer icmpType) {
          _icmpType = icmpType;
+      }
+
+      @JsonProperty(INGRESS_INTERFACE_VAR)
+      public void setIngressInterface(String ingressInterface) {
+         _ingressInterface = ingressInterface;
       }
 
       @Override

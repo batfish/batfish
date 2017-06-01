@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -14,11 +15,14 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.questions.Question;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
@@ -40,11 +44,15 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
       private static final String SENT_IBGP_ADVERTISEMENTS_VAR = "sentIbgpAdvertisements";
 
+      private SortedSet<BgpAdvertisement> _added;
+
       private SortedSet<BgpAdvertisement> _allRequestedAdvertisements;
 
       private SortedMap<String, SortedSet<BgpAdvertisement>> _receivedEbgpAdvertisements;
 
       private SortedMap<String, SortedSet<BgpAdvertisement>> _receivedIbgpAdvertisements;
+
+      private SortedSet<BgpAdvertisement> _removed;
 
       private SortedMap<String, SortedSet<BgpAdvertisement>> _sentEbgpAdvertisements;
 
@@ -52,19 +60,55 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
       @JsonCreator
       public BgpAdvertisementsAnswerElement() {
+         _added = new TreeSet<>();
+         _allRequestedAdvertisements = new TreeSet<>();
+         _receivedEbgpAdvertisements = new TreeMap<>();
+         _receivedIbgpAdvertisements = new TreeMap<>();
+         _removed = new TreeSet<>();
+         _sentEbgpAdvertisements = new TreeMap<>();
+         _sentIbgpAdvertisements = new TreeMap<>();
+      }
+
+      public BgpAdvertisementsAnswerElement(AdvertisementSet externalAdverts,
+            Map<String, Configuration> configurations, Pattern nodeRegex,
+            PrefixSpace prefixSpace) {
+         this();
+         Set<String> allowedHostnames = new HashSet<>();
+         for (String hostname : configurations.keySet()) {
+            Matcher nodeMatcher = nodeRegex.matcher(hostname);
+            if (nodeMatcher.matches()) {
+               allowedHostnames.add(hostname);
+               _sentEbgpAdvertisements.put(hostname, new TreeSet<>());
+            }
+         }
+         for (BgpAdvertisement advertisement : externalAdverts) {
+            String hostname = advertisement.getDstNode();
+            if (allowedHostnames.contains(hostname) && (prefixSpace.isEmpty()
+                  || prefixSpace.containsPrefix(advertisement.getNetwork()))) {
+               SortedSet<BgpAdvertisement> hostAdverts = _sentEbgpAdvertisements
+                     .get(hostname);
+               hostAdverts.add(advertisement);
+               _allRequestedAdvertisements.add(advertisement);
+            }
+         }
+      }
+
+      public BgpAdvertisementsAnswerElement(BgpAdvertisementsAnswerElement base,
+            BgpAdvertisementsAnswerElement delta) {
+         this();
+         _removed = CommonUtil.difference(base._allRequestedAdvertisements,
+               delta._allRequestedAdvertisements, TreeSet::new);
+         _added = CommonUtil.difference(delta._allRequestedAdvertisements,
+               base._allRequestedAdvertisements, TreeSet::new);
+         _allRequestedAdvertisements = CommonUtil.union(_removed, _added,
+               TreeSet::new);
       }
 
       public BgpAdvertisementsAnswerElement(
             Map<String, Configuration> configurations, Pattern nodeRegex,
             boolean ebgp, boolean ibgp, PrefixSpace prefixSpace,
             boolean received, boolean sent) {
-         _allRequestedAdvertisements = new TreeSet<>();
-         _receivedEbgpAdvertisements = (received && ebgp) ? new TreeMap<>()
-               : null;
-         _sentEbgpAdvertisements = (sent && ebgp) ? new TreeMap<>() : null;
-         _receivedIbgpAdvertisements = (received && ibgp) ? new TreeMap<>()
-               : null;
-         _sentIbgpAdvertisements = (sent && ibgp) ? new TreeMap<>() : null;
+         this();
          for (Entry<String, Configuration> e : configurations.entrySet()) {
             String hostname = e.getKey();
             Matcher nodeMatcher = nodeRegex.matcher(hostname);
@@ -117,6 +161,10 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          }
       }
 
+      public SortedSet<BgpAdvertisement> getAdded() {
+         return _added;
+      }
+
       @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
       public SortedSet<BgpAdvertisement> getAllRequestedAdvertisements() {
          return _allRequestedAdvertisements;
@@ -134,6 +182,10 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          return _receivedIbgpAdvertisements;
       }
 
+      public SortedSet<BgpAdvertisement> getRemoved() {
+         return _removed;
+      }
+
       @JsonIdentityReference(alwaysAsId = true)
       @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR)
       public SortedMap<String, SortedSet<BgpAdvertisement>> getSentEbgpAdvertisements() {
@@ -144,6 +196,27 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR)
       public SortedMap<String, SortedSet<BgpAdvertisement>> getSentIbgpAdvertisements() {
          return _sentIbgpAdvertisements;
+      }
+
+      @Override
+      public String prettyPrint() {
+         StringBuilder sb = new StringBuilder();
+         for (BgpAdvertisement advert : _allRequestedAdvertisements) {
+            String diffSymbol = null;
+            if (_added.contains(advert)) {
+               diffSymbol = "+";
+            }
+            else if (_removed.contains(advert)) {
+               diffSymbol = "-";
+            }
+            sb.append(advert.prettyPrint(diffSymbol));
+         }
+         String output = sb.toString();
+         return output;
+      }
+
+      public void setAdded(SortedSet<BgpAdvertisement> added) {
+         _added = added;
       }
 
       @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
@@ -162,6 +235,10 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       public void setReceivedIbgpAdvertisements(
             SortedMap<String, SortedSet<BgpAdvertisement>> receivedIbgpAdvertisements) {
          _receivedIbgpAdvertisements = receivedIbgpAdvertisements;
+      }
+
+      public void setRemoved(SortedSet<BgpAdvertisement> removed) {
+         _removed = removed;
       }
 
       @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR)
@@ -185,7 +262,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
+      public BgpAdvertisementsAnswerElement answer() {
          BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
          Pattern nodeRegex;
          try {
@@ -199,12 +276,32 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          }
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
-         _batfish.initBgpAdvertisements(configurations);
-         BgpAdvertisementsAnswerElement answerElement = new BgpAdvertisementsAnswerElement(
-               configurations, nodeRegex, question.getEbgp(),
-               question.getIbgp(), question.getPrefixSpace(),
-               question.getReceived(), question.getSent());
+         BgpAdvertisementsAnswerElement answerElement;
+         if (question._fromEnvironment) {
+            AdvertisementSet externalAdverts = _batfish
+                  .processExternalBgpAnnouncements(configurations);
+            answerElement = new BgpAdvertisementsAnswerElement(externalAdverts,
+                  configurations, nodeRegex, question.getPrefixSpace());
+         }
+         else {
+            _batfish.initBgpAdvertisements(configurations);
+            answerElement = new BgpAdvertisementsAnswerElement(configurations,
+                  nodeRegex, question.getEbgp(), question.getIbgp(),
+                  question.getPrefixSpace(), question.getReceived(),
+                  question.getSent());
+         }
          return answerElement;
+      }
+
+      @Override
+      public AnswerElement answerDiff() {
+         _batfish.pushBaseEnvironment();
+         BgpAdvertisementsAnswerElement base = answer();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         BgpAdvertisementsAnswerElement delta = answer();
+         _batfish.popEnvironment();
+         return new BgpAdvertisementsAnswerElement(base, delta);
       }
 
    }
@@ -244,6 +341,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
       private static final String EBGP_VAR = "ebgp";
 
+      private static final String FROM_ENVIRONMENT_VAR = "fromEnvironment";
+
       private static final String IBGP_VAR = "ibgp";
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
@@ -255,6 +354,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       private static final String SENT_VAR = "sent";
 
       private boolean _ebgp;
+
+      private boolean _fromEnvironment;
 
       private boolean _ibgp;
 
@@ -284,6 +385,11 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       @JsonProperty(EBGP_VAR)
       public boolean getEbgp() {
          return _ebgp;
+      }
+
+      @JsonProperty(FROM_ENVIRONMENT_VAR)
+      public boolean getFromEnvironment() {
+         return _fromEnvironment;
       }
 
       @JsonProperty(IBGP_VAR)
@@ -335,6 +441,11 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       @JsonProperty(EBGP_VAR)
       public void setEbgp(boolean ebgp) {
          _ebgp = ebgp;
+      }
+
+      @JsonProperty(FROM_ENVIRONMENT_VAR)
+      public void setFromEnvironment(boolean fromEnvironment) {
+         _fromEnvironment = fromEnvironment;
       }
 
       @JsonProperty(IBGP_VAR)

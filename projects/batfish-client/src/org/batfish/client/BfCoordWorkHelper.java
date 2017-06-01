@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -425,6 +426,54 @@ public class BfCoordWorkHelper {
             .getClientBuilder(_settings.getUseSsl(),
                   _settings.getTrustAllSslCerts())
             .register(MultiPartFeature.class);
+   }
+
+   public Map<String, String> getInfo() {
+      try {
+
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(client, "");
+
+         Response response = webTarget.request(MediaType.APPLICATION_JSON)
+               .get();
+
+         _logger.debugf(response.getStatus() + " " + response.getStatusInfo()
+               + " " + response + "\n");
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            System.err.printf("GET did not get an OK response\n");
+            return null;
+         }
+
+         String sobj = response.readEntity(String.class);
+         JSONArray array = new JSONArray(sobj);
+         _logger.debugf("response: %s [%s] [%s]\n", array.toString(),
+               array.get(0), array.get(1));
+
+         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+            _logger.errorf("Error in PostData: %s %s\n", array.get(0),
+                  array.get(1));
+            return null;
+         }
+
+         JSONObject jObject = array.getJSONObject(1);
+         Iterator<?> keys = jObject.keys();
+
+         Map<String, String> retMap = new HashMap<>();
+
+         while (keys.hasNext()) {
+            String key = (String) keys.next();
+            String value = jObject.getString(key);
+            retMap.put(key, value);
+         }
+
+         return retMap;
+      }
+      catch (Exception e) {
+         _logger.errorf("Exception in getInfo from %s\n", _coordWorkMgr);
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
    }
 
    public String getObject(String containerName, String testrigName,
