@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -55,7 +54,7 @@ public class BgpRoute extends AbstractRoute {
          return _asPath;
       }
 
-      public Set<Long> getClusterList() {
+      public SortedSet<Long> getClusterList() {
          return _clusterList;
       }
 
@@ -241,7 +240,7 @@ public class BgpRoute extends AbstractRoute {
       return _asPath;
    }
 
-   public Set<Long> getClusterList() {
+   public SortedSet<Long> getClusterList() {
       return _clusterList;
    }
 

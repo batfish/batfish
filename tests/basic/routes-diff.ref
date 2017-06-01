@@ -2,11 +2,48 @@
   "answerElements" : [
     {
       "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
+      "added" : [
+        {
+          "administrativeCost" : 200,
+          "metric" : 20,
+          "network" : "4.0.0.0/8",
+          "nextHop" : "(unknown)",
+          "nextHopInterface" : "dynamic",
+          "nextHopIp" : "10.14.22.4",
+          "node" : "as1border1",
+          "protocol" : "ibgp",
+          "tag" : -1,
+          "vrf" : "default"
+        },
+        {
+          "administrativeCost" : 20,
+          "metric" : 20,
+          "network" : "4.0.0.0/8",
+          "nextHop" : "(unknown)",
+          "nextHopInterface" : "dynamic",
+          "nextHopIp" : "10.14.22.4",
+          "node" : "as1border2",
+          "protocol" : "bgp",
+          "tag" : -1,
+          "vrf" : "default"
+        },
+        {
+          "administrativeCost" : 200,
+          "metric" : 20,
+          "network" : "4.0.0.0/8",
+          "nextHop" : "(unknown)",
+          "nextHopInterface" : "dynamic",
+          "nextHopIp" : "10.14.22.4",
+          "node" : "as1core1",
+          "protocol" : "ibgp",
+          "tag" : -1,
+          "vrf" : "default"
+        }
+      ],
       "routesByHostname" : {
         "as1border1" : {
           "default" : [
             {
-              "diffSymbol" : "+",
               "administrativeCost" : 200,
               "metric" : 20,
               "network" : "4.0.0.0/8",
@@ -23,7 +60,6 @@
         "as1border2" : {
           "default" : [
             {
-              "diffSymbol" : "+",
               "administrativeCost" : 20,
               "metric" : 20,
               "network" : "4.0.0.0/8",
@@ -40,7 +76,6 @@
         "as1core1" : {
           "default" : [
             {
-              "diffSymbol" : "+",
               "administrativeCost" : 200,
               "metric" : 20,
               "network" : "4.0.0.0/8",
@@ -97,7 +132,8 @@
     "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion",
     "differential" : true,
     "fromEnvironment" : false,
-    "nodeRegex" : ".*"
+    "nodeRegex" : ".*",
+    "prefixSpace" : [ ]
   },
   "status" : "SUCCESS"
 }

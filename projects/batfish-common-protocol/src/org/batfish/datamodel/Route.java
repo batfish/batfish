@@ -52,8 +52,6 @@ public class Route implements Comparable<Route>, Serializable {
 
    private final int _administrativeCost;
 
-   private transient String _diffSymbol;
-
    private final int _metric;
 
    private final Prefix _network;
@@ -167,11 +165,6 @@ public class Route implements Comparable<Route>, Serializable {
       return _administrativeCost;
    }
 
-   @JsonProperty(DIFF_SYMBOL_VAR)
-   public String getDiffSymbol() {
-      return _diffSymbol;
-   }
-
    @JsonProperty(METRIC_VAR)
    public int getMetric() {
       return _metric;
@@ -231,7 +224,7 @@ public class Route implements Comparable<Route>, Serializable {
       return result;
    }
 
-   public String prettyPrint(boolean diff) {
+   public String prettyPrint(String diffSymbol) {
       String node = getNode();
       String nhnode = getNextHop();
       Ip nextHopIp = getNextHopIp();
@@ -258,17 +251,12 @@ public class Route implements Comparable<Route>, Serializable {
       String admin = Integer.toString(getAdministrativeCost());
       String cost = Integer.toString(getMetric());
       String prot = getProtocol().protocolName();
-      String diffStr = diff ? getDiffSymbol() + " " : "";
+      String diffStr = diffSymbol != null ? diffSymbol + " " : "";
       String routeStr = String.format(
             "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
             diffStr, node, vrf, net, nhip, nhint, nhnode, admin, cost, tag,
             prot);
       return routeStr;
-   }
-
-   @JsonProperty(DIFF_SYMBOL_VAR)
-   public void setDiffSymbol(String diffSymbol) {
-      _diffSymbol = diffSymbol;
    }
 
    @Override

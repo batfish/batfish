@@ -18,6 +18,8 @@ public class FlowBuilder {
 
    private Integer _icmpType;
 
+   private String _ingressInterface;
+
    private String _ingressNode;
 
    private String _ingressVrf;
@@ -82,11 +84,11 @@ public class FlowBuilder {
       if (_tag == null) {
          throw new BatfishException("Cannot build flow without specifying tag");
       }
-      return new Flow(_ingressNode, _ingressVrf, _srcIp, _dstIp, _srcPort,
-            _dstPort, _ipProtocol, _dscp, _ecn, _fragmentOffset, _icmpType,
-            _icmpCode, _packetLength, _state, _tcpFlagsCwr, _tcpFlagsEce,
-            _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh, _tcpFlagsRst,
-            _tcpFlagsSyn, _tcpFlagsFin, _tag);
+      return new Flow(_ingressNode, _ingressInterface, _ingressVrf, _srcIp,
+            _dstIp, _srcPort, _dstPort, _ipProtocol, _dscp, _ecn,
+            _fragmentOffset, _icmpType, _icmpCode, _packetLength, _state,
+            _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck,
+            _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin, _tag);
    }
 
    public Integer getDscp() {
@@ -111,6 +113,10 @@ public class FlowBuilder {
 
    public Integer getIcmpType() {
       return _icmpType;
+   }
+
+   public String getIngressInterface() {
+      return _ingressInterface;
    }
 
    public String getIngressNode() {
@@ -207,6 +213,10 @@ public class FlowBuilder {
 
    public void setIcmpType(Integer icmpType) {
       _icmpType = icmpType;
+   }
+
+   public void setIngressInterface(String ingressInterface) {
+      _ingressInterface = ingressInterface;
    }
 
    public void setIngressNode(String ingressNode) {

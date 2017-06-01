@@ -576,35 +576,35 @@ public class HeaderSpace implements Serializable {
          boolean matchTcpFlags = false;
          for (TcpFlags tcpFlags : _tcpFlags) {
             if (tcpFlags.getUseAck()
-                  && tcpFlags.getAck() ^ (flow.getTcpFlagsAck() == 0)) {
+                  && tcpFlags.getAck() ^ (flow.getTcpFlagsAck() == 1)) {
                continue;
             }
             if (tcpFlags.getUseCwr()
-                  && tcpFlags.getCwr() ^ (flow.getTcpFlagsCwr() == 0)) {
+                  && tcpFlags.getCwr() ^ (flow.getTcpFlagsCwr() == 1)) {
                continue;
             }
             if (tcpFlags.getUseEce()
-                  && tcpFlags.getEce() ^ (flow.getTcpFlagsEce() == 0)) {
+                  && tcpFlags.getEce() ^ (flow.getTcpFlagsEce() == 1)) {
                continue;
             }
             if (tcpFlags.getUseFin()
-                  && tcpFlags.getFin() ^ (flow.getTcpFlagsFin() == 0)) {
+                  && tcpFlags.getFin() ^ (flow.getTcpFlagsFin() == 1)) {
                continue;
             }
             if (tcpFlags.getUsePsh()
-                  && tcpFlags.getPsh() ^ (flow.getTcpFlagsPsh() == 0)) {
+                  && tcpFlags.getPsh() ^ (flow.getTcpFlagsPsh() == 1)) {
                continue;
             }
             if (tcpFlags.getUseRst()
-                  && tcpFlags.getRst() ^ (flow.getTcpFlagsRst() == 0)) {
+                  && tcpFlags.getRst() ^ (flow.getTcpFlagsRst() == 1)) {
                continue;
             }
             if (tcpFlags.getUseSyn()
-                  && tcpFlags.getSyn() ^ (flow.getTcpFlagsSyn() == 0)) {
+                  && tcpFlags.getSyn() ^ (flow.getTcpFlagsSyn() == 1)) {
                continue;
             }
             if (tcpFlags.getUseUrg()
-                  && tcpFlags.getUrg() ^ (flow.getTcpFlagsUrg() == 0)) {
+                  && tcpFlags.getUrg() ^ (flow.getTcpFlagsUrg() == 1)) {
                continue;
             }
             matchTcpFlags = true;

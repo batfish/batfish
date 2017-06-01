@@ -29838,7 +29838,7 @@
           ]
         }
       },
-      "version" : "0.21.0",
+      "version" : "0.22.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -30908,7 +30908,7 @@
           }
         }
       },
-      "version" : "0.21.0",
+      "version" : "0.22.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
