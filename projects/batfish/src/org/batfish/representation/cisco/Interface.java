@@ -120,6 +120,16 @@ public class Interface extends ComparableStructure<String> {
 
    private Set<Prefix> _secondaryPrefixes;
 
+   private boolean _sourceNat;
+
+   private String _sourceNatAcl;
+
+   private int _sourceNatAclLine;
+
+   private String _sourceNatPool;
+
+   private int _sourceNatPoolLine;
+
    private Prefix _standbyPrefix;
 
    private boolean _switchportAccessDynamic;
@@ -249,6 +259,26 @@ public class Interface extends ComparableStructure<String> {
       return _secondaryPrefixes;
    }
 
+   public boolean getSourceNat() {
+      return _sourceNat;
+   }
+
+   public String getSourceNatAcl() {
+      return _sourceNatAcl;
+   }
+
+   public int getSourceNatAclLine() {
+      return _sourceNatAclLine;
+   }
+
+   public String getSourceNatPool() {
+      return _sourceNatPool;
+   }
+
+   public int getSourceNatPoolLine() {
+      return _sourceNatPoolLine;
+   }
+
    public Prefix getStandbyPrefix() {
       return _standbyPrefix;
    }
@@ -355,6 +385,26 @@ public class Interface extends ComparableStructure<String> {
 
    public void setRoutingPolicyLine(int routingPolicyLine) {
       _routingPolicyLine = routingPolicyLine;
+   }
+
+   public void setSourceNat(boolean sourceNat) {
+      _sourceNat = sourceNat;
+   }
+
+   public void setSourceNatAcl(String sourceNatAcl) {
+      _sourceNatAcl = sourceNatAcl;
+   }
+
+   public void setSourceNatAclLine(int sourceNatAclLine) {
+      _sourceNatAclLine = sourceNatAclLine;
+   }
+
+   public void setSourceNatPool(String sourceNatPool) {
+      _sourceNatPool = sourceNatPool;
+   }
+
+   public void setSourceNatPoolLine(int sourceNatPoolLine) {
+      _sourceNatPoolLine = sourceNatPoolLine;
    }
 
    public void setStandbyPrefix(Prefix standbyPrefix) {

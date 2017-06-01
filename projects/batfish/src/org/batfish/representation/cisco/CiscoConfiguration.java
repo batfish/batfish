@@ -56,6 +56,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -184,8 +185,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _ipNatDestinationAccessLists;
 
-   private final Set<String> _ipNatSourceAccessLists;
-
    private final Set<String> _ipPimNeighborFilters;
 
    private final Set<String> _lineAccessClassLists;
@@ -197,6 +196,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
    private final Set<String> _managementAccessGroups;
 
    private final Set<String> _msdpPeerSaLists;
+
+   private final Map<String, NatPool> _natPools;
 
    private final Set<String> _ntpAccessGroups;
 
@@ -266,13 +267,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
       _igmpAcls = new TreeSet<>();
       _interfaces = new TreeMap<>();
       _ipNatDestinationAccessLists = new TreeSet<>();
-      _ipNatSourceAccessLists = new TreeSet<>();
       _ipPimNeighborFilters = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
       _lineIpv6AccessClassLists = new TreeSet<>();
       _macAccessLists = new TreeMap<>();
       _managementAccessGroups = new TreeSet<>();
       _msdpPeerSaLists = new TreeSet<>();
+      _natPools = new TreeMap<>();
       _ntpAccessGroups = new TreeSet<>();
       _pimAcls = new TreeSet<>();
       _pimRouteMaps = new TreeSet<>();
@@ -514,10 +515,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return _ipNatDestinationAccessLists;
    }
 
-   public Set<String> getIpNatSourceAccessLists() {
-      return _ipNatSourceAccessLists;
-   }
-
    public Set<String> getIpPimNeighborFilters() {
       return _ipPimNeighborFilters;
    }
@@ -540,6 +537,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getMsdpPeerSaLists() {
       return _msdpPeerSaLists;
+   }
+
+   public Map<String, NatPool> getNatPools() {
+      return _natPools;
    }
 
    public Set<String> getNtpAccessGroups() {
@@ -1885,6 +1886,61 @@ public final class CiscoConfiguration extends VendorConfiguration {
          }
          newIface.setOutgoingFilter(outgoingFilter);
       }
+      if (iface.getSourceNat()) {
+         /*
+          * source nat acl
+          */
+         SourceNat sourceNat = new SourceNat();
+         newIface.setSourceNat(sourceNat);
+         String sourceNatAclName = iface.getSourceNatAcl();
+         if (sourceNatAclName != null) {
+            int sourceNatAclLine = iface.getSourceNatAclLine();
+            IpAccessList sourceNatAcl = ipAccessLists.get(sourceNatAclName);
+            if (sourceNatAcl == null) {
+               undefined(CiscoStructureType.IP_ACCESS_LIST, sourceNatAclName,
+                     CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+                     sourceNatAclLine);
+            }
+            else {
+               String msg = "source nat acl for interface: " + iface.getName();
+               ExtendedAccessList sourceNatExtendedAccessList = _extendedAccessLists
+                     .get(sourceNatAclName);
+               if (sourceNatExtendedAccessList != null) {
+                  sourceNatExtendedAccessList.getReferers().put(iface, msg);
+               }
+               StandardAccessList sourceNatStandardAccessList = _standardAccessLists
+                     .get(sourceNatAclName);
+               if (sourceNatStandardAccessList != null) {
+                  sourceNatStandardAccessList.getReferers().put(iface, msg);
+               }
+            }
+            sourceNat.setAcl(sourceNatAcl);
+
+            /**
+             * source nat pool
+             */
+            String sourceNatPoolName = iface.getSourceNatPool();
+            if (sourceNatPoolName != null) {
+               int sourceNatPoolLine = iface.getSourceNatPoolLine();
+               NatPool sourceNatPool = _natPools.get(sourceNatPoolName);
+               if (sourceNatPool != null) {
+                  sourceNatPool.getReferers().put(iface,
+                        "source nat pool for interface: " + iface.getName());
+                  Ip firstIp = sourceNatPool.getFirst();
+                  if (firstIp != null) {
+                     Ip lastIp = sourceNatPool.getLast();
+                     sourceNat.setPoolIpFirst(firstIp);
+                     sourceNat.setPoolIpLast(lastIp);
+                  }
+               }
+               else {
+                  undefined(CiscoStructureType.NAT_POOL, sourceNatPoolName,
+                        CiscoStructureUsage.IP_NAT_SOURCE_POOL,
+                        sourceNatPoolLine);
+               }
+            }
+         }
+      }
       String routingPolicyName = iface.getRoutingPolicy();
       if (routingPolicyName != null) {
          int routingPolicyLine = iface.getRoutingPolicyLine();
@@ -3112,6 +3168,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       warnUnusedIpAccessLists();
       warnUnusedIpv6AccessLists();
       warnUnusedMacAccessLists();
+      warnUnusedNatPools();
       warnUnusedPrefixLists();
       warnUnusedPrefix6Lists();
       warnUnusedPeerGroups();
@@ -3345,6 +3402,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
          if (macAccessList.isUnused()) {
             unused(CiscoStructureType.MAC_ACCESS_LIST, name,
                   macAccessList.getDefinitionLine());
+         }
+      }
+   }
+
+   private void warnUnusedNatPools() {
+      for (Entry<String, NatPool> e : _natPools.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         NatPool natPool = e.getValue();
+         if (natPool.isUnused()) {
+            unused(CiscoStructureType.NAT_POOL, name,
+                  natPool.getDefinitionLine());
          }
       }
    }

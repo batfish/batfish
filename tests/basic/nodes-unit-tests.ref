@@ -2485,6 +2485,7 @@
               "ospfPassive" : false,
               "prefix" : "1.2.3.4/30",
               "proxyArp" : false,
+              "sourceNat" : { },
               "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"

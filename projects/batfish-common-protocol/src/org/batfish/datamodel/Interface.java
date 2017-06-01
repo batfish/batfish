@@ -74,6 +74,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private static final String SOURCE_NAT_VAR = "sourceNat";
+
    private static final String SWITCHPORT_MODE_VAR = "switchportMode";
 
    private static final String SWITCHPORT_TRUNK_ENCAPSULATION_VAR = "switchportTrunkEncapsulation";
@@ -317,6 +319,8 @@ public final class Interface extends ComparableStructure<String> {
    private RoutingPolicy _routingPolicy;
 
    private transient String _routingPolicyName;
+
+   private SourceNat _sourceNat;
 
    private SwitchportMode _switchportMode;
 
@@ -631,6 +635,11 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
+   @JsonProperty(SOURCE_NAT_VAR)
+   public SourceNat getSourceNat() {
+      return _sourceNat;
+   }
+
    @JsonProperty(SWITCHPORT_MODE_VAR)
    @JsonPropertyDescription("The switchport mode (if any) of this interface")
    public SwitchportMode getSwitchportMode() {
@@ -861,6 +870,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(ROUTING_POLICY_VAR)
    public void setRoutingPolicy(String routingPolicyName) {
       _routingPolicyName = routingPolicyName;
+   }
+
+   @JsonProperty(SOURCE_NAT_VAR)
+   public void setSourceNat(SourceNat sourceNat) {
+      _sourceNat = sourceNat;
    }
 
    @JsonProperty(SWITCHPORT_MODE_VAR)

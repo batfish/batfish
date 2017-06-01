@@ -20,6 +20,7 @@ public enum CiscoStructureType implements StructureType {
    IPV6_ACCESS_LIST_EXTENDED("extended ipv6 access-list"),
    IPV6_ACCESS_LIST_STANDARD("standard ipv6 access-list"),
    MAC_ACCESS_LIST("mac acl"),
+   NAT_POOL("nat pool"),
    PREFIX_LIST("ipv4 prefix-list"),
    PREFIX6_LIST("ipv6 prefix-list"),
    ROUTE_MAP("route-map"),

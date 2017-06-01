@@ -96,12 +96,18 @@ public class FlowTrace implements Comparable<FlowTrace> {
       for (int i = 0; i < _hops.size(); i++) {
          FlowTraceHop hop = _hops.get(i);
          Set<String> routes = hop.getRoutes();
+         String transformedFlowString = "";
+         Flow transformedFlow = hop.getTransformedFlow();
+         if (transformedFlow != null) {
+            transformedFlowString = " ***TRANSFORMED:"
+                  + transformedFlow.prettyPrint("") + "***";
+         }
          String routesStr = routes != null ? (" --- " + routes) : "";
          Edge edge = hop.getEdge();
          int num = i + 1;
          sb.append(prefixString + "Hop " + num + ": " + edge.getNode1() + ":"
                + edge.getInt1() + " -> " + edge.getNode2() + ":"
-               + edge.getInt2() + routesStr + "\n");
+               + edge.getInt2() + transformedFlowString + routesStr + "\n");
       }
       sb.append(prefixString + _notes + "\n");
       return sb.toString();

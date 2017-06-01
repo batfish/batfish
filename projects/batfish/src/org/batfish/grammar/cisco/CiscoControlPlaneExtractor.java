@@ -369,6 +369,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private NamedBgpPeerGroup _currentNamedPeerGroup;
 
+   private NatPool _currentNatPool;
+
    private Long _currentOspfArea;
 
    private String _currentOspfInterface;
@@ -738,6 +740,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _configuration.getStandardCommunityLists().put(name,
                _currentStandardCommunityList);
       }
+   }
+
+   @Override
+   public void enterIp_nat_pool(Ip_nat_poolContext ctx) {
+      String name = ctx.name.getText();
+      int definitionLine = ctx.name.getStart().getLine();
+      NatPool natPool = new NatPool(name, definitionLine);
+      _configuration.getNatPools().put(name, natPool);
+      _currentNatPool = natPool;
    }
 
    @Override
@@ -2254,11 +2265,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
-      String acl = ctx.acl.getText();
-      int line = ctx.acl.getStart().getLine();
-      _configuration.getIpNatSourceAccessLists().add(acl);
-      _configuration.referenceStructure(CiscoStructureType.IPV4_ACCESS_LIST,
-            acl, CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST, line);
+      for (Interface iface : _currentInterfaces) {
+         iface.setSourceNat(true);
+         String acl = ctx.acl.getText();
+         if (ctx.acl != null) {
+            int aclLine = ctx.acl.getStart().getLine();
+            iface.setSourceNatAcl(acl);
+            iface.setSourceNatAclLine(aclLine);
+         }
+         if (ctx.pool != null) {
+            String pool = ctx.pool.getText();
+            int poolLine = ctx.pool.getStart().getLine();
+            iface.setSourceNatPool(pool);
+            iface.setSourceNatPoolLine(poolLine);
+         }
+      }
    }
 
    @Override
@@ -2628,6 +2649,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _configuration.setDomainName(null);
       }
 
+   }
+
+   @Override
+   public void exitIp_nat_pool(Ip_nat_poolContext ctx) {
+      _currentNatPool = null;
+   }
+
+   @Override
+   public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
+      Ip first = new Ip(ctx.first.getText());
+      _currentNatPool.setFirst(first);
+      Ip last = new Ip(ctx.last.getText());
+      _currentNatPool.setLast(last);
    }
 
    @Override
