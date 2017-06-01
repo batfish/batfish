@@ -38,10 +38,12 @@ import org.batfish.client.Settings.RunMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
+import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.plugin.AbstractClient;
@@ -1730,6 +1732,8 @@ public class Client extends AbstractClient implements IClient {
             return showLogLevel();
          case SHOW_TESTRIG:
             return showTestrig();
+         case SHOW_VERSION:
+            return showVersion();
          case TEST:
             return test(parameters);
          case UPLOAD_CUSTOM_OBJECT:
@@ -2074,6 +2078,21 @@ public class Client extends AbstractClient implements IClient {
       }
       _logger.outputf("Base testrig->environment is %s->%s\n", _currTestrig,
             _currEnv);
+      return true;
+   }
+
+   private boolean showVersion() {
+      _logger.outputf("Client version is %s\n", Version.getVersion());
+
+      Map<String,String> map = _workHelper.getInfo();
+      
+      if (!map.containsKey(CoordConsts.SVC_VERSION_KEY)) {
+         _logger.errorf("key '%s' not found in Info\n", CoordConsts.SVC_VERSION_KEY);         
+         return false;
+      }
+
+      String version = map.get(CoordConsts.SVC_VERSION_KEY);
+      _logger.outputf("Service version is %s\n", version);    
       return true;
    }
 

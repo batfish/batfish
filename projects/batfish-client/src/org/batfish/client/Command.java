@@ -73,6 +73,7 @@ public enum Command {
    SHOW_DELTA_TESTRIG("show-delta-testrig"),
    SHOW_LOGLEVEL("show-loglevel"),
    SHOW_TESTRIG("show-testrig"),
+   SHOW_VERSION("show-version"),
    TEST("test"),
    UPLOAD_CUSTOM_OBJECT("upload-custom");
 
@@ -211,6 +212,8 @@ public enum Command {
             new Pair<>("", "Show delta testrig and environment"));
       descs.put(SHOW_TESTRIG,
             new Pair<>("", "Show base testrig and environment"));
+      descs.put(SHOW_VERSION,
+            new Pair<>("", "Show the version of Client and Service"));
       descs.put(TEST, new Pair<>("<reference file> <command>",
             "Show base testrig and environment"));
       descs.put(UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>",
