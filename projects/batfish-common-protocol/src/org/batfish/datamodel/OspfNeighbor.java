@@ -97,6 +97,7 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
       return _key.getFirst();
    }
 
+   @JsonIgnore
    public Configuration getOwner() {
       return _owner;
    }
@@ -106,6 +107,7 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
       return _key.getSecond();
    }
 
+   @JsonIgnore
    public OspfNeighbor getRemoteOspfNeighbor() {
       return _remoteOspfNeighbor;
    }

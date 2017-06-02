@@ -25,6 +25,8 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
+import org.batfish.datamodel.collections.VerboseBgpEdge;
+import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.questions.Question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -40,7 +42,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private final static String OSPF_NEIGHBORS_VAR = "ospfNeighbors";
 
+      private final static String VERBOSE_EBGP_NEIGHBORS_VAR = "verboseEbgpNeighbors";
+      
+      private final static String VERBOSE_IBGP_NEIGHBORS_VAR = "verboseIbgpNeighbors";
+      
       private final static String VERBOSE_LAN_NEIGHBORS_VAR = "verboseLanNeighbors";
+      
+      private final static String VERBOSE_OSPF_NEIGHBORS_VAR = "verboseOspfNeighbors";
 
       private SortedSet<IpEdge> _ebgpNeighbors;
 
@@ -50,7 +58,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private SortedSet<IpEdge> _ospfNeighbors;
 
-      private SortedSet<VerboseEdge> _verboseLanNeighbors;
+      private SortedSet<VerboseBgpEdge> _verboseEbgpNeighbors;
+      
+      private SortedSet<VerboseBgpEdge> _verboseIbgpNeighbors;
+      
+      private SortedSet<VerboseEdge> _verboseLanNeighbors; 
+      
+      private SortedSet<VerboseOspfEdge> _verboseOspfNeighbors;
 
       public void addLanEdge(Edge edge) {
          _lanNeighbors.add(edge);
@@ -76,11 +90,26 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return _ospfNeighbors;
       }
 
+      @JsonProperty(VERBOSE_EBGP_NEIGHBORS_VAR)
+      public SortedSet<VerboseBgpEdge> getVerboseEbgpNeighbors() {
+         return _verboseEbgpNeighbors;
+      }
+      
+      @JsonProperty(VERBOSE_IBGP_NEIGHBORS_VAR)
+      public SortedSet<VerboseBgpEdge> getVerboseIbgpNeighbors() {
+         return _verboseIbgpNeighbors;
+      }
+      
       @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
       public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
          return _verboseLanNeighbors;
+      }                  
+      
+      @JsonProperty(VERBOSE_OSPF_NEIGHBORS_VAR)
+      public SortedSet<VerboseOspfEdge> getVerboseOspfNeighbors() {
+         return _verboseOspfNeighbors;
       }
-
+      
       public void initEbgpNeighbors() {
          _ebgpNeighbors = new TreeSet<>();
       }
@@ -126,12 +155,26 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             }
          }
 
+         if (_verboseEbgpNeighbors != null) {
+            sb.append("  eBGP neighbors\n");
+            for (VerboseBgpEdge edge : _verboseEbgpNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+         
          if (_ibgpNeighbors != null) {
             sb.append("  iBGP Neighbors\n");
             for (IpEdge ipEdge : _ibgpNeighbors) {
                sb.append("    " + ipEdge.toString() + "\n");
             }
          }
+         
+         if (_verboseIbgpNeighbors != null) {
+            sb.append("  iBGP neighbors\n");
+            for (VerboseBgpEdge edge : _verboseIbgpNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }         
 
          if (_ospfNeighbors != null) {
             sb.append("  OSPF Neighbors\n");
@@ -140,6 +183,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             }
          }
 
+         if (_verboseOspfNeighbors != null) {
+            sb.append("  OSPF neighbors\n");
+            for (VerboseOspfEdge edge : _verboseOspfNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+         
          return sb.toString();
       }
 
@@ -162,7 +212,25 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       public void setOspfNeighbors(SortedSet<IpEdge> ospfNeighbors) {
          _ospfNeighbors = ospfNeighbors;
       }
-
+      
+      @JsonProperty(VERBOSE_EBGP_NEIGHBORS_VAR)
+      public void setVerboseEbgpNeighbors(
+            SortedSet<VerboseBgpEdge> verboseEbgpNeighbors) {
+         _verboseEbgpNeighbors = verboseEbgpNeighbors;
+      }
+      
+      @JsonProperty(VERBOSE_IBGP_NEIGHBORS_VAR)
+      public void setVerboseIbgpNeighbors(
+            SortedSet<VerboseBgpEdge> verboseIbgpNeighbors) {
+         _verboseIbgpNeighbors = verboseIbgpNeighbors;
+      }      
+      
+      @JsonProperty(VERBOSE_OSPF_NEIGHBORS_VAR)
+      public void setVerboseOspfNeighbors(
+            SortedSet<VerboseOspfEdge> verboseOspfNeighbors) {
+         _verboseOspfNeighbors = verboseOspfNeighbors;
+      }            
+      
       @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
       public void setVerboseLanNeighbors(
             SortedSet<VerboseEdge> verboseLanNeighbors) {
@@ -225,7 +293,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          // }
 
          if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
-            answerElement.initOspfNeighbors();
+            SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
             initTopology(configurations);
             initRemoteOspfNeighbors(_batfish, configurations, _topology);
             for (Configuration c : configurations.values()) {
@@ -248,20 +316,26 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                                  && node2Matcher.matches()) {
                               Ip localIp = ospfNeighbor.getLocalIp();
                               Ip remoteIp = remoteOspfNeighbor.getLocalIp();
-                              answerElement.getOspfNeighbors()
-                                    .add(new IpEdge(hostname, localIp,
-                                          remoteHostname, remoteIp));
+                              IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
+                              vedges.add(new VerboseOspfEdge(c, ospfNeighbor, remoteHost, remoteOspfNeighbor, edge));
                            }
                         }
                      }
                   }
                }
-            }
+            }            
+            if (question.getVerbose())
+               answerElement.setVerboseOspfNeighbors(vedges);
+            else {
+               answerElement.initOspfNeighbors();
+               for (VerboseOspfEdge vedge : vedges)
+                  answerElement.getOspfNeighbors().add(vedge.getEdgeSummary());
+            }            
          }
 
          if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
-            answerElement.initEbgpNeighbors();
             initRemoteBgpNeighbors(_batfish, configurations);
+            SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
             for (Configuration c : configurations.values()) {
                String hostname = c.getHostname();
                for (Vrf vrf : c.getVrfs().values()) {
@@ -286,9 +360,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                                     && node2Matcher.matches()) {
                                  Ip localIp = bgpNeighbor.getLocalIp();
                                  Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                                 answerElement.getEbgpNeighbors()
-                                       .add(new IpEdge(hostname, localIp,
-                                             remoteHostname, remoteIp));
+                                 IpEdge edge = new IpEdge(hostname, localIp, 
+                                       remoteHostname, remoteIp);
+                                 vedges.add(new VerboseBgpEdge(c, bgpNeighbor, remoteHost, remoteBgpNeighbor, edge));
                               }
                            }
                         }
@@ -296,10 +370,17 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                   }
                }
             }
+            if (question.getVerbose())
+               answerElement.setVerboseEbgpNeighbors(vedges);
+            else {
+               answerElement.initEbgpNeighbors();
+               for (VerboseBgpEdge vedge : vedges)
+                  answerElement.getEbgpNeighbors().add(vedge.getEdgeSummary());
+            }
          }
 
          if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
-            answerElement.initIbgpNeighbors();
+            SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
             initRemoteBgpNeighbors(_batfish, configurations);
             for (Configuration c : configurations.values()) {
                String hostname = c.getHostname();
@@ -325,15 +406,21 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                                     && node2Matcher.matches()) {
                                  Ip localIp = bgpNeighbor.getLocalIp();
                                  Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                                 answerElement.getIbgpNeighbors()
-                                       .add(new IpEdge(hostname, localIp,
-                                             remoteHostname, remoteIp));
+                                 IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
+                                 vedges.add(new VerboseBgpEdge(c, bgpNeighbor, remoteHost, remoteBgpNeighbor, edge));
                               }
                            }
                         }
                      }
                   }
                }
+            }
+            if (question.getVerbose())
+               answerElement.setVerboseIbgpNeighbors(vedges);
+            else {
+               answerElement.initIbgpNeighbors();
+               for (VerboseBgpEdge vedge : vedges)
+                  answerElement.getIbgpNeighbors().add(vedge.getEdgeSummary());
             }
          }
 
