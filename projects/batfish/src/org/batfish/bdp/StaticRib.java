@@ -15,9 +15,10 @@ public class StaticRib extends AbstractRib<StaticRoute> {
 
    @Override
    public int comparePreference(StaticRoute lhs, StaticRoute rhs) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      /**
+       * TODO: see if this needs to be changed
+       */
+      return 0;
    }
 
 }
