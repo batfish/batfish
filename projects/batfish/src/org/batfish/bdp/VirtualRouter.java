@@ -526,7 +526,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                            RoutingProtocol.OSPF.getDefaultAdministrativeCost(
                                  _c.getConfigurationFormat()),
                            cost, areaNum);
-                     _ospfIntraAreaRib.addRoute(route);
+                     _ospfIntraAreaRib.mergeRoute(route);
                   }
                }
             }
@@ -581,7 +581,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             for (Prefix ifacePrefix : i.getAllPrefixes()) {
                Prefix prefix = ifacePrefix.getNetworkPrefix();
                ConnectedRoute cr = new ConnectedRoute(prefix, i.getName());
-               _connectedRib.addRoute(cr);
+               _connectedRib.mergeRoute(cr);
             }
          }
       }
@@ -641,11 +641,11 @@ public class VirtualRouter extends ComparableStructure<String> {
                      // shouldn't be null
                      if (outputRoute.getOspfMetricType() == OspfMetricType.E1) {
                         _ospfExternalType1Rib
-                              .addRoute((OspfExternalType1Route) outputRoute);
+                              .mergeRoute((OspfExternalType1Route) outputRoute);
                      }
                      else {
                         _ospfExternalType2Rib
-                              .addRoute((OspfExternalType2Route) outputRoute);
+                              .mergeRoute((OspfExternalType2Route) outputRoute);
                      }
                   }
                }
@@ -686,10 +686,10 @@ public class VirtualRouter extends ComparableStructure<String> {
          }
          // interface route
          if (sr.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-            _staticInterfaceRib.addRoute(sr);
+            _staticInterfaceRib.mergeRoute(sr);
          }
          else {
-            _staticRib.addRoute(sr);
+            _staticRib.mergeRoute(sr);
          }
       }
    }
