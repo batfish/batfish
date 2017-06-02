@@ -51,83 +51,83 @@ public class VirtualRouter extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
-   BgpMultipathRib _baseEbgpRib;
+   transient BgpMultipathRib _baseEbgpRib;
 
-   BgpMultipathRib _baseIbgpRib;
+   transient BgpMultipathRib _baseIbgpRib;
 
-   BgpBestPathRib _bgpBestPathRib;
+   transient BgpBestPathRib _bgpBestPathRib;
 
-   BgpMultipathRib _bgpMultipathRib;
+   transient BgpMultipathRib _bgpMultipathRib;
 
    final Configuration _c;
 
-   ConnectedRib _connectedRib;
+   transient ConnectedRib _connectedRib;
 
-   BgpBestPathRib _ebgpBestPathRib;
+   transient BgpBestPathRib _ebgpBestPathRib;
 
-   BgpMultipathRib _ebgpMultipathRib;
+   transient BgpMultipathRib _ebgpMultipathRib;
 
-   BgpMultipathRib _ebgpStagingRib;
+   transient BgpMultipathRib _ebgpStagingRib;
 
    Fib _fib;
 
-   Rib _generatedRib;
+   transient Rib _generatedRib;
 
-   BgpBestPathRib _ibgpBestPathRib;
+   transient BgpBestPathRib _ibgpBestPathRib;
 
-   BgpMultipathRib _ibgpMultipathRib;
+   transient BgpMultipathRib _ibgpMultipathRib;
 
-   BgpMultipathRib _ibgpStagingRib;
+   transient BgpMultipathRib _ibgpStagingRib;
 
-   Rib _independentRib;
+   transient Rib _independentRib;
 
    Rib _mainRib;
 
    private final Map<String, Node> _nodes;
 
-   OspfExternalType1Rib _ospfExternalType1Rib;
+   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
-   OspfExternalType1Rib _ospfExternalType1StagingRib;
+   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
 
-   OspfExternalType2Rib _ospfExternalType2Rib;
+   transient OspfExternalType2Rib _ospfExternalType2Rib;
 
-   OspfExternalType2Rib _ospfExternalType2StagingRib;
+   transient OspfExternalType2Rib _ospfExternalType2StagingRib;
 
-   OspfInterAreaRib _ospfInterAreaRib;
+   transient OspfInterAreaRib _ospfInterAreaRib;
 
-   OspfInterAreaRib _ospfInterAreaStagingRib;
+   transient OspfInterAreaRib _ospfInterAreaStagingRib;
 
-   OspfIntraAreaRib _ospfIntraAreaRib;
+   transient OspfIntraAreaRib _ospfIntraAreaRib;
 
-   OspfIntraAreaRib _ospfIntraAreaStagingRib;
+   transient OspfIntraAreaRib _ospfIntraAreaStagingRib;
 
-   OspfRib _ospfRib;
+   transient OspfRib _ospfRib;
 
-   BgpBestPathRib _prevBgpBestPathRib;
+   transient BgpBestPathRib _prevBgpBestPathRib;
 
-   BgpMultipathRib _prevBgpRib;
+   transient BgpMultipathRib _prevBgpRib;
 
-   BgpBestPathRib _prevEbgpBestPathRib;
+   transient BgpBestPathRib _prevEbgpBestPathRib;
 
-   BgpMultipathRib _prevEbgpRib;
+   transient BgpMultipathRib _prevEbgpRib;
 
-   BgpBestPathRib _prevIbgpBestPathRib;
+   transient BgpBestPathRib _prevIbgpBestPathRib;
 
-   BgpMultipathRib _prevIbgpRib;
+   transient BgpMultipathRib _prevIbgpRib;
 
-   Rib _prevMainRib;
+   transient Rib _prevMainRib;
 
-   OspfExternalType1Rib _prevOspfExternalType1Rib;
+   transient OspfExternalType1Rib _prevOspfExternalType1Rib;
 
-   OspfExternalType2Rib _prevOspfExternalType2Rib;
+   transient OspfExternalType2Rib _prevOspfExternalType2Rib;
 
    AdvertisementSet _receivedBgpAdvertisements;
 
    AdvertisementSet _sentBgpAdvertisements;
 
-   StaticRib _staticInterfaceRib;
+   transient StaticRib _staticInterfaceRib;
 
-   StaticRib _staticRib;
+   transient StaticRib _staticRib;
 
    final Vrf _vrf;
 
