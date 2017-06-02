@@ -374,6 +374,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       // END DONE ONCE
 
       Map<Integer, Integer> iterationByHashCode = new HashMap<>();
+      Map<Integer, Integer> iterationHashCodes = new TreeMap<>();
       Map<Integer, RouteSet> iterationRoutes = null;
       if (DEBUG_ALL_ITERATIONS) {
          iterationRoutes = new TreeMap<>();
@@ -609,6 +610,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          int iterationHashCode = computeIterationHashCode(nodes);
          Integer iterationWithThisHashCode = iterationByHashCode
                .get(iterationHashCode);
+         iterationHashCodes.put(dependentRoutesIterations, iterationHashCode);
          if (iterationWithThisHashCode == null) {
             iterationByHashCode.put(iterationHashCode,
                   dependentRoutesIterations);
@@ -616,7 +618,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          else if (dependentRoutesIterations - iterationWithThisHashCode > 1) {
             String msg = "Iteration " + dependentRoutesIterations
                   + " has same hash as iteration: " + iterationWithThisHashCode
-                  + "\n" + iterationByHashCode.toString();
+                  + "\n" + iterationHashCodes.toString();
             if (!DEBUG_REPEAT_ITERATIONS) {
                throw new BatfishException(msg);
             }
