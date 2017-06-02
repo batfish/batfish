@@ -964,13 +964,21 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Ip ip = prefix.getAddress();
          int lowestPriority = Integer.MAX_VALUE;
          String bestCandidate = null;
+         Set<String> bestCandidates = new HashSet<>();
          for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
             if (currentPriority < lowestPriority) {
-               currentPriority = lowestPriority;
+               lowestPriority = currentPriority;
+               bestCandidates.clear();
                bestCandidate = candidate.getOwner().getHostname();
             }
+            if (currentPriority == lowestPriority) {
+               bestCandidates.add(candidate.getOwner().getHostname());
+            }
+         }
+         if (bestCandidates.size() != 1) {
+            throw new BatfishException("multiple best vrrp candidates:" + bestCandidates);
          }
          Set<String> owners = ipOwners.get(ip);
          if (owners == null) {
