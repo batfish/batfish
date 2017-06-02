@@ -35,6 +35,7 @@ public enum CiscoStructureUsage implements StructureUsage {
    INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
    IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),
    IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
+   IP_NAT_SOURCE_POOL("ip nat source pool"),
    LINE_ACCESS_CLASS_LIST("line access-class list"),
    LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
    MANAGEMENT_ACCESS_GROUP("management ip access-group"),

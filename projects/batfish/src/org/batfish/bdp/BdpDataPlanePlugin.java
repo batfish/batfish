@@ -36,6 +36,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.BdpAnswerElement;
@@ -73,8 +74,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
    private void collectFlowTraces(BdpDataPlane dp, String currentNodeName,
          Set<Edge> visitedEdges, List<FlowTraceHop> hopsSoFar,
-         Set<FlowTrace> flowTraces, Flow flow) {
-      Ip dstIp = flow.getDstIp();
+         Set<FlowTrace> flowTraces, Flow originalFlow, Flow transformedFlow) {
+      Ip dstIp = transformedFlow.getDstIp();
       Set<String> dstIpOwners = dp._ipOwners.get(dstIp);
       if (dstIpOwners != null && dstIpOwners.contains(currentNodeName)) {
          FlowTrace trace = new FlowTrace(FlowDisposition.ACCEPTED, hopsSoFar,
@@ -85,7 +86,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          Node currentNode = dp._nodes.get(currentNodeName);
          String vrfName;
          if (hopsSoFar.isEmpty()) {
-            vrfName = flow.getIngressVrf();
+            vrfName = transformedFlow.getIngressVrf();
          }
          else {
             FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
@@ -145,46 +146,99 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                         new NodeInterfacePair(Configuration.NODE_NONE_NAME,
                               Interface.NULL_INTERFACE_NAME));
                   FlowTraceHop newHop = new FlowTraceHop(newEdge,
-                        routesForThisNextHopInterface);
+                        routesForThisNextHopInterface,
+                        hopFlow(originalFlow, transformedFlow));
                   newHops.add(newHop);
                   FlowTrace nullRouteTrace = new FlowTrace(
                         FlowDisposition.NULL_ROUTED, newHops,
                         FlowDisposition.NULL_ROUTED.toString());
                   flowTraces.add(nullRouteTrace);
                }
-               else if (dp._flowSinks.contains(nextHopInterface)) {
-                  List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
-                  Edge newEdge = new Edge(nextHopInterface,
-                        new NodeInterfacePair(Configuration.NODE_NONE_NAME,
-                              Interface.FLOW_SINK_TERMINATION_NAME));
-                  FlowTraceHop newHop = new FlowTraceHop(newEdge,
-                        routesForThisNextHopInterface);
-                  newHops.add(newHop);
-                  FlowTrace flowSinkTrace = new FlowTrace(
-                        FlowDisposition.ACCEPTED, newHops,
-                        FlowDisposition.ACCEPTED.toString());
-                  flowTraces.add(flowSinkTrace);
-               }
+               // else if (dp._flowSinks.contains(nextHopInterface)) {
+               // List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+               // Edge newEdge = new Edge(nextHopInterface,
+               // new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+               // Interface.FLOW_SINK_TERMINATION_NAME));
+               // FlowTraceHop newHop = new FlowTraceHop(newEdge,
+               // routesForThisNextHopInterface);
+               // newHops.add(newHop);
+               // FlowTrace flowSinkTrace = new FlowTrace(
+               // FlowDisposition.ACCEPTED, newHops,
+               // FlowDisposition.ACCEPTED.toString());
+               // flowTraces.add(flowSinkTrace);
+               // }
                else {
+                  Interface outgoingInterface = dp._nodes
+                        .get(nextHopInterface.getHostname())._c.getInterfaces()
+                              .get(nextHopInterface.getInterface());
+                  SourceNat sourceNat = outgoingInterface.getSourceNat();
+                  if (sourceNat != null) {
+                     boolean performTranslation = true;
+                     IpAccessList acl = sourceNat.getAcl();
+                     if (acl != null) {
+                        FilterResult result = acl.filter(transformedFlow);
+                        if (result.getAction() == LineAction.REJECT) {
+                           performTranslation = false;
+                        }
+                     }
+                     if (performTranslation) {
+                        Ip natPoolStartIp = sourceNat.getPoolIpFirst();
+                        if (natPoolStartIp != null) {
+                           Flow.Builder transformedFlowBuilder = new Flow.Builder(
+                                 transformedFlow);
+                           transformedFlowBuilder.setSrcIp(natPoolStartIp);
+                           transformedFlow = transformedFlowBuilder.build();
+                        }
+                     }
+                  }
                   EdgeSet edges = dp._topology.getInterfaceEdges()
                         .get(nextHopInterface);
                   if (edges != null) {
                      boolean continueToNextNextHopInterface = false;
                      continueToNextNextHopInterface = processCurrentNextHopInterfaceEdges(
                            dp, currentNodeName, visitedEdges, hopsSoFar,
-                           flowTraces, flow, dstIp, dstIpOwners,
-                           nextHopInterfaceName, routesForThisNextHopInterface,
-                           finalNextHopIp, nextHopInterface, edges, true);
+                           flowTraces, originalFlow, transformedFlow, dstIp,
+                           dstIpOwners, nextHopInterfaceName,
+                           routesForThisNextHopInterface, finalNextHopIp,
+                           nextHopInterface, edges, true);
                      if (continueToNextNextHopInterface) {
                         continue;
                      }
                   }
                   else {
-                     // Should only get here for delta environment where
-                     // non-flow-sink interface from base has no edges in delta
-                     FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
-                           nextHopInterface, routesForThisNextHopInterface);
-                     flowTraces.add(trace);
+                     /*
+                      * Should only get here for delta environment where
+                      * non-flow-sink interface from base has no edges in delta
+                      */
+                     Edge neighborUnreachbleEdge = new Edge(nextHopInterface,
+                           new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+                                 Interface.NULL_INTERFACE_NAME));
+                     FlowTraceHop neighborUnreachableHop = new FlowTraceHop(
+                           neighborUnreachbleEdge,
+                           routesForThisNextHopInterface,
+                           hopFlow(originalFlow, transformedFlow));
+                     List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+                     newHops.add(neighborUnreachableHop);
+                     /**
+                      * Check if denied out. If not, make standard
+                      * neighbor-unreachable trace.
+                      */
+                     IpAccessList outFilter = outgoingInterface
+                           .getOutgoingFilter();
+                     boolean denied = false;
+                     if (outFilter != null) {
+                        FlowDisposition disposition = FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
+                        denied = flowTraceDeniedHelper(flowTraces, originalFlow,
+                              transformedFlow, newHops, outFilter, disposition);
+                     }
+                     if (!denied) {
+                        FlowTrace trace = new FlowTrace(
+                              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                              newHops,
+                              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+                                    .toString());
+                        flowTraces.add(trace);
+                     }
                   }
                }
             }
@@ -703,11 +757,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       return errorMessage;
    }
 
-   private boolean flowTraceDeniedHelper(Set<FlowTrace> flowTraces, Flow flow,
-         List<FlowTraceHop> newHops, IpAccessList filter,
-         FlowDisposition disposition) {
-      boolean out = disposition == FlowDisposition.DENIED_OUT;
-      FilterResult outResult = filter.filter(flow);
+   private boolean flowTraceDeniedHelper(Set<FlowTrace> flowTraces,
+         Flow originalFlow, Flow transformedFlow, List<FlowTraceHop> newHops,
+         IpAccessList filter, FlowDisposition disposition) {
+      boolean out = disposition == FlowDisposition.DENIED_OUT
+            || disposition == FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
+      FilterResult outResult = filter.filter(transformedFlow);
       boolean denied = outResult.getAction() == LineAction.REJECT;
       if (denied) {
          String outFilterName = filter.getName();
@@ -732,7 +787,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   new NodeInterfacePair(Configuration.NODE_NONE_NAME,
                         Interface.NULL_INTERFACE_NAME));
             FlowTraceHop deniedOutHop = new FlowTraceHop(deniedOutEdge,
-                  lastHop.getRoutes());
+                  lastHop.getRoutes(), hopFlow(originalFlow, transformedFlow));
             newHops.add(deniedOutHop);
          }
          FlowTrace trace = new FlowTrace(disposition, newHops, notes);
@@ -793,17 +848,28 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       return outputRoutes;
    }
 
+   private Flow hopFlow(Flow originalFlow, Flow transformedFlow) {
+      if (originalFlow == transformedFlow) {
+         return null;
+      }
+      else {
+         return transformedFlow;
+      }
+   }
+
    private BdpDataPlane loadDataPlane() {
       return (BdpDataPlane) _batfish.loadDataPlane();
    }
 
    private FlowTrace neighborUnreachableTrace(List<FlowTraceHop> completedHops,
-         NodeInterfacePair srcInterface, SortedSet<String> routes) {
+         NodeInterfacePair srcInterface, SortedSet<String> routes,
+         Flow originalFlow, Flow transformedFlow) {
       Edge neighborUnreachbleEdge = new Edge(srcInterface,
             new NodeInterfacePair(Configuration.NODE_NONE_NAME,
                   Interface.NULL_INTERFACE_NAME));
       FlowTraceHop neighborUnreachableHop = new FlowTraceHop(
-            neighborUnreachbleEdge, routes);
+            neighborUnreachbleEdge, routes,
+            hopFlow(originalFlow, transformedFlow));
       List<FlowTraceHop> newHops = new ArrayList<>(completedHops);
       newHops.add(neighborUnreachableHop);
       FlowTrace trace = new FlowTrace(
@@ -814,8 +880,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
    private boolean processCurrentNextHopInterfaceEdges(BdpDataPlane dp,
          String currentNodeName, Set<Edge> visitedEdges,
-         List<FlowTraceHop> hopsSoFar, Set<FlowTrace> flowTraces, Flow flow,
-         Ip dstIp, Set<String> dstIpOwners, String nextHopInterfaceName,
+         List<FlowTraceHop> hopsSoFar, Set<FlowTrace> flowTraces,
+         Flow originalFlow, Flow transformedFlow, Ip dstIp,
+         Set<String> dstIpOwners, String nextHopInterfaceName,
          SortedSet<String> routesForThisNextHopInterface, Ip finalNextHopIp,
          NodeInterfacePair nextHopInterface, EdgeSet edges, boolean arp) {
       boolean continueToNextNextHopInterface = false;
@@ -829,7 +896,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
          Set<Edge> newVisitedEdges = new LinkedHashSet<>(visitedEdges);
          FlowTraceHop newHop = new FlowTraceHop(edge,
-               routesForThisNextHopInterface);
+               routesForThisNextHopInterface,
+               hopFlow(originalFlow, transformedFlow));
          newVisitedEdges.add(edge);
          newHops.add(newHop);
          /*
@@ -905,8 +973,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   .getOutgoingFilter();
             if (outFilter != null) {
                FlowDisposition disposition = FlowDisposition.DENIED_OUT;
-               boolean denied = flowTraceDeniedHelper(flowTraces, flow, newHops,
-                     outFilter, disposition);
+               boolean denied = flowTraceDeniedHelper(flowTraces, originalFlow,
+                     transformedFlow, newHops, outFilter, disposition);
                if (denied) {
                   potentialNeighbors--;
                   continue;
@@ -917,8 +985,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                .get(edge.getInt2()).getIncomingFilter();
          if (inFilter != null) {
             FlowDisposition disposition = FlowDisposition.DENIED_IN;
-            boolean denied = flowTraceDeniedHelper(flowTraces, flow, newHops,
-                  inFilter, disposition);
+            boolean denied = flowTraceDeniedHelper(flowTraces, originalFlow,
+                  transformedFlow, newHops, inFilter, disposition);
             if (denied) {
                potentialNeighbors--;
                continue;
@@ -926,13 +994,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          }
          // recurse
          collectFlowTraces(dp, nextNodeName, newVisitedEdges, newHops,
-               flowTraces, flow);
+               flowTraces, originalFlow, transformedFlow);
       }
       if (arp) {
          if (unreachableNeighbors > 0
                && unreachableNeighbors == potentialNeighbors) {
             FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
-                  nextHopInterface, routesForThisNextHopInterface);
+                  nextHopInterface, routesForThisNextHopInterface, originalFlow,
+                  transformedFlow);
             flowTraces.add(trace);
             continueToNextNextHopInterface = true;
          }
@@ -968,12 +1037,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   ingressInterfaceName));
             processCurrentNextHopInterfaceEdges(dp,
                   TRACEROUTE_INGRESS_NODE_NAME, visitedEdges, hops,
-                  currentFlowTraces, flow, dstIp, dstIpOwners, null,
+                  currentFlowTraces, flow, flow, dstIp, dstIpOwners, null,
                   new TreeSet<>(), null, null, edges, false);
          }
          else {
             collectFlowTraces(dp, ingressNodeName, visitedEdges, hops,
-                  currentFlowTraces, flow);
+                  currentFlowTraces, flow, flow);
          }
       });
       _flowTraces.put(dp, new TreeMap<>(flowTraces));

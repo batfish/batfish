@@ -12,7 +12,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
@@ -89,9 +88,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       private Set<Flow> getFlows(String tag) {
          Set<Flow> flows = new TreeSet<>();
          TracerouteQuestion question = (TracerouteQuestion) _question;
-         Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
+         Set<Flow.Builder> flowBuilders = question.getFlowBuilders();
          Map<String, Configuration> configurations = null;
-         for (FlowBuilder flowBuilder : flowBuilders) {
+         for (Flow.Builder flowBuilder : flowBuilders) {
             // TODO: better automatic source ip, considering VRFs and routing
             if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
                if (configurations == null) {
@@ -303,8 +302,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       public TracerouteQuestion() {
       }
 
-      public FlowBuilder createFlowBuilder() {
-         FlowBuilder flowBuilder = new FlowBuilder();
+      public Flow.Builder createFlowBuilder() {
+         Flow.Builder flowBuilder = new Flow.Builder();
          if (_dscp != null) {
             flowBuilder.setDscp(_dscp);
          }
@@ -425,7 +424,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonIgnore
-      public Set<FlowBuilder> getFlowBuilders() {
+      public Set<Flow.Builder> getFlowBuilders() {
          return Collections.singleton(createFlowBuilder());
       }
 

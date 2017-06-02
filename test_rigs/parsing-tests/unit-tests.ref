@@ -8871,16 +8871,18 @@
             "    (s_ip_nat",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      NAT:'nat'  <== mode:DEFAULT_MODE",
-            "      POOL:'pool'  <== mode:DEFAULT_MODE",
-            "      VARIABLE:'abc'  <== mode:DEFAULT_MODE",
-            "      VARIABLE:'prefix-length'  <== mode:DEFAULT_MODE",
-            "      DEC:'32'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "      (ip_nat_null",
-            "        RANGE:'range'  <== mode:DEFAULT_MODE",
-            "        IP_ADDRESS:'10.1.2.3'  <== mode:DEFAULT_MODE",
-            "        IP_ADDRESS:'10.1.2.4'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (ip_nat_pool",
+            "        POOL:'pool'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'abc'  <== mode:DEFAULT_MODE)",
+            "        PREFIX_LENGTH:'prefix-length'  <== mode:DEFAULT_MODE",
+            "        DEC:'32'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (ip_nat_pool_range",
+            "          RANGE:'range'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'10.1.2.3'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'10.1.2.4'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -29838,7 +29840,7 @@
           ]
         }
       },
-      "version" : "0.22.0",
+      "version" : "0.23.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -29985,16 +29987,6 @@
                 62
               ]
             },
-            "abc" : {
-              "ip nat source dynamic access-list" : [
-                54
-              ]
-            },
-            "def" : {
-              "ip nat source dynamic access-list" : [
-                53
-              ]
-            },
             "mynatacl" : {
               "ip nat destination acl" : [
                 50
@@ -30005,6 +29997,18 @@
             "310-systems" : {
               "interface outgoing ip access-list" : [
                 65
+              ]
+            },
+            "abc" : {
+              "ip nat source dynamic access-list" : [
+                54
+              ]
+            }
+          },
+          "nat pool" : {
+            "beeble" : {
+              "ip nat source pool" : [
+                54
               ]
             }
           }
@@ -30610,6 +30614,13 @@
             ]
           }
         },
+        "cisco_ip_nat" : {
+          "nat pool" : {
+            "abc" : [
+              4
+            ]
+          }
+        },
         "cisco_ipv6_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-XO" : [
@@ -30908,7 +30919,7 @@
           }
         }
       },
-      "version" : "0.22.0",
+      "version" : "0.23.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {

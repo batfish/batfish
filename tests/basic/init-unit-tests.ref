@@ -346,7 +346,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.22.0",
+      "version" : "0.23.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -493,16 +493,6 @@
                 62
               ]
             },
-            "abc" : {
-              "ip nat source dynamic access-list" : [
-                54
-              ]
-            },
-            "def" : {
-              "ip nat source dynamic access-list" : [
-                53
-              ]
-            },
             "mynatacl" : {
               "ip nat destination acl" : [
                 50
@@ -513,6 +503,18 @@
             "310-systems" : {
               "interface outgoing ip access-list" : [
                 65
+              ]
+            },
+            "abc" : {
+              "ip nat source dynamic access-list" : [
+                54
+              ]
+            }
+          },
+          "nat pool" : {
+            "beeble" : {
+              "ip nat source pool" : [
+                54
               ]
             }
           }
@@ -1118,6 +1120,13 @@
             ]
           }
         },
+        "cisco_ip_nat" : {
+          "nat pool" : {
+            "abc" : [
+              4
+            ]
+          }
+        },
         "cisco_ipv6_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-XO" : [
@@ -1416,7 +1425,7 @@
           }
         }
       },
-      "version" : "0.22.0",
+      "version" : "0.23.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {

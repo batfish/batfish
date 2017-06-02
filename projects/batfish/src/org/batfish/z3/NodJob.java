@@ -13,7 +13,6 @@ import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
@@ -36,7 +35,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
 
    public static Flow createFlow(String node, String vrf,
          Map<String, Long> constraints, String tag) {
-      FlowBuilder flowBuilder = new FlowBuilder();
+      Flow.Builder flowBuilder = new Flow.Builder();
       flowBuilder.setIngressNode(node);
       flowBuilder.setTag(tag);
       for (String varName : constraints.keySet()) {

@@ -495,10 +495,23 @@ ip_domain_null
 
 ip_nat_null
 :
-   NO?
    (
-      RANGE
+      INSIDE
+      | LOG
+      | OUTSIDE
+      | TRANSLATION
    ) ~NEWLINE* NEWLINE
+;
+
+ip_nat_pool
+:
+   POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
+   ip_nat_pool_range*
+;
+
+ip_nat_pool_range
+:
+   RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
 ;
 
 ip_route_stanza
@@ -1468,15 +1481,9 @@ s_ip_nat
 :
    NO? IP NAT
    (
-      INSIDE
-      | LOG
-      | OUTSIDE
-      | POOL
-      | TRANSLATION
-   ) ~NEWLINE* NEWLINE
-   (
       ip_nat_null
-   )*
+      | ip_nat_pool
+   )
 ;
 
 s_ip_sla

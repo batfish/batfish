@@ -6351,6 +6351,11 @@ PREFIX
    'prefix'
 ;
 
+PREFIX_LENGTH
+:
+   'prefix-length'
+;
+
 PREFIX_LIST
 :
    'prefix-list'

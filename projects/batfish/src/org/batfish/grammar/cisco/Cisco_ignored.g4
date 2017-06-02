@@ -429,8 +429,6 @@ null_inner
          | MSDP_PEER
          | MSIE_PROXY
          | NAMESPACE
-         | NAT
-         | NATPOOL
          | NEGOTIATE
          | NETWORK
          | NODE
@@ -763,7 +761,6 @@ null_single
       | MVR
       | NAME_SERVER
       | NAMES
-      | NAT
       | NAT_CONTROL
       | NETCONF
       | NETWORK_OBJECT

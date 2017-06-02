@@ -38,6 +38,10 @@ test tests/basic/unusedStructures.ref get unusedStructures
 test tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
 
+# snat
+test tests/basic/init-snat.ref init-testrig test_rigs/snat
+test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1 | dstIp="1.2.3.4"
+
 # parsing unit-tests through nodes question
 test tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests
 test tests/basic/nodes-unit-tests.ref get nodes summary=false
