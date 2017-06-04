@@ -143,7 +143,7 @@ public enum Statements {
 
       @Override
       public int hashCode() {
-         return _type.hashCode();
+         return _type.ordinal();
       }
 
       @Override

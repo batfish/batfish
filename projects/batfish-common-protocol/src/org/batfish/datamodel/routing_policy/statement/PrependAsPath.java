@@ -1,9 +1,9 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -56,14 +56,14 @@ public class PrependAsPath extends Statement {
       List<Integer> toPrepend = _expr.evaluate(environment);
       BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
             .getOutputRoute();
-      AsPath asPath = bgpRouteBuilder.getAsPath();
-      AsPath iAsPath = null;
+      List<SortedSet<Integer>> asPath = bgpRouteBuilder.getAsPath();
+      List<SortedSet<Integer>> iAsPath = null;
       if (environment.getWriteToIntermediateBgpAttributes()) {
          BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
          iAsPath = ir.getAsPath();
       }
       for (Integer as : toPrepend) {
-         AsSet asSet = new AsSet();
+         SortedSet<Integer> asSet = new TreeSet<>();
          asSet.add(as);
          asPath.add(0, asSet);
          if (iAsPath != null) {

@@ -73,4 +73,9 @@ public class OspfIntraAreaRoute extends OspfRoute {
       return result;
    }
 
+   @Override
+   protected final String protocolRouteString() {
+      return " area:" + _area;
+   }
+
 }

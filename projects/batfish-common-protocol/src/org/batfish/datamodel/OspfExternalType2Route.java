@@ -42,4 +42,9 @@ public class OspfExternalType2Route extends OspfExternalRoute {
       return result;
    }
 
+   @Override
+   protected final String ospfExternalRouteString() {
+      return " costToAdvertiser:" + _costToAdvertiser;
+   }
+
 }

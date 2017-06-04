@@ -57,7 +57,11 @@ public class LitIntExpr extends IntExpr {
 
    @Override
    public int hashCode() {
-      return getNumString().hashCode();
+      int prime = 31;
+      int result = 1;
+      result = prime * result + _bits;
+      result = prime * result + Long.hashCode(_num);
+      return result;
    }
 
    @Override

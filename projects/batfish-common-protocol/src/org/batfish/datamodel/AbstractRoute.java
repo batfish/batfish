@@ -42,6 +42,12 @@ public abstract class AbstractRoute implements Serializable {
    @Override
    public abstract boolean equals(Object o);
 
+   public final String fullString() {
+      return this.getClass().getSimpleName() + "<" + _network.toString()
+            + " nhip:" + _nextHopIp + " nhint:" + getNextHopInterface()
+            + protocolRouteString() + ">";
+   }
+
    @JsonProperty(ADMINISTRATIVE_COST_VAR)
    @JsonPropertyDescription("Administrative cost for this route (usually based on protocol)")
    public abstract int getAdministrativeCost();
@@ -79,6 +85,8 @@ public abstract class AbstractRoute implements Serializable {
 
    @Override
    public abstract int hashCode();
+
+   protected abstract String protocolRouteString();
 
    @JsonIgnore
    public final void setNonRouting(boolean nonRouting) {

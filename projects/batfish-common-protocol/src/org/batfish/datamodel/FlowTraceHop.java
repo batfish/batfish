@@ -34,6 +34,45 @@ public final class FlowTraceHop implements Serializable {
       _transformedFlow = transformedFlow;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      FlowTraceHop other = (FlowTraceHop) obj;
+      if (_edge == null) {
+         if (other._edge != null) {
+            return false;
+         }
+      }
+      else if (!_edge.equals(other._edge)) {
+         return false;
+      }
+      if (_routes == null) {
+         if (other._routes != null) {
+            return false;
+         }
+      }
+      else if (!_routes.equals(other._routes)) {
+         return false;
+      }
+      if (_transformedFlow == null) {
+         if (other._transformedFlow != null) {
+            return false;
+         }
+      }
+      else if (!_transformedFlow.equals(other._transformedFlow)) {
+         return false;
+      }
+      return true;
+   }
+
    @JsonProperty(EDGE_VAR)
    public Edge getEdge() {
       return _edge;
@@ -47,6 +86,17 @@ public final class FlowTraceHop implements Serializable {
    @JsonProperty(TRANSFORMED_FLOW_VAR)
    public Flow getTransformedFlow() {
       return _transformedFlow;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_edge == null) ? 0 : _edge.hashCode());
+      result = prime * result + ((_routes == null) ? 0 : _routes.hashCode());
+      result = prime * result
+            + ((_transformedFlow == null) ? 0 : _transformedFlow.hashCode());
+      return result;
    }
 
 }

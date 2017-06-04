@@ -1,7 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import java.util.SortedSet;
+
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
@@ -53,10 +54,13 @@ public class SetCommunity extends Statement {
       Result result = new Result();
       BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment
             .getOutputRoute();
-      CommunitySet communities = _expr.communities(environment);
-      bgpRoute.setCommunities(communities);
+      SortedSet<Long> communities = _expr.communities(environment);
+      bgpRoute.getCommunities().clear();
+      bgpRoute.getCommunities().addAll(communities);
       if (environment.getWriteToIntermediateBgpAttributes()) {
-         environment.getIntermediateBgpAttributes().setCommunities(communities);
+         environment.getIntermediateBgpAttributes().getCommunities().clear();
+         environment.getIntermediateBgpAttributes().getCommunities()
+               .addAll(communities);
       }
       return result;
    }

@@ -10,7 +10,6 @@ public class OspfWildcardNetwork
    private static final long serialVersionUID = 1L;
 
    private long _area;
-   private int _hashCode;
    private Ip _prefix;
    private Ip _wildcard;
 
@@ -18,7 +17,6 @@ public class OspfWildcardNetwork
       _prefix = prefix;
       _wildcard = wildcard;
       _area = area;
-      _hashCode = (prefix.networkString(_wildcard) + ":" + _area).hashCode();
    }
 
    @Override
@@ -54,7 +52,12 @@ public class OspfWildcardNetwork
 
    @Override
    public int hashCode() {
-      return _hashCode;
+      int prime = 31;
+      int result = 1;
+      result = prime * result + _prefix.hashCode();
+      result = prime * result + _wildcard.hashCode();
+      result = prime * result + Long.hashCode(_area);
+      return result;
    }
 
 }

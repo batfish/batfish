@@ -52,7 +52,7 @@ public class LiteralRouteType extends RouteTypeExpr {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((_type == null) ? 0 : _type.hashCode());
+      result = prime * result + ((_type == null) ? 0 : _type.ordinal());
       return result;
    }
 

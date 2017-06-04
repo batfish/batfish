@@ -559,17 +559,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          AtomicInteger propagateBgpCompleted = _batfish.newBatch("Iteration "
                + dependentRoutesIterations + ": Propagate BGP routes",
                nodes.size());
-         AtomicInteger currentBgpRoutes = new AtomicInteger();
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
-               int numBgpRoutes = vr.propagateBgpRoutes(nodes,
-                     dp.getIpOwners());
-               currentBgpRoutes.addAndGet(numBgpRoutes);
+               vr.propagateBgpRoutes(nodes, dp.getIpOwners());
             }
             propagateBgpCompleted.incrementAndGet();
          });
-         ae.getBgpRoutesByIteration().put(dependentRoutesIterations,
-               currentBgpRoutes.get());
          AtomicInteger importBgpCompleted = _batfish.newBatch(
                "Iteration " + dependentRoutesIterations
                      + ": Import BGP routes into respective RIBs",
@@ -596,6 +591,25 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             }
             importBgpCompleted.incrementAndGet();
          });
+
+         /**
+          * Collect sizes of certain RIBs this iteration
+          */
+         int numBgpBestPathRibRoutes = nodes.values().stream()
+               .flatMap(n -> n._virtualRouters.values().stream())
+               .mapToInt(vr -> vr._bgpBestPathRib.getRoutes().size()).sum();
+         ae.getBgpBestPathRibRoutesByIteration().put(dependentRoutesIterations,
+               numBgpBestPathRibRoutes);
+         int numBgpMultipathRibRoutes = nodes.values().stream()
+               .flatMap(n -> n._virtualRouters.values().stream())
+               .mapToInt(vr -> vr._bgpMultipathRib.getRoutes().size()).sum();
+         ae.getBgpMultipathRibRoutesByIteration().put(dependentRoutesIterations,
+               numBgpMultipathRibRoutes);
+         int numMainRibRoutes = nodes.values().stream()
+               .flatMap(n -> n._virtualRouters.values().stream())
+               .mapToInt(vr -> vr._mainRib.getRoutes().size()).sum();
+         ae.getMainRibRoutesByIteration().put(dependentRoutesIterations,
+               numMainRibRoutes);
 
          if (DEBUG_REPEAT_ITERATIONS) {
             Map<Ip, String> ipOwners = dp.getIpOwnersSimple();
@@ -658,12 +672,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             checkFixedPointCompleted.incrementAndGet();
          });
       }
-      int totalRoutes = nodes.values().stream()
-            .flatMap(n -> n._virtualRouters.values().stream())
-            .mapToInt(vr -> vr._mainRib.getRoutes().size()).sum();
       ae.setOspfInternalIterations(ospfInternalIterations);
       ae.setDependentRoutesIterations(dependentRoutesIterations);
-      ae.setTotalRoutes(totalRoutes);
    }
 
    private int computeIterationHashCode(Map<String, Node> nodes) {

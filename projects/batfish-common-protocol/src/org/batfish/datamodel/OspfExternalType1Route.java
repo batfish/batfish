@@ -12,4 +12,9 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       super(prefix, nextHopIp, admin, metric, OspfMetricType.E1, advertiser);
    }
 
+   @Override
+   protected final String ospfExternalRouteString() {
+      return "";
+   }
+
 }

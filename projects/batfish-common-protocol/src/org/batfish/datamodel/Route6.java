@@ -227,7 +227,7 @@ public class Route6 implements Comparable<Route6>, Serializable {
       result = prime * result + _nextHopIp.hashCode();
       result = prime * result + _node.hashCode();
       result = prime * result + _network.hashCode();
-      result = prime * result + _protocol.hashCode();
+      result = prime * result + _protocol.ordinal();
       result = prime * result + _tag;
       result = prime * result + _vrf.hashCode();
       return result;

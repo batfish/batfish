@@ -1,7 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import java.util.SortedSet;
+
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
@@ -52,8 +53,8 @@ public class DeleteCommunity extends Statement {
    public Result execute(Environment environment) {
       BgpRoute.Builder outputRouteBuilder = (BgpRoute.Builder) environment
             .getOutputRoute();
-      CommunitySet currentCommunities = outputRouteBuilder.getCommunities();
-      CommunitySet matchingCommunities = _expr.communities(environment,
+      SortedSet<Long> currentCommunities = outputRouteBuilder.getCommunities();
+      SortedSet<Long> matchingCommunities = _expr.communities(environment,
             currentCommunities);
       outputRouteBuilder.getCommunities().removeAll(matchingCommunities);
       Result result = new Result();

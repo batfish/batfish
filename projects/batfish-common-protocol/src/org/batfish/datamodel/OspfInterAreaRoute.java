@@ -72,4 +72,10 @@ public class OspfInterAreaRoute extends OspfRoute {
             + (_nextHopIp == null ? 0 : _nextHopIp.hashCode());
       return result;
    }
+
+   @Override
+   protected final String protocolRouteString() {
+      return " area:" + _area;
+   }
+
 }

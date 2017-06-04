@@ -93,7 +93,7 @@ public class CommunityListLine implements Serializable {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + _action.hashCode();
+      result = prime * result + _action.ordinal();
       result = prime * result + _regex.hashCode();
       return result;
    }

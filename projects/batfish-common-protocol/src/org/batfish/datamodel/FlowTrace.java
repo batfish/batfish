@@ -81,7 +81,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + _disposition.hashCode();
+      result = prime * result + _disposition.ordinal();
       result = prime * result + _hops.hashCode();
       return result;
    }
