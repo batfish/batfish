@@ -63,4 +63,9 @@ public class ConnectedRoute extends AbstractRoute
       return result;
    }
 
+   @Override
+   protected String protocolRouteString() {
+      return "";
+   }
+
 }

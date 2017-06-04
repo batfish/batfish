@@ -9,13 +9,11 @@ public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
    private static final long serialVersionUID = 1L;
 
    private long _area;
-   private int _hashCode;
    private Prefix _prefix;
 
    public OspfNetwork(Prefix prefix, long area) {
       _prefix = prefix;
       _area = area;
-      _hashCode = (_prefix.toString() + ":" + _area).hashCode();
    }
 
    @Override
@@ -43,7 +41,11 @@ public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 
    @Override
    public int hashCode() {
-      return _hashCode;
+      int prime = 31;
+      int result = 1;
+      result = prime * result + Long.hashCode(_area);
+      result = prime * result + _prefix.hashCode();
+      return result;
    }
 
 }

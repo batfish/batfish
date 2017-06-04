@@ -34,13 +34,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
          _root = new ByteTrieNode(Prefix.ZERO);
       }
 
-      public void addRoute(R route) {
-         Prefix prefix = route.getNetwork();
-         int prefixLength = prefix.getPrefixLength();
-         BitSet bits = prefix.getAddress().getAddressBits();
-         _root.addRoute(route, bits, prefixLength, 0);
-      }
-
       public Set<R> getLongestPrefixMatch(Ip address) {
          BitSet addressBits = address.getAddressBits();
          return _root.getLongestPrefixMatch(address, addressBits, 0);
@@ -79,134 +72,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       public ByteTrieNode(Prefix prefix) {
          _routes = new HashSet<>();
          _prefix = prefix;
-      }
-
-      public void addRoute(R route, BitSet bits, int prefixLength,
-            int firstUnmatchedBitIndex) {
-         if (prefixLength == _prefix.getPrefixLength()) {
-            _routes.add(route);
-         }
-         else {
-            boolean currentBit = bits.get(firstUnmatchedBitIndex);
-            if (currentBit) {
-               if (_right == null) {
-                  _right = new ByteTrieNode(route.getNetwork());
-                  _right._routes.add(route);
-               }
-               else {
-                  Prefix rightPrefix = _right._prefix;
-                  int rightPrefixLength = rightPrefix.getPrefixLength();
-                  Ip rightAddress = rightPrefix.getAddress();
-                  BitSet rightAddressBits = rightAddress.getAddressBits();
-                  int nextUnmatchedBit;
-                  boolean currentAddressBit = false;
-                  boolean currentRightAddressBit;
-                  for (nextUnmatchedBit = firstUnmatchedBitIndex
-                        + 1; nextUnmatchedBit < rightPrefixLength
-                              && nextUnmatchedBit < prefixLength; nextUnmatchedBit++) {
-                     currentAddressBit = bits.get(nextUnmatchedBit);
-                     currentRightAddressBit = rightAddressBits
-                           .get(nextUnmatchedBit);
-                     if (currentRightAddressBit != currentAddressBit) {
-                        break;
-                     }
-                  }
-                  if (nextUnmatchedBit == rightPrefixLength) {
-                     _right.addRoute(route, bits, prefixLength,
-                           nextUnmatchedBit);
-                  }
-                  else if (nextUnmatchedBit == prefixLength) {
-                     currentRightAddressBit = rightAddressBits
-                           .get(nextUnmatchedBit);
-                     ByteTrieNode oldRight = _right;
-                     _right = new ByteTrieNode(route.getNetwork());
-                     _right._routes.add(route);
-                     if (currentRightAddressBit) {
-                        _right._right = oldRight;
-                     }
-                     else {
-                        _right._left = oldRight;
-                     }
-                  }
-                  else {
-                     ByteTrieNode oldRight = _right;
-                     Prefix newNetwork = new Prefix(
-                           route.getNetwork().getAddress(), nextUnmatchedBit)
-                                 .getNetworkPrefix();
-                     _right = new ByteTrieNode(newNetwork);
-                     if (currentAddressBit) {
-                        _right._left = oldRight;
-                        _right._right = new ByteTrieNode(route.getNetwork());
-                        _right._right._routes.add(route);
-                     }
-                     else {
-                        _right._right = oldRight;
-                        _right._left = new ByteTrieNode(route.getNetwork());
-                        _right._left._routes.add(route);
-                     }
-                  }
-               }
-            }
-            else {
-               if (_left == null) {
-                  _left = new ByteTrieNode(route.getNetwork());
-                  _left._routes.add(route);
-               }
-               else {
-                  Prefix leftPrefix = _left._prefix;
-                  int leftPrefixLength = leftPrefix.getPrefixLength();
-                  Ip leftAddress = leftPrefix.getAddress();
-                  BitSet leftAddressBits = leftAddress.getAddressBits();
-                  int nextUnmatchedBit;
-                  boolean currentAddressBit = false;
-                  boolean currentLeftAddressBit;
-                  for (nextUnmatchedBit = firstUnmatchedBitIndex
-                        + 1; nextUnmatchedBit < leftPrefixLength
-                              && nextUnmatchedBit < prefixLength; nextUnmatchedBit++) {
-                     currentAddressBit = bits.get(nextUnmatchedBit);
-                     currentLeftAddressBit = leftAddressBits
-                           .get(nextUnmatchedBit);
-                     if (currentLeftAddressBit != currentAddressBit) {
-                        break;
-                     }
-                  }
-                  if (nextUnmatchedBit == leftPrefixLength) {
-                     _left.addRoute(route, bits, prefixLength,
-                           nextUnmatchedBit);
-                  }
-                  else if (nextUnmatchedBit == prefixLength) {
-                     currentLeftAddressBit = leftAddressBits
-                           .get(nextUnmatchedBit);
-                     ByteTrieNode oldLeft = _left;
-                     _left = new ByteTrieNode(route.getNetwork());
-                     _left._routes.add(route);
-                     if (currentLeftAddressBit) {
-                        _left._right = oldLeft;
-                     }
-                     else {
-                        _left._left = oldLeft;
-                     }
-                  }
-                  else {
-                     ByteTrieNode oldLeft = _left;
-                     Prefix newNetwork = new Prefix(
-                           route.getNetwork().getAddress(), nextUnmatchedBit)
-                                 .getNetworkPrefix();
-                     _left = new ByteTrieNode(newNetwork);
-                     if (currentAddressBit) {
-                        _left._left = oldLeft;
-                        _left._right = new ByteTrieNode(route.getNetwork());
-                        _left._right._routes.add(route);
-                     }
-                     else {
-                        _left._right = oldLeft;
-                        _left._left = new ByteTrieNode(route.getNetwork());
-                        _left._left._routes.add(route);
-                     }
-                  }
-               }
-            }
-         }
       }
 
       public void collectRoutes(Set<R> routes) {
@@ -442,11 +307,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
    public AbstractRib(VirtualRouter owner) {
       _trie = new ByteTrie();
       _owner = owner;
-   }
-
-   @Override
-   public void addRoute(R route) {
-      _trie.addRoute(route);
    }
 
    @Override

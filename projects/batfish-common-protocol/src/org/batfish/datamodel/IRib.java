@@ -10,8 +10,6 @@ import org.batfish.datamodel.collections.MultiSet;
 
 public interface IRib<R extends AbstractRoute> extends Serializable {
 
-   void addRoute(R route);
-
    /**
     * Compare the preferability of one route with anther
     *

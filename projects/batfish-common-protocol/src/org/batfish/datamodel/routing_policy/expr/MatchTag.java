@@ -79,7 +79,7 @@ public class MatchTag extends BooleanExpr {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((_cmp == null) ? 0 : _cmp.hashCode());
+      result = prime * result + ((_cmp == null) ? 0 : _cmp.ordinal());
       result = prime * result + ((_tag == null) ? 0 : _tag.hashCode());
       return result;
    }

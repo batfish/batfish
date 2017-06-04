@@ -62,7 +62,7 @@ public enum BooleanExprs {
 
       @Override
       public int hashCode() {
-         return _type.hashCode();
+         return _type.ordinal();
       }
 
    }

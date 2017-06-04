@@ -108,7 +108,6 @@ import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.InterfaceSet;
@@ -964,13 +963,22 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Ip ip = prefix.getAddress();
          int lowestPriority = Integer.MAX_VALUE;
          String bestCandidate = null;
+         Set<String> bestCandidates = new HashSet<>();
          for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
             if (currentPriority < lowestPriority) {
-               currentPriority = lowestPriority;
+               lowestPriority = currentPriority;
+               bestCandidates.clear();
                bestCandidate = candidate.getOwner().getHostname();
             }
+            if (currentPriority == lowestPriority) {
+               bestCandidates.add(candidate.getOwner().getHostname());
+            }
+         }
+         if (bestCandidates.size() != 1) {
+            throw new BatfishException(
+                  "multiple best vrrp candidates:" + bestCandidates);
          }
          Set<String> owners = ipOwners.get(ip);
          if (owners == null) {
@@ -3385,7 +3393,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     */
    public AdvertisementSet processExternalBgpAnnouncements(
          Map<String, Configuration> configurations,
-         CommunitySet allCommunities) {
+         SortedSet<Long> allCommunities) {
       AdvertisementSet advertSet = new AdvertisementSet();
       Path externalBgpAnnouncementsPath = _testrigSettings
             .getEnvironmentSettings().getExternalBgpAnnouncementsPath();
