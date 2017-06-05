@@ -4,8 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -45,7 +45,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       _warnings = new ArrayList<>();
       _errors = new ArrayList<>();
       _input = input;
-      ANTLRInputStream inputStream = new ANTLRInputStream(input);
+      CharStream inputStream = CharStreams.fromString(input);
       try {
          _lexer = lClass.getConstructor(CharStream.class)
                .newInstance(inputStream);

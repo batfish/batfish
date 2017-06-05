@@ -25,6 +25,6 @@
 	<classpathentry kind="lib" path="lib/accessors-smart/accessors-smart-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-1.0.11-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/guava/guava-21.0.jar" sourcepath="lib/guava/guava-21.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/antlr/antlr-4.5.3-complete.jar" sourcepath="lib/antlr/antlr4-runtime-4.5.3-sources.jar"/>
+	<classpathentry kind="lib" path="lib/antlr/antlr-4.7-complete.jar" sourcepath="lib/antlr/antlr4-4.7-runtime-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
