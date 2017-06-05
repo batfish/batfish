@@ -29840,7 +29840,7 @@
           ]
         }
       },
-      "version" : "0.24.0",
+      "version" : "0.25.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -30919,7 +30919,7 @@
           }
         }
       },
-      "version" : "0.24.0",
+      "version" : "0.25.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {

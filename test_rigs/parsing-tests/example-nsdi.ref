@@ -2828,11 +2828,11 @@
           ]
         }
       },
-      "version" : "0.24.0"
+      "version" : "0.25.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.24.0"
+      "version" : "0.25.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
