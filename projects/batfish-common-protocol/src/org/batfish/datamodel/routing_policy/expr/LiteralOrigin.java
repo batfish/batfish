@@ -70,7 +70,7 @@ public class LiteralOrigin extends OriginExpr {
       int result = 1;
       result = prime * result + ((_asNum == null) ? 0 : _asNum.hashCode());
       result = prime * result
-            + ((_originType == null) ? 0 : _originType.hashCode());
+            + ((_originType == null) ? 0 : _originType.ordinal());
       return result;
    }
 

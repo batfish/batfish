@@ -1,7 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import java.util.SortedSet;
+
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -51,7 +52,7 @@ public class MatchCommunitySet extends BooleanExpr {
    public Result evaluate(Environment environment) {
       Result result = new Result();
       boolean match = false;
-      CommunitySet inputCommunities = null;
+      SortedSet<Long> inputCommunities = null;
       if (environment.getUseOutputAttributes()
             && environment.getOutputRoute() instanceof BgpRoute.Builder) {
          BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment

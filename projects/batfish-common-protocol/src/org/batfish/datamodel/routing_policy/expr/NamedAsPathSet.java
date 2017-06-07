@@ -70,11 +70,11 @@ public class NamedAsPathSet extends AsPathSetExpr {
                && environment.getOutputRoute() instanceof BgpRoute.Builder) {
             BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
                   .getOutputRoute();
-            inputAsPath = bgpRouteBuilder.getAsPath();
+            inputAsPath = new AsPath(bgpRouteBuilder.getAsPath());
          }
          else if (environment.getReadFromIntermediateBgpAttributes()) {
-            inputAsPath = environment.getIntermediateBgpAttributes()
-                  .getAsPath();
+            inputAsPath = new AsPath(
+                  environment.getIntermediateBgpAttributes().getAsPath());
          }
          else if (environment.getOriginalRoute() instanceof BgpRoute) {
             BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();

@@ -71,7 +71,7 @@ public class MatchLocalPreference extends BooleanExpr {
       final int prime = 31;
       int result = 1;
       result = prime * result
-            + ((_comparator == null) ? 0 : _comparator.hashCode());
+            + ((_comparator == null) ? 0 : _comparator.ordinal());
       result = prime * result + ((_metric == null) ? 0 : _metric.hashCode());
       return result;
    }

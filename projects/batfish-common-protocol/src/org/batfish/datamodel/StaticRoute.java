@@ -138,6 +138,11 @@ public class StaticRoute extends AbstractRoute
       return result;
    }
 
+   @Override
+   protected final String protocolRouteString() {
+      return " tag:" + _tag;
+   }
+
    @JsonProperty(ADMINISTRATIVE_COST_VAR)
    public void setAdministrativeCost(int administrativeCost) {
       _administrativeCost = administrativeCost;

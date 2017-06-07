@@ -64,7 +64,7 @@ public class SetOspfMetricType extends Statement {
       final int prime = 31;
       int result = 1;
       result = prime * result
-            + ((_metricType == null) ? 0 : _metricType.hashCode());
+            + ((_metricType == null) ? 0 : _metricType.ordinal());
       return result;
    }
 

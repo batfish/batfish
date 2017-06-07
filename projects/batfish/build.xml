@@ -30,7 +30,7 @@
    <macrodef name="antlr4lexer">
       <attribute name="grammar.packagedir"/>
       <attribute name="grammar.name"/>
-      <attribute name="antlrjar" default="lib/antlr/antlr-4.5.3-complete.jar"/>
+      <attribute name="antlrjar" default="lib/antlr/antlr-4.7-complete.jar"/>
       <sequential>
          <outofdate>
             <sourcefiles>
@@ -62,7 +62,7 @@
    <macrodef name="antlr4parser">
       <attribute name="grammar.packagedir"/>
       <attribute name="grammar.name"/>
-      <attribute name="antlrjar" default="lib/antlr/antlr-4.5.3-complete.jar"/>
+      <attribute name="antlrjar" default="lib/antlr/antlr-4.7-complete.jar"/>
       <element name="dependencies"/>
       <sequential>
          <outofdate>

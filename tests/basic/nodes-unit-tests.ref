@@ -10667,7 +10667,7 @@
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchRouteType",
                     "type" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralRouteType",
-                      "type" : "local"
+                      "type" : "ospf-intra-area"
                     }
                   },
                   "trueStatements" : [

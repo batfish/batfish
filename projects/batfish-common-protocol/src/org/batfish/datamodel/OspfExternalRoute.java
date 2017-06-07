@@ -129,8 +129,16 @@ public abstract class OspfExternalRoute extends OspfRoute {
       result = prime * result + _admin;
       result = prime * result + _metric;
       result = prime * result
-            + ((_ospfMetricType == null) ? 0 : _ospfMetricType.hashCode());
+            + ((_ospfMetricType == null) ? 0 : _ospfMetricType.ordinal());
       return result;
+   }
+
+   protected abstract String ospfExternalRouteString();
+
+   @Override
+   protected final String protocolRouteString() {
+      return " ospfMetricType:" + _ospfMetricType + " advertiser:" + _advertiser
+            + ospfExternalRouteString();
    }
 
 }

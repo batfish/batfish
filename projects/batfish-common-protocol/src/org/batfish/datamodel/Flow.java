@@ -763,13 +763,13 @@ public final class Flow implements Comparable<Flow> {
       result = prime * result + _fragmentOffset;
       result = prime * result + _ingressNode.hashCode();
       result = prime * result + _ingressVrf.hashCode();
-      result = prime * result + _ipProtocol.hashCode();
+      result = prime * result + _ipProtocol.ordinal();
       result = prime * result + _srcIp.hashCode();
       result = prime * result + _srcPort;
       result = prime * result + _icmpType;
       result = prime * result + _icmpCode;
       result = prime * result + _packetLength;
-      result = prime * result + _state.hashCode();
+      result = prime * result + _state.ordinal();
       result = prime * result + _tag.hashCode();
       result = prime * result + _tcpFlagsCwr;
       result = prime * result + _tcpFlagsEce;

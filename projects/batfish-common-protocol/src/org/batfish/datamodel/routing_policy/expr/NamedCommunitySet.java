@@ -1,8 +1,11 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
-import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,21 +28,21 @@ public class NamedCommunitySet extends CommunitySetExpr {
    }
 
    @Override
-   public CommunitySet communities(Environment environment) {
-      CommunitySet out = new CommunitySet();
+   public SortedSet<Long> communities(Environment environment) {
+      SortedSet<Long> out = new TreeSet<>();
       CommunityList cl = environment.getConfiguration().getCommunityLists()
             .get(_name);
       for (CommunityListLine line : cl.getLines()) {
          Long community = line.toLiteralCommunity();
          out.add(community);
       }
-      return out;
+      return Collections.unmodifiableSortedSet(out);
    }
 
    @Override
-   public CommunitySet communities(Environment environment,
-         CommunitySet communityCandidates) {
-      CommunitySet matchingCommunities = new CommunitySet();
+   public SortedSet<Long> communities(Environment environment,
+         SortedSet<Long> communityCandidates) {
+      SortedSet<Long> matchingCommunities = new TreeSet<>();
       for (Long community : communityCandidates) {
          CommunityList cl = environment.getConfiguration().getCommunityLists()
                .get(_name);
@@ -47,7 +50,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
             matchingCommunities.add(community);
          }
       }
-      return matchingCommunities;
+      return Collections.unmodifiableSortedSet(matchingCommunities);
    }
 
    @Override
@@ -87,7 +90,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
 
    @Override
    public boolean matchSingleCommunity(Environment environment,
-         CommunitySet communities) {
+         SortedSet<Long> communities) {
       CommunityList cl = environment.getConfiguration().getCommunityLists()
             .get(_name);
       for (Long community : communities) {

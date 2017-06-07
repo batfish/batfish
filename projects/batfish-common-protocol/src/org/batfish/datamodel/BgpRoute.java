@@ -1,20 +1,22 @@
 package org.batfish.datamodel;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.collections.CommunitySet;
 
 public class BgpRoute extends AbstractRoute {
 
    public static class Builder extends AbstractRouteBuilder<BgpRoute> {
 
-      private AsPath _asPath;
+      private List<SortedSet<Integer>> _asPath;
 
       private SortedSet<Long> _clusterList;
 
-      private CommunitySet _communities;
+      private SortedSet<Long> _communities;
 
       private int _localPreference;
 
@@ -31,8 +33,8 @@ public class BgpRoute extends AbstractRoute {
       private int _weight;
 
       public Builder() {
-         _asPath = new AsPath();
-         _communities = new CommunitySet();
+         _asPath = new ArrayList<>();
+         _communities = new TreeSet<>();
          _clusterList = new TreeSet<>();
       }
 
@@ -44,13 +46,13 @@ public class BgpRoute extends AbstractRoute {
          if (_originType == null) {
             throw new BatfishException("Missing originType");
          }
-         return new BgpRoute(_network, _nextHopIp, _admin, _asPath,
+         return new BgpRoute(_network, _nextHopIp, _admin, new AsPath(_asPath),
                _communities, _localPreference, _metric, _originatorIp,
                _clusterList, _receivedFromRouteReflectorClient, _originType,
                _protocol, _srcProtocol, _weight);
       }
 
-      public AsPath getAsPath() {
+      public List<SortedSet<Integer>> getAsPath() {
          return _asPath;
       }
 
@@ -58,7 +60,7 @@ public class BgpRoute extends AbstractRoute {
          return _clusterList;
       }
 
-      public CommunitySet getCommunities() {
+      public SortedSet<Long> getCommunities() {
          return _communities;
       }
 
@@ -82,7 +84,7 @@ public class BgpRoute extends AbstractRoute {
          return _weight;
       }
 
-      public void setAsPath(AsPath asPath) {
+      public void setAsPath(List<SortedSet<Integer>> asPath) {
          _asPath = asPath;
       }
 
@@ -90,7 +92,7 @@ public class BgpRoute extends AbstractRoute {
          _clusterList = clusterList;
       }
 
-      public void setCommunities(CommunitySet communities) {
+      public void setCommunities(SortedSet<Long> communities) {
          _communities = communities;
       }
 
@@ -138,7 +140,7 @@ public class BgpRoute extends AbstractRoute {
 
    private final SortedSet<Long> _clusterList;
 
-   private final CommunitySet _communities;
+   private final SortedSet<Long> _communities;
 
    private final int _localPreference;
 
@@ -157,7 +159,7 @@ public class BgpRoute extends AbstractRoute {
    private final int _weight;
 
    public BgpRoute(Prefix network, Ip nextHopIp, int admin, AsPath asPath,
-         CommunitySet communities, int localPreference, int med,
+         SortedSet<Long> communities, int localPreference, int med,
          Ip originatorIp, SortedSet<Long> clusterList,
          boolean receivedFromRouteReflectorClient, OriginType originType,
          RoutingProtocol protocol, RoutingProtocol srcProtocol, int weight) {
@@ -241,11 +243,11 @@ public class BgpRoute extends AbstractRoute {
    }
 
    public SortedSet<Long> getClusterList() {
-      return _clusterList;
+      return Collections.unmodifiableSortedSet(_clusterList);
    }
 
-   public CommunitySet getCommunities() {
-      return _communities;
+   public SortedSet<Long> getCommunities() {
+      return Collections.unmodifiableSortedSet(_communities);
    }
 
    public int getLocalPreference() {
@@ -307,13 +309,22 @@ public class BgpRoute extends AbstractRoute {
       result = prime * result
             + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
       result = prime * result
-            + ((_originType == null) ? 0 : _originType.hashCode());
+            + ((_originType == null) ? 0 : _originType.ordinal());
       result = prime * result
             + ((_originatorIp == null) ? 0 : _originatorIp.hashCode());
-      result = prime * result
-            + ((_protocol == null) ? 0 : _protocol.hashCode());
+      result = prime * result + ((_protocol == null) ? 0 : _protocol.ordinal());
       result = prime * result + _weight;
       return result;
+   }
+
+   @Override
+   protected final String protocolRouteString() {
+      return " asPath:" + _asPath.toString() + " clusterList:"
+            + _clusterList.toString() + " communities:"
+            + _communities.toString() + " localPreference:" + _localPreference
+            + " med:" + _med + " originatorIp:" + _originatorIp + " originType:"
+            + _originType + " srcProtocol:" + _srcProtocol + " weight:"
+            + _weight;
    }
 
 }

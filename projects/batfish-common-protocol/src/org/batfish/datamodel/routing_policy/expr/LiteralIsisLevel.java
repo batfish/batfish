@@ -53,7 +53,7 @@ public class LiteralIsisLevel extends IsisLevelExpr {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((_level == null) ? 0 : _level.hashCode());
+      result = prime * result + ((_level == null) ? 0 : _level.ordinal());
       return result;
    }
 

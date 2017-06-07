@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.SortedSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.collections.CommunitySet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -115,7 +114,7 @@ public class BgpAdvertisement
 
    private final SortedSet<Long> _clusterList;
 
-   private final CommunitySet _communities;
+   private final SortedSet<Long> _communities;
 
    private final Ip _dstIp;
 
@@ -163,7 +162,7 @@ public class BgpAdvertisement
          @JsonProperty(MED_VAR) int med,
          @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
          @JsonProperty(AS_PATH_VAR) AsPath asPath,
-         @JsonProperty(COMMUNITIES_VAR) CommunitySet communities,
+         @JsonProperty(COMMUNITIES_VAR) SortedSet<Long> communities,
          @JsonProperty(CLUSTER_LIST_VAR) SortedSet<Long> clusterList,
          @JsonProperty(WEIGHT_VAR) int weight) {
       _type = type;
@@ -348,12 +347,12 @@ public class BgpAdvertisement
 
    @JsonProperty(CLUSTER_LIST_VAR)
    public SortedSet<Long> getClusterList() {
-      return _clusterList;
+      return Collections.unmodifiableSortedSet(_clusterList);
    }
 
    @JsonProperty(COMMUNITIES_VAR)
-   public CommunitySet getCommunities() {
-      return _communities;
+   public SortedSet<Long> getCommunities() {
+      return Collections.unmodifiableSortedSet(_communities);
    }
 
    @JsonProperty(DST_IP_VAR)
@@ -445,13 +444,13 @@ public class BgpAdvertisement
       result = prime * result + _med;
       result = prime * result + _network.hashCode();
       result = prime * result + _nextHopIp.hashCode();
-      result = prime * result + _originType.hashCode();
+      result = prime * result + _originType.ordinal();
       result = prime * result + _originatorIp.hashCode();
       result = prime * result + _srcIp.hashCode();
       result = prime * result + _srcNode.hashCode();
-      result = prime * result + _srcProtocol.hashCode();
+      result = prime * result + _srcProtocol.ordinal();
       result = prime * result + _srcVrf.hashCode();
-      result = prime * result + _type.hashCode();
+      result = prime * result + _type.ordinal();
       result = prime * result + _weight;
       return result;
    }

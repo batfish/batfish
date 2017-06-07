@@ -2,10 +2,13 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.batfish.datamodel.collections.CommunitySet;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,7 +20,7 @@ public class InlineCommunitySet extends CommunitySetExpr {
     */
    private static final long serialVersionUID = 1L;
 
-   private transient CommunitySet _cachedCommunities;
+   private transient SortedSet<Long> _cachedCommunities;
 
    private List<CommunitySetElem> _communities;
 
@@ -36,22 +39,19 @@ public class InlineCommunitySet extends CommunitySetExpr {
    }
 
    @Override
-   public CommunitySet communities(Environment environment) {
+   public SortedSet<Long> communities(Environment environment) {
       if (_cachedCommunities == null) {
          _cachedCommunities = initCommunities(environment);
       }
-      return _cachedCommunities;
+      return Collections
+            .unmodifiableSortedSet(new TreeSet<>(_cachedCommunities));
    }
 
    @Override
-   public CommunitySet communities(Environment environment,
-         CommunitySet communityCandidates) {
-      if (_cachedCommunities == null) {
-         _cachedCommunities = initCommunities(environment);
-      }
-      CommunitySet matchingCommunities = new CommunitySet(_cachedCommunities);
-      matchingCommunities.retainAll(communityCandidates);
-      return matchingCommunities;
+   public SortedSet<Long> communities(Environment environment,
+         SortedSet<Long> communityCandidates) {
+      return CommonUtil.intersection(communities(environment),
+            communityCandidates, TreeSet::new);
    }
 
    @Override
@@ -90,8 +90,9 @@ public class InlineCommunitySet extends CommunitySetExpr {
       return result;
    }
 
-   private synchronized CommunitySet initCommunities(Environment environment) {
-      CommunitySet out = new CommunitySet();
+   private synchronized SortedSet<Long> initCommunities(
+         Environment environment) {
+      SortedSet<Long> out = new TreeSet<>();
       for (CommunitySetElem elem : _communities) {
          long c = elem.community(environment);
          out.add(c);
@@ -101,8 +102,9 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
    @Override
    public boolean matchSingleCommunity(Environment environment,
-         CommunitySet communities) {
+         SortedSet<Long> communities) {
       for (Long community : communities) {
+         // BAD
          if (_communities.contains(community)) {
             return true;
          }
