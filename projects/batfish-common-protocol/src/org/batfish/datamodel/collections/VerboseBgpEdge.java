@@ -2,7 +2,6 @@ package org.batfish.datamodel.collections;
 
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.BgpNeighbor;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,11 +9,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class VerboseBgpEdge extends Pair<NodeBgpSessionPair, NodeBgpSessionPair> {
 
-   private static final String EDGE_VAR = "edgesummary";
+   private static final String EDGE_SUMMARY_VAR = "edgeSummary";
 
-   private static final String SESSION1_VAR = "node1session";
+   private static final String NODE1_SESSION_VAR = "node1Session";
 
-   private static final String SESSION2_VAR = "node2session";
+   private static final String NODE2_SESSION_VAR = "node2Session";
 
    private static final String NODE1_VAR = "node1";
 
@@ -26,37 +25,37 @@ public class VerboseBgpEdge extends Pair<NodeBgpSessionPair, NodeBgpSessionPair>
 
    @JsonCreator
    public VerboseBgpEdge(@JsonProperty(NODE1_VAR) Configuration node1,
-         @JsonProperty(SESSION1_VAR) BgpNeighbor s1,         
+         @JsonProperty(NODE1_SESSION_VAR) BgpNeighbor s1,         
          @JsonProperty(NODE2_VAR) Configuration node2,
-         @JsonProperty(SESSION2_VAR) BgpNeighbor s2,
-         @JsonProperty(EDGE_VAR) IpEdge e) {
+         @JsonProperty(NODE2_SESSION_VAR) BgpNeighbor s2,
+         @JsonProperty(EDGE_SUMMARY_VAR) IpEdge e) {
       super(new NodeBgpSessionPair(node1, s1),
             new NodeBgpSessionPair(node2, s2));
       this.edge = e;
    }
 
-   @JsonProperty(EDGE_VAR)
+   @JsonProperty(EDGE_SUMMARY_VAR)
    public IpEdge getEdgeSummary() {
       return edge;
    }
    
    @JsonProperty(NODE1_VAR)
    public Configuration getNode1() {
-      return _first.getHost();
+      return _first.getNode();
    }
    
-   @JsonProperty(SESSION1_VAR)
-   public BgpNeighbor getSession1() {
+   @JsonProperty(NODE1_SESSION_VAR)
+   public BgpNeighbor getNode1Session() {
       return _first.getSession();
    }
    
    @JsonProperty(NODE2_VAR)
    public Configuration getNode2() {
-      return _second.getHost();
+      return _second.getNode();
    }
    
-   @JsonProperty(SESSION2_VAR)
-   public BgpNeighbor getSession2() {
+   @JsonProperty(NODE2_SESSION_VAR)
+   public BgpNeighbor getNode2Session() {
       return _second.getSession();
    }
 }

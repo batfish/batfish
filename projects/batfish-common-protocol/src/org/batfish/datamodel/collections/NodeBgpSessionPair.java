@@ -22,7 +22,7 @@ public class NodeBgpSessionPair extends Pair<Configuration, BgpNeighbor> {
    }
 
    @JsonProperty(NODE_VAR)
-   public Configuration getHost() {
+   public Configuration getNode() {
       return _first;
    }
 

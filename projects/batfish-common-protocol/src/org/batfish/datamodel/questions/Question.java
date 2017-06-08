@@ -12,6 +12,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -150,6 +151,7 @@ public abstract class Question implements IQuestion {
          }
 
          @JsonProperty(VALUE_VAR)
+         @JsonInclude(Include.NON_NULL)
          public JsonNode getValue() {
             return _value;
          }
