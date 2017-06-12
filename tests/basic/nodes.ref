@@ -64,6 +64,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -86,6 +87,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -110,6 +112,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -1172,6 +1175,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -1194,6 +1198,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/2" : {
@@ -1216,6 +1221,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -1240,6 +1246,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -2264,6 +2271,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -2288,6 +2296,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -2312,6 +2321,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -2620,6 +2630,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -2644,6 +2655,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -2668,6 +2680,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -2692,6 +2705,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -3700,6 +3714,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -3724,6 +3739,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -3748,6 +3764,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -3772,6 +3789,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -4729,6 +4747,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -4753,6 +4772,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -4778,6 +4798,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet2/0" : {
@@ -4803,6 +4824,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -4827,6 +4849,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -5234,6 +5257,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -5258,6 +5282,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -5282,6 +5307,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet2/0" : {
@@ -5306,6 +5332,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -5330,6 +5357,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -5712,6 +5740,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -5734,6 +5763,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -5757,6 +5787,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/1" : {
@@ -5780,6 +5811,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -5802,6 +5834,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -6499,6 +6532,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -6523,6 +6557,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -6545,6 +6580,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -6569,6 +6605,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -7126,6 +7163,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -7150,6 +7188,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -7172,6 +7211,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -7196,6 +7236,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -7771,6 +7812,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -7795,6 +7837,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -7819,6 +7862,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -8781,6 +8825,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -8803,6 +8848,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -8827,6 +8873,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -9700,6 +9747,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
@@ -9724,6 +9772,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
@@ -9746,6 +9795,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "FastEthernet1/1" : {
@@ -9768,6 +9818,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -9792,6 +9843,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -10208,6 +10260,7 @@
               "prefix" : "2.128.0.101/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -10379,6 +10432,7 @@
               "prefix" : "2.128.1.101/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },

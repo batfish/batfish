@@ -109,6 +109,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public static final String VENDOR_NAME = "cisco";
 
+   private static final int VLAN_NORMAL_MIN_CISCO = 2;
+   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
+
    private static String getRouteMapClausePolicyName(RouteMap map,
          int continueTarget) {
       String mapName = map.getName();
@@ -2911,6 +2914,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       c.setDnsServers(_dnsServers);
+      c.setNormalVlanRange(
+            new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
       c.setTacacsServers(_tacacsServers);
       if (_cf.getNtp() != null) {
          c.setNtpServers(new TreeSet<>(_cf.getNtp().getServers().keySet()));

@@ -2389,6 +2389,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -2428,6 +2429,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Crypto-Engine1/2/3" : {
@@ -2446,6 +2448,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VPN",
               "vrf" : "default"
             },
             "Dot11Radio0" : {
@@ -2464,6 +2467,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Ethernet0" : {
@@ -2488,6 +2492,7 @@
               "sourceNat" : { },
               "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Ethernet1/11" : {
@@ -2506,6 +2511,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -2524,6 +2530,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             },
             "Null0" : {
@@ -2542,12 +2549,13 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "NULL",
               "vrf" : "default"
             },
             "Vlan111" : {
               "name" : "Vlan111",
               "accessVlan" : 0,
-              "active" : true,
+              "active" : false,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2560,6 +2568,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             },
             "Vxlan1" : {
@@ -2578,6 +2587,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "TUNNEL",
               "vrf" : "default"
             },
             "tunnel-ip6" : {
@@ -2596,6 +2606,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "TUNNEL",
               "vrf" : "default"
             }
           },
@@ -3061,6 +3072,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/1" : {
@@ -3079,6 +3091,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/0/0/0.2302" : {
@@ -3097,6 +3110,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Serial4/0" : {
@@ -3115,6 +3129,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -3835,6 +3850,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -3857,6 +3873,7 @@
               "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -5207,6 +5224,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -5299,6 +5317,7 @@
               "prefix" : "2.128.0.101/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -5763,7 +5782,7 @@
             "Vlan303" : {
               "name" : "Vlan303",
               "accessVlan" : 0,
-              "active" : true,
+              "active" : false,
               "allPrefixes" : [
                 "10.22.33.10/29"
               ],
@@ -5780,12 +5799,13 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             },
             "Vlan803" : {
               "name" : "Vlan803",
               "accessVlan" : 0,
-              "active" : true,
+              "active" : false,
               "allPrefixes" : [
                 "10.12.12.1/23"
               ],
@@ -5802,6 +5822,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             }
           },
@@ -5842,6 +5863,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/6/0/8" : {
@@ -5860,6 +5882,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Port-Channel1" : {
@@ -5878,12 +5901,13 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "Vlan100" : {
               "name" : "Vlan100",
               "accessVlan" : 0,
-              "active" : true,
+              "active" : false,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5896,6 +5920,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             }
           },
@@ -5943,6 +5968,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -6256,6 +6282,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -6343,6 +6370,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "Bundle-Ethernet103" : {
@@ -6361,6 +6389,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "Bundle-Ethernet201" : {
@@ -6380,6 +6409,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/2/0/0.292" : {
@@ -6398,6 +6428,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/2/0/3" : {
@@ -6416,6 +6447,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -6434,6 +6466,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/2" : {
@@ -6452,6 +6485,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/4" : {
@@ -6470,6 +6504,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/5" : {
@@ -6488,6 +6523,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -6763,6 +6799,7 @@
               "ospfPassive" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "xe-0/0/20.0" : {
@@ -6782,6 +6819,7 @@
               "ospfPassive" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "xe-0/0/21.0" : {
@@ -6800,6 +6838,7 @@
               "ospfPassive" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -7225,6 +7264,7 @@
               "ospfPassive" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "irb.5" : {
@@ -7247,6 +7287,7 @@
               "prefix" : "1.2.3.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default",
               "vrrpGroups" : {
                 "5" : {
@@ -7271,6 +7312,7 @@
               "ospfPassive" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "xe-0/0/5:0.0" : {
@@ -7288,6 +7330,7 @@
               "ospfPassive" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -9330,6 +9373,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -12717,6 +12761,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -13150,6 +13195,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -13189,6 +13235,7 @@
               "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },

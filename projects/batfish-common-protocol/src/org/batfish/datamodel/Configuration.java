@@ -62,6 +62,9 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
+   private static final int VLAN_NORMAL_MAX_DEFAULT = 4095;
+
    private static final String ZONES_VAR = "zones";
 
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
@@ -99,6 +102,12 @@ public final class Configuration extends ComparableStructure<String> {
    private NavigableMap<String, IpsecVpn> _ipsecVpns;
 
    private NavigableSet<String> _loggingServers;
+
+   /**
+    * Normal => Excluding extended and reserved vlans that should not be
+    * modified or deleted.
+    */
+   private SubRange _normalVlanRange;
 
    private NavigableSet<String> _ntpServers;
 
@@ -158,6 +167,8 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
       _loggingServers = new TreeSet<>();
+      _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT,
+            VLAN_NORMAL_MAX_DEFAULT);
       _ntpServers = new TreeSet<>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<>();
@@ -279,6 +290,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    public NavigableSet<String> getLoggingServers() {
       return _loggingServers;
+   }
+
+   @JsonIgnore
+   public SubRange getNormalVlanRange() {
+      return _normalVlanRange;
    }
 
    public NavigableSet<String> getNtpServers() {
@@ -523,6 +539,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void setLoggingServers(NavigableSet<String> loggingServers) {
       _loggingServers = loggingServers;
+   }
+
+   @JsonIgnore
+   public void setNormalVlanRange(SubRange normalVlanRange) {
+      _normalVlanRange = normalVlanRange;
    }
 
    public void setNtpServers(NavigableSet<String> ntpServers) {
