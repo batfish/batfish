@@ -1348,7 +1348,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             vlans.add(new SubRange(vlanNumber, vlanNumber));
 
             for (SubRange sr : vlans) {
-               for (int vlanId = sr.getStart(); vlanId < sr.getEnd(); ++vlanId) {
+               for (int vlanId = sr.getStart(); vlanId <= sr.getEnd(); ++vlanId) {
                   vlanMemberCounts.compute(vlanId,
                         (k, v) -> (v == null) ? 1 : (v + 1));
                }
