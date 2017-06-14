@@ -156,7 +156,7 @@ ntp_source
 
 ntp_source_interface
 :
-   SOURCE_INTERFACE ~NEWLINE* NEWLINE
+   SOURCE_INTERFACE iname = interface_name NEWLINE
 ;
 
 ntp_trusted_key

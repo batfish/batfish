@@ -219,6 +219,9 @@
                 "neighbors" : {
                   "1.2.3.4/32" : {
                     "name" : "1.2.3.4/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.2.3.4",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -729,6 +732,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
+              "defaultSwitchportMode" : "NONE",
               "hostname" : "arista_misc"
             }
           },
@@ -1165,6 +1169,9 @@
                 "neighbors" : {
                   "1.10.1.1/32" : {
                     "name" : "1.10.1.1/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.10.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1185,6 +1192,9 @@
                   },
                   "10.12.11.2/32" : {
                     "name" : "10.12.11.2/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "10.12.11.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1587,6 +1597,9 @@
                 "neighbors" : {
                   "64.57.21.1/32" : {
                     "name" : "64.57.21.1/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "64.57.21.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1964,6 +1977,65 @@
             }
           }
         },
+        "cisco_additional_paths" : {
+          "name" : "cisco_additional_paths",
+          "configurationFormat" : "CISCO_IOS",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+            }
+          },
+          "routingPolicies" : {
+            "~BGP_COMMON_EXPORT_POLICY:default~" : {
+              "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_additional_paths"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "multipathEbgp" : false,
+                "multipathIbgp" : false,
+                "routerId" : "0.0.0.0"
+              }
+            }
+          }
+        },
         "cisco_authentication" : {
           "name" : "cisco_authentication",
           "configurationFormat" : "CISCO_NX",
@@ -2129,6 +2201,7 @@
             "1.2.3.4",
             "2.3.4.5"
           ],
+          "dnsSourceInterface" : "Loopback666",
           "domainName" : "my.domain.name",
           "vendorFamily" : {
             "cisco" : {
@@ -2387,6 +2460,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2426,6 +2500,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2444,6 +2519,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2462,6 +2538,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2486,6 +2563,8 @@
               "prefix" : "1.2.3.4/30",
               "proxyArp" : false,
               "sourceNat" : { },
+              "spanningTreePortfast" : true,
+              "switchport" : true,
               "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2504,6 +2583,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2522,6 +2602,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2540,6 +2621,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2558,6 +2640,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2576,6 +2659,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2594,6 +2678,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3059,6 +3144,7 @@
               "ospfPassive" : false,
               "prefix" : "137.164.25.57/30",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3077,6 +3163,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3095,6 +3182,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3113,6 +3201,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3657,6 +3746,7 @@
             "11.2.3.4",
             "dead:beef::1"
           ],
+          "loggingSourceInterface" : "Management0",
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_logging",
@@ -3781,6 +3871,7 @@
             "1.2.3.4",
             "2.3.4.5"
           ],
+          "ntpSourceInterface" : "Loopback0",
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ntp",
@@ -3833,6 +3924,7 @@
               "ospfPassive" : false,
               "prefix" : "3.3.3.0/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3855,6 +3947,7 @@
               "ospfPassive" : false,
               "prefix" : "1.1.1.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4164,6 +4257,7 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "snmpSourceInterface" : "Loopback0",
           "snmpTrapServers" : [
             "10.1.2.3"
           ],
@@ -4397,6 +4491,23 @@
             }
           }
         },
+        "cisco_system" : {
+          "name" : "cisco_system",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "defaultSwitchportMode" : "NONE",
+              "hostname" : "cisco_system"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "cisco_tacacs" : {
           "name" : "cisco_tacacs",
           "configurationFormat" : "CISCO_NX",
@@ -4415,6 +4526,7 @@
             "EACACS",
             "example.com"
           ],
+          "tacacsSourceInterface" : "Loopback0",
           "vendorFamily" : {
             "cisco" : {
               "features" : {
@@ -5205,6 +5317,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5297,6 +5410,7 @@
               "ospfPassive" : false,
               "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.0.101/24",
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5778,6 +5892,7 @@
               "ospfPassive" : false,
               "prefix" : "10.22.33.10/29",
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5800,6 +5915,7 @@
               "ospfPassive" : false,
               "prefix" : "10.12.12.1/23",
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5840,6 +5956,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5858,6 +5975,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5876,6 +5994,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5894,6 +6013,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5941,6 +6061,7 @@
               "ospfPassive" : false,
               "prefix" : "137.164.16.80/32",
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6167,6 +6288,9 @@
                 "neighbors" : {
                   "1.2.1.1/32" : {
                     "name" : "1.2.1.1/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.2.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -6188,6 +6312,9 @@
                   },
                   "1.2.1.2/32" : {
                     "name" : "1.2.1.2/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.2.1.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -6209,6 +6336,9 @@
                   },
                   "1.2.1.3/32" : {
                     "name" : "1.2.1.3/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.2.1.3",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -6254,6 +6384,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6341,6 +6472,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6359,6 +6491,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6378,6 +6511,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6396,6 +6530,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6414,6 +6549,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6432,6 +6568,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6450,6 +6587,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6468,6 +6606,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6486,6 +6625,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6761,6 +6901,7 @@
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6780,6 +6921,7 @@
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6798,6 +6940,7 @@
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7223,6 +7366,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7245,6 +7389,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.2.3.1/24",
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default",
@@ -7269,6 +7414,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7286,6 +7432,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7669,6 +7816,9 @@
                 "neighbors" : {
                   "123.123.123.123/32" : {
                     "name" : "123.123.123.123/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "123.123.123.123",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7883,6 +8033,9 @@
                 "neighbors" : {
                   "123.123.123.123/32" : {
                     "name" : "123.123.123.123/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "123.123.123.123",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -8108,6 +8261,9 @@
                 "neighbors" : {
                   "1.1.1.1/32" : {
                     "name" : "1.1.1.1/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.1.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -8128,6 +8284,9 @@
                   },
                   "3.3.3.3/32" : {
                     "name" : "3.3.3.3/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "3.3.3.3",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -8148,6 +8307,9 @@
                   },
                   "4.4.4.4/32" : {
                     "name" : "4.4.4.4/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "4.4.4.4",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -8793,6 +8955,9 @@
                 "neighbors" : {
                   "10.0.0.0/32" : {
                     "name" : "10.0.0.0/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "10.0.0.0",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -9259,6 +9424,9 @@
                 "neighbors" : {
                   "10.98.25.0/25" : {
                     "name" : "10.98.25.0/25",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
@@ -9279,6 +9447,9 @@
                   },
                   "100.93.100.16/32" : {
                     "name" : "100.93.100.16/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "100.93.100.16",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -9328,6 +9499,7 @@
               "ospfPassive" : false,
               "prefix" : "137.164.17.8/32",
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11571,6 +11743,9 @@
                 "neighbors" : {
                   "1.1.1.1/32" : {
                     "name" : "1.1.1.1/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
                     "address" : "1.1.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -12715,6 +12890,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -13148,6 +13324,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -13187,6 +13364,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : false,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"

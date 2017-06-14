@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -130,7 +132,11 @@ public class Interface extends ComparableStructure<String> {
 
    private int _sourceNatPoolLine;
 
+   private boolean _spanningTreePortfast;
+
    private Prefix _standbyPrefix;
+
+   private Boolean _switchport;
 
    private boolean _switchportAccessDynamic;
 
@@ -140,14 +146,44 @@ public class Interface extends ComparableStructure<String> {
 
    private String _vrf;
 
-   public Interface(String name) {
+   public Interface(String name, CiscoConfiguration c) {
       super(name);
       _active = true;
       _allowedVlans = new ArrayList<>();
       _isisInterfaceMode = IsisInterfaceMode.UNSET;
       _nativeVlan = 1;
       _secondaryPrefixes = new LinkedHashSet<>();
-      _switchportMode = SwitchportMode.NONE;
+      SwitchportMode defaultSwitchportMode = c.getCf()
+            .getDefaultSwitchportMode();
+      ConfigurationFormat vendor = c.getVendor();
+      if (defaultSwitchportMode == null) {
+         switch (vendor) {
+
+         case ARISTA:
+            _switchportMode = SwitchportMode.ACCESS;
+            break;
+
+         case ALCATEL_AOS:
+         case AWS_VPC:
+         case CISCO_IOS:
+         case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
+         case FOUNDRY:
+            _switchportMode = SwitchportMode.NONE;
+            break;
+
+         // $CASES-OMITTED$
+         default:
+            throw new BatfishException(
+                  "Invalid vendor format for cisco parser: "
+                        + vendor.getVendorString());
+         }
+      }
+      else {
+         _switchportMode = defaultSwitchportMode;
+      }
+      _spanningTreePortfast = c.getSpanningTreePortfastDefault();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -279,8 +315,16 @@ public class Interface extends ComparableStructure<String> {
       return _sourceNatPoolLine;
    }
 
+   public boolean getSpanningTreePortfast() {
+      return _spanningTreePortfast;
+   }
+
    public Prefix getStandbyPrefix() {
       return _standbyPrefix;
+   }
+
+   public Boolean getSwitchport() {
+      return _switchport;
    }
 
    public boolean getSwitchportAccessDynamic() {
@@ -407,8 +451,20 @@ public class Interface extends ComparableStructure<String> {
       _sourceNatPoolLine = sourceNatPoolLine;
    }
 
+   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
+      _spanningTreePortfast = spanningTreePortfast;
+   }
+
    public void setStandbyPrefix(Prefix standbyPrefix) {
       _standbyPrefix = standbyPrefix;
+   }
+
+   public void setSwitchport(boolean switchport) {
+      _switchport = switchport;
+   }
+
+   public void setSwitchport(Boolean switchport) {
+      _switchport = switchport;
    }
 
    public void setSwitchportAccessDynamic(boolean switchportAccessDynamic) {

@@ -76,9 +76,13 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String SOURCE_NAT_VAR = "sourceNat";
 
+   private static final String SPANNING_TREE_PORTFAST_VAR = "spanningTreePortfast";
+
    private static final String SWITCHPORT_MODE_VAR = "switchportMode";
 
    private static final String SWITCHPORT_TRUNK_ENCAPSULATION_VAR = "switchportTrunkEncapsulation";
+
+   private static final String SWITCHPORT_VAR = "switchport";
 
    private static final String VRF_VAR = "vrf";
 
@@ -321,6 +325,10 @@ public final class Interface extends ComparableStructure<String> {
    private transient String _routingPolicyName;
 
    private SourceNat _sourceNat;
+
+   private boolean _spanningTreePortfast;
+
+   private Boolean _switchport;
 
    private SwitchportMode _switchportMode;
 
@@ -640,6 +648,18 @@ public final class Interface extends ComparableStructure<String> {
       return _sourceNat;
    }
 
+   @JsonProperty(SPANNING_TREE_PORTFAST_VAR)
+   @JsonPropertyDescription("Whether or not spanning-tree portfast feature is enabled")
+   public boolean getSpanningTreePortfast() {
+      return _spanningTreePortfast;
+   }
+
+   @JsonProperty(SWITCHPORT_VAR)
+   @JsonPropertyDescription("Whether this interface is explicitly set as a switchport. Nothing may be inferred from absence of this field.")
+   public Boolean getSwitchport() {
+      return _switchport;
+   }
+
    @JsonProperty(SWITCHPORT_MODE_VAR)
    @JsonPropertyDescription("The switchport mode (if any) of this interface")
    public SwitchportMode getSwitchportMode() {
@@ -875,6 +895,16 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(SOURCE_NAT_VAR)
    public void setSourceNat(SourceNat sourceNat) {
       _sourceNat = sourceNat;
+   }
+
+   @JsonProperty(SPANNING_TREE_PORTFAST_VAR)
+   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
+      _spanningTreePortfast = spanningTreePortfast;
+   }
+
+   @JsonProperty(SWITCHPORT_VAR)
+   public void setSwitchport(Boolean switchport) {
+      _switchport = switchport;
    }
 
    @JsonProperty(SWITCHPORT_MODE_VAR)

@@ -51,7 +51,8 @@ address_family_rb_stanza
 :
    address_family_header
    (
-      aggregate_address_rb_stanza
+      additional_paths_rb_stanza
+      | aggregate_address_rb_stanza
       | bgp_tail
       |
       {!_multilineBgpNeighbors}?
@@ -88,6 +89,27 @@ aggregate_address_rb_stanza
          ATTRIBUTE_MAP mapname = variable
       )
    )* NEWLINE
+;
+
+additional_paths_rb_stanza
+:
+   BGP ADDITIONAL_PATHS
+   (
+      SELECT ALL
+      |
+      (
+         SEND RECEIVE?
+      )
+      |
+      (
+         RECEIVE SEND?
+      )
+   ) NEWLINE
+;
+
+advertise_bgp_tail
+:
+   ADVERTISE ADDITIONAL_PATHS ALL NEWLINE
 ;
 
 allowas_in_bgp_tail
@@ -138,6 +160,7 @@ bgp_redistribute_internal_rb_stanza
 bgp_tail
 :
    activate_bgp_tail
+   | advertise_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | cluster_id_bgp_tail
@@ -738,7 +761,8 @@ router_bgp_stanza
 
 router_bgp_stanza_tail
 :
-   address_family_rb_stanza
+   additional_paths_rb_stanza
+   | address_family_rb_stanza
    | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza

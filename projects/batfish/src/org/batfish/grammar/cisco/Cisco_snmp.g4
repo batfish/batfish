@@ -27,6 +27,7 @@ s_snmp_server
       | ss_host
       | ss_null
       | ss_removed
+      | ss_source_interface
       | ss_tftp_server_list
       | ss_trap_source
    )
@@ -136,7 +137,6 @@ ss_null
       | PRIORITY
       | PROTOCOL
       | QUEUE_LENGTH
-      | SOURCE_INTERFACE
       | TCP_SESSION
       | TRAP
       | TRAPS
@@ -151,6 +151,17 @@ ss_removed
    ~NEWLINE* REMOVED ~NEWLINE* NEWLINE
 ;
 
+ss_source_interface
+:
+   SOURCE_INTERFACE
+   (
+      TRAP
+      | TRAPS
+      | INFORM
+      | INFORMS
+   )? iname = interface_name NEWLINE
+;
+
 ss_tftp_server_list
 :
    TFTP_SERVER_LIST name = variable NEWLINE
@@ -158,7 +169,7 @@ ss_tftp_server_list
 
 ss_trap_source
 :
-   TRAP_SOURCE IPV4? interface_name NEWLINE
+   TRAP_SOURCE IPV4? iname = interface_name NEWLINE
 ;
 
 ssc_access_control

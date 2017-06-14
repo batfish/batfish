@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.batfish.datamodel.SwitchportMode;
+
 public class CiscoFamily implements Serializable {
 
    /**
@@ -14,6 +16,8 @@ public class CiscoFamily implements Serializable {
    private Aaa _aaa;
 
    private SortedMap<String, String> _banners;
+
+   private SwitchportMode _defaultSwitchportMode;
 
    private SortedMap<String, Boolean> _features;
 
@@ -48,6 +52,10 @@ public class CiscoFamily implements Serializable {
 
    public SortedMap<String, String> getBanners() {
       return _banners;
+   }
+
+   public SwitchportMode getDefaultSwitchportMode() {
+      return _defaultSwitchportMode;
    }
 
    public SortedMap<String, Boolean> getFeatures() {
@@ -96,6 +104,10 @@ public class CiscoFamily implements Serializable {
 
    public void setBanners(SortedMap<String, String> banners) {
       _banners = banners;
+   }
+
+   public void setDefaultSwitchportMode(SwitchportMode defaultSwitchportMode) {
+      _defaultSwitchportMode = defaultSwitchportMode;
    }
 
    public void setFeatures(SortedMap<String, Boolean> features) {

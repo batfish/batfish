@@ -90,7 +90,7 @@ if_ip_address
    (
       IP
       | IPV4
-   ) ADDRESS
+   ) ADDRESS VIRTUAL?
    (
       (
          ip = IP_ADDRESS subnet = IP_ADDRESS
@@ -119,11 +119,6 @@ if_ip_address_secondary
       )
       | prefix = IP_PREFIX
    ) SECONDARY NEWLINE
-;
-
-if_ip_address_virtual
-:
-   IP ADDRESS VIRTUAL prefix = IP_PREFIX NEWLINE
 ;
 
 if_ip_igmp
@@ -595,7 +590,6 @@ if_null_block
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
-      | SPANNING_TREE
       | SPEED
       | SPEED_DUPLEX
       | SNMP
@@ -693,6 +687,44 @@ if_port_security
    (
       if_port_security_null
    )*
+;
+
+if_spanning_tree
+:
+   NO? SPANNING_TREE
+   (
+      if_st_null
+      | if_st_portfast
+   )
+;
+
+if_st_null
+:
+   (
+      BPDUFILTER
+      | BPDUGUARD
+      | COST
+      | GUARD
+      | LINK_TYPE
+      | MST
+      | PORT
+      | PORT_PRIORITY
+      | PRIORITY
+      | PROTECT
+      | RSTP
+      | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+if_st_portfast
+:
+   PORTFAST
+   (
+      disable = DISABLE
+      | edge = EDGE
+      | network = NETWORK
+      | trunk = TRUNK
+   )* NEWLINE
 ;
 
 if_port_security_null
@@ -855,7 +887,6 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
-      | if_ip_address_virtual
       | if_ip_igmp
       | if_ip_nat_destination
       | if_ip_nat_source
@@ -882,6 +913,7 @@ s_interface
       | if_no_ip_address
       | if_port_security
       | if_shutdown
+      | if_spanning_tree
       | if_switchport
       | if_switchport_access
       | if_switchport_mode

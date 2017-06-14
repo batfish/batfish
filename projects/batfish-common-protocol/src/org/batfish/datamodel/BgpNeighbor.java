@@ -146,6 +146,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    }
 
+   private static final String ADDITIONAL_PATHS_RECEIVE_VAR = "additionalPathsReceive";
+
+   private static final String ADDITIONAL_PATHS_SELECT_ALL_VAR = "additionalPathsSelectAll";
+
+   private static final String ADDITIONAL_PATHS_SEND_VAR = "additionalPathsSend";
+
    private static final String ADDRESS_VAR = "address";
 
    private static final String ADVERTISE_EXTERNAL_VAR = "advertiseExternal";
@@ -188,6 +194,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private boolean _additionalPathsReceive;
+
+   private boolean _additionalPathsSelectAll;
+
+   private boolean _additionalPathsSend;
 
    private boolean _advertiseExternal;
 
@@ -355,6 +367,21 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
          return false;
       }
       return true;
+   }
+
+   @JsonProperty(ADDITIONAL_PATHS_RECEIVE_VAR)
+   public boolean getAdditionalPathsReceive() {
+      return _additionalPathsReceive;
+   }
+
+   @JsonProperty(ADDITIONAL_PATHS_SELECT_ALL_VAR)
+   public boolean getAdditionalPathsSelectAll() {
+      return _additionalPathsSelectAll;
+   }
+
+   @JsonProperty(ADDITIONAL_PATHS_SEND_VAR)
+   public boolean getAdditionalPathsSend() {
+      return _additionalPathsSend;
    }
 
    /**
@@ -535,6 +562,21 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    public void resolveReferences(Configuration owner) {
       _owner = owner;
+   }
+
+   @JsonProperty(ADDITIONAL_PATHS_RECEIVE_VAR)
+   public void setAdditionalPathsReceive(boolean additionalPathsReceive) {
+      _additionalPathsReceive = additionalPathsReceive;
+   }
+
+   @JsonProperty(ADDITIONAL_PATHS_SELECT_ALL_VAR)
+   public void setAdditionalPathsSelectAll(boolean additionalPathsSelectAll) {
+      _additionalPathsSelectAll = additionalPathsSelectAll;
+   }
+
+   @JsonProperty(ADDITIONAL_PATHS_SEND_VAR)
+   public void setAdditionalPathsSend(boolean additionalPathsSend) {
+      _additionalPathsSend = additionalPathsSend;
    }
 
    @JsonProperty(ADDRESS_VAR)

@@ -697,7 +697,6 @@ null_single
             | SAP
             | SCP
             | SUBNET_ZERO
-            | TACACS
             | TCP
             | TELNET
             | TFTP
@@ -788,6 +787,10 @@ null_single
                IP
                (
                   AS_PATH
+                  |
+                  (
+                     TACACS SOURCE_INTERFACE
+                  )
                )
             )
             |
@@ -859,7 +862,6 @@ null_single
       | SUBSCRIBE_TO
       | SUN
       | SYSOPT
-      | SYSTEM
       | TAG_SWITCHING
       | TELNET
       | THREAT_DETECTION

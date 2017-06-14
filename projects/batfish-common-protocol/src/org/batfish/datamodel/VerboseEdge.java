@@ -13,9 +13,9 @@ public class VerboseEdge
 
    private static final String NODE1_INTERFACE_VAR = "node1Interface";
 
-   private static final String NODE2_INTERFACE_VAR = "node2Interface";
-
    private static final String NODE1_VAR = "node1";
+
+   private static final String NODE2_INTERFACE_VAR = "node2Interface";
 
    private static final String NODE2_VAR = "node2";
 

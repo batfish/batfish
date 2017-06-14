@@ -15,6 +15,9 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
 
    public MasterBgpPeerGroup() {
       _active = false;
+      _additionalPathsReceive = false;
+      _additionalPathsSelectAll = false;
+      _additionalPathsSend = false;
       _advertiseInactive = false;
       _allowAsIn = false;
       _defaultOriginate = false;

@@ -792,6 +792,19 @@ public class VirtualRouter extends ComparableStructure<String> {
                   }
                }
 
+               /**
+                * Add all bgp paths if additional-paths active for this session
+                */
+               boolean additionalPaths = !ebgpSession
+                     && neighbor.getAdditionalPathsReceive()
+                     && remoteBgpNeighbor.getAdditionalPathsSend()
+                     && remoteBgpNeighbor.getAdditionalPathsSelectAll();
+               if (additionalPaths) {
+                  for (AbstractRoute remoteCandidateRoute : remoteVirtualRouter._prevBgpRib
+                        .getRoutes()) {
+                     remoteCandidateRoutes.add(remoteCandidateRoute);
+                  }
+               }
                for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
                   BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
                   RoutingProtocol remoteRouteProtocol = remoteRoute

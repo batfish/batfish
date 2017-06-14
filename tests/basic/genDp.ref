@@ -34,7 +34,7 @@
         "8" : 286
       },
       "ospfInternalIterations" : 3,
-      "version" : "0.25.0"
+      "version" : "0.26.0"
     }
   ],
   "status" : "SUCCESS"

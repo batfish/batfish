@@ -237,6 +237,11 @@ ADD_VLAN
    'add-vlan'
 ;
 
+ADDITIONAL_PATHS
+:
+   'additional-paths'
+;
+
 ADDITIVE
 :
    'additive'
@@ -472,6 +477,11 @@ ALIAS
    'alias'
 ;
 
+ALL
+:
+   'all'
+;
+
 ALL_ALARMS
 :
    'all-alarms'
@@ -480,11 +490,6 @@ ALL_ALARMS
 ALL_OF_ROUTER
 :
    'all-of-router'
-;
-
-ALL
-:
-   'all'
 ;
 
 ALLOCATE
@@ -1092,6 +1097,16 @@ BOTH
 BOUNDARY
 :
    'boundary'
+;
+
+BPDUFILTER
+:
+   'bpdufilter'
+;
+
+BPDUGUARD
+:
+   'bpduguard'
 ;
 
 BREAKOUT
@@ -1910,6 +1925,11 @@ DCBX
    'dcbx'
 ;
 
+DCE_MODE
+:
+   'dce-mode'
+;
+
 DEAD_INTERVAL
 :
    'dead-interval'
@@ -2518,6 +2538,11 @@ ECMP_GROUP
 ECN
 :
    'ecn'
+;
+
+EDGE
+:
+   'edge'
 ;
 
 EF
@@ -3414,6 +3439,11 @@ GW_TYPE_PREFIX
    'gw-type-prefix'
 ;
 
+GUARD
+:
+   'guard'
+;
+
 GUEST_MODE
 :
    'guest-mode'
@@ -3834,6 +3864,11 @@ INFINITY
    'infinity'
 ;
 
+INFORM
+:
+   'inform'
+;
+
 INFORMATION_REPLY
 :
    'information-reply'
@@ -4084,6 +4119,11 @@ ISPF
 ISSUER_NAME
 :
    'issuer-name'
+;
+
+JUMBOMTU
+:
+   'jumbomtu'
 ;
 
 KEEPALIVE
@@ -4394,6 +4434,11 @@ LINK
 LINK_FAULT_SIGNALING
 :
    'link-fault-signaling'
+;
+
+LINK_TYPE
+:
+   'link-type'
 ;
 
 LIST
@@ -5034,6 +5079,11 @@ MODEM
 MODULE
 :
    'module'
+;
+
+MODULE_TYPE
+:
+   'module-type'
 ;
 
 MON
@@ -6246,6 +6296,11 @@ PORT_OBJECT
    'port-object'
 ;
 
+PORT_PRIORITY
+:
+   'port-priority'
+;
+
 PORT_PROFILE
 :
    'port-profile'
@@ -6479,6 +6534,11 @@ PROPAGATE
 PROPOSAL
 :
    'proposal'
+;
+
+PROTECT
+:
+   'protect'
 ;
 
 PROTOCOL
@@ -7181,6 +7241,11 @@ RST
    'rst'
 ;
 
+RSTP
+:
+   'rstp'
+;
+
 RSVP
 :
    'rsvp'
@@ -7364,6 +7429,11 @@ SECURITY_ASSOCIATION
 SECURITY_LEVEL
 :
    'security-level'
+;
+
+SELECT
+:
+   'select'
 ;
 
 SELECTIVE
@@ -8866,6 +8936,11 @@ URG
 URL_LIST
 :
    'url-list'
+;
+
+URPF
+:
+   'urpf'
 ;
 
 USE
@@ -10526,6 +10601,16 @@ M_Interface_GT
    'gt' -> type ( GT ) , popMode
 ;
 
+M_Interface_INFORM
+:
+   'inform' -> type ( INFORM )
+;
+
+M_Interface_INFORMS
+:
+   'informs' -> type ( INFORMS )
+;
+
 M_Interface_IP
 :
    'ip' -> type ( IP ) , popMode
@@ -10564,6 +10649,16 @@ M_Interface_MODULE
 M_Interface_MULTIPOINT
 :
    'multipoint' -> type ( MULTIPOINT ) , popMode
+;
+
+M_Interface_TRAP
+:
+   'trap' -> type ( TRAP )
+;
+
+M_Interface_TRAPS
+:
+   'traps' -> type ( TRAPS )
 ;
 
 M_Interface_VRF
