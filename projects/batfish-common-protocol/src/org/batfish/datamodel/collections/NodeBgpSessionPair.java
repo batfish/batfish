@@ -8,16 +8,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NodeBgpSessionPair extends Pair<Configuration, BgpNeighbor> {
-   
-   private static final long serialVersionUID = 1L;
-   
+
    private static final String NODE_VAR = "node";
 
-   private static final String SESSION_VAR = "session";   
+   private static final long serialVersionUID = 1L;
+
+   private static final String SESSION_VAR = "session";
 
    @JsonCreator
-   public NodeBgpSessionPair(@JsonProperty(NODE_VAR) Configuration t1, 
-                            @JsonProperty(SESSION_VAR) BgpNeighbor t2) {
+   public NodeBgpSessionPair(@JsonProperty(NODE_VAR) Configuration t1,
+         @JsonProperty(SESSION_VAR) BgpNeighbor t2) {
       super(t1, t2);
    }
 

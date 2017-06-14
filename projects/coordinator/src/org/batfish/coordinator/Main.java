@@ -205,7 +205,7 @@ public class Main {
       }
       catch (Exception e) {
          System.err.print("org.batfish.coordinator: Initialization failed: "
-               + e.getMessage());
+               + ExceptionUtils.getStackTrace(e));
          System.exit(1);
       }
    }

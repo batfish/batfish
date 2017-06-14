@@ -447,7 +447,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          boolean explicit) {
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
-         newInterface = new Interface(name);
+         newInterface = new Interface(name, _configuration);
          initInterface(newInterface, _configuration.getVendor());
          _configuration.getInterfaces().put(name, newInterface);
          initInterface(newInterface, ctx);
@@ -664,6 +664,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setDescription(description);
       }
+   }
+
+   @Override
+   public void enterIf_spanning_tree(If_spanning_treeContext ctx) {
+      _no = ctx.NO() != null;
    }
 
    @Override
@@ -1312,6 +1317,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterS_spanning_tree(S_spanning_treeContext ctx) {
+      _no = ctx.NO() != null;
+   }
+
+   @Override
    public void enterS_tacacs_server(S_tacacs_serverContext ctx) {
       _no = ctx.NO() != null;
    }
@@ -1531,6 +1541,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException(
                "no peer or peer group to activate in this context");
+      }
+   }
+
+   @Override
+   public void exitAdditional_paths_rb_stanza(
+         Additional_paths_rb_stanzaContext ctx) {
+      if (ctx.SELECT() != null && ctx.ALL() != null) {
+         _currentPeerGroup.setAdditionalPathsSelectAll(true);
+      }
+      else {
+         if (ctx.RECEIVE() != null) {
+            _currentPeerGroup.setAdditionalPathsReceive(true);
+         }
+         if (ctx.SEND() != null) {
+            _currentPeerGroup.setAdditionalPathsSend(true);
+         }
       }
    }
 
@@ -1794,6 +1820,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitDistribute_list_bgp_tail(
          Distribute_list_bgp_tailContext ctx) {
       todo(ctx, F_BGP_NEIGHBOR_DISTRIBUTE_LIST);
+   }
+
+   @Override
+   public void exitDomain_lookup(Domain_lookupContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setDnsSourceInterface(canonicalIfaceName);
    }
 
    @Override
@@ -2414,10 +2447,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_spanning_tree(If_spanning_treeContext ctx) {
+      _no = false;
+   }
+
+   @Override
+   public void exitIf_st_portfast(If_st_portfastContext ctx) {
+      if (!_no) {
+         boolean spanningTreePortfast = ctx.disable == null;
+         for (Interface iface : _currentInterfaces) {
+            iface.setSpanningTreePortfast(spanningTreePortfast);
+         }
+      }
+   }
+
+   @Override
    public void exitIf_switchport(If_switchportContext ctx) {
       if (ctx.NO() != null) {
          for (Interface iface : _currentInterfaces) {
             iface.setSwitchportMode(SwitchportMode.NONE);
+            iface.setSwitchport(false);
+         }
+      }
+      else {
+         for (Interface iface : _currentInterfaces) {
+            iface.setSwitchportMode(SwitchportMode.ACCESS);
+            iface.setSwitchport(true);
          }
       }
    }
@@ -2637,6 +2692,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_default_gateway_stanza(
          Ip_default_gateway_stanzaContext ctx) {
       todo(ctx, F_IP_DEFAULT_GATEWAY);
+   }
+
+   @Override
+   public void exitIp_domain_lookup(Ip_domain_lookupContext ctx) {
+      if (ctx.iname != null) {
+         String ifaceName = ctx.iname.getText();
+         String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+         _configuration.setDnsSourceInterface(canonicalIfaceName);
+      }
    }
 
    @Override
@@ -3370,6 +3434,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.PREFER() != null) {
          // TODO: implement
       }
+   }
+
+   @Override
+   public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setNtpSourceInterface(canonicalIfaceName);
    }
 
    @Override
@@ -4219,6 +4290,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_ip_tacacs_source_interface(
+         S_ip_tacacs_source_interfaceContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setTacacsSourceInterface(canonicalIfaceName);
+   }
+
+   @Override
    public void exitS_line(S_lineContext ctx) {
       _currentLineNames = null;
    }
@@ -4276,6 +4355,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_spanning_tree(S_spanning_treeContext ctx) {
+      _no = false;
+   }
+
+   @Override
+   public void exitS_switchport(S_switchportContext ctx) {
+      if (ctx.ACCESS() != null) {
+         _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.ACCESS);
+      }
+      else if (ctx.ROUTED() != null) {
+         _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.NONE);
+      }
+      else {
+         throw new BatfishException(
+               "Unsupported top-level switchport statement: " + ctx.getText());
+      }
+   }
+
+   @Override
    public void exitS_tacacs_server(S_tacacs_serverContext ctx) {
       _no = false;
    }
@@ -4283,6 +4381,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitS_vrf_context(S_vrf_contextContext ctx) {
       _currentVrf = Configuration.DEFAULT_VRF_NAME;
+   }
+
+   @Override
+   public void exitSd_switchport(Sd_switchportContext ctx) {
+      if (ctx.SHUTDOWN() != null) {
+         _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.NONE);
+      }
+      else {
+         // TODO: support more
+         _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.ACCESS);
+      }
    }
 
    @Override
@@ -4473,6 +4582,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitSpanning_tree_portfast(Spanning_tree_portfastContext ctx) {
+      if (ctx.defaultLiteral != null) {
+         _configuration.setSpanningTreePortfastDefault(true);
+      }
+   }
+
+   @Override
    public void exitSs_community(Ss_communityContext ctx) {
       _currentSnmpCommunity = null;
    }
@@ -4510,12 +4626,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitSs_source_interface(Ss_source_interfaceContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setSnmpSourceInterface(canonicalIfaceName);
+   }
+
+   @Override
    public void exitSs_tftp_server_list(Ss_tftp_server_listContext ctx) {
       String acl = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
       _configuration.getSnmpAccessLists().add(acl);
       _configuration.referenceStructure(CiscoStructureType.IP_ACCESS_LIST, acl,
             CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, line);
+   }
+
+   @Override
+   public void exitSs_trap_source(Ss_trap_sourceContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setSnmpSourceInterface(canonicalIfaceName);
    }
 
    @Override
@@ -4717,6 +4847,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitT_server(T_serverContext ctx) {
       String hostname = ctx.hostname.getText();
       _configuration.getTacacsServers().add(hostname);
+   }
+
+   @Override
+   public void exitT_source_interface(T_source_interfaceContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setTacacsSourceInterface(canonicalIfaceName);
    }
 
    @Override

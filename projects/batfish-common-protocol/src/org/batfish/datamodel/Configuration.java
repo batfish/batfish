@@ -38,6 +38,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    public static final String DEFAULT_VRF_NAME = "default";
 
+   private static final String DNS_SOURCE_INTERFACE_VAR = "dnsSourceInterface";
+
    private static final String IKE_GATEWAYS_VAR = "ikeGateways";
 
    private static final String IKE_POLICIES_VAR = "ikePolicies";
@@ -52,7 +54,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String IPSEC_VPNS_VAR = "ipsecVpns";
 
+   private static final String LOGGING_SOURCE_INTERFACE_VAR = "loggingSourceInterface";
+
    public static final String NODE_NONE_NAME = "(none)";
+
+   private static final String NTP_SOURCE_INTERFACE_VAR = "ntpSourceInterface";
 
    private static final String ROLES_VAR = "roles";
 
@@ -61,6 +67,10 @@ public final class Configuration extends ComparableStructure<String> {
    private static final String ROUTING_POLICIES_VAR = "routingPolicies";
 
    private static final long serialVersionUID = 1L;
+
+   private static final String SNMP_SOURCE_INTERFACE_VAR = "snmpSourceInterface";
+
+   private static final String TACACS_SOURCE_INTERFACE_VAR = "tacacsSourceInterface";
 
    private static final String ZONES_VAR = "zones";
 
@@ -77,6 +87,8 @@ public final class Configuration extends ComparableStructure<String> {
    private LineAction _defaultInboundAction;
 
    private NavigableSet<String> _dnsServers;
+
+   private String _dnsSourceInterface;
 
    private String _domainName;
 
@@ -100,7 +112,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableSet<String> _loggingServers;
 
+   private String _loggingSourceInterface;
+
    private NavigableSet<String> _ntpServers;
+
+   private String _ntpSourceInterface;
 
    private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
 
@@ -132,9 +148,13 @@ public final class Configuration extends ComparableStructure<String> {
 
    private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
+   private String _snmpSourceInterface;
+
    private NavigableSet<String> _snmpTrapServers;
 
    private NavigableSet<String> _tacacsServers;
+
+   private String _tacacsSourceInterface;
 
    private VendorFamily _vendorFamily;
 
@@ -214,6 +234,11 @@ public final class Configuration extends ComparableStructure<String> {
       return _dnsServers;
    }
 
+   @JsonProperty(DNS_SOURCE_INTERFACE_VAR)
+   public String getDnsSourceInterface() {
+      return _dnsSourceInterface;
+   }
+
    @JsonPropertyDescription("Domain name of this node.")
    public String getDomainName() {
       return _domainName;
@@ -281,8 +306,18 @@ public final class Configuration extends ComparableStructure<String> {
       return _loggingServers;
    }
 
+   @JsonProperty(LOGGING_SOURCE_INTERFACE_VAR)
+   public String getLoggingSourceInterface() {
+      return _loggingSourceInterface;
+   }
+
    public NavigableSet<String> getNtpServers() {
       return _ntpServers;
+   }
+
+   @JsonProperty(NTP_SOURCE_INTERFACE_VAR)
+   public String getNtpSourceInterface() {
+      return _ntpSourceInterface;
    }
 
    @JsonIgnore
@@ -358,12 +393,22 @@ public final class Configuration extends ComparableStructure<String> {
       return _sentIbgpAdvertisements;
    }
 
+   @JsonProperty(SNMP_SOURCE_INTERFACE_VAR)
+   public String getSnmpSourceInterface() {
+      return _snmpSourceInterface;
+   }
+
    public NavigableSet<String> getSnmpTrapServers() {
       return _snmpTrapServers;
    }
 
    public NavigableSet<String> getTacacsServers() {
       return _tacacsServers;
+   }
+
+   @JsonProperty(TACACS_SOURCE_INTERFACE_VAR)
+   public String getTacacsSourceInterface() {
+      return _tacacsSourceInterface;
    }
 
    @JsonPropertyDescription("Object containing vendor-specific information for this node.")
@@ -470,6 +515,11 @@ public final class Configuration extends ComparableStructure<String> {
       _dnsServers = dnsServers;
    }
 
+   @JsonProperty(DNS_SOURCE_INTERFACE_VAR)
+   public void setDnsSourceInterface(String dnsSourceInterface) {
+      _dnsSourceInterface = dnsSourceInterface;
+   }
+
    public void setDomainName(String domainName) {
       _domainName = domainName;
    }
@@ -525,8 +575,18 @@ public final class Configuration extends ComparableStructure<String> {
       _loggingServers = loggingServers;
    }
 
+   @JsonProperty(LOGGING_SOURCE_INTERFACE_VAR)
+   public void setLoggingSourceInterface(String loggingSourceInterface) {
+      _loggingSourceInterface = loggingSourceInterface;
+   }
+
    public void setNtpServers(NavigableSet<String> ntpServers) {
       _ntpServers = ntpServers;
+   }
+
+   @JsonProperty(NTP_SOURCE_INTERFACE_VAR)
+   public void setNtpSourceInterface(String ntpSourceInterface) {
+      _ntpSourceInterface = ntpSourceInterface;
    }
 
    public void setRoles(RoleSet roles) {
@@ -550,12 +610,22 @@ public final class Configuration extends ComparableStructure<String> {
       _routingPolicies = routingPolicies;
    }
 
+   @JsonProperty(SNMP_SOURCE_INTERFACE_VAR)
+   public void setSnmpSourceInterface(String snmpSourceInterface) {
+      _snmpSourceInterface = snmpSourceInterface;
+   }
+
    public void setSnmpTrapServers(NavigableSet<String> snmpTrapServers) {
       _snmpTrapServers = snmpTrapServers;
    }
 
    public void setTacacsServers(NavigableSet<String> tacacsServers) {
       _tacacsServers = tacacsServers;
+   }
+
+   @JsonProperty(TACACS_SOURCE_INTERFACE_VAR)
+   public void setTacacsSourceInterface(String tacacsSourceInterface) {
+      _tacacsSourceInterface = tacacsSourceInterface;
    }
 
    public void setVendorFamily(VendorFamily vendorFamily) {

@@ -91,6 +91,11 @@ interface Ethernet0
  medium broadcast
  mtu 1500
  no negotiate auto
+ nv
+  satellite-fabric-link satellite 100
+   remote-ports GigabitEthernet 0/0/0-43
+  !
+ !
  ntp multicast key 12 ttl 1
  no ospfv3 passive-interface
  ospfv3 network point-to-point
@@ -128,15 +133,29 @@ interface Ethernet0
  no spanning-tree bpdufilter
  no spanning-tree bpduguard
  no spanning-tree bpduguard nv
+ spanning-tree bpdufilter disable
+ spanning-tree bpduguard enable
+ spanning-tree bpduguard disable
+ spanning-tree bpdufilter enable
  spanning-tree cost auto
+ spanning-tree guard loop
+ spanning-tree guard none
+ spanning-tree guard root
  spanning-tree link-type auto
+ spanning-tree mst 0-1 port-priority 64
+ spanning-tree mst pre-standard
+ spanning-tree port type normal
  spanning-tree port type normal
  spanning-tree port-priority 128
+ spanning-tree portfast
+ spanning-tree portfast disable
+ spanning-tree portfast edge
+ spanning-tree portfast edge trunk
+ spanning-tree portfast network
+ spanning-tree portfast trunk
+ spanning-tree priority 1
  spanning-tree protect
-  satellite-fabric-link satellite 100
-   remote-ports GigabitEthernet 0/0/0-43
-  !
- !
+ spanning-tree vlan 888 cost 8
  speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
  ssid blah
  station-role root access-point

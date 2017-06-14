@@ -14,20 +14,8 @@ test test_rigs/parsing-tests/disable-as-suppression.ref init-testrig test_rigs/d
 #example
 test test_rigs/parsing-tests/example.ref init-testrig test_rigs/example
 
-#example-isp-switchover-1
-test test_rigs/parsing-tests/example-isp-switchover-1.ref init-testrig test_rigs/example-isp-switchover-1
-
-#example-isp-switchover-2
-test test_rigs/parsing-tests/example-isp-switchover-2.ref init-testrig test_rigs/example-isp-switchover-2
-
 #example-juniper
 test test_rigs/parsing-tests/example-juniper.ref init-testrig test_rigs/example-juniper
-
-#example-nsdi
-test test_rigs/parsing-tests/example-nsdi.ref init-testrig test_rigs/example-nsdi
-
-#example-with-delta
-#test test_rigs/parsing-tests/example-with-delta.ref init-testrig test_rigs/example-with-delta
 
 #indirection
 test test_rigs/parsing-tests/indirection.ref init-testrig test_rigs/indirection
@@ -46,3 +34,4 @@ test test_rigs/parsing-tests/srx-testbed.ref init-testrig test_rigs/srx-testbed
 
 #unit-tests
 test test_rigs/parsing-tests/unit-tests.ref init-testrig test_rigs/unit-tests
+

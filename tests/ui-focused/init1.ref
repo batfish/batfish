@@ -40,7 +40,7 @@
         "testrig/iptables/host1.iptables" : "PASSED",
         "testrig/iptables/host2.iptables" : "PASSED"
       },
-      "version" : "0.25.0"
+      "version" : "0.26.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -49,7 +49,7 @@
           "route-map" : {
             "filter-bogons" : {
               "bgp inbound route-map" : [
-                90
+                106
               ]
             }
           }
@@ -59,41 +59,58 @@
         "as1border1" : {
           "bgp group" : {
             "as3" : [
-              79
+              83
             ]
           },
           "expanded community-list" : {
             "as1_community" : [
-              115
+              119
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              123
+              129
             ]
           }
         },
         "as1border2" : {
           "bgp group" : {
             "as2" : [
-              80
+              84
             ]
           },
           "expanded community-list" : {
             "as1_community" : [
-              116
+              120
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              125
+              131
             ]
           }
         },
         "as2border1" : {
           "bgp group" : {
             "as3" : [
-              88
+              90
+            ]
+          },
+          "expanded community-list" : {
+            "as2_community" : [
+              121
+            ]
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : [
+              136
+            ]
+          }
+        },
+        "as2border2" : {
+          "bgp group" : {
+            "as1" : [
+              84
             ]
           },
           "expanded community-list" : {
@@ -103,87 +120,70 @@
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              134
-            ]
-          }
-        },
-        "as2border2" : {
-          "bgp group" : {
-            "as1" : [
-              82
-            ]
-          },
-          "expanded community-list" : {
-            "as2_community" : [
-              117
-            ]
-          },
-          "ipv4 prefix-list" : {
-            "inbound_route_filter" : [
-              132
+              133
             ]
           }
         },
         "as2dept1" : {
           "extended ip access-list" : {
             "105" : [
-              118
+              121
             ],
             "RESTRICT_HOST_TRAFFIC_OUT" : [
-              104
+              114
             ]
           }
         },
         "as2dist1" : {
           "extended ip access-list" : {
             "102" : [
-              117
+              116
             ]
           }
         },
         "as2dist2" : {
           "extended ip access-list" : {
             "102" : [
-              117
+              116
             ]
           }
         },
         "as3border1" : {
           "bgp group" : {
             "as1" : [
-              75
+              78
             ]
           },
           "expanded community-list" : {
             "as3_community" : [
-              109
+              112
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              115
+              120
             ]
           }
         },
         "as3border2" : {
           "bgp group" : {
             "as2" : [
-              77
+              80
             ]
           },
           "expanded community-list" : {
             "as3_community" : [
-              109
+              112
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              115
+              118
             ]
           }
         }
       },
-      "version" : "0.25.0",
+      "version" : "0.26.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {

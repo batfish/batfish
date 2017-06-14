@@ -110,7 +110,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -515,7 +515,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -835,7 +835,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -1167,7 +1167,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -1495,7 +1495,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -1824,7 +1824,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -2188,7 +2188,7 @@
             "      NO:'no'  <== mode:DEFAULT_MODE",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
-            "      (ip_domain_null",
+            "      (ip_domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -2445,11 +2445,11 @@
           ]
         }
       },
-      "version" : "0.25.0"
+      "version" : "0.26.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.25.0"
+      "version" : "0.26.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

@@ -8,16 +8,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NodeOspfSessionPair extends Pair<Configuration, OspfNeighbor> {
-   
-   private static final long serialVersionUID = 1L;
-   
+
    private static final String NODE_VAR = "node";
 
-   private static final String SESSION_VAR = "session";   
+   private static final long serialVersionUID = 1L;
+
+   private static final String SESSION_VAR = "session";
 
    @JsonCreator
-   public NodeOspfSessionPair(@JsonProperty(NODE_VAR) Configuration t1, 
-                              @JsonProperty(SESSION_VAR) OspfNeighbor t2) {
+   public NodeOspfSessionPair(@JsonProperty(NODE_VAR) Configuration t1,
+         @JsonProperty(SESSION_VAR) OspfNeighbor t2) {
       super(t1, t2);
    }
 

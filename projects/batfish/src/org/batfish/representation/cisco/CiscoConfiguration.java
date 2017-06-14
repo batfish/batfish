@@ -151,6 +151,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private NavigableSet<String> _dnsServers;
 
+   private String _dnsSourceInterface;
+
    private String _domainName;
 
    private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
@@ -201,6 +203,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _ntpAccessGroups;
 
+   private String _ntpSourceInterface;
+
    private final Set<String> _pimAcls;
 
    private final Set<String> _pimRouteMaps;
@@ -221,6 +225,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private SnmpServer _snmpServer;
 
+   private String _snmpSourceInterface;
+
+   private boolean _spanningTreePortfastDefault;
+
    private final Set<String> _sshAcls;
 
    private final Set<String> _sshIpv6Acls;
@@ -232,6 +240,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
    private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
 
    private NavigableSet<String> _tacacsServers;
+
+   private String _tacacsSourceInterface;
 
    private final SortedMap<String, Integer> _undefinedPeerGroups;
 
@@ -450,6 +460,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return _dnsServers;
    }
 
+   public String getDnsSourceInterface() {
+      return _dnsSourceInterface;
+   }
+
    public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
       return _expandedCommunityLists;
    }
@@ -545,6 +559,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getNtpAccessGroups() {
       return _ntpAccessGroups;
+   }
+
+   public String getNtpSourceInterface() {
+      return _ntpSourceInterface;
    }
 
    public Set<String> getPimAcls() {
@@ -662,6 +680,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return _snmpServer;
    }
 
+   public String getSnmpSourceInterface() {
+      return _snmpSourceInterface;
+   }
+
+   public boolean getSpanningTreePortfastDefault() {
+      return _spanningTreePortfastDefault;
+   }
+
    public Set<String> getSshAcls() {
       return _sshAcls;
    }
@@ -684,6 +710,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public NavigableSet<String> getTacacsServers() {
       return _tacacsServers;
+   }
+
+   public String getTacacsSourceInterface() {
+      return _tacacsSourceInterface;
    }
 
    public SortedMap<String, Integer> getUndefinedPeerGroups() {
@@ -942,6 +972,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
    }
 
+   public void setDnsSourceInterface(String dnsSourceInterface) {
+      _dnsSourceInterface = dnsSourceInterface;
+   }
+
    public void setDomainName(String domainName) {
       _domainName = domainName;
    }
@@ -979,6 +1013,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       _hostname = hostname;
    }
 
+   public void setNtpSourceInterface(String ntpSourceInterface) {
+      _ntpSourceInterface = ntpSourceInterface;
+   }
+
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
@@ -986,6 +1024,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public void setSnmpServer(SnmpServer snmpServer) {
       _snmpServer = snmpServer;
+   }
+
+   public void setSnmpSourceInterface(String snmpSourceInterface) {
+      _snmpSourceInterface = snmpSourceInterface;
+   }
+
+   public void setSpanningTreePortfastDefault(
+         boolean spanningTreePortfastDefault) {
+      _spanningTreePortfastDefault = spanningTreePortfastDefault;
+   }
+
+   public void setTacacsSourceInterface(String tacacsSourceInterface) {
+      _tacacsSourceInterface = tacacsSourceInterface;
    }
 
    @Override
@@ -1609,6 +1660,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
          }
          boolean routeReflectorClient = lpg.getRouteReflectorClient();
          boolean sendCommunity = lpg.getSendCommunity();
+         boolean additionalPathsReceive = lpg.getAdditionalPathsReceive();
+         boolean additionalPathsSelectAll = lpg.getAdditionalPathsSelectAll();
+         boolean additionalPathsSend = lpg.getAdditionalPathsSend();
          boolean advertiseInactive = lpg.getAdvertiseInactive();
          boolean ebgpMultihop = lpg.getEbgpMultihop();
          boolean allowasIn = lpg.getAllowAsIn();
@@ -1702,6 +1756,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
             }
             newBgpNeighbors.put(newNeighbor.getPrefix(), newNeighbor);
 
+            newNeighbor.setAdditionalPathsReceive(additionalPathsReceive);
+            newNeighbor.setAdditionalPathsSelectAll(additionalPathsSelectAll);
+            newNeighbor.setAdditionalPathsSend(additionalPathsSend);
             newNeighbor.setAdvertiseInactive(advertiseInactive);
             newNeighbor.setAllowLocalAsIn(allowasIn);
             newNeighbor.setAllowRemoteAsOut(disablePeerAsCheck);
@@ -1761,6 +1818,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
       newIface.setProxyArp(iface.getProxyArp());
+      newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
+      newIface.setSwitchport(iface.getSwitchport());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
          newIface.getAllPrefixes().add(iface.getPrefix());
@@ -2911,14 +2970,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       c.setDnsServers(_dnsServers);
+      c.setDnsSourceInterface(_dnsSourceInterface);
       c.setTacacsServers(_tacacsServers);
+      c.setTacacsSourceInterface(_tacacsSourceInterface);
+      c.setNtpSourceInterface(_ntpSourceInterface);
       if (_cf.getNtp() != null) {
          c.setNtpServers(new TreeSet<>(_cf.getNtp().getServers().keySet()));
       }
       if (_cf.getLogging() != null) {
+         c.setLoggingSourceInterface(_cf.getLogging().getSourceInterface());
          c.setLoggingServers(
                new TreeSet<>(_cf.getLogging().getHosts().keySet()));
       }
+      c.setSnmpSourceInterface(_snmpSourceInterface);
 
       processLines();
       processFailoverSettings();

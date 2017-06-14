@@ -106,7 +106,7 @@
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "name" : "deny ip any any",
+                "name" : "deny   ip any any",
                 "negate" : false,
                 "srcIps" : [
                   "0.0.0.0/0"
@@ -122,7 +122,7 @@
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+                "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
                 "negate" : false,
                 "srcIps" : [
                   "2.0.0.0/8"
@@ -133,7 +133,7 @@
                 "dstIps" : [
                   "2.128.1.101"
                 ],
-                "name" : "deny ip any host 2.128.1.101",
+                "name" : "deny   ip any host 2.128.1.101",
                 "negate" : false,
                 "srcIps" : [
                   "0.0.0.0/0"
@@ -173,7 +173,7 @@
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "name" : "deny ip any any",
+                "name" : "deny   ip any any",
                 "negate" : false,
                 "srcIps" : [
                   "0.0.0.0/0"
@@ -189,7 +189,7 @@
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+                "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
                 "negate" : false,
                 "srcIps" : [
                   "2.0.0.0/8"
@@ -340,7 +340,7 @@
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "name" : "deny ip any any",
+                "name" : "deny   ip any any",
                 "negate" : false,
                 "srcIps" : [
                   "0.0.0.0/0"
@@ -381,7 +381,7 @@
                 "dstIps" : [
                   "2.128.0.0/16"
                 ],
-                "name" : "deny ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+                "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
                 "negate" : false,
                 "srcIps" : [
                   "1.128.0.0/16"
@@ -392,7 +392,7 @@
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "name" : "deny ip any any",
+                "name" : "deny   ip any any",
                 "negate" : false,
                 "srcIps" : [
                   "0.0.0.0/0"
@@ -773,19 +773,19 @@
             },
             {
               "index" : 1,
-              "name" : "deny ip any any",
+              "name" : "deny   ip any any",
               "differentAction" : false
             }
           ],
           "OUTSIDE_TO_INSIDE" : [
             {
               "index" : 0,
-              "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+              "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
               "differentAction" : false
             },
             {
               "index" : 1,
-              "name" : "deny ip any host 2.128.1.101",
+              "name" : "deny   ip any host 2.128.1.101",
               "differentAction" : false
             },
             {
@@ -804,14 +804,14 @@
             },
             {
               "index" : 1,
-              "name" : "deny ip any any",
+              "name" : "deny   ip any any",
               "differentAction" : false
             }
           ],
           "OUTSIDE_TO_INSIDE" : [
             {
               "index" : 0,
-              "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+              "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
               "differentAction" : false
             },
             {
@@ -878,7 +878,7 @@
             },
             {
               "index" : 1,
-              "name" : "deny ip any any",
+              "name" : "deny   ip any any",
               "differentAction" : false
             }
           ],
@@ -890,7 +890,7 @@
             },
             {
               "index" : 2,
-              "name" : "deny ip any any",
+              "name" : "deny   ip any any",
               "differentAction" : false
             }
           ]
@@ -1011,13 +1011,13 @@
               "name" : "permit icmp any any",
               "differentAction" : true,
               "earliestMoreGeneralLineIndex" : 1,
-              "earliestMoreGeneralLineName" : "deny ip any any"
+              "earliestMoreGeneralLineName" : "deny   ip any any"
             }
           ],
           "RESTRICT_HOST_TRAFFIC_OUT" : [
             {
               "index" : 1,
-              "name" : "deny ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+              "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
               "differentAction" : true,
               "earliestMoreGeneralLineIndex" : 0,
               "earliestMoreGeneralLineName" : "permit ip any 2.128.0.0 0.0.255.255"

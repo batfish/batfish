@@ -12,6 +12,12 @@ public abstract class BgpPeerGroup implements Serializable {
 
    protected Boolean _active;
 
+   protected Boolean _additionalPathsReceive;
+
+   protected Boolean _additionalPathsSelectAll;
+
+   protected Boolean _additionalPathsSend;
+
    protected Boolean _advertiseInactive;
 
    private Map<String, String> _afGroups;
@@ -100,6 +106,18 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public Boolean getActive() {
       return _active;
+   }
+
+   public Boolean getAdditionalPathsReceive() {
+      return _additionalPathsReceive;
+   }
+
+   public Boolean getAdditionalPathsSelectAll() {
+      return _additionalPathsSelectAll;
+   }
+
+   public Boolean getAdditionalPathsSend() {
+      return _additionalPathsSend;
    }
 
    public Boolean getAdvertiseInactive() {
@@ -309,6 +327,15 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_active == null) {
          _active = pg.getActive();
       }
+      if (_additionalPathsReceive == null) {
+         _additionalPathsReceive = pg.getAdditionalPathsReceive();
+      }
+      if (_additionalPathsSelectAll == null) {
+         _additionalPathsSelectAll = pg.getAdditionalPathsSelectAll();
+      }
+      if (_additionalPathsSend == null) {
+         _additionalPathsSend = pg.getAdditionalPathsSend();
+      }
       if (_advertiseInactive == null) {
          _advertiseInactive = pg.getAdvertiseInactive();
       }
@@ -409,6 +436,18 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setActive(boolean active) {
       _active = active;
+   }
+
+   public void setAdditionalPathsReceive(Boolean additionalPathsReceive) {
+      _additionalPathsReceive = additionalPathsReceive;
+   }
+
+   public void setAdditionalPathsSelectAll(Boolean additionalPathsSelectAll) {
+      _additionalPathsSelectAll = additionalPathsSelectAll;
+   }
+
+   public void setAdditionalPathsSend(Boolean additionalPathsSend) {
+      _additionalPathsSend = additionalPathsSend;
    }
 
    public void setAdvertiseInactive(boolean advertiseInactive) {
