@@ -23,8 +23,8 @@
           "interfacesDiff" : {
             "class" : "org.batfish.datamodel.InterfacesDiff",
             "diff" : [
-              "FastEthernet1/0",
-              "FastEthernet1/1"
+              "GigabitEthernet2/0",
+              "GigabitEthernet3/0"
             ]
           }
         },

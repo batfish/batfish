@@ -11,8 +11,9 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -53,9 +54,10 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet0/2",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -91,8 +93,9 @@
         "as1core1" : {
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
             "Loopback0"
           ],
           "policySortedMaps" : [
@@ -114,9 +117,10 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -158,9 +162,10 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -197,10 +202,11 @@
         "as2core1" : {
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
-            "FastEthernet2/0",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
+            "GigabitEthernet3/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -222,10 +228,11 @@
         "as2core2" : {
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
-            "FastEthernet2/0",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
+            "GigabitEthernet3/0",
             "Loopback0"
           ],
           "policySortedMaps" : [
@@ -247,10 +254,11 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
-            "FastEthernet1/1",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
+            "GigabitEthernet3/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -279,9 +287,10 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -311,9 +320,10 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -345,8 +355,9 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -384,8 +395,9 @@
           ],
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
             "Loopback0"
           ],
           "ipAccessLists" : [
@@ -417,10 +429,11 @@
         "as3core1" : {
           "configurationFormat" : "CISCO_IOS",
           "interfaces" : [
-            "FastEthernet0/0",
-            "FastEthernet0/1",
-            "FastEthernet1/0",
-            "FastEthernet1/1",
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "GigabitEthernet2/0",
+            "GigabitEthernet3/0",
             "Loopback0"
           ],
           "policySortedMaps" : [
