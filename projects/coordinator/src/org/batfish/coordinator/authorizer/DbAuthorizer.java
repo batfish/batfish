@@ -243,9 +243,11 @@ public class DbAuthorizer implements Authorizer {
             if (_dbConn != null) {
                _dbConn.close();
             }
-            String driverClass = Main.getSettings().getDriverClass();
-            if (driverClass != null) {
-               Class.forName(Main.getSettings().getDriverClass());
+            String driverClassName = Main.getSettings().getDriverClass();
+            if (driverClassName != null) {
+               ClassLoader cl = Thread.currentThread().getContextClassLoader();
+               cl.loadClass(driverClassName);
+               Class.forName(driverClassName, true, cl);
             }
             _dbConn = DriverManager.getConnection(
                   Main.getSettings().getDbAuthorizerConnString());
