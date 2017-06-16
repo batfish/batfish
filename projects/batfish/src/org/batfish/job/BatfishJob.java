@@ -3,7 +3,7 @@ package org.batfish.job;
 import java.util.concurrent.Callable;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.main.Settings;
+import org.batfish.config.Settings;
 
 public abstract class BatfishJob<R extends BatfishJobResult<?, ?>>
       implements Callable<R> {

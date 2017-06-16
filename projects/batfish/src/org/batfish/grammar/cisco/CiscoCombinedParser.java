@@ -1,10 +1,10 @@
 package org.batfish.grammar.cisco;
 
 import org.batfish.common.BatfishException;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
-import org.batfish.main.Settings;
 
 public class CiscoCombinedParser
       extends BatfishCombinedParser<CiscoParser, CiscoLexer> {

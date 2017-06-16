@@ -1,8 +1,8 @@
 package org.batfish.grammar.topology;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.main.Settings;
 
 public class RoleCombinedParser
       extends BatfishCombinedParser<RoleParser, RoleLexer> {

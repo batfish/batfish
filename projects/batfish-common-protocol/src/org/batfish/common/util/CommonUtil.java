@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
@@ -11,11 +12,14 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -28,15 +32,24 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.skyscreamer.jsonassert.JSONAssert;
+
+import sun.reflect.Reflection;
 
 public class CommonUtil {
 
@@ -68,6 +81,59 @@ public class CommonUtil {
       }
       else {
          return false;
+      }
+   }
+
+   public static <T extends Throwable> boolean causedBy(Throwable e,
+         Class<T> causeClass) {
+      Set<Throwable> seenCauses = Collections
+            .newSetFromMap(new IdentityHashMap<>());
+      return causedBy(e, causeClass, seenCauses);
+   }
+
+   private static <T extends Throwable> boolean causedBy(Throwable e,
+         Class<T> causeClass, Set<Throwable> seenCauses) {
+      if (seenCauses.contains(e)) {
+         return false;
+      }
+      seenCauses.add(e);
+      if (causeClass.isInstance(e)) {
+         return true;
+      }
+      else {
+         Throwable cause = e.getCause();
+         if (cause != null) {
+            return causedBy(cause, causeClass, seenCauses);
+         }
+         else {
+            return false;
+         }
+      }
+   }
+
+   public static boolean causedByMessage(Throwable e, String searchTerm) {
+      Set<Throwable> seenCauses = Collections
+            .newSetFromMap(new IdentityHashMap<>());
+      return causedByMessage(e, searchTerm, seenCauses);
+   }
+
+   private static boolean causedByMessage(Throwable e, String searchTerm,
+         Set<Throwable> seenCauses) {
+      if (seenCauses.contains(e)) {
+         return false;
+      }
+      seenCauses.add(e);
+      if (e.getMessage().contains(searchTerm)) {
+         return true;
+      }
+      else {
+         Throwable cause = e.getCause();
+         if (cause != null) {
+            return causedByMessage(cause, searchTerm, seenCauses);
+         }
+         else {
+            return false;
+         }
       }
    }
 
@@ -108,6 +174,81 @@ public class CommonUtil {
                "Could not create directories leading up to and including '"
                      + path.toString() + "'",
                e);
+      }
+   }
+
+   public static ClientBuilder createHttpClientBuilder(boolean noSsl,
+         boolean trustAllSslCerts, String keystoreFile, String keystorePassword,
+         String truststoreFile, String truststorePassword) {
+      try {
+         if (!noSsl) {
+            ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+            SSLContext sslcontext = SSLContext.getInstance("TLS");
+            TrustManager[] trustManagers;
+            if (trustAllSslCerts) {
+               trustManagers = new TrustManager[] { new X509TrustManager() {
+                  @Override
+                  public void checkClientTrusted(X509Certificate[] arg0,
+                        String arg1) throws CertificateException {
+                  }
+
+                  @Override
+                  public void checkServerTrusted(X509Certificate[] arg0,
+                        String arg1) throws CertificateException {
+                  }
+
+                  @Override
+                  public X509Certificate[] getAcceptedIssuers() {
+                     return new X509Certificate[0];
+                  }
+
+               } };
+               clientBuilder.hostnameVerifier(new TrustAllHostNameVerifier());
+            }
+            else if (truststoreFile != null) {
+               TrustManagerFactory tmf = TrustManagerFactory
+                     .getInstance("SunX509");
+               KeyStore ts = KeyStore.getInstance("JKS");
+               if (truststorePassword == null) {
+                  throw new BatfishException(
+                        "Truststore file supplied but truststore password missing");
+               }
+               char[] tsPass = truststorePassword.toCharArray();
+               ts.load(new FileInputStream(Paths.get(truststoreFile).toFile()),
+                     tsPass);
+               tmf.init(ts);
+               trustManagers = tmf.getTrustManagers();
+            }
+            else {
+               trustManagers = null;
+            }
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            KeyStore ks = KeyStore.getInstance("JKS");
+            KeyManager[] keyManagers;
+            if (keystoreFile != null) {
+               if (keystorePassword == null) {
+                  throw new BatfishException(
+                        "Keystore file supplied but keystore password");
+               }
+               char[] ksPass = keystorePassword.toCharArray();
+               ks.load(new FileInputStream(Paths.get(keystoreFile).toFile()),
+                     ksPass);
+               kmf.init(ks, ksPass);
+               keyManagers = kmf.getKeyManagers();
+            }
+            else {
+               keyManagers = null;
+            }
+            sslcontext.init(keyManagers, trustManagers,
+                  new java.security.SecureRandom());
+            return clientBuilder.sslContext(sslcontext);
+         }
+         else {
+            return ClientBuilder.newBuilder();
+         }
+      }
+      catch (Exception e) {
+         throw new BatfishException("Error creating HTTP client builder", e);
       }
    }
 
@@ -152,41 +293,6 @@ public class CommonUtil {
          s += (bit != 0) ? 1 : 0;
       }
       return s;
-   }
-
-   public static ClientBuilder getClientBuilder(boolean secure,
-         boolean trustAll) throws Exception {
-      if (secure) {
-         if (trustAll) {
-            SSLContext sslcontext = SSLContext.getInstance("TLS");
-            sslcontext.init(null, new TrustManager[] { new X509TrustManager() {
-               @Override
-               public void checkClientTrusted(X509Certificate[] arg0,
-                     String arg1) throws CertificateException {
-               }
-
-               @Override
-               public void checkServerTrusted(X509Certificate[] arg0,
-                     String arg1) throws CertificateException {
-               }
-
-               @Override
-               public X509Certificate[] getAcceptedIssuers() {
-                  return new X509Certificate[0];
-               }
-
-            } }, new java.security.SecureRandom());
-
-            return ClientBuilder.newBuilder().sslContext(sslcontext)
-                  .hostnameVerifier(new TrustAllHostNameVerifier());
-         }
-         else {
-            return ClientBuilder.newBuilder();
-         }
-      }
-      else {
-         return ClientBuilder.newBuilder();
-      }
    }
 
    public static Path getConfigProperties(Class<?> locatorClass,
@@ -434,6 +540,46 @@ public class CommonUtil {
       }
       String sha256 = sb.toString();
       return sha256;
+   }
+
+   public static void startSSLServer(ResourceConfig rcWork, URI mgrUri,
+         String keystoreFilename, String keystorePassword,
+         boolean trustAllCerts, String truststoreFilename,
+         String truststorePassword, Class<?> configurationLocatorClass) {
+      if (keystoreFilename == null) {
+         throw new BatfishException(
+               "Cannot start SSL server without keystore. If you have none, you must disable SSL.");
+      }
+      // first find the file as specified.
+      // if that does not work, find it relative to the binary
+      Path keystoreFile = Paths.get(keystoreFilename).toAbsolutePath();
+      if (!Files.exists(keystoreFile)) {
+         keystoreFile = CommonUtil.getJarOrClassDir(configurationLocatorClass)
+               .toAbsolutePath().resolve(keystoreFilename);
+      }
+
+      if (!Files.exists(keystoreFile)) {
+         String callingClass = Reflection.getCallerClass().getCanonicalName();
+         System.err.printf("%s: keystore file not found at %s or %s\n",
+               callingClass, keystoreFilename, keystoreFile.toString());
+         System.exit(1);
+      }
+
+      SSLContextConfigurator sslCon = new SSLContextConfigurator();
+      sslCon.setKeyStoreFile(keystoreFile.toString());
+      sslCon.setKeyStorePass(keystorePassword);
+
+      if (truststoreFilename != null) {
+         if (truststorePassword == null) {
+            throw new BatfishException(
+                  "Truststore file supplied but truststore password missing");
+         }
+         sslCon.setTrustStoreFile(truststoreFilename);
+         sslCon.setTrustStorePass(truststorePassword);
+      }
+      boolean verifyClient = !trustAllCerts;
+      GrizzlyHttpServerFactory.createHttpServer(mgrUri, rcWork, true,
+            new SSLEngineConfigurator(sslCon, false, verifyClient, false));
    }
 
    public static <S extends Set<T>, T> S symmetricDifference(Set<T> set1,

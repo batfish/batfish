@@ -1,8 +1,8 @@
 package org.batfish.grammar.topology;
 
+import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.topology.GNS3TopologyParser.TopologyContext;
-import org.batfish.main.Settings;
 
 public class GNS3TopologyCombinedParser
       extends BatfishCombinedParser<GNS3TopologyParser, GNS3TopologyLexer> {

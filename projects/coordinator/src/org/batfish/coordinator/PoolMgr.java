@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -18,6 +17,8 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.coordinator.config.Settings;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -30,12 +31,15 @@ public class PoolMgr {
       }
    }
 
-   private BatfishLogger _logger;
+   private final BatfishLogger _logger;
+
+   private final Settings _settings;
 
    // the key should be of the form <ip or hostname>:<port>
    private HashMap<String, WorkerStatus> workerPool;
 
-   public PoolMgr(BatfishLogger logger) {
+   public PoolMgr(Settings settings, BatfishLogger logger) {
+      _settings = settings;
       _logger = logger;
       workerPool = new HashMap<>();
 
@@ -121,9 +125,19 @@ public class PoolMgr {
       // +"\n");
 
       try {
-         Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(String.format("http://%s%s/%s",
-               worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_STATUS_RSC));
+         // Client client = ClientBuilder.newClient();
+         Client client = CommonUtil
+               .createHttpClientBuilder(_settings.getSslPoolDisable(),
+                     _settings.getSslPoolTrustAllCerts(),
+                     _settings.getSslPoolKeystoreFile(),
+                     _settings.getSslPoolKeystorePassword(),
+                     _settings.getSslPoolTruststoreFile(),
+                     _settings.getSslPoolTruststorePassword())
+               .build();
+         String protocol = _settings.getSslPoolDisable() ? "http" : "https";
+         WebTarget webTarget = client
+               .target(String.format("%s://%s%s/%s", protocol, worker,
+                     BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_STATUS_RSC));
          Invocation.Builder invocationBuilder = webTarget
                .request(MediaType.APPLICATION_JSON);
          Response response = invocationBuilder.get();

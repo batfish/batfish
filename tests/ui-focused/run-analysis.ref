@@ -12,10 +12,10 @@
                   "description" : "Unused structure of type: 'bgp group' with name: 'as1'",
                   "files" : {
                     "as2border2.cfg" : [
-                      82
+                      84
                     ],
                     "as3border1.cfg" : [
-                      75
+                      78
                     ]
                   }
                 },
@@ -23,10 +23,10 @@
                   "description" : "Unused structure of type: 'bgp group' with name: 'as2'",
                   "files" : {
                     "as1border2.cfg" : [
-                      80
+                      84
                     ],
                     "as3border2.cfg" : [
-                      77
+                      80
                     ]
                   }
                 },
@@ -34,10 +34,10 @@
                   "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
                   "files" : {
                     "as1border1.cfg" : [
-                      79
+                      83
                     ],
                     "as2border1.cfg" : [
-                      88
+                      90
                     ]
                   }
                 },
@@ -45,10 +45,10 @@
                   "description" : "Unused structure of type: 'expanded community-list' with name: 'as1_community'",
                   "files" : {
                     "as1border1.cfg" : [
-                      115
+                      119
                     ],
                     "as1border2.cfg" : [
-                      116
+                      120
                     ]
                   }
                 },
@@ -56,10 +56,10 @@
                   "description" : "Unused structure of type: 'expanded community-list' with name: 'as2_community'",
                   "files" : {
                     "as2border1.cfg" : [
-                      119
+                      121
                     ],
                     "as2border2.cfg" : [
-                      117
+                      119
                     ]
                   }
                 },
@@ -67,10 +67,10 @@
                   "description" : "Unused structure of type: 'expanded community-list' with name: 'as3_community'",
                   "files" : {
                     "as3border1.cfg" : [
-                      109
+                      112
                     ],
                     "as3border2.cfg" : [
-                      109
+                      112
                     ]
                   }
                 },
@@ -78,10 +78,10 @@
                   "description" : "Unused structure of type: 'extended ip access-list' with name: '102'",
                   "files" : {
                     "as2dist1.cfg" : [
-                      117
+                      116
                     ],
                     "as2dist2.cfg" : [
-                      117
+                      116
                     ]
                   }
                 },
@@ -89,7 +89,7 @@
                   "description" : "Unused structure of type: 'extended ip access-list' with name: '105'",
                   "files" : {
                     "as2dept1.cfg" : [
-                      118
+                      121
                     ]
                   }
                 },
@@ -97,7 +97,7 @@
                   "description" : "Unused structure of type: 'extended ip access-list' with name: 'RESTRICT_HOST_TRAFFIC_OUT'",
                   "files" : {
                     "as2dept1.cfg" : [
-                      104
+                      114
                     ]
                   }
                 },
@@ -105,22 +105,22 @@
                   "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'inbound_route_filter'",
                   "files" : {
                     "as1border1.cfg" : [
-                      123
+                      129
                     ],
                     "as1border2.cfg" : [
-                      125
+                      131
                     ],
                     "as2border1.cfg" : [
-                      134
+                      136
                     ],
                     "as2border2.cfg" : [
-                      132
+                      133
                     ],
                     "as3border1.cfg" : [
-                      115
+                      120
                     ],
                     "as3border2.cfg" : [
-                      115
+                      118
                     ]
                   }
                 }
@@ -129,41 +129,58 @@
                 "as1border1" : {
                   "bgp group" : {
                     "as3" : [
-                      79
+                      83
                     ]
                   },
                   "expanded community-list" : {
                     "as1_community" : [
-                      115
+                      119
                     ]
                   },
                   "ipv4 prefix-list" : {
                     "inbound_route_filter" : [
-                      123
+                      129
                     ]
                   }
                 },
                 "as1border2" : {
                   "bgp group" : {
                     "as2" : [
-                      80
+                      84
                     ]
                   },
                   "expanded community-list" : {
                     "as1_community" : [
-                      116
+                      120
                     ]
                   },
                   "ipv4 prefix-list" : {
                     "inbound_route_filter" : [
-                      125
+                      131
                     ]
                   }
                 },
                 "as2border1" : {
                   "bgp group" : {
                     "as3" : [
-                      88
+                      90
+                    ]
+                  },
+                  "expanded community-list" : {
+                    "as2_community" : [
+                      121
+                    ]
+                  },
+                  "ipv4 prefix-list" : {
+                    "inbound_route_filter" : [
+                      136
+                    ]
+                  }
+                },
+                "as2border2" : {
+                  "bgp group" : {
+                    "as1" : [
+                      84
                     ]
                   },
                   "expanded community-list" : {
@@ -173,82 +190,65 @@
                   },
                   "ipv4 prefix-list" : {
                     "inbound_route_filter" : [
-                      134
-                    ]
-                  }
-                },
-                "as2border2" : {
-                  "bgp group" : {
-                    "as1" : [
-                      82
-                    ]
-                  },
-                  "expanded community-list" : {
-                    "as2_community" : [
-                      117
-                    ]
-                  },
-                  "ipv4 prefix-list" : {
-                    "inbound_route_filter" : [
-                      132
+                      133
                     ]
                   }
                 },
                 "as2dept1" : {
                   "extended ip access-list" : {
                     "105" : [
-                      118
+                      121
                     ],
                     "RESTRICT_HOST_TRAFFIC_OUT" : [
-                      104
+                      114
                     ]
                   }
                 },
                 "as2dist1" : {
                   "extended ip access-list" : {
                     "102" : [
-                      117
+                      116
                     ]
                   }
                 },
                 "as2dist2" : {
                   "extended ip access-list" : {
                     "102" : [
-                      117
+                      116
                     ]
                   }
                 },
                 "as3border1" : {
                   "bgp group" : {
                     "as1" : [
-                      75
+                      78
                     ]
                   },
                   "expanded community-list" : {
                     "as3_community" : [
-                      109
+                      112
                     ]
                   },
                   "ipv4 prefix-list" : {
                     "inbound_route_filter" : [
-                      115
+                      120
                     ]
                   }
                 },
                 "as3border2" : {
                   "bgp group" : {
                     "as2" : [
-                      77
+                      80
                     ]
                   },
                   "expanded community-list" : {
                     "as3_community" : [
-                      109
+                      112
                     ]
                   },
                   "ipv4 prefix-list" : {
                     "inbound_route_filter" : [
-                      115
+                      118
                     ]
                   }
                 }

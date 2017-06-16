@@ -258,6 +258,11 @@ dhcp_profile_null
    ) ~NEWLINE* NEWLINE
 ;
 
+domain_lookup
+:
+   LOOKUP SOURCE_INTERFACE iname = interface_name NEWLINE
+;
+
 domain_name
 :
    NAME hostname = variable_hostname NEWLINE
@@ -477,6 +482,14 @@ ip_dhcp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ip_domain_lookup
+:
+   LOOKUP
+   (
+      SOURCE_INTERFACE iname = interface_name
+   )? NEWLINE
+;
+
 ip_domain_name
 :
    NAME
@@ -489,7 +502,6 @@ ip_domain_null
 :
    (
       LIST
-      | LOOKUP
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1309,7 +1321,8 @@ s_domain
       VRF vrf = variable
    )?
    (
-      domain_name
+      domain_lookup
+      | domain_name
       | domain_name_server
    )
 ;
@@ -1450,7 +1463,8 @@ s_ip_domain
 :
    NO? IP DOMAIN
    (
-      ip_domain_name
+      ip_domain_lookup
+      | ip_domain_name
       | ip_domain_null
    )
 ;
@@ -1507,6 +1521,14 @@ s_ip_ssh
       | ip_ssh_version
       | ip_ssh_null
    )
+;
+
+s_ip_tacacs_source_interface
+:
+   IP TACACS
+   (
+      VRF vrf = variable
+   )? SOURCE_INTERFACE iname = interface_name NEWLINE
 ;
 
 s_ip_wccp
@@ -1725,8 +1747,10 @@ s_spanning_tree
    NO? SPANNING_TREE
    (
       spanning_tree_mst
+      | spanning_tree_portfast
       | spanning_tree_pseudo_information
       | spanning_tree_null
+      | NEWLINE
    )
 ;
 
@@ -1774,12 +1798,21 @@ s_switchport
    ) NEWLINE
 ;
 
+s_system
+:
+   SYSTEM
+   (
+      system_default
+      | system_null
+   )
+;
+
 s_tacacs
 :
    TACACS
    (
-      t_null
-      | t_server
+      t_server
+      | t_source_interface
    )
 ;
 
@@ -1922,6 +1955,19 @@ sccp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+sd_null
+:
+   (
+      DCE_MODE
+      | INTERFACE
+   ) ~NEWLINE* NEWLINE
+;
+
+sd_switchport
+:
+   SWITCHPORT SHUTDOWN? NEWLINE
+;
+
 sntp_server
 :
    SERVER hostname = variable
@@ -1945,6 +1991,17 @@ spanning_tree_mst_null
    ) ~NEWLINE* NEWLINE
 ;
 
+spanning_tree_portfast
+:
+   PORTFAST
+   (
+      bpdufilter = BPDUFILTER
+      | bpduguard = BPDUGUARD
+      | defaultLiteral = DEFAULT
+      | edge = EDGE
+   )* NEWLINE
+;
+
 spanning_tree_pseudo_information
 :
    PSEUDO_INFORMATION NEWLINE
@@ -1956,9 +2013,7 @@ spanning_tree_pseudo_information
 spanning_tree_null
 :
    (
-   // intentional blank
-
-      | BACKBONEFAST
+      BACKBONEFAST
       | BRIDGE
       | DISPUTE
       | ETHERCHANNEL
@@ -1970,7 +2025,6 @@ spanning_tree_null
       | OPTIMIZE
       | PATHCOST
       | PORT
-      | PORTFAST
       | UPLINKFAST
       | VLAN
    ) ~NEWLINE* NEWLINE
@@ -2126,6 +2180,7 @@ stanza
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
+   | s_ip_tacacs_source_interface
    | s_ip_wccp
    | s_ipc
    | s_ipv6_router_ospf
@@ -2176,6 +2231,7 @@ stanza
    | s_statistics
    | s_stcapp
    | s_switchport
+   | s_system
    | s_table_map
    | s_tacacs
    | s_tacacs_server
@@ -2214,10 +2270,28 @@ switching_mode_stanza
    SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
-t_null
+system_default
+:
+   DEFAULT
+   (
+      sd_null
+      | sd_switchport
+   )
+;
+
+system_null
 :
    (
-      SOURCE_INTERFACE
+      FABRIC
+      | FABRIC_MODE
+      | FLOWCONTROL
+      | JUMBOMTU
+      | MODULE_TYPE
+      | MTU
+      | QOS
+      | ROUTING
+      | URPF
+      | VLAN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2256,6 +2330,14 @@ t_server_null
 t_key
 :
    KEY DEC? variable_permissive NEWLINE
+;
+
+t_source_interface
+:
+   SOURCE_INTERFACE iname = interface_name
+   (
+      VRF name = variable
+   )? NEWLINE
 ;
 
 tap_null

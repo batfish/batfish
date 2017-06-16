@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
@@ -33,6 +34,10 @@ import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.ConfigurationLocator;
+import org.batfish.config.Settings;
+import org.batfish.config.Settings.EnvironmentSettings;
+import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.common.Version;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -40,8 +45,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.main.Settings.EnvironmentSettings;
-import org.batfish.main.Settings.TestrigSettings;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -88,8 +91,6 @@ public class Driver {
 
    static Logger networkListenerLogger = Logger
          .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
-
-   private static final String SERVICE_URL = "http://0.0.0.0";
 
    private static synchronized Map<TestrigSettings, DataPlane> buildDataPlaneCache() {
       return Collections.synchronizedMap(
@@ -200,17 +201,28 @@ public class Driver {
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
       if (_mainSettings.runInServiceMode()) {
-         URI baseUri = UriBuilder.fromUri(SERVICE_URL)
+
+         String protocol = _mainSettings.getSslDisable() ? "http" : "https";
+         String baseUrl = String.format("%s://%s", protocol,
+               _mainSettings.getServiceBindHost());
+         URI baseUri = UriBuilder.fromUri(baseUrl)
                .port(_mainSettings.getServicePort()).build();
-
          _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
-
          ResourceConfig rc = new ResourceConfig(Service.class)
                .register(new JettisonFeature());
-
          try {
-            GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
-
+            if (_mainSettings.getSslDisable()) {
+               GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
+            }
+            else {
+               CommonUtil.startSSLServer(rc, baseUri,
+                     _mainSettings.getSslKeystoreFile(),
+                     _mainSettings.getSslKeystorePassword(),
+                     _mainSettings.getSslTrustAllCerts(),
+                     _mainSettings.getSslTruststoreFile(),
+                     _mainSettings.getSslTruststoreFile(),
+                     ConfigurationLocator.class);
+            }
             if (_mainSettings.getCoordinatorRegister()) {
                // this function does not return until registration succeeds
                registerWithCoordinatorPersistent();
@@ -274,14 +286,18 @@ public class Driver {
    private static boolean registerWithCoordinator(String poolRegUrl) {
       try {
          Client client = CommonUtil
-               .getClientBuilder(_mainSettings.getCoordinatorUseSsl(),
-                     _mainSettings.getTrustAllSslCerts())
+               .createHttpClientBuilder(_mainSettings.getSslDisable(),
+                     _mainSettings.getSslTrustAllCerts(),
+                     _mainSettings.getSslKeystoreFile(),
+                     _mainSettings.getSslKeystorePassword(),
+                     _mainSettings.getSslTruststoreFile(),
+                     _mainSettings.getSslTruststorePassword())
                .build();
          WebTarget webTarget = client.target(poolRegUrl)
-               .queryParam(CoordConsts.SVC_ADD_WORKER_KEY,
+               .queryParam(CoordConsts.SVC_KEY_ADD_WORKER,
                      _mainSettings.getServiceHost() + ":"
                            + _mainSettings.getServicePort())
-               .queryParam(CoordConsts.SVC_VERSION_KEY, Version.getVersion());
+               .queryParam(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
@@ -298,7 +314,7 @@ public class Driver {
          _mainLogger.debugf("BF: response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
-         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+         if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
             _mainLogger.errorf(
                   "BF: got error while checking work status: %s %s\n",
                   array.get(0), array.get(1));
@@ -308,9 +324,14 @@ public class Driver {
          return true;
       }
       catch (ProcessingException e) {
+         if (CommonUtil.causedBy(e, SSLHandshakeException.class) || CommonUtil
+               .causedByMessage(e, "Unexpected end of file from server")) {
+            throw new BatfishException("Unrecoverable connection error", e);
+         }
          _mainLogger.errorf(
                "BF: unable to connect to coordinator pool mgr at %s\n",
                poolRegUrl);
+         _mainLogger.debug(ExceptionUtils.getStackTrace(e) + "\n");
          return false;
       }
       catch (Exception e) {
@@ -323,12 +344,11 @@ public class Driver {
          throws InterruptedException {
       boolean registrationSuccess;
 
-      String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
-            : "http";
+      String protocol = _mainSettings.getSslDisable() ? "http" : "https";
       String poolRegUrl = String.format("%s://%s:%s%s/%s", protocol,
             _mainSettings.getCoordinatorHost(),
             +_mainSettings.getCoordinatorPoolPort(),
-            CoordConsts.SVC_BASE_POOL_MGR, CoordConsts.SVC_POOL_UPDATE_RSC);
+            CoordConsts.SVC_CFG_POOL_MGR, CoordConsts.SVC_RSC_POOL_UPDATE);
 
       do {
          registrationSuccess = registerWithCoordinator(poolRegUrl);

@@ -42,14 +42,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "1.0.1.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -62,19 +82,20 @@
               "ospfPassive" : false,
               "prefix" : "1.0.1.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "10.12.11.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -85,6 +106,7 @@
               "ospfPassive" : false,
               "prefix" : "10.12.11.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -110,6 +132,7 @@
               "ospfPassive" : true,
               "prefix" : "1.1.1.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -965,9 +988,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -998,6 +1018,9 @@
                 "neighbors" : {
                   "1.10.1.1/32" : {
                     "name" : "1.10.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "1.10.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1019,6 +1042,9 @@
                   },
                   "3.2.2.2/32" : {
                     "name" : "3.2.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "3.2.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1039,6 +1065,9 @@
                   },
                   "5.6.7.8/32" : {
                     "name" : "5.6.7.8/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "5.6.7.8",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1059,6 +1088,9 @@
                   },
                   "10.12.11.2/32" : {
                     "name" : "10.12.11.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.12.11.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -1083,8 +1115,9 @@
                 "routerId" : "1.1.1.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -1092,7 +1125,7 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
+                      "GigabitEthernet0/0",
                       "Loopback0"
                     ]
                   }
@@ -1153,14 +1186,58 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "10.13.22.1/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "10.13.22.1/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "1.0.2.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -1173,42 +1250,20 @@
               "ospfPassive" : false,
               "prefix" : "1.0.2.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "10.13.22.1/24"
-              ],
-              "bandwidth" : 1.0E8,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "10.13.22.1/24",
-              "proxyArp" : true,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
-            "FastEthernet0/2" : {
-              "name" : "FastEthernet0/2",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "10.14.22.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -1219,6 +1274,7 @@
               "ospfPassive" : false,
               "prefix" : "10.14.22.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -1244,6 +1300,7 @@
               "ospfPassive" : false,
               "prefix" : "1.2.2.2/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -2120,9 +2177,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -2153,6 +2207,9 @@
                 "neighbors" : {
                   "1.10.1.1/32" : {
                     "name" : "1.10.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "1.10.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -2174,6 +2231,9 @@
                   },
                   "10.13.22.3/32" : {
                     "name" : "10.13.22.3/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.13.22.3",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -2196,6 +2256,9 @@
                   },
                   "10.14.22.4/32" : {
                     "name" : "10.14.22.4/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.14.22.4",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -2220,9 +2283,10 @@
                 "routerId" : "1.2.2.2"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet0/2",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -2230,7 +2294,7 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
+                      "GigabitEthernet1/0",
                       "Loopback0"
                     ]
                   }
@@ -2249,39 +2313,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
               "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "1.0.1.2/24"
-              ],
-              "bandwidth" : 1.0E8,
+              "active" : false,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
               "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
+              "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "prefix" : "1.0.1.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "1.0.2.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2294,6 +2353,33 @@
               "ospfPassive" : false,
               "prefix" : "1.0.2.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "1.0.1.2/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 1,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.0.1.2/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -2319,6 +2405,7 @@
               "ospfPassive" : false,
               "prefix" : "1.10.1.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -2470,9 +2557,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -2503,6 +2587,9 @@
                 "neighbors" : {
                   "1.1.1.1/32" : {
                     "name" : "1.1.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "1.1.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -2524,6 +2611,9 @@
                   },
                   "1.2.2.2/32" : {
                     "name" : "1.2.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "1.2.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -2547,8 +2637,9 @@
                 "routerId" : "1.10.1.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -2556,8 +2647,8 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
-                      "FastEthernet0/1",
+                      "GigabitEthernet0/0",
+                      "GigabitEthernet1/0",
                       "Loopback0"
                     ]
                   }
@@ -2608,14 +2699,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "10.12.11.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "incomingFilter" : "OUTSIDE_TO_INSIDE",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2628,19 +2739,20 @@
               "outgoingFilter" : "INSIDE_TO_AS1",
               "prefix" : "10.12.11.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.11.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2653,19 +2765,20 @@
               "ospfPassive" : false,
               "prefix" : "2.12.11.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.12.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2678,6 +2791,7 @@
               "ospfPassive" : false,
               "prefix" : "2.12.12.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -2703,6 +2817,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.1.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -2783,7 +2898,7 @@
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "name" : "deny ip any any",
+                  "name" : "deny   ip any any",
                   "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
@@ -2799,7 +2914,7 @@
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+                  "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
                   "negate" : false,
                   "srcIps" : [
                     "2.0.0.0/8"
@@ -2810,7 +2925,7 @@
                   "dstIps" : [
                     "2.128.1.101"
                   ],
-                  "name" : "deny ip any host 2.128.1.101",
+                  "name" : "deny   ip any host 2.128.1.101",
                   "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
@@ -3522,9 +3637,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -3564,6 +3676,9 @@
                 "neighbors" : {
                   "2.1.2.1/32" : {
                     "name" : "2.1.2.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -3585,6 +3700,9 @@
                   },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -3606,6 +3724,9 @@
                   },
                   "10.12.11.1/32" : {
                     "name" : "10.12.11.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.12.11.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -3630,9 +3751,10 @@
                 "routerId" : "2.1.1.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -3640,8 +3762,8 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/1",
-                      "FastEthernet1/0",
+                      "GigabitEthernet1/0",
+                      "GigabitEthernet2/0",
                       "Loopback0"
                     ]
                   }
@@ -3692,14 +3814,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "10.23.21.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "incomingFilter" : "OUTSIDE_TO_INSIDE",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -3712,44 +3854,20 @@
               "outgoingFilter" : "INSIDE_TO_AS3",
               "prefix" : "10.23.21.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "2.12.21.1/24"
-              ],
-              "bandwidth" : 1.0E8,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "2.12.21.1/24",
-              "proxyArp" : true,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.22.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -3762,6 +3880,33 @@
               "ospfPassive" : false,
               "prefix" : "2.12.22.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.12.21.1/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 1,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.12.21.1/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -3787,6 +3932,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.1.2/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -3867,7 +4013,7 @@
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "name" : "deny ip any any",
+                  "name" : "deny   ip any any",
                   "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
@@ -3883,7 +4029,7 @@
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+                  "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
                   "negate" : false,
                   "srcIps" : [
                     "2.0.0.0/8"
@@ -4587,9 +4733,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -4629,6 +4772,9 @@
                 "neighbors" : {
                   "2.1.2.1/32" : {
                     "name" : "2.1.2.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -4650,6 +4796,9 @@
                   },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -4671,6 +4820,9 @@
                   },
                   "10.23.21.3/32" : {
                     "name" : "10.23.21.3/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.23.21.3",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -4695,9 +4847,10 @@
                 "routerId" : "2.1.1.2"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -4705,8 +4858,8 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/1",
-                      "FastEthernet1/0",
+                      "GigabitEthernet1/0",
+                      "GigabitEthernet2/0",
                       "Loopback0"
                     ]
                   }
@@ -4725,14 +4878,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.11.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4745,19 +4918,20 @@
               "ospfPassive" : false,
               "prefix" : "2.12.11.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.21.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4770,45 +4944,20 @@
               "ospfPassive" : false,
               "prefix" : "2.12.21.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "2.23.12.2/24"
-              ],
-              "bandwidth" : 1.0E8,
-              "incomingFilter" : "blocktelnet",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "2.23.12.2/24",
-              "proxyArp" : true,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
-            "FastEthernet2/0" : {
-              "name" : "FastEthernet2/0",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.23.11.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "incomingFilter" : "blocktelnet",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -4822,6 +4971,34 @@
               "ospfPassive" : false,
               "prefix" : "2.23.11.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet3/0" : {
+              "name" : "GigabitEthernet3/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.23.12.2/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "incomingFilter" : "blocktelnet",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 1,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.23.12.2/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -4847,6 +5024,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.2.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -5083,9 +5261,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -5116,6 +5291,9 @@
                 "neighbors" : {
                   "2.1.1.1/32" : {
                     "name" : "2.1.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5137,6 +5315,9 @@
                   },
                   "2.1.1.2/32" : {
                     "name" : "2.1.1.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.1.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5158,6 +5339,9 @@
                   },
                   "2.1.3.1/32" : {
                     "name" : "2.1.3.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.3.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5179,6 +5363,9 @@
                   },
                   "2.1.3.2/32" : {
                     "name" : "2.1.3.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.3.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5202,10 +5389,11 @@
                 "routerId" : "2.1.2.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
-                "FastEthernet2/0",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
+                "GigabitEthernet3/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -5213,10 +5401,10 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
-                      "FastEthernet0/1",
-                      "FastEthernet1/0",
-                      "FastEthernet2/0",
+                      "GigabitEthernet0/0",
+                      "GigabitEthernet1/0",
+                      "GigabitEthernet2/0",
+                      "GigabitEthernet3/0",
                       "Loopback0"
                     ]
                   }
@@ -5235,17 +5423,37 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.22.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
-              "mtu" : 1300,
+              "mtu" : 1800,
               "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
@@ -5255,22 +5463,23 @@
               "ospfPassive" : false,
               "prefix" : "2.12.22.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.12.12.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
-              "mtu" : 1100,
+              "mtu" : 1600,
               "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
@@ -5280,19 +5489,46 @@
               "ospfPassive" : false,
               "prefix" : "2.12.12.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.23.22.2/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1700,
+              "nativeVlan" : 1,
+              "ospfArea" : 1,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.23.22.2/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet3/0" : {
+              "name" : "GigabitEthernet3/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.23.21.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5305,31 +5541,7 @@
               "ospfPassive" : false,
               "prefix" : "2.23.21.2/24",
               "proxyArp" : true,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
-            "FastEthernet2/0" : {
-              "name" : "FastEthernet2/0",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "2.23.22.2/24"
-              ],
-              "bandwidth" : 1.0E8,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1200,
-              "nativeVlan" : 1,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "2.23.22.2/24",
-              "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -5355,6 +5567,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.2.2/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -5556,9 +5769,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -5589,6 +5799,9 @@
                 "neighbors" : {
                   "2.1.1.1/32" : {
                     "name" : "2.1.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5610,6 +5823,9 @@
                   },
                   "2.1.1.2/32" : {
                     "name" : "2.1.1.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.1.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5631,6 +5847,9 @@
                   },
                   "2.1.3.1/32" : {
                     "name" : "2.1.3.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.3.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5652,6 +5871,9 @@
                   },
                   "2.1.3.2/32" : {
                     "name" : "2.1.3.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.3.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -5675,10 +5897,11 @@
                 "routerId" : "2.1.2.2"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
-                "FastEthernet2/0",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
+                "GigabitEthernet3/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -5686,10 +5909,10 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
-                      "FastEthernet0/1",
-                      "FastEthernet1/0",
-                      "FastEthernet2/0",
+                      "GigabitEthernet0/0",
+                      "GigabitEthernet1/0",
+                      "GigabitEthernet2/0",
+                      "GigabitEthernet3/0",
                       "Loopback0"
                     ]
                   }
@@ -5720,14 +5943,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.34.101.4/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5738,19 +5981,20 @@
               "ospfPassive" : false,
               "prefix" : "2.34.101.4/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.34.201.4/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5761,19 +6005,20 @@
               "ospfPassive" : false,
               "prefix" : "2.34.201.4/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.128.0.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5785,19 +6030,20 @@
               "ospfPassive" : false,
               "prefix" : "2.128.0.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/1" : {
-              "name" : "FastEthernet1/1",
+            "GigabitEthernet3/0" : {
+              "name" : "GigabitEthernet3/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.128.1.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5809,6 +6055,7 @@
               "ospfPassive" : false,
               "prefix" : "2.128.1.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -5832,6 +6079,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.1.2/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -5934,7 +6182,7 @@
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "name" : "deny ip any any",
+                  "name" : "deny   ip any any",
                   "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
@@ -5975,7 +6223,7 @@
                   "dstIps" : [
                     "2.128.0.0/16"
                   ],
-                  "name" : "deny ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+                  "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
                   "negate" : false,
                   "srcIps" : [
                     "1.128.0.0/16"
@@ -5986,7 +6234,7 @@
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "name" : "deny ip any any",
+                  "name" : "deny   ip any any",
                   "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
@@ -6403,9 +6651,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -6436,6 +6681,9 @@
                 "neighbors" : {
                   "2.34.101.3/32" : {
                     "name" : "2.34.101.3/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.34.101.3",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -6458,6 +6706,9 @@
                   },
                   "2.34.201.3/32" : {
                     "name" : "2.34.201.3/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.34.201.3",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -6482,10 +6733,11 @@
                 "routerId" : "2.1.4.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
-                "FastEthernet1/1",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
+                "GigabitEthernet3/0",
                 "Loopback0"
               ]
             }
@@ -6510,39 +6762,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
               "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "2.23.21.3/24"
-              ],
-              "bandwidth" : 1.0E8,
+              "active" : false,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
               "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
+              "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "prefix" : "2.23.21.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.23.11.3/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -6555,19 +6802,46 @@
               "ospfPassive" : false,
               "prefix" : "2.23.11.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.23.21.3/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 1,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.23.21.3/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.34.101.3/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -6578,6 +6852,7 @@
               "ospfPassive" : false,
               "prefix" : "2.34.101.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -6603,6 +6878,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.3.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -7000,9 +7276,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -7033,6 +7306,9 @@
                 "neighbors" : {
                   "2.1.2.1/32" : {
                     "name" : "2.1.2.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7054,6 +7330,9 @@
                   },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7075,6 +7354,9 @@
                   },
                   "2.34.101.4/32" : {
                     "name" : "2.34.101.4/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.34.101.4",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7099,9 +7381,10 @@
                 "routerId" : "2.1.3.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -7109,8 +7392,8 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
-                      "FastEthernet0/1",
+                      "GigabitEthernet0/0",
+                      "GigabitEthernet1/0",
                       "Loopback0"
                     ]
                   }
@@ -7141,14 +7424,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.23.22.3/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -7161,19 +7464,20 @@
               "ospfPassive" : false,
               "prefix" : "2.23.22.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.23.12.3/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -7186,19 +7490,20 @@
               "ospfPassive" : false,
               "prefix" : "2.23.12.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "2.34.201.3/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -7209,6 +7514,7 @@
               "ospfPassive" : false,
               "prefix" : "2.34.201.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -7234,6 +7540,7 @@
               "ospfPassive" : false,
               "prefix" : "2.1.3.2/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -7631,9 +7938,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -7664,6 +7968,9 @@
                 "neighbors" : {
                   "2.1.2.1/32" : {
                     "name" : "2.1.2.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7685,6 +7992,9 @@
                   },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7706,6 +8016,9 @@
                   },
                   "2.34.201.4/32" : {
                     "name" : "2.34.201.4/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "2.34.201.4",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -7730,9 +8043,10 @@
                 "routerId" : "2.1.3.2"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -7740,8 +8054,8 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
-                      "FastEthernet0/1",
+                      "GigabitEthernet0/0",
+                      "GigabitEthernet1/0",
                       "Loopback0"
                     ]
                   }
@@ -7792,14 +8106,11 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
               "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "10.23.21.3/24"
-              ],
-              "bandwidth" : 1.0E8,
+              "active" : false,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -7808,21 +8119,21 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "prefix" : "10.23.21.3/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "3.0.1.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -7835,6 +8146,31 @@
               "ospfPassive" : false,
               "prefix" : "3.0.1.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "10.23.21.3/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "10.23.21.3/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -7860,6 +8196,7 @@
               "ospfPassive" : false,
               "prefix" : "3.1.1.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -8665,9 +9002,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -8698,6 +9032,9 @@
                 "neighbors" : {
                   "3.10.1.1/32" : {
                     "name" : "3.10.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "3.10.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -8719,6 +9056,9 @@
                   },
                   "10.23.21.2/32" : {
                     "name" : "10.23.21.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.23.21.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -8743,8 +9083,9 @@
                 "routerId" : "3.1.1.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -8752,7 +9093,7 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/1",
+                      "GigabitEthernet0/0",
                       "Loopback0"
                     ]
                   }
@@ -8803,14 +9144,58 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "10.13.22.3/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "10.13.22.3/24",
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "3.0.2.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -8823,29 +9208,7 @@
               "ospfPassive" : false,
               "prefix" : "3.0.2.1/24",
               "proxyArp" : true,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "10.13.22.3/24"
-              ],
-              "bandwidth" : 1.0E8,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "prefix" : "10.13.22.3/24",
-              "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -8871,6 +9234,7 @@
               "ospfPassive" : false,
               "prefix" : "3.2.2.2/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -9619,9 +9983,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -9652,6 +10013,9 @@
                 "neighbors" : {
                   "3.10.1.1/32" : {
                     "name" : "3.10.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "3.10.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -9673,6 +10037,9 @@
                   },
                   "10.13.22.1/32" : {
                     "name" : "10.13.22.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "10.13.22.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -9697,8 +10064,9 @@
                 "routerId" : "3.2.2.2"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -9706,7 +10074,7 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
+                      "GigabitEthernet1/0",
                       "Loopback0"
                     ]
                   }
@@ -9725,14 +10093,34 @@
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "lab.local",
           "interfaces" : {
-            "FastEthernet0/0" : {
-              "name" : "FastEthernet0/0",
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : false,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : true,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "3.0.2.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9745,19 +10133,20 @@
               "ospfPassive" : false,
               "prefix" : "3.0.2.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet0/1" : {
-              "name" : "FastEthernet0/1",
+            "GigabitEthernet1/0" : {
+              "name" : "GigabitEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "3.0.1.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9770,19 +10159,20 @@
               "ospfPassive" : false,
               "prefix" : "3.0.1.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/0" : {
-              "name" : "FastEthernet1/0",
+            "GigabitEthernet2/0" : {
+              "name" : "GigabitEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "90.90.90.1/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9793,19 +10183,20 @@
               "ospfPassive" : false,
               "prefix" : "90.90.90.1/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "FastEthernet1/1" : {
-              "name" : "FastEthernet1/1",
+            "GigabitEthernet3/0" : {
+              "name" : "GigabitEthernet3/0",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
                 "90.90.90.2/24"
               ],
-              "bandwidth" : 1.0E8,
+              "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9816,6 +10207,7 @@
               "ospfPassive" : false,
               "prefix" : "90.90.90.2/24",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -9841,6 +10233,7 @@
               "ospfPassive" : false,
               "prefix" : "3.10.1.1/32",
               "proxyArp" : true,
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "LOOPBACK",
@@ -10132,9 +10525,6 @@
                     }
                   }
                 },
-                "password-encryption" : {
-                  "enabled" : false
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
@@ -10165,6 +10555,9 @@
                 "neighbors" : {
                   "3.1.1.1/32" : {
                     "name" : "3.1.1.1/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "3.1.1.1",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -10186,6 +10579,9 @@
                   },
                   "3.2.2.2/32" : {
                     "name" : "3.2.2.2/32",
+                    "additionalPathsReceive" : true,
+                    "additionalPathsSelectAll" : true,
+                    "additionalPathsSend" : true,
                     "address" : "3.2.2.2",
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
@@ -10209,10 +10605,11 @@
                 "routerId" : "3.10.1.1"
               },
               "interfaces" : [
-                "FastEthernet0/0",
-                "FastEthernet0/1",
-                "FastEthernet1/0",
-                "FastEthernet1/1",
+                "Ethernet0/0",
+                "GigabitEthernet0/0",
+                "GigabitEthernet1/0",
+                "GigabitEthernet2/0",
+                "GigabitEthernet3/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
@@ -10220,8 +10617,8 @@
                   "1" : {
                     "name" : 1,
                     "interfaces" : [
-                      "FastEthernet0/0",
-                      "FastEthernet0/1",
+                      "GigabitEthernet0/0",
+                      "GigabitEthernet1/0",
                       "Loopback0"
                     ]
                   }
@@ -10258,6 +10655,7 @@
               "ospfPassive" : false,
               "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.0.101/24",
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
@@ -10430,6 +10828,7 @@
               "ospfPassive" : false,
               "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.1.101/24",
+              "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",

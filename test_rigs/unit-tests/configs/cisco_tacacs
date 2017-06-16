@@ -2,6 +2,7 @@
 hostname cisco_tacacs
 !
 feature tacacs+
+no ip tacacs source-interface
 ip tacacs source-interface loopback0
 ip tacacs source-interface Loopback0
 no tacacs-server directed-request

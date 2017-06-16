@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.util.LinkedList;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.client.config.Settings;
 
 public class Main {
 

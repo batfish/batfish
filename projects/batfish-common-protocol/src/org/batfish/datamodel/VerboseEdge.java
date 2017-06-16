@@ -9,13 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class VerboseEdge
       extends Pair<VerboseNodeInterfacePair, VerboseNodeInterfacePair> {
-   private static final String EDGE_VAR = "edgesummary";
+   private static final String EDGE_SUMMARY_VAR = "edgeSummary";
 
-   private static final String INT1_VAR = "node1interface";
-
-   private static final String INT2_VAR = "node2interface";
+   private static final String NODE1_INTERFACE_VAR = "node1Interface";
 
    private static final String NODE1_VAR = "node1";
+
+   private static final String NODE2_INTERFACE_VAR = "node2Interface";
 
    private static final String NODE2_VAR = "node2";
 
@@ -25,10 +25,10 @@ public class VerboseEdge
 
    @JsonCreator
    public VerboseEdge(@JsonProperty(NODE1_VAR) Configuration node1,
-         @JsonProperty(INT1_VAR) Interface int1,
+         @JsonProperty(NODE1_INTERFACE_VAR) Interface int1,
          @JsonProperty(NODE2_VAR) Configuration node2,
-         @JsonProperty(INT2_VAR) Interface int2,
-         @JsonProperty(EDGE_VAR) Edge e) {
+         @JsonProperty(NODE2_INTERFACE_VAR) Interface int2,
+         @JsonProperty(EDGE_SUMMARY_VAR) Edge e) {
       this(new VerboseNodeInterfacePair(node1, int1),
             new VerboseNodeInterfacePair(node2, int2), e);
    }
@@ -39,17 +39,17 @@ public class VerboseEdge
       this.edge = e;
    }
 
-   @JsonProperty(EDGE_VAR)
+   @JsonProperty(EDGE_SUMMARY_VAR)
    public Edge getEdgeSummary() {
       return edge;
    }
 
-   @JsonProperty(INT1_VAR)
+   @JsonProperty(NODE1_INTERFACE_VAR)
    public Interface getInt1() {
       return _first.getInterface();
    }
 
-   @JsonProperty(INT2_VAR)
+   @JsonProperty(NODE2_INTERFACE_VAR)
    public Interface getInt2() {
       return _second.getInterface();
    }

@@ -23,8 +23,8 @@ public class BfCoordPoolHelper {
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client
                .target(String.format("http://%s%s/%s", _coordPoolMgr,
-                     CoordConsts.SVC_BASE_POOL_MGR,
-                     CoordConsts.SVC_POOL_UPDATE_RSC))
+                     CoordConsts.SVC_CFG_POOL_MGR,
+                     CoordConsts.SVC_RSC_POOL_UPDATE))
                .queryParam("add", worker);
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
@@ -42,7 +42,7 @@ public class BfCoordPoolHelper {
          System.out.printf("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
-         if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
+         if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
             System.err.printf("got error while checking work status: %s %s\n",
                   array.get(0), array.get(1));
             return false;

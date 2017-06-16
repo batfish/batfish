@@ -29,6 +29,7 @@
         "bgp_route_policy" : "bgp_route_policy",
         "cisco_aaa" : "cisco_aaa",
         "cisco_acl" : "cisco_acl",
+        "cisco_additional_paths" : "cisco_additional_paths",
         "cisco_authentication" : "cisco_authentication",
         "cisco_bgp" : "cisco_bgp",
         "cisco_callhome" : "cisco_callhome",
@@ -76,6 +77,7 @@
         "cisco_stcapp" : "cisco_stcapp",
         "cisco_style_acl1" : "cisco_style_acl1",
         "cisco_style_acl2" : "cisco_style_acl2",
+        "cisco_system" : "cisco_system",
         "cisco_tacacs" : "cisco_tacacs",
         "cisco_track" : "cisco_track",
         "cisco_vdc" : "cisco_vdc",
@@ -201,6 +203,7 @@
         "bgp_route_policy" : "PASSED",
         "cisco_aaa" : "PASSED",
         "cisco_acl" : "PASSED",
+        "cisco_additional_paths" : "PASSED",
         "cisco_authentication" : "PASSED",
         "cisco_bgp" : "PASSED",
         "cisco_callhome" : "PASSED",
@@ -248,6 +251,7 @@
         "cisco_stcapp" : "PASSED",
         "cisco_style_acl1" : "PASSED",
         "cisco_style_acl2" : "PASSED",
+        "cisco_system" : "PASSED",
         "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_vdc" : "PASSED",
@@ -346,11 +350,17 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.25.0",
+      "version" : "0.26.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '13.16.3.16'"
+          }
+        },
+        "cisco_additional_paths" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
+            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'"
           }
         },
         "cisco_style_acl1" : {
@@ -1425,7 +1435,7 @@
           }
         }
       },
-      "version" : "0.25.0",
+      "version" : "0.26.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1542,6 +1552,7 @@
         "bgp_route_policy" : "PASSED",
         "cisco_aaa" : "PASSED",
         "cisco_acl" : "PASSED",
+        "cisco_additional_paths" : "PASSED",
         "cisco_authentication" : "PASSED",
         "cisco_bgp" : "PASSED",
         "cisco_callhome" : "PASSED",
@@ -1589,6 +1600,7 @@
         "cisco_stcapp" : "PASSED",
         "cisco_style_acl1" : "PASSED",
         "cisco_style_acl2" : "PASSED",
+        "cisco_system" : "PASSED",
         "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_vdc" : "PASSED",

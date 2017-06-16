@@ -1,7 +1,7 @@
 package org.batfish.client.plugin;
 
 import org.batfish.client.Client;
-import org.batfish.client.Settings;
+import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.Plugin;
 
