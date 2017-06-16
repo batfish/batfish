@@ -525,7 +525,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public AnswerElement answerAclReachability(String aclNameRegexStr,
          NamedStructureEquivalenceSets<?> aclEqSets) {
-      if (SystemUtils.IS_OS_MAC_OSX) {
+      if (Boolean.FALSE) {
          // TODO: remove when z3 parallelism bug on OSX is fixed
          _settings.setSequential(true);
       }
@@ -2666,7 +2666,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AnswerElement multipath(HeaderSpace headerSpace) {
-      if (SystemUtils.IS_OS_MAC_OSX) {
+      if (Boolean.FALSE) {
          // TODO: remove when z3 parallelism bug on OSX is fixed
          _settings.setSequential(true);
       }
@@ -3105,7 +3105,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AnswerElement pathDiff(HeaderSpace headerSpace) {
-      if (SystemUtils.IS_OS_MAC_OSX) {
+      if (Boolean.FALSE) {
          // TODO: remove when z3 parallelism bug on OSX is fixed
          _settings.setSequential(true);
       }
@@ -3556,7 +3556,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AnswerElement reducedReachability(HeaderSpace headerSpace) {
-      if (SystemUtils.IS_OS_MAC_OSX) {
+      if (Boolean.FALSE) {
          // TODO: remove when z3 parallelism bug on OSX is fixed
          _settings.setSequential(true);
       }
@@ -4250,7 +4250,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Set<ForwardingAction> actions, String ingressNodeRegexStr,
          String notIngressNodeRegexStr, String finalNodeRegexStr,
          String notFinalNodeRegexStr) {
-      if (SystemUtils.IS_OS_MAC_OSX) {
+      if (Boolean.FALSE) {
          // TODO: remove when z3 parallelism bug on OSX is fixed
          _settings.setSequential(true);
       }
