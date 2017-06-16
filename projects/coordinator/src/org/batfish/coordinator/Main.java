@@ -2,9 +2,6 @@ package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,8 +12,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.*;
 import org.batfish.coordinator.config.ConfigurationLocator;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
-import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.batfish.coordinator.config.Settings;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -80,7 +76,7 @@ public class Main {
             .register(new JettisonFeature()).register(MultiPartFeature.class)
             .register(org.batfish.coordinator.CrossDomainFilter.class);
 
-      if (!_settings.getUseSsl()) {
+      if (_settings.getSslPoolDisable()) {
          URI poolMgrUri = UriBuilder
                .fromUri("http://" + _settings.getServiceHost())
                .port(_settings.getServicePoolPort()).build();
@@ -96,39 +92,16 @@ public class Main {
 
          _logger.info("Starting pool manager at " + poolMgrUri + "\n");
 
-         // first find the file as specified.
-         // if that does not work, find it relative to the binary
-         Path keystoreFile = Paths.get(_settings.getSslKeystoreFilename())
-               .toAbsolutePath();
-         if (!Files.exists(keystoreFile)) {
-            keystoreFile = CommonUtil
-                  .getJarOrClassDir(ConfigurationLocator.class).toAbsolutePath()
-                  .resolve(_settings.getSslKeystoreFilename());
-
-         }
-         if (!Files.exists(keystoreFile)) {
-            System.err.printf(
-                  "org.batfish.coordinator: keystore file not found at %s or %s\n",
-                  _settings.getSslKeystoreFilename(), keystoreFile.toString());
-            System.exit(1);
-         }
-         /* Uncomment below to enable fine glassfish/grizzly ssl logging */
-         // Logger l =
-         // Logger.getLogger("org.glassfish.grizzly.ssl.SSLContextConfigurator");
-         // l.setLevel(Level.FINE);
-         // l.setUseParentHandlers(false);
-         // ConsoleHandler ch = new ConsoleHandler();
-         // ch.setLevel(Level.ALL);
-         // l.addHandler(ch);
-         SSLContextConfigurator sslCon = new SSLContextConfigurator();
-         sslCon.setKeyStoreFile(keystoreFile.toString());
-         sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
-
-         GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool, true,
-               new SSLEngineConfigurator(sslCon, false, false, false));
+         CommonUtil.startSSLServer(rcPool, poolMgrUri,
+               _settings.getSslPoolKeystoreFile(),
+               _settings.getSslPoolKeystorePassword(),
+               _settings.getSslPoolTrustAllCerts(),
+               _settings.getSslPoolTruststoreFile(),
+               _settings.getSslPoolTruststorePassword(),
+               ConfigurationLocator.class);
       }
 
-      _poolManager = new PoolMgr(_logger);
+      _poolManager = new PoolMgr(_settings, _logger);
       _poolManager.startPoolManager();
 
    }
@@ -138,7 +111,7 @@ public class Main {
             .register(new JettisonFeature()).register(MultiPartFeature.class)
             .register(org.batfish.coordinator.CrossDomainFilter.class);
 
-      if (!_settings.getUseSsl()) {
+      if (_settings.getSslWorkDisable()) {
          URI workMgrUri = UriBuilder
                .fromUri("http://" + _settings.getServiceHost())
                .port(_settings.getServiceWorkPort()).build();
@@ -153,33 +126,16 @@ public class Main {
                .port(_settings.getServiceWorkPort()).build();
 
          _logger.info("Starting work manager at " + workMgrUri + "\n");
-
-         // first find the file as specified.
-         // if that does not work, find it relative to the binary
-         Path keystoreFile = Paths.get(_settings.getSslKeystoreFilename())
-               .toAbsolutePath();
-         if (!Files.exists(keystoreFile)) {
-            keystoreFile = CommonUtil
-                  .getJarOrClassDir(ConfigurationLocator.class).toAbsolutePath()
-                  .resolve(_settings.getSslKeystoreFilename());
-         }
-
-         if (!Files.exists(keystoreFile)) {
-            System.err.printf(
-                  "org.batfish.coordinator: keystore file not found at %s or %s\n",
-                  _settings.getSslKeystoreFilename(), keystoreFile.toString());
-            System.exit(1);
-         }
-
-         SSLContextConfigurator sslCon = new SSLContextConfigurator();
-         sslCon.setKeyStoreFile(keystoreFile.toString());
-         sslCon.setKeyStorePass(_settings.getSslKeystorePassword());
-
-         GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork, true,
-               new SSLEngineConfigurator(sslCon, false, false, false));
+         CommonUtil.startSSLServer(rcWork, workMgrUri,
+               _settings.getSslWorkKeystoreFile(),
+               _settings.getSslWorkKeystorePassword(),
+               _settings.getSslWorkTrustAllCerts(),
+               _settings.getSslWorkTruststoreFile(),
+               _settings.getSslWorkTruststorePassword(),
+               ConfigurationLocator.class);
       }
 
-      _workManager = new WorkMgr(_logger);
+      _workManager = new WorkMgr(_settings, _logger);
       _workManager.startWorkManager();
    }
 
@@ -219,7 +175,7 @@ public class Main {
       catch (Exception e) {
          System.err.println(
                "org.batfish.coordinator: Initialization of a helper failed: "
-                     + e.getMessage());
+                     + ExceptionUtils.getStackTrace(e));
          System.exit(1);
       }
 

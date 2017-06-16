@@ -1,10 +1,9 @@
-package org.batfish.client;
+package org.batfish.client.config;
 
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import org.batfish.client.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -26,7 +25,6 @@ public class Settings extends BaseSettings {
    public static final String ARG_CONTAINER_ID = "containerid";
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    public static final String ARG_DATAMODEL_DIR = "datamodeldir";
-   private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
    public static final String ARG_LOG_FILE = "logfile";
    public static final String ARG_LOG_LEVEL = "loglevel";
@@ -36,11 +34,9 @@ public class Settings extends BaseSettings {
    public static final String ARG_QUESTIONS_DIR = "questionsdir";
    public static final String ARG_RUN_MODE = "runmode";
    private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
-
    private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
    public static final String ARG_TESTRIG_DIR = "testrigdir";
    public static final String ARG_TESTRIG_ID = "testrigid";
-   private static final String ARG_TRUST_ALL_SSL_CERTS = "trustallsslcerts";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
 
@@ -61,10 +57,14 @@ public class Settings extends BaseSettings {
 
    private RunMode _runMode;
    private boolean _sanityCheck;
+   private boolean _sslDisable;
+   private String _sslKeystoreFile;
+   private String _sslKeystorePassword;
+   private boolean _sslTrustAllCerts;
+   private String _sslTruststoreFile;
+   private String _sslTruststorePassword;
    private String _testrigDir;
    private String _testrigId;
-   private boolean _trustAllSslCerts;
-   private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
@@ -141,6 +141,30 @@ public class Settings extends BaseSettings {
       return _sanityCheck;
    }
 
+   public boolean getSslDisable() {
+      return _sslDisable;
+   }
+
+   public String getSslKeystoreFile() {
+      return _sslKeystoreFile;
+   }
+
+   public String getSslKeystorePassword() {
+      return _sslKeystorePassword;
+   }
+
+   public boolean getSslTrustAllCerts() {
+      return _sslTrustAllCerts;
+   }
+
+   public String getSslTruststoreFile() {
+      return _sslTruststoreFile;
+   }
+
+   public String getSslTruststorePassword() {
+      return _sslTruststorePassword;
+   }
+
    public String getTestrigDir() {
       return _testrigDir;
    }
@@ -149,21 +173,15 @@ public class Settings extends BaseSettings {
       return _testrigId;
    }
 
-   public boolean getTrustAllSslCerts() {
-      return _trustAllSslCerts;
-   }
-
-   public boolean getUseSsl() {
-      return _useSsl;
-   }
-
    private void initConfigDefaults() {
       setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
       setDefaultProperty(ARG_BATFISH_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_DATAMODEL_DIR, "datamodel");
-      setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
+      setDefaultProperty(BfConsts.ARG_SSL_DISABLE,
+            CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
@@ -174,9 +192,15 @@ public class Settings extends BaseSettings {
             Collections.<String> emptyList());
       setDefaultProperty(ARG_PRETTY_PRINT_ANSWERS, true);
       setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
-      setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
-      setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
-      setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
+      setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
+      setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
+      setDefaultProperty(BfConsts.ARG_SSL_DISABLE,
+            CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
+      setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
+      setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
    }
 
    private void initOptions() {
@@ -195,8 +219,6 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_DATAMODEL_DIR, "directory where datamodel should be dumped",
             "datamodel_dir");
-
-      addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
       addBooleanOption(ARG_HELP, "print this message");
 
@@ -228,12 +250,16 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
+      addBooleanOption(BfConsts.ARG_SSL_DISABLE,
+            "whether to disable SSL during communication with coordinator");
+
+      addBooleanOption(BfConsts.ARG_SSL_TRUST_ALL_CERTS,
+            "whether to trust all SSL certificates during communication with coordinator");
+
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
       addOption(ARG_TESTRIG_ID, "testrig to attach to", "testrig_id");
 
-      addBooleanOption(ARG_TRUST_ALL_SSL_CERTS,
-            "whether we should trust any coordinator SSL certs (for testing locally)");
    }
 
    private void parseCommandLine(String[] args) {
@@ -257,14 +283,23 @@ public class Settings extends BaseSettings {
       _questionsDir = getStringOptionValue(ARG_QUESTIONS_DIR);
       _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
       _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
+      _sslDisable = getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
+      _sslKeystoreFile = getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
+      _sslKeystorePassword = getStringOptionValue(
+            BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
+      _sslTrustAllCerts = getBooleanOptionValue(
+            BfConsts.ARG_SSL_TRUST_ALL_CERTS);
+      _sslTruststoreFile = getStringOptionValue(
+            BfConsts.ARG_SSL_TRUSTSTORE_FILE);
+      _sslTruststorePassword = getStringOptionValue(
+            BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
+
       _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
       _testrigId = getStringOptionValue(ARG_TESTRIG_ID);
 
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
       _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
-      _trustAllSslCerts = getBooleanOptionValue(ARG_TRUST_ALL_SSL_CERTS);
-      _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
 
    }
 
@@ -279,4 +314,29 @@ public class Settings extends BaseSettings {
    public void setPrettyPrintAnswers(boolean prettyPrint) {
       _prettyPrintAnswers = prettyPrint;
    }
+
+   public void setSslDisable(boolean sslDisable) {
+      _sslDisable = sslDisable;
+   }
+
+   public void setSslKeystoreFile(String sslKeystoreFile) {
+      _sslKeystoreFile = sslKeystoreFile;
+   }
+
+   public void setSslKeystorePassword(String sslKeystorePassword) {
+      _sslKeystorePassword = sslKeystorePassword;
+   }
+
+   public void setSslTrustAllCerts(boolean sslTrustAllCerts) {
+      _sslTrustAllCerts = sslTrustAllCerts;
+   }
+
+   public void setSslTruststoreFile(String sslTruststoreFile) {
+      _sslTruststoreFile = sslTruststoreFile;
+   }
+
+   public void setSslTruststorePassword(String sslTruststorePassword) {
+      _sslTruststorePassword = sslTruststorePassword;
+   }
+
 }

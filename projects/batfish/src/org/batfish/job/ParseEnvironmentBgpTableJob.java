@@ -10,7 +10,6 @@ import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.BgpTableFormatDetector;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.main.Batfish;
-import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -18,6 +17,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
+import org.batfish.config.Settings;
 
 public class ParseEnvironmentBgpTableJob
       extends BatfishJob<ParseEnvironmentBgpTableResult> {

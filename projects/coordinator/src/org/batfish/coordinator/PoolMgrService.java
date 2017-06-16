@@ -19,7 +19,7 @@ import javax.ws.rs.Produces;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
-@Path(CoordConsts.SVC_BASE_POOL_MGR)
+@Path(CoordConsts.SVC_CFG_POOL_MGR)
 public class PoolMgrService {
 
    BatfishLogger _logger = Main.getLogger();
@@ -28,13 +28,13 @@ public class PoolMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
       _logger.info("PMS:getInfo\n");
-      return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
             "Batfish coordinator v" + Version.getVersion()
                   + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET
-   @Path(CoordConsts.SVC_POOL_GETSTATUS_RSC)
+   @Path(CoordConsts.SVC_RSC_POOL_GETSTATUS)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
@@ -42,19 +42,19 @@ public class PoolMgrService {
          HashMap<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
          JSONObject obj = new JSONObject(poolStatus);
          return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, obj.toString()));
+               Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, obj.toString()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:getStatus exception: " + stackTrace);
          return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
       }
    }
 
    // functions for pool management
    @GET
-   @Path(CoordConsts.SVC_POOL_UPDATE_RSC)
+   @Path(CoordConsts.SVC_RSC_POOL_UPDATE)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
@@ -70,7 +70,7 @@ public class PoolMgrService {
             _logger.info(String.format("PMS:updatePool: key = %s value = %s\n",
                   entry.getKey(), entry.getValue()));
 
-            if (entry.getKey().equals(CoordConsts.SVC_ADD_WORKER_KEY)) {
+            if (entry.getKey().equals(CoordConsts.SVC_KEY_ADD_WORKER)) {
                for (String worker : entry.getValue()) {
                   // don't add empty values; occurs for keys without values
                   if (!worker.equals("")) {
@@ -78,7 +78,7 @@ public class PoolMgrService {
                   }
                }
             }
-            else if (entry.getKey().equals(CoordConsts.SVC_DEL_WORKER_KEY)) {
+            else if (entry.getKey().equals(CoordConsts.SVC_KEY_DEL_WORKER)) {
                for (String worker : entry.getValue()) {
                   // don't add empty values; occurs for keys without values
                   if (!worker.equals("")) {
@@ -86,10 +86,10 @@ public class PoolMgrService {
                   }
                }
             }
-            else if (entry.getKey().equals(CoordConsts.SVC_VERSION_KEY)) {
+            else if (entry.getKey().equals(CoordConsts.SVC_KEY_VERSION)) {
                if (entry.getValue().size() > 1) {
                   return new JSONArray(Arrays.asList(
-                        CoordConsts.SVC_FAILURE_KEY,
+                        CoordConsts.SVC_KEY_FAILURE,
                         "Got " + entry.getValue().size() + " version values"));
                }
 
@@ -97,7 +97,7 @@ public class PoolMgrService {
             }
 
             else {
-               return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
                      "Got unknown command " + entry.getKey()));
             }
          }
@@ -109,12 +109,12 @@ public class PoolMgrService {
 
          if (workersToAdd.size() > 0) {
             if (workerVersion == null) {
-               return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
                      "Worker version not specified"));
             }
             if (!Version.isCompatibleVersion("Service", "Worker",
                   workerVersion)) {
-               return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
                      "Worker version " + workerVersion
                            + "is incompatible with coordinator version "
                            + Version.getVersion()));
@@ -129,9 +129,9 @@ public class PoolMgrService {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:updatePool exception: " + stackTrace);
          return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
+               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
       }
 
-      return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "done"));
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, "done"));
    }
 }

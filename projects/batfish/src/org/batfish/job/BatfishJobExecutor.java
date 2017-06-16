@@ -14,9 +14,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Driver;
-import org.batfish.main.Settings;
 
 public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends AnswerElement, JobResult extends BatfishJobResult<Output, AE>, Output> {
 

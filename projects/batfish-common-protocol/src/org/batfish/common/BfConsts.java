@@ -39,6 +39,12 @@ public class BfConsts {
    public static final String ARG_QUESTION_NAME = "questionname";
    public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
+   public static final String ARG_SSL_DISABLE = "ssldisable";
+   public static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
+   public static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";
+   public static final String ARG_SSL_TRUST_ALL_CERTS = "ssltrustallcerts";
+   public static final String ARG_SSL_TRUSTSTORE_FILE = "ssltruststorefile";
+   public static final String ARG_SSL_TRUSTSTORE_PASSWORD = "ssltruststorepassword";
    public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
    public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
    public static final String ARG_TASK_PLUGIN = "taskplugin";

@@ -1,8 +1,8 @@
 package org.batfish.grammar.topology;
 
+import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyParser.TopologyContext;
-import org.batfish.main.Settings;
 
 public class BatfishTopologyCombinedParser extends
       BatfishCombinedParser<BatfishTopologyParser, BatfishTopologyLexer> {

@@ -42,6 +42,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.coordinator.config.Settings;
 import org.batfish.common.WorkItem;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -87,11 +88,14 @@ public class WorkMgr {
       return envFilenames;
    }
 
-   private BatfishLogger _logger;
+   private final BatfishLogger _logger;
+
+   private final Settings _settings;
 
    private WorkQueueMgr _workQueueMgr;
 
-   public WorkMgr(BatfishLogger logger) {
+   public WorkMgr(Settings settings, BatfishLogger logger) {
+      _settings = settings;
       _logger = logger;
       _workQueueMgr = new WorkQueueMgr();
    }
@@ -156,9 +160,18 @@ public class WorkMgr {
                      work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE)
                      .toString());
 
-         Client client = ClientBuilder.newClient();
+         // Client client = ClientBuilder.newClient();
+         Client client = CommonUtil
+               .createHttpClientBuilder(_settings.getSslWorkDisable(),
+                     _settings.getSslWorkTrustAllCerts(),
+                     _settings.getSslWorkKeystoreFile(),
+                     _settings.getSslWorkKeystorePassword(),
+                     _settings.getSslWorkTruststoreFile(),
+                     _settings.getSslWorkTruststorePassword())
+               .build();
+         String protocol = _settings.getSslWorkDisable() ? "http" : "https";
          WebTarget webTarget = client
-               .target(String.format("http://%s%s/%s", worker,
+               .target(String.format("%s://%s%s/%s", protocol, worker,
                      BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
                .queryParam(BfConsts.SVC_TASKID_KEY,
                      UriComponent.encode(work.getId().toString(),
@@ -250,8 +263,9 @@ public class WorkMgr {
 
       try {
          Client client = ClientBuilder.newClient();
+         String protocol = _settings.getSslWorkDisable() ? "http" : "https";
          WebTarget webTarget = client
-               .target(String.format("http://%s%s/%s", worker,
+               .target(String.format("%s://%s%s/%s", protocol, worker,
                      BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_TASKSTATUS_RSC))
                .queryParam(BfConsts.SVC_TASKID_KEY,
                      UriComponent.encode(work.getId().toString(),

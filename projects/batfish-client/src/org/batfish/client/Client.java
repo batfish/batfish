@@ -34,8 +34,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.client.Settings.RunMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
+import org.batfish.client.config.Settings;
+import org.batfish.client.config.Settings.RunMode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
@@ -1136,8 +1137,8 @@ public class Client extends AbstractClient implements IClient {
          }
          catch (Exception e) {
             _logger.errorf(
-                  "Exeption while checking reachability to coordinator: ",
-                  e.getMessage());
+                  "Exeption while checking reachability to coordinator: %s",
+                  ExceptionUtils.getStackTrace(e));
             System.exit(1);
          }
       }
@@ -1821,7 +1822,7 @@ public class Client extends AbstractClient implements IClient {
       initHelpers();
 
       _logger.debugf("Will use coordinator at %s://%s\n",
-            (_settings.getUseSsl()) ? "https" : "http",
+            (_settings.getSslDisable()) ? "http" : "https",
             _settings.getCoordinatorHost());
 
       if (!processCommands(initialCommands)) {
@@ -2086,13 +2087,13 @@ public class Client extends AbstractClient implements IClient {
 
       Map<String, String> map = _workHelper.getInfo();
 
-      if (!map.containsKey(CoordConsts.SVC_VERSION_KEY)) {
+      if (!map.containsKey(CoordConsts.SVC_KEY_VERSION)) {
          _logger.errorf("key '%s' not found in Info\n",
-               CoordConsts.SVC_VERSION_KEY);
+               CoordConsts.SVC_KEY_VERSION);
          return false;
       }
 
-      String version = map.get(CoordConsts.SVC_VERSION_KEY);
+      String version = map.get(CoordConsts.SVC_KEY_VERSION);
       _logger.outputf("Service version is %s\n", version);
       return true;
    }

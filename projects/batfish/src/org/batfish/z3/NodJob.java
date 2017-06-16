@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.job.BatfishJob;
-import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;

@@ -1,8 +1,8 @@
 package org.batfish.z3;
 
 import org.batfish.common.BatfishException;
+import org.batfish.config.Settings;
 import org.batfish.job.BatfishJob;
-import org.batfish.main.Settings;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;

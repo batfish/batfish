@@ -20,13 +20,13 @@ import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
-import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.config.Settings;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
