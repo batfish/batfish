@@ -53,7 +53,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
    private final boolean _serializeToText;
 
    public PluginConsumer(boolean serializeToText, List<Path> pluginDirs) {
-      //_currentClassLoader = getClass().getClassLoader();
+      // _currentClassLoader = getClass().getClassLoader();
       _currentClassLoader = Thread.currentThread().getContextClassLoader();
       _serializeToText = serializeToText;
       _pluginDirs = new ArrayList<>(pluginDirs);

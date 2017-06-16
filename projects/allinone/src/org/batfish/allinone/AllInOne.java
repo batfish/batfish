@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -42,27 +43,28 @@ public class AllInOne {
          System.exit(1);
       }
 
-      String argString = String.format("%s -%s %s -%s %s -%s %s",
+      String argString = String.format("%s -%s %s -%s %s",
             _settings.getClientArgs(),
-            org.batfish.client.Settings.ARG_COORDINATOR_HOST, "localhost",
-            org.batfish.client.Settings.ARG_LOG_LEVEL, _settings.getLogLevel(),
-            org.batfish.client.Settings.ARG_RUN_MODE, _settings.getRunMode());
+            org.batfish.client.config.Settings.ARG_LOG_LEVEL,
+            _settings.getLogLevel(),
+            org.batfish.client.config.Settings.ARG_RUN_MODE,
+            _settings.getRunMode());
 
       if (_settings.getLogFile() != null) {
          argString += String.format(" -%s %s",
-               org.batfish.client.Settings.ARG_LOG_FILE,
+               org.batfish.client.config.Settings.ARG_LOG_FILE,
                _settings.getLogFile());
       }
 
       if (_settings.getCommandFile() != null) {
          argString += String.format(" -%s %s",
-               org.batfish.client.Settings.ARG_COMMAND_FILE,
+               org.batfish.client.config.Settings.ARG_COMMAND_FILE,
                _settings.getCommandFile());
       }
 
       if (_settings.getTestrigDir() != null) {
          argString += String.format(" -%s %s",
-               org.batfish.client.Settings.ARG_TESTRIG_DIR,
+               org.batfish.client.config.Settings.ARG_TESTRIG_DIR,
                _settings.getTestrigDir());
       }
 
@@ -70,7 +72,8 @@ public class AllInOne {
       // lets do a dummy cmdfile do client initialization does not barf
       if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
          argString += String.format(" -%s %s",
-               org.batfish.client.Settings.ARG_COMMAND_FILE, "dummy_allinone");
+               org.batfish.client.config.Settings.ARG_COMMAND_FILE,
+               "dummy_allinone");
       }
 
       String[] initialArgArray = getArgArrayFromString(argString);
@@ -128,12 +131,10 @@ public class AllInOne {
 
    private void runBatfish() {
 
-      String batfishArgs = String.format("%s -%s -%s %s -%s %s",
+      String batfishArgs = String.format("%s -%s -%s %s",
             _settings.getBatfishArgs(),
-            org.batfish.main.Settings.ARG_SERVICE_MODE,
-            org.batfish.main.Settings.ARG_COORDINATOR_REGISTER, "true",
-            org.batfish.main.Settings.ARG_COORDINATOR_HOST, "localhost");
-
+            org.batfish.config.Settings.ARG_SERVICE_MODE,
+            org.batfish.config.Settings.ARG_COORDINATOR_REGISTER, "true");
       String[] initialArgArray = getArgArrayFromString(batfishArgs);
       List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
       List<Path> pluginDirs = _settings.getPluginDirs();
@@ -149,7 +150,6 @@ public class AllInOne {
       final String[] argArray = args.toArray(new String[] {});
       _logger.debugf("Starting batfish worker with args: %s\n",
             Arrays.toString(argArray));
-
       Thread thread = new Thread("batfishThread") {
          @Override
          public void run() {
@@ -163,7 +163,6 @@ public class AllInOne {
             }
          }
       };
-
       thread.start();
    }
 

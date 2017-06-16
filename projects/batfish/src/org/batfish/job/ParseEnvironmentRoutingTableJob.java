@@ -13,13 +13,13 @@ import org.batfish.grammar.routing_table.eos.EosRoutingTableExtractor;
 import org.batfish.grammar.routing_table.nxos.NxosRoutingTableCombinedParser;
 import org.batfish.grammar.routing_table.nxos.NxosRoutingTableExtractor;
 import org.batfish.main.Batfish;
-import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.config.Settings;
 
 public class ParseEnvironmentRoutingTableJob
       extends BatfishJob<ParseEnvironmentRoutingTableResult> {

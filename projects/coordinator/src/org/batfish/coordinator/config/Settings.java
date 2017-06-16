@@ -1,4 +1,4 @@
-package org.batfish.coordinator;
+package org.batfish.coordinator.config;
 
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -6,7 +6,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
-import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.queues.WorkQueue;
 
 public class Settings extends BaseSettings {
@@ -16,7 +15,6 @@ public class Settings extends BaseSettings {
    private static final String ARG_CONTAINERS_LOCATION = "containerslocation";
    private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
-   private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_DRIVER_CLASS = "driverclass";
    /**
     * (the arguments below are not wired to command line)
@@ -37,9 +35,21 @@ public class Settings extends BaseSettings {
 
    private static final String ARG_SERVICE_POOL_PORT = "poolport";
    private static final String ARG_SERVICE_WORK_PORT = "workport";
-   private static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
 
-   private static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";
+   private static final String ARG_SSL_POOL_DISABLE = "sslpooldisable";
+   private static final String ARG_SSL_POOL_KEYSTORE_FILE = "sslpoolkeystorefile";
+   private static final String ARG_SSL_POOL_KEYSTORE_PASSWORD = "sslpoolkeystorepassword";
+   private static final String ARG_SSL_POOL_TRUST_ALL_CERTS = "sslpooltrustallcerts";
+   private static final String ARG_SSL_POOL_TRUSTSTORE_FILE = "sslpooltruststorefile";
+   private static final String ARG_SSL_POOL_TRUSTSTORE_PASSWORD = "sslpooltruststorepassword";
+   private static final String ARG_SSL_WORK_DISABLE = "sslworkdisable";
+
+   private static final String ARG_SSL_WORK_KEYSTORE_FILE = "sslworkkeystorefile";
+   private static final String ARG_SSL_WORK_KEYSTORE_PASSWORD = "sslworkkeystorepassword";
+   private static final String ARG_SSL_WORK_TRUST_ALL_CERTS = "sslworktrustallcerts";
+   private static final String ARG_SSL_WORK_TRUSTSTORE_FILE = "sslworktruststorefile";
+   private static final String ARG_SSL_WORK_TRUSTSTORE_PASSWORD = "sslworktruststorepassword";
+
    /**
     * Need when using Azure queues for storing work items
     */
@@ -67,11 +77,21 @@ public class Settings extends BaseSettings {
    private String _serviceHost;
    private int _servicePoolPort;
    private int _serviceWorkPort;
-   private String _sslKeystoreFilename;
+   private boolean _sslPoolDisable;
+   private String _sslPoolKeystoreFile;
+   private String _sslPoolKeystorePassword;
+   private boolean _sslPoolTrustAllCerts;
+   private String _sslPoolTruststoreFile;
+   private String _sslPoolTruststorePassword;
+   private boolean _sslWorkDisable;
+   private String _sslWorkKeystoreFile;
+   private String _sslWorkKeystorePassword;
+   private boolean _sslWorkTrustAllCerts;
+   private String _sslWorkTruststoreFile;
+   private String _sslWorkTruststorePassword;
    private String _storageAccountKey;
    private String _storageAccountName;
    private String _storageProtocol;
-   private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
@@ -164,12 +184,52 @@ public class Settings extends BaseSettings {
       return _serviceWorkPort;
    }
 
-   public String getSslKeystoreFilename() {
-      return _sslKeystoreFilename;
+   public boolean getSslPoolDisable() {
+      return _sslPoolDisable;
    }
 
-   public String getSslKeystorePassword() {
-      return _config.getString(ARG_SSL_KEYSTORE_PASSWORD);
+   public String getSslPoolKeystoreFile() {
+      return _sslPoolKeystoreFile;
+   }
+
+   public String getSslPoolKeystorePassword() {
+      return _sslPoolKeystorePassword;
+   }
+
+   public boolean getSslPoolTrustAllCerts() {
+      return _sslPoolTrustAllCerts;
+   }
+
+   public String getSslPoolTruststoreFile() {
+      return _sslPoolTruststoreFile;
+   }
+
+   public String getSslPoolTruststorePassword() {
+      return _sslPoolTruststorePassword;
+   }
+
+   public boolean getSslWorkDisable() {
+      return _sslWorkDisable;
+   }
+
+   public String getSslWorkKeystoreFile() {
+      return _sslWorkKeystoreFile;
+   }
+
+   public String getSslWorkKeystorePassword() {
+      return _sslWorkKeystorePassword;
+   }
+
+   public boolean getSslWorkTrustAllCerts() {
+      return _sslWorkTrustAllCerts;
+   }
+
+   public String getSslWorkTruststoreFile() {
+      return _sslWorkTruststoreFile;
+   }
+
+   public String getSslWorkTruststorePassword() {
+      return _sslWorkTruststorePassword;
    }
 
    public String getStorageAccountKey() {
@@ -184,10 +244,6 @@ public class Settings extends BaseSettings {
       return _storageProtocol;
    }
 
-   public boolean getUseSsl() {
-      return _useSsl;
-   }
-
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
       setDefaultProperty(ARG_ALLOW_DEFAULT_KEY_LISTINGS, false);
@@ -195,7 +251,6 @@ public class Settings extends BaseSettings {
             "jdbc:mysql://localhost/batfish?user=batfish&password=batfish");
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); // 15
                                                                              // minutes
-      setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_DRIVER_CLASS, null);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
@@ -211,10 +266,24 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
       setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
       setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
-      setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
-      setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
-      setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
-      setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
+      setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
+      setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
+      setDefaultProperty(ARG_SSL_POOL_DISABLE,
+            CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
+      setDefaultProperty(ARG_SSL_POOL_KEYSTORE_FILE, null);
+      setDefaultProperty(ARG_SSL_POOL_KEYSTORE_PASSWORD, null);
+      setDefaultProperty(ARG_SSL_POOL_TRUST_ALL_CERTS, false);
+      setDefaultProperty(ARG_SSL_POOL_TRUSTSTORE_FILE, null);
+      setDefaultProperty(ARG_SSL_POOL_TRUSTSTORE_PASSWORD, null);
+      setDefaultProperty(ARG_SSL_WORK_DISABLE,
+            CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
+      setDefaultProperty(ARG_SSL_WORK_KEYSTORE_FILE, null);
+      setDefaultProperty(ARG_SSL_WORK_KEYSTORE_PASSWORD, null);
+      setDefaultProperty(ARG_SSL_WORK_TRUST_ALL_CERTS, false);
+      setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_FILE, null);
+      setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_PASSWORD, null);
+      // setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
+      // setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
       setDefaultProperty(ARG_STORAGE_ACCOUNT_KEY,
             "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==");
       setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
@@ -235,8 +304,6 @@ public class Settings extends BaseSettings {
       addOption(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS,
             "when to expire information from authorizer database",
             "expiration time (ms)");
-
-      addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
       addBooleanOption(ARG_DRIVER_CLASS,
             "jdbc driver class to load explicitly");
@@ -268,8 +335,17 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
-      addOption(ARG_SSL_KEYSTORE_FILE, "which keystore file to use for ssl",
-            "keystore (.jks) file");
+      addBooleanOption(ARG_SSL_POOL_DISABLE,
+            "disable SSL on pool manager service");
+
+      addBooleanOption(ARG_SSL_POOL_TRUST_ALL_CERTS,
+            "trust all SSL certs for outgoing connections from pool manager");
+
+      addBooleanOption(ARG_SSL_WORK_DISABLE,
+            "disable SSL on work manager service");
+
+      addBooleanOption(ARG_SSL_WORK_TRUST_ALL_CERTS,
+            "trust all SSL certs for outgoing connections from work manager");
 
       addOption(ARG_CONTAINERS_LOCATION, "where to store containers",
             "containers_location");
@@ -298,7 +374,26 @@ public class Settings extends BaseSettings {
       _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
       _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
       _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
-      _sslKeystoreFilename = getStringOptionValue(ARG_SSL_KEYSTORE_FILE);
+      _sslPoolDisable = getBooleanOptionValue(ARG_SSL_POOL_DISABLE);
+      _sslPoolKeystoreFile = getStringOptionValue(ARG_SSL_POOL_KEYSTORE_FILE);
+      _sslPoolKeystorePassword = getStringOptionValue(
+            ARG_SSL_POOL_KEYSTORE_PASSWORD);
+      _sslPoolTrustAllCerts = getBooleanOptionValue(
+            ARG_SSL_POOL_TRUST_ALL_CERTS);
+      _sslPoolTruststoreFile = getStringOptionValue(
+            ARG_SSL_POOL_TRUSTSTORE_FILE);
+      _sslPoolTruststorePassword = getStringOptionValue(
+            ARG_SSL_POOL_TRUSTSTORE_PASSWORD);
+      _sslWorkDisable = getBooleanOptionValue(ARG_SSL_WORK_DISABLE);
+      _sslWorkKeystoreFile = getStringOptionValue(ARG_SSL_WORK_KEYSTORE_FILE);
+      _sslWorkKeystorePassword = getStringOptionValue(
+            ARG_SSL_WORK_KEYSTORE_PASSWORD);
+      _sslWorkTrustAllCerts = getBooleanOptionValue(
+            ARG_SSL_WORK_TRUST_ALL_CERTS);
+      _sslWorkTruststoreFile = getStringOptionValue(
+            ARG_SSL_WORK_TRUSTSTORE_FILE);
+      _sslWorkTruststorePassword = getStringOptionValue(
+            ARG_SSL_WORK_TRUSTSTORE_PASSWORD);
       _storageAccountKey = getStringOptionValue(ARG_STORAGE_ACCOUNT_KEY);
       _storageAccountName = getStringOptionValue(ARG_STORAGE_ACCOUNT_NAME);
       _storageProtocol = getStringOptionValue(ARG_STORAGE_PROTOCOL);
@@ -309,6 +404,54 @@ public class Settings extends BaseSettings {
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK_MS);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
-      _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
+
+   public void setSslPoolDisable(boolean sslPoolDisable) {
+      _sslPoolDisable = sslPoolDisable;
+   }
+
+   public void setSslPoolKeystoreFile(String sslPoolKeystoreFile) {
+      _sslPoolKeystoreFile = sslPoolKeystoreFile;
+   }
+
+   public void setSslPoolKeystorePassword(String sslPoolKeystorePassword) {
+      _sslPoolKeystorePassword = sslPoolKeystorePassword;
+   }
+
+   public void setSslPoolTrustAllCerts(boolean sslPoolTrustAllCerts) {
+      _sslPoolTrustAllCerts = sslPoolTrustAllCerts;
+   }
+
+   public void setSslPoolTruststoreFile(String sslPoolTruststoreFile) {
+      _sslPoolTruststoreFile = sslPoolTruststoreFile;
+   }
+
+   public void setSslPoolTruststorePassword(String sslPoolTruststorePassword) {
+      _sslPoolTruststorePassword = sslPoolTruststorePassword;
+   }
+
+   public void setSslWorkDisable(boolean sslWorkDisable) {
+      _sslWorkDisable = sslWorkDisable;
+   }
+
+   public void setSslWorkKeystoreFile(String sslWorkKeystoreFile) {
+      _sslWorkKeystoreFile = sslWorkKeystoreFile;
+   }
+
+   public void setSslWorkKeystorePassword(String sslWorkKeystorePassword) {
+      _sslWorkKeystorePassword = sslWorkKeystorePassword;
+   }
+
+   public void setSslWorkTrustAllCerts(boolean sslWorkTrustAllCerts) {
+      _sslWorkTrustAllCerts = sslWorkTrustAllCerts;
+   }
+
+   public void setSslWorkTruststoreFile(String sslWorkTruststoreFile) {
+      _sslWorkTruststoreFile = sslWorkTruststoreFile;
+   }
+
+   public void setSslWorkTruststorePassword(String sslWorkTruststorePassword) {
+      _sslWorkTruststorePassword = sslWorkTruststorePassword;
+   }
+
 }

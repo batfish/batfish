@@ -1,5 +1,7 @@
 package org.batfish.coordinator.authorizer;
 
+import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -9,8 +11,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.Main;
 
 //An authorizer that is backed by a file
@@ -236,14 +240,13 @@ public class DbAuthorizer implements Authorizer {
    private synchronized void openDbConnection() throws SQLException {
       int triesLeft = MAX_DB_TRIES;
 
+      String driverClassName = Main.getSettings().getDriverClass();
       while (triesLeft > 0) {
          triesLeft--;
          try {
-
             if (_dbConn != null) {
                _dbConn.close();
             }
-            String driverClassName = Main.getSettings().getDriverClass();
             if (driverClassName != null) {
                ClassLoader cl = Thread.currentThread().getContextClassLoader();
                cl.loadClass(driverClassName);
@@ -254,19 +257,28 @@ public class DbAuthorizer implements Authorizer {
             return;
          }
          catch (SQLException e) {
-            if (e.getMessage().contains("Access denied for user")
-                  || e.getMessage().contains("No suitable driver found")
-                  || triesLeft == 0) {
-               throw e;
+            if (CommonUtil.causedByMessage(e, "Access denied for user")
+                  || CommonUtil.causedByMessage(e, "No suitable driver found")
+                  || CommonUtil.causedByMessage(e, "Unknown database")
+                  || CommonUtil.causedBy(e, UnknownHostException.class)
+                  || CommonUtil.causedBy(e, ConnectException.class)) {
+               throw new BatfishException(
+                     "Unrecoverable SQLException loading JDBC driver: "
+                           + driverClassName,
+                     e);
             }
-
+            if (triesLeft == 0) {
+               throw new BatfishException(
+                     "No tries left loading JDBC driver: " + driverClassName);
+            }
             _logger.errorf("SQLException while opening Db connection: %s\n",
-                  e.getMessage());
+                  ExceptionUtils.getStackTrace(e));
             _logger.errorf("Tries left = %d\n", triesLeft);
 
          }
          catch (ClassNotFoundException e) {
-            throw new BatfishException("Could not load class", e);
+            throw new BatfishException(
+                  "JDBC driver class not found: " + driverClassName, e);
          }
       }
    }

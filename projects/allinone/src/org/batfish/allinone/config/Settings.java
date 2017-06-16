@@ -1,10 +1,9 @@
-package org.batfish.allinone;
+package org.batfish.allinone.config;
 
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -15,14 +14,14 @@ public class Settings extends BaseSettings {
 
    private static final String ARG_BATFISH_ARGS = "batfishargs";
    private static final String ARG_CLIENT_ARGS = "clientargs";
-   private static final String ARG_COMMAND_FILE = org.batfish.client.Settings.ARG_COMMAND_FILE;
+   private static final String ARG_COMMAND_FILE = org.batfish.client.config.Settings.ARG_COMMAND_FILE;
    private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_RUN_CLIENT = "runclient";
-   private static final String ARG_RUN_MODE = org.batfish.client.Settings.ARG_RUN_MODE;
-   private static final String ARG_TESTRIG_DIR = org.batfish.client.Settings.ARG_TESTRIG_DIR;
+   private static final String ARG_RUN_MODE = org.batfish.client.config.Settings.ARG_RUN_MODE;
+   private static final String ARG_TESTRIG_DIR = org.batfish.client.config.Settings.ARG_TESTRIG_DIR;
    private static final String ARG_VERSION = "version";
 
    private static final String EXECUTABLE_NAME = "allinone";

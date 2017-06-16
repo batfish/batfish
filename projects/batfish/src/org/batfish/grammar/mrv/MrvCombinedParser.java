@@ -1,8 +1,8 @@
 package org.batfish.grammar.mrv;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.main.Settings;
 
 public class MrvCombinedParser
       extends BatfishCombinedParser<MrvParser, MrvLexer> {

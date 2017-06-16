@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.config;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -12,7 +12,6 @@ import org.batfish.common.PedanticBatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.config.ConfigurationLocator;
 import org.batfish.grammar.GrammarSettings;
 
 public final class Settings extends BaseSettings implements GrammarSettings {
@@ -367,8 +366,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
-   private static final String ARG_COORDINATOR_NO_SSL = "coordinator.NoSsl";
-
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
    public static final String ARG_COORDINATOR_REGISTER = "register";
@@ -433,6 +430,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
 
+   private static final String ARG_SERVICE_BIND_HOST = "servicebindhost";
+
    public static final String ARG_SERVICE_HOST = "servicehost";
 
    public static final String ARG_SERVICE_MODE = "servicemode";
@@ -444,11 +443,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
 
    private static final String ARG_TIMESTAMP = "timestamp";
-
-   /**
-    * (not wired to command line)
-    */
-   private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts";
 
    private static final String ARGNAME_AS = "as";
 
@@ -501,8 +495,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private int _coordinatorPoolPort;
 
    private boolean _coordinatorRegister;
-
-   private boolean _coordinatorUseSsl;
 
    private int _coordinatorWorkPort;
 
@@ -620,6 +612,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private boolean _serializeVendor;
 
+   private String _serviceBindHost;
+
    private String _serviceHost;
 
    private int _servicePort;
@@ -627,6 +621,18 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private boolean _shuffleJobs;
 
    private boolean _simplify;
+
+   private boolean _sslDisable;
+
+   private String _sslKeystoreFile;
+
+   private String _sslKeystorePassword;
+
+   private boolean _sslTrustAllCerts;
+
+   private String _sslTruststoreFile;
+
+   private String _sslTruststorePassword;
 
    private boolean _synthesizeJsonTopology;
 
@@ -643,8 +649,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private boolean _throwOnParserError;
 
    private boolean _timestamp;
-
-   private boolean _trustAllSslCerts;
 
    private boolean _unimplementedAsError;
 
@@ -739,10 +743,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public boolean getCoordinatorRegister() {
       return _coordinatorRegister;
-   }
-
-   public boolean getCoordinatorUseSsl() {
-      return _coordinatorUseSsl;
    }
 
    public int getCoordinatorWorkPort() {
@@ -951,6 +951,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _serializeVendor;
    }
 
+   public String getServiceBindHost() {
+      return _serviceBindHost;
+   }
+
    public String getServiceHost() {
       return _serviceHost;
    }
@@ -965,6 +969,30 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public boolean getSimplify() {
       return _simplify;
+   }
+
+   public boolean getSslDisable() {
+      return _sslDisable;
+   }
+
+   public String getSslKeystoreFile() {
+      return _sslKeystoreFile;
+   }
+
+   public String getSslKeystorePassword() {
+      return _sslKeystorePassword;
+   }
+
+   public boolean getSslTrustAllCerts() {
+      return _sslTrustAllCerts;
+   }
+
+   public String getSslTruststoreFile() {
+      return _sslTruststoreFile;
+   }
+
+   public String getSslTruststorePassword() {
+      return _sslTruststorePassword;
    }
 
    public boolean getSynthesizeJsonTopology() {
@@ -999,10 +1027,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public boolean getTimestamp() {
       return _timestamp;
-   }
-
-   public boolean getTrustAllSslCerts() {
-      return _trustAllSslCerts;
    }
 
    public boolean getUnimplementedAsError() {
@@ -1065,9 +1089,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
-      setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT);
-      setDefaultProperty(ARG_COORDINATOR_NO_SSL, CoordConsts.SVC_DISABLE_SSL);
-      setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
+      setDefaultProperty(ARG_COORDINATOR_POOL_PORT,
+            CoordConsts.SVC_CFG_POOL_PORT);
+      setDefaultProperty(ARG_COORDINATOR_WORK_PORT,
+            CoordConsts.SVC_CFG_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
       setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
       setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
@@ -1114,16 +1139,23 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
       setDefaultProperty(ARG_SEQUENTIAL, false);
       setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
+      setDefaultProperty(ARG_SERVICE_BIND_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_MODE, false);
       setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
+      setDefaultProperty(BfConsts.ARG_SSL_DISABLE,
+            CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
+      setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
+      setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
+      setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_TOPOLOGY, false);
       setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
       setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
       setDefaultProperty(ARG_TIMESTAMP, false);
-      setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
       setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
@@ -1170,8 +1202,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addBooleanOption(ARG_COORDINATOR_REGISTER,
             "register service with coordinator on startup");
-
-      addBooleanOption(ARG_COORDINATOR_NO_SSL, "whether coordinator uses ssl");
 
       addOption(ARG_COORDINATOR_WORK_PORT,
             "coordinator work manager listening port", "port_number");
@@ -1317,12 +1347,22 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addBooleanOption(ARG_SERIALIZE_TO_TEXT, "serialize to text");
 
+      addOption(ARG_SERVICE_BIND_HOST,
+            "local hostname used bind service (default is 0.0.0.0 which listens on all interfaces)",
+            ARGNAME_HOSTNAME);
+
       addOption(ARG_SERVICE_HOST, "local hostname to report to coordinator",
             ARGNAME_HOSTNAME);
 
       addBooleanOption(ARG_SERVICE_MODE, "run in service mode");
 
       addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
+
+      addBooleanOption(BfConsts.ARG_SSL_DISABLE,
+            "whether to disable SSL during communication with coordinator");
+
+      addBooleanOption(BfConsts.ARG_SSL_TRUST_ALL_CERTS,
+            "whether to trust all SSL certificates during communication with coordinator");
 
       addBooleanOption(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
             "synthesize json topology from interface ip subnet information");
@@ -1423,7 +1463,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
       _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
-      _coordinatorUseSsl = !getBooleanOptionValue(ARG_COORDINATOR_NO_SSL);
       _coordinatorWorkPort = getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
       _dataPlane = getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
       _deltaEnvironmentName = getStringOptionValue(
@@ -1486,10 +1525,21 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _serializeToText = getBooleanOptionValue(ARG_SERIALIZE_TO_TEXT);
       _serializeVendor = getBooleanOptionValue(
             BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
+      _serviceBindHost = getStringOptionValue(ARG_SERVICE_BIND_HOST);
       _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
       _servicePort = getIntOptionValue(ARG_SERVICE_PORT);
       _shuffleJobs = !getBooleanOptionValue(ARG_NO_SHUFFLE);
       _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+      _sslDisable = getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
+      _sslKeystoreFile = getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
+      _sslKeystorePassword = getStringOptionValue(
+            BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
+      _sslTrustAllCerts = getBooleanOptionValue(
+            BfConsts.ARG_SSL_TRUST_ALL_CERTS);
+      _sslTruststoreFile = getStringOptionValue(
+            BfConsts.ARG_SSL_TRUSTSTORE_FILE);
+      _sslTruststorePassword = getStringOptionValue(
+            BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
       _synthesizeJsonTopology = getBooleanOptionValue(
             BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
       _synthesizeTopology = getBooleanOptionValue(
@@ -1499,7 +1549,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
       _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
       _timestamp = getBooleanOptionValue(ARG_TIMESTAMP);
-      _trustAllSslCerts = getBooleanOptionValue(ARG_TRUST_ALL_SSL_CERTS);
       _unimplementedAsError = getBooleanOptionValue(
             BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
       _unimplementedRecord = !getBooleanOptionValue(
@@ -1603,6 +1652,30 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public void setSequential(boolean sequential) {
       _sequential = true;
+   }
+
+   public void setSslDisable(boolean sslDisable) {
+      _sslDisable = sslDisable;
+   }
+
+   public void setSslKeystoreFile(String sslKeystoreFile) {
+      _sslKeystoreFile = sslKeystoreFile;
+   }
+
+   public void setSslKeystorePassword(String sslKeystorePassword) {
+      _sslKeystorePassword = sslKeystorePassword;
+   }
+
+   public void setSslTrustAllCerts(boolean sslTrustAllCerts) {
+      _sslTrustAllCerts = sslTrustAllCerts;
+   }
+
+   public void setSslTruststoreFile(String sslTruststoreFile) {
+      _sslTruststoreFile = sslTruststoreFile;
+   }
+
+   public void setSslTruststorePassword(String sslTruststorePassword) {
+      _sslTruststorePassword = sslTruststorePassword;
    }
 
    public void setTaskId(String taskId) {
