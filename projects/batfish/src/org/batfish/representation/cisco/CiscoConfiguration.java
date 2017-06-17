@@ -1818,6 +1818,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
+      newIface.setAutoState(iface.getAutoState());
       newIface.setVrf(c.getVrfs().get(vrfName));
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());

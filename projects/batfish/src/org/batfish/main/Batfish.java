@@ -1364,7 +1364,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                if ((vlanNumber >= normalVlanRange.getStart())
                      && (vlanNumber <= normalVlanRange.getEnd())) {
                   Interface iface = vlanInterfaces.get(vlanNumber);
-                  if (iface != null) {
+                  if ((iface != null) && iface.getAutoState()) {
                      _logger.warnf(
                            "WARNING: Disabling unusable vlan interface because no switch port is assigned to it: \"%s:%d\"\n",
                            hostname, vlanNumber);

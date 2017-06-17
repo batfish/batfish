@@ -30,6 +30,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String ALLOWED_VLANS_VAR = "allowedVlans";
 
+   private static final String AUTOSTATE_VAR = "autostate";
+
    private static final String BANDWIDTH_VAR = "bandwidth";
 
    private static final int DEFAULT_MTU = 1500;
@@ -295,6 +297,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private Set<Prefix> _allPrefixes;
 
+   private boolean _autoState;
+
    private Double _bandwidth;
 
    private transient boolean _blacklisted;
@@ -382,6 +386,7 @@ public final class Interface extends ComparableStructure<String> {
    public Interface(String name, Configuration owner) {
       super(name);
       _active = true;
+      _autoState = true;
       _allowedVlans = new ArrayList<>();
       _allPrefixes = new TreeSet<>();
       _interfaceType = InterfaceType.UNKNOWN;
@@ -426,6 +431,9 @@ public final class Interface extends ComparableStructure<String> {
          return false;
       }
       if (!this._allPrefixes.equals(other._allPrefixes)) {
+         return false;
+      }
+      if (this._autoState != other._autoState) {
          return false;
       }
       if (this._bandwidth.compareTo(other._bandwidth) != 0) {
@@ -503,6 +511,12 @@ public final class Interface extends ComparableStructure<String> {
    @JsonPropertyDescription("All IPV4 address/network assignments on this interface")
    public Set<Prefix> getAllPrefixes() {
       return _allPrefixes;
+   }
+
+   @JsonProperty(AUTOSTATE_VAR)
+   @JsonPropertyDescription("Whether this VLAN interface's operational status is dependent on corresponding member switchports")
+   public boolean getAutoState() {
+      return _autoState;
    }
 
    @JsonProperty(BANDWIDTH_VAR)
@@ -802,6 +816,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(ALL_PREFIXES_VAR)
    public void setAllPrefixes(Set<Prefix> allPrefixes) {
       _allPrefixes = allPrefixes;
+   }
+
+   @JsonProperty(AUTOSTATE_VAR)
+   public void setAutoState(boolean autoState) {
+      _autoState = autoState;
    }
 
    @JsonProperty(BANDWIDTH_VAR)

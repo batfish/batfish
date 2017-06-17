@@ -2225,6 +2225,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_autostate(If_autostateContext ctx) {
+      if (ctx.NO() != null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setAutoState(false);
+         }
+      }
+   }
+
+   @Override
    public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
