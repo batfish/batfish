@@ -222,7 +222,7 @@ interface vlan1006
 !
 interface vlan1234
 !
-interface vlan4095
+interface vlan4094
 !
 !
 interface ethernet 1/12

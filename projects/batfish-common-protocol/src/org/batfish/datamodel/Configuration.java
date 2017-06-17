@@ -74,7 +74,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
 
-   private static final int VLAN_NORMAL_MAX_DEFAULT = 4095;
+   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
    private static final String ZONES_VAR = "zones";
 

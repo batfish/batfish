@@ -9061,7 +9061,7 @@
             "        M_Interface_PREFIX:'vlan'  <== mode:M_Interface",
             "        (range",
             "          (subrange",
-            "            DEC:'4095'  <== mode:M_Interface)))",
+            "            DEC:'4094'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
             "    (s_interface",
