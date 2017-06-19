@@ -75,6 +75,7 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -82,8 +83,9 @@ import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
@@ -1317,6 +1319,64 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return vendorConfigurations;
    }
 
+   private void disableUnusableVlanInterfaces(
+         Map<String, Configuration> configurations) {
+      for (Configuration c : configurations.values()) {
+         Map<Integer, Interface> vlanInterfaces = new HashMap<>();
+         Map<Integer, Integer> vlanMemberCounts = new HashMap<>();
+         Set<Interface> nonVlanInterfaces = new HashSet<>();
+         Integer vlanNumber = null;
+         // Populate vlanInterface and nonVlanInterfaces, and initialize
+         // vlanMemberCounts:
+         for (Interface iface : c.getInterfaces().values()) {
+            if ((iface.getInterfaceType() == InterfaceType.VLAN)
+                  && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
+               vlanInterfaces.put(vlanNumber, iface);
+               vlanMemberCounts.put(vlanNumber, 0);
+            }
+            else {
+               nonVlanInterfaces.add(iface);
+            }
+         }
+         // Update vlanMemberCounts:
+         for (Interface iface : nonVlanInterfaces) {
+            List<SubRange> vlans = new ArrayList<>();
+            vlanNumber = iface.getAccessVlan();
+            if (vlanNumber == 0) { // vlan trunked interface
+               vlans.addAll(iface.getAllowedVlans());
+               vlanNumber = iface.getNativeVlan();
+            }
+            vlans.add(new SubRange(vlanNumber, vlanNumber));
+
+            for (SubRange sr : vlans) {
+               for (int vlanId = sr.getStart(); vlanId <= sr.getEnd(); ++vlanId) {
+                  vlanMemberCounts.compute(vlanId,
+                        (k, v) -> (v == null) ? 1 : (v + 1));
+               }
+            }
+         }
+         // Disable all "normal" vlan interfaces with zero member counts:
+         String hostname = c.getHostname();
+         SubRange normalVlanRange = c.getNormalVlanRange();
+         for (Map.Entry<Integer, Integer> entry : vlanMemberCounts.entrySet()) {
+            if (entry.getValue() == 0) {
+               vlanNumber = entry.getKey();
+               if ((vlanNumber >= normalVlanRange.getStart())
+                     && (vlanNumber <= normalVlanRange.getEnd())) {
+                  Interface iface = vlanInterfaces.get(vlanNumber);
+                  if ((iface != null) && iface.getAutoState()) {
+                     _logger.warnf(
+                           "WARNING: Disabling unusable vlan interface because no switch port is assigned to it: \"%s:%d\"\n",
+                           hostname, vlanNumber);
+                     iface.setActive(false);
+                     iface.setBlacklisted(true);
+                  }
+               }
+            }
+         }
+      }
+   }
+
    private void disableUnusableVpnInterfaces(
          Map<String, Configuration> configurations) {
       initRemoteIpsecVpns(configurations);
@@ -2452,6 +2512,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       processNodeBlacklist(configurations);
       processInterfaceBlacklist(configurations);
       processDeltaConfigurations(configurations);
+      disableUnusableVlanInterfaces(configurations);
       disableUnusableVpnInterfaces(configurations);
       return configurations;
    }

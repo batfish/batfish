@@ -80,6 +80,8 @@ public class Interface extends ComparableStructure<String> {
 
    private ArrayList<SubRange> _allowedVlans;
 
+   private boolean _autoState;
+
    private Double _bandwidth;
 
    private String _description;
@@ -149,6 +151,7 @@ public class Interface extends ComparableStructure<String> {
    public Interface(String name, CiscoConfiguration c) {
       super(name);
       _active = true;
+      _autoState = true;
       _allowedVlans = new ArrayList<>();
       _isisInterfaceMode = IsisInterfaceMode.UNSET;
       _nativeVlan = 1;
@@ -209,6 +212,10 @@ public class Interface extends ComparableStructure<String> {
       }
       allPrefixes.addAll(_secondaryPrefixes);
       return allPrefixes;
+   }
+
+   public boolean getAutoState() {
+      return _autoState;
    }
 
    public Double getBandwidth() {
@@ -349,6 +356,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setActive(boolean active) {
       _active = active;
+   }
+
+   public void setAutoState(boolean autoState) {
+      _autoState = autoState;
    }
 
    public void setBandwidth(Double bandwidth) {

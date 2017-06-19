@@ -59,6 +59,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -84,6 +85,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -107,6 +109,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -132,6 +135,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -1199,6 +1203,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -1222,6 +1227,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -1247,6 +1253,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -1270,6 +1277,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -1295,6 +1303,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -2321,6 +2330,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -2346,6 +2356,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -2371,6 +2382,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -2396,6 +2408,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -2703,6 +2716,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -2728,6 +2742,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -2753,6 +2768,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -2778,6 +2794,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -2803,6 +2820,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -3813,6 +3831,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -3838,6 +3857,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -3863,6 +3883,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -3888,6 +3909,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -3913,6 +3935,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -4872,6 +4895,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -4897,6 +4921,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -4922,6 +4947,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -4948,6 +4974,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet3/0" : {
@@ -4974,6 +5001,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -4999,6 +5027,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -5411,6 +5440,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -5436,6 +5466,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -5461,6 +5492,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -5486,6 +5518,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet3/0" : {
@@ -5511,6 +5544,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -5536,6 +5570,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -5925,6 +5960,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -5948,6 +5984,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -5971,6 +6008,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -5995,6 +6033,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet3/0" : {
@@ -6019,6 +6058,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -6042,6 +6082,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -6738,6 +6779,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -6763,6 +6805,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -6788,6 +6831,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -6811,6 +6855,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -6836,6 +6881,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -7395,6 +7441,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -7420,6 +7467,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -7445,6 +7493,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -7468,6 +7517,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -7493,6 +7543,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -8072,6 +8123,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -8097,6 +8149,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -8120,6 +8173,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -8145,6 +8199,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -9106,6 +9161,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -9129,6 +9185,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -9154,6 +9211,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -9179,6 +9237,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -10051,6 +10110,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/0" : {
@@ -10076,6 +10136,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet1/0" : {
@@ -10101,6 +10162,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet2/0" : {
@@ -10124,6 +10186,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet3/0" : {
@@ -10147,6 +10210,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -10172,6 +10236,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -10593,6 +10658,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -10765,6 +10831,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
