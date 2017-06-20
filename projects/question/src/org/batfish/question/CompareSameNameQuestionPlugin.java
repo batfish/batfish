@@ -92,6 +92,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       private List<String> _nodes;
 
       private boolean _singletons;
+      
+      private boolean _missing;
 
       public CompareSameNameAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
@@ -120,6 +122,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          _namedStructTypes = question.getNamedStructTypes().stream()
                .map(s -> s.toLowerCase()).collect(Collectors.toSet());
          _singletons = question.getSingletons();
+         _missing = question.getMissing();
 
          add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
          add(CommunityList.class, c -> c.getCommunityLists());
@@ -142,15 +145,23 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
             Function<Configuration, Map<String, T>> structureMapRetriever) {
          NamedStructureEquivalenceSets<T> ae = new NamedStructureEquivalenceSets<>(
                structureClass.getSimpleName());
+         // collect the set of all names for structures of type T, across all nodes
+         Set<String> allNames = new TreeSet<String>();
          for (String hostname : hostnames) {
-            // Process route filters
             Configuration node = configurations.get(hostname);
-            Map<String, T> structureMap = structureMapRetriever.apply(node);
-            for (String listName : structureMap.keySet()) {
-               if (listName.startsWith("~")) {
+            Map<String,T> structureMap = structureMapRetriever.apply(node);
+            allNames.addAll(structureMap.keySet());
+         }
+         for (String hostname : hostnames) {
+            Configuration node = configurations.get(hostname);
+            Map<String, T> structureMap = structureMapRetriever.apply(node);            
+            for (String structName : allNames) {
+               if (structName.startsWith("~")) {
                   continue;
                }
-               ae.add(hostname, listName, structureMap.get(listName));
+               T struct = structureMap.get(structName);
+               if (struct != null || _missing)
+                  ae.add(hostname, structName, struct);
             }
          }
          if (!_singletons) {
@@ -191,6 +202,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     *           Defaults to false. Specifies whether or not to include named
     *           structures for which there is only one equivalence class.
     *
+    * @param missing
+    *           Defaults to false. Specifies whether or not to create an equivalence
+    *           class for nodes that are missing a structure of a given name.
+    * 
     */
    public static final class CompareSameNameQuestion extends Question {
 
@@ -199,12 +214,16 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
       private static final String SINGLETONS_VAR = "singletons";
+      
+      private static final String MISSING_VAR = "missing";
 
       private SortedSet<String> _namedStructTypes;
 
       private String _nodeRegex;
 
       private boolean _singletons;
+      
+      private boolean _missing;
 
       public CompareSameNameQuestion() {
          _namedStructTypes = new TreeSet<>();
@@ -235,6 +254,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       public boolean getSingletons() {
          return _singletons;
       }
+      
+      @JsonProperty(MISSING_VAR)
+      public boolean getMissing() {
+         return _missing;
+      }
 
       @Override
       public boolean getTraffic() {
@@ -254,6 +278,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       @JsonProperty(SINGLETONS_VAR)
       public void setSingletons(boolean singletons) {
          _singletons = singletons;
+      }
+      
+      @JsonProperty(MISSING_VAR)
+      public void setMIssing(boolean missing) {
+         _missing = missing;
       }
 
    }
