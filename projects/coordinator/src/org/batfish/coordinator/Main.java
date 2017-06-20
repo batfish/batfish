@@ -74,7 +74,7 @@ public class Main {
 
       ResourceConfig rcPool = new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature()).register(MultiPartFeature.class)
-            .register(org.batfish.coordinator.CrossDomainFilter.class);
+            .register(CrossDomainFilter.class);
 
       if (_settings.getSslPoolDisable()) {
          URI poolMgrUri = UriBuilder
@@ -109,7 +109,7 @@ public class Main {
    private static void initWorkManager() {
       ResourceConfig rcWork = new ResourceConfig(WorkMgrService.class)
             .register(new JettisonFeature()).register(MultiPartFeature.class)
-            .register(org.batfish.coordinator.CrossDomainFilter.class);
+            .register(CrossDomainFilter.class);
 
       if (_settings.getSslWorkDisable()) {
          URI workMgrUri = UriBuilder

@@ -683,7 +683,7 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public String initContainer(String containerPrefix) {
+   public String initContainer(String containerName, String containerPrefix) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
