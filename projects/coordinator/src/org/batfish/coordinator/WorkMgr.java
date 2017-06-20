@@ -753,9 +753,11 @@ public class WorkMgr {
       return _workQueueMgr.getWork(workItemId);
    }
 
-   public String initContainer(String containerPrefix) throws Exception {
-
-      String containerName = containerPrefix + "_" + UUID.randomUUID();
+   public String initContainer(String containerName, String containerPrefix)
+         throws Exception {
+      if (containerName == null || containerName.equals("")) {
+         containerName = containerPrefix + "_" + UUID.randomUUID();
+      }
 
       File containerDir = Paths
             .get(Main.getSettings().getContainersLocation(), containerName)

@@ -1056,7 +1056,7 @@ public class Client extends AbstractClient implements IClient {
    private boolean initContainer(String[] words) {
       String containerPrefix = (words.length > 1) ? words[1]
             : DEFAULT_CONTAINER_PREFIX;
-      _currContainerName = _workHelper.initContainer(containerPrefix);
+      _currContainerName = _workHelper.initContainer(null, containerPrefix);
       if (_currContainerName == null) {
          _logger.errorf("Could not init container\n");
          return false;
@@ -1201,8 +1201,8 @@ public class Client extends AbstractClient implements IClient {
 
       // initialize the container if it hasn't been init'd before
       if (!isSetContainer(false)) {
-         _currContainerName = _workHelper
-               .initContainer(DEFAULT_CONTAINER_PREFIX);
+         _currContainerName = _workHelper.initContainer(null,
+               DEFAULT_CONTAINER_PREFIX);
          if (_currContainerName == null) {
             _logger.errorf("Could not init container\n");
             return false;
