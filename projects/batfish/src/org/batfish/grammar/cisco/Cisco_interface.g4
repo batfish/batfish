@@ -6,6 +6,11 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+if_autostate
+:
+   NO? AUTOSTATE NEWLINE
+;
+
 if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
@@ -309,7 +314,6 @@ if_null_block
       | AUTHENTICATION
       | AUTO
       | AUTOROUTE
-      | AUTOSTATE
       | BANDWIDTH
       | BEACON
       | BFD
@@ -878,7 +882,8 @@ s_interface
       | POINT_TO_POINT
    )? NEWLINE
    (
-      if_default_gw
+      if_autostate
+      | if_default_gw
       | if_description
       | if_hsrp
       | if_ip_proxy_arp

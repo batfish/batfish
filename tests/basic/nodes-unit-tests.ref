@@ -2450,6 +2450,7 @@
               "name" : "TenGigabitEthernet0/0/2/2",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2463,6 +2464,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -2490,6 +2492,7 @@
               "name" : "Async1",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2503,12 +2506,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Crypto-Engine1/2/3" : {
               "name" : "Crypto-Engine1/2/3",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2522,12 +2527,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VPN",
               "vrf" : "default"
             },
             "Dot11Radio0" : {
               "name" : "Dot11Radio0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2541,6 +2548,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Ethernet0" : {
@@ -2550,6 +2558,7 @@
               "allPrefixes" : [
                 "1.2.3.4/30"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "description" : "description-goes-here",
               "isisL1InterfaceMode" : "unset",
@@ -2567,12 +2576,14 @@
               "switchport" : true,
               "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Ethernet1/11" : {
               "name" : "Ethernet1/11",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2586,12 +2597,35 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet1/12" : {
+              "name" : "Ethernet1/12",
+              "accessVlan" : 3,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "ACCESS",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2605,12 +2639,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             },
             "Null0" : {
               "name" : "Null0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2624,12 +2660,77 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "NULL",
+              "vrf" : "default"
+            },
+            "Vlan1" : {
+              "name" : "Vlan1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
+            },
+            "Vlan1005" : {
+              "name" : "Vlan1005",
+              "accessVlan" : 0,
+              "active" : false,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
+            },
+            "Vlan1006" : {
+              "name" : "Vlan1006",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             },
             "Vlan111" : {
               "name" : "Vlan111",
               "accessVlan" : 0,
-              "active" : true,
+              "active" : false,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2643,12 +2744,98 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
+            },
+            "Vlan1234" : {
+              "name" : "Vlan1234",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
+            },
+            "Vlan2" : {
+              "name" : "Vlan2",
+              "accessVlan" : 0,
+              "active" : false,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
+            },
+            "Vlan3" : {
+              "name" : "Vlan3",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
+            },
+            "Vlan4094" : {
+              "name" : "Vlan4094",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             },
             "Vxlan1" : {
               "name" : "Vxlan1",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2662,12 +2849,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "TUNNEL",
               "vrf" : "default"
             },
             "tunnel-ip6" : {
               "name" : "tunnel-ip6",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2681,6 +2870,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "TUNNEL",
               "vrf" : "default"
             }
           },
@@ -2698,9 +2888,17 @@
                 "Dot11Radio0",
                 "Ethernet0",
                 "Ethernet1/11",
+                "Ethernet1/12",
                 "Loopback0",
                 "Null0",
+                "Vlan1",
+                "Vlan1005",
+                "Vlan1006",
                 "Vlan111",
+                "Vlan1234",
+                "Vlan2",
+                "Vlan3",
+                "Vlan4094",
                 "Vxlan1",
                 "tunnel-ip6"
               ]
@@ -3132,6 +3330,7 @@
               "allPrefixes" : [
                 "137.164.25.57/30"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "isisCost" : 15,
               "isisL1InterfaceMode" : "unset",
@@ -3147,12 +3346,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "GigabitEthernet0/1" : {
               "name" : "GigabitEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
@@ -3166,12 +3367,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/0/0/0.2302" : {
               "name" : "HundredGigabitEthernet0/0/0/0.2302",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "passive",
@@ -3185,12 +3388,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Serial4/0" : {
               "name" : "Serial4/0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
@@ -3204,6 +3409,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -3911,6 +4117,7 @@
               "allPrefixes" : [
                 "3.3.3.0/24"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -3927,6 +4134,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
@@ -3936,6 +4144,7 @@
               "allPrefixes" : [
                 "1.1.1.1/32"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -3950,6 +4159,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -5307,6 +5517,7 @@
               "name" : "Ethernet1/15",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5320,6 +5531,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -5398,6 +5610,7 @@
               "allPrefixes" : [
                 "2.128.0.101/24"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "incomingFilter" : "filter::INPUT",
               "isisL1InterfaceMode" : "unset",
@@ -5413,6 +5626,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -5881,6 +6095,7 @@
               "allPrefixes" : [
                 "10.22.33.10/29"
               ],
+              "autostate" : false,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5895,6 +6110,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             },
             "Vlan803" : {
@@ -5904,6 +6120,7 @@
               "allPrefixes" : [
                 "10.12.12.1/23"
               ],
+              "autostate" : false,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5918,6 +6135,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             }
           },
@@ -5946,6 +6164,7 @@
               "name" : "FastEthernet12/13",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E8,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5959,12 +6178,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/6/0/8" : {
               "name" : "HundredGigabitEthernet0/6/0/8",
               "accessVlan" : 0,
               "active" : false,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5978,12 +6199,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Port-Channel1" : {
               "name" : "Port-Channel1",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -5997,12 +6220,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "Vlan100" : {
               "name" : "Vlan100",
               "accessVlan" : 0,
-              "active" : true,
+              "active" : false,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6016,6 +6241,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
               "vrf" : "default"
             }
           },
@@ -6049,6 +6275,7 @@
               "allPrefixes" : [
                 "137.164.16.80/32"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
               "isisL1InterfaceMode" : "unset",
@@ -6064,6 +6291,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -6374,6 +6602,7 @@
               "name" : "GigabitEthernet0/2/1/6",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "active",
               "isisL2InterfaceMode" : "active",
@@ -6387,6 +6616,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -6462,6 +6692,7 @@
               "name" : "Bundle-Ethernet101",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6475,12 +6706,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "Bundle-Ethernet103" : {
               "name" : "Bundle-Ethernet103",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6494,12 +6727,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "Bundle-Ethernet201" : {
               "name" : "Bundle-Ethernet201",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6514,12 +6749,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/2/0/0.292" : {
               "name" : "HundredGigabitEthernet0/2/0/0.292",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6533,12 +6770,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/2/0/3" : {
               "name" : "HundredGigabitEthernet0/2/0/3",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6552,12 +6791,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "Loopback0" : {
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6571,12 +6812,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/2" : {
               "name" : "TenGigabitEthernet0/0/0/2",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6590,12 +6833,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/4" : {
               "name" : "TenGigabitEthernet0/0/0/4",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6609,12 +6854,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/5" : {
               "name" : "TenGigabitEthernet0/0/0/5",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6628,6 +6875,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -6890,6 +7138,7 @@
               "name" : "xe-0/0/1.0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6904,12 +7153,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "xe-0/0/20.0" : {
               "name" : "xe-0/0/20.0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6924,12 +7175,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "xe-0/0/21.0" : {
               "name" : "xe-0/0/21.0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -6943,6 +7196,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -7357,6 +7611,7 @@
               "name" : "ae0.0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -7369,6 +7624,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "AGGREGATED",
               "vrf" : "default"
             },
             "irb.5" : {
@@ -7379,6 +7635,7 @@
                 "1.2.3.0/24",
                 "1.2.3.1/24"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -7392,6 +7649,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default",
               "vrrpGroups" : {
                 "5" : {
@@ -7405,6 +7663,7 @@
               "name" : "xe-0/0/0:0.0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -7417,12 +7676,14 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             },
             "xe-0/0/5:0.0" : {
               "name" : "xe-0/0/5:0.0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E10,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -7435,6 +7696,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -9488,6 +9750,7 @@
               "allPrefixes" : [
                 "137.164.17.8/32"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -9502,6 +9765,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "LOOPBACK",
               "vrf" : "default"
             }
           },
@@ -12880,6 +13144,7 @@
                 "56-78",
                 "99-99"
               ],
+              "autostate" : true,
               "bandwidth" : 1.0E8,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -12893,6 +13158,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -13314,6 +13580,7 @@
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E8,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -13327,6 +13594,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },
@@ -13354,6 +13622,7 @@
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
+              "autostate" : true,
               "bandwidth" : 1.0E8,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -13367,6 +13636,7 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
               "vrf" : "default"
             }
           },

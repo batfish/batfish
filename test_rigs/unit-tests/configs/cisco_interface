@@ -210,3 +210,21 @@ interface Vlan111
 interface Vxlan1
 !
 !
+interface vlan1
+!
+interface vlan2
+!
+interface vlan3
+!
+interface vlan1005
+!
+interface vlan1006
+!
+interface vlan1234
+!
+interface vlan4094
+!
+!
+interface ethernet 1/12
+switchport access vlan 3
+!

@@ -30,6 +30,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String ALLOWED_VLANS_VAR = "allowedVlans";
 
+   private static final String AUTOSTATE_VAR = "autostate";
+
    private static final String BANDWIDTH_VAR = "bandwidth";
 
    private static final int DEFAULT_MTU = 1500;
@@ -41,6 +43,8 @@ public final class Interface extends ComparableStructure<String> {
    private static final String INBOUND_FILTER_VAR = "inboundFilter";
 
    private static final String INCOMING_FILTER_VAR = "incomingFilter";
+
+   private static final String INTERFACE_TYPE_VAR = "type";
 
    private static final String ISIS_COST_VAR = "isisCost";
 
@@ -118,10 +122,19 @@ public final class Interface extends ComparableStructure<String> {
       else if (name.startsWith("ATM")) {
          return InterfaceType.PHYSICAL;
       }
-      else if (name.startsWith("Bundle-Ether")) {
+      else if (name.startsWith("Bundle-Ethernet")) {
          return InterfaceType.AGGREGATED;
       }
       else if (name.startsWith("cmp-mgmt")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Crypto-Engine")) {
+         return InterfaceType.VPN; // IPSec VPN
+      }
+      else if (name.startsWith("Dialer")) {
+         return InterfaceType.PHYSICAL;
+      }
+      else if (name.startsWith("Dot11Radio")) {
          return InterfaceType.PHYSICAL;
       }
       else if (name.startsWith("Embedded-Service-Engine")) {
@@ -133,13 +146,16 @@ public final class Interface extends ComparableStructure<String> {
       else if (name.startsWith("FastEthernet")) {
          return InterfaceType.PHYSICAL;
       }
+      else if (name.startsWith("FortyGigabitEthernet")) {
+         return InterfaceType.PHYSICAL;
+      }
       else if (name.startsWith("GigabitEthernet")) {
          return InterfaceType.PHYSICAL;
       }
       else if (name.startsWith("GMPLS")) {
          return InterfaceType.PHYSICAL;
       }
-      else if (name.startsWith("HundredGigE")) {
+      else if (name.startsWith("HundredGigabitEthernet")) {
          return InterfaceType.PHYSICAL;
       }
       else if (name.startsWith("Group-Async")) {
@@ -158,9 +174,9 @@ public final class Interface extends ComparableStructure<String> {
          return InterfaceType.PHYSICAL;
       }
       else if (name.startsWith("Null")) {
-         throw new BatfishException("Don't know what to do with this");
+         return InterfaceType.NULL;
       }
-      else if (name.startsWith("Port-channel")) {
+      else if (name.startsWith("Port-Channel")) {
          return InterfaceType.AGGREGATED;
       }
       else if (name.startsWith("POS")) {
@@ -173,17 +189,22 @@ public final class Interface extends ComparableStructure<String> {
          return InterfaceType.PHYSICAL;
       }
       else if (name.startsWith("Tunnel")) {
-         return InterfaceType.VPN;
+         return InterfaceType.TUNNEL;
+      }
+      else if (name.startsWith("tunnel-ip")) {
+         return InterfaceType.TUNNEL;
       }
       else if (name.startsWith("tunnel-te")) {
-         return InterfaceType.VPN;
+         return InterfaceType.TUNNEL;
       }
       else if (name.startsWith("Vlan")) {
          return InterfaceType.VLAN;
       }
+      else if (name.startsWith("Vxlan")) {
+         return InterfaceType.TUNNEL;
+      }
       else {
-         throw new BatfishException(
-               "Missing mapping to interface type for name: \"" + name + "\"");
+         return InterfaceType.UNKNOWN;
       }
    }
 
@@ -201,11 +222,15 @@ public final class Interface extends ComparableStructure<String> {
       switch (format) {
       case ALCATEL_AOS:
          return computeAosInteraceType(name);
+
       case AWS_VPC:
          return computeAwsInterfaceType(name);
+
       case ARISTA:
       case CISCO_IOS:
       case CISCO_IOS_XR:
+      case CISCO_NX:
+      case FOUNDRY:
          return computeCiscoInterfaceType(name);
 
       case FLAT_JUNIPER:
@@ -272,6 +297,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private Set<Prefix> _allPrefixes;
 
+   private boolean _autoState;
+
    private Double _bandwidth;
 
    private transient boolean _blacklisted;
@@ -285,6 +312,8 @@ public final class Interface extends ComparableStructure<String> {
    private IpAccessList _incomingFilter;
 
    private transient String _incomingFilterName;
+
+   private InterfaceType _interfaceType;
 
    private Integer _isisCost;
 
@@ -357,8 +386,10 @@ public final class Interface extends ComparableStructure<String> {
    public Interface(String name, Configuration owner) {
       super(name);
       _active = true;
+      _autoState = true;
       _allowedVlans = new ArrayList<>();
       _allPrefixes = new TreeSet<>();
+      _interfaceType = InterfaceType.UNKNOWN;
       _mtu = DEFAULT_MTU;
       _nativeVlan = 1;
       _owner = owner;
@@ -368,14 +399,19 @@ public final class Interface extends ComparableStructure<String> {
       _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
       _vrfName = Configuration.DEFAULT_VRF_NAME;
       _vrrpGroups = new TreeMap<>();
+
+      computeInterfaceType();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
       _allowedVlans.addAll(ranges);
    }
 
-   private InterfaceType computeInterfaceType() {
-      return computeInterfaceType(_key, _owner.getConfigurationFormat());
+   private void computeInterfaceType() {
+      if ((_key != null) && (_owner != null)) {
+         _interfaceType = computeInterfaceType(_key,
+               _owner.getConfigurationFormat());
+      }
    }
 
    @Override
@@ -397,6 +433,9 @@ public final class Interface extends ComparableStructure<String> {
       if (!this._allPrefixes.equals(other._allPrefixes)) {
          return false;
       }
+      if (this._autoState != other._autoState) {
+         return false;
+      }
       if (this._bandwidth.compareTo(other._bandwidth) != 0) {
          return false;
       }
@@ -409,6 +448,10 @@ public final class Interface extends ComparableStructure<String> {
 
       if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(),
             other.getIncomingFilter())) {
+         return false;
+      }
+
+      if (this._interfaceType != other._interfaceType) {
          return false;
       }
 
@@ -470,6 +513,12 @@ public final class Interface extends ComparableStructure<String> {
       return _allPrefixes;
    }
 
+   @JsonProperty(AUTOSTATE_VAR)
+   @JsonPropertyDescription("Whether this VLAN interface's operational status is dependent on corresponding member switchports")
+   public boolean getAutoState() {
+      return _autoState;
+   }
+
    @JsonProperty(BANDWIDTH_VAR)
    @JsonPropertyDescription("The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
    public Double getBandwidth() {
@@ -517,6 +566,12 @@ public final class Interface extends ComparableStructure<String> {
       else {
          return _incomingFilterName;
       }
+   }
+
+   @JsonProperty(INTERFACE_TYPE_VAR)
+   @JsonPropertyDescription("The type of this interface")
+   public InterfaceType getInterfaceType() {
+      return _interfaceType;
    }
 
    @JsonProperty(ISIS_COST_VAR)
@@ -763,6 +818,11 @@ public final class Interface extends ComparableStructure<String> {
       _allPrefixes = allPrefixes;
    }
 
+   @JsonProperty(AUTOSTATE_VAR)
+   public void setAutoState(boolean autoState) {
+      _autoState = autoState;
+   }
+
    @JsonProperty(BANDWIDTH_VAR)
    public void setBandwidth(Double bandwidth) {
       _bandwidth = bandwidth;
@@ -796,6 +856,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(INCOMING_FILTER_VAR)
    public void setIncomingFilterName(String incomingFilterName) {
       _incomingFilterName = incomingFilterName;
+   }
+
+   @JsonProperty(INTERFACE_TYPE_VAR)
+   public void setInterfaceType(InterfaceType it) {
+      _interfaceType = it;
    }
 
    @JsonProperty(ISIS_COST_VAR)
@@ -950,9 +1015,8 @@ public final class Interface extends ComparableStructure<String> {
       JSONObject iface = new JSONObject();
       iface.put("node", _owner.getName());
       iface.put("name", _key);
-      iface.put("prefix", _prefix.toString());
-      InterfaceType interfaceType = computeInterfaceType();
-      iface.put("type", interfaceType.toString());
+      iface.put(PREFIX_VAR, _prefix.toString());
+      iface.put(INTERFACE_TYPE_VAR, _interfaceType.toString());
       return iface;
    }
 
