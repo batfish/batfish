@@ -4,9 +4,9 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +39,6 @@ public class DbAuthorizer implements Authorizer {
    private Connection _dbConn;
    private BatfishLogger _logger;
 
-   private java.text.SimpleDateFormat DateFormatter = new java.text.SimpleDateFormat(
-         "yyyy-MM-dd HH:mm:ss");
-
    public DbAuthorizer() throws SQLException {
       _logger = Main.getLogger();
       openDbConnection();
@@ -55,16 +52,19 @@ public class DbAuthorizer implements Authorizer {
 
       // add the container if it does not exist; update datelastaccessed if it
       // does
-      Date now = new Date();
-      String insertQuery = String.format(
-            "INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s') "
-                  + " ON DUPLICATE KEY UPDATE %s = '%s'",
+      java.sql.Date now = new java.sql.Date(new Date().getTime());
+      String insertContainersString = String.format(
+            "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?) "
+                  + " ON DUPLICATE KEY UPDATE %s = ?",
             TABLE_CONTAINERS, COLUMN_CONTAINER_NAME, COLUMN_DATE_CREATED,
-            COLUMN_DATE_LAST_ACCESSED, containerName, DateFormatter.format(now),
-            DateFormatter.format(now), COLUMN_DATE_LAST_ACCESSED,
-            DateFormatter.format(now));
-
-      int numInsertRows = executeUpdate(insertQuery);
+            COLUMN_DATE_LAST_ACCESSED, COLUMN_DATE_LAST_ACCESSED);
+      PreparedStatement insertContainers = _dbConn
+            .prepareStatement(insertContainersString);
+      insertContainers.setString(1, containerName);
+      insertContainers.setDate(2, now);
+      insertContainers.setDate(3, now);
+      insertContainers.setDate(4, now);
+      int numInsertRows = executeUpdate(insertContainers);
 
       // MySQL says 2 rows impacted when an old row is updated; otherwise it
       // says 1
@@ -77,12 +77,14 @@ public class DbAuthorizer implements Authorizer {
          return;
       }
 
-      String query = String.format(
-            "INSERT INTO %s (%s, %s) VALUES ('%s', '%s')", TABLE_PERMISSIONS,
-            COLUMN_APIKEY, COLUMN_CONTAINER_NAME, apiKey, containerName);
-
-      int numRows = executeUpdate(query);
-
+      String insertPermissionsString = String.format(
+            "INSERT INTO %s (%s, %s) VALUES (?, ?)", TABLE_PERMISSIONS,
+            COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
+      PreparedStatement insertPermissions = _dbConn
+            .prepareStatement(insertPermissionsString);
+      insertPermissions.setString(1, apiKey);
+      insertPermissions.setString(2, containerName);
+      int numRows = executeUpdate(insertPermissions);
       if (numRows > 0) {
          String cacheKey = getPermsCacheKey(apiKey, containerName);
          insertInCache(_cachePermissions, cacheKey);
@@ -91,18 +93,18 @@ public class DbAuthorizer implements Authorizer {
 
    }
 
-   private synchronized ResultSet executeQuery(String query) {
+   private synchronized ResultSet executeQuery(PreparedStatement query) {
       int triesLeft = MAX_DB_TRIES;
-
+      String queryString = query.toString();
       while (triesLeft > 0) {
          triesLeft--;
          try {
-            Statement stmt = _dbConn.createStatement();
-            return stmt.executeQuery(query);
+            _logger.debugf("Executing SQL query: %s\n", queryString);
+            return query.executeQuery();
          }
          catch (SQLException e) {
-            _logger.errorf("SQLException while executing query '%s': %s", query,
-                  e.getMessage());
+            _logger.errorf("SQLException while executing query '%s': %s",
+                  queryString, e.getMessage());
             _logger.errorf("Tries left = %d\n", triesLeft);
 
             if (triesLeft > 0) {
@@ -116,23 +118,26 @@ public class DbAuthorizer implements Authorizer {
                }
             }
          }
+         catch (Exception e) {
+            throw new BatfishException("well shit");
+         }
       }
 
       return null;
    }
 
-   private synchronized int executeUpdate(String query) {
+   private synchronized int executeUpdate(PreparedStatement update) {
       int triesLeft = MAX_DB_TRIES;
-
+      String updateString = update.toString();
       while (triesLeft > 0) {
          triesLeft--;
          try {
-            Statement stmt = _dbConn.createStatement();
-            return stmt.executeUpdate(query);
+            _logger.debugf("Executing SQL update: %s\n", updateString);
+            return update.executeUpdate();
          }
          catch (SQLException e) {
-            _logger.errorf("SQLException while executing query '%s': %s", query,
-                  e.getMessage());
+            _logger.errorf("SQLException while executing query '%s': %s",
+                  updateString, e.getMessage());
             _logger.errorf("Tries left = %d\n", triesLeft);
 
             if (triesLeft > 0) {
@@ -171,23 +176,28 @@ public class DbAuthorizer implements Authorizer {
          return true;
       }
 
-      String query = String.format(
-            "SELECT * FROM %s WHERE %s = '%s' AND %s = '%s'", TABLE_PERMISSIONS,
-            COLUMN_APIKEY, apiKey, COLUMN_CONTAINER_NAME, containerName);
+      String selectPermittedContainerString = String.format(
+            "SELECT * FROM %s WHERE %s = ? AND %s = ?", TABLE_PERMISSIONS,
+            COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
+      PreparedStatement ps = _dbConn
+            .prepareStatement(selectPermittedContainerString);
+      ps.setString(1, apiKey);
+      ps.setString(2, containerName);
 
-      ResultSet rs = executeQuery(query);
+      ResultSet rs = executeQuery(ps);
 
       if (rs != null && rs.first()) {
          insertInCache(_cachePermissions, cacheKey);
 
          // a valid access was made; update datelastaccessed
-         Date now = new Date();
-         String updateQuery = String.format(
-               "UPDATE %s SET %s='%s' WHERE %s='%s'", TABLE_CONTAINERS,
-               COLUMN_DATE_LAST_ACCESSED, DateFormatter.format(now),
-               COLUMN_CONTAINER_NAME, containerName);
-
-         executeUpdate(updateQuery);
+         java.sql.Date now = new java.sql.Date(new Date().getTime());
+         String updatePsString = String.format("UPDATE %s SET %s=? WHERE %s=?",
+               TABLE_CONTAINERS, COLUMN_DATE_LAST_ACCESSED,
+               COLUMN_CONTAINER_NAME);
+         PreparedStatement updatePs = _dbConn.prepareStatement(updatePsString);
+         updatePs.setDate(1, now);
+         updatePs.setString(2, containerName);
+         executeUpdate(updatePs);
 
          return true;
       }
@@ -223,10 +233,12 @@ public class DbAuthorizer implements Authorizer {
          return true;
       }
 
-      String query = String.format("SELECT * FROM %s WHERE %s = '%s'",
-            TABLE_USERS, COLUMN_APIKEY, apiKey);
+      String selectApiKeyRowString = String.format(
+            "SELECT * FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
+      PreparedStatement ps = _dbConn.prepareStatement(selectApiKeyRowString);
+      ps.setString(1, apiKey);
 
-      ResultSet rs = executeQuery(query);
+      ResultSet rs = executeQuery(ps);
 
       if (rs != null && rs.first()) {
          insertInCache(_cacheApiKeys, apiKey);
