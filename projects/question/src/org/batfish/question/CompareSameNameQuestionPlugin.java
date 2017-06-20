@@ -38,8 +38,12 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
        * Equivalence sets are keyed by classname
        */
       private SortedMap<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
+      
+      private List<String> _nodes;
 
       private final String EQUIVALENCE_SETS_MAP_VAR = "equivalenceSetsMap";
+      
+      private final String NODES_VAR = "nodes";
 
       public CompareSameNameAnswerElement() {
          _equivalenceSets = new TreeMap<>();
@@ -60,6 +64,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       public SortedMap<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
          return _equivalenceSets;
       }
+      
+      @JsonProperty(NODES_VAR)
+      public List<String> getNodes() {
+         return _nodes;
+      }
 
       @Override
       public String prettyPrint() {
@@ -78,6 +87,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       public void setEquivalenceSets(
             SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
          _equivalenceSets = equivalenceSets;
+      }
+      
+      @JsonProperty(NODES_VAR)
+      public void setNodes(List<String> nodes) {
+         _nodes = nodes;
       }
    }
 
@@ -115,7 +129,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
          _batfish.checkConfigurations();
          _configurations = _batfish.loadConfigurations();
-         _answerElement = new CompareSameNameAnswerElement();
          // collect relevant nodes in a list.
          _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(),
                _configurations.keySet());
@@ -123,6 +136,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                .map(s -> s.toLowerCase()).collect(Collectors.toSet());
          _singletons = question.getSingletons();
          _missing = question.getMissing();
+         
+         _answerElement = new CompareSameNameAnswerElement();
+         _answerElement.setNodes(_nodes);
 
          add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
          add(CommunityList.class, c -> c.getCommunityLists());
@@ -281,19 +297,19 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       }
       
       @JsonProperty(MISSING_VAR)
-      public void setMIssing(boolean missing) {
+      public void setMissing(boolean missing) {
          _missing = missing;
       }
 
    }
 
    @Override
-   protected Answerer createAnswerer(Question question, IBatfish batfish) {
+   protected CompareSameNameAnswerer createAnswerer(Question question, IBatfish batfish) {
       return new CompareSameNameAnswerer(question, batfish);
    }
 
    @Override
-   protected Question createQuestion() {
+   protected CompareSameNameQuestion createQuestion() {
       return new CompareSameNameQuestion();
    }
 
