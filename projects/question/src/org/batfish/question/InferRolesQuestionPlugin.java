@@ -195,7 +195,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          return sb.toString();
       }
       
-      // standard k-modes clustering, with the seeding technique from the k-means++ algorithm
+      // standard k-modes clustering, with a variant of the seeding technique from the k-means++ algorithm
       private List<Set<String>> kModes(int k, Set<String> vectors) {
          
          int vecLen = 0;
@@ -211,30 +211,22 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          String[] vecArray = vectors.toArray(new String[vectors.size()]);
          int numVecs = vecArray.length;
          
-         // use the k-means++ seeding algorithm:
+         // use a variant of the k-means++ seeding algorithm:
          // choose the first center randomly
          centers[0] = vecArray[rand.nextInt(numVecs)];
+
          for (int c = 1; c < k; c++) {
-            // for each vector, find its minimal distance to any already-chosen center, and square it
-            int[] minDistancesSquared = new int[numVecs];
-            int sumOfSquares = 0;
+            // for each vector, find its minimal distance to any already-chosen center, and choose the vector with the maximal such distance
+            int max = 0;
+            int index = -1;
             for(int i = 0; i < numVecs; i++) {
                int minDist = minHammingDistance(vecArray[i], centers, c).getSecond();
-               int minDistSquared = minDist * minDist;
-               sumOfSquares += minDistSquared;
-               minDistancesSquared[i] = minDistSquared;
-            }
-            // randomly choose the next center, with the probability of choosing vector i being
-            // minDistancesSquared[i] / sumOfSquares
-            double target = rand.nextDouble() * sumOfSquares;
-            for(int i = 0; i < numVecs; i++) {
-               target -= minDistancesSquared[i];
-               if (target <= 0.0) {
-                  centers[c] = vecArray[i];
-                  break;
+               if(minDist > max) {
+                  max = minDist;
+                  index = i;
                }
             }
-            
+            centers[c] = vecArray[index];            
          }
          
          boolean done = false;
