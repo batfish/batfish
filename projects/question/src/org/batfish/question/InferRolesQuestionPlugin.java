@@ -12,8 +12,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.Answerer;
+import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
@@ -24,41 +24,30 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
    public static class InferRolesAnswerElement implements AnswerElement {
       
-      private Set<Set<String>> _roles;
+      private List<Set<String>> _roles;
 
-      private List<Set<String>> _clusters;
-      
-      private Map<String,Set<String>> _dataVectors;
-      
       private final String ROLES_VAR = "roles";
 
       public InferRolesAnswerElement() {
-         _roles = new TreeSet<>();
       }
 
       @JsonProperty(ROLES_VAR)
-      public Set<Set<String>> getRoles() {
+      public List<Set<String>> getRoles() {
          return _roles;
       }
 
       @Override
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder(
-               "Results for role inference\n");
-         
-         for(Set<String> cluster : _clusters) {
-            sb.append("=====\n");
-            sb.append(cluster.toString() + "\n");
-            for(String vector : cluster) {
-               sb.append(_dataVectors.get(vector).toString() + "\n");
-            }
-            sb.append("\n");
+               "Results for role inference\n");         
+         for(Set<String> role : _roles) {
+            sb.append(role.toString() + "\n");
          }
          return sb.toString();
       }
 
       @JsonProperty(ROLES_VAR)
-      public void setRoles(Set<Set<String>> roles) {
+      public void setRoles(List<Set<String>> roles) {
          _roles = roles;
       }
    }
@@ -68,14 +57,6 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       private InferRolesAnswerElement _answerElement;
       
       private List<String> _nodes;
-      
-      // maps each data vector to to the nodes that correspond to this vector
-      private Map<String,Set<String>> _dataVectors;
-      
-      // a vector where each position holds the number of choices for that position
-      private String _masterVector;
-      
-      private Set<Set<String>> _roles;
 
       public InferRolesAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
@@ -103,16 +84,24 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          _nodes = innerAnswer.getNodes();
          
          // now do k-modes clustering on this data
-         createDataVectors(equivalenceSets);
-         _answerElement._dataVectors = _dataVectors;
+         Map<String,Set<String>> dataVectors = createDataVectors(equivalenceSets);
+ 
+         List<Set<String>> clusters = kModes(question.getNumRoles(), dataVectors.keySet());
          
-         _answerElement._clusters = kModes(question.getNumRoles());
+         List<Set<String>> roles = new ArrayList<>(clusters.size());
+         for(Set<String> cluster : clusters) {
+            Set<String> role = new TreeSet<>();
+            for (String vector : cluster)
+               role.addAll(dataVectors.get(vector));
+            roles.add(role);
+         }
+         _answerElement.setRoles(roles);
          
          return _answerElement;
       }
       
       private <T> void addToDataVectors(NamedStructureEquivalenceSets<T> eSets, 
-            Map<String, StringBuilder> vectors, StringBuilder masterVector) {
+            Map<String, StringBuilder> vectors) {
          for (Set<NamedStructureEquivalenceSet<T>> eSet : eSets.getSameNamedStructures().values()) {
             int index = 0;
             for (NamedStructureEquivalenceSet<T> eClass : eSet) {
@@ -122,20 +111,18 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                }
                index++;
             }
-            masterVector.append(index);
          }
       }
       
-      private void createDataVectors(SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
+      // create a vector for each node, representing the equivalence classes it is in for each named structure
+      private Map<String,Set<String>> createDataVectors(SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
          Map<String, StringBuilder> vectors = new TreeMap<>();
          for(String node : _nodes) {
             vectors.put(node, new StringBuilder());
          }
-         StringBuilder masterVector = new StringBuilder();
          for (NamedStructureEquivalenceSets<?> eSets : equivalenceSets.values()) {
-            addToDataVectors(eSets, vectors, masterVector);
+            addToDataVectors(eSets, vectors);
          }
-         _masterVector = masterVector.toString();
          
          // invert vecs to produce a mapping from vectors to the nodes that have that vector
          Map<String,Set<String>> invertedVectors = new TreeMap<>();
@@ -150,7 +137,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                invertedVectors.put(vector, nodes);
             }
          }
-         _dataVectors = invertedVectors;
+         return invertedVectors;
       }
       
       private int hammingDistance(String s1, String s2) {
@@ -163,6 +150,22 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          return dist;
       }
       
+      // find the element in choice[0..(i-1)] with the minimum hamming distance to s
+      // return a pair of the index and hamming distance
+      private Pair<Integer,Integer> minHammingDistance(String s, String[] choices, int len) {
+         int min = Integer.MAX_VALUE;
+         int minIndex = -1;
+         for(int i = 0; i < len; i++) {
+            int dist = hammingDistance(s, choices[i]);
+            if(dist < min) {
+               min = dist;
+               minIndex = i;
+            }
+         }
+         return new Pair<Integer,Integer>(minIndex, min);
+      }
+      
+      // produce a new vector whose ith element is the mode of the ith elements of the given vectors
       private String elementwiseMode(Set<String> vectors, int strLen) {
          StringBuilder sb = new StringBuilder();
          for(int i = 0; i < strLen; i++) {
@@ -185,21 +188,46 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          return sb.toString();
       }
       
-      private List<Set<String>> kModes(int k) {
-         String master = _masterVector;
-         Set<String> vectors = _dataVectors.keySet();
+      // standard k-modes clustering, with the seeding technique from the k-means++ algorithm
+      private List<Set<String>> kModes(int k, Set<String> vectors) {
+         
+         int vecLen = 0;
+         for(String vector : vectors) {
+            vecLen = vector.length();
+            break;
+         }
          
          String[] centers = new String[k];
          List<Set<String>> clusters = null;
          
-         // create k random cluster centers
-         Random r = new Random();         
-         for(int c = 0; c < k; c++) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < master.length(); i++) {
-               sb.append(r.nextInt(Character.getNumericValue(master.charAt(i))));
+         Random rand = new Random();         
+         String[] vecArray = vectors.toArray(new String[vectors.size()]);
+         int numVecs = vecArray.length;
+         
+         // use the k-means++ seeding algorithm:
+         // choose the first center randomly
+         centers[0] = vecArray[rand.nextInt(numVecs)];
+         for (int c = 1; c < k; c++) {
+            // for each vector, find its minimal distance to any already-chosen center, and square it
+            int[] minDistancesSquared = new int[numVecs];
+            int sumOfSquares = 0;
+            for(int i = 0; i < numVecs; i++) {
+               int minDist = minHammingDistance(vecArray[i], centers, c).getSecond();
+               int minDistSquared = minDist * minDist;
+               sumOfSquares += minDistSquared;
+               minDistancesSquared[i] = minDistSquared;
             }
-            centers[c] = sb.toString();
+            // randomly choose the next center, with the probability of choosing vector i being
+            // minDistancesSquared[i] / sumOfSquares
+            double target = rand.nextDouble() * sumOfSquares;
+            for(int i = 0; i < numVecs; i++) {
+               target -= minDistancesSquared[i];
+               if (target <= 0.0) {
+                  centers[c] = vecArray[i];
+                  break;
+               }
+            }
+            
          }
          
          boolean done = false;
@@ -212,17 +240,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
             for(int i = 0; i < k; i++)
                clusters.add(new TreeSet<>());
             for (String vector : vectors) {
-               int min = Integer.MAX_VALUE;
-               int cluster = -1;
-               int index = 0;
-               for(String center : centers) {
-                  int dist = hammingDistance(vector, center);
-                  if(dist < min) {
-                     min = dist;
-                     cluster = index;
-                  }
-                  index++;
-               }
+               int cluster = minHammingDistance(vector, centers, centers.length).getFirst();
                Set<String> clusterSet = clusters.get(cluster);
                clusterSet.add(vector);
             }
@@ -232,15 +250,14 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
             String[] newCenters = new String[k];
             int c = 0;
             for (Set<String> cluster : clusters) {
-               newCenters[c] = elementwiseMode(cluster, master.length());
+               newCenters[c] = elementwiseMode(cluster, vecLen);
                c++;
             }
             
             done = Arrays.equals(centers, newCenters);
             centers = newCenters;
          }
-         return clusters;
-         
+         return clusters;         
       }
    }
 
