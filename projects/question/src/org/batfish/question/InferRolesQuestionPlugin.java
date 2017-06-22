@@ -73,7 +73,6 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                new CompareSameNameQuestionPlugin.CompareSameNameQuestion();
          inner.setNodeRegex(question.getNodeRegex());
          inner.setNamedStructTypes(question.getNamedStructTypes());
-         inner.setMissing(true);
          CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer = 
                new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);
          CompareSameNameQuestionPlugin.CompareSameNameAnswerElement innerAnswer = 
@@ -83,9 +82,10 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                innerAnswer.getEquivalenceSets();
          _nodes = innerAnswer.getNodes();
          
-         // now do k-modes clustering on this data
+         // use the CompareSameName info to create a data vector for each node
          Map<String,Set<String>> dataVectors = createDataVectors(equivalenceSets);
- 
+
+         // now do k-modes clustering on this data
          List<Set<String>> clusters = kModes(question.getNumRoles(), dataVectors.keySet());
          
          List<Set<String>> roles = new ArrayList<>(clusters.size());
@@ -100,22 +100,29 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          return _answerElement;
       }
       
+
       private <T> void addToDataVectors(NamedStructureEquivalenceSets<T> eSets, 
             Map<String, StringBuilder> vectors) {
+
+         // append a 1 to the vector of each node that contains a structure of this name and a 0 for all other nodes
+         
+         for(StringBuilder sb : vectors.values())
+            sb.append('0');
+         
          for (Set<NamedStructureEquivalenceSet<T>> eSet : eSets.getSameNamedStructures().values()) {
-            int index = 0;
             for (NamedStructureEquivalenceSet<T> eClass : eSet) {
                for (String node : eClass.getNodes()) {
                   StringBuilder sb = vectors.get(node);
-                  sb.append(index);
+                  sb.setCharAt(sb.length() - 1, '1');
                }
-               index++;
             }
          }
       }
       
-      // create a vector for each node, representing the equivalence classes it is in for each named structure
       private Map<String,Set<String>> createDataVectors(SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
+         
+         // TODO: Currently each data vector is a String of 0 and 1 characters; consider replacing with a BitSet for better efficiency.
+         
          Map<String, StringBuilder> vectors = new TreeMap<>();
          for(String node : _nodes) {
             vectors.put(node, new StringBuilder());
