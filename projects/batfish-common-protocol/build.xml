@@ -101,21 +101,5 @@
      <jar destfile="${outputJar}" basedir="bin" />
 	</target>
 
-   <target name="test" depends="compileTest">
-      <mkdir dir="report"/>
-      <junit printsummary="yes" haltonfailure="no">
-         <classpath>
-            <pathelement location="ant-junit/ant-junit4.jar"/>
-            <pathelement location="bin"/>
-            <pathelement location="test/bin"/>
-         </classpath>
-         <classpath refid="libraries" />
-         <test name="org.batfish.test.TestSerialization" haltonfailure="no" todir="report">
-            <formatter type="plain" />
-            <formatter type="xml" />
-         </test>
-      </junit>
-   </target>
-
 </project>
 
