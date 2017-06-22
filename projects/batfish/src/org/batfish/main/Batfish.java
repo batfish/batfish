@@ -430,6 +430,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private long _timerCount;
 
+
    public Batfish(Settings settings,
          Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
          Map<TestrigSettings, DataPlane> cachedDataPlanes,
@@ -3554,18 +3555,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _testrigSettings = _deltaTestrigSettings;
    }
 
+
+
    private Map<Path, String> readConfigurationFiles(Path testRigPath,
          String configsType) {
       _logger.infof("\n*** READING %s FILES ***\n", configsType);
       resetTimer();
       Map<Path, String> configurationData = new TreeMap<>();
       Path configsPath = testRigPath.resolve(configsType);
-      Path[] configFilePaths = CommonUtil.list(configsPath)
-            .filter(path -> !path.getFileName().toString().startsWith("."))
-            .collect(Collectors.toList()).toArray(new Path[] {});
-      Arrays.sort(configFilePaths);
+      List<Path> configFilePaths = listAllFiles(configsPath);
       AtomicInteger completed = newBatch("Reading network configuration files",
-            configFilePaths.length);
+            configFilePaths.size());
       for (Path file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
@@ -3576,6 +3576,20 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       printElapsedTime();
       return configurationData;
+   }
+
+   static List<Path> listAllFiles(Path configsPath) {
+      List<Path> configFilePaths;
+      try {
+         configFilePaths = Files.walk(configsPath)
+                 .filter(path -> !path.getFileName().toString().startsWith(".")
+                         && Files.isRegularFile(path))
+                 .sorted()
+                 .collect(Collectors.toList());
+      } catch (IOException e) {
+         throw new BatfishException("Failed to walk path: " + configsPath.toString(), e);
+      }
+      return configFilePaths;
    }
 
    @Override
