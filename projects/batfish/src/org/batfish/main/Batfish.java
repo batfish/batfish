@@ -430,7 +430,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private long _timerCount;
 
-
    public Batfish(Settings settings,
          Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
          Map<TestrigSettings, DataPlane> cachedDataPlanes,
@@ -3555,8 +3554,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _testrigSettings = _deltaTestrigSettings;
    }
 
-
-
    private Map<Path, String> readConfigurationFiles(Path testRigPath,
          String configsType) {
       _logger.infof("\n*** READING %s FILES ***\n", configsType);
@@ -3578,6 +3575,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurationData;
    }
 
+   /**
+    * Returns a sorted list of {@link Path paths} contains all files under the directory
+    * indicated by {@code configsPath}. Directories under {@code configsPath} are recursively
+    * expanded but not included in the returned list.
+    *
+    * <p>Temporary files(files start with {@code .} are omitted from the returned list. </p>
+    * <p>Currently skips all symlinks.</p>
+    */
    static List<Path> listAllFiles(Path configsPath) {
       List<Path> configFilePaths;
       try {
@@ -3587,7 +3592,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                  .sorted()
                  .collect(Collectors.toList());
       } catch (IOException e) {
-         throw new BatfishException("Failed to walk path: " + configsPath.toString(), e);
+         throw new BatfishException("Failed to walk path: " + configsPath, e);
       }
       return configFilePaths;
    }
