@@ -3,3 +3,7 @@
 /unit-tests
 .DS_Store
 *.testout
+
+# IntelliJ project files
+.idea/
+*.iml

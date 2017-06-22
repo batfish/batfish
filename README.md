@@ -5,7 +5,7 @@ Batfish is a network configuration analysis tool that can find bugs and guarante
 
 **Batfish does not require access to network devices.** It only needs offline configuration files, e.g., pulled from RANCID or template authoring tools.
 
-The developers of Batfish include researchers from Intentionet, University of California Los Angeles, University of Southern California, and Microsoft Research. See [www.batfish.org] (http://www.batfish.org) for technical information on how it works.
+The developers of Batfish include researchers from Intentionet, University of California Los Angeles, University of Southern California, and Microsoft Research. See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
 
 ## What kinds of correctness checks does Batfish support?
 
@@ -41,11 +41,11 @@ Batfish supports many types of correctness checks, including
   - Planned ACL changes have no collateral damage, e.g., relative to the current configuration, only flows that are intended to be (un)blocked are (un)blocked; no other flow is impacted.
   - Two configurations, potentially from different vendors, are semantically equivalent
 
-These checks are performed by asking questions about configurations. See [here] (https://github.com/batfish/batfish/wiki/Questions) for the list of questions.
+These checks are performed by asking questions about configurations. See [here](https://github.com/batfish/batfish/wiki/Questions) for the list of questions.
 
 ## How do I get started?
 
-If you are a DIYer, go to [Batfish Wiki] (https://github.com/batfish/batfish/wiki)
+If you are a DIYer, go to [Batfish Wiki](https://github.com/batfish/batfish/wiki)
 
 If you'd like a hosted service, drop a line to info@intentionet.com.
 
@@ -64,4 +64,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
   - Quanta
   - VyOS
 
-Report an issue if your device is not on the list, and we'll try to support it. Batfish does not parse all possible configuration directives. If Batfish fails to parse your files, report an issue and we'll try to fix. Or, you can :)
+Batfish does not yet support all devices and may be missing support for less
+common configuration directives. Please file feature requests or bug reports
+using the [GitHub issue tracker](https://github.com/batfish/batfish/issues/new)
+and we'll try to fix. Or, you can :) -- we welcome pull requests!
