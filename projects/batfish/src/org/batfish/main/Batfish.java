@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -3581,12 +3582,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     * expanded but not included in the returned list.
     *
     * <p>Temporary files(files start with {@code .} are omitted from the returned list. </p>
-    * <p>Currently skips all symlinks.</p>
+    *
+    * <p>This method follows all symbolic links. </p>
     */
    static List<Path> listAllFiles(Path configsPath) {
       List<Path> configFilePaths;
       try {
-         configFilePaths = Files.walk(configsPath)
+         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
                  .filter(path -> !path.getFileName().toString().startsWith(".")
                          && Files.isRegularFile(path))
                  .sorted()

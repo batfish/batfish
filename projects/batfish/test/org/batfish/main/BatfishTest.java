@@ -19,10 +19,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertThat;
 
+/**
+ * Test for {@link Batfish#listAllFiles(Path)}.
+ */
 public class BatfishTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -35,63 +39,53 @@ public class BatfishTest {
 
     @Test
     public void testNoFileUnderPath() throws IOException {
-        File emptyFolder= folder.newFolder("emptyFolder");
-        List<Path> resultList = Batfish.listAllFiles(emptyFolder.toPath());
-        assertThat(resultList, empty());
+        File emptyFolder = folder.newFolder("emptyFolder");
+        List<Path> result = Batfish.listAllFiles(emptyFolder.toPath());
+        assertThat(result, empty());
     }
 
     @Test
     public void testReadStartWithDotFile() throws IOException {
-        File startWithDot= folder.newFolder("startWithDot");
+        File startWithDot = folder.newFolder("startWithDot");
         File file = new File(startWithDot + "/.cfg");
         file.getParentFile().mkdir();
         assertThat(file.createNewFile(), is(true));
-        List<Path> resultList = Batfish.listAllFiles(startWithDot.toPath());
-        assertThat(resultList, is(empty()));
+        List<Path> result = Batfish.listAllFiles(startWithDot.toPath());
+        assertThat(result, is(empty()));
     }
 
     @Test
     public void testReadUnNestedPath() throws IOException {
         File unNestedFolder= folder.newFolder("unNestedDirectory");
-        List<Path> fileList = new ArrayList<>();
-        fileList.add(new File(unNestedFolder + "/test1.cfg").toPath());
-        fileList.add(new File(unNestedFolder + "/test2.cfg").toPath());
-        fileList.add(new File(unNestedFolder + "/test3.cfg").toPath());
-        for (Path file : fileList) {
-            file.getParent().toFile().mkdir();
-            assertThat(file.toFile().createNewFile(), is(true));
+        List<Path> expected = new ArrayList<>();
+        expected.add(new File(unNestedFolder + "/test1.cfg").toPath());
+        expected.add(new File(unNestedFolder + "/test2.cfg").toPath());
+        expected.add(new File(unNestedFolder + "/test3.cfg").toPath());
+        for (Path path : expected) {
+            path.getParent().toFile().mkdir();
+            assertThat(path.toFile().createNewFile(), is(true));
         }
-        List<Path> resultList = Batfish.listAllFiles(unNestedFolder.toPath());
-        List<Path> expectedList = new ArrayList<Path>();
-        expectedList.add(Paths.get(unNestedFolder + "/test1.cfg"));
-        expectedList.add(Paths.get(unNestedFolder + "/test2.cfg"));
-        expectedList.add(Paths.get(unNestedFolder + "/test3.cfg"));
-        Collections.sort(expectedList);
-        assertThat(expectedList, equalTo(resultList));
+        List<Path> actual = Batfish.listAllFiles(unNestedFolder.toPath());
+        Collections.sort(expected);
+        assertThat(expected, equalTo(actual));
     }
 
     @Test
     public void testReadNestedPath() throws IOException {
-        File nestedFolder= folder.newFolder("nestedDirectory");
-        List<Path> fileList = new ArrayList<>();
-        fileList.add(new File(nestedFolder + "/b-test.cfg").toPath());
-        fileList.add(new File(nestedFolder + "/d-test.cfg").toPath());
-        fileList.add(new File(nestedFolder + "/aDirectory/e-test.cfg").toPath());
-        fileList.add(new File(nestedFolder + "/eDirectory/a-test.cfg").toPath());
-        fileList.add(new File(nestedFolder + "/eDirectory/c-test.cfg").toPath());
-        for (Path file : fileList) {
-            file.getParent().toFile().mkdir();
-            assertThat(file.toFile().createNewFile(), is(true));
+        File nestedFolder = folder.newFolder("nestedDirectory");
+        List<Path> expected = new ArrayList<>();
+        expected.add(new File(nestedFolder + "/b-test.cfg").toPath());
+        expected.add(new File(nestedFolder + "/d-test.cfg").toPath());
+        expected.add(new File(nestedFolder + "/aDirectory/e-test.cfg").toPath());
+        expected.add(new File(nestedFolder + "/eDirectory/a-test.cfg").toPath());
+        expected.add(new File(nestedFolder + "/eDirectory/c-test.cfg").toPath());
+        for (Path path : expected) {
+            path.getParent().toFile().mkdir();
+            assertThat(path.toFile().createNewFile(), is(true));
         }
-        List<Path> resultList = Batfish.listAllFiles(nestedFolder.toPath());
-        List<Path> expectedList = new ArrayList<Path>();
-        expectedList.add(Paths.get(nestedFolder + "/b-test.cfg"));
-        expectedList.add(Paths.get(nestedFolder + "/d-test.cfg"));
-        expectedList.add(Paths.get(nestedFolder + "/aDirectory/e-test.cfg"));
-        expectedList.add(Paths.get(nestedFolder + "/eDirectory/a-test.cfg"));
-        expectedList.add(Paths.get(nestedFolder + "/eDirectory/c-test.cfg"));
-        Collections.sort(expectedList);
-        assertThat(expectedList, equalTo(resultList));
+        List<Path> actual = Batfish.listAllFiles(nestedFolder.toPath());
+        Collections.sort(expected);
+        assertThat(expected, equalTo(actual));
     }
 
 }
