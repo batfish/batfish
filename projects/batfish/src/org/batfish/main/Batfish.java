@@ -3577,11 +3577,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    /**
-    * Returns a sorted list of {@link Path paths} contains all files under the directory
-    * indicated by {@code configsPath}. Directories under {@code configsPath} are recursively
-    * expanded but not included in the returned list.
+    * Returns a sorted list of {@link Path paths} contains all files under the
+    * directory indicated by {@code configsPath}. Directories under
+    * {@code configsPath} are recursively expanded but not included in the
+    * returned list.
     *
-    * <p>Temporary files(files start with {@code .} are omitted from the returned list. </p>
+    * <p>Temporary files(files start with {@code .} are omitted from the
+    * returned list. </p>
     *
     * <p>This method follows all symbolic links. </p>
     */

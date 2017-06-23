@@ -9,7 +9,6 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +19,7 @@ import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertThat;
 
 /**
- * Test for {@link Batfish#listAllFiles(Path)}.
+ * Tests for {@link Batfish}.
  */
 public class BatfishTest {
 
@@ -32,58 +31,59 @@ public class BatfishTest {
 
     @Test
     public void throwsExceptionWithSpecificType() {
+        Path nonExistPath = folder.getRoot().toPath().resolve("nonExistent");
         thrown.expect(BatfishException.class);
-        thrown.expectMessage("Failed to walk path: ./test/notExist");
-        Batfish.listAllFiles(Paths.get("./test/notExist"));
+        thrown.expectMessage("Failed to walk path: " + nonExistPath);
+        Batfish.listAllFiles(nonExistPath);
     }
 
     @Test
     public void testNoFileUnderPath() throws IOException {
-        File emptyFolder = folder.newFolder("emptyFolder");
-        List<Path> result = Batfish.listAllFiles(emptyFolder.toPath());
+        Path emptyFolder = folder.newFolder("emptyFolder").toPath();
+        List<Path> result = Batfish.listAllFiles(emptyFolder);
         assertThat(result, empty());
     }
 
     @Test
     public void testReadStartWithDotFile() throws IOException {
-        File startWithDot = folder.newFolder("startWithDot");
-        File file = new File(startWithDot + "/.cfg");
+        Path startWithDot = folder.newFolder("startWithDot").toPath();
+        File file = startWithDot.resolve(".cfg").toFile();
         file.getParentFile().mkdir();
         assertThat(file.createNewFile(), is(true));
-        List<Path> result = Batfish.listAllFiles(startWithDot.toPath());
+        List<Path> result = Batfish.listAllFiles(startWithDot);
         assertThat(result, is(empty()));
     }
 
     @Test
     public void testReadUnNestedPath() throws IOException {
-        File unNestedFolder= folder.newFolder("unNestedDirectory");
+        Path unNestedFolder= folder.newFolder("unNestedDirectory").toPath();
         List<Path> expected = new ArrayList<>();
-        expected.add(new File(unNestedFolder + "/test1.cfg").toPath());
-        expected.add(new File(unNestedFolder + "/test2.cfg").toPath());
-        expected.add(new File(unNestedFolder + "/test3.cfg").toPath());
+        expected.add(unNestedFolder.resolve("test1.cfg"));
+        expected.add(unNestedFolder.resolve("test2.cfg"));
+        expected.add(unNestedFolder.resolve("test3.cfg"));
         for (Path path : expected) {
             path.getParent().toFile().mkdir();
             assertThat(path.toFile().createNewFile(), is(true));
         }
-        List<Path> actual = Batfish.listAllFiles(unNestedFolder.toPath());
+        List<Path> actual = Batfish.listAllFiles(unNestedFolder);
         Collections.sort(expected);
         assertThat(expected, equalTo(actual));
     }
 
     @Test
     public void testReadNestedPath() throws IOException {
-        File nestedFolder = folder.newFolder("nestedDirectory");
+        Path nestedFolder = folder.newFolder("nestedDirectory").toPath();
         List<Path> expected = new ArrayList<>();
-        expected.add(new File(nestedFolder + "/b-test.cfg").toPath());
-        expected.add(new File(nestedFolder + "/d-test.cfg").toPath());
-        expected.add(new File(nestedFolder + "/aDirectory/e-test.cfg").toPath());
-        expected.add(new File(nestedFolder + "/eDirectory/a-test.cfg").toPath());
-        expected.add(new File(nestedFolder + "/eDirectory/c-test.cfg").toPath());
+        expected.add(nestedFolder.resolve("b-test.cfg"));
+        expected.add(nestedFolder.resolve("d-test.cfg"));
+        expected.add(nestedFolder.resolve("aDirectory").resolve("e-test.cfg"));
+        expected.add(nestedFolder.resolve("eDirectory").resolve("a-test.cfg"));
+        expected.add(nestedFolder.resolve("eDirectory").resolve("c-test.cfg"));
         for (Path path : expected) {
             path.getParent().toFile().mkdir();
             assertThat(path.toFile().createNewFile(), is(true));
         }
-        List<Path> actual = Batfish.listAllFiles(nestedFolder.toPath());
+        List<Path> actual = Batfish.listAllFiles(nestedFolder);
         Collections.sort(expected);
         assertThat(expected, equalTo(actual));
     }
