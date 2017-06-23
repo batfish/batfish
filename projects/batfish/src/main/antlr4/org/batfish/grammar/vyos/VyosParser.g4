@@ -5,10 +5,6 @@ options {
    tokenVocab = VyosLexer;
 }
 
-@header {
-package org.batfish.grammar.vyos;
-}
-
 braced_clause
 :
    OPEN_BRACE NEWLINE statement* CLOSE_BRACE NEWLINE

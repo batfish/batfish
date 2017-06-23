@@ -5,10 +5,6 @@ options {
    tokenVocab = IptablesLexer;
 }
 
-@header {
-package org.batfish.grammar.iptables;
-}
-
 iptables_configuration
 :
    command+

@@ -8,10 +8,6 @@ options {
    tokenVocab = FlatVyosLexer;
 }
 
-@header {
-package org.batfish.grammar.flatvyos;
-}
-
 flat_vyos_configuration
 :
    NEWLINE* set_line+ NEWLINE* EOF

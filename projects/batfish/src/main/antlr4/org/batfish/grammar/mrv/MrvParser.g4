@@ -8,10 +8,6 @@ options {
    tokenVocab = MrvLexer;
 }
 
-@header {
-package org.batfish.grammar.mrv;
-}
-
 assignment
 :
    a_async

@@ -4,10 +4,6 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
-@header {
-package org.batfish.grammar.routing_table.eos;
-}
-
 @members {
 private int lastTokenType = -1;
 

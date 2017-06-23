@@ -4,10 +4,6 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
-@header {
-package org.batfish.grammar.topology;
-}
-
 HEADER
 :
    'BATFISH_ROLE_DECLARATIONS'

@@ -5,10 +5,6 @@ options {
    tokenVocab = RoleLexer;
 }
 
-@header {
-package org.batfish.grammar.topology;
-}
-
 role_declarations
 :
    HEADER NEWLINE

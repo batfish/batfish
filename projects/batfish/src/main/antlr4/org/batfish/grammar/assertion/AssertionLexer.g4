@@ -4,10 +4,6 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
-@header {
-package org.batfish.grammar.assertion;
-}
-
 tokens {
    QUOTED_TEXT
 }

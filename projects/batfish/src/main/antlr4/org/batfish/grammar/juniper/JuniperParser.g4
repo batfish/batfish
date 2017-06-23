@@ -5,10 +5,6 @@ options {
    tokenVocab = JuniperLexer;
 }
 
-@header {
-package org.batfish.grammar.juniper;
-}
-
 braced_clause
 :
    OPEN_BRACE statement* CLOSE_BRACE

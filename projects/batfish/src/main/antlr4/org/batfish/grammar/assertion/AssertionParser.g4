@@ -5,10 +5,6 @@ options {
    tokenVocab = AssertionLexer;
 }
 
-@header {
-package org.batfish.grammar.assertion;
-}
-
 and
 :
    AND

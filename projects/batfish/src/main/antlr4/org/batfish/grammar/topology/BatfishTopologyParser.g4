@@ -5,10 +5,6 @@ options {
    tokenVocab = BatfishTopologyLexer;
 }
 
-@header {
-package org.batfish.grammar.topology;
-}
-
 topology
 :
    HEADER NEWLINE

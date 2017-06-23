@@ -8,10 +8,6 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-@header {
-package org.batfish.grammar.flatjuniper;
-}
-
 deactivate_line
 :
    DEACTIVATE deactivate_line_tail NEWLINE

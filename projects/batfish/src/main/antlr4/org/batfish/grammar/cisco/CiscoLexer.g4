@@ -4,10 +4,6 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
-@header {
-package org.batfish.grammar.cisco;
-}
-
 @members {
 private int lastTokenType = -1;
 private boolean enableIPV6_ADDRESS = true;

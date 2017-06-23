@@ -5,10 +5,6 @@ options {
    tokenVocab = NxosRoutingTableLexer;
 }
 
-@header {
-package org.batfish.grammar.routing_table.nxos;
-}
-
 @members {
 
 }

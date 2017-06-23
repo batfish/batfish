@@ -4,10 +4,6 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
-@header {
-package org.batfish.grammar.iptables;
-}
-
 @members {
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;

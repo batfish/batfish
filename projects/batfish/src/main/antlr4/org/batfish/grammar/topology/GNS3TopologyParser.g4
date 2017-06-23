@@ -5,10 +5,6 @@ options {
    tokenVocab = GNS3TopologyLexer;
 }
 
-@header {
-package org.batfish.grammar.topology;
-}
-
 topology
 :
    (

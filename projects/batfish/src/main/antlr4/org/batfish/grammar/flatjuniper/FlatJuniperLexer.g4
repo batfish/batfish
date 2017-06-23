@@ -4,10 +4,6 @@ options {
    superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
-@header {
-package org.batfish.grammar.flatjuniper;
-}
-
 @members {
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;

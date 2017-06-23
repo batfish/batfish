@@ -8,10 +8,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-@header {
-package org.batfish.grammar.cisco;
-}
-
 @members {
    private boolean _multilineBgpNeighbors;
    

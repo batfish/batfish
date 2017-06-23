@@ -5,10 +5,6 @@ options {
    tokenVocab = EosRoutingTableLexer;
 }
 
-@header {
-package org.batfish.grammar.routing_table.eos;
-}
-
 @members {
 
 }
