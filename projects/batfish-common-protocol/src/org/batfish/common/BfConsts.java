@@ -52,9 +52,6 @@ public class BfConsts {
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
-   public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
-   public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
-   public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
    public static final String ARG_VERBOSE_PARSE = "verboseparse";
 
    public static final String COMMAND_ANALYZE = "analyze";
@@ -66,9 +63,6 @@ public class BfConsts {
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_REPORT = "report";
-   public static final String COMMAND_WRITE_ADVERTISEMENTS = "writeadvertisements";
-   public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
-   public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
    public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
 

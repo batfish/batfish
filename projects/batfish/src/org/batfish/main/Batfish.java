@@ -114,7 +114,6 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.EdgeSet;
-import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
@@ -124,7 +123,6 @@ import org.batfish.datamodel.collections.NodeRoleMap;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
@@ -1890,10 +1888,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       _logger.debug(flowHistory.toString());
       return flowHistory;
-   }
-
-   private IbgpTopology getIbgpNeighbors() {
-      return _dataPlanePlugin.getIbgpNeighbors();
    }
 
    public Set<NodeInterfacePair> getInterfaceBlacklist() {
@@ -3931,22 +3925,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          action = true;
       }
 
-      if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath());
-         action = true;
-      }
-
-      if (_settings.getWriteBgpAdvertisements()) {
-         writeBgpAdvertisements(
-               _settings.getPrecomputedBgpAdvertisementsPath());
-         action = true;
-      }
-
-      if (_settings.getWriteIbgpNeighbors()) {
-         writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath());
-         action = true;
-      }
-
       if (!action) {
          throw new CleanBatfishException(
                "No task performed! Run with -help flag to see usage\n");
@@ -4478,15 +4456,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return new Topology(edges);
    }
 
-   private void writeBgpAdvertisements(Path writeAdvertsPath) {
-      AdvertisementSet adverts = _dataPlanePlugin.getAdvertisements();
-      CommonUtil.createDirectories(writeAdvertsPath.getParent());
-      _logger.info("Serializing: BGP advertisements => \"" + writeAdvertsPath
-            + "\"...");
-      serializeObject(adverts, writeAdvertsPath);
-      _logger.info("OK\n");
-   }
-
    @Override
    public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
       _cachedDataPlanes.put(_testrigSettings, dp);
@@ -4494,15 +4463,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
       serializeObject(ae,
             _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
-   }
-
-   private void writeIbgpNeighbors(Path ibgpTopologyPath) {
-      IbgpTopology topology = getIbgpNeighbors();
-      CommonUtil.createDirectories(ibgpTopologyPath.getParent());
-      _logger.info(
-            "Serializing: IBGP neighbors => \"" + ibgpTopologyPath + "\"...");
-      serializeObject(topology, ibgpTopologyPath);
-      _logger.info("OK\n");
    }
 
    private void writeJsonAnswer(String structuredAnswerString,
@@ -4604,14 +4564,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       catch (JSONException e) {
          throw new BatfishException("Failed to synthesize JSON topology", e);
       }
-   }
-
-   public void writeRoutes(Path writeRoutesPath) {
-      RouteSet routes = _dataPlanePlugin.getRoutes();
-      CommonUtil.createDirectories(writeRoutesPath.getParent());
-      _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
-      serializeObject(routes, writeRoutesPath);
-      _logger.info("OK\n");
    }
 
    private void writeSynthesizedTopology() {
