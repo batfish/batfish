@@ -279,7 +279,7 @@ public class Settings extends BaseSettings {
             CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
       setDefaultProperty(ARG_SSL_WORK_KEYSTORE_FILE, null);
       setDefaultProperty(ARG_SSL_WORK_KEYSTORE_PASSWORD, null);
-      setDefaultProperty(ARG_SSL_WORK_TRUST_ALL_CERTS, false);
+      setDefaultProperty(ARG_SSL_WORK_TRUST_ALL_CERTS, true);
       setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_FILE, null);
       setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_PASSWORD, null);
       // setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");

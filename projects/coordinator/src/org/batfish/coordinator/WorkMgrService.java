@@ -713,25 +713,28 @@ public class WorkMgrService {
    public JSONArray initContainer(
          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_PREFIX) String containerPrefix) {
       try {
          _logger.info("WMS:initContainer " + containerPrefix + "\n");
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
-         checkStringParam(containerPrefix, "Container prefix");
+         if (containerName == null || containerName.equals("")) {
+            checkStringParam(containerPrefix, "Container prefix");
+         }
 
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
 
-         String containerName = Main.getWorkMgr()
-               .initContainer(containerPrefix);
+         String outputContainerName = Main.getWorkMgr()
+               .initContainer(containerName, containerPrefix);
 
-         Main.getAuthorizer().authorizeContainer(apiKey, containerName);
+         Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
 
-         return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject()
-                     .put(CoordConsts.SVC_KEY_CONTAINER_NAME, containerName))));
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+               (new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_NAME,
+                     outputContainerName))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {

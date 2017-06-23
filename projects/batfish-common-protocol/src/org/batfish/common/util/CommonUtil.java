@@ -542,7 +542,7 @@ public class CommonUtil {
       return sha256;
    }
 
-   public static void startSSLServer(ResourceConfig rcWork, URI mgrUri,
+   public static void startSSLServer(ResourceConfig resourceConfig, URI mgrUri,
          String keystoreFilename, String keystorePassword,
          boolean trustAllCerts, String truststoreFilename,
          String truststorePassword, Class<?> configurationLocatorClass) {
@@ -578,7 +578,7 @@ public class CommonUtil {
          sslCon.setTrustStorePass(truststorePassword);
       }
       boolean verifyClient = !trustAllCerts;
-      GrizzlyHttpServerFactory.createHttpServer(mgrUri, rcWork, true,
+      GrizzlyHttpServerFactory.createHttpServer(mgrUri, resourceConfig, true,
             new SSLEngineConfigurator(sslCon, false, verifyClient, false));
    }
 

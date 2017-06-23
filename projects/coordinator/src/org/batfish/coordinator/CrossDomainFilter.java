@@ -22,9 +22,15 @@ public class CrossDomainFilter implements ContainerResponseFilter {
    @Override
    public void filter(ContainerRequestContext creq,
          ContainerResponseContext cres) {
+      // cres.getHeaders().add("Access-Control-Allow-Origin", "*");
+      // cres.getHeaders().add("Access-Control-Allow-Headers",
+      // "origin, content-type, accept, authorization");
+      // cres.getHeaders().add("Access-Control-Allow-Credentials", "true");
+      // cres.getHeaders().add("Access-Control-Allow-Methods",
+      // "GET, POST, PUT, DELETE, OPTIONS, HEAD");
       cres.getHeaders().add("Access-Control-Allow-Origin", "*");
       cres.getHeaders().add("Access-Control-Allow-Headers",
-            "origin, content-type, accept, authorization");
+            "Host, User-Agent, Accept, Authorization, Accept-Language, Accept-Encoding, Content-Type, Referer, Content-Length, Origin, DNT, Connection");
       cres.getHeaders().add("Access-Control-Allow-Credentials", "true");
       cres.getHeaders().add("Access-Control-Allow-Methods",
             "GET, POST, PUT, DELETE, OPTIONS, HEAD");
