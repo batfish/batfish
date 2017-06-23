@@ -1,5 +1,6 @@
 package org.batfish.common;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -14,31 +15,36 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 public abstract class BaseSettings {
 
    private static final int HELP_WIDTH = 80;
 
-   protected final FileConfiguration _config;
+   protected final Configuration _config;
 
    private CommandLine _line;
 
    protected final Options _options;
 
-   public BaseSettings(Path configFile) {
-      _options = new Options();
-      _config = new PropertiesConfiguration();
-      _config.setFile(configFile.toFile());
+   private static Configuration loadFileConfiguration(File configFile) {
       try {
-         _config.load();
-      }
-      catch (ConfigurationException e) {
+         return new Configurations().properties(configFile);
+      } catch (ConfigurationException e) {
          throw new BatfishException("Error loading configuration from "
-               + configFile.toAbsolutePath(), e);
+               + configFile.getAbsolutePath(), e);
       }
+   }
+
+   public BaseSettings(Path configFile) {
+      this(loadFileConfiguration(configFile.toFile()));
+   }
+
+   public BaseSettings(Configuration config) {
+      _options = new Options();
+      _config = config;
    }
 
    protected final void addBooleanOption(String key, String description) {

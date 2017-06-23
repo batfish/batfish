@@ -38,9 +38,9 @@ public class Settings extends BaseSettings {
    private String _testrigDir;
 
    public Settings(String[] args) throws Exception {
-      super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
-            BfConsts.RELPATH_CONFIG_FILE_NAME_ALLINONE,
-            BfConsts.PROP_ALLINONE_PROPERTIES_PATH));
+      super(CommonUtil.getConfig(
+            BfConsts.PROP_ALLINONE_PROPERTIES_PATH,
+            BfConsts.ABSPATH_CONFIG_FILE_NAME_ALLINONE, ConfigurationLocator.class));
 
       initConfigDefaults();
 

@@ -99,9 +99,9 @@ public class Settings extends BaseSettings {
    private String _storageProtocol;
 
    public Settings(String[] args) throws Exception {
-      super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
-            BfConsts.RELPATH_CONFIG_FILE_NAME_COORDINATOR,
-            BfConsts.PROP_COORDINATOR_PROPERTIES_PATH));
+      super(CommonUtil.getConfig(
+            BfConsts.PROP_COORDINATOR_PROPERTIES_PATH,
+            BfConsts.ABSPATH_CONFIG_FILE_NAME_COORDINATOR, Settings.class));
 
       initConfigDefaults();
 

@@ -40,6 +40,7 @@ public class AllInOne {
       catch (Exception e) {
          System.err.println("org.batfish.allinone: Initialization failed: "
                + e.getMessage());
+         e.printStackTrace();
          System.exit(1);
       }
 
