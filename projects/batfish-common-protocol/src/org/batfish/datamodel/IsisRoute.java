@@ -84,4 +84,11 @@ public class IsisRoute extends AbstractRoute {
                                                        // method stub
    }
 
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
 }

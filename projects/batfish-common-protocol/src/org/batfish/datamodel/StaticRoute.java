@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StaticRoute extends AbstractRoute
-      implements Comparable<StaticRoute> {
+public class StaticRoute extends AbstractRoute {
 
    private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
 
@@ -35,44 +34,6 @@ public class StaticRoute extends AbstractRoute
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
       _tag = tag;
-   }
-
-   @Override
-   public int compareTo(StaticRoute rhs) {
-      int ret;
-      ret = _network.compareTo(rhs._network);
-      if (ret != 0) {
-         return ret;
-      }
-      if (_nextHopInterface == null) {
-         if (rhs._nextHopInterface != null) {
-            return -1;
-         }
-      }
-      else if (rhs._nextHopInterface == null) {
-         return 1;
-      }
-      else {
-         ret = _nextHopInterface.compareTo(rhs._nextHopInterface);
-         if (ret != 0) {
-            return ret;
-         }
-      }
-      if (_nextHopIp == null) {
-         if (rhs._nextHopIp != null) {
-            return -1;
-         }
-      }
-      else if (rhs._nextHopIp == null) {
-         return 1;
-      }
-      else {
-         ret = _nextHopIp.compareTo(rhs._nextHopIp);
-         if (ret != 0) {
-            return ret;
-         }
-      }
-      return Integer.compare(_tag, rhs._tag);
    }
 
    @Override
@@ -141,6 +102,11 @@ public class StaticRoute extends AbstractRoute
    @Override
    protected final String protocolRouteString() {
       return " tag:" + _tag;
+   }
+
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      return 0;
    }
 
    @JsonProperty(ADMINISTRATIVE_COST_VAR)

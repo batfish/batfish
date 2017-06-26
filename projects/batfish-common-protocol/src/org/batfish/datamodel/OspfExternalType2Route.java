@@ -47,4 +47,14 @@ public class OspfExternalType2Route extends OspfExternalRoute {
       return " costToAdvertiser:" + _costToAdvertiser;
    }
 
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      if (getClass() != rhs.getClass()) {
+         return 0;
+      }
+      OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
+      int ret = Integer.compare(_costToAdvertiser, castRhs._costToAdvertiser);
+      return ret;
+   }
+
 }

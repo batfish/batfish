@@ -61,6 +61,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
@@ -991,6 +992,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return ipOwners;
    }
 
+   @Override
+   public Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
+      Map<Ip, String> ipOwnersSimple = new HashMap<>();
+      ipOwners.forEach((ip, owners) -> {
+         String hostname = owners.size() == 1 ? owners.iterator().next()
+               : Route.AMBIGUOUS_NEXT_HOP;
+         ipOwnersSimple.put(ip, hostname);
+      });
+      return ipOwnersSimple;
+   }
+
    public <Key, Result> void computeNodFirstUnsatOutput(
          List<NodFirstUnsatJob<Key, Result>> jobs, Map<Key, Result> output) {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
@@ -1328,7 +1340,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          // vlanMemberCounts:
          for (Interface iface : c.getInterfaces().values()) {
             if ((iface.getInterfaceType() == InterfaceType.VLAN)
-                  && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
+                  && ((vlanNumber = CommonUtil
+                        .getInterfaceVlanNumber(iface.getName())) != null)) {
                vlanInterfaces.put(vlanNumber, iface);
                vlanMemberCounts.put(vlanNumber, 0);
             }
@@ -1347,7 +1360,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             vlans.add(new SubRange(vlanNumber, vlanNumber));
 
             for (SubRange sr : vlans) {
-               for (int vlanId = sr.getStart(); vlanId <= sr.getEnd(); ++vlanId) {
+               for (int vlanId = sr.getStart(); vlanId <= sr
+                     .getEnd(); ++vlanId) {
                   vlanMemberCounts.compute(vlanId,
                         (k, v) -> (v == null) ? 1 : (v + 1));
                }
@@ -1920,6 +1934,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return blacklistNodes;
    }
 
+   @Override
+   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
+      return _dataPlanePlugin.getRoutes();
+   }
+
    public Settings getSettings() {
       return _settings;
    }
@@ -2455,36 +2474,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   }
                }
             }
-         }
-      }
-   }
-
-   @Override
-   public void initRoutes(Map<String, Configuration> configurations) {
-      Set<Route> globalRoutes = _dataPlanePlugin.getRoutes();
-      for (Configuration node : configurations.values()) {
-         node.initRoutes();
-      }
-      for (Route route : globalRoutes) {
-         String nodeName = route.getNode();
-         Configuration node = configurations.get(nodeName);
-         String vrfName = route.getVrf();
-         if (node != null) {
-            node.getRoutes().add(route);
-            Vrf vrf = node.getVrfs().get(vrfName);
-            if (vrf != null) {
-               vrf.getRoutes().add(route);
-            }
-            else {
-               throw new BatfishException(
-                     "Precomputed route refers to missing vrf: '" + vrfName
-                           + "' on node: '" + nodeName + "'");
-            }
-         }
-         else {
-            throw new BatfishException(
-                  "Precomputed route refers to missing node: '" + nodeName
-                        + "'");
          }
       }
    }

@@ -3,11 +3,13 @@ package org.batfish.common.plugin;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -52,6 +54,8 @@ public interface IBatfish extends IPluginConsumer {
    Map<Ip, Set<String>> computeIpOwners(
          Map<String, Configuration> configurations, boolean excludeInactive);
 
+   Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners);
+
    Topology computeTopology(Map<String, Configuration> configurations);
 
    AnswerElement createEnvironment(String environmentName,
@@ -67,6 +71,8 @@ public interface IBatfish extends IPluginConsumer {
    GrammarSettings getGrammarSettings();
 
    FlowHistory getHistory();
+
+   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
    Directory getTestrigFileTree();
 
@@ -84,8 +90,6 @@ public interface IBatfish extends IPluginConsumer {
 
    void initRemoteOspfNeighbors(Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners, Topology topology);
-
-   void initRoutes(Map<String, Configuration> configurations);
 
    SortedMap<String, Configuration> loadConfigurations();
 

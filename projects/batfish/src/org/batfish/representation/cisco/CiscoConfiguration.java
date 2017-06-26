@@ -109,9 +109,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public static final String VENDOR_NAME = "cisco";
 
-   private static final int VLAN_NORMAL_MIN_CISCO = 2;
-
    private static final int VLAN_NORMAL_MAX_CISCO = 1005;
+
+   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
    private static String getRouteMapClausePolicyName(RouteMap map,
          int continueTarget) {

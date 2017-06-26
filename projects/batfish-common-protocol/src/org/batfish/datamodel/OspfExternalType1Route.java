@@ -17,4 +17,9 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       return "";
    }
 
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      return 0;
+   }
+
 }

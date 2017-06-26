@@ -14,11 +14,12 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
@@ -29,7 +30,13 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
    public static class RoutesAnswerElement implements AnswerElement {
 
+      private static final String DETAIL_VAR = "detail";
+
       private SortedSet<Route> _added;
+
+      private boolean _detail;
+
+      private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> _detailRoutesByHostname;
 
       private SortedSet<Route> _removed;
 
@@ -37,46 +44,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       @JsonCreator
       public RoutesAnswerElement() {
+         _detailRoutesByHostname = new TreeMap<>();
          _routesByHostname = new TreeMap<>();
          _added = new TreeSet<>();
          _removed = new TreeSet<>();
-      }
-
-      public RoutesAnswerElement(Map<String, Configuration> configurations,
-            Pattern nodeRegex, Set<RoutingProtocol> protocols,
-            PrefixSpace prefixSpace) {
-         this();
-         for (Entry<String, Configuration> e : configurations.entrySet()) {
-            String hostname = e.getKey();
-            if (!nodeRegex.matcher(hostname).matches()) {
-               continue;
-            }
-            Configuration c = e.getValue();
-            RoutesByVrf routesByVrf = new RoutesByVrf();
-            _routesByHostname.put(hostname, routesByVrf);
-            for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
-               String vrfName = e2.getKey();
-               Vrf vrf = e2.getValue();
-               SortedSet<Route> routes = vrf.getRoutes();
-               SortedSet<Route> filteredRoutes;
-               if (protocols.isEmpty() && prefixSpace.isEmpty()) {
-                  filteredRoutes = routes;
-               }
-               else {
-                  filteredRoutes = new TreeSet<>();
-                  for (Route route : routes) {
-                     boolean matchProtocol = protocols.isEmpty()
-                           || protocols.contains(route.getProtocol());
-                     boolean matchPrefixSpace = prefixSpace.isEmpty()
-                           || prefixSpace.containsPrefix(route.getNetwork());
-                     if (matchProtocol && matchPrefixSpace) {
-                        filteredRoutes.add(route);
-                     }
-                  }
-               }
-               routesByVrf.put(vrfName, filteredRoutes);
-            }
-         }
       }
 
       public RoutesAnswerElement(RoutesAnswerElement base,
@@ -186,8 +157,70 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          }
       }
 
+      public RoutesAnswerElement(
+            SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> inputRoutesByHostname,
+            Map<Ip, String> ipOwners, Pattern nodeRegex,
+            Set<RoutingProtocol> protocols, PrefixSpace prefixSpace) {
+         this();
+         for (Entry<String, SortedMap<String, SortedSet<AbstractRoute>>> e : inputRoutesByHostname
+               .entrySet()) {
+            String hostname = e.getKey();
+            if (!nodeRegex.matcher(hostname).matches()) {
+               continue;
+            }
+            SortedMap<String, SortedSet<AbstractRoute>> inputRoutesByVrf = e
+                  .getValue();
+            SortedMap<String, SortedSet<AbstractRoute>> detailRoutesByVrf = new TreeMap<>();
+            RoutesByVrf routesByVrf = new RoutesByVrf();
+            _routesByHostname.put(hostname, routesByVrf);
+            _detailRoutesByHostname.put(hostname, detailRoutesByVrf);
+            for (Entry<String, SortedSet<AbstractRoute>> e2 : inputRoutesByVrf
+                  .entrySet()) {
+               String vrfName = e2.getKey();
+               SortedSet<AbstractRoute> inputDetailRoutes = e2.getValue();
+               SortedSet<Route> filteredRoutes = new TreeSet<>();
+               SortedSet<AbstractRoute> filteredDetailRoutes;
+               routesByVrf.put(vrfName, filteredRoutes);
+               if (protocols.isEmpty() && prefixSpace.isEmpty()) {
+                  filteredDetailRoutes = inputDetailRoutes;
+               }
+               else {
+                  filteredDetailRoutes = new TreeSet<>();
+                  for (AbstractRoute detailRoute : inputDetailRoutes) {
+                     boolean matchProtocol = protocols.isEmpty()
+                           || protocols.contains(detailRoute.getProtocol());
+                     boolean matchPrefixSpace = prefixSpace.isEmpty()
+                           || prefixSpace
+                                 .containsPrefix(detailRoute.getNetwork());
+                     if (matchProtocol && matchPrefixSpace) {
+                        filteredDetailRoutes.add(detailRoute);
+                     }
+                  }
+               }
+               detailRoutesByVrf.put(vrfName, filteredDetailRoutes);
+               for (AbstractRoute detailRoute : filteredDetailRoutes) {
+                  Route route = detailRoute.toSummaryRoute(hostname, vrfName,
+                        ipOwners);
+                  detailRoute.setNextHop(route.getNextHop());
+                  detailRoute.setNode(hostname);
+                  detailRoute.setVrf(vrfName);
+                  filteredRoutes.add(route);
+               }
+            }
+         }
+      }
+
       public SortedSet<Route> getAdded() {
          return _added;
+      }
+
+      @JsonProperty(DETAIL_VAR)
+      public boolean getDetail() {
+         return _detail;
+      }
+
+      public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getDetailRoutesByHostname() {
+         return _detailRoutesByHostname;
       }
 
       public SortedSet<Route> getRemoved() {
@@ -201,19 +234,46 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
-         for (Entry<String, RoutesByVrf> e : _routesByHostname.entrySet()) {
-            RoutesByVrf routesByVrf = e.getValue();
-            for (SortedSet<Route> routes : routesByVrf.values()) {
-               for (Route route : routes) {
-                  String diffSymbol = null;
-                  if (_added.contains(route)) {
-                     diffSymbol = "+";
+         if (!_detail) {
+            for (Entry<String, RoutesByVrf> e : _routesByHostname.entrySet()) {
+               RoutesByVrf routesByVrf = e.getValue();
+               for (SortedSet<Route> routes : routesByVrf.values()) {
+                  for (Route route : routes) {
+                     String diffSymbol = null;
+                     if (_added.contains(route)) {
+                        diffSymbol = "+";
+                     }
+                     else if (_removed.contains(route)) {
+                        diffSymbol = "-";
+                     }
+                     String routeStr = route.prettyPrint(diffSymbol);
+                     sb.append(routeStr);
                   }
-                  else if (_removed.contains(route)) {
-                     diffSymbol = "-";
+               }
+            }
+         }
+         else {
+            for (Entry<String, SortedMap<String, SortedSet<AbstractRoute>>> e : _detailRoutesByHostname
+                  .entrySet()) {
+               SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = e
+                     .getValue();
+               for (Entry<String, SortedSet<AbstractRoute>> e2 : routesByVrf
+                     .entrySet()) {
+                  SortedSet<AbstractRoute> routes = e2.getValue();
+                  for (AbstractRoute route : routes) {
+                     String diffSymbol = null;
+                     if (_added.contains(route)) {
+                        diffSymbol = "+";
+                     }
+                     else if (_removed.contains(route)) {
+                        diffSymbol = "-";
+                     }
+                     String diffStr = diffSymbol != null ? diffSymbol + " "
+                           : "";
+                     String routeStr = route.fullString();
+                     String newStr = String.format("%s%s\n", diffStr, routeStr);
+                     sb.append(newStr);
                   }
-                  String routeStr = route.prettyPrint(diffSymbol);
-                  sb.append(routeStr);
                }
             }
          }
@@ -222,6 +282,16 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       public void setAdded(SortedSet<Route> added) {
          _added = added;
+      }
+
+      @JsonProperty(DETAIL_VAR)
+      public void setDetail(boolean detail) {
+         _detail = detail;
+      }
+
+      public void setDetailRoutesByHostname(
+            SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> detailRoutesByHostname) {
+         _detailRoutesByHostname = detailRoutesByHostname;
       }
 
       public void setRemoved(SortedSet<Route> removed) {
@@ -263,12 +333,19 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
          }
          else {
+            SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname = _batfish
+                  .getRoutes();
             Map<String, Configuration> configurations = _batfish
                   .loadConfigurations();
-            _batfish.initRoutes(configurations);
-            answerElement = new RoutesAnswerElement(configurations, nodeRegex,
-                  question._protocols, question._prefixSpace);
+            Map<Ip, Set<String>> ipOwners = _batfish
+                  .computeIpOwners(configurations, true);
+            Map<Ip, String> ipOwnersSimple = _batfish
+                  .computeIpOwnersSimple(ipOwners);
+            answerElement = new RoutesAnswerElement(routesByHostname,
+                  ipOwnersSimple, nodeRegex, question._protocols,
+                  question._prefixSpace);
          }
+         answerElement.setDetail(question._detail);
          return answerElement;
       }
 
@@ -303,6 +380,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     */
    public static class RoutesQuestion extends Question {
 
+      private static final String DETAIL_VAR = "detail";
+
       private static final String FROM_ENVIRONMENT_VAR = "fromEnvironment";
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
@@ -310,6 +389,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       private static final String PREFIX_SPACE_VAR = "prefixSpace";
 
       private static final String PROTOCOLS_VAR = "protocols";
+
+      private boolean _detail;
 
       private boolean _fromEnvironment;
 
@@ -328,6 +409,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @Override
       public boolean getDataPlane() {
          return !_fromEnvironment;
+      }
+
+      @JsonProperty(DETAIL_VAR)
+      public boolean getDetail() {
+         return _detail;
       }
 
       @JsonProperty(FROM_ENVIRONMENT_VAR)
@@ -358,6 +444,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @Override
       public boolean getTraffic() {
          return false;
+      }
+
+      @JsonProperty(DETAIL_VAR)
+      public void setDetail(boolean detail) {
+         _detail = detail;
       }
 
       @JsonProperty(FROM_ENVIRONMENT_VAR)

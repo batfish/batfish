@@ -78,4 +78,14 @@ public class OspfInterAreaRoute extends OspfRoute {
       return " area:" + _area;
    }
 
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      if (getClass() != rhs.getClass()) {
+         return 0;
+      }
+      OspfInterAreaRoute castRhs = (OspfInterAreaRoute) rhs;
+      int ret = Long.compare(_area, castRhs._area);
+      return ret;
+   }
+
 }

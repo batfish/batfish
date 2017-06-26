@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 
 public class BgpRoute extends AbstractRoute {
 
@@ -325,6 +326,41 @@ public class BgpRoute extends AbstractRoute {
             + " med:" + _med + " originatorIp:" + _originatorIp + " originType:"
             + _originType + " srcProtocol:" + _srcProtocol + " weight:"
             + _weight;
+   }
+
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      if (getClass() != rhs.getClass()) {
+         return 0;
+      }
+      BgpRoute castRhs = (BgpRoute) rhs;
+      int ret;
+      ret = _asPath.compareTo(castRhs._asPath);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = CommonUtil.compareCollection(_clusterList, castRhs._clusterList);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = CommonUtil.compareCollection(_communities, castRhs._communities);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_localPreference, castRhs._localPreference);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _originType.compareTo(castRhs._originType);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _originatorIp.compareTo(castRhs._originatorIp);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_weight, castRhs._weight);
+      return ret;
    }
 
 }

@@ -11,8 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
-public final class GeneratedRoute extends AbstractRoute
-      implements Comparable<GeneratedRoute> {
+public final class GeneratedRoute extends AbstractRoute {
 
    public static class Builder extends AbstractRouteBuilder<GeneratedRoute> {
 
@@ -103,11 +102,6 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @Override
-   public int compareTo(GeneratedRoute o) {
-      return _network.compareTo(o._network);
-   }
-
-   @Override
    public boolean equals(Object o) {
       GeneratedRoute rhs = (GeneratedRoute) o;
       return _network.equals(rhs._network);
@@ -177,6 +171,29 @@ public final class GeneratedRoute extends AbstractRoute
    protected final String protocolRouteString() {
       return " asPath:" + _asPath + " attributePolicy:" + _attributePolicy
             + " discard:" + _discard + " generationPolicy:" + _generationPolicy;
+   }
+
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      if (getClass() != rhs.getClass()) {
+         return 0;
+      }
+      GeneratedRoute castRhs = (GeneratedRoute) rhs;
+      int ret;
+      ret = _asPath.compareTo(castRhs._asPath);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _attributePolicy.compareTo(castRhs._attributePolicy);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Boolean.compare(_discard, castRhs._discard);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _generationPolicy.compareTo(castRhs._generationPolicy);
+      return ret;
    }
 
    @JsonProperty(ADMINISTRATIVE_COST_VAR)

@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
-public class ConnectedRoute extends AbstractRoute
-      implements Comparable<ConnectedRoute> {
+public class ConnectedRoute extends AbstractRoute {
 
    private static final long serialVersionUID = 1L;
 
@@ -10,16 +9,6 @@ public class ConnectedRoute extends AbstractRoute
    public ConnectedRoute(Prefix prefix, String nextHopInterface) {
       super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
       _nextHopInterface = nextHopInterface;
-   }
-
-   @Override
-   public int compareTo(ConnectedRoute rhs) {
-      int ret;
-      ret = _network.compareTo(rhs._network);
-      if (ret != 0) {
-         return ret;
-      }
-      return _nextHopInterface.compareTo(rhs._nextHopInterface);
    }
 
    @Override
@@ -66,6 +55,11 @@ public class ConnectedRoute extends AbstractRoute
    @Override
    protected String protocolRouteString() {
       return "";
+   }
+
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      return 0;
    }
 
 }
