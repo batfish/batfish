@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -3543,12 +3544,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Map<Path, String> configurationData = new TreeMap<>();
       Path configsPath = testRigPath.resolve(configsType);
-      Path[] configFilePaths = CommonUtil.list(configsPath)
-            .filter(path -> !path.getFileName().toString().startsWith("."))
-            .collect(Collectors.toList()).toArray(new Path[] {});
-      Arrays.sort(configFilePaths);
+      List<Path> configFilePaths = listAllFiles(configsPath);
       AtomicInteger completed = newBatch("Reading network configuration files",
-            configFilePaths.length);
+            configFilePaths.size());
       for (Path file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
@@ -3559,6 +3557,31 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       printElapsedTime();
       return configurationData;
+   }
+
+   /**
+    * Returns a sorted list of {@link Path paths} contains all files under the
+    * directory indicated by {@code configsPath}. Directories under
+    * {@code configsPath} are recursively expanded but not included in the
+    * returned list.
+    *
+    * <p>Temporary files(files start with {@code .} are omitted from the
+    * returned list. </p>
+    *
+    * <p>This method follows all symbolic links. </p>
+    */
+   static List<Path> listAllFiles(Path configsPath) {
+      List<Path> configFilePaths;
+      try {
+         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
+                 .filter(path -> !path.getFileName().toString().startsWith(".")
+                         && Files.isRegularFile(path))
+                 .sorted()
+                 .collect(Collectors.toList());
+      } catch (IOException e) {
+         throw new BatfishException("Failed to walk path: " + configsPath, e);
+      }
+      return configFilePaths;
    }
 
    @Override
