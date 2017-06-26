@@ -125,66 +125,67 @@ public class ClientTest {
    //Tests for validateJsonPath
    @Test
    public void testNullJsonPath () {
-      thrown.expect(BatfishException.class);
-      thrown.expectMessage("JsonPath should not be empty or null.");
+      // Null value should be checked before entering this method
+      thrown.expect(NullPointerException.class);
       Client.validateJsonPath(null);
    }
 
    @Test
-   public void testEmptyJsonPath () {
+   public void testEmptyJsonPath () throws IOException {
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("JsonPath should not be empty or null.");
-      Client.validateJsonPath("");
+      thrown.expectMessage("Expected a jsonPath dictionary with " +
+            "elements 'path' (string) and optional 'suffix' (boolean)");
+      Client.validateJsonPath(mapper.readTree("\"\""));
    }
 
    @Test
-   public void testInvalidJsonPath () {
+   public void testInvalidJsonPath () throws IOException {
       String invalidJsonPath = "\"variable\" : \"I am variable\"";
       thrown.expect(BatfishException.class);
       thrown.expectMessage("Expected a jsonPath dictionary with " +
             "elements 'path' (string) and optional 'suffix' (boolean)");
-      Client.validateJsonPath(invalidJsonPath);
+      Client.validateJsonPath(mapper.readTree(invalidJsonPath));
    }
 
    @Test
-   public void testJsonPathNoPathAtrribute () {
+   public void testJsonPathNoPathAtrribute () throws IOException {
       String invalidJsonPath = "{\"variable\" : \"I am variable\"}";
       thrown.expect(BatfishException.class);
       thrown.expectMessage("Missing 'path' element of jsonPath");
-      Client.validateJsonPath(invalidJsonPath);
+      Client.validateJsonPath(mapper.readTree(invalidJsonPath));
    }
 
    @Test
-   public void testNotStringPath () {
+   public void testNotStringPath () throws IOException {
       String invalidJsonPath = "{\"path\" : 1}";
       thrown.expect(BatfishException.class);
       thrown.expectMessage("Expected a String for variable type: path");
-      Client.validateJsonPath(invalidJsonPath);
+      Client.validateJsonPath(mapper.readTree(invalidJsonPath));
    }
 
    @Test
-   public void testNestedContainerPathValue() {
+   public void testNestedContainerPathValue() throws IOException {
       String invalidJsonPath = "{\"path\" : {\"innerVariable\" : \"content\"}}";
       thrown.expect(BatfishException.class);
       thrown.expectMessage("Expected a String for variable type: path");
-      Client.validateJsonPath(invalidJsonPath);
+      Client.validateJsonPath(mapper.readTree(invalidJsonPath));
    }
 
    @Test
-   public void testJsonPathNotBooleanSuffix() {
+   public void testJsonPathNotBooleanSuffix() throws IOException {
       String invalidJsonPath = "{\"path\" : \"I am path.\", \"suffix\" : \"I " +
             "am suffix.\"}";
       thrown.expect(BatfishException.class);
       thrown.expectMessage("'suffix' element of jsonPath dictionary should " +
             "be a boolean");
-      Client.validateJsonPath(invalidJsonPath);
+      Client.validateJsonPath(mapper.readTree(invalidJsonPath));
    }
 
    @Test
    public void testValidJsonPath() {
-      String invalidJsonPath = "{\"path\" : \"I am path.\", \"suffix\" : true}";
+      String validJsonPath = "{\"path\" : \"I am path.\", \"suffix\" : true}";
       try {
-         Client.validateJsonPath(invalidJsonPath);
+         Client.validateJsonPath(mapper.readTree(validJsonPath));
       } catch (Exception e) {
          throw new BatfishException("Unexpected exception");
       }

@@ -394,7 +394,7 @@ public class Client extends AbstractClient implements IClient {
             //TODO: need prefix range validation check
             break;
          case JSON_PATH:
-            validateJsonPath(value.toString());
+            validateJsonPath(value);
             break;
       }
    }
@@ -440,35 +440,28 @@ public class Client extends AbstractClient implements IClient {
    }
 
    /**
-    * Validate that {@code jsonPath} is a valid jsonPath dictionary.
+    * Validate that json-encoded {@code jsonPath} is a valid jsonPath
+    * dictionary.
     *  <p>If {@code jsonPath} is not a valid java jsonPath dictionary,
     *  {@link BatfishException BatfishException} will be thrown.</p>
     */
-   static void validateJsonPath(String jsonPath) throws BatfishException {
-      if (jsonPath == null || jsonPath.isEmpty()) {
-         throw new BatfishException("JsonPath should not be empty or null.");
-      }
-      Map<String, Object> pathContent = null;
-      try {
-         BatfishObjectMapper mapper = new BatfishObjectMapper();
-         pathContent = mapper.readValue(jsonPath,
-               new TypeReference<Map<String, Object>>() {});
-      } catch (JsonMappingException e) {
+   static void validateJsonPath(JsonNode jsonPath) throws BatfishException {
+      if (!jsonPath.isContainerNode()) {
          throw new BatfishException("Expected a jsonPath dictionary " +
                "with elements 'path' (string) and optional 'suffix'" +
-               " (boolean)", e);
-      } catch (IOException e1) {
-         throw new BatfishException("Unexpected I/O exception when " +
-               "reading jsonPath", e1);
+               " (boolean)");
       }
-      if (!pathContent.containsKey("path")) {
+      if (jsonPath.get("path") != null) {
+         JsonNode path = jsonPath.get("path");
+         if (!path.isTextual()) {
+            throw new BatfishException("Expected a String for variable type: path");
+         }
+      }
+      else {
          throw new BatfishException("Missing 'path' element of jsonPath");
       }
-      if (!(pathContent.get("path") instanceof String)) {
-         throw new BatfishException("Expected a String for variable type: path");
-      }
-      if (pathContent.containsKey("suffix")) {
-         if (!(pathContent.get("suffix") instanceof Boolean)) {
+      if (jsonPath.get("suffix") != null) {
+         if (!(jsonPath.get("suffix").isBoolean())) {
             throw new BatfishException("'suffix' element of " +
                   "jsonPath dictionary should be a boolean");
          }
