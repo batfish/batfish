@@ -1,6 +1,7 @@
 package org.batfish.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Question;
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.IOException;
 
@@ -17,6 +19,7 @@ import java.io.IOException;
 public class ClientTest {
 
    BatfishObjectMapper mapper;
+   String errorMessage;
 
    @Rule
    public ExpectedException thrown = ExpectedException.none();
@@ -26,14 +29,23 @@ public class ClientTest {
       mapper = new BatfishObjectMapper();
    }
 
+   public String generateErrorMessage (String value, JsonNodeType inputType,
+          Question.InstanceData.Variable.Type expectedType) {
+      String errorMessage
+            = String.format("The parameter value: %s is a type of %s doesn't " +
+                        "match expected variable type: %s",
+                        value, inputType, expectedType);
+      return errorMessage;
+   }
+
    @Test
    public void testNullValue() {
-      //Need to check if null input is allowed, otherwise verify before entering
-      // method
       JsonNode nullNode = null;
-      Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
-      thrown.expect(NullPointerException.class);
-      Client.validate(nullNode, variable);
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      thrown.expect(InvalidStateException.class);
+      thrown.expectMessage("The parameter value should not be null");
+      Client.validateType(nullNode, variable);
    }
 
    @Test
@@ -43,9 +55,10 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.STRING);
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("The parameter value type: NUMBER doesn't match " +
-            "the type required for variable type: STRING");
-      Client.validate(numberNode, variable);
+      errorMessage = generateErrorMessage("10", numberNode.getNodeType(),
+            variable.getType());
+      thrown.expectMessage(errorMessage);
+      Client.validateType(numberNode, variable);
    }
 
    @Test
@@ -55,8 +68,10 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("Expected a boolean for variable type: BOOLEAN");
-      Client.validate(invalidBooleanNode, variable);
+      errorMessage = generateErrorMessage("\"true\"",
+            invalidBooleanNode.getNodeType(), variable.getType());
+      thrown.expectMessage(errorMessage);
+      Client.validateType(invalidBooleanNode, variable);
    }
 
    @Test
@@ -66,7 +81,7 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
       try {
-         Client.validate(booleanNode, variable);
+         Client.validateType(booleanNode, variable);
       } catch (Exception e) {
          throw new BatfishException("Unexpected exception");
       }
@@ -79,9 +94,10 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.COMPARATOR);
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("Expected a comparator for " +
-            "variable type: COMPARATOR");
-      Client.validate(invalidComparator, variable);
+      errorMessage = generateErrorMessage("\"=>\"",
+            invalidComparator.getNodeType(), variable.getType());
+      thrown.expectMessage(errorMessage);
+      Client.validateType(invalidComparator, variable);
    }
 
    @Test
@@ -91,7 +107,7 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.COMPARATOR);
       try {
-         Client.validate(comparatorNode, variable);
+         Client.validateType(comparatorNode, variable);
       } catch (Exception e) {
          throw new BatfishException("Unexpected exception");
       }
@@ -104,9 +120,10 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.INTEGER);
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("Expected an Integer for " +
-            "variable type: INTEGER");
-      Client.validate(invalidInteger, variable);
+      errorMessage = generateErrorMessage("1.5",
+            invalidInteger.getNodeType(), variable.getType());
+      thrown.expectMessage(errorMessage);
+      Client.validateType(invalidInteger, variable);
    }
 
    @Test
@@ -116,20 +133,38 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.INTEGER);
       try {
-         Client.validate(comparatorNode, variable);
+         Client.validateType(comparatorNode, variable);
+      } catch (Exception e) {
+         throw new BatfishException("Unexpected exception");
+      }
+   }
+
+   @Test
+   public void testInvalidIpValue() throws IOException {
+      JsonNode invalidInteger = mapper.readTree("\"0.0.0\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.IP);
+      thrown.expect(BatfishException.class);
+      thrown.expectMessage(
+            "The input: 0.0.0 is not a valid ip address.");
+      Client.validateType(invalidInteger, variable);
+   }
+
+   @Test
+   public void testValidIpValue() throws IOException {
+      JsonNode comparatorNode = mapper.readTree("\"0.0.0.0\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.IP);
+      try {
+         Client.validateType(comparatorNode, variable);
       } catch (Exception e) {
          throw new BatfishException("Unexpected exception");
       }
    }
 
    //Tests for validateJsonPath
-   @Test
-   public void testNullJsonPath () {
-      // Null value should be checked before entering this method
-      thrown.expect(NullPointerException.class);
-      Client.validateJsonPath(null);
-   }
-
    @Test
    public void testEmptyJsonPath () throws IOException {
       thrown.expect(BatfishException.class);
@@ -192,7 +227,6 @@ public class ClientTest {
    }
 
    //Tests for validateJsonPathRegex
-
    @Test
    public void testNullJsonPathRegex () {
       thrown.expect(BatfishException.class);
@@ -211,7 +245,7 @@ public class ClientTest {
    public void testPathRegexInvalidStart () {
       String invalidStart = "pathRegex";
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("Expected jsonPathRegex start with: /");
+      thrown.expectMessage("Expected a jsonPathRegex starts with: /");
       Client.validateJsonPathRegex(invalidStart);
    }
 
@@ -219,8 +253,8 @@ public class ClientTest {
    public void testPathRegexInvalidEnd () {
       String invalidEnd= "/pathRegex";
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("Expected a json path regex" +
-            "ends in either '/' or '/i'");
+      thrown.expectMessage(
+            "Expected a jsonPathRegex ends in either '/' or '/i'");
       Client.validateJsonPathRegex(invalidEnd);
    }
 
@@ -228,19 +262,19 @@ public class ClientTest {
    public void testInvalidInteriorJavaRegex () {
       String invalidJavaRegex = "/...{\\\\Q8\\\\E}/";
       thrown.expect(BatfishException.class);
-      thrown.expectMessage("Invalid javaRegex at interior "
-            + "of jsonPathRegex: " + "...{\\\\Q8\\\\E}");
+      thrown.expectMessage("Invalid javaRegex at interior of jsonPathRegex:" +
+            " ...{\\\\Q8\\\\E}");
       Client.validateJsonPathRegex(invalidJavaRegex);
    }
 
    @Test
    public void testPathRegexWithOnlySlash () {
-      //Need to confirm the requirement
-      String jsonPathRegex = "/i";
-      thrown.expect(BatfishException.class);
-      thrown.expectMessage("Expected a json path regex" +
-         "ends in either '/' or '/i'");
-      Client.validateJsonPathRegex(jsonPathRegex);
+      String jsonPathRegex = "/";
+      try {
+         Client.validateJsonPathRegex(jsonPathRegex);
+      } catch (Exception e) {
+         throw new BatfishException("Unexpected exception");
+      }
    }
 
    @Test
