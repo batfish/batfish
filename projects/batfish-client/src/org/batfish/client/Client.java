@@ -35,7 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import jersey.repackaged.com.google.common.net.InetAddresses;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -255,27 +254,7 @@ public class Client extends AbstractClient implements IClient {
          throw new BatfishException("Invalid instance data (JSON)", e);
       }
       Map<String, Variable> variables = instanceData.getVariables();
-      for (Entry<String, String> e : parameters.entrySet()) {
-         String parameterName = e.getKey();
-         String parameterValue = e.getValue();
-         Variable variable = variables.get(parameterName);
-         if (variable != null) {
-            JsonNode value;
-            try {
-               value = mapper.readTree(parameterValue);
-            }
-            catch (IOException e1) {
-               throw new BatfishException("Variable value is not valid JSON",
-                     e1);
-            }
-            validateType(value, variable);
-            variable.setValue(value);
-         }
-         else {
-            throw new BatfishException("No variable named: '" + parameterName
-                  + "' in supplied question template");
-         }
-      }
+      validate(parameters, variables);
       String modifiedInstanceDataStr;
       try {
          modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
@@ -326,142 +305,218 @@ public class Client extends AbstractClient implements IClient {
    }
 
    /**
+    * For each key in {@code parameters}, validate that its value has
+    * a type matches the type required by {@code variables} for that specific
+    * key.
+    *
+    * @throws IllegalStateException if no content (end-of-input) found from
+    * value in {@code parameters}.
+    * @throws BatfishException if the key in parameters does not exist in
+    * variable, or the value type in {@code parameters} does not match the
+    * type required by {@code variables} for that specific key.
+    */
+   static void validate(Map<String, String> parameters,
+                        Map<String, Variable> variables)
+                        throws IllegalStateException, BatfishException {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      for (Entry<String, String> e : parameters.entrySet()) {
+         String parameterName = e.getKey();
+         String parameterValue = e.getValue();
+         Variable variable = variables.get(parameterName);
+         if (variable != null) {
+            JsonNode value;
+            try {
+               value = mapper.readTree(parameterValue);
+            }
+            catch (IOException e1) {
+               throw new BatfishException("Variable value is not valid JSON",
+                     e1);
+            }
+            if (value == null) {
+               throw new IllegalStateException(
+                     String.format("Failed to extract JsonNode " +
+                     "for parameter: %s, with variable value: %s.",
+                           parameterName, parameterValue));
+            }
+            else {
+               try {
+                  validateType(value, variable);
+               } catch (BatfishException e2) {
+                  String messageHead
+                        = String.format("Error when validating parameter: %s: ",
+                        parameterName);
+                  String messageBody
+                        = String.format("The value: %s, is a type " +
+                        "of %s, doesn't match the type expected for %s: %s",
+                        parameterValue, value.getNodeType(), parameterName,
+                        variable.getType());
+                  String errorMessage
+                        = messageHead.concat(e2.getMessage().isEmpty() ?
+                                             messageBody : e2.getMessage());
+                  throw new BatfishException(errorMessage);
+               }
+               variable.setValue(value);
+            }
+         }
+         else {
+            throw new BatfishException("No variable named: '" + parameterName
+                  + "' in supplied question template");
+         }
+      }
+   }
+
+   /**
     * Validate the contents contained in json-encoded {@code value}
-    * matches the type required by {@code variable}.
-    * Call {@link Variable#getType()} on {@code variable} shows the expected
+    * matches the type required by {@code variable}. Call
+    * {@link Variable#getType()} on {@code variable} gives the expected
     * type.
-    * @throws BatfishException If the type encoded in input {@code value}
-    * does not match the type specified in {@code variable}.
-    * @throws IllegalArgumentException If the input {@code value} is null.
+    *
+    * @throws BatfishException if the type encoded in input {@code value}
+    * does not satisfy the requirements specified in {@code variable}.
     */
    static void validateType(JsonNode value, Variable variable)
-         throws BatfishException, IllegalArgumentException {
-      if (value == null) {
-         throw new IllegalArgumentException(
-               "The parameter value should not be null");
-      }
-      JsonNodeType inputType = value.getNodeType();
+         throws BatfishException {
       Variable.Type expectedType = variable.getType();
-      String errorMessage = String.format("The parameter value: %s is a " +
-            "type of %s doesn't match expected variable type: %s",
-            value, inputType, expectedType);
       switch (expectedType) {
          case BOOLEAN:
             if (!value.isBoolean()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             break;
          case COMPARATOR:
             if (!(COMPARATORS.contains(value.textValue()))) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             break;
          case INTEGER:
             if (!value.isInt()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             break;
          case IP:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             // TODO: Need to double check isInetAddress()
             if (!InetAddresses.isInetAddress(value.textValue())) {
                throw new BatfishException(
-                     String.format("The input: %s is not a valid ip address.",
-                           value.textValue()));
+                     String.format("The value: %s, is not a valid IP address " +
+                                 "for expected type: %s.",
+                                 value.textValue(), expectedType));
             }
             break;
          case IP_WILDCARD:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             // TODO: need ip_WildCard validation check
             break;
          case JAVA_REGEX:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             try {
                Pattern.compile(value.textValue());
             } catch (PatternSyntaxException e) {
                throw new BatfishException(
-                     String.format("Input String: %s is not a valid Java " +
-                           "regular  expression for variable type: %s.",
-                           value.textValue(), expectedType));
+                     String.format("The value: %s, is not a valid Java " +
+                                 "regular expression for variable type: %s. " +
+                                 "Message: %s.",
+                                 value.textValue(), expectedType,
+                                 e.getMessage()));
             }
             break;
          case JSON_PATH_REGEX:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
-            validateJsonPathRegex(value.textValue());
+            try {
+               validateJsonPathRegex(value.textValue());
+            } catch (BatfishException e) {
+               throw new BatfishException(
+                     String.format("The value: %s is not a valid " +
+                                 "JsonPathRegex for variable type: %s. " +
+                                 "Message: %s",
+                                 value.textValue(), expectedType, e.getMessage()));
+            }
             break;
          case PREFIX:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             // TODO: need prefix validation check
             break;
          case PREFIX_RANGE:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             // TODO: need prefix range validation check
             break;
          case STRING:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             break;
          case SUBRANGE:
             if (!value.isTextual()) {
-               throw new BatfishException(errorMessage);
+               throw new BatfishException("");
             }
             // TODO: need prefix range validation check
             break;
          case JSON_PATH:
-            validateJsonPath(value);
+            try {
+               validateJsonPath(value);
+            } catch (BatfishException e) {
+               throw new BatfishException(
+                     String.format("The value is not a valid JsonPath " +
+                                 "for variable type: %s. Message: %s",
+                                 expectedType, e.getMessage()));
+            }
             break;
+         default:
+            throw new BatfishException(
+                  String.format("Unsupported parameter type: %s ",
+                        expectedType));
       }
    }
 
    /**
     * Validate that {@code jsonPathRegex} contains a valid Java regular
-    * expression of a JsonPath(Starts with '/', ends with either '/' or
-    * '/i', contains a valid Java regular expression between '/').
-    * @throws BatfishException If the content of {@code jsonPathRegex} is not
-    * a valid java regular expression of a JsonPath.
+    * expression of a {@code JsonPath} (Starts with "/", ends with either "/" or
+    * "/i", contains a valid Java regular expression between "/").
+    *
+    * <p> As written, this function will accept the strings "/" and "/i" as
+    * complete expressions – resulting in an empty inner Java regular
+    * expression.</p>
+    *
+    * @throws BatfishException if the content of {@code jsonPathRegex} is not
+    * a valid Java regular expression of a JsonPath.
     */
    static void validateJsonPathRegex(String jsonPathRegex)
          throws BatfishException {
-      if (jsonPathRegex == null || jsonPathRegex.isEmpty()) {
+      if (!jsonPathRegex.startsWith("/")) {
          throw new BatfishException(
-               "JsonPathRegex should not be empty or null.");
+               String.format("Expected a jsonPathRegex starts with /, the" +
+                           " input value: %s does not satisfy this requirement.",
+                           jsonPathRegex));
       }
-      // TODO: Currently assume "/" and "/i" is allowed here.
-      if (jsonPathRegex.startsWith("/")) {
-         String innerPath = "";
-         if ((jsonPathRegex.endsWith("/") || jsonPathRegex.endsWith("/i"))) {
-            if (jsonPathRegex.lastIndexOf('/') > 0) {
-               innerPath =
-                     jsonPathRegex.substring(1, jsonPathRegex.lastIndexOf('/'));
-            }
-         }
-         else {
-            throw new BatfishException(
-                  "Expected a jsonPathRegex ends in either '/' or '/i'");
-         }
-         try {
-            Pattern.compile(innerPath);
-         } catch (PatternSyntaxException e) {
-            throw new BatfishException(
-                  String.format("Invalid javaRegex at interior of " +
-                        "jsonPathRegex: %s", innerPath));
-         }
+      if (!(jsonPathRegex.endsWith("/") || jsonPathRegex.endsWith("/i"))) {
+         throw new BatfishException(
+               String.format("Expected a jsonPathRegex ends in either / " +
+                           "or /i, the input value: %s does not satisfy " +
+                           "this requirement.", jsonPathRegex));
       }
-      else {
-         throw new BatfishException("Expected a jsonPathRegex starts with: /");
+      String innerPath = "";
+      if (jsonPathRegex.lastIndexOf('/') > 0) {
+         innerPath =
+               jsonPathRegex.substring(1, jsonPathRegex.lastIndexOf('/'));
+      }
+      try {
+         Pattern.compile(innerPath);
+      } catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               String.format("Invalid javaRegex at interior of jsonPathRegex: " +
+                     "%s. Message: %s", innerPath, e.getMessage()));
       }
    }
 
@@ -469,29 +524,27 @@ public class Client extends AbstractClient implements IClient {
     * Validate that json-encoded {@code jsonPath} is a valid jsonPath dictionary
     * (A valid jsonPath contains key 'path' which mapping to a String, and an
     * optional key 'suffix' which mapping to a boolean value.).
+    *
     * @throws BatfishException if {@code jsonPath} is not a valid jsonPath
     * dictionary.
     */
    static void validateJsonPath(JsonNode jsonPath) throws BatfishException {
       if (!jsonPath.isContainerNode()) {
-         throw new BatfishException("Expected a jsonPath dictionary with " +
-               "elements 'path' (string) and optional 'suffix' (boolean)");
+         throw new BatfishException(
+               String.format("Expected JsonPath to be a dictionary, " +
+               "but the input is a type of: %s", jsonPath.getNodeType()));
       }
-      if (jsonPath.get("path") != null) {
-         JsonNode path = jsonPath.get("path");
-         if (!path.isTextual()) {
-            throw new BatfishException(
-                  "Expected a String for variable type: path");
-         }
-      }
-      else {
+      if (jsonPath.get("path") == null) {
          throw new BatfishException("Missing 'path' element of jsonPath");
       }
-      if (jsonPath.get("suffix") != null) {
-         if (!(jsonPath.get("suffix").isBoolean())) {
-            throw new BatfishException("'suffix' element of jsonPath " +
-                  "dictionary should be a boolean");
-         }
+      if (!jsonPath.get("path").isTextual()) {
+         throw new BatfishException(
+               "Expected a String for variable type: path");
+      }
+      if (jsonPath.get("suffix") != null &&
+            (!jsonPath.get("suffix").isBoolean())) {
+         throw new BatfishException("'suffix' element of jsonPath " +
+               "dictionary should be a boolean");
       }
    }
 
