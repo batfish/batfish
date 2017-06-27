@@ -3499,8 +3499,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             String ifaceName = p.getInterface();
             Configuration node = configurations.get(hostname);
             Interface iface = node.getInterfaces().get(ifaceName);
-            iface.setActive(false);
-            iface.setBlacklisted(true);
+            if (iface == null) {
+               throw new BatfishException(
+                     "Cannot disable non-existent interface '" + ifaceName
+                           + "' on node '" + hostname + "'\n");
+            }
+            else {
+               iface.setActive(false);
+               iface.setBlacklisted(true);
+            }
          }
       }
    }
