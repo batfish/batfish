@@ -663,7 +663,8 @@ public class Client extends AbstractClient implements IClient {
             catch (IOException e) {
                throw new BatfishException(
                      "Response does not appear to be valid JSON representation of "
-                           + Answer.class.getSimpleName());
+                           + Answer.class.getSimpleName(),
+                     e);
             }
             answerStringToPrint = answer.prettyPrint();
          }
