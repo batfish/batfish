@@ -347,6 +347,35 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
+   /**
+    * Returns a sorted list of {@link Path paths} contains all files under the
+    * directory indicated by {@code configsPath}. Directories under
+    * {@code configsPath} are recursively expanded but not included in the
+    * returned list.
+    *
+    * <p>
+    * Temporary files(files start with {@code .} are omitted from the returned
+    * list.
+    * </p>
+    *
+    * <p>
+    * This method follows all symbolic links.
+    * </p>
+    */
+   static List<Path> listAllFiles(Path configsPath) {
+      List<Path> configFilePaths;
+      try {
+         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
+               .filter(path -> !path.getFileName().toString().startsWith(".")
+                     && Files.isRegularFile(path))
+               .sorted().collect(Collectors.toList());
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to walk path: " + configsPath, e);
+      }
+      return configFilePaths;
+   }
+
    public static void logWarnings(BatfishLogger logger, Warnings warnings) {
       for (Warning warning : warnings.getRedFlagWarnings()) {
          logger.redflag(logWarningsHelper(warning));
@@ -3564,31 +3593,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       printElapsedTime();
       return configurationData;
-   }
-
-   /**
-    * Returns a sorted list of {@link Path paths} contains all files under the
-    * directory indicated by {@code configsPath}. Directories under
-    * {@code configsPath} are recursively expanded but not included in the
-    * returned list.
-    *
-    * <p>Temporary files(files start with {@code .} are omitted from the
-    * returned list. </p>
-    *
-    * <p>This method follows all symbolic links. </p>
-    */
-   static List<Path> listAllFiles(Path configsPath) {
-      List<Path> configFilePaths;
-      try {
-         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
-                 .filter(path -> !path.getFileName().toString().startsWith(".")
-                         && Files.isRegularFile(path))
-                 .sorted()
-                 .collect(Collectors.toList());
-      } catch (IOException e) {
-         throw new BatfishException("Failed to walk path: " + configsPath, e);
-      }
-      return configFilePaths;
    }
 
    @Override
