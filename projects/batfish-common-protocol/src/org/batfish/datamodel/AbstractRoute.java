@@ -59,7 +59,22 @@ public abstract class AbstractRoute
       if (ret != 0) {
          return ret;
       }
-      ret = Integer.compare(getMetric(), rhs.getMetric());
+      Integer lhsMetric = getMetric();
+      Integer rhsMetric = rhs.getMetric();
+      if (lhsMetric == null) {
+         if (rhsMetric != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (rhsMetric == null) {
+         ret = 1;
+      }
+      else {
+         ret = Integer.compare(lhsMetric, rhsMetric);
+      }
       if (ret != 0) {
          return ret;
       }

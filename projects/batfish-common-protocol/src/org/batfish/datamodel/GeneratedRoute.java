@@ -180,11 +180,37 @@ public final class GeneratedRoute extends AbstractRoute {
       }
       GeneratedRoute castRhs = (GeneratedRoute) rhs;
       int ret;
-      ret = _asPath.compareTo(castRhs._asPath);
+      if (_asPath == null) {
+         if (castRhs._asPath != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (castRhs._asPath == null) {
+         ret = 1;
+      }
+      else {
+         ret = _asPath.compareTo(castRhs._asPath);
+      }
       if (ret != 0) {
          return ret;
       }
-      ret = _attributePolicy.compareTo(castRhs._attributePolicy);
+      if (_attributePolicy == null) {
+         if (castRhs._attributePolicy != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (castRhs._attributePolicy == null) {
+         ret = 1;
+      }
+      else {
+         ret = _attributePolicy.compareTo(castRhs._attributePolicy);
+      }
       if (ret != 0) {
          return ret;
       }
@@ -192,7 +218,20 @@ public final class GeneratedRoute extends AbstractRoute {
       if (ret != 0) {
          return ret;
       }
-      ret = _generationPolicy.compareTo(castRhs._generationPolicy);
+      if (_generationPolicy == null) {
+         if (castRhs._generationPolicy != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (castRhs._generationPolicy == null) {
+         ret = 1;
+      }
+      else {
+         ret = _generationPolicy.compareTo(castRhs._generationPolicy);
+      }
       return ret;
    }
 
