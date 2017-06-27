@@ -968,7 +968,7 @@ public class WorkMgr {
             .toFile();
 
       if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
-         throw new Exception("Non-existent testrig");
+         throw new Exception("Non-existent testrig: " + testrigDir.getName());
       }
 
       boolean success = _workQueueMgr
