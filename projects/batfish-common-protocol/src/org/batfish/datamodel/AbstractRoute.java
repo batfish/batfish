@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,21 +17,31 @@ public abstract class AbstractRoute
 
    protected static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
 
-   private static final String METRIC_VAR = "metric";
+   protected static final String METRIC_VAR = "metric";
 
    protected static final String NETWORK_VAR = "network";
 
+   protected static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+
    protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
+
+   private static final String NEXT_HOP_VAR = "nextHop";
 
    public static final int NO_TAG = -1;
 
+   private static final String NODE_VAR = "node";
+
+   protected static final String PROTOCOL_VAR = "protocol";
+
    private static final long serialVersionUID = 1L;
+
+   protected static final String TAG_VAR = "tag";
+
+   private static final String VRF_VAR = "vrf";
 
    protected final Prefix _network;
 
    private String _nextHop;
-
-   protected final Ip _nextHopIp;
 
    private String _node;
 
@@ -38,13 +49,13 @@ public abstract class AbstractRoute
 
    private String _vrf;
 
-   public AbstractRoute(Prefix network, Ip nextHopIp) {
+   @JsonCreator
+   public AbstractRoute(@JsonProperty(NETWORK_VAR) Prefix network) {
       if (network == null) {
          throw new BatfishException(
                "Cannot construct AbstractRoute with null network");
       }
       _network = network;
-      _nextHopIp = nextHopIp;
    }
 
    @Override
@@ -82,16 +93,21 @@ public abstract class AbstractRoute
       if (ret != 0) {
          return ret;
       }
-      if (_nextHopIp == null) {
-         if (rhs._nextHopIp != null) {
+      Ip lhsNextHopIp = getNextHopIp();
+      Ip rhsNextHopIp = rhs.getNextHopIp();
+      if (lhsNextHopIp == null) {
+         if (rhsNextHopIp != null) {
             ret = -1;
          }
          else {
             ret = 0;
          }
       }
+      else if (rhsNextHopIp == null) {
+         ret = 1;
+      }
       else {
-         ret = _nextHopIp.compareTo(rhs._nextHopIp);
+         ret = lhsNextHopIp.compareTo(rhsNextHopIp);
       }
       if (ret != 0) {
          return ret;
@@ -151,12 +167,10 @@ public abstract class AbstractRoute
       return routeStr;
    }
 
-   @JsonProperty(ADMINISTRATIVE_COST_VAR)
-   @JsonPropertyDescription("Administrative cost for this route (usually based on protocol)")
+   @JsonIgnore
    public abstract int getAdministrativeCost();
 
-   @JsonProperty(METRIC_VAR)
-   @JsonPropertyDescription("Protocol-specific cost for this route")
+   @JsonIgnore
    public abstract Integer getMetric();
 
    @JsonProperty(NETWORK_VAR)
@@ -165,19 +179,18 @@ public abstract class AbstractRoute
       return _network;
    }
 
+   @JsonProperty(NEXT_HOP_VAR)
    public String getNextHop() {
       return _nextHop;
    }
 
-   @JsonPropertyDescription("The explicit next-hop interface for this route")
+   @JsonIgnore
    public abstract String getNextHopInterface();
 
-   @JsonProperty(NEXT_HOP_IP_VAR)
-   @JsonPropertyDescription("The IPV4 address of the next-hop router for this route")
-   public Ip getNextHopIp() {
-      return _nextHopIp;
-   }
+   @JsonIgnore
+   public abstract Ip getNextHopIp();
 
+   @JsonProperty(NODE_VAR)
    public String getNode() {
       return _node;
    }
@@ -188,12 +201,12 @@ public abstract class AbstractRoute
    }
 
    @JsonIgnore
-   @JsonPropertyDescription("The routing protocol that produced this route")
    public abstract RoutingProtocol getProtocol();
 
-   @JsonPropertyDescription("The non-transitive tag attribute of this route")
+   @JsonIgnore
    public abstract int getTag();
 
+   @JsonProperty(VRF_VAR)
    public String getVrf() {
       return _vrf;
    }
@@ -205,10 +218,12 @@ public abstract class AbstractRoute
 
    public abstract int routeCompare(AbstractRoute rhs);
 
+   @JsonProperty(NEXT_HOP_VAR)
    public void setNextHop(String nextHop) {
       _nextHop = nextHop;
    }
 
+   @JsonProperty(NODE_VAR)
    public void setNode(String node) {
       _node = node;
    }
@@ -218,6 +233,7 @@ public abstract class AbstractRoute
       _nonRouting = nonRouting;
    }
 
+   @JsonProperty(VRF_VAR)
    public void setVrf(String vrf) {
       _vrf = vrf;
    }
@@ -225,7 +241,8 @@ public abstract class AbstractRoute
    @Override
    public String toString() {
       return this.getClass().getSimpleName() + "<" + _network.toString()
-            + ",nhip:" + _nextHopIp + ",nhint:" + getNextHopInterface() + ">";
+            + ",nhip:" + getNextHopIp() + ",nhint:" + getNextHopInterface()
+            + ">";
    }
 
    public Route toSummaryRoute(String hostname, String vrfName,

@@ -10,11 +10,11 @@ public class StaticRoute extends AbstractRoute {
 
    private static final long serialVersionUID = 1L;
 
-   private static final String TAG_VAR = "tag";
-
-   private int _administrativeCost;
+   private final int _administrativeCost;
 
    private final String _nextHopInterface;
+
+   private final Ip _nextHopIp;
 
    private final int _tag;
 
@@ -22,17 +22,12 @@ public class StaticRoute extends AbstractRoute {
    public StaticRoute(@JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
          @JsonProperty(TAG_VAR) int tag) {
-      super(network, nextHopIp);
-      _nextHopInterface = nextHopInterface;
-      _tag = tag;
-   }
-
-   public StaticRoute(Prefix network, Ip nextHopIp, String nextHopInterface,
-         int administrativeCost, int tag) {
-      super(network, nextHopIp);
-      _nextHopInterface = nextHopInterface;
+      super(network);
       _administrativeCost = administrativeCost;
+      _nextHopIp = nextHopIp;
+      _nextHopInterface = nextHopInterface;
       _tag = tag;
    }
 
@@ -57,6 +52,7 @@ public class StaticRoute extends AbstractRoute {
    }
 
    @Override
+   @JsonIgnore(false)
    @JsonProperty(ADMINISTRATIVE_COST_VAR)
    public int getAdministrativeCost() {
       return _administrativeCost;
@@ -69,9 +65,17 @@ public class StaticRoute extends AbstractRoute {
    }
 
    @Override
+   @JsonIgnore(false)
    @JsonProperty(NEXT_HOP_INTERFACE_VAR)
    public String getNextHopInterface() {
       return _nextHopInterface;
+   }
+
+   @JsonIgnore(false)
+   @JsonProperty(NEXT_HOP_IP_VAR)
+   @Override
+   public Ip getNextHopIp() {
+      return _nextHopIp;
    }
 
    @Override
@@ -80,6 +84,7 @@ public class StaticRoute extends AbstractRoute {
    }
 
    @Override
+   @JsonIgnore(false)
    @JsonProperty(TAG_VAR)
    public int getTag() {
       return _tag;
@@ -107,11 +112,6 @@ public class StaticRoute extends AbstractRoute {
    @Override
    public int routeCompare(AbstractRoute rhs) {
       return 0;
-   }
-
-   @JsonProperty(ADMINISTRATIVE_COST_VAR)
-   public void setAdministrativeCost(int administrativeCost) {
-      _administrativeCost = administrativeCost;
    }
 
 }

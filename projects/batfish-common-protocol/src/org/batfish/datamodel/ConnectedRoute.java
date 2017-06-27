@@ -1,13 +1,19 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ConnectedRoute extends AbstractRoute {
 
    private static final long serialVersionUID = 1L;
 
    private final String _nextHopInterface;
 
-   public ConnectedRoute(Prefix prefix, String nextHopInterface) {
-      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
+   @JsonCreator
+   public ConnectedRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+         @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface) {
+      super(network);
       _nextHopInterface = nextHopInterface;
    }
 
@@ -28,9 +34,16 @@ public class ConnectedRoute extends AbstractRoute {
       return 0;
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(NEXT_HOP_INTERFACE_VAR)
    @Override
    public String getNextHopInterface() {
       return _nextHopInterface;
+   }
+
+   @Override
+   public Ip getNextHopIp() {
+      return Route.UNSET_ROUTE_NEXT_HOP_IP;
    }
 
    @Override

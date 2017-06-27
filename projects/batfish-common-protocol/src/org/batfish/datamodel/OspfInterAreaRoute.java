@@ -1,6 +1,11 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class OspfInterAreaRoute extends OspfRoute {
+
+   private static final String AREA_VAR = "area";
 
    /**
    *
@@ -9,9 +14,13 @@ public class OspfInterAreaRoute extends OspfRoute {
 
    private final long _area;
 
-   public OspfInterAreaRoute(Prefix prefix, Ip nextHopIp, int admin, int metric,
-         long area) {
-      super(prefix, nextHopIp, admin, metric);
+   @JsonCreator
+   public OspfInterAreaRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
+         @JsonProperty(METRIC_VAR) int metric,
+         @JsonProperty(AREA_VAR) long area) {
+      super(network, nextHopIp, admin, metric);
       _area = area;
    }
 
@@ -41,6 +50,7 @@ public class OspfInterAreaRoute extends OspfRoute {
       return _network.equals(other._network);
    }
 
+   @JsonProperty(AREA_VAR)
    public long getArea() {
       return _area;
    }
@@ -57,7 +67,7 @@ public class OspfInterAreaRoute extends OspfRoute {
 
    @Override
    public int getTag() {
-      return -1;
+      return NO_TAG;
    }
 
    @Override

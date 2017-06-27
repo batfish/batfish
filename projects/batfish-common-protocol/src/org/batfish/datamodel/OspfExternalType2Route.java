@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class OspfExternalType2Route extends OspfExternalRoute {
 
    /**
@@ -7,12 +10,14 @@ public class OspfExternalType2Route extends OspfExternalRoute {
     */
    private static final long serialVersionUID = 1L;
 
-   private final int _costToAdvertiser;
-
-   public OspfExternalType2Route(Prefix prefix, Ip nextHopIp, int admin,
-         int metric, int costToAdvertiser, String advertiser) {
-      super(prefix, nextHopIp, admin, metric, OspfMetricType.E2, advertiser);
-      _costToAdvertiser = costToAdvertiser;
+   @JsonCreator
+   public OspfExternalType2Route(@JsonProperty(NETWORK_VAR) Prefix network,
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
+         @JsonProperty(METRIC_VAR) int metric,
+         @JsonProperty(COST_TO_ADVERTISER_VAR) int costToAdvertiser,
+         @JsonProperty(ADVERTISER_VAR) String advertiser) {
+      super(network, nextHopIp, admin, metric, advertiser, costToAdvertiser);
    }
 
    @Override
@@ -24,27 +29,28 @@ public class OspfExternalType2Route extends OspfExternalRoute {
          return false;
       }
       OspfExternalType2Route other = (OspfExternalType2Route) obj;
-      if (_costToAdvertiser != other._costToAdvertiser) {
+      if (getCostToAdvertiser() != other.getCostToAdvertiser()) {
          return false;
       }
       return true;
    }
 
-   public int getCostToAdvertiser() {
-      return _costToAdvertiser;
+   @Override
+   public OspfMetricType getOspfMetricType() {
+      return OspfMetricType.E2;
    }
 
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + _costToAdvertiser;
+      result = prime * result + getCostToAdvertiser();
       return result;
    }
 
    @Override
    protected final String ospfExternalRouteString() {
-      return " costToAdvertiser:" + _costToAdvertiser;
+      return " costToAdvertiser:" + getCostToAdvertiser();
    }
 
    @Override
@@ -53,7 +59,8 @@ public class OspfExternalType2Route extends OspfExternalRoute {
          return 0;
       }
       OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
-      int ret = Integer.compare(_costToAdvertiser, castRhs._costToAdvertiser);
+      int ret = Integer.compare(getCostToAdvertiser(),
+            castRhs.getCostToAdvertiser());
       return ret;
    }
 
