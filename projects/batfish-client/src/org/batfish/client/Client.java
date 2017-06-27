@@ -80,7 +80,6 @@ import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
-import sun.plugin.dom.exception.InvalidStateException;
 
 public class Client extends AbstractClient implements IClient {
 
@@ -333,12 +332,12 @@ public class Client extends AbstractClient implements IClient {
     * type.
     * @throws BatfishException If the type encoded in input {@code value}
     * does not match the type specified in {@code variable}.
-    * @throws InvalidStateException If the input {@code value} is null.
+    * @throws IllegalArgumentException If the input {@code value} is null.
     */
    static void validateType(JsonNode value, Variable variable)
-         throws BatfishException, InvalidStateException {
+         throws BatfishException, IllegalArgumentException {
       if (value == null) {
-         throw new InvalidStateException(
+         throw new IllegalArgumentException(
                "The parameter value should not be null");
       }
       JsonNodeType inputType = value.getNodeType();

@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.IOException;
 
@@ -43,7 +42,7 @@ public class ClientTest {
       JsonNode nullNode = null;
       Question.InstanceData.Variable variable
             = new Question.InstanceData.Variable();
-      thrown.expect(InvalidStateException.class);
+      thrown.expect(IllegalArgumentException.class);
       thrown.expectMessage("The parameter value should not be null");
       Client.validateType(nullNode, variable);
    }
