@@ -81,11 +81,7 @@ public class ClientTest {
    @Test
    public void testPathRegexWithOnlySlash() {
       String jsonPathRegex = "/";
-      try {
-         Client.validateJsonPathRegex(jsonPathRegex);
-      } catch (Exception e) {
-         throw new BatfishException("Unexpected exception");
-      }
+      Client.validateJsonPathRegex(jsonPathRegex);
    }
 
    @Test
