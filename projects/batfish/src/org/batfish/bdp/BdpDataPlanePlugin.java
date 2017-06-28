@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -262,7 +263,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       _logger.info("\n*** COMPUTING DATA PLANE ***\n");
       Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations,
             true);
-      dp.initIpOwners(configurations, ipOwners);
+      Map<Ip, String> ipOwnersSimple = _batfish.computeIpOwnersSimple(ipOwners);
+      dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       _batfish.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
       Map<String, Node> nodes = new TreeMap<>();
       configurations.values()
@@ -853,11 +855,33 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    }
 
    @Override
-   public RouteSet getRoutes() {
+   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
       BdpDataPlane dp = loadDataPlane();
-      RouteSet outputRoutes = computeOutputRoutes(dp._nodes,
-            dp.getIpOwnersSimple());
-      return outputRoutes;
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname = new TreeMap<>();
+      for (Entry<String, Node> e : dp._nodes.entrySet()) {
+         String hostname = e.getKey();
+         Node node = e.getValue();
+         for (Entry<String, VirtualRouter> e2 : node._virtualRouters
+               .entrySet()) {
+            String vrfName = e2.getKey();
+            VirtualRouter vrf = e2.getValue();
+            for (AbstractRoute route : vrf._mainRib.getRoutes()) {
+               SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByHostname
+                     .get(hostname);
+               if (routesByVrf == null) {
+                  routesByVrf = new TreeMap<>();
+                  routesByHostname.put(hostname, routesByVrf);
+               }
+               SortedSet<AbstractRoute> routes = routesByVrf.get(vrfName);
+               if (routes == null) {
+                  routes = new TreeSet<>();
+                  routesByVrf.put(vrfName, routes);
+               }
+               routes.add(route);
+            }
+         }
+      }
+      return routesByHostname;
    }
 
    private Flow hopFlow(Flow originalFlow, Flow transformedFlow) {

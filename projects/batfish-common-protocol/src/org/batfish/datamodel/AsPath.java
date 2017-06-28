@@ -8,10 +8,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.batfish.common.util.CommonUtil;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class AsPath implements Serializable {
+public class AsPath implements Serializable, Comparable<AsPath> {
 
    private static final long serialVersionUID = 1L;
 
@@ -20,6 +22,27 @@ public class AsPath implements Serializable {
    @JsonCreator
    public AsPath(List<SortedSet<Integer>> asSets) {
       _asSets = copyAsSets(asSets);
+   }
+
+   @Override
+   public int compareTo(AsPath rhs) {
+      Iterator<SortedSet<Integer>> l = _asSets.iterator();
+      Iterator<SortedSet<Integer>> r = rhs._asSets.iterator();
+      while (l.hasNext()) {
+         if (!r.hasNext()) {
+            return 1;
+         }
+         SortedSet<Integer> lVal = l.next();
+         SortedSet<Integer> rVal = r.next();
+         int ret = CommonUtil.compareCollection(lVal, rVal);
+         if (ret != 0) {
+            return ret;
+         }
+      }
+      if (r.hasNext()) {
+         return -1;
+      }
+      return 0;
    }
 
    public boolean containsAs(int as) {

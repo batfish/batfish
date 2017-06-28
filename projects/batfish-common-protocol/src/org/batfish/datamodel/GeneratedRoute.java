@@ -11,8 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
-public final class GeneratedRoute extends AbstractRoute
-      implements Comparable<GeneratedRoute> {
+public final class GeneratedRoute extends AbstractRoute {
 
    public static class Builder extends AbstractRouteBuilder<GeneratedRoute> {
 
@@ -33,14 +32,9 @@ public final class GeneratedRoute extends AbstractRoute
 
       @Override
       public GeneratedRoute build() {
-         GeneratedRoute gr = new GeneratedRoute(_network, _nextHopIp);
-         gr.setAdministrativePreference(_admin);
-         gr.setMetric(_metric);
-         gr.setGenerationPolicy(_generationPolicy);
-         gr.setAttributePolicy(_attributePolicy);
-         gr.setDiscard(_discard);
-         gr.setAsPath(new AsPath(_asPath));
-         gr.setNextHopInterface(_nextHopInterface);
+         GeneratedRoute gr = new GeneratedRoute(_network, _admin, _nextHopIp,
+               new AsPath(_asPath), _attributePolicy, _discard,
+               _generationPolicy, _metric, _nextHopInterface);
          return gr;
       }
 
@@ -68,43 +62,51 @@ public final class GeneratedRoute extends AbstractRoute
 
    private static final String AS_PATH_VAR = "asPath";
 
+   private static final String ATTRIBUTE_POLICY_VAR = "attributePolicy";
+
    private static final String DISCARD_VAR = "discard";
+
+   private static final String GENERATION_POLICY_VAR = "generationPolicy";
 
    private static final String METRIC_VAR = "metric";
 
    private static final long serialVersionUID = 1L;
 
-   private int _administrativeCost;
+   private final int _administrativeCost;
 
-   private AsPath _asPath;
+   private final AsPath _asPath;
 
-   private String _attributePolicy;
+   private final String _attributePolicy;
 
-   private boolean _discard;
+   private final boolean _discard;
 
-   private String _generationPolicy;
+   private final String _generationPolicy;
 
-   private Integer _metric;
+   private final Integer _metric;
 
-   private String _nextHopInterface;
+   private final String _nextHopInterface;
+
+   private final Ip _nextHopIp;
 
    @JsonCreator
-   public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix prefix) {
-      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
-   }
-
-   public GeneratedRoute(Prefix prefix, int administrativeCost) {
-      super(prefix, Route.UNSET_ROUTE_NEXT_HOP_IP);
+   public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(AS_PATH_VAR) AsPath asPath,
+         @JsonProperty(ATTRIBUTE_POLICY_VAR) String attributePolicy,
+         @JsonProperty(DISCARD_VAR) boolean discard,
+         @JsonProperty(GENERATION_POLICY_VAR) String generationPolicy,
+         @JsonProperty(METRIC_VAR) Integer metric,
+         @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface) {
+      super(network);
       _administrativeCost = administrativeCost;
-   }
-
-   public GeneratedRoute(Prefix prefix, Ip nextHopIp) {
-      super(prefix, nextHopIp);
-   }
-
-   @Override
-   public int compareTo(GeneratedRoute o) {
-      return _network.compareTo(o._network);
+      _asPath = asPath;
+      _attributePolicy = attributePolicy;
+      _discard = discard;
+      _generationPolicy = generationPolicy;
+      _metric = metric;
+      _nextHopInterface = nextHopInterface;
+      _nextHopIp = nextHopIp;
    }
 
    @Override
@@ -113,6 +115,8 @@ public final class GeneratedRoute extends AbstractRoute
       return _network.equals(rhs._network);
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(ADMINISTRATIVE_COST_VAR)
    @Override
    public int getAdministrativeCost() {
       return _administrativeCost;
@@ -124,6 +128,7 @@ public final class GeneratedRoute extends AbstractRoute
       return _asPath;
    }
 
+   @JsonProperty(ATTRIBUTE_POLICY_VAR)
    @JsonPropertyDescription("The name of the policy that sets attributes of this route")
    public String getAttributePolicy() {
       return _attributePolicy;
@@ -135,11 +140,13 @@ public final class GeneratedRoute extends AbstractRoute
       return _discard;
    }
 
+   @JsonProperty(GENERATION_POLICY_VAR)
    @JsonPropertyDescription("The name of the policy that will generate this route if another route matches it")
    public String getGenerationPolicy() {
       return _generationPolicy;
    }
 
+   @JsonIgnore(false)
    @JsonProperty(METRIC_VAR)
    @Override
    public Integer getMetric() {
@@ -151,10 +158,11 @@ public final class GeneratedRoute extends AbstractRoute
       return _nextHopInterface;
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(NEXT_HOP_IP_VAR)
    @Override
-   @JsonIgnore
    public Ip getNextHopIp() {
-      return super.getNextHopIp();
+      return _nextHopIp;
    }
 
    @Override
@@ -163,7 +171,6 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @Override
-   @JsonIgnore
    public int getTag() {
       return NO_TAG;
    }
@@ -179,36 +186,66 @@ public final class GeneratedRoute extends AbstractRoute
             + " discard:" + _discard + " generationPolicy:" + _generationPolicy;
    }
 
-   @JsonProperty(ADMINISTRATIVE_COST_VAR)
-   public void setAdministrativePreference(int preference) {
-      _administrativeCost = preference;
-   }
-
-   @JsonProperty(AS_PATH_VAR)
-   public void setAsPath(AsPath asPath) {
-      _asPath = asPath;
-   }
-
-   public void setAttributePolicy(String attributePolicy) {
-      _attributePolicy = attributePolicy;
-   }
-
-   @JsonProperty(DISCARD_VAR)
-   public void setDiscard(boolean discard) {
-      _discard = discard;
-   }
-
-   public void setGenerationPolicy(String generationPolicy) {
-      _generationPolicy = generationPolicy;
-   }
-
-   @JsonProperty(METRIC_VAR)
-   public void setMetric(int metric) {
-      _metric = metric;
-   }
-
-   public void setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      if (getClass() != rhs.getClass()) {
+         return 0;
+      }
+      GeneratedRoute castRhs = (GeneratedRoute) rhs;
+      int ret;
+      if (_asPath == null) {
+         if (castRhs._asPath != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (castRhs._asPath == null) {
+         ret = 1;
+      }
+      else {
+         ret = _asPath.compareTo(castRhs._asPath);
+      }
+      if (ret != 0) {
+         return ret;
+      }
+      if (_attributePolicy == null) {
+         if (castRhs._attributePolicy != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (castRhs._attributePolicy == null) {
+         ret = 1;
+      }
+      else {
+         ret = _attributePolicy.compareTo(castRhs._attributePolicy);
+      }
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Boolean.compare(_discard, castRhs._discard);
+      if (ret != 0) {
+         return ret;
+      }
+      if (_generationPolicy == null) {
+         if (castRhs._generationPolicy != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (castRhs._generationPolicy == null) {
+         ret = 1;
+      }
+      else {
+         ret = _generationPolicy.compareTo(castRhs._generationPolicy);
+      }
+      return ret;
    }
 
 }
