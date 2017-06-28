@@ -7,6 +7,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BgpRoute extends AbstractRoute {
 
@@ -127,12 +132,30 @@ public class BgpRoute extends AbstractRoute {
 
    }
 
+   private static final String AS_PATH_VAR = "asPath";
+
+   private static final String CLUSTER_LIST_VAR = "clusterList";
+
+   private static final String COMMUNITIES_VAR = "communities";
+
    public static final int DEFAULT_LOCAL_PREFERENCE = 100;
+
+   private static final String LOCAL_PREFERENCE_VAR = "localPreference";
+
+   private static final String ORIGIN_TYPE_VAR = "originType";
+
+   private static final String ORIGINATOR_IP_VAR = "originatorIp";
+
+   private static final String RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR = "receivedFromRouteReflectorClient";
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private static final String SRC_PROTOCOL_VAR = "srcProtocol";
+
+   private static final String WEIGHT_VAR = "weight";
 
    private final int _admin;
 
@@ -146,6 +169,8 @@ public class BgpRoute extends AbstractRoute {
 
    private final int _med;
 
+   private final Ip _nextHopIp;
+
    private final Ip _originatorIp;
 
    private final OriginType _originType;
@@ -158,18 +183,29 @@ public class BgpRoute extends AbstractRoute {
 
    private final int _weight;
 
-   public BgpRoute(Prefix network, Ip nextHopIp, int admin, AsPath asPath,
-         SortedSet<Long> communities, int localPreference, int med,
-         Ip originatorIp, SortedSet<Long> clusterList,
-         boolean receivedFromRouteReflectorClient, OriginType originType,
-         RoutingProtocol protocol, RoutingProtocol srcProtocol, int weight) {
-      super(network, nextHopIp);
+   @JsonCreator
+   public BgpRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
+         @JsonProperty(AS_PATH_VAR) AsPath asPath,
+         @JsonProperty(COMMUNITIES_VAR) SortedSet<Long> communities,
+         @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference,
+         @JsonProperty(METRIC_VAR) int med,
+         @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
+         @JsonProperty(CLUSTER_LIST_VAR) SortedSet<Long> clusterList,
+         @JsonProperty(RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR) boolean receivedFromRouteReflectorClient,
+         @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
+         @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol,
+         @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol,
+         @JsonProperty(WEIGHT_VAR) int weight) {
+      super(network);
       _admin = admin;
       _asPath = asPath;
-      _clusterList = clusterList;
-      _communities = communities;
+      _clusterList = clusterList != null ? clusterList : new TreeSet<>();
+      _communities = communities != null ? communities : new TreeSet<>();
       _localPreference = localPreference;
       _med = med;
+      _nextHopIp = nextHopIp;
       _originatorIp = originatorIp;
       _originType = originType;
       _protocol = protocol;
@@ -233,27 +269,35 @@ public class BgpRoute extends AbstractRoute {
       return true;
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(ADMINISTRATIVE_COST_VAR)
    @Override
    public int getAdministrativeCost() {
       return _admin;
    }
 
+   @JsonProperty(AS_PATH_VAR)
    public AsPath getAsPath() {
       return _asPath;
    }
 
+   @JsonProperty(CLUSTER_LIST_VAR)
    public SortedSet<Long> getClusterList() {
       return Collections.unmodifiableSortedSet(_clusterList);
    }
 
+   @JsonProperty(COMMUNITIES_VAR)
    public SortedSet<Long> getCommunities() {
       return Collections.unmodifiableSortedSet(_communities);
    }
 
+   @JsonProperty(LOCAL_PREFERENCE_VAR)
    public int getLocalPreference() {
       return _localPreference;
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(METRIC_VAR)
    @Override
    public Integer getMetric() {
       return _med;
@@ -264,32 +308,46 @@ public class BgpRoute extends AbstractRoute {
       return null;
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(NEXT_HOP_IP_VAR)
+   @Override
+   public Ip getNextHopIp() {
+      return _nextHopIp;
+   }
+
+   @JsonProperty(ORIGINATOR_IP_VAR)
    public Ip getOriginatorIp() {
       return _originatorIp;
    }
 
+   @JsonProperty(ORIGIN_TYPE_VAR)
    public OriginType getOriginType() {
       return _originType;
    }
 
+   @JsonIgnore(false)
+   @JsonProperty(PROTOCOL_VAR)
    @Override
    public RoutingProtocol getProtocol() {
       return _protocol;
    }
 
+   @JsonProperty(RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR)
    public boolean getReceivedFromRouteReflectorClient() {
       return _receivedFromRouteReflectorClient;
    }
 
+   @JsonProperty(SRC_PROTOCOL_VAR)
    public RoutingProtocol getSrcProtocol() {
       return _srcProtocol;
    }
 
    @Override
    public int getTag() {
-      return -1;
+      return NO_TAG;
    }
 
+   @JsonProperty(WEIGHT_VAR)
    public int getWeight() {
       return _weight;
    }
@@ -325,6 +383,41 @@ public class BgpRoute extends AbstractRoute {
             + " med:" + _med + " originatorIp:" + _originatorIp + " originType:"
             + _originType + " srcProtocol:" + _srcProtocol + " weight:"
             + _weight;
+   }
+
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
+      if (getClass() != rhs.getClass()) {
+         return 0;
+      }
+      BgpRoute castRhs = (BgpRoute) rhs;
+      int ret;
+      ret = _asPath.compareTo(castRhs._asPath);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = CommonUtil.compareCollection(_clusterList, castRhs._clusterList);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = CommonUtil.compareCollection(_communities, castRhs._communities);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_localPreference, castRhs._localPreference);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _originType.compareTo(castRhs._originType);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _originatorIp.compareTo(castRhs._originatorIp);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_weight, castRhs._weight);
+      return ret;
    }
 
 }

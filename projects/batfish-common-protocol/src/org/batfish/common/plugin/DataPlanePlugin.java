@@ -2,14 +2,16 @@ package org.batfish.common.plugin;
 
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 
 import org.batfish.common.plugin.IDataPlanePlugin;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
-import org.batfish.datamodel.collections.RouteSet;
 
 public abstract class DataPlanePlugin extends BatfishPlugin
       implements IDataPlanePlugin {
@@ -55,7 +57,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin
 
    public abstract IbgpTopology getIbgpNeighbors();
 
-   public abstract RouteSet getRoutes();
+   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
    public abstract void processFlows(Set<Flow> flows);
 

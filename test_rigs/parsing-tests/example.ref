@@ -10699,7 +10699,7 @@
           ]
         }
       },
-      "version" : "0.27.0"
+      "version" : "0.28.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -10842,7 +10842,7 @@
           }
         }
       },
-      "version" : "0.27.0",
+      "version" : "0.28.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {

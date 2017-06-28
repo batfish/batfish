@@ -28,7 +28,8 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
    @Override
    public boolean mergeRoute(OspfExternalType2Route route) {
       String advertiser = route.getAdvertiser();
-      if (_owner._c.getHostname().equals(advertiser)) {
+      if (route.getCostToAdvertiser() != 0
+            && _owner._c.getHostname().equals(advertiser)) {
          return false;
       }
       else {

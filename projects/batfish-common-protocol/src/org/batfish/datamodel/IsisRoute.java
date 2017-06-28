@@ -24,8 +24,9 @@ public class IsisRoute extends AbstractRoute {
     */
    private static final long serialVersionUID = 1L;
 
-   public IsisRoute(Prefix network, Ip nextHopIp) {
-      super(network, nextHopIp);
+   public IsisRoute(Prefix network) {
+      super(network);
+      // TODO Auto-generated constructor stub
    }
 
    @Override
@@ -57,6 +58,13 @@ public class IsisRoute extends AbstractRoute {
    }
 
    @Override
+   public Ip getNextHopIp() {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
    public RoutingProtocol getProtocol() {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
@@ -79,6 +87,13 @@ public class IsisRoute extends AbstractRoute {
 
    @Override
    public String protocolRouteString() {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   @Override
+   public int routeCompare(AbstractRoute rhs) {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub

@@ -1,5 +1,9 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public abstract class OspfExternalRoute extends OspfRoute {
 
    public static class Builder extends AbstractRouteBuilder<OspfExternalRoute> {
@@ -16,7 +20,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
          OspfExternalRoute route;
          if (protocol == RoutingProtocol.OSPF_E1) {
             route = new OspfExternalType1Route(_network, _nextHopIp, _admin,
-                  _metric, _advertiser);
+                  _metric, _costToAdvertiser, _advertiser);
          }
          else {
             route = new OspfExternalType2Route(_network, _nextHopIp, _admin,
@@ -51,6 +55,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
    }
 
+   protected static final String ADVERTISER_VAR = "advertiser";
+
+   protected static final String COST_TO_ADVERTISER_VAR = "costToAdvertiser";
+
+   protected static final String OSPF_METRIC_TYPE_VAR = "ospfMetricType";
+
    /**
     *
     */
@@ -58,13 +68,17 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
    private final String _advertiser;
 
-   private final OspfMetricType _ospfMetricType;
+   private final int _costToAdvertiser;
 
-   public OspfExternalRoute(Prefix prefix, Ip nextHopIp, int admin, int metric,
-         OspfMetricType ospfMetricType, String advertiser) {
+   @JsonCreator
+   public OspfExternalRoute(@JsonProperty(NETWORK_VAR) Prefix prefix,
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin, int metric,
+         @JsonProperty(ADVERTISER_VAR) String advertiser,
+         @JsonProperty(COST_TO_ADVERTISER_VAR) int costToAdvertiser) {
       super(prefix, nextHopIp, admin, metric);
       _advertiser = advertiser;
-      _ospfMetricType = ospfMetricType;
+      _costToAdvertiser = costToAdvertiser;
    }
 
    @Override
@@ -90,14 +104,20 @@ public abstract class OspfExternalRoute extends OspfRoute {
       if (_metric != other._metric) {
          return false;
       }
-      if (_ospfMetricType != other._ospfMetricType) {
+      if (getOspfMetricType() != other.getOspfMetricType()) {
          return false;
       }
       return true;
    }
 
-   public String getAdvertiser() {
+   @JsonProperty(ADVERTISER_VAR)
+   public final String getAdvertiser() {
       return _advertiser;
+   }
+
+   @JsonProperty(COST_TO_ADVERTISER_VAR)
+   public int getCostToAdvertiser() {
+      return _costToAdvertiser;
    }
 
    @Override
@@ -105,18 +125,17 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return null;
    }
 
-   public OspfMetricType getOspfMetricType() {
-      return _ospfMetricType;
-   }
+   @JsonIgnore
+   public abstract OspfMetricType getOspfMetricType();
 
    @Override
    public RoutingProtocol getProtocol() {
-      return _ospfMetricType.toRoutingProtocol();
+      return getOspfMetricType().toRoutingProtocol();
    }
 
    @Override
    public int getTag() {
-      return -1;
+      return NO_TAG;
    }
 
    @Override
@@ -128,8 +147,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
             + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
       result = prime * result + _admin;
       result = prime * result + _metric;
-      result = prime * result
-            + ((_ospfMetricType == null) ? 0 : _ospfMetricType.ordinal());
+      result = prime * result + ((getOspfMetricType() == null) ? 0
+            : getOspfMetricType().ordinal());
       return result;
    }
 
@@ -137,8 +156,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
    @Override
    protected final String protocolRouteString() {
-      return " ospfMetricType:" + _ospfMetricType + " advertiser:" + _advertiser
-            + ospfExternalRouteString();
+      return " ospfMetricType:" + getOspfMetricType() + " advertiser:"
+            + _advertiser + ospfExternalRouteString();
    }
 
 }
