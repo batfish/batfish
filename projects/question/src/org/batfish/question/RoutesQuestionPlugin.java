@@ -30,9 +30,21 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
    public static class RoutesAnswerElement implements AnswerElement {
 
+      private static final String ADDED_VAR = "added";
+
+      private static final String AGAINST_ENVIRONMENT_VAR = "againstEnvironment";
+
+      private static final String DETAIL_ROUTES_BY_HOSTNAME_VAR = "detailRoutesByHostname";
+
       private static final String DETAIL_VAR = "detail";
 
+      private static final String REMOVED_VAR = "removed";
+
+      private static final String ROUTES_BY_HOSTNAME_VAR = "routesByHostname";
+
       private SortedSet<Route> _added;
+
+      private boolean _againstEnvironment;
 
       private boolean _detail;
 
@@ -129,7 +141,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       public RoutesAnswerElement(
             SortedMap<String, RoutesByVrf> environmentRoutesByHostname,
             Pattern nodeRegex, Set<RoutingProtocol> protocols) {
-         _routesByHostname = new TreeMap<>();
+         this();
          for (Entry<String, RoutesByVrf> e : environmentRoutesByHostname
                .entrySet()) {
             String hostname = e.getKey();
@@ -210,8 +222,14 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          }
       }
 
+      @JsonProperty(ADDED_VAR)
       public SortedSet<Route> getAdded() {
          return _added;
+      }
+
+      @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+      public boolean getAgainstEnvironment() {
+         return _againstEnvironment;
       }
 
       @JsonProperty(DETAIL_VAR)
@@ -219,20 +237,25 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          return _detail;
       }
 
+      @JsonProperty(DETAIL_ROUTES_BY_HOSTNAME_VAR)
       public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getDetailRoutesByHostname() {
          return _detailRoutesByHostname;
       }
 
+      @JsonProperty(REMOVED_VAR)
       public SortedSet<Route> getRemoved() {
          return _removed;
       }
 
+      @JsonProperty(ROUTES_BY_HOSTNAME_VAR)
       public SortedMap<String, RoutesByVrf> getRoutesByHostname() {
          return _routesByHostname;
       }
 
       @Override
       public String prettyPrint() {
+         String addedSymbol = _againstEnvironment ? "BAT " : "+";
+         String removedSymbol = _againstEnvironment ? "ENV " : "-";
          StringBuilder sb = new StringBuilder();
          if (!_detail) {
             for (Entry<String, RoutesByVrf> e : _routesByHostname.entrySet()) {
@@ -241,10 +264,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   for (Route route : routes) {
                      String diffSymbol = null;
                      if (_added.contains(route)) {
-                        diffSymbol = "+";
+                        diffSymbol = addedSymbol;
                      }
                      else if (_removed.contains(route)) {
-                        diffSymbol = "-";
+                        diffSymbol = removedSymbol;
                      }
                      String routeStr = route.prettyPrint(diffSymbol);
                      sb.append(routeStr);
@@ -263,10 +286,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   for (AbstractRoute route : routes) {
                      String diffSymbol = null;
                      if (_added.contains(route)) {
-                        diffSymbol = "+";
+                        diffSymbol = addedSymbol;
                      }
                      else if (_removed.contains(route)) {
-                        diffSymbol = "-";
+                        diffSymbol = removedSymbol;
                      }
                      String diffStr = diffSymbol != null ? diffSymbol + " "
                            : "";
@@ -280,8 +303,14 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          return sb.toString();
       }
 
+      @JsonProperty(ADDED_VAR)
       public void setAdded(SortedSet<Route> added) {
          _added = added;
+      }
+
+      @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+      public void setAgainstEnvironment(boolean againstEnvironment) {
+         _againstEnvironment = againstEnvironment;
       }
 
       @JsonProperty(DETAIL_VAR)
@@ -289,15 +318,18 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          _detail = detail;
       }
 
+      @JsonProperty(DETAIL_ROUTES_BY_HOSTNAME_VAR)
       public void setDetailRoutesByHostname(
             SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> detailRoutesByHostname) {
          _detailRoutesByHostname = detailRoutesByHostname;
       }
 
+      @JsonProperty(REMOVED_VAR)
       public void setRemoved(SortedSet<Route> removed) {
          _removed = removed;
       }
 
+      @JsonProperty(ROUTES_BY_HOSTNAME_VAR)
       public void setRoutesByHostname(
             SortedMap<String, RoutesByVrf> routesByHostname) {
          _routesByHostname = routesByHostname;
@@ -314,6 +346,18 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @Override
       public RoutesAnswerElement answer() {
          RoutesQuestion question = (RoutesQuestion) _question;
+         if (question._againstEnvironment && question._fromEnvironment) {
+            throw new BatfishException(
+                  String.format("%s and %s flags are mutually exclusive",
+                        RoutesQuestion.AGAINST_ENVIRONMENT_VAR,
+                        RoutesQuestion.FROM_ENVIRONMENT_VAR));
+         }
+         if (question._againstEnvironment && question._fromEnvironment) {
+            throw new BatfishException(String.format(
+                  "%s and %s flags together are currently unsupported",
+                  RoutesQuestion.AGAINST_ENVIRONMENT_VAR,
+                  RoutesQuestion.DETAIL_VAR));
+         }
          Pattern nodeRegex;
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -325,14 +369,15 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   e);
          }
          RoutesAnswerElement answerElement;
-         if (question._fromEnvironment) {
+         RoutesAnswerElement environmentAnswerElement = null;
+         RoutesAnswerElement batfishAnswerElement = null;
+         if (question._fromEnvironment || question._againstEnvironment) {
             SortedMap<String, RoutesByVrf> environmentRoutes = _batfish
                   .loadEnvironmentRoutingTables();
-            answerElement = new RoutesAnswerElement(environmentRoutes,
-                  nodeRegex, question._protocols);
-
+            environmentAnswerElement = new RoutesAnswerElement(
+                  environmentRoutes, nodeRegex, question._protocols);
          }
-         else {
+         if (!question._fromEnvironment) {
             SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname = _batfish
                   .getRoutes();
             Map<String, Configuration> configurations = _batfish
@@ -341,16 +386,34 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   .computeIpOwners(configurations, true);
             Map<Ip, String> ipOwnersSimple = _batfish
                   .computeIpOwnersSimple(ipOwners);
-            answerElement = new RoutesAnswerElement(routesByHostname,
+            batfishAnswerElement = new RoutesAnswerElement(routesByHostname,
                   ipOwnersSimple, nodeRegex, question._protocols,
                   question._prefixSpace);
          }
+         if (question._fromEnvironment) {
+            answerElement = environmentAnswerElement;
+         }
+         else if (!question._againstEnvironment) {
+            answerElement = batfishAnswerElement;
+         }
+         else {
+            answerElement = new RoutesAnswerElement(environmentAnswerElement,
+                  batfishAnswerElement);
+         }
+         answerElement.setAgainstEnvironment(question._againstEnvironment);
          answerElement.setDetail(question._detail);
          return answerElement;
       }
 
       @Override
       public AnswerElement answerDiff() {
+         RoutesQuestion question = (RoutesQuestion) _question;
+         if (question.getAgainstEnvironment()) {
+            throw new BatfishException("Differential " + _question.getName()
+                  + " routes question unsupported when '"
+                  + RoutesQuestion.AGAINST_ENVIRONMENT_VAR
+                  + "' is set, due to unclear semantics of result.");
+         }
          _batfish.pushBaseEnvironment();
          RoutesAnswerElement base = answer();
          _batfish.popEnvironment();
@@ -380,6 +443,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     */
    public static class RoutesQuestion extends Question {
 
+      private static final String AGAINST_ENVIRONMENT_VAR = "againstEnvironment";
+
       private static final String DETAIL_VAR = "detail";
 
       private static final String FROM_ENVIRONMENT_VAR = "fromEnvironment";
@@ -389,6 +454,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       private static final String PREFIX_SPACE_VAR = "prefixSpace";
 
       private static final String PROTOCOLS_VAR = "protocols";
+
+      private boolean _againstEnvironment;
 
       private boolean _detail;
 
@@ -404,6 +471,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          _nodeRegex = ".*";
          _prefixSpace = new PrefixSpace();
          _protocols = new TreeSet<>();
+      }
+
+      @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+      public boolean getAgainstEnvironment() {
+         return _againstEnvironment;
       }
 
       @Override
@@ -444,6 +516,11 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @Override
       public boolean getTraffic() {
          return false;
+      }
+
+      @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+      public void setAgainstEnvironment(boolean againstEnvironment) {
+         _againstEnvironment = againstEnvironment;
       }
 
       @JsonProperty(DETAIL_VAR)
