@@ -309,15 +309,13 @@ public class Client extends AbstractClient implements IClient {
     * a type matches the type required by {@code variables} for that specific
     * key.
     *
-    * @throws IllegalStateException if no content (end-of-input) found from
-    * value in {@code parameters}.
     * @throws BatfishException if the key in parameters does not exist in
     * variable, or the value type in {@code parameters} does not match the
     * type required by {@code variables} for that specific key.
     */
    static void validate(Map<String, String> parameters,
                         Map<String, Variable> variables)
-                        throws IllegalStateException, BatfishException {
+                        throws BatfishException {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       for (Entry<String, String> e : parameters.entrySet()) {
          String parameterName = e.getKey();
@@ -343,8 +341,8 @@ public class Client extends AbstractClient implements IClient {
                   validateType(value, variable);
                } catch (BatfishException e2) {
                   String errorMessage
-                        = String.format("Invalid value: %s for parameter: %s: ",
-                        parameterValue, parameterName);
+                        = String.format("Invalid value for parameter %s: %s",
+                        parameterName, parameterValue);
                   throw new BatfishException(errorMessage, e2);
                }
                variable.setValue(value);
@@ -373,107 +371,98 @@ public class Client extends AbstractClient implements IClient {
          case BOOLEAN:
             if (!value.isBoolean()) {
                throw new BatfishException(
-                     String.format("Value: %s, is not a valid Boolean " +
-                           "value.", value.toString()));
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
             }
             break;
          case COMPARATOR:
             if (!(COMPARATORS.contains(value.textValue()))) {
                throw new BatfishException(
-                     String.format("Value: %s, is not a valid comparator.",
-                           value.toString()));
+                     String.format("It is not a known %s. Valid options are:" +
+                           " %s", expectedType.getName(),
+                           COMPARATORS));
             }
             break;
          case INTEGER:
             if (!value.isInt()) {
                throw new BatfishException(
-                     String.format("Value: %s, is not a valid Integer.",
-                           value.toString()));
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
             }
             break;
          case IP:
-            if (!value.isTextual()) {
-               throw new BatfishException(
-                     "IP address was expected to be a String.");
-            }
             // TODO: Need to double check isInetAddress()
-            if (!InetAddresses.isInetAddress(value.textValue())) {
-               throw new BatfishException(
-                     String.format("Value: %s, is not a valid IP address.",
-                                 value.textValue()));
+            if (!(value.isTextual()
+                  && InetAddresses.isInetAddress(value.textValue()))) {
+               throw new BatfishException("It is not a valid IP address");
             }
             break;
          case IP_WILDCARD:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "IP_Wildcard was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
             // TODO: need ip_WildCard validation check
             break;
          case JAVA_REGEX:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "Java_Regex was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
             try {
                Pattern.compile(value.textValue());
             } catch (PatternSyntaxException e) {
-               throw new BatfishException(
-                     String.format("Value: %s, is not a valid Java " +
-                                 "regular expression: ", value.textValue()), e);
+               throw new BatfishException("It is not a valid Java regular " +
+                           "expression", e);
             }
             break;
          case JSON_PATH_REGEX:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "Java_Path_Regex was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
-            try {
-               validateJsonPathRegex(value.textValue());
-            } catch (BatfishException e) {
-               throw new BatfishException(
-                     String.format("Value: %s is not a valid JsonPathRegex: ",
-                                 value.textValue()), e);
-            }
+            validateJsonPathRegex(value.textValue());
             break;
          case PREFIX:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "Prefix was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
             // TODO: need prefix validation check
             break;
          case PREFIX_RANGE:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "Prefix_Range was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
             // TODO: need prefix range validation check
             break;
          case STRING:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "String was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
             break;
          case SUBRANGE:
             if (!value.isTextual()) {
                throw new BatfishException(
-                     "Subrange was expected to be a String.");
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
             // TODO: need prefix range validation check
             break;
          case JSON_PATH:
-            try {
-               validateJsonPath(value);
-            } catch (BatfishException e) {
-               throw new BatfishException(
-                     "The value is not a valid JsonPath: ", e);
-            }
+            validateJsonPath(value);
             break;
          default:
             throw new BatfishException(
-                  String.format("Unsupported parameter type: %s.",
+                  String.format("Unsupported parameter type: %s",
                         expectedType));
       }
    }
@@ -494,11 +483,15 @@ public class Client extends AbstractClient implements IClient {
          throws BatfishException {
       if (!jsonPathRegex.startsWith("/")) {
          throw new BatfishException(
-               "Expected a jsonPathRegex starts with /.");
+               String.format("A Batfish %s must start with %s",
+                              Variable.Type.JSON_PATH_REGEX.getName(),
+                              "\"/\""));
       }
       if (!(jsonPathRegex.endsWith("/") || jsonPathRegex.endsWith("/i"))) {
-         throw new BatfishException("Expected a jsonPathRegex ends in either / " +
-                           "or /i.");
+         throw new BatfishException(
+               String.format("A Batfish %s must end in either %s or %s",
+                     Variable.Type.JSON_PATH_REGEX.getName(),
+                     "\"/\"", "\"/i\""));
       }
       String innerPath = "";
       if (jsonPathRegex.lastIndexOf('/') > 0) {
@@ -508,8 +501,10 @@ public class Client extends AbstractClient implements IClient {
       try {
          Pattern.compile(innerPath);
       } catch (PatternSyntaxException e) {
-         throw new BatfishException("Invalid javaRegex at interior of " +
-               "jsonPathRegex: ", e);
+         throw new BatfishException(
+               String.format("Invalid %s at interior of %s",
+                     Variable.Type.JAVA_REGEX.getName(),
+                     Variable.Type.JSON_PATH_REGEX.getName()), e);
       }
    }
 
@@ -524,20 +519,25 @@ public class Client extends AbstractClient implements IClient {
    static void validateJsonPath(JsonNode jsonPath) throws BatfishException {
       if (!jsonPath.isContainerNode()) {
          throw new BatfishException(
-               String.format("Expected JsonPath to be a dictionary, " +
-               "but the input is a type of: %s.", jsonPath.getNodeType()));
+               String.format("%s is not a valid type for a Batfish %s. Type " +
+                           "expected: JSON dictionary", jsonPath.getNodeType(),
+                           Variable.Type.JSON_PATH.getName()));
       }
       if (jsonPath.get("path") == null) {
-         throw new BatfishException("Missing 'path' element of jsonPath.");
+         throw new BatfishException(
+               String.format("Missing 'path' element of %s",
+                     Variable.Type.JSON_PATH.getName()));
       }
       if (!jsonPath.get("path").isTextual()) {
          throw new BatfishException(
-               "Expected a String for variable type: path.");
+               String.format("'path' element of %s must be a JSON string",
+                     Variable.Type.JSON_PATH.getName()));
       }
       if (jsonPath.get("suffix") != null &&
             (!jsonPath.get("suffix").isBoolean())) {
-         throw new BatfishException("'suffix' element of jsonPath " +
-               "dictionary should be a boolean.");
+         throw new BatfishException(
+               String.format("'suffix' element of %s must be a JSON boolean",
+                     Variable.Type.JSON_PATH.getName()));
       }
    }
 
