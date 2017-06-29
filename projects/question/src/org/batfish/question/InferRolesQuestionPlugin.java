@@ -19,6 +19,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.Question;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.primitives.Chars;
 
 public class InferRolesQuestionPlugin extends QuestionPlugin {
 
@@ -56,8 +57,12 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
       private InferRolesAnswerElement _answerElement;
       
+      // the names of all nodes being analyzed
       private List<String> _nodes;
 
+      // the minimum size of a name set for it to be included in the role analysis
+      private static double THRESHOLD;
+      
       public InferRolesAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
       }
@@ -73,6 +78,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
                new CompareSameNameQuestionPlugin.CompareSameNameQuestion();
          inner.setNodeRegex(question.getNodeRegex());
          inner.setNamedStructTypes(question.getNamedStructTypes());
+         inner.setSingletons(true);
          CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer = 
                new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);
          CompareSameNameQuestionPlugin.CompareSameNameAnswerElement innerAnswer = 
@@ -81,6 +87,9 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
          SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets = 
                innerAnswer.getEquivalenceSets();
          _nodes = innerAnswer.getNodes();
+         
+         // TODO: Figure out the appropriate threshold, if any
+         THRESHOLD = 0.0; // 0.5 * _nodes.size() / question.getNumRoles();
          
          // use the CompareSameName info to create a data vector for each node
          Map<String,Set<String>> dataVectors = createDataVectors(equivalenceSets);
@@ -103,26 +112,32 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
       private <T> void addToDataVectors(NamedStructureEquivalenceSets<T> eSets, 
             Map<String, StringBuilder> vectors) {
-
-         // append a 1 to the vector of each node that contains a structure of this name and a 0 for all other nodes
-         
-         for(StringBuilder sb : vectors.values())
-            sb.append('0');
          
          for (Set<NamedStructureEquivalenceSet<T>> eSet : eSets.getSameNamedStructures().values()) {
+            // make sure the number of nodes with this name is large enough
+            int count = 0;
+            for(NamedStructureEquivalenceSet<T> eClass : eSet)
+               count += eClass.getNodes().size();
+            if (count < THRESHOLD)
+               continue;
+            for(StringBuilder sb : vectors.values())
+               sb.append('0');
+            char className = 'a';
             for (NamedStructureEquivalenceSet<T> eClass : eSet) {
                for (String node : eClass.getNodes()) {
                   StringBuilder sb = vectors.get(node);
-                  sb.setCharAt(sb.length() - 1, '1');
+                  // TODO: Should we partition among equivalence classes, or just care about
+                  // whether the name exists or not?  
+//                  sb.setCharAt(sb.length() - 1, '1');
+                  sb.setCharAt(sb.length() - 1, className);
                }
+               className++;
             }
          }
       }
       
       private Map<String,Set<String>> createDataVectors(SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
-         
-         // TODO: Currently each data vector is a String of 0 and 1 characters; consider replacing with a BitSet for better efficiency.
-         
+              
          Map<String, StringBuilder> vectors = new TreeMap<>();
          for(String node : _nodes) {
             vectors.put(node, new StringBuilder());
@@ -217,7 +232,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
          for (int c = 1; c < k; c++) {
             // for each vector, find its minimal distance to any already-chosen center, and choose the vector with the maximal such distance
-            int max = 0;
+            int max = -1;
             int index = -1;
             for(int i = 0; i < numVecs; i++) {
                int minDist = minHammingDistance(vecArray[i], centers, c).getSecond();

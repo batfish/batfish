@@ -19,11 +19,16 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.Question;
@@ -145,12 +150,17 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          add(IkeGateway.class, c -> c.getIkeGateways());
          add(IkePolicy.class, c -> c.getIkePolicies());
          add(IkeProposal.class, c -> c.getIkeProposals());
+         add(Interface.class, c -> c.getInterfaces());
+         add(Ip6AccessList.class, c -> c.getIp6AccessLists());
          add(IpAccessList.class, c -> c.getIpAccessLists());
          add(IpsecPolicy.class, c -> c.getIpsecPolicies());
          add(IpsecProposal.class, c -> c.getIpsecProposals());
          add(IpsecVpn.class, c -> c.getIpsecVpns());
+         add(Route6FilterList.class, c -> c.getRoute6FilterLists());
          add(RouteFilterList.class, c -> c.getRouteFilterLists());
          add(RoutingPolicy.class, c -> c.getRoutingPolicies());
+         add(Vrf.class, c -> c.getVrfs());
+         add(Zone.class, c -> c.getZones());
 
          return _answerElement;
       }
