@@ -1,6 +1,7 @@
 package org.batfish.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Question;
@@ -14,14 +15,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.STRING;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
 /**
  * Tests for {@link org.batfish.client.Client}.
  */
 public class ClientTest {
 
-   BatfishObjectMapper mapper;
+   private BatfishObjectMapper mapper;
 
    @Rule
    public ExpectedException thrown = ExpectedException.none();
@@ -53,7 +57,7 @@ public class ClientTest {
 
    @Test
    public void testPathRegexInvalidEnd() {
-      String invalidEnd= "/pathRegex";
+      String invalidEnd = "/pathRegex";
       thrown.expect(BatfishException.class);
       thrown.expectMessage(equalTo(
             String.format("A Batfish %s must end in either \"/\" or \"/i\"",
@@ -90,8 +94,7 @@ public class ClientTest {
       JsonNode emptyPath = mapper.readTree("\"\"");
       thrown.expect(BatfishException.class);
       thrown.expectMessage(equalTo(
-            String.format("%s is not a valid type for a Batfish %s. " +
-                  "Type expected: JSON dictionary", emptyPath.getNodeType(),
+            String.format("Expecting a JSON dictionary for a Batfish %s",
                   Question.InstanceData.Variable.Type.JSON_PATH.getName())));
       Client.validateJsonPath(emptyPath);
    }
@@ -102,8 +105,7 @@ public class ClientTest {
             = mapper.readTree("\"variable\" : \"I am variable\"");
       thrown.expect(BatfishException.class);
       thrown.expectMessage(equalTo(
-            String.format("%s is not a valid type for a Batfish %s. Type " +
-                        "expected: JSON dictionary", invalidPath.getNodeType(),
+            String.format("Expecting a JSON dictionary for a Batfish %s",
                   Question.InstanceData.Variable.Type.JSON_PATH.getName())));
       Client.validateJsonPath(invalidPath);
    }
@@ -155,9 +157,53 @@ public class ClientTest {
       Client.validateJsonPath(mapper.readTree(validJsonPath));
    }
 
+   // Tests for parseParaValue method
+   @Test
+   public void testParseInvalidJsonContent() {
+      String invalidJsonContent = "I am not valid";
+      thrown.expect(BatfishException.class);
+      thrown.expectMessage(equalTo(
+            String.format("Variable value \"%s\" is not valid JSON",
+            invalidJsonContent)));
+      Client.parseParaValue("content", invalidJsonContent);
+   }
+
+   @Test
+   public void testParseValidJsonContent() {
+      String validJsonContent = "true";
+      JsonNode node = Client.parseParaValue("boolean", validJsonContent);
+      assertThat(node.getNodeType(), is(JsonNodeType.BOOLEAN));
+      assertThat(node.asBoolean(), is(equalTo(true)));
+   }
+
+   // Tests for validateNde method
+   @Test
+   public void testValidateInvalidNode() throws IOException {
+      String parameterName = "boolean";
+      JsonNode invalidNode = mapper.readTree("\"I am string\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
+      thrown.expect(BatfishException.class);
+      thrown.expectMessage(equalTo(
+            String.format("Invalid value for parameter %s: %s",
+                  parameterName, invalidNode)));
+      Client.validateNode(invalidNode, variable, parameterName);
+   }
+
+   @Test
+   public void testValidateValidNode() throws IOException {
+      String parameterName = "boolean";
+      JsonNode invalidNode = mapper.readTree("false");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
+      Client.validateNode(invalidNode, variable, parameterName);
+   }
+
    // Tests for validateType method
-   public void validateTypeWithInvalidInput(String input, String expectedMessage,
-                                 Question.InstanceData.Variable.Type type)
+   private void validateTypeWithInvalidInput(String input, String
+         expectedMessage, Question.InstanceData.Variable.Type type)
                                  throws IOException {
       JsonNode node = mapper.readTree(input);
       Question.InstanceData.Variable variable
@@ -173,8 +219,8 @@ public class ClientTest {
       String input = "10";
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.STRING;
-      String expectedMessage =
-            String.format("A Batfish %s must be a JSON string",
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string",
                   Question.InstanceData.Variable.Type.STRING.getName());
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
@@ -184,8 +230,8 @@ public class ClientTest {
       String input = "\"true\"";
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.BOOLEAN;
-      String expectedMessage =
-            String.format("It is not a valid JSON %s value",
+      String expectedMessage = String
+            .format("It is not a valid JSON %s value",
                   Question.InstanceData.Variable.Type.BOOLEAN.getName());
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
@@ -202,7 +248,6 @@ public class ClientTest {
    @Test
    public void testInvalidComparatorValue() throws IOException {
       String input = "\"=>\"";
-      JsonNode inputNode = mapper.readTree(input);
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.COMPARATOR;
       String expectedMessage = "It is not a known comparator. Valid options " +
@@ -224,8 +269,8 @@ public class ClientTest {
       String input = "1.5";
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.INTEGER;
-      String expectedMessage =
-            String.format("It is not a valid JSON %s value",
+      String expectedMessage = String
+            .format("It is not a valid JSON %s value",
                   Question.InstanceData.Variable.Type.INTEGER.getName());
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
@@ -242,9 +287,7 @@ public class ClientTest {
    @Test
    public void testInvalidIPValue() throws IOException {
       String input = "\"0.0.0\"";
-      JsonNode inputNode = mapper.readTree(input);
-      Question.InstanceData.Variable.Type expectedType
-            = IP;
+      Question.InstanceData.Variable.Type expectedType = IP;
       String expectedMessage = "It is not a valid IP address";
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
@@ -261,10 +304,9 @@ public class ClientTest {
    @Test
    public void testInvalidJavaRegexValue() throws IOException {
       String invalidJavaRegex = "\"...{\\\\Q8\\\\E}\"";
-      JsonNode inputNode = mapper.readTree(invalidJavaRegex);
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.JAVA_REGEX;
-      String expectedMessage ="It is not a valid Java regular expression";
+      String expectedMessage = "It is not a valid Java regular expression";
       validateTypeWithInvalidInput(invalidJavaRegex, expectedMessage,
             expectedType);
    }
@@ -283,16 +325,16 @@ public class ClientTest {
       String input = "{\"variable\" : \"I am variable\"}";
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.JSON_PATH;
-      String expectedMessage =
-            String.format("Missing 'path' element of %s",
+      String expectedMessage = String
+            .format("Missing 'path' element of %s",
                   Question.InstanceData.Variable.Type.JSON_PATH.getName());
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
 
    @Test
    public void testValidJsonPathValue() throws IOException {
-      JsonNode JsonPathNode =
-            mapper.readTree("{\"path\" : \"I am path.\", \"suffix\" : true}");
+      JsonNode JsonPathNode = mapper
+            .readTree("{\"path\" : \"I am path.\", \"suffix\" : true}");
       Question.InstanceData.Variable variable
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.JSON_PATH);
@@ -304,16 +346,15 @@ public class ClientTest {
       String input = "\"/pathRegex\"";
       Question.InstanceData.Variable.Type expectedType
             = Question.InstanceData.Variable.Type.JSON_PATH_REGEX;
-      String expectedMessage =
-            String.format("A Batfish %s must end in either \"/\" or \"/i\"",
+      String expectedMessage = String
+            .format("A Batfish %s must end in either \"/\" or \"/i\"",
                   Question.InstanceData.Variable.Type.JSON_PATH_REGEX.getName());
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
 
    @Test
    public void testValidJsonPathRegexValue() throws IOException {
-      JsonNode JsonPathRegexNode =
-            mapper.readTree("\"/.*/\"");
+      JsonNode JsonPathRegexNode = mapper.readTree("\"/.*/\"");
       Question.InstanceData.Variable variable
             = new Question.InstanceData.Variable();
       variable.setType(Question.InstanceData.Variable.Type.JSON_PATH_REGEX);
@@ -322,25 +363,24 @@ public class ClientTest {
 
    @Test
    public void testUnsatisfiedMinLengthValue() throws IOException {
-      String invalidIP = "\"0.0.0\"";
+      String shortString = "\"short\"";
       Question.InstanceData.Variable variable
             = new Question.InstanceData.Variable();
-      variable.setType(IP);
       variable.setMinLength(8);
       thrown.expect(BatfishException.class);
       thrown.expectMessage(equalTo(
             "Must be at least 8 characters in length"));
-      Client.validateType(mapper.readTree(invalidIP), variable);
+      Client.validateType(mapper.readTree(shortString), variable);
    }
 
    @Test
    public void testSatisfiedMinLengthValue() throws IOException {
-      String validIP = "\"192.168.1.1\"";
+      String longString = "\"long enough\"";
       Question.InstanceData.Variable variable
             = new Question.InstanceData.Variable();
-      variable.setType(IP);
       variable.setMinLength(8);
-      Client.validateType(mapper.readTree(validIP), variable);
+      variable.setType(STRING);
+      Client.validateType(mapper.readTree(longString), variable);
    }
 
    // Tests for validate method
@@ -393,9 +433,9 @@ public class ClientTest {
       actionsVariable.setMinElements(5);
       variables.put("actions", actionsVariable);
       thrown.expect(BatfishException.class);
-      String errorMessage =
-            String.format("Invalid value for parameter actions: %s. Input " +
-            "must be a JSON array contains at least 5 elements", jsonArray);
+      String errorMessage = String
+            .format("Invalid value for parameter actions: %s. Expecting a " +
+                  "JSON array of at least 5 elements", jsonArray);
       thrown.expectMessage(errorMessage);
       Client.validateAndSet(parameters, variables);
    }
