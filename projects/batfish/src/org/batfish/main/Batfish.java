@@ -1158,8 +1158,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
-      applyBaseDir(_settings.getBaseTestrigSettings(),
-            _settings.getContainerDir(), _settings.getTestrig(), newEnvName,
+      applyBaseDir(_testrigSettings,
+            _settings.getContainerDir(), _testrigSettings.getName(), newEnvName,
             _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
