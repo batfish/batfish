@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 /**
@@ -243,7 +244,7 @@ public class ClientTest {
       String input = "\"0.0.0\"";
       JsonNode inputNode = mapper.readTree(input);
       Question.InstanceData.Variable.Type expectedType
-            = Question.InstanceData.Variable.Type.IP;
+            = IP;
       String expectedMessage = "It is not a valid IP address";
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
@@ -253,7 +254,7 @@ public class ClientTest {
       JsonNode IPNode = mapper.readTree("\"0.0.0.0\"");
       Question.InstanceData.Variable variable
             = new Question.InstanceData.Variable();
-      variable.setType(Question.InstanceData.Variable.Type.IP);
+      variable.setType(IP);
       Client.validateType(IPNode, variable);
    }
 
@@ -319,6 +320,29 @@ public class ClientTest {
       Client.validateType(JsonPathRegexNode, variable);
    }
 
+   @Test
+   public void testUnsatisfiedMinLengthValue() throws IOException {
+      String invalidIP = "\"0.0.0\"";
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(IP);
+      variable.setMinLength(8);
+      thrown.expect(BatfishException.class);
+      thrown.expectMessage(equalTo(
+            "Must be at least 8 characters in length"));
+      Client.validateType(mapper.readTree(invalidIP), variable);
+   }
+
+   @Test
+   public void testSatisfiedMinLengthValue() throws IOException {
+      String validIP = "\"192.168.1.1\"";
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(IP);
+      variable.setMinLength(8);
+      Client.validateType(mapper.readTree(validIP), variable);
+   }
+
    // Tests for validate method
    @Test
    public void testValidateWithInvalidInput() {
@@ -337,7 +361,7 @@ public class ClientTest {
       thrown.expect(BatfishException.class);
       String errorMessage = "Invalid value for parameter boolean: \"true\"";
       thrown.expectMessage(errorMessage);
-      Client.validate(parameters, variables);
+      Client.validateAndSet(parameters, variables);
    }
 
    @Test
@@ -354,7 +378,84 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       booleanVariable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
       variables.put("boolean", booleanVariable);
-      Client.validate(parameters, variables);
+      Client.validateAndSet(parameters, variables);
+   }
+
+   @Test
+   public void testUnsatisfiedMinElementInput() {
+      Map<String, String> parameters = new HashMap<>();
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      String jsonArray = "[\"action1\", \"action2\"]";
+      parameters.put("actions", jsonArray);
+      Question.InstanceData.Variable actionsVariable
+            = new Question.InstanceData.Variable();
+      actionsVariable.setType(Question.InstanceData.Variable.Type.STRING);
+      actionsVariable.setMinElements(5);
+      variables.put("actions", actionsVariable);
+      thrown.expect(BatfishException.class);
+      String errorMessage =
+            String.format("Invalid value for parameter actions: %s. Input " +
+            "must be a JSON array contains at least 5 elements", jsonArray);
+      thrown.expectMessage(errorMessage);
+      Client.validateAndSet(parameters, variables);
+   }
+
+   @Test
+   public void testSatisfiedMinElementInput() {
+      Map<String, String> parameters = new HashMap<>();
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      String jsonArray = "[\"action1\", \"action2\", \"action3\", " +
+            "\"action4\", \"action5\", \"action6\"]";
+      parameters.put("actions", jsonArray);
+      Question.InstanceData.Variable actionsVariable
+            = new Question.InstanceData.Variable();
+      actionsVariable.setType(Question.InstanceData.Variable.Type.STRING);
+      actionsVariable.setMinElements(5);
+      variables.put("actions", actionsVariable);
+      Client.validateAndSet(parameters, variables);
+   }
+
+   // Tests for checkRequiredPara method
+   @Test
+   public void testMissingNonOptionalParameterNoValue() {
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      Question.InstanceData.Variable integerVariable
+            = new Question.InstanceData.Variable();
+      variables.put("integer", integerVariable);
+      thrown.expect(BatfishException.class);
+      String errorMessage = "Missing parameter: integer";
+      thrown.expectMessage(errorMessage);
+      Client.checkVariableState(variables);
+   }
+
+   @Test
+   public void testMissingOptionalParameterNoValue() {
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      Question.InstanceData.Variable integerVariable
+            = new Question.InstanceData.Variable();
+      integerVariable.setOptional(true);
+      Client.checkVariableState(variables);
+   }
+
+   @Test
+   public void testProvideNonOptionalParameterWithValue() throws IOException {
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      Question.InstanceData.Variable integerVariable
+            = new Question.InstanceData.Variable();
+      integerVariable.setValue(mapper.readTree("3"));
+      variables.put("integer", integerVariable);
+      Client.checkVariableState(variables);
+   }
+
+   @Test
+   public void testProvideOptionalParameterWithValue() throws IOException {
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      Question.InstanceData.Variable integerVariable
+            = new Question.InstanceData.Variable();
+      integerVariable.setOptional(true);
+      integerVariable.setValue(mapper.readTree("3"));
+      variables.put("integer", integerVariable);
+      Client.checkVariableState(variables);
    }
 
 }
