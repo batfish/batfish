@@ -3331,20 +3331,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          JSONObject jobj = new JSONObject(rawQuestionText);
          // first preprocess inner questions
          if (jobj.has(Question.INNER_QUESTION_VAR)) {
-            JSONObject innerQuestion = jobj
-                  .getJSONObject(Question.INNER_QUESTION_VAR);
-            String innerQuestionStr = innerQuestion.toString();
-            String preprocessedInnerQuestionStr = preprocessQuestion(
-                  innerQuestionStr);
+            String innerQuestionStr = jobj.getString(Question.INNER_QUESTION_VAR);
+            String preprocessedInnerQuestionStr =
+                  preprocessQuestion(innerQuestionStr);
             JSONObject preprocessedInnerQuestion = new JSONObject(
                   preprocessedInnerQuestionStr);
             jobj.put(Question.INNER_QUESTION_VAR, preprocessedInnerQuestion);
          }
          if (jobj.has(Question.INSTANCE_VAR)
                && !jobj.isNull(Question.INSTANCE_VAR)) {
-            JSONObject instanceDataObj = jobj
-                  .getJSONObject(Question.INSTANCE_VAR);
-            String instanceDataStr = instanceDataObj.toString();
+            String instanceDataStr = jobj.getString(Question.INSTANCE_VAR);
             BatfishObjectMapper mapper = new BatfishObjectMapper();
             InstanceData instanceData = mapper.<InstanceData> readValue(
                   instanceDataStr, new TypeReference<InstanceData>() {
@@ -3354,14 +3350,41 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                String varName = e.getKey();
                Variable variable = e.getValue();
                JsonNode value = variable.getValue();
-               boolean optional = variable.getOptional();
-               if (value == null && optional) {
-                  /*
-                   * For now we assume optional values are top-level variables
-                   * and single-line. Otherwise it's not really clear what to
-                   * do.
-                   */
-                  jobj.remove(varName);
+               if (value == null) {
+                  if (variable.getOptional()) {
+                     /*
+                      * For now we assume optional values are top-level
+                      * variables and single-line. Otherwise it's not really
+                      * clear what to do.
+                      */
+                     jobj.remove(varName);
+                  } else {
+                     // What to do here? For now, do nothing and assume that
+                     // later validation will handle it.
+                  }
+                  continue;
+               }
+               if (variable.getType() == Variable.Type.QUESTION) {
+                  if (variable.getMinElements() != null) {
+                     if (!value.isArray()) {
+                        throw new IllegalArgumentException(
+                              "Expecting JSON array for array type");
+                     }
+                     JSONArray arr = new JSONArray();
+                     for (int i = 0; i < value.size(); i++) {
+                        String valueJsonString = new ObjectMapper()
+                              .writeValueAsString(value.get(i));
+                        arr.put(i,
+                              new JSONObject(
+                                    preprocessQuestion(valueJsonString)));
+                     }
+                     jobj.put(varName, arr);
+                  } else {
+                     String valueJsonString = new ObjectMapper()
+                           .writeValueAsString(value);
+                     jobj.put(varName,
+                           new JSONObject(preprocessQuestion(valueJsonString)));
+                  }
                }
             }
             String questionText = jobj.toString();
@@ -3407,7 +3430,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       catch (JSONException | IOException e) {
          throw new BatfishException(
-               "Could not convert raw question text to JSON", e);
+               String.format(
+                     "Could not convert raw question text [%s] to JSON",
+                     rawQuestionText),
+               e);
       }
    }
 
