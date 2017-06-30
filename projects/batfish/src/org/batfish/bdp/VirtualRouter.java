@@ -644,6 +644,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                      outputRouteBuilder
                            .setNetwork(potentialExport.getNetwork());
                      outputRouteBuilder.setCostToAdvertiser(0);
+                     outputRouteBuilder.setAdvertiser(_c.getHostname());
                      OspfExternalRoute outputRoute = outputRouteBuilder.build();
                      outputRoute.setNonRouting(true);
                      // shouldn't be null
@@ -1181,10 +1182,13 @@ public class VirtualRouter extends ComparableStructure<String> {
                      .getRoutes()) {
                   int newMetric = neighborRoute.getMetric()
                         + connectingInterfaceCost;
+                  int newCostToAdvertiser = neighborRoute.getCostToAdvertiser()
+                        + connectingInterfaceCost;
                   OspfExternalType1Route newRoute = new OspfExternalType1Route(
                         neighborRoute.getNetwork(),
                         neighborInterface.getPrefix().getAddress(), admin,
-                        newMetric, neighborRoute.getAdvertiser());
+                        newMetric, newCostToAdvertiser,
+                        neighborRoute.getAdvertiser());
                   if (_ospfExternalType1StagingRib.mergeRoute(newRoute)) {
                      changed = true;
                   }

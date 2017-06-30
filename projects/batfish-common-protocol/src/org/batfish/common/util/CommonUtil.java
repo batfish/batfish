@@ -18,8 +18,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -163,6 +165,27 @@ public class CommonUtil {
       long low = Long.parseLong(parts[1]);
       long result = low + (high << 16);
       return result;
+   }
+
+   public static <T extends Comparable<T>> int compareCollection(
+         Collection<T> lhs, Collection<T> rhs) {
+      Iterator<T> l = lhs.iterator();
+      Iterator<T> r = rhs.iterator();
+      while (l.hasNext()) {
+         if (!r.hasNext()) {
+            return 1;
+         }
+         T lVal = l.next();
+         T rVal = r.next();
+         int ret = lVal.compareTo(rVal);
+         if (ret != 0) {
+            return ret;
+         }
+      }
+      if (r.hasNext()) {
+         return -1;
+      }
+      return 0;
    }
 
    public static void createDirectories(Path path) {

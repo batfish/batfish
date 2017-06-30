@@ -863,13 +863,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RouteFilterList rfList = new RouteFilterList(rflName);
       rfList.addLine(new org.batfish.datamodel.RouteFilterLine(
             LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32)));
-      org.batfish.datamodel.GeneratedRoute newRoute = new org.batfish.datamodel.GeneratedRoute(
-            prefix, administrativeCost);
+      org.batfish.datamodel.GeneratedRoute.Builder newRoute = new org.batfish.datamodel.GeneratedRoute.Builder();
+      newRoute.setNetwork(prefix);
+      newRoute.setAdmin(administrativeCost);
       newRoute.setDiscard(true);
       newRoute.setGenerationPolicy(policyName);
       _c.getRoutingPolicies().put(policyName, routingPolicy);
       _c.getRouteFilterLists().put(rflName, rfList);
-      return newRoute;
+      return newRoute.build();
    }
 
    private org.batfish.datamodel.CommunityList toCommunityList(
@@ -930,11 +931,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
             }
          });
       }
-      org.batfish.datamodel.GeneratedRoute newRoute = new org.batfish.datamodel.GeneratedRoute(
-            prefix, administrativeCost);
+      org.batfish.datamodel.GeneratedRoute.Builder newRoute = new org.batfish.datamodel.GeneratedRoute.Builder();
+      newRoute.setNetwork(prefix);
+      newRoute.setAdmin(administrativeCost);
       newRoute.setMetric(metric);
       newRoute.setGenerationPolicy(generationPolicyName);
-      return newRoute;
+      return newRoute.build();
    }
 
    private org.batfish.datamodel.IkeGateway toIkeGateway(

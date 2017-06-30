@@ -109,9 +109,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    public static final String VENDOR_NAME = "cisco";
 
-   private static final int VLAN_NORMAL_MIN_CISCO = 2;
-
    private static final int VLAN_NORMAL_MAX_CISCO = 1005;
+
+   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
    private static String getRouteMapClausePolicyName(RouteMap map,
          int continueTarget) {
@@ -1144,11 +1144,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                .add(Statements.ReturnTrue.toStaticStatement());
          c.getRoutingPolicies().put(generationPolicyName,
                currentGeneratedRoutePolicy);
-         GeneratedRoute gr = new GeneratedRoute(prefix,
-               CISCO_AGGREGATE_ROUTE_ADMIN_COST);
+         GeneratedRoute.Builder gr = new GeneratedRoute.Builder();
+         gr.setNetwork(prefix);
+         gr.setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST);
          gr.setGenerationPolicy(generationPolicyName);
          gr.setDiscard(true);
-         v.getGeneratedRoutes().add(gr);
 
          // set attribute map for aggregate network
          String attributeMapName = aggNet.getAttributeMap();
@@ -1177,6 +1177,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      attributeMapLine);
             }
          }
+         v.getGeneratedRoutes().add(gr.build());
          BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior,
                OriginType.IGP);
          applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
@@ -1591,8 +1592,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
          }
 
          // set up default export policy for this peer group
-         GeneratedRoute defaultRoute = null;
-         GeneratedRoute6 defaultRoute6 = null;
+         GeneratedRoute.Builder defaultRoute = null;
+         GeneratedRoute6.Builder defaultRoute6 = null;
          if (lpg.getDefaultOriginate()) {
             if (ipv4) {
                localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
@@ -1600,10 +1601,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
             else {
                localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute6);
             }
-            defaultRoute = new GeneratedRoute(Prefix.ZERO,
-                  MAX_ADMINISTRATIVE_COST);
-            defaultRoute6 = new GeneratedRoute6(Prefix6.ZERO,
-                  MAX_ADMINISTRATIVE_COST);
+            defaultRoute = new GeneratedRoute.Builder();
+            defaultRoute.setNetwork(Prefix.ZERO);
+            defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
+            defaultRoute6 = new GeneratedRoute6.Builder();
+            defaultRoute6.setNetwork(Prefix6.ZERO);
+            defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);
 
             String defaultOriginateMapName = lpg.getDefaultOriginateMap();
             if (defaultOriginateMapName != null) { // originate contingent on
@@ -1772,7 +1775,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newNeighbor.setDescription(description);
             newNeighbor.setEbgpMultihop(ebgpMultihop);
             if (defaultRoute != null) {
-               newNeighbor.getGeneratedRoutes().add(defaultRoute);
+               newNeighbor.getGeneratedRoutes().add(defaultRoute.build());
             }
             newNeighbor.setGroup(lpg.getGroupName());
             if (importPolicy != null) {
@@ -2521,18 +2524,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
                      .get(defaultOriginateMapName);
                generationRouteMap.getReferers().put(proc,
                      "ospf default-originate route-map");
-               GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
-                     MAX_ADMINISTRATIVE_COST);
+               GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+               route.setNetwork(Prefix.ZERO);
+               route.setAdmin(MAX_ADMINISTRATIVE_COST);
                route.setGenerationPolicy(defaultOriginateMapName);
-               newProcess.getGeneratedRoutes().add(route);
+               newProcess.getGeneratedRoutes().add(route.build());
             }
          }
          else if (proc.getDefaultInformationOriginateAlways()) {
             useAggregateDefaultOnly = true;
             // add generated aggregate with no precondition
-            GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
-                  MAX_ADMINISTRATIVE_COST);
-            newProcess.getGeneratedRoutes().add(route);
+            GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+            route.setNetwork(Prefix.ZERO);
+            route.setAdmin(MAX_ADMINISTRATIVE_COST);
+            newProcess.getGeneratedRoutes().add(route.build());
          }
          else {
             // do not generate an aggregate default route;

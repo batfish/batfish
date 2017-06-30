@@ -321,14 +321,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
    }
 
    protected void initIpOwners(Map<String, Configuration> configurations,
-         Map<Ip, Set<String>> ipOwners) {
+         Map<Ip, Set<String>> ipOwners, Map<Ip, String> ipOwnersSimple) {
       setIpOwners(ipOwners);
-      Map<Ip, String> ipOwnersSimple = new HashMap<>();
-      ipOwners.forEach((ip, owners) -> {
-         String hostname = owners.size() == 1 ? owners.iterator().next()
-               : Route.AMBIGUOUS_NEXT_HOP;
-         ipOwnersSimple.put(ip, hostname);
-      });
       setIpOwnersSimple(ipOwnersSimple);
    }
 
