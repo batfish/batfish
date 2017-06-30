@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.Question;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,6 +20,7 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX_RANGE;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PROTOCOL;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.STRING;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.SUBRANGE;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -518,6 +520,36 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(SUBRANGE);
       Client.validateType(subRangeNode, variable);
+   }
+
+   @Test
+   public void testNonStringProtocolValue() throws IOException {
+      String input = "10";
+      Question.InstanceData.Variable.Type expectedType = PROTOCOL;
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string",
+                  expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testInvalidProtocolValue() throws IOException {
+      String input = "\"missing\"";
+      Question.InstanceData.Variable.Type expectedType = PROTOCOL;
+      String expectedMessage = String
+            .format("No %s with name: '%s'", Protocol.class.getSimpleName(),
+                  mapper.readTree(input).textValue());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidProtocolValue() throws IOException {
+      JsonNode prefixRangeNode = mapper
+            .readTree("\"tcp\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(PROTOCOL);
+      Client.validateType(prefixRangeNode, variable);
    }
 
    @Test
