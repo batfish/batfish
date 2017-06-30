@@ -63,6 +63,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
@@ -550,7 +551,7 @@ public class Client extends AbstractClient implements IClient {
                      String.format("A Batfish %s must be a JSON string",
                            expectedType.getName()));
             }
-            // TODO: need protocol validation check
+            Protocol.fromString(value.textValue());
             break;
          case JSON_PATH:
             validateJsonPath(value);
