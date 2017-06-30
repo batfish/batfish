@@ -44,6 +44,7 @@ public abstract class Question implements IQuestion {
             PREFIX("prefix", true),
             PREFIX_RANGE("prefixRange", true),
             PROTOCOL("protocol", true),
+            QUESTION("question", true),
             STRING("string", true),
             SUBRANGE("subrange", true);
 
