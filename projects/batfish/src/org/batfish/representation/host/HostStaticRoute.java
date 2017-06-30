@@ -73,8 +73,7 @@ public class HostStaticRoute implements Serializable {
    public StaticRoute toStaticRoute() {
       int tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
       StaticRoute sr = new StaticRoute(_prefix, _nextHopIp, _nextHopInterface,
-            tag);
-      sr.setAdministrativeCost(_administrativeCost);
+            _administrativeCost, tag);
       return sr;
    }
 

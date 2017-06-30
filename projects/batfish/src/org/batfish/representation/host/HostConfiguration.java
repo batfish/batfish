@@ -226,9 +226,8 @@ public class HostConfiguration extends VendorConfiguration {
          Ip gateway = iface.getGateway();
          if (gateway != null) {
             StaticRoute sr = new StaticRoute(Prefix.ZERO, gateway,
-                  iface.getName(), AbstractRoute.NO_TAG);
-            sr.setAdministrativeCost(
-                  HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
+                  iface.getName(), HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST,
+                  AbstractRoute.NO_TAG);
             staticRoutes.add(sr);
             break;
          }
@@ -238,8 +237,8 @@ public class HostConfiguration extends VendorConfiguration {
          String ifaceName = _c.getInterfaces().values().iterator().next()
                .getName();
          StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
+               HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST,
                AbstractRoute.NO_TAG);
-         sr.setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
          _c.getDefaultVrf().getStaticRoutes().add(sr);
       }
       return _c;

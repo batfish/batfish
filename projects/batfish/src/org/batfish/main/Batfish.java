@@ -62,6 +62,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
@@ -115,7 +116,6 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.EdgeSet;
-import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
@@ -125,7 +125,6 @@ import org.batfish.datamodel.collections.NodeRoleMap;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
@@ -346,6 +345,35 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          throw new CleanBatfishException(
                "Must supply argument to -" + BfConsts.ARG_TESTRIG);
       }
+   }
+
+   /**
+    * Returns a sorted list of {@link Path paths} contains all files under the
+    * directory indicated by {@code configsPath}. Directories under
+    * {@code configsPath} are recursively expanded but not included in the
+    * returned list.
+    *
+    * <p>
+    * Temporary files(files start with {@code .} are omitted from the returned
+    * list.
+    * </p>
+    *
+    * <p>
+    * This method follows all symbolic links.
+    * </p>
+    */
+   static List<Path> listAllFiles(Path configsPath) {
+      List<Path> configFilePaths;
+      try {
+         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
+               .filter(path -> !path.getFileName().toString().startsWith(".")
+                     && Files.isRegularFile(path))
+               .sorted().collect(Collectors.toList());
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to walk path: " + configsPath, e);
+      }
+      return configFilePaths;
    }
 
    public static void logWarnings(BatfishLogger logger, Warnings warnings) {
@@ -994,6 +1022,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return ipOwners;
    }
 
+   @Override
+   public Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
+      Map<Ip, String> ipOwnersSimple = new HashMap<>();
+      ipOwners.forEach((ip, owners) -> {
+         String hostname = owners.size() == 1 ? owners.iterator().next()
+               : Route.AMBIGUOUS_NEXT_HOP;
+         ipOwnersSimple.put(ip, hostname);
+      });
+      return ipOwnersSimple;
+   }
+
    public <Key, Result> void computeNodFirstUnsatOutput(
          List<NodFirstUnsatJob<Key, Result>> jobs, Map<Key, Result> output) {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
@@ -1119,8 +1158,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
-      applyBaseDir(_settings.getBaseTestrigSettings(),
-            _settings.getContainerDir(), _settings.getTestrig(), newEnvName,
+      applyBaseDir(_testrigSettings,
+            _settings.getContainerDir(), _testrigSettings.getName(), newEnvName,
             _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -1331,7 +1370,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          // vlanMemberCounts:
          for (Interface iface : c.getInterfaces().values()) {
             if ((iface.getInterfaceType() == InterfaceType.VLAN)
-                  && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
+                  && ((vlanNumber = CommonUtil
+                        .getInterfaceVlanNumber(iface.getName())) != null)) {
                vlanInterfaces.put(vlanNumber, iface);
                vlanMemberCounts.put(vlanNumber, 0);
             }
@@ -1350,7 +1390,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             vlans.add(new SubRange(vlanNumber, vlanNumber));
 
             for (SubRange sr : vlans) {
-               for (int vlanId = sr.getStart(); vlanId <= sr.getEnd(); ++vlanId) {
+               for (int vlanId = sr.getStart(); vlanId <= sr
+                     .getEnd(); ++vlanId) {
                   vlanMemberCounts.compute(vlanId,
                         (k, v) -> (v == null) ? 1 : (v + 1));
                }
@@ -1893,10 +1934,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return flowHistory;
    }
 
-   private IbgpTopology getIbgpNeighbors() {
-      return _dataPlanePlugin.getIbgpNeighbors();
-   }
-
    public Set<NodeInterfacePair> getInterfaceBlacklist() {
       Set<NodeInterfacePair> blacklistInterfaces = null;
       Path interfaceBlacklistPath = _testrigSettings.getEnvironmentSettings()
@@ -1925,6 +1962,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       return blacklistNodes;
+   }
+
+   @Override
+   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
+      return _dataPlanePlugin.getRoutes();
    }
 
    public Settings getSettings() {
@@ -2462,36 +2504,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   }
                }
             }
-         }
-      }
-   }
-
-   @Override
-   public void initRoutes(Map<String, Configuration> configurations) {
-      Set<Route> globalRoutes = _dataPlanePlugin.getRoutes();
-      for (Configuration node : configurations.values()) {
-         node.initRoutes();
-      }
-      for (Route route : globalRoutes) {
-         String nodeName = route.getNode();
-         Configuration node = configurations.get(nodeName);
-         String vrfName = route.getVrf();
-         if (node != null) {
-            node.getRoutes().add(route);
-            Vrf vrf = node.getVrfs().get(vrfName);
-            if (vrf != null) {
-               vrf.getRoutes().add(route);
-            }
-            else {
-               throw new BatfishException(
-                     "Precomputed route refers to missing vrf: '" + vrfName
-                           + "' on node: '" + nodeName + "'");
-            }
-         }
-         else {
-            throw new BatfishException(
-                  "Precomputed route refers to missing node: '" + nodeName
-                        + "'");
          }
       }
    }
@@ -3516,8 +3528,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             String ifaceName = p.getInterface();
             Configuration node = configurations.get(hostname);
             Interface iface = node.getInterfaces().get(ifaceName);
-            iface.setActive(false);
-            iface.setBlacklisted(true);
+            if (iface == null) {
+               throw new BatfishException(
+                     "Cannot disable non-existent interface '" + ifaceName
+                           + "' on node '" + hostname + "'\n");
+            }
+            else {
+               iface.setActive(false);
+               iface.setBlacklisted(true);
+            }
          }
       }
    }
@@ -3574,31 +3593,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       printElapsedTime();
       return configurationData;
-   }
-
-   /**
-    * Returns a sorted list of {@link Path paths} contains all files under the
-    * directory indicated by {@code configsPath}. Directories under
-    * {@code configsPath} are recursively expanded but not included in the
-    * returned list.
-    *
-    * <p>Temporary files(files start with {@code .} are omitted from the
-    * returned list. </p>
-    *
-    * <p>This method follows all symbolic links. </p>
-    */
-   static List<Path> listAllFiles(Path configsPath) {
-      List<Path> configFilePaths;
-      try {
-         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
-                 .filter(path -> !path.getFileName().toString().startsWith(".")
-                         && Files.isRegularFile(path))
-                 .sorted()
-                 .collect(Collectors.toList());
-      } catch (IOException e) {
-         throw new BatfishException("Failed to walk path: " + configsPath, e);
-      }
-      return configFilePaths;
    }
 
    @Override
@@ -3951,22 +3945,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       if (_settings.getDataPlane()) {
          answer.append(computeDataPlane(_settings.getDiffActive()));
-         action = true;
-      }
-
-      if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath());
-         action = true;
-      }
-
-      if (_settings.getWriteBgpAdvertisements()) {
-         writeBgpAdvertisements(
-               _settings.getPrecomputedBgpAdvertisementsPath());
-         action = true;
-      }
-
-      if (_settings.getWriteIbgpNeighbors()) {
-         writeIbgpNeighbors(_settings.getPrecomputedIbgpNeighborsPath());
          action = true;
       }
 
@@ -4501,15 +4479,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return new Topology(edges);
    }
 
-   private void writeBgpAdvertisements(Path writeAdvertsPath) {
-      AdvertisementSet adverts = _dataPlanePlugin.getAdvertisements();
-      CommonUtil.createDirectories(writeAdvertsPath.getParent());
-      _logger.info("Serializing: BGP advertisements => \"" + writeAdvertsPath
-            + "\"...");
-      serializeObject(adverts, writeAdvertsPath);
-      _logger.info("OK\n");
-   }
-
    @Override
    public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
       _cachedDataPlanes.put(_testrigSettings, dp);
@@ -4517,15 +4486,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
       serializeObject(ae,
             _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
-   }
-
-   private void writeIbgpNeighbors(Path ibgpTopologyPath) {
-      IbgpTopology topology = getIbgpNeighbors();
-      CommonUtil.createDirectories(ibgpTopologyPath.getParent());
-      _logger.info(
-            "Serializing: IBGP neighbors => \"" + ibgpTopologyPath + "\"...");
-      serializeObject(topology, ibgpTopologyPath);
-      _logger.info("OK\n");
    }
 
    private void writeJsonAnswer(String structuredAnswerString,
@@ -4627,14 +4587,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       catch (JSONException e) {
          throw new BatfishException("Failed to synthesize JSON topology", e);
       }
-   }
-
-   public void writeRoutes(Path writeRoutesPath) {
-      RouteSet routes = _dataPlanePlugin.getRoutes();
-      CommonUtil.createDirectories(writeRoutesPath.getParent());
-      _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
-      serializeObject(routes, writeRoutesPath);
-      _logger.info("OK\n");
    }
 
    private void writeSynthesizedTopology() {

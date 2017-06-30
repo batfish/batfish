@@ -265,9 +265,9 @@ public class Route implements Comparable<Route>, Serializable {
       String nextHopIp = _nextHopIp.toString();
       String tag = Integer.toString(_tag);
       // extra formatting
-      if (!_nextHopInterface.equals(UNSET_NEXT_HOP_INTERFACE)) {
+      if (_nextHopInterface != null) {
          // static interface
-         if (_nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+         if (_nextHopIp.equals(null)) {
             nextHop = "N/A";
             nextHopIp = "N/A";
          }

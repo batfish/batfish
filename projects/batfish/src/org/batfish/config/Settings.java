@@ -412,16 +412,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
 
-   private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
-
-   private static final String ARG_PRECOMPUTED_FACTS_PATH = "precomputedfactspath";
-
-   private static final String ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH = "precomputedibgpneighborspath";
-
-   private static final String ARG_PRECOMPUTED_ROUTES_PATH = "precomputedroutespath";
-
-   private static final String ARG_PRECOMPUTED_ROUTES_PATHS = "precomputedroutespaths";
-
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
    private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
@@ -574,16 +564,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private List<Path> _pluginDirs;
 
-   private Path _precomputedBgpAdvertisementsPath;
-
-   private Path _precomputedFactsPath;
-
-   private Path _precomputedIbgpNeighborsPath;
-
-   private Path _precomputedRoutesPath;
-
-   private List<Path> _precomputedRoutesPaths;
-
    private List<String> _predicates;
 
    private boolean _prettyPrintAnswer;
@@ -656,19 +636,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    private boolean _unrecognizedAsRedFlag;
 
-   private boolean _usePrecomputedAdvertisements;
-
-   private boolean _usePrecomputedIbgpNeighbors;
-
-   private boolean _usePrecomputedRoutes;
-
    private boolean _verboseParse;
-
-   private boolean _writeBgpAdvertisements;
-
-   private boolean _writeIbgpNeighbors;
-
-   private boolean _writeRoutes;
 
    public Settings() {
       this(new String[] {});
@@ -887,26 +855,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _pluginDirs;
    }
 
-   public Path getPrecomputedBgpAdvertisementsPath() {
-      return _precomputedBgpAdvertisementsPath;
-   }
-
-   public Path getPrecomputedFactsPath() {
-      return _precomputedFactsPath;
-   }
-
-   public Path getPrecomputedIbgpNeighborsPath() {
-      return _precomputedIbgpNeighborsPath;
-   }
-
-   public Path getPrecomputedRoutesPath() {
-      return _precomputedRoutesPath;
-   }
-
-   public List<Path> getPrecomputedRoutesPaths() {
-      return _precomputedRoutesPaths;
-   }
-
    public List<String> getPredicates() {
       return _predicates;
    }
@@ -1041,32 +989,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       return _unrecognizedAsRedFlag;
    }
 
-   public boolean getUsePrecomputedBgpAdvertisements() {
-      return _usePrecomputedAdvertisements;
-   }
-
-   public boolean getUsePrecomputedIbgpNeighbors() {
-      return _usePrecomputedIbgpNeighbors;
-   }
-
-   public boolean getUsePrecomputedRoutes() {
-      return _usePrecomputedRoutes;
-   }
-
    public boolean getVerboseParse() {
       return _verboseParse;
-   }
-
-   public boolean getWriteBgpAdvertisements() {
-      return _writeBgpAdvertisements;
-   }
-
-   public boolean getWriteIbgpNeighbors() {
-      return _writeIbgpNeighbors;
-   }
-
-   public boolean getWriteRoutes() {
-      return _writeRoutes;
    }
 
    public List<String> ignoreFilesWithStrings() {
@@ -1126,11 +1050,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
       setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
             Collections.<String> emptyList());
-      setDefaultProperty(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH, null);
-      setDefaultProperty(ARG_PRECOMPUTED_FACTS_PATH, null);
-      setDefaultProperty(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH, null);
-      setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATH, null);
-      setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATHS, new String[] {});
       setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
       setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
       setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
@@ -1157,9 +1076,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
-      setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
-      setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
-      setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
       setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
@@ -1171,9 +1087,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
       setDefaultProperty(BfConsts.COMMAND_REPORT, false);
-      setDefaultProperty(BfConsts.COMMAND_WRITE_ADVERTISEMENTS, false);
-      setDefaultProperty(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS, false);
-      setDefaultProperty(BfConsts.COMMAND_WRITE_ROUTES, false);
    }
 
    private void initOptions() {
@@ -1312,21 +1225,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories",
             ARGNAME_PATHS);
 
-      addOption(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH,
-            "path to precomputed bgp advertisements", ARGNAME_PATH);
-
-      addOption(ARG_PRECOMPUTED_FACTS_PATH, "path to precomputed facts",
-            ARGNAME_PATH);
-
-      addOption(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH,
-            "path to precomputed ibgp neighbors", ARGNAME_PATH);
-
-      addOption(ARG_PRECOMPUTED_ROUTES_PATH,
-            "output path to precomputed routes", ARGNAME_PATH);
-
-      addListOption(ARG_PRECOMPUTED_ROUTES_PATHS,
-            "input paths to precomputed routes", ARGNAME_PATHS);
-
       addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
 
       addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
@@ -1393,15 +1291,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addBooleanOption(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG,
             "treat unrecognized configuration directives as red flags instead of force-crashing");
 
-      addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS,
-            "add precomputed bgp advertisements to data plane model");
-
-      addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS,
-            "add precomputed ibgp neighbors to data plane model");
-
-      addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES,
-            "add precomputed routes to data plane model");
-
       addBooleanOption(BfConsts.ARG_VERBOSE_PARSE,
             "(developer option) include parse/convert data in init-testrig answer");
 
@@ -1423,15 +1312,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addBooleanOption(BfConsts.COMMAND_REPORT,
             "generate report based on answered questions");
-
-      addBooleanOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS,
-            "write bgp advertisements from data plane model to disk");
-
-      addBooleanOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS,
-            "write ibgp neighbors from data plane model to disk");
-
-      addBooleanOption(BfConsts.COMMAND_WRITE_ROUTES,
-            "write routes from data plane model to disk");
 
    }
 
@@ -1502,14 +1382,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
-      _precomputedBgpAdvertisementsPath = getPathOptionValue(
-            ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
-      _precomputedFactsPath = getPathOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
-      _precomputedIbgpNeighborsPath = getPathOptionValue(
-            ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
-      _precomputedRoutesPath = getPathOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
-      _precomputedRoutesPaths = getPathListOptionValue(
-            ARG_PRECOMPUTED_ROUTES_PATHS);
       _prettyPrintAnswer = getBooleanOptionValue(
             BfConsts.ARG_PRETTY_PRINT_ANSWER);
       _printParseTree = getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
@@ -1555,18 +1427,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
             BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
       _unrecognizedAsRedFlag = getBooleanOptionValue(
             BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
-      _usePrecomputedAdvertisements = getBooleanOptionValue(
-            BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
-      _usePrecomputedIbgpNeighbors = getBooleanOptionValue(
-            BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
-      _usePrecomputedRoutes = getBooleanOptionValue(
-            BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
       _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
-      _writeBgpAdvertisements = getBooleanOptionValue(
-            BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
-      _writeIbgpNeighbors = getBooleanOptionValue(
-            BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
-      _writeRoutes = getBooleanOptionValue(BfConsts.COMMAND_WRITE_ROUTES);
    }
 
    public boolean prettyPrintAnswer() {
