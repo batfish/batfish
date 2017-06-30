@@ -59,6 +59,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
@@ -427,8 +432,29 @@ public class Client extends AbstractClient implements IClient {
                            COMPARATORS));
             }
             break;
+         case DOUBLE:
+            if (!value.isDouble()) {
+               throw new BatfishException(
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case FLOAT:
+            if (!value.isFloat()) {
+               throw new BatfishException(
+                        String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
          case INTEGER:
             if (!value.isInt()) {
+               throw new BatfishException(
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case LONG:
+            if (!value.isLong()) {
                throw new BatfishException(
                      String.format("It is not a valid JSON %s value",
                            expectedType.getName()));
@@ -441,13 +467,28 @@ public class Client extends AbstractClient implements IClient {
                throw new BatfishException("It is not a valid IP address");
             }
             break;
+         case IP_PROTOCOL:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            try {
+               IpProtocol.fromString(value.textValue());
+            } catch (IllegalArgumentException e) {
+               throw new BatfishException(
+                     String.format("Unknown %s string",
+                           expectedType.getName()));
+            }
+
+            break;
          case IP_WILDCARD:
             if (!value.isTextual()) {
                throw new BatfishException(
                      String.format("A Batfish %s must be a JSON string",
                            expectedType.getName()));
             }
-            // TODO: need ip_WildCard validation check
+            new IpWildcard(value.textValue());
             break;
          case JAVA_REGEX:
             if (!value.isTextual()) {
@@ -476,7 +517,7 @@ public class Client extends AbstractClient implements IClient {
                      String.format("A Batfish %s must be a JSON string",
                            expectedType.getName()));
             }
-            // TODO: need prefix validation check
+            new Prefix(value.textValue());
             break;
          case PREFIX_RANGE:
             if (!value.isTextual()) {
@@ -484,7 +525,7 @@ public class Client extends AbstractClient implements IClient {
                      String.format("A Batfish %s must be a JSON string",
                            expectedType.getName()));
             }
-            // TODO: need prefix range validation check
+            new PrefixRange(value.textValue());
             break;
          case STRING:
             if (!value.isTextual()) {
@@ -494,12 +535,22 @@ public class Client extends AbstractClient implements IClient {
             }
             break;
          case SUBRANGE:
+            if (!(value.isTextual() || value.isInt())) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string or " +
+                                 "integer", expectedType.getName()));
+            }
+            Object actualValue = value
+                  .isTextual() ? value.textValue() : value.asInt();
+            new SubRange(actualValue);
+            break;
+         case PROTOCOL:
             if (!value.isTextual()) {
                throw new BatfishException(
                      String.format("A Batfish %s must be a JSON string",
                            expectedType.getName()));
             }
-            // TODO: need prefix range validation check
+            // TODO: need protocol validation check
             break;
          case JSON_PATH:
             validateJsonPath(value);

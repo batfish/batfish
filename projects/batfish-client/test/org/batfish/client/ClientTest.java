@@ -15,7 +15,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_PROTOCOL;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_WILDCARD;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX_RANGE;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.STRING;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.SUBRANGE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -285,6 +290,68 @@ public class ClientTest {
    }
 
    @Test
+   public void testInvalidDoubleValue() throws IOException {
+      String input = "\"string\"";
+      Question.InstanceData.Variable.Type expectedType
+            = Question.InstanceData.Variable.Type.DOUBLE;
+      String expectedMessage = String
+            .format("It is not a valid JSON %s value",
+                  Question.InstanceData.Variable.Type.DOUBLE.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidDoubleValue() throws IOException {
+      JsonNode doubleNode = mapper.readTree("15.0");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.DOUBLE);
+      Client.validateType(doubleNode, variable);
+   }
+
+   @Test
+   public void testInvalidFloatValue() throws IOException {
+      String input = "\"string\"";
+      Question.InstanceData.Variable.Type expectedType
+            = Question.InstanceData.Variable.Type.FLOAT;
+      String expectedMessage = String
+            .format("It is not a valid JSON %s value",
+                  Question.InstanceData.Variable.Type.FLOAT.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidFloatValue() throws IOException {
+      Float floatValue = 15.0f;
+      JsonNode floatNode = mapper.valueToTree(floatValue);
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.FLOAT);
+      Client.validateType(floatNode, variable);
+   }
+
+   @Test
+   public void testInvalidLongValue() throws IOException {
+      String input = "\"string\"";
+      Question.InstanceData.Variable.Type expectedType
+            = Question.InstanceData.Variable.Type.LONG;
+      String expectedMessage = String
+            .format("It is not a valid JSON %s value",
+                  Question.InstanceData.Variable.Type.LONG.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidLongValue() throws IOException {
+      Long longValue = 15L;
+      JsonNode floatNode = mapper.valueToTree(longValue);
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(Question.InstanceData.Variable.Type.LONG);
+      Client.validateType(floatNode, variable);
+   }
+
+   @Test
    public void testInvalidIPValue() throws IOException {
       String input = "\"0.0.0\"";
       Question.InstanceData.Variable.Type expectedType = IP;
@@ -299,6 +366,158 @@ public class ClientTest {
             = new Question.InstanceData.Variable();
       variable.setType(IP);
       Client.validateType(IPNode, variable);
+   }
+
+   @Test
+   public void testNonStringIpProtocolValue() throws IOException {
+      String input = "10";
+      Question.InstanceData.Variable.Type expectedType = IP_PROTOCOL;
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string",
+                  expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testInvalidIpProtocolValue() throws IOException {
+      String input = "\"invalid\"";
+      Question.InstanceData.Variable.Type expectedType = IP_PROTOCOL;
+      String expectedMessage = String
+            .format("Unknown %s string", expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidIpProtocolValue() throws IOException {
+      JsonNode IpProtocolNode = mapper.readTree("\"visa\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(IP_PROTOCOL);
+      Client.validateType(IpProtocolNode, variable);
+   }
+
+   @Test
+   public void testNonStringIpWildcardValue() throws IOException {
+      String input = "10";
+      Question.InstanceData.Variable.Type expectedType = IP_WILDCARD;
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string",
+                  expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testInvalidIpWildcardValue() throws IOException {
+      String input = "\"10.168.5.5:10.168.100.$\"";
+      Question.InstanceData.Variable.Type expectedType = IP_WILDCARD;
+      String expectedMessage = "Invalid ip segment: \"$\" in ip string: " +
+            "\"10.168.100.$\"";
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidIpWildcardValue() throws IOException {
+      JsonNode IpWildcardNode = mapper
+            .readTree("\"10.168.5.5:10.168.100.100\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(IP_WILDCARD);
+      Client.validateType(IpWildcardNode, variable);
+   }
+
+   @Test
+   public void testNonStringPrefixValue() throws IOException {
+      String input = "10";
+      Question.InstanceData.Variable.Type expectedType = PREFIX;
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string",
+                  expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testInvalidPrefixValue() throws IOException {
+      String input = "\"10.168.5.5/30/20\"";
+      Question.InstanceData.Variable.Type expectedType = PREFIX;
+      String expectedMessage = String
+            .format("Invalid prefix string: %s", input);
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidPrefixValue() throws IOException {
+      JsonNode prefixNode = mapper
+            .readTree("\"10.168.5.5/30\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(PREFIX);
+      Client.validateType(prefixNode, variable);
+   }
+
+   @Test
+   public void testNonStringPrefixRangelValue() throws IOException {
+      String input = "10";
+      Question.InstanceData.Variable.Type expectedType = PREFIX_RANGE;
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string",
+                  expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testInvalidPrefixRangeValue() throws IOException {
+      String input = "\"10.168.5.5/30:s10-50\"";
+      Question.InstanceData.Variable.Type expectedType = PREFIX_RANGE;
+      String expectedMessage = "Invalid subrange start: \"s10\"";
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidPrefixRangeValue() throws IOException {
+      JsonNode prefixRangeNode = mapper
+            .readTree("\"10.168.5.5/30:10-50\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(PREFIX_RANGE);
+      Client.validateType(prefixRangeNode, variable);
+   }
+
+   @Test
+   public void testNonStringOrIntSubRangeValue() throws IOException {
+      String input = "false";
+      Question.InstanceData.Variable.Type expectedType = SUBRANGE;
+      String expectedMessage = String
+            .format("A Batfish %s must be a JSON string or integer",
+                  expectedType.getName());
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testInvalidSubRangeValue() throws IOException {
+      String input = "\"10-s50\"";
+      Question.InstanceData.Variable.Type expectedType = SUBRANGE;
+      String expectedMessage = "Invalid subrange end: \"s50\"";
+      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+   }
+
+   @Test
+   public void testValidSubRangeStringValue() throws IOException {
+      JsonNode subRangeNode = mapper
+            .readTree("\"10-50\"");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(SUBRANGE);
+      Client.validateType(subRangeNode, variable);
+   }
+
+   @Test
+   public void testValidSubRangeIntegerValue() throws IOException {
+      JsonNode subRangeNode = mapper
+            .readTree("10");
+      Question.InstanceData.Variable variable
+            = new Question.InstanceData.Variable();
+      variable.setType(SUBRANGE);
+      Client.validateType(subRangeNode, variable);
    }
 
    @Test
@@ -383,7 +602,20 @@ public class ClientTest {
       Client.validateType(mapper.readTree(longString), variable);
    }
 
-   // Tests for validate method
+   // Tests for validateAndSet method
+   @Test
+   public void testValidateWithNullVariableInput() {
+      Map<String, String> parameters = new HashMap<>();
+      Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
+      parameters.put("integer", "10");
+      variables.put("integer", null);
+      thrown.expect(BatfishException.class);
+      String errorMessage = "No variable named: 'integer' in supplied " +
+            "question template";
+      thrown.expectMessage(equalTo(errorMessage));
+      Client.validateAndSet(parameters, variables);
+   }
+
    @Test
    public void testValidateWithInvalidInput() {
       Map<String, String> parameters = new HashMap<>();
@@ -400,7 +632,7 @@ public class ClientTest {
       variables.put("boolean", booleanVariable);
       thrown.expect(BatfishException.class);
       String errorMessage = "Invalid value for parameter boolean: \"true\"";
-      thrown.expectMessage(errorMessage);
+      thrown.expectMessage(equalTo(errorMessage));
       Client.validateAndSet(parameters, variables);
    }
 
@@ -436,7 +668,7 @@ public class ClientTest {
       String errorMessage = String
             .format("Invalid value for parameter actions: %s. Expecting a " +
                   "JSON array of at least 5 elements", jsonArray);
-      thrown.expectMessage(errorMessage);
+      thrown.expectMessage(equalTo(errorMessage));
       Client.validateAndSet(parameters, variables);
    }
 
@@ -464,7 +696,7 @@ public class ClientTest {
       variables.put("integer", integerVariable);
       thrown.expect(BatfishException.class);
       String errorMessage = "Missing parameter: integer";
-      thrown.expectMessage(errorMessage);
+      thrown.expectMessage(equalTo(errorMessage));
       Client.checkVariableState(variables);
    }
 
