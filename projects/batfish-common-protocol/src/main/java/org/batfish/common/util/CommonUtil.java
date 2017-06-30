@@ -415,7 +415,7 @@ public class CommonUtil {
       if (overriddenPath != null) {
          // The user provided an override, so look up that configuration instead.
          try {
-            propertiesUrl = new URL(overriddenPath);
+            propertiesUrl = new URL(new URL("file://"), overriddenPath);
          } catch (MalformedURLException e) {
             throw new BatfishException("Error treating " + overriddenPath + " as a path to a properties file", e);
          }
