@@ -357,7 +357,7 @@ public class ClientTest {
    public void testInvalidIPValue() throws IOException {
       String input = "\"0.0.0\"";
       Question.InstanceData.Variable.Type expectedType = IP;
-      String expectedMessage = "It is not a valid IP address";
+      String expectedMessage = String.format("Invalid ip string: %s", input);
       validateTypeWithInvalidInput(input, expectedMessage, expectedType);
    }
 
