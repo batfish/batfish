@@ -5,9 +5,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
+
+import org.batfish.common.BatfishException;
 
 /**
  * This utility extracts files and directories of a standard zip file to a
@@ -22,6 +26,10 @@ public class UnzipUtility {
     * Size of the buffer to read/write data
     */
    private static final int BUFFER_SIZE = 4096;
+
+   public static void unzip(Path zipFile, Path dstDir) {
+      new UnzipUtility().unzipHelper(zipFile, dstDir);
+   }
 
    /**
     * Extracts a zip entry (file entry)
@@ -50,38 +58,43 @@ public class UnzipUtility {
     * @param destDirectory
     * @throws IOException
     */
-   public void unzip(File zipFile, String destDirectory) throws IOException {
+   private void unzipHelper(Path zipFile, Path destDirectory) {
+      try {
+         // <ratul>
+         // this lets us check if the zip file is proper
+         // for bad zip files this will throw an exception
+         ZipFile zipTest = new ZipFile(zipFile.toFile());
+         zipTest.close();
 
-      // <ratul>
-      // this lets us check if the zip file is proper
-      // for bad zip files this will throw an exception
-      ZipFile zipTest = new ZipFile(zipFile);
-      zipTest.close();
-
-      File destDir = new File(destDirectory);
-      if (!destDir.exists()) {
-         destDir.mkdir();
-      }
-
-      ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFile));
-
-      ZipEntry entry = zipIn.getNextEntry();
-
-      // iterates over entries in the zip file
-      while (entry != null) {
-         String filePath = destDirectory + File.separator + entry.getName();
-         if (!entry.isDirectory()) {
-            // if the entry is a file, extracts it
-            extractFile(zipIn, filePath);
+         if (!Files.exists(destDirectory)) {
+            destDirectory.toFile().mkdirs();
          }
-         else {
-            // if the entry is a directory, make the directory
-            File dir = new File(filePath);
-            dir.mkdir();
+
+         ZipInputStream zipIn = new ZipInputStream(
+               new FileInputStream(zipFile.toFile()));
+
+         ZipEntry entry = zipIn.getNextEntry();
+
+         // iterates over entries in the zip file
+         while (entry != null) {
+            String filePath = destDirectory + File.separator + entry.getName();
+            if (!entry.isDirectory()) {
+               // if the entry is a file, extracts it
+               extractFile(zipIn, filePath);
+            }
+            else {
+               // if the entry is a directory, make the directory
+               File dir = new File(filePath);
+               dir.mkdir();
+            }
+            zipIn.closeEntry();
+            entry = zipIn.getNextEntry();
          }
-         zipIn.closeEntry();
-         entry = zipIn.getNextEntry();
+         zipIn.close();
       }
-      zipIn.close();
+      catch (IOException e) {
+         throw new BatfishException("Could not unzip: '" + zipFile.toString()
+               + "' into: '" + destDirectory.toString() + "'", e);
+      }
    }
 }

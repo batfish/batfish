@@ -1,5 +1,7 @@
 package org.batfish.coordinator.config;
 
+import java.nio.file.Path;
+
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -61,11 +63,14 @@ public class Settings extends BaseSettings {
    private static final String EXECUTABLE_NAME = "coordinator";
 
    private Authorizer.Type _authorizerType;
-   private String _containersLocation;
+   private Path _containersLocation;
    private String _dbAuthorizerConnString;
    private long _dbCacheExpiryMs;
    private boolean _defaultKeyListings;
    private String _driverClass;
+   private Path _fileAuthorizerPermsFile;
+   private Path _fileAuthorizerRotoDir;
+   private Path _fileAuthorizerUsersFile;
    private String _logFile;
    private String _logLevel;
    private long _periodAssignWorkMs;
@@ -78,16 +83,16 @@ public class Settings extends BaseSettings {
    private int _servicePoolPort;
    private int _serviceWorkPort;
    private boolean _sslPoolDisable;
-   private String _sslPoolKeystoreFile;
+   private Path _sslPoolKeystoreFile;
    private String _sslPoolKeystorePassword;
    private boolean _sslPoolTrustAllCerts;
-   private String _sslPoolTruststoreFile;
+   private Path _sslPoolTruststoreFile;
    private String _sslPoolTruststorePassword;
    private boolean _sslWorkDisable;
-   private String _sslWorkKeystoreFile;
+   private Path _sslWorkKeystoreFile;
    private String _sslWorkKeystorePassword;
    private boolean _sslWorkTrustAllCerts;
-   private String _sslWorkTruststoreFile;
+   private Path _sslWorkTruststoreFile;
    private String _sslWorkTruststorePassword;
    private String _storageAccountKey;
    private String _storageAccountName;
@@ -108,7 +113,7 @@ public class Settings extends BaseSettings {
       return _authorizerType;
    }
 
-   public String getContainersLocation() {
+   public Path getContainersLocation() {
       return _containersLocation;
    }
 
@@ -128,16 +133,16 @@ public class Settings extends BaseSettings {
       return _driverClass;
    }
 
-   public String getFileAuthorizerPermsFile() {
-      return _config.getString(ARG_FILE_AUTHORIZER_PERMS_FILE);
+   public Path getFileAuthorizerPermsFile() {
+      return _fileAuthorizerPermsFile;
    }
 
-   public String getFileAuthorizerRootDir() {
-      return _config.getString(ARG_FILE_AUTHORIZER_ROOT_DIR);
+   public Path getFileAuthorizerRootDir() {
+      return _fileAuthorizerRotoDir;
    }
 
-   public String getFileAuthorizerUsersFile() {
-      return _config.getString(ARG_FILE_AUTHORIZER_USERS_FILE);
+   public Path getFileAuthorizerUsersFile() {
+      return _fileAuthorizerUsersFile;
    }
 
    public String getLogFile() {
@@ -188,7 +193,7 @@ public class Settings extends BaseSettings {
       return _sslPoolDisable;
    }
 
-   public String getSslPoolKeystoreFile() {
+   public Path getSslPoolKeystoreFile() {
       return _sslPoolKeystoreFile;
    }
 
@@ -200,7 +205,7 @@ public class Settings extends BaseSettings {
       return _sslPoolTrustAllCerts;
    }
 
-   public String getSslPoolTruststoreFile() {
+   public Path getSslPoolTruststoreFile() {
       return _sslPoolTruststoreFile;
    }
 
@@ -212,7 +217,7 @@ public class Settings extends BaseSettings {
       return _sslWorkDisable;
    }
 
-   public String getSslWorkKeystoreFile() {
+   public Path getSslWorkKeystoreFile() {
       return _sslWorkKeystoreFile;
    }
 
@@ -224,7 +229,7 @@ public class Settings extends BaseSettings {
       return _sslWorkTrustAllCerts;
    }
 
-   public String getSslWorkTruststoreFile() {
+   public Path getSslWorkTruststoreFile() {
       return _sslWorkTruststoreFile;
    }
 
@@ -247,6 +252,7 @@ public class Settings extends BaseSettings {
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
       setDefaultProperty(ARG_ALLOW_DEFAULT_KEY_LISTINGS, false);
+      setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers");
       setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
             "jdbc:mysql://localhost/batfish?user=batfish&password=batfish");
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); // 15
@@ -288,7 +294,6 @@ public class Settings extends BaseSettings {
             "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==");
       setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
       setDefaultProperty(ARG_STORAGE_PROTOCOL, "http");
-      setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers");
    }
 
    private void initOptions() {
@@ -297,6 +302,9 @@ public class Settings extends BaseSettings {
 
       addBooleanOption(ARG_ALLOW_DEFAULT_KEY_LISTINGS,
             "allow default API key to list containers and testrigs");
+
+      addOption(ARG_CONTAINERS_LOCATION, "where to store containers",
+            "containers_location");
 
       addOption(ARG_DB_AUTHORIZER_CONN_STRING,
             "connection string for authorizer db", "connection string");
@@ -347,9 +355,6 @@ public class Settings extends BaseSettings {
       addBooleanOption(ARG_SSL_WORK_TRUST_ALL_CERTS,
             "trust all SSL certs for outgoing connections from work manager");
 
-      addOption(ARG_CONTAINERS_LOCATION, "where to store containers",
-            "containers_location");
-
    }
 
    private void parseCommandLine(String[] args) {
@@ -375,29 +380,27 @@ public class Settings extends BaseSettings {
       _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
       _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
       _sslPoolDisable = getBooleanOptionValue(ARG_SSL_POOL_DISABLE);
-      _sslPoolKeystoreFile = getStringOptionValue(ARG_SSL_POOL_KEYSTORE_FILE);
+      _sslPoolKeystoreFile = getPathOptionValue(ARG_SSL_POOL_KEYSTORE_FILE);
       _sslPoolKeystorePassword = getStringOptionValue(
             ARG_SSL_POOL_KEYSTORE_PASSWORD);
       _sslPoolTrustAllCerts = getBooleanOptionValue(
             ARG_SSL_POOL_TRUST_ALL_CERTS);
-      _sslPoolTruststoreFile = getStringOptionValue(
-            ARG_SSL_POOL_TRUSTSTORE_FILE);
+      _sslPoolTruststoreFile = getPathOptionValue(ARG_SSL_POOL_TRUSTSTORE_FILE);
       _sslPoolTruststorePassword = getStringOptionValue(
             ARG_SSL_POOL_TRUSTSTORE_PASSWORD);
       _sslWorkDisable = getBooleanOptionValue(ARG_SSL_WORK_DISABLE);
-      _sslWorkKeystoreFile = getStringOptionValue(ARG_SSL_WORK_KEYSTORE_FILE);
+      _sslWorkKeystoreFile = getPathOptionValue(ARG_SSL_WORK_KEYSTORE_FILE);
       _sslWorkKeystorePassword = getStringOptionValue(
             ARG_SSL_WORK_KEYSTORE_PASSWORD);
       _sslWorkTrustAllCerts = getBooleanOptionValue(
             ARG_SSL_WORK_TRUST_ALL_CERTS);
-      _sslWorkTruststoreFile = getStringOptionValue(
-            ARG_SSL_WORK_TRUSTSTORE_FILE);
+      _sslWorkTruststoreFile = getPathOptionValue(ARG_SSL_WORK_TRUSTSTORE_FILE);
       _sslWorkTruststorePassword = getStringOptionValue(
             ARG_SSL_WORK_TRUSTSTORE_PASSWORD);
       _storageAccountKey = getStringOptionValue(ARG_STORAGE_ACCOUNT_KEY);
       _storageAccountName = getStringOptionValue(ARG_STORAGE_ACCOUNT_NAME);
       _storageProtocol = getStringOptionValue(ARG_STORAGE_PROTOCOL);
-      _containersLocation = getStringOptionValue(ARG_CONTAINERS_LOCATION);
+      _containersLocation = getPathOptionValue(ARG_CONTAINERS_LOCATION);
       _periodWorkerStatusRefreshMs = getLongOptionValue(
             ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
       _periodAssignWorkMs = getLongOptionValue(ARG_PERIOD_ASSIGN_WORK_MS);
@@ -410,7 +413,7 @@ public class Settings extends BaseSettings {
       _sslPoolDisable = sslPoolDisable;
    }
 
-   public void setSslPoolKeystoreFile(String sslPoolKeystoreFile) {
+   public void setSslPoolKeystoreFile(Path sslPoolKeystoreFile) {
       _sslPoolKeystoreFile = sslPoolKeystoreFile;
    }
 
@@ -422,7 +425,7 @@ public class Settings extends BaseSettings {
       _sslPoolTrustAllCerts = sslPoolTrustAllCerts;
    }
 
-   public void setSslPoolTruststoreFile(String sslPoolTruststoreFile) {
+   public void setSslPoolTruststoreFile(Path sslPoolTruststoreFile) {
       _sslPoolTruststoreFile = sslPoolTruststoreFile;
    }
 
@@ -434,7 +437,7 @@ public class Settings extends BaseSettings {
       _sslWorkDisable = sslWorkDisable;
    }
 
-   public void setSslWorkKeystoreFile(String sslWorkKeystoreFile) {
+   public void setSslWorkKeystoreFile(Path sslWorkKeystoreFile) {
       _sslWorkKeystoreFile = sslWorkKeystoreFile;
    }
 
@@ -446,7 +449,7 @@ public class Settings extends BaseSettings {
       _sslWorkTrustAllCerts = sslWorkTrustAllCerts;
    }
 
-   public void setSslWorkTruststoreFile(String sslWorkTruststoreFile) {
+   public void setSslWorkTruststoreFile(Path sslWorkTruststoreFile) {
       _sslWorkTruststoreFile = sslWorkTruststoreFile;
    }
 

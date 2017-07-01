@@ -1,28 +1,20 @@
 package org.batfish.coordinator;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -31,9 +23,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.io.FileExistsException;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -68,14 +59,7 @@ public class WorkMgr {
 
    private static final Set<String> ENV_FILENAMES = initEnvFilenames();
 
-   // private Runnable _checkWorkTask;
-   // private Runnable _assignWorkTask;
-   //
-   // private ScheduledExecutorService _checkService;
-   // private ScheduledExecutorService _assignService;
-   //
-   // private ScheduledFuture<?> _checkFuture;
-   // private ScheduledFuture<?> _assignFuture;
+   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
    private static Set<String> initEnvFilenames() {
       Set<String> envFilenames = new HashSet<>();
@@ -138,12 +122,10 @@ public class WorkMgr {
       boolean assigned = false;
 
       try {
-
          // get the task and add other standard stuff
          JSONObject task = work.getWorkItem().toTask();
-         Path containerDir = Paths.get(
-               Main.getSettings().getContainersLocation(),
-               work.getWorkItem().getContainerName());
+         Path containerDir = Main.getSettings().getContainersLocation()
+               .resolve(work.getWorkItem().getContainerName());
          String testrigName = work.getWorkItem().getTestrigName();
          Path testrigBaseDir = containerDir.resolve(testrigName)
                .toAbsolutePath();
@@ -207,12 +189,13 @@ public class WorkMgr {
       }
       catch (ProcessingException e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error(String.format("unable to connect to %s: %s\n", worker,
-               stackTrace));
+         _logger.error(String.format("Unable to connect to worker at %s: %s\n",
+               worker, stackTrace));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error(String.format("exception: %s\n", stackTrace));
+         _logger.error(
+               String.format("Exception assigning work: %s\n", stackTrace));
       }
 
       // mark the assignment results for both work and worker
@@ -230,23 +213,18 @@ public class WorkMgr {
    }
 
    private void checkTask() {
-
       try {
          QueuedWork work = _workQueueMgr.getWorkForChecking();
-
          if (work == null) {
             // _logger.info("WM:checkTask: No assigned work\n");
             return;
          }
-
          String assignedWorker = work.getAssignedWorker();
-
          if (assignedWorker == null) {
             _logger.error("WM:CheckWork no assinged worker for " + work + "\n");
             _workQueueMgr.makeWorkUnassigned(work);
             return;
          }
-
          checkTask(work, assignedWorker);
       }
       catch (Exception e) {
@@ -319,348 +297,304 @@ public class WorkMgr {
       }
    }
 
+   /**
+    * Create, update, or truncate an analysis with provided questions or and/or
+    * question names
+    *
+    * @param containerName
+    *           The container in which the analysis resides
+    * @param newAnalysis
+    *           Whether or not to create a new analysis. Incompatible with
+    *           {@code delQuestionsStr}.
+    * @param aName
+    *           The name of the analysis
+    * @param addQuestionsFileStream
+    *           The questions to be added to or initially populate the analysis.
+    * @param delQuestionsStr
+    *           A string representation of a JSON array of names of questions to
+    *           be deleted from the analysis. Incompatible with
+    *           {@code newAnalysis}.
+    */
    public void configureAnalysis(String containerName, boolean newAnalysis,
          String aName, InputStream addQuestionsFileStream,
-         String delQuestionsStr) throws Exception {
-
-      File containerDir = getdirContainer(containerName);
-
-      File aDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_ANALYSES_DIR, aName).toFile();
-
-      if (aDir.exists() && newAnalysis) {
-         throw new FileExistsException("Analysis " + aName
-               + " already exists for container " + containerName);
+         String delQuestionsStr) {
+      Path containerDir = getdirContainer(containerName);
+      Path aDir = containerDir
+            .resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
+      if (Files.exists(aDir) && newAnalysis) {
+         throw new BatfishException("Analysis '" + aName
+               + "' already exists for container '" + containerName);
       }
-
-      if (!aDir.exists()) {
+      if (!Files.exists(aDir)) {
          if (!newAnalysis) {
-            throw new FileExistsException("Analysis " + aName
-                  + " does not exists for container " + containerName);
+            throw new BatfishException("Analysis '" + aName
+                  + "' does not exist for container '" + containerName + "'");
          }
-         if (!aDir.mkdirs()) {
-            throw new Exception("failed to create analyses directory "
-                  + aDir.getAbsolutePath());
+         if (!aDir.toFile().mkdirs()) {
+            throw new BatfishException("Failed to create analysis directory '"
+                  + aDir.toString() + "'");
          }
       }
-
-      File questionsDir = Paths
-            .get(aDir.getAbsolutePath(), BfConsts.RELPATH_QUESTIONS_DIR)
-            .toFile();
-
+      Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       if (addQuestionsFileStream != null) {
-         ByteArrayOutputStream questions = new ByteArrayOutputStream();
-
-         int read = 0;
-         final byte[] buffer = new byte[1024];
-         while ((read = addQuestionsFileStream.read(buffer)) != -1) {
-            questions.write(buffer, 0, read);
-         }
-
-         JSONObject jObject = new JSONObject(questions.toString("UTF-8"));
-
+         JSONObject jObject = CommonUtil
+               .writeStreamToJSONObject(addQuestionsFileStream);
          Iterator<?> keys = jObject.keys();
-
          while (keys.hasNext()) {
             String qName = (String) keys.next();
-            JSONObject qJson = jObject.getJSONObject(qName);
-
-            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName)
-                  .toFile();
-
-            if (qDir.exists()) {
-               throw new FileExistsException("Question " + qName
-                     + " already exists for analysis " + aName);
+            JSONObject qJson;
+            try {
+               qJson = jObject.getJSONObject(qName);
             }
-
-            if (!qDir.mkdirs()) {
-               throw new Exception("failed to create question directory "
-                     + qDir.getAbsolutePath());
+            catch (JSONException e) {
+               throw new BatfishException(
+                     "Provided questions lack a question named '" + qName + "'",
+                     e);
             }
-
-            File qFile = Paths
-                  .get(qDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
-                  .toFile();
-
-            FileUtils.writeStringToFile(qFile, qJson.toString(1));
+            Path qDir = questionsDir.resolve(qName);
+            if (Files.exists(qDir)) {
+               throw new BatfishException("Question '" + qName
+                     + "' already exists for analysis '" + aName + "'");
+            }
+            if (!qDir.toFile().mkdirs()) {
+               throw new BatfishException(
+                     "Failed to create question directory '" + qDir.toString()
+                           + "'");
+            }
+            Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+            String qOutput;
+            try {
+               qOutput = qJson.toString(1);
+            }
+            catch (JSONException e) {
+               throw new BatfishException(
+                     "Failed to convert question JSON to string", e);
+            }
+            CommonUtil.writeFile(qFile, qOutput);
          }
       }
 
+      /**
+       * Delete questions
+       */
       if (delQuestionsStr != null && !delQuestionsStr.equals("")) {
-         JSONArray delQuestionsArray = new JSONArray(delQuestionsStr);
-
+         JSONArray delQuestionsArray;
+         try {
+            delQuestionsArray = new JSONArray(delQuestionsStr);
+         }
+         catch (JSONException e) {
+            throw new BatfishException(
+                  "The string of questions to be deleted does not encode a valid JSON array: "
+                        + delQuestionsStr,
+                  e);
+         }
          for (int index = 0; index < delQuestionsArray.length(); index++) {
-            String qName = delQuestionsArray.getString(index);
-
-            File qDir = Paths.get(questionsDir.getAbsolutePath(), qName)
-                  .toFile();
-
-            if (!qDir.exists()) {
-               throw new FileExistsException("Question " + qName
+            String qName;
+            try {
+               qName = delQuestionsArray.getString(index);
+            }
+            catch (JSONException e) {
+               throw new BatfishException(
+                     "Could not get name of question to be deleted at index "
+                           + index,
+                     e);
+            }
+            Path qDir = questionsDir.resolve(qName);
+            if (!Files.exists(qDir)) {
+               throw new BatfishException("Question " + qName
                      + " does not exist for analysis " + aName);
             }
-
-            FileUtils.deleteDirectory(qDir);
+            CommonUtil.deleteDirectory(qDir);
          }
       }
    }
 
-   public void delAnalysis(String containerName, String aName)
-         throws Exception {
-      File aDir = getdirContainerAnalysis(containerName, aName);
-      FileUtils.deleteDirectory(aDir);
+   public void delAnalysis(String containerName, String aName) {
+      Path aDir = getdirContainerAnalysis(containerName, aName);
+      CommonUtil.deleteDirectory(aDir);
    }
 
-   public void delContainer(String containerName) throws Exception {
-      File containerDir = getdirContainer(containerName);
-      FileUtils.deleteDirectory(containerDir);
+   public void delContainer(String containerName) {
+      Path containerDir = getdirContainer(containerName);
+      CommonUtil.deleteDirectory(containerDir);
    }
 
    public void delEnvironment(String containerName, String testrigName,
-         String envName) throws Exception {
-      File envDir = getdirEnvironment(containerName, testrigName, envName);
-      FileUtils.deleteDirectory(envDir);
+         String envName) {
+      Path envDir = getdirEnvironment(containerName, testrigName, envName);
+      CommonUtil.deleteDirectory(envDir);
    }
 
-   public void delTestrig(String containerName, String testrigName)
-         throws Exception {
-      File testrigDir = getdirTestrig(containerName, testrigName);
-      FileUtils.deleteDirectory(testrigDir);
+   public void delTestrig(String containerName, String testrigName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      CommonUtil.deleteDirectory(testrigDir);
    }
 
    public void delTestrigQuestion(String containerName, String testrigName,
-         String qName) throws Exception {
-      File qDir = getdirTestrigQuestion(containerName, testrigName, qName);
-      FileUtils.deleteDirectory(qDir);
+         String qName) {
+      Path qDir = getdirTestrigQuestion(containerName, testrigName, qName);
+      CommonUtil.deleteDirectory(qDir);
    }
-
-   // public String getAnswer(String containerName, String testrigName,
-   // String analysisName, String questionName) throws FileNotFoundException {
-   //
-   // File questionDir = getExistingTestrigQuestionDir(containerName,
-   // analysisName, questionName);
-   //
-   // File questionFile = Paths.get(questionDir.getAbsolutePath(),
-   // BfConsts.RELPATH_QUESTION_FILE).toFile();
-   // if (!questionFile.exists()) {
-   // throw new FileNotFoundException(
-   // "Question file not found for " + questionName);
-   // }
-   //
-   // File answerDir = getExistingAnalysisAnswerDir(containerName, testrigName,
-   // analysisName, questionName);
-   //
-   // File answerFile = Paths.get(answerDir.getAbsolutePath(),
-   // BfConsts.RELPATH_ANSWER_JSON).toFile();
-   // if (!answerFile.exists()) {
-   // return null;
-   // }
-   //
-   // if (answerFile.lastModified() < questionFile.lastModified()) {
-   // throw new FileNotFoundException("The answer file is stale");
-   // }
-   //
-   // return CommonUtil.readFile(answerFile.toPath());
-   // }
 
    public Map<String, String> getAnalysisAnswers(String containerName,
          String baseTestrig, String baseEnv, String deltaTestrig,
-         String deltaEnv, String analysisName, boolean pretty)
-         throws FileNotFoundException {
-
-      File analysisDir = getdirContainerAnalysis(containerName, analysisName);
-      File testrigDir = getdirTestrig(containerName, baseTestrig);
-      String[] questions = listAnalysisQuestions(containerName, analysisName);
-
+         String deltaEnv, String analysisName, boolean pretty) {
+      Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+      Path testrigDir = getdirTestrig(containerName, baseTestrig);
+      SortedSet<String> questions = listAnalysisQuestions(containerName,
+            analysisName);
       Map<String, String> retMap = new TreeMap<>();
-
       for (String questionName : questions) {
-
          String answer = "unknown";
-
-         File questionFile = Paths.get(analysisDir.getAbsolutePath(),
-               BfConsts.RELPATH_QUESTIONS_DIR, questionName,
-               BfConsts.RELPATH_QUESTION_FILE).toFile();
-         if (!questionFile.exists()) {
-            throw new FileNotFoundException(
+         Path questionFile = analysisDir
+               .resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+                     BfConsts.RELPATH_QUESTION_FILE));
+         if (!Files.exists(questionFile)) {
+            throw new BatfishException(
                   "Question file for question " + questionName + "not found");
          }
-
          String answerFilename = pretty ? BfConsts.RELPATH_ANSWER_PRETTY_JSON
                : BfConsts.RELPATH_ANSWER_JSON;
-
-         Path answerDir = Paths.get(testrigDir.getAbsolutePath(),
-               BfConsts.RELPATH_ANALYSES_DIR, analysisName,
-               BfConsts.RELPATH_QUESTIONS_DIR, questionName,
-               BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnv);
+         Path answerDir = testrigDir
+               .resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName,
+                     BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+                     BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnv));
          if (deltaTestrig != null) {
             answerDir = answerDir.resolve(
-                  Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv)
-                        .toString());
+                  Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
          }
-
-         File answerFile = answerDir.resolve(answerFilename).toFile();
-
-         if (!answerFile.exists()) {
+         Path answerFile = answerDir.resolve(answerFilename);
+         if (!Files.exists(answerFile)) {
             answer = "Not answered";
          }
          else {
-            if (questionFile.lastModified() > answerFile.lastModified()) {
+            boolean answerIsStale;
+            answerIsStale = CommonUtil.getLastModifiedTime(questionFile)
+                  .compareTo(CommonUtil.getLastModifiedTime(answerFile)) > 0;
+            if (answerIsStale) {
                answer = "Not fresh";
             }
             else {
-               answer = CommonUtil.readFile(answerFile.toPath());
+               answer = CommonUtil.readFile(answerFile);
             }
          }
 
          retMap.put(questionName, answer);
       }
-
       return retMap;
    }
 
    public String getAnalysisQuestion(String containerName, String analysisName,
-         String questionName) throws Exception {
-
-      File questionDir = getdirAnalysisQuestion(containerName, analysisName,
+         String questionName) {
+      Path questionDir = getdirAnalysisQuestion(containerName, analysisName,
             questionName);
-
-      Path qFile = Paths.get(questionDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTION_FILE);
-      if (!qFile.toFile().exists()) {
-         throw new FileExistsException(
+      Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      if (!Files.exists(qFile)) {
+         throw new BatfishException(
                "Question file not found for " + questionName);
       }
-
       return CommonUtil.readFile(qFile);
    }
 
    public String getAnswer(String containerName, String baseTestrig,
          String baseEnv, String deltaTestrig, String deltaEnv,
-         String questionName, boolean pretty) throws FileNotFoundException {
-
-      File questionDir = getdirTestrigQuestion(containerName, baseTestrig,
+         String questionName, boolean pretty) {
+      Path questionDir = getdirTestrigQuestion(containerName, baseTestrig,
             questionName);
-
-      File questionFile = Paths
-            .get(questionDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
-            .toFile();
-      if (!questionFile.exists()) {
-         throw new FileNotFoundException(
+      Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      if (!Files.exists(questionFile)) {
+         throw new BatfishException(
                "Question file not found for " + questionName);
       }
-
-      Path answerDir = Paths.get(questionDir.getAbsolutePath(),
-            BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnv);
+      Path answerDir = questionDir
+            .resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnv));
       if (deltaTestrig != null) {
-         answerDir = answerDir.resolve(Paths.get(answerDir.toString(),
-               BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
+         answerDir = answerDir.resolve(
+               Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
       }
-
       String answerFilename = pretty ? BfConsts.RELPATH_ANSWER_PRETTY_JSON
             : BfConsts.RELPATH_ANSWER_JSON;
-
-      File answerFile = answerDir.resolve(answerFilename).toFile();
-
+      Path answerFile = answerDir.resolve(answerFilename);
       String answer = "unknown";
-
-      if (!answerFile.exists()) {
+      if (!Files.exists(answerFile)) {
          answer = "Not answered";
       }
       else {
-         if (questionFile.lastModified() > answerFile.lastModified()) {
+         if (CommonUtil.getLastModifiedTime(questionFile)
+               .compareTo(CommonUtil.getLastModifiedTime(answerFile)) > 0) {
             answer = "Not fresh";
          }
          else {
-            answer = CommonUtil.readFile(answerFile.toPath());
+            answer = CommonUtil.readFile(answerFile);
          }
       }
-
       return answer;
    }
 
-   private File getdirAnalysisQuestion(String containerName,
-         String analysisName, String qName) throws FileNotFoundException {
-      File analysisDir = getdirContainerAnalysis(containerName, analysisName);
-
-      File qDir = Paths.get(analysisDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTIONS_DIR, qName).toFile();
-      if (!qDir.exists()) {
-         throw new FileNotFoundException(
-               "Question " + qName + " does not exist");
+   private Path getdirAnalysisQuestion(String containerName,
+         String analysisName, String qName) {
+      Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+      Path qDir = analysisDir
+            .resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
+      if (!Files.exists(qDir)) {
+         throw new BatfishException("Question '" + qName + "' does not exist");
       }
-
       return qDir;
    }
 
-   private File getdirContainer(String containerName)
-         throws FileNotFoundException {
-      File containerDir = Paths
-            .get(Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
-      if (!containerDir.exists()) {
-         throw new FileNotFoundException(
-               "Container " + containerName + " does not exist");
+   private Path getdirContainer(String containerName) {
+      Path containerDir = Main.getSettings().getContainersLocation()
+            .resolve(containerName).toAbsolutePath();
+      if (!Files.exists(containerDir)) {
+         throw new BatfishException(
+               "Container '" + containerName + "' does not exist");
       }
-
       return containerDir;
    }
 
-   private File getdirContainerAnalysis(String containerName,
-         String analysisName) throws FileNotFoundException {
-
-      File containerDir = getdirContainer(containerName);
-
-      File aDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_ANALYSES_DIR, analysisName).toFile();
-      if (!aDir.exists()) {
-         throw new FileNotFoundException("Analysis " + analysisName
-               + " does not exists for container " + containerName);
+   private Path getdirContainerAnalysis(String containerName,
+         String analysisName) {
+      Path containerDir = getdirContainer(containerName);
+      Path aDir = containerDir
+            .resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
+      if (!Files.exists(aDir)) {
+         throw new BatfishException("Analysis '" + analysisName
+               + "' does not exists for container '" + containerName + "'");
       }
-
       return aDir;
    }
 
-   private File getdirEnvironment(String containerName, String testrigName,
-         String envName) throws FileNotFoundException {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-
-      File envDir = Paths.get(testrigDir.getAbsolutePath(),
-            BfConsts.RELPATH_ENVIRONMENTS_DIR, envName).toFile();
-      if (!envDir.exists()) {
-         throw new FileNotFoundException(
-               "Environment " + envName + " does not exist");
+   private Path getdirEnvironment(String containerName, String testrigName,
+         String envName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path envDir = testrigDir
+            .resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
+      if (!Files.exists(envDir)) {
+         throw new BatfishException(
+               "Environment '" + envName + "' does not exist");
       }
-
       return envDir;
    }
 
-   private File getdirTestrig(String containerName, String testrigName)
-         throws FileNotFoundException {
-      File containerDir = getdirContainer(containerName);
-
-      File testrigDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_TESTRIGS_DIR, testrigName).toFile();
-      if (!testrigDir.exists()) {
-         throw new FileNotFoundException(
-               "testrig " + testrigName + " does not exist");
+   private Path getdirTestrig(String containerName, String testrigName) {
+      Path containerDir = getdirContainer(containerName);
+      Path testrigDir = containerDir
+            .resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+      if (!Files.exists(testrigDir)) {
+         throw new BatfishException(
+               "Testrig '" + testrigName + "' does not exist");
       }
-
       return testrigDir;
    }
 
-   private File getdirTestrigQuestion(String containerName, String testrigName,
-         String qName) throws FileNotFoundException {
-      File testrigDir = getdirTestrig(containerName, testrigName);
-
-      File qDir = Paths.get(testrigDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTIONS_DIR, qName).toFile();
-      if (!qDir.exists()) {
-         throw new FileNotFoundException(
-               "Question " + qName + " does not exist");
+   private Path getdirTestrigQuestion(String containerName, String testrigName,
+         String qName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path qDir = testrigDir
+            .resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
+      if (!Files.exists(qDir)) {
+         throw new BatfishException("Question '" + qName + "' does not exist");
       }
-
       return qDir;
    }
 
@@ -668,42 +602,32 @@ public class WorkMgr {
       return _workQueueMgr.getStatusJson();
    }
 
-   public String getTestrigInfo(String containerName, String testrigName)
-         throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-
-      File submittedTestrigDir = Paths
-            .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_TEST_RIG_DIR)
-            .toFile();
-
-      if (!submittedTestrigDir.exists()) {
-         return "Missing folder " + BfConsts.RELPATH_TEST_RIG_DIR
-               + " for testrig " + testrigName + "\n";
+   public String getTestrigInfo(String containerName, String testrigName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path submittedTestrigDir = testrigDir
+            .resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+      if (!Files.exists(submittedTestrigDir)) {
+         return "Missing folder '" + BfConsts.RELPATH_TEST_RIG_DIR
+               + "' for testrig '" + testrigName + "'\n";
       }
-
       StringBuilder retStringBuilder = new StringBuilder();
-
-      File[] subFiles = submittedTestrigDir.listFiles();
-      Arrays.sort(subFiles);
-
-      for (File subFile : subFiles) {
-         retStringBuilder.append(subFile.getName());
-         if (subFile.isDirectory()) {
-            File[] subSubFiles = subFile.listFiles();
-            Arrays.sort(subSubFiles);
-
+      SortedSet<Path> entries = CommonUtil.getEntries(submittedTestrigDir);
+      for (Path entry : entries) {
+         retStringBuilder.append(entry.getFileName().toString());
+         if (Files.isDirectory(entry)) {
+            String[] subdirEntryNames = CommonUtil.getEntries(entry).stream()
+                  .map(subdirEntry -> subdirEntry.getFileName().toString())
+                  .collect(Collectors.toList()).toArray(new String[] {});
             retStringBuilder.append("/\n");
-
-            // now append a maximum of 10
-            for (int index = 0; index < subSubFiles.length
-                  && index < 10; index++) {
-               retStringBuilder
-                     .append("  " + subSubFiles[index].getName() + "\n");
+            // now append a maximum of MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES
+            for (int index = 0; index < subdirEntryNames.length
+                  && index < MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES; index++) {
+               retStringBuilder.append("  " + subdirEntryNames[index] + "\n");
             }
-
-            if (subSubFiles.length > 10) {
-               retStringBuilder.append("  ...... " + (subSubFiles.length - 10)
+            if (subdirEntryNames.length > 10) {
+               retStringBuilder.append("  ...... "
+                     + (subdirEntryNames.length
+                           - MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES)
                      + " more entries\n");
             }
          }
@@ -711,35 +635,31 @@ public class WorkMgr {
             retStringBuilder.append("\n");
          }
       }
-
       return retStringBuilder.toString();
    }
 
-   public File getTestrigObject(String containerName, String testrigName,
-         String objectName) throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-      File file = Paths.get(testrigDir.getAbsolutePath(), objectName).toFile();
-
-      // check if we got an object name outside of the testrig folder,
-      // perhaps because of ".." in the name; disallow it
-      if (!file.getCanonicalPath().contains(testrigDir.getCanonicalPath())) {
-         throw new AccessControlException("Illegal object name: " + objectName);
+   public Path getTestrigObject(String containerName, String testrigName,
+         String objectName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path file = testrigDir.resolve(objectName);
+      /**
+       * Check if we got an object name outside of the testrig folder, perhaps
+       * because of ".." in the name; disallow it
+       */
+      if (!CommonUtil.getCanonicalPath(file)
+            .startsWith(CommonUtil.getCanonicalPath(testrigDir))) {
+         throw new BatfishException(
+               "Illegal object name: '" + objectName + "'");
       }
-
-      if (file.isFile()) {
+      if (Files.isRegularFile(file)) {
          return file;
       }
-      else if (file.isDirectory()) {
-         File zipfile = new File(file.getAbsolutePath() + ".zip");
-
-         if (zipfile.exists()) {
-            zipfile.delete();
+      else if (Files.isDirectory(file)) {
+         Path zipfile = Paths.get(file.toString() + ".zip");
+         if (Files.exists(zipfile)) {
+            CommonUtil.deleteIfExists(zipfile);
          }
-
-         // AppZip appZip = new AppZip();
-         // appZip.zip();
-         ZipUtility.zipFiles(file.getAbsolutePath(), zipfile.getAbsolutePath());
+         ZipUtility.zipFiles(file, zipfile);
 
          // TODO: delete the zipfile
 
@@ -753,227 +673,156 @@ public class WorkMgr {
       return _workQueueMgr.getWork(workItemId);
    }
 
-   public String initContainer(String containerName, String containerPrefix)
-         throws Exception {
+   public String initContainer(String containerName, String containerPrefix) {
       if (containerName == null || containerName.equals("")) {
          containerName = containerPrefix + "_" + UUID.randomUUID();
       }
-
-      File containerDir = Paths
-            .get(Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
-
-      if (containerDir.exists()) {
-         throw new FileExistsException(
-               "Container " + containerName + " already exists!");
+      Path containerDir = Main.getSettings().getContainersLocation()
+            .resolve(containerName);
+      if (Files.exists(containerDir)) {
+         throw new BatfishException(
+               "Container '" + containerName + "' already exists!");
       }
-
-      if (!containerDir.mkdirs()) {
-         throw new Exception(
-               "failed to create directory " + containerDir.getAbsolutePath());
+      if (!containerDir.toFile().mkdirs()) {
+         throw new BatfishException(
+               "failed to create directory '" + containerDir.toString() + "'");
       }
-
       return containerName;
    }
 
-   private boolean isEnvFile(File file) {
-      String name = file.getName();
+   private boolean isEnvFile(Path path) {
+      String name = path.getFileName().toString();
       return ENV_FILENAMES.contains(name);
    }
 
-   public String[] listAnalyses(String containerName) throws Exception {
-
-      File containerDir = getdirContainer(containerName);
-
-      File analysesDir = Paths
-            .get(containerDir.getAbsolutePath(), BfConsts.RELPATH_ANALYSES_DIR)
-            .toFile();
-      if (!analysesDir.exists()) {
-         return new String[0];
+   public SortedSet<String> listAnalyses(String containerName) {
+      Path containerDir = getdirContainer(containerName);
+      Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
+      if (!Files.exists(analysesDir)) {
+         return new TreeSet<>();
       }
-
-      String[] directories = analysesDir.list(new FilenameFilter() {
-         @Override
-         public boolean accept(File current, String name) {
-            return new File(current, name).isDirectory();
-         }
-      });
-
-      return directories;
+      SortedSet<String> analyses = new TreeSet<>(
+            CommonUtil.getSubdirectories(analysesDir).stream()
+                  .map(subdir -> subdir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      return analyses;
    }
 
-   public String[] listAnalysisQuestions(String containerName,
-         String analysisName) throws FileNotFoundException {
-
-      File analysisDir = getdirContainerAnalysis(containerName, analysisName);
-      File questionsDir = Paths
-            .get(analysisDir.getAbsolutePath(), BfConsts.RELPATH_QUESTIONS_DIR)
-            .toFile();
-      if (!questionsDir.exists()) {
-         return new String[0];
+   public SortedSet<String> listAnalysisQuestions(String containerName,
+         String analysisName) {
+      Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+      Path questionsDir = analysisDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+      if (!Files.exists(questionsDir)) {
+         /**
+          * TODO: Something better than returning empty set?
+          */
+         return new TreeSet<>();
       }
-
-      String[] directories = questionsDir.list(new FilenameFilter() {
-         @Override
-         public boolean accept(File current, String name) {
-            return new File(current, name).isDirectory();
-         }
-      });
-
-      return directories;
+      SortedSet<Path> subdirectories = CommonUtil
+            .getSubdirectories(questionsDir);
+      SortedSet<String> subdirectoryNames = new TreeSet<>(
+            subdirectories.stream().map(path -> path.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      return subdirectoryNames;
    }
 
-   public String[] listContainers(String apiKey) throws Exception {
-
-      File containersDir = new File(Main.getSettings().getContainersLocation());
-
-      if (!containersDir.exists()) {
-         containersDir.mkdirs();
+   public SortedSet<String> listContainers(String apiKey) {
+      Path containersDir = Main.getSettings().getContainersLocation();
+      if (!Files.exists(containersDir)) {
+         containersDir.toFile().mkdirs();
       }
-
-      List<String> containers = new ArrayList<>();
-
-      File[] files = containersDir.listFiles();
-      Arrays.sort(files);
-
-      for (File file : files) {
-         if (file.isDirectory() && Main.getAuthorizer()
-               .isAccessibleContainer(apiKey, file.getName(), false)) {
-            containers.add(file.getName());
-         }
-      }
-
-      return containers.toArray(new String[containers.size()]);
+      SortedSet<String> authorizedContainers = new TreeSet<>(
+            CommonUtil.getSubdirectories(containersDir).stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .filter(container -> Main.getAuthorizer()
+                        .isAccessibleContainer(apiKey, container, false))
+                  .collect(Collectors.toSet()));
+      return authorizedContainers;
    }
 
-   public String[] listEnvironments(String containerName, String testrigName)
-         throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-      File environmentsDir = Paths.get(testrigDir.getAbsolutePath(),
-            BfConsts.RELPATH_ENVIRONMENTS_DIR).toFile();
-
-      if (!environmentsDir.exists()) {
-         return new String[0];
+   public SortedSet<String> listEnvironments(String containerName,
+         String testrigName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path environmentsDir = testrigDir
+            .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
+      if (!Files.exists(environmentsDir)) {
+         return new TreeSet<>();
       }
-
-      String[] directories = environmentsDir.list(new FilenameFilter() {
-         @Override
-         public boolean accept(File current, String name) {
-            return new File(current, name).isDirectory();
-         }
-      });
-
-      return directories;
+      SortedSet<String> environments = new TreeSet<>(
+            CommonUtil.getSubdirectories(environmentsDir).stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      return environments;
    }
 
-   public String[] listQuestions(String containerName, String testrigName)
-         throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-      File questionsDir = Paths
-            .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_QUESTIONS_DIR)
-            .toFile();
-
-      if (!questionsDir.exists()) {
-         return new String[0];
+   public SortedSet<String> listQuestions(String containerName,
+         String testrigName) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path questionsDir = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+      if (!Files.exists(questionsDir)) {
+         return new TreeSet<>();
       }
-
-      String[] directories = questionsDir.list(new FilenameFilter() {
-         @Override
-         public boolean accept(File current, String name) {
-            return new File(current, name).isDirectory();
-         }
-      });
-
-      return directories;
+      SortedSet<String> questions = new TreeSet<>(
+            CommonUtil.getSubdirectories(questionsDir).stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      return questions;
    }
 
-   public String[] listTestrigs(String containerName) throws Exception {
-
-      File containerDir = getdirContainer(containerName);
-      File testrigsDir = Paths
-            .get(containerDir.getAbsolutePath(), BfConsts.RELPATH_TESTRIGS_DIR)
-            .toFile();
-      if (!testrigsDir.exists()) {
-         return new String[0];
+   public SortedSet<String> listTestrigs(String containerName) {
+      Path containerDir = getdirContainer(containerName);
+      Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
+      if (!Files.exists(testrigsDir)) {
+         return new TreeSet<>();
       }
-
-      String[] directories = containerDir.list(new FilenameFilter() {
-         @Override
-         public boolean accept(File current, String name) {
-            return new File(current, name).isDirectory();
-         }
-      });
-
-      return directories;
-
-   }
-
-   private void moveByCopy(File srcFile, File destFile) throws IOException {
-      if (srcFile.isDirectory()) {
-         FileUtils.copyDirectory(srcFile, destFile);
-         FileUtils.deleteDirectory(srcFile);
-      }
-      else {
-         FileUtils.copyFile(srcFile, destFile);
-         if (!srcFile.delete()) {
-            throw new IOException(
-                  "Failed to delete srcFile: " + srcFile.toString());
-         }
-      }
+      SortedSet<String> testrigs = new TreeSet<>(
+            CommonUtil.getSubdirectories(testrigsDir).stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      return testrigs;
    }
 
    public void putObject(String containerName, String testrigName,
-         String objectName, InputStream fileStream) throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-      File file = Paths.get(testrigDir.getAbsolutePath(), objectName).toFile();
-
+         String objectName, InputStream fileStream) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path file = testrigDir.resolve(objectName);
       // check if we got an object name outside of the testrig folder,
       // perhaps because of ".." in the name; disallow it
-      if (!file.getCanonicalPath().contains(testrigDir.getCanonicalPath())) {
-         throw new Exception("Illegal object name: " + objectName);
+      if (!CommonUtil.getCanonicalPath(file)
+            .startsWith(CommonUtil.getCanonicalPath(testrigDir))) {
+         throw new BatfishException(
+               "Illegal object name: '" + objectName + "'");
       }
-
-      File parentFolder = file.getParentFile();
-
-      if (!parentFolder.exists()) {
-         if (!parentFolder.mkdirs()) {
-            throw new Exception("failed to create directory "
-                  + parentFolder.getAbsolutePath());
+      Path parentFolder = file.getParent();
+      if (!Files.exists(parentFolder)) {
+         if (!parentFolder.toFile().mkdirs()) {
+            throw new BatfishException("Failed to create directory: '"
+                  + parentFolder.toString() + "'");
          }
       }
       else {
-         if (!parentFolder.isDirectory()) {
-            throw new Exception(parentFolder.getAbsolutePath()
+         if (!Files.isDirectory(parentFolder)) {
+            throw new BatfishException(parentFolder.toString()
                   + " already exists but is not a folder");
          }
       }
-
-      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
-      }
+      CommonUtil.writeStreamToFile(fileStream, file);
    }
 
-   public boolean queueWork(WorkItem workItem) throws Exception {
-
-      File testrigDir = Paths
-            .get(Main.getSettings().getContainersLocation(),
-                  workItem.getContainerName(), workItem.getTestrigName())
-            .toFile();
-
-      if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
-         throw new Exception("Non-existent testrig: " + testrigDir.getName());
+   public boolean queueWork(WorkItem workItem) {
+      Path testrigDir = Main.getSettings().getContainersLocation().resolve(
+            Paths.get(workItem.getContainerName(), workItem.getTestrigName()));
+      if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
+         throw new BatfishException("Non-existent testrig: '"
+               + testrigDir.getFileName().toString() + "'");
       }
-
-      boolean success = _workQueueMgr
-            .queueUnassignedWork(new QueuedWork(workItem));
-
+      boolean success;
+      try {
+         success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
+      }
+      catch (Exception e) {
+         throw new BatfishException("Failed to queue work", e);
+      }
       // as an optimization trigger AssignWork to see if we can schedule this
       // (or another) work
       if (success) {
@@ -985,7 +834,6 @@ public class WorkMgr {
          };
          thread.start();
       }
-
       return success;
    }
 
@@ -1006,184 +854,165 @@ public class WorkMgr {
 
    }
 
+   /**
+    * Upload a new environment to an existing testrig.
+    *
+    * @param containerName
+    *           The container in which the testrig resides
+    * @param testrigName
+    *           The testrig in which the (optional base environment and) new
+    *           environment reside
+    * @param baseEnvName
+    *           The name of an optional base environment. The new environment is
+    *           initialized with files from this base if it is provided.
+    * @param newEnvName
+    *           The name of the new environment to be created
+    * @param fileStream
+    *           A stream providing the zip file containing the file structure of
+    *           the new environment.
+    */
    public void uploadEnvironment(String containerName, String testrigName,
-         String envName, InputStream fileStream) throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-
-      File envDir = Paths.get(testrigDir.getAbsolutePath(),
-            BfConsts.RELPATH_ENVIRONMENTS_DIR, envName).toFile();
-
-      if (envDir.exists()) {
-         throw new FileExistsException(
-               "environment " + envName + " exists for testrig " + testrigName);
+         String baseEnvName, String newEnvName, InputStream fileStream) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path environmentsDir = testrigDir
+            .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
+      Path newEnvDir = environmentsDir.resolve(newEnvName);
+      Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
+      if (Files.exists(newEnvDir)) {
+         throw new BatfishException("Environment: '" + newEnvName
+               + "' already exists for testrig: '" + testrigName + "'");
       }
-
-      if (!envDir.mkdirs()) {
-         throw new Exception(
-               "failed to create directory " + envDir.getAbsolutePath());
+      if (!dstDir.toFile().mkdirs()) {
+         throw new BatfishException(
+               "Failed to create directory: '" + dstDir.toString() + "'");
       }
+      Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
+      CommonUtil.writeStreamToFile(fileStream, zipFile);
 
-      File zipFile = Files
-            .createTempFile("coordinatortmpuploadenvironment", ".zip").toFile();
-
-      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
+      /**
+       * First copy base environment if it is set
+       */
+      if (baseEnvName.length() > 0) {
+         Path baseEnvPath = environmentsDir
+               .resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
+         if (!Files.exists(baseEnvPath)) {
+            CommonUtil.delete(zipFile);
+            throw new BatfishException(
+                  "Base environment for copy does not exist: '" + baseEnvName
+                        + "'");
+         }
+         SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
+         dstDir.toFile().mkdirs();
+         for (Path baseFile : baseFileList) {
+            Path target;
+            if (isEnvFile(baseFile)) {
+               target = dstDir.resolve(baseFile.getFileName());
+               CommonUtil.copy(baseFile, target);
+            }
          }
       }
 
       // now unzip
-      File unzipDir = Paths
-            .get(envDir.getAbsolutePath(), BfConsts.RELPATH_ENV_DIR).toFile();
-      UnzipUtility unzipper = new UnzipUtility();
-      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
+      Path unzipDir = CommonUtil.createTempDirectory("coord_up_env_unzip_dir_");
+      UnzipUtility.unzip(zipFile, unzipDir);
 
-      // sanity check what we got
-      // 1. there should be just one top-level folder
-      File[] fileList = unzipDir.listFiles();
-
-      if (fileList.length != 1 || !fileList[0].isDirectory()) {
-         FileUtils.deleteDirectory(envDir);
-         throw new Exception(
+      /*-
+       *  Sanity check what we got:
+       *    There should be just one top-level folder
+       */
+      SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
+      if (unzipDirEntries.size() != 1
+            || !Files.isDirectory(unzipDirEntries.iterator().next())) {
+         CommonUtil.deleteDirectory(newEnvDir);
+         CommonUtil.deleteDirectory(unzipDir);
+         throw new BatfishException(
                "Unexpected packaging of environment. There should be just one top-level folder");
       }
-
-      File[] subFileList = fileList[0].listFiles();
+      Path unzipSubdir = unzipDirEntries.iterator().next();
+      SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
 
       // things look ok, now make the move
-      for (File file : subFileList) {
-         File target = Paths.get(unzipDir.toString(), file.getName()).toFile();
-         moveByCopy(file, target);
+      for (Path subdirFile : subFileList) {
+         Path target = dstDir.resolve(subdirFile.getFileName());
+         CommonUtil.moveByCopy(subdirFile, target);
       }
 
       // delete the empty directory and the zip file
-      fileList[0].delete();
-      zipFile.delete();
+      CommonUtil.deleteDirectory(unzipDir);
+      CommonUtil.deleteIfExists(zipFile);
    }
 
    public void uploadQuestion(String containerName, String testrigName,
-         String qName, InputStream fileStream, InputStream paramFileStream)
-         throws Exception {
-
-      File testrigDir = getdirTestrig(containerName, testrigName);
-
-      File qDir = Paths.get(testrigDir.getAbsolutePath(),
-            BfConsts.RELPATH_QUESTIONS_DIR, qName).toFile();
-
-      if (qDir.exists()) {
-         throw new FileExistsException(
-               "question " + qName + " exists for testrig " + testrigName);
+         String qName, InputStream fileStream, InputStream paramFileStream) {
+      Path testrigDir = getdirTestrig(containerName, testrigName);
+      Path qDir = testrigDir
+            .resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
+      if (Files.exists(qDir)) {
+         throw new BatfishException("Question: '" + qName
+               + "' already exists for testrig '" + testrigName + "'");
       }
-
-      if (!qDir.mkdirs()) {
-         throw new Exception(
-               "failed to create directory " + qDir.getAbsolutePath());
+      if (!qDir.toFile().mkdirs()) {
+         throw new BatfishException(
+               "Failed to create directory: '" + qDir.toString() + "'");
       }
-
-      File file = Paths
-            .get(qDir.getAbsolutePath(), BfConsts.RELPATH_QUESTION_FILE)
-            .toFile();
-
-      try (OutputStream fileOutputStream = new FileOutputStream(file)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
-      }
-
+      Path file = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      CommonUtil.writeStreamToFile(fileStream, file);
    }
 
    public void uploadTestrig(String containerName, String testrigName,
-         InputStream fileStream) throws Exception {
-
-      File containerDir = getdirContainer(containerName);
-
-      File testrigDir = Paths.get(containerDir.getAbsolutePath(),
-            BfConsts.RELPATH_TESTRIGS_DIR, testrigName).toFile();
-
-      if (testrigDir.exists()) {
-         throw new FileExistsException(
-               "Testrig with name " + testrigName + " already exists");
+         InputStream fileStream) {
+      Path containerDir = getdirContainer(containerName);
+      Path testrigDir = containerDir
+            .resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+      if (Files.exists(testrigDir)) {
+         throw new BatfishException(
+               "Testrig with name: '" + testrigName + "' already exists");
       }
-
-      if (!testrigDir.mkdirs()) {
-         throw new Exception(
-               "failed to create directory " + testrigDir.getAbsolutePath());
+      if (!testrigDir.toFile().mkdirs()) {
+         throw new BatfishException(
+               "Failed to create directory: '" + testrigDir.toString() + "'");
       }
+      Path zipFile = CommonUtil.createTempFile("testrig", ".zip");
+      CommonUtil.writeStreamToFile(fileStream, zipFile);
+      Path unzipDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+      UnzipUtility.unzip(zipFile, unzipDir);
 
-      File zipFile = Files.createTempFile("testrig", ".zip").toFile();
-      try (OutputStream fileOutputStream = new FileOutputStream(zipFile)) {
-         int read = 0;
-         final byte[] bytes = new byte[1024];
-         while ((read = fileStream.read(bytes)) != -1) {
-            fileOutputStream.write(bytes, 0, read);
-         }
+      /*-
+       * Sanity check what we got:
+       *    There should be just one top-level folder.
+       */
+      SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
+      if (unzipDirEntries.size() != 1
+            || !Files.isDirectory(unzipDirEntries.iterator().next())) {
+         CommonUtil.deleteDirectory(testrigDir);
+         throw new BatfishException(
+               "Unexpected packaging of environment. There should be just one top-level folder");
       }
-
-      // now unzip
-      File unzipDir = Paths
-            .get(testrigDir.getAbsolutePath(), BfConsts.RELPATH_TEST_RIG_DIR)
-            .toFile();
-      UnzipUtility unzipper = new UnzipUtility();
-      unzipper.unzip(zipFile, unzipDir.getAbsolutePath());
-
-      // sanity check what we got
-      // 1. there should be just one top-level folder
-      // 2. there should be a directory called configs in that folder
-      File[] fileList = unzipDir.listFiles();
-
-      if (fileList.length != 1 || !fileList[0].isDirectory()) {
-         FileUtils.deleteDirectory(testrigDir);
-         throw new Exception(
-               "Unexpected packaging of test rig. There should be just one top-level folder. Got "
-                     + fileList.length);
-      }
-
-      File[] subFileList = fileList[0].listFiles();
-
-      // boolean foundConfigs = false;
-      // for (File file : subFileList) {
-      // if (file.isDirectory() && file.getName().equals("configs")) {
-      // foundConfigs = true;
-      // break;
-      // }
-      // }
-      //
-      // if (!foundConfigs) {
-      // FileUtils.deleteDirectory(testrigDir);
-      // throw new Exception(
-      // "Unexpected packaging of test rig. Did not find configs folder inside
-      // the top-level folder");
-      // }
+      Path unzipSubdir = unzipDirEntries.iterator().next();
+      SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
 
       // create empty default environment
-      File defaultEnvironmentLeafDir = Paths.get(testrigDir.getAbsolutePath(),
-            BfConsts.RELPATH_ENVIRONMENTS_DIR,
-            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, BfConsts.RELPATH_ENV_DIR)
-            .toFile();
-      defaultEnvironmentLeafDir.mkdirs();
+      Path defaultEnvironmentLeafDir = testrigDir
+            .resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                  BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                  BfConsts.RELPATH_ENV_DIR));
+      defaultEnvironmentLeafDir.toFile().mkdirs();
 
       // things look ok, now make the move
-      for (File file : subFileList) {
-         File target;
-         if (isEnvFile(file)) {
-            target = Paths.get(defaultEnvironmentLeafDir.getAbsolutePath(),
-                  file.getName()).toFile();
+      for (Path subFile : subFileList) {
+         Path target;
+         if (isEnvFile(subFile)) {
+            target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
          }
          else {
-            target = Paths.get(unzipDir.toString(), file.getName()).toFile();
+            target = unzipDir.resolve(subFile.getFileName());
          }
-         moveByCopy(file, target);
+         CommonUtil.moveByCopy(subFile, target);
       }
 
       // delete the empty directory and the zip file
-      fileList[0].delete();
-      zipFile.delete();
-
+      CommonUtil.deleteDirectory(unzipSubdir);
+      CommonUtil.delete(zipFile);
    }
 
 }

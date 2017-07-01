@@ -112,14 +112,12 @@ public class WorkQueueMgr {
    }
 
    public QueuedWork getWorkForChecking() {
-
       for (QueuedWork work : _queueIncompleteWork) {
          if (work.getStatus() == WorkStatusCode.ASSIGNED) {
             work.setStatus(WorkStatusCode.CHECKINGSTATUS);
             return work;
          }
       }
-
       return null;
    }
 
