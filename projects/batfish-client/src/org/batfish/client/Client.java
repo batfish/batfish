@@ -21,16 +21,19 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -53,6 +56,13 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
@@ -98,6 +108,9 @@ public class Client extends AbstractClient implements IClient {
    private static final int NUM_TRIES_WARNING_THRESHOLD = 5;
 
    private static final String STARTUP_FILE = ".batfishclientrc";
+
+   private static final Set<String> COMPARATORS
+         = new HashSet<>(Arrays.asList(">", ">=", "==", "!=", "<", "<="));
 
    private Map<String, String> _additionalBatfishOptions;
 
@@ -246,26 +259,9 @@ public class Client extends AbstractClient implements IClient {
          throw new BatfishException("Invalid instance data (JSON)", e);
       }
       Map<String, Variable> variables = instanceData.getVariables();
-      for (Entry<String, String> e : parameters.entrySet()) {
-         String parameterName = e.getKey();
-         String parameterValue = e.getValue();
-         Variable variable = variables.get(parameterName);
-         if (variable != null) {
-            JsonNode value;
-            try {
-               value = mapper.readTree(parameterValue);
-            }
-            catch (IOException e1) {
-               throw new BatfishException("Variable value is not valid JSON",
-                     e1);
-            }
-            variable.setValue(value);
-         }
-         else {
-            throw new BatfishException("No variable named: '" + parameterName
-                  + "' in supplied question template");
-         }
-      }
+      validateAndSet(parameters, variables);
+      checkVariableState(variables);
+
       String modifiedInstanceDataStr;
       try {
          modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
@@ -313,6 +309,347 @@ public class Client extends AbstractClient implements IClient {
             _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig,
             _currDeltaEnv, isDelta);
       return execute(wItemAs, outWriter);
+   }
+
+   /**
+    * For each key in {@code parameters}, validate that its value satisfies the
+    * requirements specified by {@code variables} for that specific
+    * key. Set value to {@code variables} if validation passed.
+    *
+    * @throws BatfishException if the key in parameters does not exist in
+    * variable, or the values in {@code parameters} do not match the
+    * requirements in {@code variables} for that specific key.
+    */
+   static void validateAndSet(Map<String, String> parameters,
+                        Map<String, Variable> variables)
+                        throws BatfishException {
+      for (Entry<String, String> e : parameters.entrySet()) {
+         String parameterName = e.getKey();
+         String parameterValue = e.getValue();
+         Variable variable = variables.get(parameterName);
+         if (variable == null) {
+            throw new BatfishException("No variable named: '" + parameterName
+                  + "' in supplied question template");
+         }
+         JsonNode value = parseParaValue(parameterName, parameterValue);
+         if (variable.getMinElements() != null) {
+            // Value is an array, check size and validate each elements in it
+            if (!value.isArray() || value.size() < variable.getMinElements()) {
+               throw new BatfishException(
+                     String.format("Invalid value for parameter %s: %s. " +
+                                 "Expecting a JSON array of at least %d " +
+                                 "elements", parameterName, parameterValue,
+                                 variable.getMinElements()));
+            }
+            for (JsonNode node : value) {
+               validateNode(node, variable, parameterName);
+            }
+         }
+         else {
+            validateNode(value, variable, parameterName);
+         }
+         // validation passed.
+         variable.setValue(value);
+      }
+   }
+
+   /**
+    * Parse contents of {@code parameterValue} to build a
+    * {@link JsonNode JsonNode}.
+    *
+    * @return a json-encoded {@link JsonNode node} that contains the
+    * information in {@code parameterValue}.
+    *
+    * @throws BatfishException if contents of {@code parameterValue} is not
+    * valid JSON.
+    */
+   static JsonNode parseParaValue(String parameterName, String parameterValue)
+         throws BatfishException {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      JsonNode value;
+      try {
+         value = mapper.readTree(parameterValue);
+      }
+      catch (IOException e1) {
+         throw new BatfishException(
+               String.format("Variable value \"%s\" is not valid JSON",
+                     parameterValue), e1);
+      }
+      return value;
+   }
+
+   /**
+    * This method calls {@link Client#validateType(JsonNode, Variable)} to
+    * check that the contents encoded in {@code value} match the requirement
+    * specified in {@code variable}.
+    */
+   static void validateNode(JsonNode value, Variable variable,
+                            String parameterName) throws BatfishException{
+      try {
+         validateType(value, variable);
+      } catch (BatfishException e) {
+         String errorMessage = String
+               .format("Invalid value for parameter %s: %s",
+                     parameterName, value);
+         throw new BatfishException(errorMessage, e);
+      }
+   }
+
+   /**
+    * Validate the contents contained in json-encoded {@code value}
+    * matches the type required by {@code variable}, and the length of input
+    * string meets the requirement of minimum length if specified in
+    * {@code variable}. Call {@link Variable#getType()} on {@code variable}
+    * gives the expected type.
+    *
+    * @throws BatfishException if the content encoded in input {@code value}
+    * does not satisfy the requirements specified in {@code variable}.
+    */
+   static void validateType(JsonNode value, Variable variable)
+         throws BatfishException {
+      int minLength = variable
+            .getMinLength() == null ? 0 : variable.getMinLength();
+      if (value.isTextual() && value.textValue().length() < minLength) {
+         throw new BatfishException(
+               String.format("Must be at least %s characters in length",
+                     minLength));
+      }
+      Variable.Type expectedType = variable.getType();
+      switch (expectedType) {
+         case BOOLEAN:
+            if (!value.isBoolean()) {
+               throw new BatfishException(
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case COMPARATOR:
+            if (!(COMPARATORS.contains(value.textValue()))) {
+               throw new BatfishException(
+                     String.format("It is not a known %s. Valid options are:" +
+                           " %s", expectedType.getName(),
+                           COMPARATORS));
+            }
+            break;
+         case DOUBLE:
+            if (!value.isDouble()) {
+               throw new BatfishException(
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case FLOAT:
+            if (!value.isFloat()) {
+               throw new BatfishException(
+                        String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case INTEGER:
+            if (!value.isInt()) {
+               throw new BatfishException(
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case LONG:
+            if (!value.isLong()) {
+               throw new BatfishException(
+                     String.format("It is not a valid JSON %s value",
+                           expectedType.getName()));
+            }
+            break;
+         case IP:
+            // TODO: Need to double check isInetAddress()
+            if (!(value.isTextual())) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            new Ip(value.textValue());
+            break;
+         case IP_PROTOCOL:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            try {
+               IpProtocol.fromString(value.textValue());
+            } catch (IllegalArgumentException e) {
+               throw new BatfishException(
+                     String.format("Unknown %s string",
+                           expectedType.getName()));
+            }
+
+            break;
+         case IP_WILDCARD:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            new IpWildcard(value.textValue());
+            break;
+         case JAVA_REGEX:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            try {
+               Pattern.compile(value.textValue());
+            } catch (PatternSyntaxException e) {
+               throw new BatfishException("It is not a valid Java regular " +
+                           "expression", e);
+            }
+            break;
+         case JSON_PATH_REGEX:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            validateJsonPathRegex(value.textValue());
+            break;
+         case PREFIX:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            new Prefix(value.textValue());
+            break;
+         case PREFIX_RANGE:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            new PrefixRange(value.textValue());
+            break;
+         case STRING:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            break;
+         case SUBRANGE:
+            if (!(value.isTextual() || value.isInt())) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string or " +
+                                 "integer", expectedType.getName()));
+            }
+            Object actualValue = value
+                  .isTextual() ? value.textValue() : value.asInt();
+            new SubRange(actualValue);
+            break;
+         case PROTOCOL:
+            if (!value.isTextual()) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
+            }
+            Protocol.fromString(value.textValue());
+            break;
+         case JSON_PATH:
+            validateJsonPath(value);
+            break;
+         default:
+            throw new BatfishException(
+                  String.format("Unsupported parameter type: %s",
+                        expectedType));
+      }
+   }
+
+   /**
+    * Validate that {@code jsonPathRegex} contains a valid Java regular
+    * expression of a {@code JsonPath} (Starts with "/", ends with either "/" or
+    * "/i", contains a valid Java regular expression between "/").
+    *
+    * <p> As written, this function will accept the strings "/" and "/i" as
+    * complete expressions – resulting in an empty inner Java regular
+    * expression.</p>
+    *
+    * @throws BatfishException if the content of {@code jsonPathRegex} is not
+    * a valid Java regular expression of a JsonPath.
+    */
+   static void validateJsonPathRegex(String jsonPathRegex)
+         throws BatfishException {
+      if (!jsonPathRegex.startsWith("/")) {
+         throw new BatfishException(
+               String.format("A Batfish %s must start with \"/\"",
+                              Variable.Type.JSON_PATH_REGEX.getName()));
+      }
+      if (!(jsonPathRegex.endsWith("/") || jsonPathRegex.endsWith("/i"))) {
+         throw new BatfishException(
+               String.format("A Batfish %s must end in either \"/\" or \"/i\"",
+                     Variable.Type.JSON_PATH_REGEX.getName()));
+      }
+      String innerPath = "";
+      if (jsonPathRegex.lastIndexOf('/') > 0) {
+         innerPath = jsonPathRegex
+               .substring(1, jsonPathRegex.lastIndexOf('/'));
+      }
+      try {
+         Pattern.compile(innerPath);
+      } catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               String.format("Invalid %s at interior of %s",
+                     Variable.Type.JAVA_REGEX.getName(),
+                     Variable.Type.JSON_PATH_REGEX.getName()), e);
+      }
+   }
+
+   /**
+    * Validate that json-encoded {@code jsonPath} is a valid jsonPath dictionary
+    * (A valid jsonPath contains key 'path' which mapping to a String, and an
+    * optional key 'suffix' which mapping to a boolean value).
+    *
+    * @throws BatfishException if {@code jsonPath} is not a valid jsonPath
+    * dictionary.
+    */
+   static void validateJsonPath(JsonNode jsonPath) throws BatfishException {
+      if (!jsonPath.isContainerNode()) {
+         throw new BatfishException(
+               String.format("Expecting a JSON dictionary for a Batfish %s",
+                           Variable.Type.JSON_PATH.getName()));
+      }
+      if (jsonPath.get("path") == null) {
+         throw new BatfishException(
+               String.format("Missing 'path' element of %s",
+                     Variable.Type.JSON_PATH.getName()));
+      }
+      if (!jsonPath.get("path").isTextual()) {
+         throw new BatfishException(
+               String.format("'path' element of %s must be a JSON string",
+                     Variable.Type.JSON_PATH.getName()));
+      }
+      if (jsonPath.get("suffix") != null
+            && !jsonPath.get("suffix").isBoolean()) {
+         throw new BatfishException(
+               String.format("'suffix' element of %s must be a JSON boolean",
+                     Variable.Type.JSON_PATH.getName()));
+      }
+   }
+
+   /**
+    * Verify that every non-optional variable has value assigned to it.
+    *
+    * @throws BatfishException when there exists a missing parameter: it is
+    * not optional in {@code variable}, but the user failed to provide it.
+    */
+   static void checkVariableState(Map<String, Variable> variables)
+         throws BatfishException{
+      for (Entry<String, Variable> e : variables.entrySet()) {
+         String variableName = e.getKey();
+         Variable variable = e.getValue();
+         if (!variable.getOptional() && variable.getValue() == null) {
+            throw new BatfishException(
+                  String.format("Missing parameter: %s", variableName));
+         }
+      }
    }
 
    private boolean answer(String[] words, FileWriter outWriter,
