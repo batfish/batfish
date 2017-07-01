@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import jersey.repackaged.com.google.common.net.InetAddresses;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
@@ -59,6 +56,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -463,10 +461,12 @@ public class Client extends AbstractClient implements IClient {
             break;
          case IP:
             // TODO: Need to double check isInetAddress()
-            if (!(value.isTextual()
-                  && InetAddresses.isInetAddress(value.textValue()))) {
-               throw new BatfishException("It is not a valid IP address");
+            if (!(value.isTextual())) {
+               throw new BatfishException(
+                     String.format("A Batfish %s must be a JSON string",
+                           expectedType.getName()));
             }
+            new Ip(value.textValue());
             break;
          case IP_PROTOCOL:
             if (!value.isTextual()) {
