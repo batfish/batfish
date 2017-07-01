@@ -183,6 +183,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1145,8 +1146,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public EnvironmentCreationAnswerElement createEnvironment(String newEnvName,
-         NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
-         Topology edgeBlacklist, boolean dp) {
+         SortedSet<String> nodeBlacklist,
+         SortedSet<NodeInterfacePair> interfaceBlacklist,
+         SortedSet<Edge> edgeBlacklist, boolean dp) {
       EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -1158,8 +1160,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
-      applyBaseDir(_testrigSettings,
-            _settings.getContainerDir(), _testrigSettings.getName(), newEnvName,
+      applyBaseDir(_testrigSettings, _settings.getContainerDir(),
+            _testrigSettings.getName(), newEnvName,
             _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -1178,45 +1180,45 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       // write node blacklist from question
+      String nodeBlacklistStr;
       if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
-         StringBuilder nodeBlacklistSb = new StringBuilder();
-         for (String node : nodeBlacklist) {
-            nodeBlacklistSb.append(node + "\n");
+         try {
+            nodeBlacklistStr = new BatfishObjectMapper()
+                  .writeValueAsString(nodeBlacklist);
          }
-         String nodeBlacklistStr = nodeBlacklistSb.toString();
+         catch (JsonProcessingException e) {
+            throw new BatfishException("Could not serialize node blacklist", e);
+         }
          CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(),
                nodeBlacklistStr);
       }
       // write interface blacklist from question
       if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
-         StringBuilder interfaceBlacklistSb = new StringBuilder();
-         for (NodeInterfacePair pair : interfaceBlacklist) {
-            interfaceBlacklistSb.append(
-                  pair.getHostname() + ":" + pair.getInterface() + "\n");
+         String interfaceBlacklistStr;
+         try {
+            interfaceBlacklistStr = new BatfishObjectMapper()
+                  .writeValueAsString(interfaceBlacklist);
          }
-         String interfaceBlacklistStr = interfaceBlacklistSb.toString();
+         catch (JsonProcessingException e) {
+            throw new BatfishException(
+                  "Could not serialize interface blacklist", e);
+         }
          CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(),
                interfaceBlacklistStr);
       }
 
       // write edge blacklist from question
       if (edgeBlacklist != null) {
-         SortedSet<Edge> edges = edgeBlacklist.sortedEdges();
-         if (!edges.isEmpty()) {
-            StringBuilder edgeBlacklistSb = new StringBuilder();
-            edgeBlacklistSb.append(BatfishTopologyCombinedParser.HEADER + "\n");
-            for (Edge edge : edges) {
-               String node1 = edge.getNode1();
-               String node2 = edge.getNode2();
-               String int1 = edge.getInt1();
-               String int2 = edge.getInt2();
-               edgeBlacklistSb.append("\"" + node1 + "\" : \"" + int1 + ", \""
-                     + node2 + "\" : \"" + int2 + "\"\n");
-            }
-            String edgeBlacklistStr = edgeBlacklistSb.toString();
-            CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(),
-                  edgeBlacklistStr);
+         String edgeBlacklistStr;
+         try {
+            edgeBlacklistStr = new BatfishObjectMapper()
+                  .writeValueAsString(edgeBlacklist);
          }
+         catch (JsonProcessingException e) {
+            throw new BatfishException("Could not serialize edge blacklist", e);
+         }
+         CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(),
+               edgeBlacklistStr);
       }
 
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
@@ -3357,7 +3359,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                       * clear what to do.
                       */
                      jobj.remove(varName);
-                  } else {
+                  }
+                  else {
                      // What to do here? For now, do nothing and assume that
                      // later validation will handle it.
                   }
@@ -3373,12 +3376,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      for (int i = 0; i < value.size(); i++) {
                         String valueJsonString = new ObjectMapper()
                               .writeValueAsString(value.get(i));
-                        arr.put(i,
-                              new JSONObject(
-                                    preprocessQuestion(valueJsonString)));
+                        arr.put(i, new JSONObject(
+                              preprocessQuestion(valueJsonString)));
                      }
                      jobj.put(varName, arr);
-                  } else {
+                  }
+                  else {
                      String valueJsonString = new ObjectMapper()
                            .writeValueAsString(value);
                      jobj.put(varName,
@@ -3429,8 +3432,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       catch (JSONException | IOException e) {
          throw new BatfishException(
-               String.format(
-                     "Could not convert raw question text [%s] to JSON",
+               String.format("Could not convert raw question text [%s] to JSON",
                      rawQuestionText),
                e);
       }

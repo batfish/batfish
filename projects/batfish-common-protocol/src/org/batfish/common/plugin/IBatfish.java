@@ -12,6 +12,7 @@ import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.ForwardingAction;
@@ -31,7 +32,6 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BgpTableFormat;
@@ -59,8 +59,9 @@ public interface IBatfish extends IPluginConsumer {
    Topology computeTopology(Map<String, Configuration> configurations);
 
    AnswerElement createEnvironment(String environmentName,
-         NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
-         Topology edgeBlacklist, boolean dp);
+         SortedSet<String> nodeBlacklist,
+         SortedSet<NodeInterfacePair> interfaceBlacklist,
+         SortedSet<Edge> edgeBlacklist, boolean dp);
 
    Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
