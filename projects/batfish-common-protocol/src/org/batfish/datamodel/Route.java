@@ -56,7 +56,7 @@ public class Route implements Comparable<Route>, Serializable {
 
    private final Prefix _network;
 
-   private final transient String _nextHop;
+   private final String _nextHop;
 
    private final String _nextHopInterface;
 

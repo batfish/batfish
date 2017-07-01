@@ -3050,7 +3050,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                _settings.printParseTree());
          String fileText = inputData.get(currentFile);
          ParseEnvironmentRoutingTableJob job = new ParseEnvironmentRoutingTableJob(
-               _settings, fileText, currentFile, warnings);
+               _settings, fileText, currentFile, warnings, this);
          jobs.add(job);
       }
       BatfishJobExecutor<ParseEnvironmentRoutingTableJob, ParseEnvironmentRoutingTablesAnswerElement, ParseEnvironmentRoutingTableResult, SortedMap<String, RoutesByVrf>> executor = new BatfishJobExecutor<>(

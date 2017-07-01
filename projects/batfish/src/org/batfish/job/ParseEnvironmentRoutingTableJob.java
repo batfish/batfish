@@ -19,10 +19,13 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 
 public class ParseEnvironmentRoutingTableJob
       extends BatfishJob<ParseEnvironmentRoutingTableResult> {
+
+   private IBatfish _batfish;
 
    private Path _file;
 
@@ -35,8 +38,9 @@ public class ParseEnvironmentRoutingTableJob
    private Warnings _warnings;
 
    public ParseEnvironmentRoutingTableJob(Settings settings, String fileText,
-         Path file, Warnings warnings) {
+         Path file, Warnings warnings, IBatfish batfish) {
       super(settings);
+      _batfish = batfish;
       _fileText = fileText;
       _file = file;
       _hostname = file.getFileName().toString();
@@ -71,7 +75,7 @@ public class ParseEnvironmentRoutingTableJob
                _fileText, _settings);
          combinedParser = nxosRoutingTableParser;
          extractor = new NxosRoutingTableExtractor(_hostname, _fileText,
-               nxosRoutingTableParser, _warnings);
+               nxosRoutingTableParser, _warnings, _batfish);
          break;
 
       case EOS:
@@ -79,7 +83,7 @@ public class ParseEnvironmentRoutingTableJob
                _fileText, _settings);
          combinedParser = eosRoutingTableParser;
          extractor = new EosRoutingTableExtractor(_hostname, _fileText,
-               eosRoutingTableParser, _warnings);
+               eosRoutingTableParser, _warnings, _batfish);
          break;
 
       /**
