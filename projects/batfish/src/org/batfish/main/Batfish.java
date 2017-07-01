@@ -3329,15 +3329,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private String preprocessQuestion(String rawQuestionText) {
       try {
          JSONObject jobj = new JSONObject(rawQuestionText);
-         // first preprocess inner questions
-         if (jobj.has(Question.INNER_QUESTION_VAR)) {
-            String innerQuestionStr = jobj.getString(Question.INNER_QUESTION_VAR);
-            String preprocessedInnerQuestionStr =
-                  preprocessQuestion(innerQuestionStr);
-            JSONObject preprocessedInnerQuestion = new JSONObject(
-                  preprocessedInnerQuestionStr);
-            jobj.put(Question.INNER_QUESTION_VAR, preprocessedInnerQuestion);
-         }
          if (jobj.has(Question.INSTANCE_VAR)
                && !jobj.isNull(Question.INSTANCE_VAR)) {
             String instanceDataStr = jobj.getString(Question.INSTANCE_VAR);
