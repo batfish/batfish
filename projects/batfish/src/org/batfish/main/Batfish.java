@@ -1838,8 +1838,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .getEdgeBlacklistPath();
       if (edgeBlacklistPath != null) {
          if (Files.exists(edgeBlacklistPath)) {
-            Topology blacklistTopology = parseTopology(edgeBlacklistPath);
-            blacklistEdges = blacklistTopology.getEdges();
+            blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
          }
       }
       return blacklistEdges;
@@ -2968,6 +2967,20 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return config;
    }
 
+   private EdgeSet parseEdgeBlacklist(Path edgeBlacklistPath) {
+      String edgeBlacklistText = CommonUtil.readFile(edgeBlacklistPath);
+      SortedSet<Edge> edges;
+      try {
+         edges = new BatfishObjectMapper().<SortedSet<Edge>> readValue(
+               edgeBlacklistText, new TypeReference<SortedSet<Edge>>() {
+               });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to parse edge blacklist", e);
+      }
+      return new EdgeSet(edges);
+   }
+
    private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
          SortedMap<Path, String> inputData,
          ParseEnvironmentBgpTablesAnswerElement answerElement) {
@@ -3048,38 +3061,33 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private Set<NodeInterfacePair> parseInterfaceBlacklist(
          Path interfaceBlacklistPath) {
-      Set<NodeInterfacePair> ifaces = new TreeSet<>();
       String interfaceBlacklistText = CommonUtil
             .readFile(interfaceBlacklistPath);
-      String[] interfaceBlacklistLines = interfaceBlacklistText.split("\n");
-      for (String interfaceBlacklistLine : interfaceBlacklistLines) {
-         String trimmedLine = interfaceBlacklistLine.trim();
-         if (trimmedLine.length() > 0) {
-            String[] parts = trimmedLine.split(":");
-            if (parts.length != 2) {
-               throw new BatfishException(
-                     "Invalid node-interface pair format: " + trimmedLine);
-            }
-            String hostname = parts[0];
-            String iface = parts[1];
-            NodeInterfacePair p = new NodeInterfacePair(hostname, iface);
-            ifaces.add(p);
-         }
+      SortedSet<NodeInterfacePair> ifaces;
+      try {
+         ifaces = new BatfishObjectMapper()
+               .<SortedSet<NodeInterfacePair>> readValue(interfaceBlacklistText,
+                     new TypeReference<SortedSet<NodeInterfacePair>>() {
+                     });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to parse interface blacklist", e);
       }
       return ifaces;
    }
 
    private NodeSet parseNodeBlacklist(Path nodeBlacklistPath) {
-      NodeSet nodeSet = new NodeSet();
       String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
-      String[] nodeBlacklistLines = nodeBlacklistText.split("\n");
-      for (String nodeBlacklistLine : nodeBlacklistLines) {
-         String hostname = nodeBlacklistLine.trim();
-         if (hostname.length() > 0) {
-            nodeSet.add(hostname);
-         }
+      SortedSet<String> nodes;
+      try {
+         nodes = new BatfishObjectMapper().<SortedSet<String>> readValue(
+               nodeBlacklistText, new TypeReference<SortedSet<String>>() {
+               });
       }
-      return nodeSet;
+      catch (IOException e) {
+         throw new BatfishException("Failed to parse node blacklist", e);
+      }
+      return new NodeSet(nodes);
    }
 
    private NodeRoleMap parseNodeRoles(Path testRigPath) {
@@ -3749,8 +3757,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .getDataPlanePath();
       Path dataPlaneAnswerPath = _testrigSettings.getEnvironmentSettings()
             .getDataPlaneAnswerPath();
-      CommonUtil.delete(dataPlanePath);
-      CommonUtil.delete(dataPlaneAnswerPath);
+      CommonUtil.deleteIfExists(dataPlanePath);
+      CommonUtil.deleteIfExists(dataPlaneAnswerPath);
       computeDataPlane(false);
    }
 
@@ -3760,7 +3768,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
       Path bgpTablesOutputPath = envSettings
             .getSerializeEnvironmentBgpTablesPath();
-      CommonUtil.delete(answerPath);
+      CommonUtil.deleteIfExists(answerPath);
       CommonUtil.deleteDirectory(bgpTablesOutputPath);
       computeEnvironmentBgpTables();
    }
@@ -3772,7 +3780,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .getParseEnvironmentRoutingTablesAnswerPath();
       Path rtOutputPath = envSettings
             .getSerializeEnvironmentRoutingTablesPath();
-      CommonUtil.delete(answerPath);
+      CommonUtil.deleteIfExists(answerPath);
       CommonUtil.deleteDirectory(rtOutputPath);
       computeEnvironmentRoutingTables();
    }

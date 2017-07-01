@@ -306,7 +306,7 @@ public class Client extends AbstractClient implements IClient {
       _logger.debug("Uploaded question. Answering now.\n");
       // delete the temporary params file
       if (questionFile != null) {
-         CommonUtil.delete(questionFile);
+         CommonUtil.deleteIfExists(questionFile);
       }
       // answer the question
       WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(questionName,
@@ -419,7 +419,7 @@ public class Client extends AbstractClient implements IClient {
       questionFile.toFile().deleteOnExit();
       boolean result = answerFile(questionFile, isDelta, outWriter);
       if (questionFile != null) {
-         CommonUtil.delete(questionFile);
+         CommonUtil.deleteIfExists(questionFile);
       }
       return result;
    }
@@ -1077,8 +1077,9 @@ public class Client extends AbstractClient implements IClient {
       String deltaEnvLocation = parameters.get(0);
       String deltaEnvName = (parameters.size() > 1) ? parameters.get(1)
             : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID().toString();
+      String baseEnvName = (parameters.size() > 2) ? parameters.get(2) : "";
 
-      if (!uploadTestrigOrEnv(deltaEnvLocation, deltaEnvName, false)) {
+      if (!uploadEnv(deltaEnvLocation, deltaEnvName, baseEnvName)) {
          return false;
       }
 
@@ -1186,7 +1187,7 @@ public class Client extends AbstractClient implements IClient {
             null);
 
       if (analysisFile != null) {
-         CommonUtil.delete(analysisFile);
+         CommonUtil.deleteIfExists(analysisFile);
       }
 
       logOutput(outWriter, "Output of configuring analysis " + analysisName
@@ -1213,7 +1214,7 @@ public class Client extends AbstractClient implements IClient {
          _logger.output("\n");
       }
 
-      if (!uploadTestrigOrEnv(testrigLocation, testrigName, true)) {
+      if (!uploadTestrig(testrigLocation, testrigName)) {
          unsetTestrig(doDelta);
          return false;
       }
@@ -2249,32 +2250,47 @@ public class Client extends AbstractClient implements IClient {
             objectName, objectFile);
    }
 
-   private boolean uploadTestrigOrEnv(String fileOrDir, String testrigOrEnvName,
-         boolean isTestrig) throws Exception {
-
-      File filePointer = new File(fileOrDir);
-
-      String uploadFilename = fileOrDir;
-
-      if (filePointer.isDirectory()) {
-         File uploadFile = File.createTempFile("testrigOrEnv", "zip");
-         uploadFile.deleteOnExit();
-         uploadFilename = uploadFile.getAbsolutePath();
-         ZipUtility.zipFiles(filePointer.getAbsolutePath(), uploadFilename);
+   private boolean uploadEnv(String fileOrDir, String envName,
+         String baseEnvName) throws Exception {
+      Path initialUploadTarget = Paths.get(fileOrDir);
+      Path uploadTarget = initialUploadTarget;
+      boolean createZip = Files.isDirectory(initialUploadTarget);
+      if (createZip) {
+         uploadTarget = CommonUtil.createTempFile("testrigOrEnv", ".zip");
+         ZipUtility.zipFiles(initialUploadTarget.toAbsolutePath(),
+               uploadTarget.toAbsolutePath());
       }
-
-      boolean result = (isTestrig)
-            ? _workHelper.uploadTestrig(_currContainerName, testrigOrEnvName,
-                  uploadFilename)
-            : _workHelper.uploadEnvironment(_currContainerName, _currTestrig,
-                  testrigOrEnvName, uploadFilename);
-
-      // unequal means we must have created a temporary file
-      if (uploadFilename != fileOrDir) {
-         new File(uploadFilename).delete();
+      try {
+         boolean result = _workHelper.uploadEnvironment(_currContainerName,
+               _currTestrig, baseEnvName, envName, uploadTarget.toString());
+         return result;
       }
+      finally {
+         if (createZip) {
+            CommonUtil.delete(uploadTarget);
+         }
+      }
+   }
 
-      return result;
+   private boolean uploadTestrig(String fileOrDir, String testrigName) {
+      Path initialUploadTarget = Paths.get(fileOrDir);
+      Path uploadTarget = initialUploadTarget;
+      boolean createZip = Files.isDirectory(initialUploadTarget);
+      if (createZip) {
+         uploadTarget = CommonUtil.createTempFile("testrigOrEnv", "zip");
+         ZipUtility.zipFiles(initialUploadTarget.toAbsolutePath(),
+               uploadTarget.toAbsolutePath());
+      }
+      try {
+         boolean result = _workHelper.uploadTestrig(_currContainerName,
+               testrigName, uploadTarget.toString());
+         return result;
+      }
+      finally {
+         if (createZip) {
+            CommonUtil.delete(uploadTarget);
+         }
+      }
    }
 
    private void validateInstanceData(InstanceData instanceData) {

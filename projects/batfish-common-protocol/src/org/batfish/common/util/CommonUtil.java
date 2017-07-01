@@ -1,17 +1,25 @@
 package org.batfish.common.util;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -25,7 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -45,6 +55,8 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -64,6 +76,8 @@ public class CommonUtil {
 
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
+
+   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
    public static String applyPrefix(String prefix, String msg) {
       String[] lines = msg.split("\n");
@@ -188,6 +202,35 @@ public class CommonUtil {
       return 0;
    }
 
+   public static void copy(Path srcPath, Path dstPath) {
+      if (Files.isDirectory(srcPath)) {
+         copyDirectory(srcPath, dstPath);
+      }
+      else {
+         copyFile(srcPath, dstPath);
+      }
+   }
+
+   public static void copyDirectory(Path srcPath, Path dstPath) {
+      try {
+         FileUtils.copyDirectory(srcPath.toFile(), dstPath.toFile());
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to copy directory: '"
+               + srcPath.toString() + "' to: '" + dstPath.toString() + "'", e);
+      }
+   }
+
+   public static void copyFile(Path srcPath, Path dstPath) {
+      try {
+         FileUtils.copyFile(srcPath.toFile(), dstPath.toFile());
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to copy file: '"
+               + srcPath.toString() + "' to: '" + dstPath.toString() + "'", e);
+      }
+   }
+
    public static void createDirectories(Path path) {
       try {
          Files.createDirectories(path);
@@ -201,8 +244,8 @@ public class CommonUtil {
    }
 
    public static ClientBuilder createHttpClientBuilder(boolean noSsl,
-         boolean trustAllSslCerts, String keystoreFile, String keystorePassword,
-         String truststoreFile, String truststorePassword) {
+         boolean trustAllSslCerts, Path keystoreFile, String keystorePassword,
+         Path truststoreFile, String truststorePassword) {
       try {
          if (!noSsl) {
             ClientBuilder clientBuilder = ClientBuilder.newBuilder();
@@ -237,8 +280,7 @@ public class CommonUtil {
                         "Truststore file supplied but truststore password missing");
                }
                char[] tsPass = truststorePassword.toCharArray();
-               ts.load(new FileInputStream(Paths.get(truststoreFile).toFile()),
-                     tsPass);
+               ts.load(new FileInputStream(truststoreFile.toFile()), tsPass);
                tmf.init(ts);
                trustManagers = tmf.getTrustManagers();
             }
@@ -254,8 +296,7 @@ public class CommonUtil {
                         "Keystore file supplied but keystore password");
                }
                char[] ksPass = keystorePassword.toCharArray();
-               ks.load(new FileInputStream(Paths.get(keystoreFile).toFile()),
-                     ksPass);
+               ks.load(new FileInputStream(keystoreFile.toFile()), ksPass);
                kmf.init(ks, ksPass);
                keyManagers = kmf.getKeyManagers();
             }
@@ -275,11 +316,37 @@ public class CommonUtil {
       }
    }
 
+   public static Path createTempDirectory(String prefix,
+         FileAttribute<?>... attrs) {
+      try {
+         Path tempDir = Files.createTempDirectory(prefix, attrs);
+         tempDir.toFile().deleteOnExit();
+         return tempDir;
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to create temporary directory", e);
+      }
+   }
+
+   public static Path createTempFile(String prefix, String suffix,
+         FileAttribute<?>... attributes) {
+      try {
+         Path tempFile = Files.createTempFile(prefix, suffix, attributes);
+         tempFile.toFile().deleteOnExit();
+         return tempFile;
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to create temporary file", e);
+      }
+   }
+
    public static void delete(Path path) {
       try {
          Files.delete(path);
       }
       catch (NoSuchFileException e) {
+         throw new BatfishException(
+               "Cannot delete non-existent file: '" + path.toString() + "'", e);
       }
       catch (IOException e) {
          throw new BatfishException("Failed to delete file: " + path, e);
@@ -292,6 +359,17 @@ public class CommonUtil {
       }
       catch (IOException | NullPointerException e) {
          throw new BatfishException("Could not delete directory: " + path, e);
+      }
+   }
+
+   public static void deleteIfExists(Path path) {
+      try {
+         Files.delete(path);
+      }
+      catch (NoSuchFileException e) {
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to delete file: " + path, e);
       }
    }
 
@@ -318,6 +396,16 @@ public class CommonUtil {
       return s;
    }
 
+   public static Path getCanonicalPath(Path path) {
+      try {
+         return Paths.get(path.toFile().getCanonicalPath());
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Could not get canonical path from: '" + path.toString() + "'");
+      }
+   }
+
    public static Path getConfigProperties(Class<?> locatorClass,
          String propertiesFilename, String propertiesJvmArg) {
       String jvmArgPath = System.getProperty(propertiesJvmArg);
@@ -328,6 +416,20 @@ public class CommonUtil {
          Path configDir = getJarOrClassDir(locatorClass);
          return configDir.resolve(propertiesFilename);
       }
+   }
+
+   public static SortedSet<Path> getEntries(Path directory) {
+      SortedSet<Path> entries = new TreeSet<>();
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+         for (Path entry : stream) {
+            entries.add(entry);
+         }
+      }
+      catch (IOException | DirectoryIteratorException e) {
+         throw new BatfishException(
+               "Error listing directory '" + directory.toString() + "'", e);
+      }
+      return entries;
    }
 
    public static String getIndentedString(String str, int indentLevel) {
@@ -402,6 +504,16 @@ public class CommonUtil {
       }
    }
 
+   public static FileTime getLastModifiedTime(Path path) {
+      try {
+         return Files.getLastModifiedTime(path);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to get last modified time for '"
+               + path.toString() + "'");
+      }
+   }
+
    public static List<String> getMatchingStrings(String regex,
          Set<String> allStrings) {
       List<String> matchingStrings = new ArrayList<>();
@@ -426,6 +538,22 @@ public class CommonUtil {
          matchingStrings.addAll(allStrings);
       }
       return matchingStrings;
+   }
+
+   public static SortedSet<Path> getSubdirectories(Path directory) {
+      SortedSet<Path> subdirectories = new TreeSet<>();
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+         for (Path entry : stream) {
+            if (Files.isDirectory(entry)) {
+               subdirectories.add(entry);
+            }
+         }
+      }
+      catch (IOException | DirectoryIteratorException e) {
+         throw new BatfishException(
+               "Error listing directory '" + directory.toString() + "'", e);
+      }
+      return subdirectories;
    }
 
    public static String getTime(long millis) {
@@ -503,6 +631,17 @@ public class CommonUtil {
       return md5;
    }
 
+   public static void moveByCopy(Path srcPath, Path dstPath) {
+      if (Files.isDirectory(srcPath)) {
+         copyDirectory(srcPath, dstPath);
+         deleteDirectory(srcPath);
+      }
+      else {
+         copyFile(srcPath, dstPath);
+         delete(srcPath);
+      }
+   }
+
    public static int nullChecker(Object a, Object b) {
       if (a == null && b == null) {
          return 0;
@@ -566,38 +705,36 @@ public class CommonUtil {
    }
 
    public static void startSSLServer(ResourceConfig resourceConfig, URI mgrUri,
-         String keystoreFilename, String keystorePassword,
-         boolean trustAllCerts, String truststoreFilename,
-         String truststorePassword, Class<?> configurationLocatorClass) {
-      if (keystoreFilename == null) {
+         Path keystorePath, String keystorePassword, boolean trustAllCerts,
+         Path truststorePath, String truststorePassword,
+         Class<?> configurationLocatorClass) {
+      if (keystorePath == null) {
          throw new BatfishException(
                "Cannot start SSL server without keystore. If you have none, you must disable SSL.");
       }
       // first find the file as specified.
       // if that does not work, find it relative to the binary
-      Path keystoreFile = Paths.get(keystoreFilename).toAbsolutePath();
-      if (!Files.exists(keystoreFile)) {
-         keystoreFile = CommonUtil.getJarOrClassDir(configurationLocatorClass)
-               .toAbsolutePath().resolve(keystoreFilename);
+      Path keystoreAbsolutePath = keystorePath.toAbsolutePath();
+      if (!Files.exists(keystoreAbsolutePath)) {
+         keystoreAbsolutePath = CommonUtil
+               .getJarOrClassDir(configurationLocatorClass).toAbsolutePath()
+               .resolve(keystorePath);
       }
-
-      if (!Files.exists(keystoreFile)) {
+      if (!Files.exists(keystoreAbsolutePath)) {
          String callingClass = Reflection.getCallerClass().getCanonicalName();
          System.err.printf("%s: keystore file not found at %s or %s\n",
-               callingClass, keystoreFilename, keystoreFile.toString());
+               callingClass, keystorePath, keystoreAbsolutePath.toString());
          System.exit(1);
       }
-
       SSLContextConfigurator sslCon = new SSLContextConfigurator();
-      sslCon.setKeyStoreFile(keystoreFile.toString());
+      sslCon.setKeyStoreFile(keystoreAbsolutePath.toString());
       sslCon.setKeyStorePass(keystorePassword);
-
-      if (truststoreFilename != null) {
+      if (truststorePath != null) {
          if (truststorePassword == null) {
             throw new BatfishException(
                   "Truststore file supplied but truststore password missing");
          }
-         sslCon.setTrustStoreFile(truststoreFilename);
+         sslCon.setTrustStoreFile(truststorePath.toString());
          sslCon.setTrustStorePass(truststorePassword);
       }
       boolean verifyClient = !trustAllCerts;
@@ -725,6 +862,46 @@ public class CommonUtil {
       }
       catch (IOException e) {
          throw new BatfishException("Failed to write file: " + outputPath, e);
+      }
+   }
+
+   public static void writeStreamToFile(InputStream inputStream,
+         Path outputFile) {
+      try (OutputStream fileOutputStream = new FileOutputStream(
+            outputFile.toFile())) {
+         int read = 0;
+         final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+         while ((read = inputStream.read(bytes)) != -1) {
+            fileOutputStream.write(bytes, 0, read);
+         }
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Failed to write input stream to output file: '"
+                     + outputFile.toString() + "'");
+      }
+   }
+
+   public static JSONObject writeStreamToJSONObject(InputStream inputStream) {
+      try {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         int read = 0;
+         final byte[] buffer = new byte[STREAMED_FILE_BUFFER_SIZE];
+         while (true) {
+            read = inputStream.read(buffer);
+
+            if (read == -1) {
+               break;
+            }
+            baos.write(buffer, 0, read);
+         }
+         JSONObject jObject;
+         jObject = new JSONObject(baos.toString("UTF-8"));
+         return jObject;
+      }
+      catch (IOException | JSONException e) {
+         throw new BatfishException(
+               "Failed to convert input stream into JSON object", e);
       }
    }
 
