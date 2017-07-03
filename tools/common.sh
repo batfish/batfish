@@ -44,8 +44,10 @@ export BATFISH_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish.tmp
 export BATFISH_CLIENT_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish-client.tmp
 export COORDINATOR_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-coordinator.tmp
 
-# TODO: this should be automated.
-export VERSION=0.29.0-SNAPSHOT
+# Use Maven to print the current Batfish java version
+export VERSION=$(mvn -q -f ${PROJECTS_PATH}/pom.xml \
+    -Dexec.executable="echo" -Dexec.args='${project.version}' \
+    --non-recursive exec:exec)             
 
 batfish() {
    # if cygwin, shift and replace each parameter
