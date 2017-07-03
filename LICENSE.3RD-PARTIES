@@ -1,1 +1,14 @@
-Licenses for 3rd-party libraries are located in proximity to the corresponding jars in the <repository>/lib folder and subfolders
+All third party dependencies of Batfish are compatible with The Apache Software License, Version 2.0.
+
+The set of licenses of these dependencies includes:
+
+* The Apache Software License, Version 2.0
+* BSD
+* CDDL
+* Eclipse Public License
+* MIT License
+
+and various public domain licenses.
+
+A full report of dependencies and their licenses can be obtained by running `mvn license:aggregate-add-third-party`
+in the `projects` folder.
