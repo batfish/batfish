@@ -6,10 +6,19 @@
   <artifactId>batfish-parent</artifactId>
   <name>Batfish</name>
   <url>https://www.batfish.org</url>
+  <inceptionYear>2014</inceptionYear>
 
   <packaging>pom</packaging>
 
   <version>0.29.0-SNAPSHOT</version>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <properties>
     <!-- Configuration of Maven project itself. Please keep alphabetical. -->
