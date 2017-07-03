@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.util.ComparableStructure;
 
 public class SnmpHost extends ComparableStructure<String> {
 

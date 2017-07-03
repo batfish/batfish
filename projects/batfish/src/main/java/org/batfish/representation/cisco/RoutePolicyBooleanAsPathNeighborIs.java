@@ -1,12 +1,11 @@
 package org.batfish.representation.cisco;
 
 import java.util.List;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
-import org.batfish.common.Warnings;
 
 public class RoutePolicyBooleanAsPathNeighborIs extends RoutePolicyBoolean {
 

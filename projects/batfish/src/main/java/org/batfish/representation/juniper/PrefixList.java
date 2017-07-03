@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Prefix;
 

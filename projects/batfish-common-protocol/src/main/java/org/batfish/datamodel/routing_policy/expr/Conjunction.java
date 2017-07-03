@@ -2,7 +2,6 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 

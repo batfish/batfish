@@ -1,15 +1,10 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.DiffieHellmanGroup;
-import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
-import org.batfish.datamodel.IkeAuthenticationMethod;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import org.batfish.common.util.ComparableStructure;
 
 public final class IkeProposal extends ComparableStructure<String> {
 

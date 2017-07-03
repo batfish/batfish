@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-
-import org.batfish.common.plugin.IDataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;

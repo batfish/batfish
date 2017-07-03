@@ -1,10 +1,10 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.questions.Question;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class InitInfoQuestionPlugin extends QuestionPlugin {
 

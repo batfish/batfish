@@ -1,8 +1,7 @@
 package org.batfish.representation.cisco;
 
-import java.util.List;
 import java.util.ArrayList;
-
+import java.util.List;
 import org.batfish.common.util.ComparableStructure;
 
 public class RoutePolicy extends ComparableStructure<String> {

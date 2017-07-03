@@ -1,9 +1,8 @@
 package org.batfish.datamodel.vendor_family.cisco;
 
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.util.ComparableStructure;
 
 public class LoggingHost extends ComparableStructure<String> {
 

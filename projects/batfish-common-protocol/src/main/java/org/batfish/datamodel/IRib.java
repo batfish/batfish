@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-
 import org.batfish.datamodel.collections.MultiSet;
 
 public interface IRib<R extends AbstractRoute> extends Serializable {

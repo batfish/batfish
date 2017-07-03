@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterList;
 

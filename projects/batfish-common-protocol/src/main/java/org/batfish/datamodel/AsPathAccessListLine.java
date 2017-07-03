@@ -1,9 +1,8 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 
 @JsonSchemaDescription("A line in an AsPathAccessList")
 public final class AsPathAccessListLine

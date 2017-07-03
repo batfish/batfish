@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 

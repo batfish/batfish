@@ -1,7 +1,6 @@
 package org.batfish.datamodel.questions;
 
 import java.util.SortedSet;
-
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Protocol;

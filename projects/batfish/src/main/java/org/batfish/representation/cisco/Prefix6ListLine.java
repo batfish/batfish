@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;

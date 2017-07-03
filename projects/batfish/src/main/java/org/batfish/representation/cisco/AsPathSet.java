@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 

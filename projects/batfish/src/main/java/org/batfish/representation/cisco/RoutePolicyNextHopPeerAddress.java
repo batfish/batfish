@@ -1,9 +1,9 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.PeerAddressNextHop;
-import org.batfish.common.Warnings;
 
 public class RoutePolicyNextHopPeerAddress extends RoutePolicyNextHop {
 

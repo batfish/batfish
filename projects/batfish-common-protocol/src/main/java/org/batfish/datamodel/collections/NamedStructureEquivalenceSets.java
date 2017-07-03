@@ -1,12 +1,11 @@
 package org.batfish.datamodel.collections;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class NamedStructureEquivalenceSets<T> {
 

@@ -1,12 +1,10 @@
 package org.batfish.common.util;
 
-import java.io.Serializable;
-
-import org.batfish.common.BatfishException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.io.Serializable;
+import org.batfish.common.BatfishException;
 
 public abstract class ComparableStructure<Key extends Comparable<Key>>
       extends ReferenceCountedStructure

@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 

@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import org.batfish.datamodel.answers.AnswerElement;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.datamodel.answers.AnswerElement;
 
 public class ConfigurationDiff implements AnswerElement {
 

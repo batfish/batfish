@@ -1,11 +1,10 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeSet;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class RouteFilterListsDiff extends ConfigDiffElement {
 

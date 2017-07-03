@@ -1,9 +1,8 @@
 package org.batfish.datamodel.answers;
 
-import org.batfish.common.util.JsonDiff;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.util.JsonDiff;
 
 public class JsonDiffAnswerElement implements AnswerElement {
 

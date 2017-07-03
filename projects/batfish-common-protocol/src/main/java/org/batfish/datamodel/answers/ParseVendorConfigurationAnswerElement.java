@@ -3,7 +3,6 @@ package org.batfish.datamodel.answers;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;

@@ -1,7 +1,6 @@
 package org.batfish.job;
 
 import java.util.concurrent.Callable;
-
 import org.batfish.common.BatfishLogger;
 import org.batfish.config.Settings;
 

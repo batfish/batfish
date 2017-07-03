@@ -1,7 +1,6 @@
 package org.batfish.common.plugin;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.plugin.Plugin;
 
 public abstract class BatfishPlugin extends Plugin {
 

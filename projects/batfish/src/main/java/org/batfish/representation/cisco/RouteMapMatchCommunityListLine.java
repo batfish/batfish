@@ -2,14 +2,13 @@ package org.batfish.representation.cisco;
 
 import java.util.List;
 import java.util.Set;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-import org.batfish.common.Warnings;
 
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 

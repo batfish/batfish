@@ -1,10 +1,11 @@
 package org.batfish.z3;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Z3Exception;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -22,9 +23,6 @@ import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
 import org.batfish.z3.node.VarIntExpr;
-
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Z3Exception;
 
 public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
 

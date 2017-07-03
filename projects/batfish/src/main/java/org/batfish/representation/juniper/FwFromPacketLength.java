@@ -1,11 +1,10 @@
 package org.batfish.representation.juniper;
 
 import java.util.List;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.SubRange;
-import org.batfish.common.Warnings;
 
 public class FwFromPacketLength extends FwFrom {
 

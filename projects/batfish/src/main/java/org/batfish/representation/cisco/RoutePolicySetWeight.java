@@ -1,10 +1,10 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.common.Warnings;
 
 public class RoutePolicySetWeight extends RoutePolicySetStatement {
 

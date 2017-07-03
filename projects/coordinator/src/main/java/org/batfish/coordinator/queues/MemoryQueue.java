@@ -2,7 +2,6 @@ package org.batfish.coordinator.queues;
 
 import java.util.LinkedList;
 import java.util.UUID;
-
 import org.batfish.coordinator.QueuedWork;
 
 // we don't synchronize on this queue

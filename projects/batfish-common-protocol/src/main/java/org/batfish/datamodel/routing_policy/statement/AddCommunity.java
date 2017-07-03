@@ -1,13 +1,11 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.SortedSet;
-
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class AddCommunity extends Statement {
 

@@ -1,21 +1,19 @@
 package org.batfish.vendor;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericConfigObject;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.collections.RoleSet;
 
 public abstract class VendorConfiguration
       implements Serializable, GenericConfigObject {

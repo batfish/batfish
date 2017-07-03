@@ -2,14 +2,13 @@ package org.batfish.representation.cisco;
 
 import java.util.List;
 import java.util.Set;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
-import org.batfish.common.Warnings;
 
 public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
 

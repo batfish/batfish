@@ -3,7 +3,6 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.batfish.common.BatfishLogger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;

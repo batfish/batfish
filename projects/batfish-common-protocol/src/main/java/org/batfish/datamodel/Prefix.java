@@ -1,11 +1,9 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-
-import org.batfish.common.BatfishException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
+import org.batfish.common.BatfishException;
 
 public final class Prefix implements Comparable<Prefix>, Serializable {
 

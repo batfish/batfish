@@ -1,13 +1,11 @@
 package org.batfish.datamodel.answers;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Map.Entry;
-
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class InitInfoAnswerElement implements AnswerElement {
 

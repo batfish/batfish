@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
+import java.math.BigInteger;
 
 public final class IsoAddress implements Serializable {
 

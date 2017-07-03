@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import java.util.NavigableMap;
 import java.util.TreeMap;
-
 import org.batfish.common.util.ComparableStructure;
 
 public class RouteMap extends ComparableStructure<String> {

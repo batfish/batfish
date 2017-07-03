@@ -1,9 +1,8 @@
 package org.batfish.datamodel;
 
-import java.util.NavigableMap;
-
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.NavigableMap;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class RoutingPoliciesDiff extends ConfigDiffElement {
 

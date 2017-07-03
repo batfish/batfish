@@ -1,12 +1,11 @@
 package org.batfish.representation.cisco;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
-import org.batfish.common.Warnings;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class RoutePolicyBooleanRouteTypeIs extends RoutePolicyBoolean {
 

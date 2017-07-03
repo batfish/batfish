@@ -2,10 +2,9 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.List;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.common.Warnings;
 
 public abstract class PsThen implements Serializable {
 

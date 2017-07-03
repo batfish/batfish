@@ -1,7 +1,6 @@
 package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
-
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;

@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import java.util.Date;
 import java.util.UUID;
-
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;

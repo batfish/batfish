@@ -1,12 +1,10 @@
 package org.batfish.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.datamodel.answers.AnswerElement;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class CompositeBatfishException extends RuntimeException
       implements AnswerElement {

@@ -3,7 +3,6 @@ package org.batfish.allinone.config;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;

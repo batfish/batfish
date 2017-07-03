@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Map;
 
 public class VrfsDiff extends ConfigDiffElement {
 

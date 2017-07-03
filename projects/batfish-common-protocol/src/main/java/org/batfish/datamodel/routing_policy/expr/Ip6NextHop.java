@@ -1,12 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.List;
-
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.routing_policy.Environment;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Ip6NextHop extends NextHopExpr {
 

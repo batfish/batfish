@@ -1,10 +1,9 @@
 package org.batfish.datamodel.collections;
 
-import org.batfish.common.Pair;
-import org.batfish.datamodel.Ip;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.Pair;
+import org.batfish.datamodel.Ip;
 
 public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
 

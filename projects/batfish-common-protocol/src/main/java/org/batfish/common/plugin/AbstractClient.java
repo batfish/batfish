@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-
 import org.batfish.datamodel.questions.Question;
 
 public abstract class AbstractClient extends PluginConsumer implements IClient {

@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-
 import org.batfish.common.BatfishException;
 
 public class ExtendedCommunity implements Serializable {

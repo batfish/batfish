@@ -1,9 +1,9 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-import org.batfish.common.Warnings;
 
 public class RoutePolicyCommunitySetName extends RoutePolicyCommunitySet {
 

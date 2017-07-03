@@ -1,8 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.SubRange;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import org.batfish.datamodel.SubRange;
 
 public class RangeCommunitySetElemHalf implements CommunitySetElemHalfExpr {
 

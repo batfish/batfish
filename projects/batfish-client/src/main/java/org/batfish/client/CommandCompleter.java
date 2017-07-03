@@ -5,7 +5,6 @@ import static jline.internal.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import jline.console.completer.Completer;
 
 public class CommandCompleter implements Completer {

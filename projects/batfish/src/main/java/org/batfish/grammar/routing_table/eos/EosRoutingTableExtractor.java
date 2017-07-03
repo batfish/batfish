@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -20,7 +19,10 @@ import org.batfish.datamodel.RouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.grammar.RoutingTableExtractor;
-import org.batfish.grammar.routing_table.eos.EosRoutingTableParser.*;
+import org.batfish.grammar.routing_table.eos.EosRoutingTableParser.Eos_routing_tableContext;
+import org.batfish.grammar.routing_table.eos.EosRoutingTableParser.ProtocolContext;
+import org.batfish.grammar.routing_table.eos.EosRoutingTableParser.RouteContext;
+import org.batfish.grammar.routing_table.eos.EosRoutingTableParser.Vrf_declarationContext;
 
 public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
       implements RoutingTableExtractor {

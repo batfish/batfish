@@ -2,12 +2,14 @@ package org.batfish.grammar.mrv;
 
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.mrv.MrvParser.*;
 import org.batfish.common.Warnings;
+import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.mrv.MrvParser.A_system_systemnameContext;
+import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
+import org.batfish.grammar.mrv.MrvParser.NsdeclContext;
+import org.batfish.grammar.mrv.MrvParser.Quoted_stringContext;
 import org.batfish.representation.mrv.MrvConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

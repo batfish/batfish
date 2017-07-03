@@ -6,7 +6,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;

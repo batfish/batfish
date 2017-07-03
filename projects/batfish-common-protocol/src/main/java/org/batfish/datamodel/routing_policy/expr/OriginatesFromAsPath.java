@@ -1,11 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.List;
-
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class OriginatesFromAsPath extends BooleanExpr {
 

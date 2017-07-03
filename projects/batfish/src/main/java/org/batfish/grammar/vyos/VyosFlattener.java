@@ -2,8 +2,10 @@ package org.batfish.grammar.vyos;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.batfish.grammar.vyos.VyosParser.*;
+import org.batfish.grammar.vyos.VyosParser.StatementContext;
+import org.batfish.grammar.vyos.VyosParser.TerminatorContext;
+import org.batfish.grammar.vyos.VyosParser.Vyos_configurationContext;
+import org.batfish.grammar.vyos.VyosParser.WordContext;
 
 public class VyosFlattener extends VyosParserBaseListener {
 

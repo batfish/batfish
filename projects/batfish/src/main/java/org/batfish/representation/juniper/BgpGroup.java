@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.batfish.datamodel.Ip;
 
 public class BgpGroup implements Serializable {

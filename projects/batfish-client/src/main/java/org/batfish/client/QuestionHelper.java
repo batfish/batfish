@@ -1,20 +1,21 @@
 package org.batfish.client;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
-
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.questions.*;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
+import org.batfish.datamodel.questions.IQuestion;
+import org.batfish.datamodel.questions.IReachabilityQuestion;
+import org.batfish.datamodel.questions.ITracerouteQuestion;
+import org.batfish.datamodel.questions.Question;
 
 public class QuestionHelper {
 

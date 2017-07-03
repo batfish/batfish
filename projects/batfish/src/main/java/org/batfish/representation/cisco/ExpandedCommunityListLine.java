@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-
 import org.batfish.datamodel.LineAction;
 
 public class ExpandedCommunityListLine implements Serializable {

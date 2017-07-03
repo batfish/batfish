@@ -2,16 +2,21 @@ package org.batfish.grammar.flatjuniper;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
-import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groups_exceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groups_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
+import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
-import org.batfish.common.Warnings;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 

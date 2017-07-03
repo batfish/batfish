@@ -3,7 +3,6 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;

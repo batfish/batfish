@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.io.Serializable;
 
 @JsonPropertyOrder({ Route.DIFF_SYMBOL_VAR })
 public class Route implements Comparable<Route>, Serializable {

@@ -1,15 +1,13 @@
 package org.batfish.datamodel;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import org.batfish.common.util.ComparableStructure;
 
 @JsonSchemaDescription("An IPV4 firewall zone")
 public final class Zone extends ComparableStructure<String> {

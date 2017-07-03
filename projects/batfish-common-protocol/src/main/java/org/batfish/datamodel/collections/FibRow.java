@@ -1,7 +1,6 @@
 package org.batfish.datamodel.collections;
 
 import java.io.Serializable;
-
 import org.batfish.datamodel.Prefix;
 
 public class FibRow implements Comparable<FibRow>, Serializable {

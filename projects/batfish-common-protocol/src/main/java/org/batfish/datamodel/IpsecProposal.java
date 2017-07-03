@@ -1,13 +1,9 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
-import org.batfish.datamodel.IpsecProtocol;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.util.ComparableStructure;
 
 public class IpsecProposal extends ComparableStructure<String> {
 

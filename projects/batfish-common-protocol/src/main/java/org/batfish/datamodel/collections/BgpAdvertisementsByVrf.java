@@ -3,7 +3,6 @@ package org.batfish.datamodel.collections;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeMap;
-
 import org.batfish.datamodel.BgpAdvertisement;
 
 public final class BgpAdvertisementsByVrf extends

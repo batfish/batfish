@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.batfish.common.BatfishException;
 
 public enum NamedPort {

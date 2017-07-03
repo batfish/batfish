@@ -1,8 +1,10 @@
 package org.batfish.z3;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Z3Exception;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.z3.node.AclMatchExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.DeclareRelExpr;
@@ -10,10 +12,6 @@ import org.batfish.z3.node.NumberedQueryExpr;
 import org.batfish.z3.node.QueryExpr;
 import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
-
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Z3Exception;
 
 public final class AclReachabilityQuerySynthesizer
       extends SatQuerySynthesizer<AclLine> {

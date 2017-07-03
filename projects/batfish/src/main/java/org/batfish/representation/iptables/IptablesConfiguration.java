@@ -2,7 +2,6 @@ package org.batfish.representation.iptables;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.vendor.VendorConfiguration;

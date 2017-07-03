@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.common.util.ComparableStructure;
 
 public final class Zone extends ComparableStructure<String> {

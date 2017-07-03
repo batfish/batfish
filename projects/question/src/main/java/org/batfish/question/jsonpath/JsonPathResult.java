@@ -1,11 +1,10 @@
 package org.batfish.question.jsonpath;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class JsonPathResult {
 

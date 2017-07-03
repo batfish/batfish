@@ -1,11 +1,10 @@
 package org.batfish.question.jsonpath;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 public class ConcreteJsonPath implements Comparable<ConcreteJsonPath> {
 

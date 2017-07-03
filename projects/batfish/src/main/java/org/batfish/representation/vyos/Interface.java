@@ -2,7 +2,6 @@ package org.batfish.representation.vyos;
 
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Prefix;

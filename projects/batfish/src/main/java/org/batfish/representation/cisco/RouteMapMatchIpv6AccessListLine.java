@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.util.List;
 import java.util.Set;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.Route6FilterList;
@@ -12,7 +12,6 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
-import org.batfish.common.Warnings;
 
 public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
 

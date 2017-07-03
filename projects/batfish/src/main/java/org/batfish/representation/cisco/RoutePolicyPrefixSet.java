@@ -1,11 +1,10 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.Prefix6SetExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.common.Warnings;
 
 public abstract class RoutePolicyPrefixSet implements Serializable {
 

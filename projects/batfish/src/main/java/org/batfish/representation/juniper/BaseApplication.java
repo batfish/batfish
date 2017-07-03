@@ -5,10 +5,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.common.Warnings;
 
 public class BaseApplication extends ComparableStructure<String>
       implements Application {

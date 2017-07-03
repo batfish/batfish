@@ -1,9 +1,8 @@
 package org.batfish.datamodel.collections;
 
-import org.batfish.common.Pair;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.Pair;
 
 public class NodeInterfacePair extends Pair<String, String> {
 

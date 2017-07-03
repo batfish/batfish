@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
 import org.batfish.common.BatfishException;
 
 //code from

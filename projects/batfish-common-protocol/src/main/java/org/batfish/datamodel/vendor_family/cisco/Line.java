@@ -1,12 +1,10 @@
 package org.batfish.datamodel.vendor_family.cisco;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import org.batfish.common.util.ComparableStructure;
 
 public class Line extends ComparableStructure<String> {
 

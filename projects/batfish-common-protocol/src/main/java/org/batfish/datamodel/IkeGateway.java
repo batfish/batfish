@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import org.batfish.common.util.ComparableStructure;
 
 public class IkeGateway extends ComparableStructure<String> {
 

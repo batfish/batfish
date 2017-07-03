@@ -1,15 +1,13 @@
 package org.batfish.datamodel.assertion;
 
-import java.util.concurrent.ConcurrentMap;
-
-import org.batfish.common.BatfishException;
-import org.batfish.common.plugin.IBatfish;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import java.util.concurrent.ConcurrentMap;
+import org.batfish.common.BatfishException;
+import org.batfish.common.plugin.IBatfish;
 
 public class Environment {
 

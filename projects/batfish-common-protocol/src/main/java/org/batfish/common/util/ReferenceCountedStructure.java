@@ -1,10 +1,9 @@
 package org.batfish.common.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class ReferenceCountedStructure implements Serializable {
 

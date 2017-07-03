@@ -3,7 +3,6 @@ package org.batfish.representation.iptables;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;

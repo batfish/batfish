@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 

@@ -2,7 +2,6 @@ package org.batfish.representation.vyos;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.LineAction;
 

@@ -1,11 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class NamedAsPathSet extends AsPathSetExpr {
 

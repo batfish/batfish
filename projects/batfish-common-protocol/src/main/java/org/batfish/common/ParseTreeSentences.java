@@ -1,10 +1,9 @@
 package org.batfish.common;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ParseTreeSentences implements Serializable {
 

@@ -1,10 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import java.util.List;
-
-import org.batfish.datamodel.routing_policy.Environment;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.List;
+import org.batfish.datamodel.routing_policy.Environment;
 
 public class ExplicitAsPathSet extends AsPathSetExpr {
 

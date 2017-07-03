@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -7,11 +8,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.routing_policy.Environment;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class InlineCommunitySet extends CommunitySetExpr {
 

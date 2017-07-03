@@ -1,15 +1,13 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-
-import org.batfish.datamodel.routing_policy.Environment;
-import org.batfish.datamodel.routing_policy.Result;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 @JsonSubTypes({ @JsonSubTypes.Type(value = AddCommunity.class),

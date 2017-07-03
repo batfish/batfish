@@ -1,13 +1,11 @@
 package org.batfish.coordinator.queues;
 
-import java.util.Iterator;
-import java.util.UUID;
-
-import org.batfish.coordinator.QueuedWork;
-
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.queue.CloudQueue;
 import com.microsoft.azure.storage.queue.CloudQueueClient;
+import java.util.Iterator;
+import java.util.UUID;
+import org.batfish.coordinator.QueuedWork;
 
 public class AzureQueue implements WorkQueue {
 

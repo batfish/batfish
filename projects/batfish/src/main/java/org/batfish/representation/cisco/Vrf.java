@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.batfish.common.util.ComparableStructure;
 
 public final class Vrf extends ComparableStructure<String> {

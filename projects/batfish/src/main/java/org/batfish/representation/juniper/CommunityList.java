@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.common.util.ComparableStructure;
 
 public final class CommunityList extends ComparableStructure<String>

@@ -2,22 +2,21 @@ package org.batfish.job;
 
 import java.nio.file.Path;
 import java.util.SortedMap;
-
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishException;
+import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.Warnings;
+import org.batfish.common.plugin.BgpTablePlugin;
+import org.batfish.config.Settings;
+import org.batfish.datamodel.answers.ParseStatus;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableExtractor;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.BgpTableFormatDetector;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.main.Batfish;
-import org.batfish.common.BatfishException;
-import org.batfish.common.ParseTreeSentences;
-import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.main.ParserBatfishException;
-import org.batfish.common.Warnings;
-import org.batfish.common.plugin.BgpTablePlugin;
-import org.batfish.config.Settings;
 
 public class ParseEnvironmentBgpTableJob
       extends BatfishJob<ParseEnvironmentBgpTableResult> {

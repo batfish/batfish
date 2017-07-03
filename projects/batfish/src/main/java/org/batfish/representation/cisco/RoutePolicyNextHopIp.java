@@ -1,12 +1,11 @@
 package org.batfish.representation.cisco;
 
 import java.util.Collections;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
-import org.batfish.common.Warnings;
+import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 
 public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
 

@@ -1,9 +1,8 @@
 package org.batfish.z3;
 
+import com.microsoft.z3.Context;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.microsoft.z3.Context;
 
 public abstract class FirstUnsatQuerySynthesizer<Key, Result>
       extends BaseQuerySynthesizer {

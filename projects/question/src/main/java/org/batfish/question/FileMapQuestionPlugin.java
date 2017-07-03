@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import java.util.SortedMap;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;

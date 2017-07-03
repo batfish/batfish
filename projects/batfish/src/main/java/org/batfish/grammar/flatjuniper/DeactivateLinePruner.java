@@ -2,9 +2,9 @@ package org.batfish.grammar.flatjuniper;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 
 public class DeactivateLinePruner extends FlatJuniperParserBaseListener {
 

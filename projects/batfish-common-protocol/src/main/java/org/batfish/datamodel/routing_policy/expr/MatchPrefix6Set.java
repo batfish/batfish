@@ -1,10 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class MatchPrefix6Set extends BooleanExpr {
 

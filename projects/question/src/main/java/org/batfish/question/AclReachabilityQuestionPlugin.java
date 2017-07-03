@@ -1,8 +1,8 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.TreeSet;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.IpAccessList;
@@ -12,7 +12,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerElement;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerer;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameQuestion;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AclReachabilityQuestionPlugin extends QuestionPlugin {
 

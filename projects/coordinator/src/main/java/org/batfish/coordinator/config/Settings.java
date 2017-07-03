@@ -1,7 +1,6 @@
 package org.batfish.coordinator.config;
 
 import java.nio.file.Path;
-
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;

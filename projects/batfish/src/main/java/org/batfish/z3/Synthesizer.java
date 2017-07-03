@@ -1,5 +1,10 @@
 package org.batfish.z3;
 
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.FuncDecl;
+import com.microsoft.z3.Z3Exception;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -10,7 +15,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -100,12 +104,6 @@ import org.batfish.z3.node.Statement;
 import org.batfish.z3.node.TrueExpr;
 import org.batfish.z3.node.UnoriginalExpr;
 import org.batfish.z3.node.VarIntExpr;
-
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.FuncDecl;
-import com.microsoft.z3.Z3Exception;
 
 public class Synthesizer {
    public static final int DSCP_BITS = 6;

@@ -1,14 +1,13 @@
 package org.batfish.job;
 
 import java.nio.file.Path;
-
-import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.grammar.VendorConfigurationFormatDetector;
-import org.batfish.main.ParserBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
+import org.batfish.main.Batfish;
+import org.batfish.main.ParserBatfishException;
 
 public class FlattenVendorConfigurationJob
       extends BatfishJob<FlattenVendorConfigurationResult> {

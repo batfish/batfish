@@ -1,9 +1,5 @@
 package org.batfish.z3;
 
-import org.batfish.common.BatfishException;
-import org.batfish.config.Settings;
-import org.batfish.job.BatfishJob;
-
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Fixedpoint;
@@ -11,6 +7,9 @@ import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
+import org.batfish.common.BatfishException;
+import org.batfish.config.Settings;
+import org.batfish.job.BatfishJob;
 
 public class NodFirstUnsatJob<Key, Result>
       extends BatfishJob<NodFirstUnsatResult<Key, Result>> {

@@ -3,7 +3,6 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.RoutingProtocol;

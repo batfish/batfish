@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;

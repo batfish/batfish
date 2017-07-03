@@ -1,13 +1,12 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public class HeaderSpace implements Serializable {
 

@@ -1,9 +1,8 @@
 package org.batfish.question.jsonpath;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class JsonPathQuery {
 

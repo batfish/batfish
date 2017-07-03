@@ -1,12 +1,10 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-
-import org.batfish.common.BatfishException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
+import java.math.BigInteger;
+import org.batfish.common.BatfishException;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
 

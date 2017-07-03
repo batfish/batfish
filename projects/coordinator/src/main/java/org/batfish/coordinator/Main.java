@@ -1,16 +1,18 @@
 package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
+
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.ws.rs.core.UriBuilder;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.coordinator.authorizer.*;
+import org.batfish.coordinator.authorizer.Authorizer;
+import org.batfish.coordinator.authorizer.DbAuthorizer;
+import org.batfish.coordinator.authorizer.FileAuthorizer;
+import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;

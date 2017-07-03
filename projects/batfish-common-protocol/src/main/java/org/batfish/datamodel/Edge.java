@@ -1,11 +1,10 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.Pair;
-import org.batfish.datamodel.collections.NodeInterfacePair;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.Pair;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 

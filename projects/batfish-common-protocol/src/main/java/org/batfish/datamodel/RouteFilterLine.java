@@ -1,11 +1,10 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 
 @JsonSchemaDescription("A line in an RouteFilterList")
 public class RouteFilterLine implements Serializable {

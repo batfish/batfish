@@ -1,11 +1,5 @@
 package org.batfish.coordinator;
 
-import org.apache.commons.io.FileExistsException;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.common.*;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.coordinator.config.Settings;
-
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -15,15 +9,22 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.zip.ZipException;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileExistsException;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.CoordConsts;
+import org.batfish.common.Version;
+import org.batfish.common.WorkItem;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.config.Settings;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;

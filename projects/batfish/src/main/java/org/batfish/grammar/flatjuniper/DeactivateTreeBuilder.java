@@ -1,7 +1,9 @@
 package org.batfish.grammar.flatjuniper;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_line_tailContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 
 public class DeactivateTreeBuilder extends FlatJuniperParserBaseListener {

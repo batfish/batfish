@@ -1,7 +1,6 @@
 package org.batfish.representation.mrv;
 
 import java.util.Set;
-
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;

@@ -1,11 +1,11 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
-import org.batfish.common.Warnings;
 
 public final class PsFromLocalPreference extends PsFrom {
 

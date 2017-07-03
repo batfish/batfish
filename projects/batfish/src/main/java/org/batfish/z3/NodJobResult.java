@@ -2,12 +2,11 @@ package org.batfish.z3;
 
 import java.util.Collections;
 import java.util.Set;
-
-import org.batfish.job.BatfishJobResult;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.NodAnswerElement;
+import org.batfish.job.BatfishJobResult;
 
 public class NodJobResult
       extends BatfishJobResult<Set<Flow>, NodAnswerElement> {

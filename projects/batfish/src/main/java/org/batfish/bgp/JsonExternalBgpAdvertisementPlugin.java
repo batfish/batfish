@@ -1,8 +1,8 @@
 package org.batfish.bgp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Iterator;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
@@ -11,8 +11,6 @@ import org.batfish.datamodel.collections.AdvertisementSet;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonExternalBgpAdvertisementPlugin
       extends ExternalBgpAdvertisementPlugin {

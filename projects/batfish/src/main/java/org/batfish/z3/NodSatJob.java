@@ -1,12 +1,5 @@
 package org.batfish.z3;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.batfish.common.BatfishException;
-import org.batfish.config.Settings;
-import org.batfish.job.BatfishJob;
-
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Fixedpoint;
@@ -14,6 +7,11 @@ import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.batfish.common.BatfishException;
+import org.batfish.config.Settings;
+import org.batfish.job.BatfishJob;
 
 public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
 

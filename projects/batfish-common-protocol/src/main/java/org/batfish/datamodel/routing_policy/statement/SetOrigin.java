@@ -1,12 +1,11 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class SetOrigin extends Statement {
 

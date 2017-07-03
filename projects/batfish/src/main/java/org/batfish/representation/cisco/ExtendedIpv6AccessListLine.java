@@ -3,7 +3,6 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
-
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;

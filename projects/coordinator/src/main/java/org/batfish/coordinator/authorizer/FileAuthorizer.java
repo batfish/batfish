@@ -2,7 +2,6 @@ package org.batfish.coordinator.authorizer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;

@@ -1,17 +1,14 @@
 package org.batfish.datamodel;
 
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.DiffieHellmanGroup;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import org.batfish.common.util.ComparableStructure;
 
 public class IpsecPolicy extends ComparableStructure<String> {
 

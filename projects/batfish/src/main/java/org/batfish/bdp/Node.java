@@ -3,7 +3,6 @@ package org.batfish.bdp;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Configuration;
 

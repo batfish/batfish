@@ -1,7 +1,6 @@
 package org.batfish.job;
 
 import java.util.Map;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;

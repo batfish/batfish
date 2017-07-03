@@ -1,7 +1,6 @@
 package org.batfish.datamodel.vendor_family;
 
 import java.io.Serializable;
-
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 
 public class VendorFamily implements Serializable {

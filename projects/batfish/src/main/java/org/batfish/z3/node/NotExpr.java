@@ -1,14 +1,12 @@
 package org.batfish.z3.node;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.batfish.z3.NodProgram;
-
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.batfish.z3.NodProgram;
 
 public class NotExpr extends BooleanExpr implements ComplexExpr {
 

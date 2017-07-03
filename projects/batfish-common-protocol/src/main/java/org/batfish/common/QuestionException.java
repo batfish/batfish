@@ -1,8 +1,7 @@
 package org.batfish.common;
 
-import org.batfish.datamodel.answers.Answer;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.batfish.datamodel.answers.Answer;
 
 public class QuestionException extends BatfishException {
 

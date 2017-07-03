@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Prefix;
 

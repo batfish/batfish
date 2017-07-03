@@ -2,7 +2,6 @@ package org.batfish.grammar;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.batfish.datamodel.ConfigurationFormat;
 
 public final class VendorConfigurationFormatDetector {

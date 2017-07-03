@@ -1,13 +1,11 @@
 package org.batfish.datamodel.collections;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.batfish.common.util.CommonUtil;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import org.batfish.common.util.CommonUtil;
 
 public class NamedStructureEquivalenceSet<T>
       implements Comparable<NamedStructureEquivalenceSet<T>> {

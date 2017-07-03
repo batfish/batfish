@@ -1,9 +1,8 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Map;
 import java.util.TreeSet;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class NeighborsDiff extends ConfigDiffElement {
 

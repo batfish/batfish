@@ -2,7 +2,6 @@ package org.batfish.representation.vyos;
 
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.batfish.common.util.ComparableStructure;
 
 public class IkeGroup extends ComparableStructure<String> {

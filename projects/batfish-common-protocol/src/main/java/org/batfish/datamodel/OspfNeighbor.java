@@ -1,11 +1,10 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.Pair;
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.Pair;
+import org.batfish.common.util.ComparableStructure;
 
 public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
 

@@ -1,16 +1,14 @@
 package org.batfish.datamodel;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.ComparableStructure;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.ComparableStructure;
 
 /**
  * Represents a peering with a single router (by ip address) acting as a bgp

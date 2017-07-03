@@ -1,10 +1,9 @@
 package org.batfish.common.util;
 
-import java.util.LinkedList;
-import java.util.TreeMap;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.LinkedList;
+import java.util.TreeMap;
 
 public class PrettyPrinter {
 

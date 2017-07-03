@@ -2,15 +2,14 @@ package org.batfish.job;
 
 import java.nio.file.Path;
 import java.util.SortedMap;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.common.Warnings;
 
 public class ParseEnvironmentBgpTableResult extends
       BatfishJobResult<SortedMap<String, BgpAdvertisementsByVrf>, ParseEnvironmentBgpTablesAnswerElement> {

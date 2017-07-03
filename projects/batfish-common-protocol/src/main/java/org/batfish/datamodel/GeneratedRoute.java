@@ -1,14 +1,13 @@
 package org.batfish.datamodel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute {

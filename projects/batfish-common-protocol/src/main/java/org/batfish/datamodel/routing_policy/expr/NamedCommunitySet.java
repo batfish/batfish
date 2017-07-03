@@ -1,14 +1,12 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.routing_policy.Environment;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class NamedCommunitySet extends CommunitySetExpr {
 

@@ -1,10 +1,9 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class SetNextHop extends Statement {
 

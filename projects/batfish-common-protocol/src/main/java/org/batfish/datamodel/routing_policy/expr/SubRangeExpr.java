@@ -1,11 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.Serializable;
-
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.Environment;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class SubRangeExpr implements Serializable {
 

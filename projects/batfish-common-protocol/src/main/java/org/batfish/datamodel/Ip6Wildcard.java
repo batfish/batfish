@@ -1,12 +1,10 @@
 package org.batfish.datamodel;
 
-import java.math.BigInteger;
-
-import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.math.BigInteger;
+import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 
 public class Ip6Wildcard extends Pair<Ip6, Ip6> {
 

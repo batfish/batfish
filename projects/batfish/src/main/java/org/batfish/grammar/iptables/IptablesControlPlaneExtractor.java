@@ -3,10 +3,10 @@ package org.batfish.grammar.iptables;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
@@ -21,14 +21,13 @@ import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext
 import org.batfish.grammar.iptables.IptablesParser.MatchContext;
 import org.batfish.grammar.iptables.IptablesParser.ProtocolContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
-import org.batfish.common.Warnings;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.representation.iptables.IptablesConfiguration;
 import org.batfish.representation.iptables.IptablesMatch.MatchType;
 import org.batfish.representation.iptables.IptablesRule;
 import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
-import org.batfish.vendor.VendorConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       implements ControlPlaneExtractor {

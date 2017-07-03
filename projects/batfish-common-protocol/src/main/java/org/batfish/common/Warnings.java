@@ -1,17 +1,5 @@
 package org.batfish.common;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.ParseTreePrettyPrinter;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -23,6 +11,16 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 
 @JsonSerialize(using = Warnings.Serializer.class)
 @JsonDeserialize(using = Warnings.Deserializer.class)

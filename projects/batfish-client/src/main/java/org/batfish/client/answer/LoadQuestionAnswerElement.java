@@ -1,12 +1,10 @@
 package org.batfish.client.answer;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.batfish.datamodel.answers.AnswerElement;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import org.batfish.datamodel.answers.AnswerElement;
 
 public class LoadQuestionAnswerElement implements AnswerElement {
 

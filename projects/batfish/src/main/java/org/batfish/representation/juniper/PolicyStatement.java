@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.batfish.common.util.ReferenceCountedStructure;
 
 public final class PolicyStatement extends ReferenceCountedStructure {

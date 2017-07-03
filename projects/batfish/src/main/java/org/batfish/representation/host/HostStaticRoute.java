@@ -1,7 +1,6 @@
 package org.batfish.representation.host;
 
 import java.io.Serializable;
-
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;

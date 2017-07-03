@@ -1,10 +1,9 @@
 package org.batfish.datamodel.collections;
 
-import org.batfish.common.Pair;
-import org.batfish.datamodel.Ip;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.batfish.common.Pair;
+import org.batfish.datamodel.Ip;
 
 public class IpPair extends Pair<Ip, Ip> {
 

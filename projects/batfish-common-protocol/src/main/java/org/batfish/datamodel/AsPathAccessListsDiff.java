@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
-import java.util.NavigableMap;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.NavigableMap;
 
 public class AsPathAccessListsDiff extends ConfigDiffElement {
 

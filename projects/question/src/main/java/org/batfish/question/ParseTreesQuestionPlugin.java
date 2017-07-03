@@ -1,15 +1,14 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class ParseTreesQuestionPlugin extends QuestionPlugin {
 

@@ -1,14 +1,12 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CompositeQuestionPlugin extends QuestionPlugin {
 

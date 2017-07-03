@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.io.Serializable;
 
 public final class TcpFlags implements Serializable {
 

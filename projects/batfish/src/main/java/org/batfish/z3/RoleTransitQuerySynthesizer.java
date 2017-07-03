@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.microsoft.z3.Z3Exception;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.ExternalDestinationIpExpr;
 import org.batfish.z3.node.ExternalSourceIpExpr;
@@ -9,8 +10,6 @@ import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RoleOriginateExpr;
 import org.batfish.z3.node.RuleExpr;
 import org.batfish.z3.node.SaneExpr;
-
-import com.microsoft.z3.Z3Exception;
 
 public class RoleTransitQuerySynthesizer extends BaseQuerySynthesizer {
 

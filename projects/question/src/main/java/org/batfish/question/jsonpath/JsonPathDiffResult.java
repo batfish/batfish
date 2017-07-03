@@ -1,15 +1,13 @@
 package org.batfish.question.jsonpath;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.common.util.CommonUtil;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class JsonPathDiffResult {
 

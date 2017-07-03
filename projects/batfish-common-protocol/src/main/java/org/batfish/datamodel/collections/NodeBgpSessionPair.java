@@ -1,11 +1,10 @@
 package org.batfish.datamodel.collections;
 
-import org.batfish.common.Pair;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.BgpNeighbor;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.Pair;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.Configuration;
 
 public class NodeBgpSessionPair extends Pair<Configuration, BgpNeighbor> {
 

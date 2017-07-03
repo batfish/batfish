@@ -1,13 +1,11 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.batfish.common.BatfishException;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class SubRange implements Serializable, Comparable<SubRange> {
 

@@ -1,11 +1,10 @@
 package org.batfish.datamodel.answers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Problem implements Serializable {
 

@@ -1,7 +1,6 @@
 package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
-
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Ip;
 import org.codehaus.jettison.json.JSONException;

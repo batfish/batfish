@@ -1,13 +1,13 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.common.Warnings;
 
 public final class FwFromDestinationPrefixListExcept extends FwFrom {
 

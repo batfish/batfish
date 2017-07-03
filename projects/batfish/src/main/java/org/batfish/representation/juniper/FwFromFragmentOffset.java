@@ -3,11 +3,10 @@ package org.batfish.representation.juniper;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.SubRange;
-import org.batfish.common.Warnings;
 
 public class FwFromFragmentOffset extends FwFrom {
 

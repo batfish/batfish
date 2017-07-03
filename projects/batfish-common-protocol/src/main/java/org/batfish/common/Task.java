@@ -1,17 +1,15 @@
 package org.batfish.common;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.batfish.common.BfConsts.TaskStatus;
-import org.batfish.common.util.BatfishObjectMapper;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.util.BatfishObjectMapper;
 
 public class Task {
 

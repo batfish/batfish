@@ -1,9 +1,8 @@
 package org.batfish.representation.cisco;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NatPool extends ComparableStructure<String> {
 

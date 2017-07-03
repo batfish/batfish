@@ -2,13 +2,17 @@ package org.batfish.grammar.flatjuniper;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groups_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 

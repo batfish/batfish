@@ -1,12 +1,11 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class IpAccessListsDiff extends ConfigDiffElement {
 

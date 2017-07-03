@@ -1,13 +1,12 @@
 package org.batfish.representation.juniper;
 
 import java.util.List;
-
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.common.Warnings;
 
 public final class PsThenCommunityDelete extends PsThen {
 

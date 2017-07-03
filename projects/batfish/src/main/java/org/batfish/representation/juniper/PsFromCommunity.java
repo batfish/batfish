@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-import org.batfish.common.Warnings;
 
 public final class PsFromCommunity extends PsFrom {
 

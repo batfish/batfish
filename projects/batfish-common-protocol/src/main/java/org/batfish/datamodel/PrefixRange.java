@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 
 public class PrefixRange extends Pair<Prefix, SubRange> {
 

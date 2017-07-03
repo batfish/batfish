@@ -2,13 +2,12 @@ package org.batfish.job;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.batfish.common.Warnings;
-import org.batfish.config.Settings;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

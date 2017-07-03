@@ -2,13 +2,16 @@ package org.batfish.grammar.flatjuniper;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
-import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.common.Warnings;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_apply_pathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
+import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 
 public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
 

@@ -2,7 +2,6 @@ package org.batfish.representation.iptables;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 

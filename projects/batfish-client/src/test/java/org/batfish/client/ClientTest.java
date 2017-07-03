@@ -1,20 +1,5 @@
 package org.batfish.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import org.batfish.common.BatfishException;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.questions.Question;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_PROTOCOL;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_WILDCARD;
@@ -26,6 +11,20 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.questions.Question;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * Tests for {@link org.batfish.client.Client}.

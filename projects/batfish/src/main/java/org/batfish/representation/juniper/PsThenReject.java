@@ -2,13 +2,12 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 import java.util.List;
-
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.common.Warnings;
 
 public final class PsThenReject extends PsThen {
 

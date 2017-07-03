@@ -1,7 +1,6 @@
 package org.batfish.coordinator;
 
 import java.util.UUID;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;

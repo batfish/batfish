@@ -1,15 +1,13 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class If extends Statement {
 

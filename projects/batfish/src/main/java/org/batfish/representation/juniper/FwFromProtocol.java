@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.common.Warnings;
 
 public final class FwFromProtocol extends FwFrom {
 

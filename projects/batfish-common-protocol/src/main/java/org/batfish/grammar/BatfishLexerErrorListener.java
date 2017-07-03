@@ -2,7 +2,6 @@ package org.batfish.grammar;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;

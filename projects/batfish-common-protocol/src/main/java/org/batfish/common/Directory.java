@@ -1,15 +1,13 @@
 package org.batfish.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import org.batfish.common.util.ComparableStructure;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Directory extends ComparableStructure<String> {
 

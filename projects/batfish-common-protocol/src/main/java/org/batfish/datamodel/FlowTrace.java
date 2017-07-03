@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class FlowTrace implements Comparable<FlowTrace> {
 

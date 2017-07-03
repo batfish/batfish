@@ -6,7 +6,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 

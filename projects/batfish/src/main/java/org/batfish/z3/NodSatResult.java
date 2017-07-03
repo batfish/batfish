@@ -1,7 +1,6 @@
 package org.batfish.z3;
 
 import java.util.Map;
-
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.NodSatAnswerElement;

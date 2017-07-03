@@ -1,12 +1,10 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.batfish.common.BatfishException;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum IpProtocol {
    AHP(51),

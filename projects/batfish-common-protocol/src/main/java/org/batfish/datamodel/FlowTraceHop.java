@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-import java.util.SortedSet;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
+import java.util.SortedSet;
 
 public final class FlowTraceHop implements Serializable {
 

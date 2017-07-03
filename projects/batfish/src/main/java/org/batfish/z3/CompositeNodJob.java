@@ -1,20 +1,5 @@
 package org.batfish.z3;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.batfish.job.BatfishJob;
-import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
-import org.batfish.config.Settings;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.collections.NodeVrfSet;
-
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
@@ -27,6 +12,19 @@ import com.microsoft.z3.Params;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
+import org.batfish.config.Settings;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.collections.NodeVrfSet;
+import org.batfish.job.BatfishJob;
 
 public class CompositeNodJob extends BatfishJob<NodJobResult> {
 

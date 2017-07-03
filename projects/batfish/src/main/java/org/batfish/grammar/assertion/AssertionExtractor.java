@@ -2,32 +2,50 @@ package org.batfish.grammar.assertion;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.assertion.And;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.assertion.BooleanExpr;
 import org.batfish.datamodel.assertion.BooleanExprs;
+import org.batfish.datamodel.assertion.BooleanIf;
+import org.batfish.datamodel.assertion.ComparableExpr;
+import org.batfish.datamodel.assertion.ComparableIf;
+import org.batfish.datamodel.assertion.DoubleLiteral;
 import org.batfish.datamodel.assertion.Eq;
 import org.batfish.datamodel.assertion.FloatLiteral;
 import org.batfish.datamodel.assertion.Ge;
 import org.batfish.datamodel.assertion.Gt;
-import org.batfish.datamodel.assertion.BooleanIf;
 import org.batfish.datamodel.assertion.IntLiteral;
 import org.batfish.datamodel.assertion.Le;
 import org.batfish.datamodel.assertion.LongLiteral;
 import org.batfish.datamodel.assertion.Lt;
 import org.batfish.datamodel.assertion.Not;
-import org.batfish.datamodel.assertion.ComparableExpr;
-import org.batfish.datamodel.assertion.ComparableIf;
-import org.batfish.datamodel.assertion.DoubleLiteral;
 import org.batfish.datamodel.assertion.Or;
 import org.batfish.datamodel.assertion.PathSize;
 import org.batfish.datamodel.assertion.StringExpr;
 import org.batfish.datamodel.assertion.StringIf;
 import org.batfish.datamodel.assertion.StringLiteral;
-import org.batfish.grammar.assertion.AssertionParser.*;
+import org.batfish.grammar.assertion.AssertionParser.AndContext;
+import org.batfish.grammar.assertion.AssertionParser.AssertionContext;
+import org.batfish.grammar.assertion.AssertionParser.Boolean_exprContext;
+import org.batfish.grammar.assertion.AssertionParser.Boolean_functionContext;
+import org.batfish.grammar.assertion.AssertionParser.Boolean_ifContext;
+import org.batfish.grammar.assertion.AssertionParser.EqContext;
+import org.batfish.grammar.assertion.AssertionParser.GeContext;
+import org.batfish.grammar.assertion.AssertionParser.GtContext;
+import org.batfish.grammar.assertion.AssertionParser.LeContext;
+import org.batfish.grammar.assertion.AssertionParser.LtContext;
+import org.batfish.grammar.assertion.AssertionParser.NotContext;
+import org.batfish.grammar.assertion.AssertionParser.Num_exprContext;
+import org.batfish.grammar.assertion.AssertionParser.Num_functionContext;
+import org.batfish.grammar.assertion.AssertionParser.Num_ifContext;
+import org.batfish.grammar.assertion.AssertionParser.OrContext;
+import org.batfish.grammar.assertion.AssertionParser.PathsizeContext;
+import org.batfish.grammar.assertion.AssertionParser.Quoted_stringContext;
+import org.batfish.grammar.assertion.AssertionParser.String_exprContext;
+import org.batfish.grammar.assertion.AssertionParser.String_functionContext;
+import org.batfish.grammar.assertion.AssertionParser.String_ifContext;
 
 public class AssertionExtractor extends AssertionParserBaseListener {
 

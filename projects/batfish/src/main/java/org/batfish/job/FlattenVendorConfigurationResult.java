@@ -2,7 +2,6 @@ package org.batfish.job;
 
 import java.nio.file.Path;
 import java.util.Map;
-
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;

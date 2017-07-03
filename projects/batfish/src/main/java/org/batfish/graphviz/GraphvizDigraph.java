@@ -2,7 +2,6 @@ package org.batfish.graphviz;
 
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.batfish.datamodel.Prefix;
 
 public class GraphvizDigraph extends GraphvizInput {

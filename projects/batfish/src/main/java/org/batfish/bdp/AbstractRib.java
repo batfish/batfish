@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Ip;

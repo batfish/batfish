@@ -1,10 +1,9 @@
 package org.batfish.common;
 
+import com.google.common.io.ByteStreams;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Locale;
-
-import com.google.common.io.ByteStreams;
 
 public class CompositePrintStream extends PrintStream {
 

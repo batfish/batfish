@@ -3,9 +3,8 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.IpAccessListLine;
 
 public final class FwFromApplication implements Serializable {
 

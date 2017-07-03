@@ -2,8 +2,11 @@ package org.batfish.grammar.juniper;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.batfish.grammar.juniper.JuniperParser.*;
+import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
+import org.batfish.grammar.juniper.JuniperParser.Juniper_configurationContext;
+import org.batfish.grammar.juniper.JuniperParser.StatementContext;
+import org.batfish.grammar.juniper.JuniperParser.TerminatorContext;
+import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
 public class JuniperFlattener extends JuniperParserBaseListener {
 
