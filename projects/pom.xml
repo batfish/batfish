@@ -9,7 +9,7 @@
 
   <packaging>pom</packaging>
 
-  <version>0.28.0-SNAPSHOT</version>
+  <version>0.29.0-SNAPSHOT</version>
 
   <properties>
     <!-- Configuration of Maven project itself. Please keep alphabetical. -->

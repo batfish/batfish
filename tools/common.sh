@@ -45,7 +45,7 @@ export BATFISH_CLIENT_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish-cli
 export COORDINATOR_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-coordinator.tmp
 
 # TODO: this should be automated.
-export VERSION=0.28.0-SNAPSHOT
+export VERSION=0.29.0-SNAPSHOT
 
 batfish() {
    # if cygwin, shift and replace each parameter
