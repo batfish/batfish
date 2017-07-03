@@ -58,10 +58,10 @@ public class Settings extends BaseSettings {
    private RunMode _runMode;
    private boolean _sanityCheck;
    private boolean _sslDisable;
-   private String _sslKeystoreFile;
+   private Path _sslKeystoreFile;
    private String _sslKeystorePassword;
    private boolean _sslTrustAllCerts;
-   private String _sslTruststoreFile;
+   private Path _sslTruststoreFile;
    private String _sslTruststorePassword;
    private String _testrigDir;
    private String _testrigId;
@@ -145,7 +145,7 @@ public class Settings extends BaseSettings {
       return _sslDisable;
    }
 
-   public String getSslKeystoreFile() {
+   public Path getSslKeystoreFile() {
       return _sslKeystoreFile;
    }
 
@@ -157,7 +157,7 @@ public class Settings extends BaseSettings {
       return _sslTrustAllCerts;
    }
 
-   public String getSslTruststoreFile() {
+   public Path getSslTruststoreFile() {
       return _sslTruststoreFile;
    }
 
@@ -284,13 +284,12 @@ public class Settings extends BaseSettings {
       _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
       _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
       _sslDisable = getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
-      _sslKeystoreFile = getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
+      _sslKeystoreFile = getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
       _sslKeystorePassword = getStringOptionValue(
             BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
       _sslTrustAllCerts = getBooleanOptionValue(
             BfConsts.ARG_SSL_TRUST_ALL_CERTS);
-      _sslTruststoreFile = getStringOptionValue(
-            BfConsts.ARG_SSL_TRUSTSTORE_FILE);
+      _sslTruststoreFile = getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
       _sslTruststorePassword = getStringOptionValue(
             BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
 
@@ -319,7 +318,7 @@ public class Settings extends BaseSettings {
       _sslDisable = sslDisable;
    }
 
-   public void setSslKeystoreFile(String sslKeystoreFile) {
+   public void setSslKeystoreFile(Path sslKeystoreFile) {
       _sslKeystoreFile = sslKeystoreFile;
    }
 
@@ -331,7 +330,7 @@ public class Settings extends BaseSettings {
       _sslTrustAllCerts = sslTrustAllCerts;
    }
 
-   public void setSslTruststoreFile(String sslTruststoreFile) {
+   public void setSslTruststoreFile(Path sslTruststoreFile) {
       _sslTruststoreFile = sslTruststoreFile;
    }
 

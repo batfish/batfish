@@ -6,12 +6,13 @@ import org.batfish.common.*;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.UUID;
 import java.util.zip.ZipException;
 
@@ -597,18 +598,19 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         File file = Main.getWorkMgr().getTestrigObject(containerName,
-               testrigName, objectName);
+         java.nio.file.Path file = Main.getWorkMgr()
+               .getTestrigObject(containerName, testrigName, objectName);
 
-         if (file == null) {
+         if (file == null || !Files.exists(file)) {
             return Response.status(Response.Status.NOT_FOUND)
                   .entity("File not found").type(MediaType.TEXT_PLAIN).build();
          }
 
-         return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
+         String filename = file.getFileName().toString();
+         return Response.ok(file.toFile(), MediaType.APPLICATION_OCTET_STREAM)
                .header("Content-Disposition",
-                     "attachment; filename=\"" + file.getName() + "\"")
-               .header(CoordConsts.SVC_FILENAME_HDR, file.getName()).build();
+                     "attachment; filename=\"" + filename + "\"")
+               .header(CoordConsts.SVC_FILENAME_HDR, filename).build();
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
@@ -839,11 +841,12 @@ public class WorkMgrService {
                   "Listing containers is not allowed with Default API key");
          }
 
-         String[] containerList = Main.getWorkMgr().listContainers(apiKey);
+         SortedSet<String> containerList = Main.getWorkMgr()
+               .listContainers(apiKey);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_LIST,
-                     new JSONArray(Arrays.asList(containerList))))));
+                     new JSONArray(containerList)))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
@@ -889,12 +892,12 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         String[] environmentList = Main.getWorkMgr()
+         SortedSet<String> environmentList = Main.getWorkMgr()
                .listEnvironments(containerName, testrigName);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put(CoordConsts.SVC_KEY_ENVIRONMENT_LIST,
-                     new JSONArray(Arrays.asList(environmentList))))));
+                     new JSONArray(environmentList)))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
@@ -940,12 +943,12 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
-         String[] questionList = Main.getWorkMgr().listQuestions(containerName,
-               testrigName);
+         SortedSet<String> questions = Main.getWorkMgr()
+               .listQuestions(containerName, testrigName);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST,
-                     new JSONArray(Arrays.asList(questionList))))));
+                     new JSONArray(questions)))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
@@ -989,7 +992,8 @@ public class WorkMgrService {
 
          JSONArray retArray = new JSONArray();
 
-         String[] testrigList = Main.getWorkMgr().listTestrigs(containerName);
+         SortedSet<String> testrigList = Main.getWorkMgr()
+               .listTestrigs(containerName);
 
          for (String testrig : testrigList) {
             String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName,
@@ -1171,6 +1175,7 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
          @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+         @FormDataParam(CoordConsts.SVC_KEY_BASE_ENV_NAME) String baseEnvName,
          @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String envName,
          @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
       try {
@@ -1188,16 +1193,14 @@ public class WorkMgrService {
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().uploadEnvironment(containerName, testrigName,
-               envName, fileStream);
+               baseEnvName, envName, fileStream);
 
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject()
                      .put("result", "successfully uploaded environment"))));
 
       }
-      catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException
-            | ZipException e) {
+      catch (BatfishException e) {
          _logger.error(
                "WMS:uploadEnvironment exception: " + e.getMessage() + "\n");
          return new JSONArray(

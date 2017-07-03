@@ -1,5 +1,7 @@
 package org.batfish.grammar.routing_table.nxos;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -8,10 +10,13 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.grammar.RoutingTableExtractor;
@@ -36,6 +41,8 @@ public class NxosRoutingTableExtractor extends
 
    private final String _hostname;
 
+   private final Map<Ip, String> _ipOwners;
+
    @SuppressWarnings("unused")
    private NxosRoutingTableCombinedParser _parser;
 
@@ -47,11 +54,16 @@ public class NxosRoutingTableExtractor extends
    private final Warnings _w;
 
    public NxosRoutingTableExtractor(String hostname, String text,
-         NxosRoutingTableCombinedParser parser, Warnings w) {
+         NxosRoutingTableCombinedParser parser, Warnings w, IBatfish batfish) {
       _hostname = hostname;
       _text = text;
       _parser = parser;
       _w = w;
+      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations,
+            true);
+      Map<Ip, String> ipOwnersSimple = batfish.computeIpOwnersSimple(ipOwners);
+      _ipOwners = ipOwnersSimple;
    }
 
    private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -96,9 +108,32 @@ public class NxosRoutingTableExtractor extends
       if (protocol != RoutingProtocol.CONNECTED && ctx.nexthop != null) {
          nextHopIp = new Ip(ctx.nexthop.getText());
       }
-      Route route = new Route(_hostname, _currentVrfName, _currentPrefix,
-            nextHopIp, Route.UNSET_NEXT_HOP, nextHopInterface, admin, cost,
-            protocol, Route.UNSET_ROUTE_TAG);
+
+      RouteBuilder rb = new RouteBuilder();
+      rb.setNode(_hostname);
+      rb.setNetwork(_currentPrefix);
+      if (protocol == RoutingProtocol.CONNECTED
+            || (protocol == RoutingProtocol.STATIC
+                  && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
+            || Interface.NULL_INTERFACE_NAME.equals(nextHopInterface)) {
+         rb.setNextHop(Configuration.NODE_NONE_NAME);
+      }
+      if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+         rb.setNextHopIp(nextHopIp);
+         String nextHop = _ipOwners.get(nextHopIp);
+         if (nextHop != null) {
+            rb.setNextHop(nextHop);
+         }
+      }
+      if (nextHopInterface != null) {
+         rb.setNextHopInterface(nextHopInterface);
+      }
+      rb.setAdministrativeCost(admin);
+      rb.setCost(cost);
+      rb.setProtocol(protocol);
+      rb.setTag(Route.UNSET_ROUTE_TAG);
+      rb.setVrf(_currentVrfName);
+      Route route = rb.build();
       _currentVrfRoutes.add(route);
    }
 

@@ -220,7 +220,7 @@ public class Driver {
                      _mainSettings.getSslKeystorePassword(),
                      _mainSettings.getSslTrustAllCerts(),
                      _mainSettings.getSslTruststoreFile(),
-                     _mainSettings.getSslTruststoreFile(),
+                     _mainSettings.getSslTruststorePassword(),
                      ConfigurationLocator.class);
             }
             if (_mainSettings.getCoordinatorRegister()) {

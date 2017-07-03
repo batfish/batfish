@@ -3,8 +3,11 @@ package org.batfish.common.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.batfish.common.BatfishException;
 
 //code from
 //http://stackoverflow.com/questions/740375/directories-in-a-zip-file-when-using-java-util-zip-zipoutputstream
@@ -91,23 +94,15 @@ public class ZipUtility {
    /*
     * Zip function zip all files and folders
     */
-   @SuppressWarnings("finally")
-   public static boolean zipFiles(String srcFolder, String destZipFile) {
-      boolean result = false;
+   public static void zipFiles(Path srcFolder, Path destZipFile) {
       try {
-         // System.out.println("Program Start zipping the given files");
-         /*
-          * send to the zip procedure
-          */
-         zipFolder(srcFolder, destZipFile);
-         result = true;
-         // System.out.println("Given files are successfully zipped");
+         zipFolder(srcFolder.toString(), destZipFile.toString());
       }
       catch (Exception e) {
-         System.out.println("Some Errors happened during the zip process");
-      }
-      finally {
-         return result;
+         throw new BatfishException(
+               "Could not zip folder: '" + srcFolder.toString() + "' into: '"
+                     + destZipFile.toString() + "'",
+               e);
       }
    }
 

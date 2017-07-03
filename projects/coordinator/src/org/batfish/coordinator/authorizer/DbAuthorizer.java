@@ -45,9 +45,7 @@ public class DbAuthorizer implements Authorizer {
    }
 
    @Override
-   public void authorizeContainer(String apiKey, String containerName)
-         throws Exception {
-
+   public void authorizeContainer(String apiKey, String containerName) {
       _logger.infof("Authorizing %s for %s\n", apiKey, containerName);
 
       // add the container if it does not exist; update datelastaccessed if it
@@ -58,13 +56,19 @@ public class DbAuthorizer implements Authorizer {
                   + " ON DUPLICATE KEY UPDATE %s = ?",
             TABLE_CONTAINERS, COLUMN_CONTAINER_NAME, COLUMN_DATE_CREATED,
             COLUMN_DATE_LAST_ACCESSED, COLUMN_DATE_LAST_ACCESSED);
-      PreparedStatement insertContainers = _dbConn
-            .prepareStatement(insertContainersString);
-      insertContainers.setString(1, containerName);
-      insertContainers.setDate(2, now);
-      insertContainers.setDate(3, now);
-      insertContainers.setDate(4, now);
-      int numInsertRows = executeUpdate(insertContainers);
+      PreparedStatement insertContainers;
+      int numInsertRows;
+      try {
+         insertContainers = _dbConn.prepareStatement(insertContainersString);
+         insertContainers.setString(1, containerName);
+         insertContainers.setDate(2, now);
+         insertContainers.setDate(3, now);
+         insertContainers.setDate(4, now);
+         numInsertRows = executeUpdate(insertContainers);
+      }
+      catch (SQLException e) {
+         throw new BatfishException("Could not update containers table", e);
+      }
 
       // MySQL says 2 rows impacted when an old row is updated; otherwise it
       // says 1
@@ -76,15 +80,20 @@ public class DbAuthorizer implements Authorizer {
       if (isAccessibleContainer(apiKey, containerName, false)) {
          return;
       }
-
+      int numRows;
       String insertPermissionsString = String.format(
             "INSERT INTO %s (%s, %s) VALUES (?, ?)", TABLE_PERMISSIONS,
             COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
-      PreparedStatement insertPermissions = _dbConn
-            .prepareStatement(insertPermissionsString);
-      insertPermissions.setString(1, apiKey);
-      insertPermissions.setString(2, containerName);
-      int numRows = executeUpdate(insertPermissions);
+      try {
+         PreparedStatement insertPermissions = _dbConn
+               .prepareStatement(insertPermissionsString);
+         insertPermissions.setString(1, apiKey);
+         insertPermissions.setString(2, containerName);
+         numRows = executeUpdate(insertPermissions);
+      }
+      catch (SQLException e) {
+         throw new BatfishException("Could not update permissions table", e);
+      }
       if (numRows > 0) {
          String cacheKey = getPermsCacheKey(apiKey, containerName);
          insertInCache(_cachePermissions, cacheKey);
@@ -166,7 +175,7 @@ public class DbAuthorizer implements Authorizer {
 
    @Override
    public boolean isAccessibleContainer(String apiKey, String containerName,
-         boolean logError) throws Exception {
+         boolean logError) {
 
       String cacheKey = getPermsCacheKey(apiKey, containerName);
 
@@ -179,14 +188,26 @@ public class DbAuthorizer implements Authorizer {
       String selectPermittedContainerString = String.format(
             "SELECT * FROM %s WHERE %s = ? AND %s = ?", TABLE_PERMISSIONS,
             COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
-      PreparedStatement ps = _dbConn
-            .prepareStatement(selectPermittedContainerString);
-      ps.setString(1, apiKey);
-      ps.setString(2, containerName);
-
-      ResultSet rs = executeQuery(ps);
-
-      if (rs != null && rs.first()) {
+      ResultSet rs;
+      try {
+         PreparedStatement ps = _dbConn
+               .prepareStatement(selectPermittedContainerString);
+         ps.setString(1, apiKey);
+         ps.setString(2, containerName);
+         rs = executeQuery(ps);
+      }
+      catch (SQLException e) {
+         throw new BatfishException("Could not query permissions table", e);
+      }
+      boolean authorized;
+      try {
+         authorized = rs != null && rs.first();
+      }
+      catch (SQLException e) {
+         throw new BatfishException(
+               "Error examinng permissions query result set", e);
+      }
+      if (authorized) {
          insertInCache(_cachePermissions, cacheKey);
 
          // a valid access was made; update datelastaccessed
@@ -194,11 +215,16 @@ public class DbAuthorizer implements Authorizer {
          String updatePsString = String.format("UPDATE %s SET %s=? WHERE %s=?",
                TABLE_CONTAINERS, COLUMN_DATE_LAST_ACCESSED,
                COLUMN_CONTAINER_NAME);
-         PreparedStatement updatePs = _dbConn.prepareStatement(updatePsString);
-         updatePs.setDate(1, now);
-         updatePs.setString(2, containerName);
-         executeUpdate(updatePs);
-
+         try {
+            PreparedStatement updatePs = _dbConn
+                  .prepareStatement(updatePsString);
+            updatePs.setDate(1, now);
+            updatePs.setString(2, containerName);
+            executeUpdate(updatePs);
+         }
+         catch (SQLException e) {
+            throw new BatfishException("Could not update containers table", e);
+         }
          return true;
       }
 
@@ -225,26 +251,35 @@ public class DbAuthorizer implements Authorizer {
    }
 
    @Override
-   public boolean isValidWorkApiKey(String apiKey) throws Exception {
-
+   public boolean isValidWorkApiKey(String apiKey) {
       boolean validInCache = isValidInCache(_cacheApiKeys, apiKey);
-
       if (validInCache) {
          return true;
       }
-
       String selectApiKeyRowString = String.format(
             "SELECT * FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
-      PreparedStatement ps = _dbConn.prepareStatement(selectApiKeyRowString);
-      ps.setString(1, apiKey);
-
-      ResultSet rs = executeQuery(ps);
-
-      if (rs != null && rs.first()) {
+      PreparedStatement ps;
+      ResultSet rs;
+      try {
+         ps = _dbConn.prepareStatement(selectApiKeyRowString);
+         ps.setString(1, apiKey);
+         rs = executeQuery(ps);
+      }
+      catch (SQLException e) {
+         throw new BatfishException("Could not query users table", e);
+      }
+      boolean authorized;
+      try {
+         authorized = rs != null && rs.first();
+      }
+      catch (SQLException e) {
+         throw new BatfishException("Could not example users query result set",
+               e);
+      }
+      if (authorized) {
          insertInCache(_cacheApiKeys, apiKey);
          return true;
       }
-
       _logger.infof("Authorizer: %s is NOT a valid key\n", apiKey);
       return false;
    }

@@ -302,6 +302,7 @@ package() {
    COORDINATOR_JAR_P=${PBASE}$COORDINATOR_JAR
    COORDINATOR_CLASSPATH_NAME=coordinator.classpath
    COORDINATOR_CLASSPATH=${CONF_DIR}/${COORDINATOR_CLASSPATH_NAME}
+   COORDINATOR_CLASSPATH_P=${PBASE}${COORDINATOR_CLASSPATH}
    COORDINATOR_PROPERTIES_NAME=coordinator.properties
    COORDINATOR_PROPERTIES_SRC=${BATFISH_PATH}/projects/coordinator/out/${COORDINATOR_PROPERTIES_NAME}
    COORDINATOR_PROPERTIES_LINK=${DATA_DIR}/${COORDINATOR_PROPERTIES_NAME}
@@ -316,6 +317,9 @@ package() {
    COORDINATOR_KEYSTORE_P=${PBASE}${COORDINATOR_KEYSTORE}
    EXTRA_PLUGIN_DIR=${CONF_DIR}/plugins
    EXTRA_PLUGIN_DIR_P=${PBASE}${EXTRA_PLUGIN_DIR}
+   EXTRA_PLUGIN_README_NAME=README
+   EXTRA_PLUGIN_README=${EXTRA_PLUGIN_DIR}/${EXTRA_PLUGIN_README_NAME}
+   EXTRA_PLUGIN_README_P=${PBASE}${EXTRA_PLUGIN_README}
    PLUGIN_DIR=${DATA_DIR}/plugins
    PLUGIN_DIR_P=${PBASE}${PLUGIN_DIR}
    QUESTION_JAR_NAME=question.jar
@@ -447,8 +451,12 @@ rm -rf %{buildroot}
 $(reload_init_scripts)
 /bin/chown root:$BATFISH_USER $CONF_DIR
 /bin/chmod 0770 $CONF_DIR
+/bin/chown root:$BATFISH_USER $COORDINATOR_CLASSPATH
+/bin/chmod 0660 $EXTRA_PLUGIN_DIR
 /bin/chown root:$BATFISH_USER $EXTRA_PLUGIN_DIR
 /bin/chmod 0770 $EXTRA_PLUGIN_DIR
+/bin/chown root:$BATFISH_USER $EXTRA_PLUGIN_README
+/bin/chmod 0660 $EXTRA_PLUGIN_README
 /bin/chown root:$BATFISH_USER $BATFISH_PROPERTIES
 /bin/chmod 0660 $BATFISH_PROPERTIES
 /bin/chown root:$BATFISH_USER $CLIENT_PROPERTIES
@@ -479,8 +487,10 @@ ${SERVICE} coordinator stop || /bin/true
 %defattr(-,root,root,-)
 %config(noreplace) $BATFISH_PROPERTIES
 %config(noreplace) $CLIENT_PROPERTIES
+%config(noreplace) $COORDINATOR_CLASSPATH
 %config(noreplace) $COORDINATOR_PROPERTIES
 %config(noreplace) $COORDINATOR_KEYSTORE
+%config $EXTRA_PLUGIN_README
 %config $BATFISH_INIT
 %config $COORDINATOR_INIT
 $DATA_DIR/*
@@ -508,6 +518,12 @@ License: Apache-2.0
  License can be found in the file
  '/usr/share/common-licenses/Apache-2.0'.
 EOF
+
+   cat > $EXTRA_PLUGIN_README_P <<EOF
+Put additional plugin jars here
+EOF
+
+   touch $COORDINATOR_CLASSPATH_P
 
    echo "Building and installing z3 in $USR_P"
    $BATFISH_Z3_RHEL_INSTALLER $USR_P

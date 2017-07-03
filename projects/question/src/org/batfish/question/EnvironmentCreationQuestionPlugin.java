@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
@@ -51,13 +51,13 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
 
-      private Topology _edgeBlacklist;
+      private SortedSet<Edge> _edgeBlacklist;
 
       private String _environmentName;
 
       private SortedSet<NodeInterfacePair> _interfaceBlacklist;
 
-      private NodeSet _nodeBlacklist;
+      private SortedSet<String> _nodeBlacklist;
 
       @JsonCreator
       public EnvironmentCreationQuestion() {
@@ -77,7 +77,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(EDGE_BLACKLIST_VAR)
-      public Topology getEdgeBlacklist() {
+      public SortedSet<Edge> getEdgeBlacklist() {
          return _edgeBlacklist;
       }
 
@@ -97,7 +97,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(NODE_BLACKLIST_VAR)
-      public NodeSet getNodeBlacklist() {
+      public SortedSet<String> getNodeBlacklist() {
          return _nodeBlacklist;
       }
 
@@ -107,7 +107,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(EDGE_BLACKLIST_VAR)
-      public void setEdgeBlacklist(Topology edgeBlacklist) {
+      public void setEdgeBlacklist(SortedSet<Edge> edgeBlacklist) {
          _edgeBlacklist = edgeBlacklist;
       }
 
