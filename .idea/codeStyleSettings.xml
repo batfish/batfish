@@ -30,6 +30,10 @@
           <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
           <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
           <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="1" />
+          <option name="ELSE_ON_NEW_LINE" value="true" />
+          <option name="CATCH_ON_NEW_LINE" value="true" />
+          <option name="FINALLY_ON_NEW_LINE" value="true" />
+          <option name="INDENT_CASE_FROM_SWITCH" value="false" />
           <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
           <option name="ALIGN_MULTILINE_RESOURCES" value="false" />
           <option name="ALIGN_MULTILINE_FOR" value="false" />
@@ -63,6 +67,5 @@
       </value>
     </option>
     <option name="USE_PER_PROJECT_SETTINGS" value="true" />
-    <option name="PREFERRED_PROJECT_CODE_STYLE" value="Default" />
   </component>
 </project>
