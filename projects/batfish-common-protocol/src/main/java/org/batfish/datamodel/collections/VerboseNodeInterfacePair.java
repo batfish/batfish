@@ -17,7 +17,8 @@ public class VerboseNodeInterfacePair extends Pair<Configuration, Interface> {
    private static final long serialVersionUID = 1L;
 
    @JsonCreator
-   public VerboseNodeInterfacePair(@JsonProperty(HOST_VAR) Configuration node,
+   public VerboseNodeInterfacePair(
+         @JsonProperty(HOST_VAR) Configuration node,
          @JsonProperty(INTERFACE_VAR) Interface iface) {
       super(node, iface);
    }

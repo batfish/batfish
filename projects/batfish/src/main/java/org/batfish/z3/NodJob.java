@@ -31,7 +31,8 @@ import org.batfish.job.BatfishJob;
 
 public final class NodJob extends BatfishJob<NodJobResult> {
 
-   public static Flow createFlow(String node, String vrf,
+   public static Flow createFlow(
+         String node, String vrf,
          Map<String, Long> constraints, String tag) {
       Flow.Builder flowBuilder = new Flow.Builder();
       flowBuilder.setIngressNode(node);
@@ -134,7 +135,8 @@ public final class NodJob extends BatfishJob<NodJobResult> {
 
    private String _tag;
 
-   public NodJob(Settings settings, Synthesizer dataPlaneSynthesizer,
+   public NodJob(
+         Settings settings, Synthesizer dataPlaneSynthesizer,
          QuerySynthesizer querySynthesizer, NodeVrfSet nodeVrfSet, String tag) {
       super(settings);
       _dataPlaneSynthesizer = dataPlaneSynthesizer;
@@ -185,7 +187,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             List<Expr> reversedVarList = new ArrayList<>();
             reversedVarList.addAll(program.getVariablesAsConsts().values());
             Collections.reverse(reversedVarList);
-            Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
+            Expr[] reversedVars = reversedVarList.toArray(new Expr[]{});
             Expr substitutedAnswer = answer.substituteVars(reversedVars);
             solverInput = (BoolExpr) substitutedAnswer;
          }
@@ -239,7 +241,8 @@ public final class NodJob extends BatfishJob<NodJobResult> {
       }
    }
 
-   private Flow createFlow(String node, String vrf,
+   private Flow createFlow(
+         String node, String vrf,
          Map<String, Long> constraints) {
       return createFlow(node, vrf, constraints, _tag);
    }

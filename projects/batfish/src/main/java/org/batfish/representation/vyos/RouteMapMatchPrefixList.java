@@ -29,12 +29,14 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(VyosConfiguration vc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         VyosConfiguration vc, Configuration c,
          Warnings w) {
       PrefixList pl = vc.getPrefixLists().get(_prefixList);
       if (pl != null) {
          pl.getReferers().put(vc, "used in route-map match prefix-list");
-         return new MatchPrefixSet(new DestinationNetwork(),
+         return new MatchPrefixSet(
+               new DestinationNetwork(),
                new NamedPrefixSet(_prefixList));
       }
       else {

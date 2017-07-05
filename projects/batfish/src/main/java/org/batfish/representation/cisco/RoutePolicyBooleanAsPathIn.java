@@ -29,7 +29,8 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       if (_asExpr instanceof NamedAsPathSet) {
          NamedAsPathSet named = (NamedAsPathSet) _asExpr;

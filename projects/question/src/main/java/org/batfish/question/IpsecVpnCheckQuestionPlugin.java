@@ -39,11 +39,13 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
          private static final long serialVersionUID = 1L;
 
          @JsonCreator
-         public IpsecVpnPair(@JsonProperty(HOSTNAME1_VAR) String hostname1,
+         public IpsecVpnPair(
+               @JsonProperty(HOSTNAME1_VAR) String hostname1,
                @JsonProperty(IPSEC_VPN1_VAR) String ipsecVpn1,
                @JsonProperty(HOSTNAME2_VAR) String hostname2,
                @JsonProperty(IPSEC_VPN2_VAR) String ipsecVpn2) {
-            super(new Pair<>(hostname1, ipsecVpn1),
+            super(
+                  new Pair<>(hostname1, ipsecVpn1),
                   new Pair<>(hostname2, ipsecVpn2));
          }
 
@@ -87,7 +89,8 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
          _preSharedKeyMismatch = new TreeMap<>();
       }
 
-      public void addIpsecVpn(SortedMap<String, SortedSet<String>> ipsecVpnMap,
+      public void addIpsecVpn(
+            SortedMap<String, SortedSet<String>> ipsecVpnMap,
             Configuration c, IpsecVpn ipsecVpn) {
          String hostname = c.getHostname();
          SortedSet<String> ipsecVpnsByHostname = ipsecVpnMap.get(hostname);
@@ -241,6 +244,7 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Checks if IPSec VPNs are correctly configured.
     * <p>
@@ -256,7 +260,7 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
     *           the sessions. Default is '.*' (all nodes).
     *
     * @example bf_answer("IpsecVpnCheck", node1Regex="as1.*",
-    *          node2Regex="as2.*") Checks all IPSec VPN sessions between nodes
+    *node2Regex="as2.*") Checks all IPSec VPN sessions between nodes
     *          that start with as1 and those that start with as2.
     */
    public static class IpsecVpnCheckQuestion extends Question {

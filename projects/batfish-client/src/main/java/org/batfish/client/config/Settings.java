@@ -174,26 +174,31 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
-      setDefaultProperty(ARG_BATFISH_LOG_LEVEL,
+      setDefaultProperty(
+            ARG_BATFISH_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_DATAMODEL_DIR, "datamodel");
-      setDefaultProperty(BfConsts.ARG_SSL_DISABLE,
+      setDefaultProperty(
+            BfConsts.ARG_SSL_DISABLE,
             CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
       setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
-      setDefaultProperty(ARG_LOG_LEVEL,
+      setDefaultProperty(
+            ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_NO_SANITY_CHECK, false);
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
-      setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
-            Collections.<String> emptyList());
+      setDefaultProperty(
+            BfConsts.ARG_PLUGIN_DIRS,
+            Collections.<String>emptyList());
       setDefaultProperty(ARG_PRETTY_PRINT_ANSWERS, true);
       setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
-      setDefaultProperty(BfConsts.ARG_SSL_DISABLE,
+      setDefaultProperty(
+            BfConsts.ARG_SSL_DISABLE,
             CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
       setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
       setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
@@ -225,7 +230,8 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_LOG_LEVEL, "log level", "loglevel");
 
-      addBooleanOption(ARG_NO_SANITY_CHECK,
+      addBooleanOption(
+            ARG_NO_SANITY_CHECK,
             "do not check if container, testrig etc. are set. (helps debugging.)");
 
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
@@ -239,7 +245,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_QUESTIONS_DIR, "directory to output questions in",
             "questions_dir");
 
-      addOption(ARG_RUN_MODE,
+      addOption(
+            ARG_RUN_MODE,
             "which mode to run in (batch|interactive|genquestions)",
             "run_mode");
 
@@ -249,10 +256,12 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
-      addBooleanOption(BfConsts.ARG_SSL_DISABLE,
+      addBooleanOption(
+            BfConsts.ARG_SSL_DISABLE,
             "whether to disable SSL during communication with coordinator");
 
-      addBooleanOption(BfConsts.ARG_SSL_TRUST_ALL_CERTS,
+      addBooleanOption(
+            BfConsts.ARG_SSL_TRUST_ALL_CERTS,
             "whether to trust all SSL certificates during communication with coordinator");
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");

@@ -15,7 +15,8 @@ public abstract class CommunitySetExpr implements Serializable {
 
    public abstract SortedSet<Long> communities(Environment environment);
 
-   public abstract SortedSet<Long> communities(Environment environment,
+   public abstract SortedSet<Long> communities(
+         Environment environment,
          SortedSet<Long> communityCandidates);
 
    @Override
@@ -24,7 +25,8 @@ public abstract class CommunitySetExpr implements Serializable {
    @Override
    public abstract int hashCode();
 
-   public abstract boolean matchSingleCommunity(Environment environment,
+   public abstract boolean matchSingleCommunity(
+         Environment environment,
          SortedSet<Long> communities);
 
 }

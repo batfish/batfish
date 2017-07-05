@@ -25,7 +25,8 @@ public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
    }
 
    @JsonCreator
-   public IpEdge(@JsonProperty(NODE1_VAR) String node1,
+   public IpEdge(
+         @JsonProperty(NODE1_VAR) String node1,
          @JsonProperty(IP1_VAR) Ip ip1, @JsonProperty(NODE2_VAR) String node2,
          @JsonProperty(IP2_VAR) Ip ip2) {
       super(new NodeIpPair(node1, ip1), new NodeIpPair(node2, ip2));

@@ -18,14 +18,16 @@ public class RoutePolicyBooleanAsPathPassesThrough extends RoutePolicyBoolean {
 
    private List<SubRangeExpr> _range;
 
-   public RoutePolicyBooleanAsPathPassesThrough(List<SubRangeExpr> range,
+   public RoutePolicyBooleanAsPathPassesThrough(
+         List<SubRangeExpr> range,
          boolean exact) {
       _range = range;
       _exact = exact;
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new PassesThroughAsPath(_range, _exact);
    }

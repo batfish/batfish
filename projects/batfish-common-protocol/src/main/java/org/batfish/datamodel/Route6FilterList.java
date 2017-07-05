@@ -56,7 +56,8 @@ public class Route6FilterList extends ComparableStructure<String> {
       for (Route6FilterLine line : _lines) {
          Prefix6 linePrefix = line.getPrefix();
          int lineBits = linePrefix.getPrefixLength();
-         Prefix6 truncatedLinePrefix = new Prefix6(linePrefix.getAddress(),
+         Prefix6 truncatedLinePrefix = new Prefix6(
+               linePrefix.getAddress(),
                lineBits);
          Prefix6 relevantPortion = new Prefix6(prefix.getAddress(), lineBits)
                .getNetworkPrefix();

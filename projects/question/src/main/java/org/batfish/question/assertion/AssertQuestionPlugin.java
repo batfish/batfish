@@ -87,7 +87,8 @@ public class AssertQuestionPlugin extends QuestionPlugin {
 
          NodesQuestion nodesQuestion = new NodesQuestion();
          nodesQuestion.setSummary(false);
-         NodesAnswerer nodesAnswerer = new NodesAnswerer(nodesQuestion,
+         NodesAnswerer nodesAnswerer = new NodesAnswerer(
+               nodesQuestion,
                _batfish);
          AnswerElement nodesAnswer = nodesAnswerer.answer();
          BatfishObjectMapper mapper = new BatfishObjectMapper();
@@ -131,6 +132,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Checks assertions.
     *

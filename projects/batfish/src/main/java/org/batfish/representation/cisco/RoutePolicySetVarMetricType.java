@@ -20,7 +20,8 @@ public class RoutePolicySetVarMetricType extends RoutePolicyStatement {
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       statements.add(new SetVarMetricType(_var));
    }

@@ -638,7 +638,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private boolean _verboseParse;
 
    public Settings() {
-      this(new String[] {});
+      this(new String[]{});
    }
 
    public Settings(String[] args) {
@@ -1008,13 +1008,15 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
       setDefaultProperty(ARG_ANONYMIZE, false);
       setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
-      setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
+      setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[]{});
       setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
-      setDefaultProperty(ARG_COORDINATOR_POOL_PORT,
+      setDefaultProperty(
+            ARG_COORDINATOR_POOL_PORT,
             CoordConsts.SVC_CFG_POOL_PORT);
-      setDefaultProperty(ARG_COORDINATOR_WORK_PORT,
+      setDefaultProperty(
+            ARG_COORDINATOR_WORK_PORT,
             CoordConsts.SVC_CFG_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
       setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
@@ -1047,8 +1049,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
-      setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
-            Collections.<String> emptyList());
+      setDefaultProperty(
+            BfConsts.ARG_PLUGIN_DIRS,
+            Collections.<String>emptyList());
       setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
       setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
       setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
@@ -1061,7 +1064,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(ARG_SERVICE_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_MODE, false);
       setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
-      setDefaultProperty(BfConsts.ARG_SSL_DISABLE,
+      setDefaultProperty(
+            BfConsts.ARG_SSL_DISABLE,
             CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
       setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
       setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
@@ -1092,7 +1096,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
 
-      addBooleanOption(ARG_ANONYMIZE,
+      addBooleanOption(
+            ARG_ANONYMIZE,
             "created anonymized versions of configs in test rig");
 
       addOption(BfConsts.ARG_ANSWER_JSON_PATH,
@@ -1104,7 +1109,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory",
             ARGNAME_PATH);
 
-      addOption(ARG_COORDINATOR_HOST,
+      addOption(
+            ARG_COORDINATOR_HOST,
             "hostname of coordinator for registration with -"
                   + ARG_SERVICE_MODE,
             ARGNAME_HOSTNAME);
@@ -1112,7 +1118,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addOption(ARG_COORDINATOR_POOL_PORT,
             "coordinator pool manager listening port", ARGNAME_PORT);
 
-      addBooleanOption(ARG_COORDINATOR_REGISTER,
+      addBooleanOption(
+            ARG_COORDINATOR_REGISTER,
             "register service with coordinator on startup");
 
       addOption(ARG_COORDINATOR_WORK_PORT,
@@ -1124,32 +1131,40 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addOption(BfConsts.ARG_DELTA_TESTRIG, "name of delta testrig",
             ARGNAME_NAME);
 
-      addBooleanOption(BfConsts.ARG_DIFF_ACTIVE,
+      addBooleanOption(
+            BfConsts.ARG_DIFF_ACTIVE,
             "make differential environment the active one for questions about a single environment");
 
-      addBooleanOption(BfConsts.ARG_DIFFERENTIAL,
+      addBooleanOption(
+            BfConsts.ARG_DIFFERENTIAL,
             "force treatment of question as differential (to be used when not answering question)");
 
-      addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION,
+      addBooleanOption(
+            ARG_DISABLE_Z3_SIMPLIFICATION,
             "disable z3 simplification");
 
       addOption(BfConsts.ARG_ENVIRONMENT_NAME, "name of environment to use",
             "name");
 
-      addBooleanOption(ARG_EXIT_ON_FIRST_ERROR,
+      addBooleanOption(
+            ARG_EXIT_ON_FIRST_ERROR,
             "exit on first parse error (otherwise will exit on last parse error)");
 
-      addBooleanOption(ARG_FLATTEN,
+      addBooleanOption(
+            ARG_FLATTEN,
             "flatten hierarchical juniper configuration files");
 
-      addOption(ARG_FLATTEN_DESTINATION,
+      addOption(
+            ARG_FLATTEN_DESTINATION,
             "output path to test rig in which flat juniper (and all other) configurations will be placed",
             ARGNAME_PATH);
 
-      addBooleanOption(ARG_FLATTEN_ON_THE_FLY,
+      addBooleanOption(
+            ARG_FLATTEN_ON_THE_FLY,
             "flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)");
 
-      addBooleanOption(BfConsts.COMMAND_INIT_INFO,
+      addBooleanOption(
+            BfConsts.COMMAND_INIT_INFO,
             "include parse/convert initialization info in answer");
 
       addOption(ARG_GEN_OSPF_TOPLOGY_PATH,
@@ -1160,29 +1175,35 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       addOption(ARG_GENERATE_STUBS_INPUT_ROLE,
             "input role for which to generate stubs", ARGNAME_ROLE);
 
-      addOption(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX,
+      addOption(
+            ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX,
             "java regex to extract hostname of generated stub from description of adjacent interface",
             ARGNAME_JAVA_REGEX);
 
       addOption(ARG_GENERATE_STUBS_REMOTE_AS,
             "autonomous system number of stubs to be generated", ARGNAME_AS);
 
-      addBooleanOption(BfConsts.ARG_HALT_ON_CONVERT_ERROR,
+      addBooleanOption(
+            BfConsts.ARG_HALT_ON_CONVERT_ERROR,
             "Halt on conversion error instead of proceeding with successfully converted configs");
 
-      addBooleanOption(BfConsts.ARG_HALT_ON_PARSE_ERROR,
+      addBooleanOption(
+            BfConsts.ARG_HALT_ON_PARSE_ERROR,
             "Halt on parse error instead of proceeding with successfully parsed configs");
 
       addBooleanOption(ARG_HELP, "print this message");
 
-      addOption(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS,
+      addOption(
+            BfConsts.ARG_IGNORE_FILES_WITH_STRINGS,
             "ignore configuration files containing these strings",
             ARGNAME_STRINGS);
 
-      addBooleanOption(ARG_IGNORE_UNKNOWN,
+      addBooleanOption(
+            ARG_IGNORE_UNKNOWN,
             "ignore configuration files with unknown format instead of crashing");
 
-      addBooleanOption(ARG_IGNORE_UNSUPPORTED,
+      addBooleanOption(
+            ARG_IGNORE_UNSUPPORTED,
             "ignore configuration files with unsupported format instead of crashing");
 
       addOption(ARG_JOBS, "number of threads used by parallel jobs executor",
@@ -1190,19 +1211,23 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addOption(BfConsts.ARG_LOG_LEVEL, "log level", ARGNAME_LOG_LEVEL);
 
-      addBooleanOption(ARG_HISTOGRAM,
+      addBooleanOption(
+            ARG_HISTOGRAM,
             "build histogram of unimplemented features");
 
       addOption(BfConsts.ARG_LOG_FILE, "path to main log file", ARGNAME_PATH);
 
-      addBooleanOption(ARG_LOG_TEE,
+      addBooleanOption(
+            ARG_LOG_TEE,
             "print output to both logfile and standard out");
 
-      addOption(ARG_MAX_PARSER_CONTEXT_LINES,
+      addOption(
+            ARG_MAX_PARSER_CONTEXT_LINES,
             "max number of surrounding lines to print on parser error",
             ARGNAME_NUMBER);
 
-      addOption(ARG_MAX_PARSER_CONTEXT_TOKENS,
+      addOption(
+            ARG_MAX_PARSER_CONTEXT_TOKENS,
             "max number of context tokens to print on parser error",
             ARGNAME_NUMBER);
 
@@ -1216,9 +1241,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addBooleanOption(BfConsts.ARG_PEDANTIC_AS_ERROR, "throws "
             + PedanticBatfishException.class.getSimpleName()
-            + " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing");
+            +
+            " for likely harmless warnings (e.g. deviation from good configuration style), instead of emitting warning and continuing");
 
-      addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS,
+      addBooleanOption(
+            BfConsts.ARG_PEDANTIC_SUPPRESS,
             "suppresses pedantic warnings");
 
       addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories",
@@ -1228,23 +1255,27 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
-      addBooleanOption(ARG_PRINT_SYMMETRIC_EDGES,
+      addBooleanOption(
+            ARG_PRINT_SYMMETRIC_EDGES,
             "print topology with symmetric edges adjacent in listing");
 
       addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
 
       addBooleanOption(BfConsts.ARG_RED_FLAG_AS_ERROR, "throws "
             + RedFlagBatfishException.class.getSimpleName()
-            + " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover");
+            +
+            " on some recoverable errors (e.g. bad config lines), instead of emitting warning and attempting to recover");
 
-      addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS,
+      addBooleanOption(
+            BfConsts.ARG_RED_FLAG_SUPPRESS,
             "suppresses red-flag warnings");
 
       addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 
       addBooleanOption(ARG_SERIALIZE_TO_TEXT, "serialize to text");
 
-      addOption(ARG_SERVICE_BIND_HOST,
+      addOption(
+            ARG_SERVICE_BIND_HOST,
             "local hostname used bind service (default is 0.0.0.0 which listens on all interfaces)",
             ARGNAME_HOSTNAME);
 
@@ -1255,16 +1286,20 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
-      addBooleanOption(BfConsts.ARG_SSL_DISABLE,
+      addBooleanOption(
+            BfConsts.ARG_SSL_DISABLE,
             "whether to disable SSL during communication with coordinator");
 
-      addBooleanOption(BfConsts.ARG_SSL_TRUST_ALL_CERTS,
+      addBooleanOption(
+            BfConsts.ARG_SSL_TRUST_ALL_CERTS,
             "whether to trust all SSL certificates during communication with coordinator");
 
-      addBooleanOption(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
+      addBooleanOption(
+            BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
             "synthesize json topology from interface ip subnet information");
 
-      addBooleanOption(BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
+      addBooleanOption(
+            BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
             "synthesize topology from interface ip subnet information");
 
       addOption(BfConsts.ARG_TASK_PLUGIN,
@@ -1272,44 +1307,55 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       addOption(BfConsts.ARG_TESTRIG, "name of testrig", ARGNAME_NAME);
 
-      addBooleanOption(ARG_THROW_ON_LEXER_ERROR,
+      addBooleanOption(
+            ARG_THROW_ON_LEXER_ERROR,
             "throw exception immediately on lexer error");
 
-      addBooleanOption(ARG_THROW_ON_PARSER_ERROR,
+      addBooleanOption(
+            ARG_THROW_ON_PARSER_ERROR,
             "throw exception immediately on parser error");
 
       addBooleanOption(ARG_TIMESTAMP, "print timestamps in log messages");
 
       addBooleanOption(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, "throws "
             + UnimplementedBatfishException.class.getSimpleName()
-            + " when encountering unimplemented configuration directives, instead of emitting warning and ignoring");
+            +
+            " when encountering unimplemented configuration directives, instead of emitting warning and ignoring");
 
-      addBooleanOption(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
+      addBooleanOption(
+            BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
             "suppresses warnings about unimplemented configuration directives");
 
-      addBooleanOption(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG,
+      addBooleanOption(
+            BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG,
             "treat unrecognized configuration directives as red flags instead of force-crashing");
 
-      addBooleanOption(BfConsts.ARG_VERBOSE_PARSE,
+      addBooleanOption(
+            BfConsts.ARG_VERBOSE_PARSE,
             "(developer option) include parse/convert data in init-testrig answer");
 
       addBooleanOption(BfConsts.COMMAND_ANALYZE, "run provided analysis");
 
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
-      addBooleanOption(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
+      addBooleanOption(
+            BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
             "compile configurations for differential environment");
 
-      addBooleanOption(BfConsts.COMMAND_DUMP_DP,
+      addBooleanOption(
+            BfConsts.COMMAND_DUMP_DP,
             "compute and serialize data plane");
 
-      addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT,
+      addBooleanOption(
+            BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT,
             "serialize vendor-independent configs");
 
-      addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC,
+      addBooleanOption(
+            BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC,
             "serialize vendor configs");
 
-      addBooleanOption(BfConsts.COMMAND_REPORT,
+      addBooleanOption(
+            BfConsts.COMMAND_REPORT,
             "generate report based on answered questions");
 
    }

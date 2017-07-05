@@ -194,7 +194,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             if (matchingRoutePrefix.getAddress().asLong() > prefix.getAddress()
                   .asLong()
                   || matchingRoutePrefix.getEndAddress().asLong() < prefix
-                        .getEndAddress().asLong()) {
+                  .getEndAddress().asLong()) {
                if (_mainRib.mergeRoute(sr)) {
                   changed = true;
                }
@@ -235,7 +235,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                               metric = contributingRouteMetric;
                            }
                            else {
-                              metric = Math.min(metric,
+                              metric = Math.min(
+                                    metric,
                                     contributingRouteMetric);
                            }
                         }
@@ -253,7 +254,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                               metric = contributingRouteMetric;
                            }
                            else {
-                              metric = Math.min(metric,
+                              metric = Math.min(
+                                    metric,
                                     contributingRouteMetric);
                            }
                         }
@@ -280,7 +282,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
    }
 
-   public void initBaseBgpRibs(AdvertisementSet externalAdverts,
+   public void initBaseBgpRibs(
+         AdvertisementSet externalAdverts,
          Map<Ip, Set<String>> ipOwners) {
       _bgpMultipathRib = new BgpMultipathRib(this);
       _baseEbgpRib = new BgpMultipathRib(this);
@@ -464,7 +467,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
                      if (ebgp
                            && transformedOutgoingRoute.getAsPath()
-                                 .containsAs(neighbor.getLocalAs())
+                           .containsAs(neighbor.getLocalAs())
                            && !neighbor.getAllowLocalAsIn()) {
                         // skip routes containing peer's AS unless
                         // disable-peer-as-check (getAllowRemoteAsOut) is set
@@ -702,7 +705,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
    }
 
-   public int propagateBgpRoutes(Map<String, Node> nodes,
+   public int propagateBgpRoutes(
+         Map<String, Node> nodes,
          Map<Ip, Set<String>> ipOwners) {
       int numRoutes = 0;
       _receivedBgpAdvertisements = new AdvertisementSet();
@@ -752,7 +756,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                for (AbstractRoute remoteCandidateRoute : activeRemoteRoutes) {
                   if (remoteCandidateRoute.getProtocol() != RoutingProtocol.BGP
                         && remoteCandidateRoute
-                              .getProtocol() != RoutingProtocol.IBGP) {
+                        .getProtocol() != RoutingProtocol.IBGP) {
                      remoteCandidateRoutes.add(remoteCandidateRoute);
                   }
                }
@@ -832,7 +836,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                            .setOriginType(bgpRemoteRoute.getOriginType());
                      if (ebgpSession
                            && bgpRemoteRoute.getAsPath()
-                                 .containsAs(remoteBgpNeighbor.getRemoteAs())
+                           .containsAs(remoteBgpNeighbor.getRemoteAs())
                            && !remoteBgpNeighbor.getAllowRemoteAsOut()) {
                         // skip routes containing peer's AS unless
                         // disable-peer-as-check (getAllowRemoteAsOut) is set
@@ -897,7 +901,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                   if (ebgpSession) {
                      SortedSet<Integer> newAsPathElement = new TreeSet<>();
                      newAsPathElement.add(remoteAs);
-                     transformedOutgoingRouteBuilder.getAsPath().add(0,
+                     transformedOutgoingRouteBuilder.getAsPath().add(
+                           0,
                            newAsPathElement);
                   }
 
@@ -1045,7 +1050,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
                      if (ebgpSession
                            && transformedOutgoingRoute.getAsPath()
-                                 .containsAs(neighbor.getLocalAs())
+                           .containsAs(neighbor.getLocalAs())
                            && !neighbor.getAllowLocalAsIn()) {
                         // skip routes containing peer's AS unless
                         // disable-peer-as-check (getAllowRemoteAsOut) is set
@@ -1128,7 +1133,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       return numRoutes;
    }
 
-   public boolean propagateOspfExternalRoutes(Map<String, Node> nodes,
+   public boolean propagateOspfExternalRoutes(
+         Map<String, Node> nodes,
          Topology topology) {
       boolean changed = false;
       String node = _c.getHostname();
@@ -1211,7 +1217,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       return changed;
    }
 
-   public boolean propagateOspfInternalRoutes(Map<String, Node> nodes,
+   public boolean propagateOspfInternalRoutes(
+         Map<String, Node> nodes,
          Topology topology) {
       boolean changed = false;
       String node = _c.getHostname();
@@ -1331,7 +1338,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                      long neighborRouteArea = neighborRoute.getArea();
                      if (areaNum != neighborRouteArea
                            && (neighborArea.getName().equals(0l) || neighborArea
-                                 .getName().equals(neighborRouteArea))) {
+                           .getName().equals(neighborRouteArea))) {
                         Prefix neighborRouteNetwork = neighborRoute
                               .getNetwork();
                         String neighborSummaryFilterName = neighborArea

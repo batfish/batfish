@@ -99,14 +99,16 @@ public class CommonUtil {
       }
    }
 
-   public static <T extends Throwable> boolean causedBy(Throwable e,
+   public static <T extends Throwable> boolean causedBy(
+         Throwable e,
          Class<T> causeClass) {
       Set<Throwable> seenCauses = Collections
             .newSetFromMap(new IdentityHashMap<>());
       return causedBy(e, causeClass, seenCauses);
    }
 
-   private static <T extends Throwable> boolean causedBy(Throwable e,
+   private static <T extends Throwable> boolean causedBy(
+         Throwable e,
          Class<T> causeClass, Set<Throwable> seenCauses) {
       if (seenCauses.contains(e)) {
          return false;
@@ -132,7 +134,8 @@ public class CommonUtil {
       return causedByMessage(e, searchTerm, seenCauses);
    }
 
-   private static boolean causedByMessage(Throwable e, String searchTerm,
+   private static boolean causedByMessage(
+         Throwable e, String searchTerm,
          Set<Throwable> seenCauses) {
       if (seenCauses.contains(e)) {
          return false;
@@ -242,7 +245,8 @@ public class CommonUtil {
       }
    }
 
-   public static ClientBuilder createHttpClientBuilder(boolean noSsl,
+   public static ClientBuilder createHttpClientBuilder(
+         boolean noSsl,
          boolean trustAllSslCerts, Path keystoreFile, String keystorePassword,
          Path truststoreFile, String truststorePassword) {
       try {
@@ -251,23 +255,26 @@ public class CommonUtil {
             SSLContext sslcontext = SSLContext.getInstance("TLS");
             TrustManager[] trustManagers;
             if (trustAllSslCerts) {
-               trustManagers = new TrustManager[] { new X509TrustManager() {
-                  @Override
-                  public void checkClientTrusted(X509Certificate[] arg0,
-                        String arg1) throws CertificateException {
-                  }
+               trustManagers = new TrustManager[]{
+                     new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(
+                              X509Certificate[] arg0,
+                              String arg1) throws CertificateException {
+                        }
 
-                  @Override
-                  public void checkServerTrusted(X509Certificate[] arg0,
-                        String arg1) throws CertificateException {
-                  }
+                        @Override
+                        public void checkServerTrusted(
+                              X509Certificate[] arg0,
+                              String arg1) throws CertificateException {
+                        }
 
-                  @Override
-                  public X509Certificate[] getAcceptedIssuers() {
-                     return new X509Certificate[0];
-                  }
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                           return new X509Certificate[0];
+                        }
 
-               } };
+                     }};
                clientBuilder.hostnameVerifier(new TrustAllHostNameVerifier());
             }
             else if (truststoreFile != null) {
@@ -315,7 +322,8 @@ public class CommonUtil {
       }
    }
 
-   public static Path createTempDirectory(String prefix,
+   public static Path createTempDirectory(
+         String prefix,
          FileAttribute<?>... attrs) {
       try {
          Path tempDir = Files.createTempDirectory(prefix, attrs);
@@ -327,7 +335,8 @@ public class CommonUtil {
       }
    }
 
-   public static Path createTempFile(String prefix, String suffix,
+   public static Path createTempFile(
+         String prefix, String suffix,
          FileAttribute<?>... attributes) {
       try {
          Path tempFile = Files.createTempFile(prefix, suffix, attributes);
@@ -372,7 +381,8 @@ public class CommonUtil {
       }
    }
 
-   public static <S extends Set<T>, T> S difference(Set<T> minuendSet,
+   public static <S extends Set<T>, T> S difference(
+         Set<T> minuendSet,
          Set<T> subtrahendSet, Supplier<S> setConstructor) {
       S differenceSet = setConstructor.get();
       differenceSet.addAll(minuendSet);
@@ -406,23 +416,29 @@ public class CommonUtil {
    }
 
    public static org.apache.commons.configuration2.Configuration getConfig(
-         String overridePropertyName, String defaultPropertyFilename, Class<?> defaultPropertyLocatorClass) {
+         String overridePropertyName, String defaultPropertyFilename,
+         Class<?> defaultPropertyLocatorClass) {
       String overriddenPath = System.getProperty(overridePropertyName);
       URL propertiesUrl;
       if (overriddenPath != null) {
          // The user provided an override, so look up that configuration instead.
          try {
             propertiesUrl = new URL(new URL("file://"), overriddenPath);
-         } catch (MalformedURLException e) {
-            throw new BatfishException("Error treating " + overriddenPath + " as a path to a properties file", e);
          }
-      } else {
+         catch (MalformedURLException e) {
+            throw new BatfishException(
+                  "Error treating " + overriddenPath + " as a path to a properties file", e);
+         }
+      }
+      else {
          // Find the default properties file.
-         propertiesUrl = defaultPropertyLocatorClass.getClassLoader().getResource(defaultPropertyFilename);
+         propertiesUrl =
+               defaultPropertyLocatorClass.getClassLoader().getResource(defaultPropertyFilename);
       }
       try {
          return new Configurations().properties(propertiesUrl);
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
          throw new BatfishException("Error loading configuration from " + overriddenPath, e);
       }
    }
@@ -491,7 +507,8 @@ public class CommonUtil {
             throw new BatfishException("could not find onejar class");
          }
          catch (URISyntaxException e) {
-            throw new BatfishException("Failed to convert onejar URL to URI",
+            throw new BatfishException(
+                  "Failed to convert onejar URL to URI",
                   e);
          }
          Path jarDir = Paths.get(onejarSourceURI).getParent();
@@ -506,7 +523,8 @@ public class CommonUtil {
                   .getResource(locatorPackageResourceName).toURI());
          }
          catch (URISyntaxException e) {
-            throw new BatfishException("Failed to resolve locator directory",
+            throw new BatfishException(
+                  "Failed to resolve locator directory",
                   e);
          }
          return locatorDirFile;
@@ -523,7 +541,8 @@ public class CommonUtil {
       }
    }
 
-   public static List<String> getMatchingStrings(String regex,
+   public static List<String> getMatchingStrings(
+         String regex,
          Set<String> allStrings) {
       List<String> matchingStrings = new ArrayList<>();
       Pattern pattern;
@@ -574,7 +593,8 @@ public class CommonUtil {
       return time;
    }
 
-   public static <S extends Set<T>, T> S intersection(Set<T> set1, Set<T> set2,
+   public static <S extends Set<T>, T> S intersection(
+         Set<T> set1, Set<T> set2,
          Supplier<S> setConstructor) {
       S intersectionSet = setConstructor.get();
       intersectionSet.addAll(set1);
@@ -663,7 +683,8 @@ public class CommonUtil {
       }
    }
 
-   public static void outputFileLines(Path downloadedFile,
+   public static void outputFileLines(
+         Path downloadedFile,
          Consumer<String> outputFunction) {
       try (BufferedReader br = new BufferedReader(
             new FileReader(downloadedFile.toFile()))) {
@@ -684,7 +705,8 @@ public class CommonUtil {
          text = new String(Files.readAllBytes(file), "UTF-8");
       }
       catch (IOException e) {
-         throw new BatfishException("Failed to read file: " + file.toString(),
+         throw new BatfishException(
+               "Failed to read file: " + file.toString(),
                e);
       }
       return text;
@@ -713,7 +735,8 @@ public class CommonUtil {
       return sha256;
    }
 
-   public static void startSSLServer(ResourceConfig resourceConfig, URI mgrUri,
+   public static void startSSLServer(
+         ResourceConfig resourceConfig, URI mgrUri,
          Path keystorePath, String keystorePassword, boolean trustAllCerts,
          Path truststorePath, String truststorePassword,
          Class<?> configurationLocatorClass) {
@@ -751,7 +774,8 @@ public class CommonUtil {
             new SSLEngineConfigurator(sslCon, false, verifyClient, false));
    }
 
-   public static <S extends Set<T>, T> S symmetricDifference(Set<T> set1,
+   public static <S extends Set<T>, T> S symmetricDifference(
+         Set<T> set1,
          Set<T> set2, Supplier<S> constructor) {
       S differenceSet = constructor.get();
       differenceSet.addAll(set1);
@@ -843,8 +867,9 @@ public class CommonUtil {
                   ch = 'u';
                   break;
                }
-               int code = Integer.parseInt("" + st.charAt(i + 2)
-                     + st.charAt(i + 3) + st.charAt(i + 4) + st.charAt(i + 5),
+               int code = Integer.parseInt(
+                     "" + st.charAt(i + 2)
+                           + st.charAt(i + 3) + st.charAt(i + 4) + st.charAt(i + 5),
                      16);
                sb.append(Character.toChars(code));
                i += 5;
@@ -857,7 +882,8 @@ public class CommonUtil {
       return sb.toString();
    }
 
-   public static <S extends Set<T>, T> S union(Set<T> set1, Set<T> set2,
+   public static <S extends Set<T>, T> S union(
+         Set<T> set1, Set<T> set2,
          Supplier<S> setConstructor) {
       S unionSet = setConstructor.get();
       unionSet.addAll(set1);
@@ -874,7 +900,8 @@ public class CommonUtil {
       }
    }
 
-   public static void writeStreamToFile(InputStream inputStream,
+   public static void writeStreamToFile(
+         InputStream inputStream,
          Path outputFile) {
       try (OutputStream fileOutputStream = new FileOutputStream(
             outputFile.toFile())) {

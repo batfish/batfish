@@ -59,7 +59,8 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
    public void enterPoplt_apply_path(Poplt_apply_pathContext ctx) {
       HierarchyPath applyPathPath = new HierarchyPath();
       String pathQuoted = ctx.path.getText();
-      String pathWithoutQuotes = pathQuoted.substring(1,
+      String pathWithoutQuotes = pathQuoted.substring(
+            1,
             pathQuoted.length() - 1);
       String[] pathComponents = pathWithoutQuotes.split(" ");
       for (String pathComponent : pathComponents) {
@@ -79,7 +80,8 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
       }
       catch (BatfishException e) {
          _w.redFlag("Could not apply path: " + pathQuoted
-               + ": make sure path is terminated by wildcard (e.g. <*>) representing ip(v6) addresses or prefixes");
+               +
+               ": make sure path is terminated by wildcard (e.g. <*>) representing ip(v6) addresses or prefixes");
       }
       // _newConfigurationLines.remove(_currentSetLine);
       if (newLines != null) {

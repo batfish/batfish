@@ -18,14 +18,16 @@ public class RoutePolicyBooleanAsPathOriginatesFrom extends RoutePolicyBoolean {
 
    private boolean _exact;
 
-   public RoutePolicyBooleanAsPathOriginatesFrom(List<SubRangeExpr> asRange,
+   public RoutePolicyBooleanAsPathOriginatesFrom(
+         List<SubRangeExpr> asRange,
          boolean exact) {
       _asRange = asRange;
       _exact = exact;
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new OriginatesFromAsPath(_asRange, _exact);
    }

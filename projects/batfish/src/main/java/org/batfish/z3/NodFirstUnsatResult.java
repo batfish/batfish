@@ -15,7 +15,8 @@ public class NodFirstUnsatResult<Key, Result>
 
    private final Result _result;
 
-   public NodFirstUnsatResult(Key key, Integer firstUnsatQueryIndex,
+   public NodFirstUnsatResult(
+         Key key, Integer firstUnsatQueryIndex,
          Result result, BatfishLoggerHistory history, long elapsedTime) {
       super(elapsedTime, history);
       _firstUnsatQueryIndex = firstUnsatQueryIndex;
@@ -23,7 +24,8 @@ public class NodFirstUnsatResult<Key, Result>
       _result = result;
    }
 
-   public NodFirstUnsatResult(long elapsedTime, BatfishLoggerHistory history,
+   public NodFirstUnsatResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _key = null;
@@ -37,7 +39,8 @@ public class NodFirstUnsatResult<Key, Result>
    }
 
    @Override
-   public void applyTo(Map<Key, Result> output, BatfishLogger logger,
+   public void applyTo(
+         Map<Key, Result> output, BatfishLogger logger,
          NodFirstUnsatAnswerElement answerElement) {
       output.put(_key, _result);
    }

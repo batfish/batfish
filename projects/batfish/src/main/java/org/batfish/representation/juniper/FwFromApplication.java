@@ -25,14 +25,16 @@ public final class FwFromApplication implements Serializable {
       _applications = null;
    }
 
-   public FwFromApplication(String applicationName,
+   public FwFromApplication(
+         String applicationName,
          Map<String, BaseApplication> applications) {
       _applicationName = applicationName;
       _application = null;
       _applications = applications;
    }
 
-   public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines,
+   public void applyTo(
+         IpAccessListLine srcLine, List<IpAccessListLine> lines,
          Warnings w) {
       Application application;
       if (_applicationName != null) {

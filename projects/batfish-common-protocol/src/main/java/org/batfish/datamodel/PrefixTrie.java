@@ -57,7 +57,8 @@ public class PrefixTrie implements Serializable {
 
       private ByteTrieNode _right;
 
-      public void addPrefix(Prefix prefix, BitSet bits, int prefixLength,
+      public void addPrefix(
+            Prefix prefix, BitSet bits, int prefixLength,
             int depth) {
          if (prefixLength == depth) {
             _prefix = prefix;
@@ -80,7 +81,8 @@ public class PrefixTrie implements Serializable {
          }
       }
 
-      public boolean containsPathFromPrefix(BitSet bits, int prefixLength,
+      public boolean containsPathFromPrefix(
+            BitSet bits, int prefixLength,
             int depth) {
          if (prefixLength == depth) {
             if (depth == 0 && _prefix == null) {

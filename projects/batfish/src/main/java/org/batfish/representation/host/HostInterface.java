@@ -104,7 +104,8 @@ public class HostInterface implements Serializable {
       _vrf = vrf;
    }
 
-   public Interface toInterface(Configuration configuration,
+   public Interface toInterface(
+         Configuration configuration,
          Warnings warnings) {
       Interface iface = new Interface(_name, configuration);
       iface.setBandwidth(_bandwidth);

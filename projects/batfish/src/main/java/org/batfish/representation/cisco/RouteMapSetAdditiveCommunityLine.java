@@ -18,7 +18,8 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       statements.add(new AddCommunity(new InlineCommunitySet(_communities)));
    }

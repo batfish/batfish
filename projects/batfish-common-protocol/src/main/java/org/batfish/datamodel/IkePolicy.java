@@ -55,7 +55,8 @@ public final class IkePolicy extends ComparableStructure<String> {
    public void resolveReferences(Configuration owner) {
       if (_proposalNames != null) {
          for (String proposalName : _proposalNames) {
-            _proposals.put(proposalName,
+            _proposals.put(
+                  proposalName,
                   owner.getIkeProposals().get(proposalName));
          }
       }

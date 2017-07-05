@@ -29,7 +29,8 @@ public class SelfNextHop extends NextHopExpr {
    @Override
    public Ip getNextHopIp(Environment environment) {
       // TODO: make work for dynamic sessions
-      Prefix prefix = new Prefix(environment.getPeerAddress(),
+      Prefix prefix = new Prefix(
+            environment.getPeerAddress(),
             Prefix.MAX_PREFIX_LENGTH);
       BgpNeighbor neighbor = environment.getVrf().getBgpProcess().getNeighbors()
             .get(prefix);

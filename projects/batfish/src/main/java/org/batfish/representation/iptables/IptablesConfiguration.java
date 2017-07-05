@@ -26,7 +26,8 @@ public abstract class IptablesConfiguration extends VendorConfiguration {
       _tables.get(tableName).addChain(chainName);
    }
 
-   public void addRule(String tableName, String chainName, IptablesRule rule,
+   public void addRule(
+         String tableName, String chainName, IptablesRule rule,
          int index) {
       addTable(tableName);
       _tables.get(tableName).addRule(chainName, rule, index);
@@ -38,7 +39,8 @@ public abstract class IptablesConfiguration extends VendorConfiguration {
       }
    }
 
-   public void setChainPolicy(String tableName, String chainName,
+   public void setChainPolicy(
+         String tableName, String chainName,
          ChainPolicy policy) {
       addTable(tableName);
       _tables.get(tableName).setChainPolicy(chainName, policy);

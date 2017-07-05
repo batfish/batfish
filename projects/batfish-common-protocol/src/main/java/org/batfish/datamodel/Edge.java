@@ -23,11 +23,13 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
    }
 
    @JsonCreator
-   public Edge(@JsonProperty(NODE1_VAR) String node1,
+   public Edge(
+         @JsonProperty(NODE1_VAR) String node1,
          @JsonProperty(INT1_VAR) String int1,
          @JsonProperty(NODE2_VAR) String node2,
          @JsonProperty(INT2_VAR) String int2) {
-      super(new NodeInterfacePair(node1, int1),
+      super(
+            new NodeInterfacePair(node1, int1),
             new NodeInterfacePair(node2, int2));
    }
 

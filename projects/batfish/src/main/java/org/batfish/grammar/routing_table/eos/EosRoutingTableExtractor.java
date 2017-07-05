@@ -49,14 +49,16 @@ public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
    @SuppressWarnings("unused")
    private final Warnings _w;
 
-   public EosRoutingTableExtractor(String hostname, String text,
+   public EosRoutingTableExtractor(
+         String hostname, String text,
          EosRoutingTableCombinedParser parser, Warnings w, IBatfish batfish) {
       _hostname = hostname;
       _text = text;
       _parser = parser;
       _w = w;
       Map<String, Configuration> configurations = batfish.loadConfigurations();
-      Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations,
+      Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(
+            configurations,
             true);
       Map<Ip, String> ipOwnersSimple = batfish.computeIpOwnersSimple(ipOwners);
       _ipOwners = ipOwnersSimple;
@@ -111,7 +113,7 @@ public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
          rb.setNetwork(prefix);
          if (protocol == RoutingProtocol.CONNECTED
                || (protocol == RoutingProtocol.STATIC
-                     && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
+               && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
                || Interface.NULL_INTERFACE_NAME.equals(nextHopInterface)) {
             rb.setNextHop(Configuration.NODE_NONE_NAME);
          }

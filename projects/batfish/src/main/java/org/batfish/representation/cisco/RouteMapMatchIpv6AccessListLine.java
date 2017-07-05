@@ -23,7 +23,8 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
 
    private final int _statementLine;
 
-   public RouteMapMatchIpv6AccessListLine(Set<String> names,
+   public RouteMapMatchIpv6AccessListLine(
+         Set<String> names,
          int statementLine) {
       _listNames = names;
       _statementLine = statementLine;
@@ -42,7 +43,8 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+   public BooleanExpr toBooleanExpr(
+         Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();
       List<BooleanExpr> disjuncts = d.getDisjuncts();
@@ -76,7 +78,8 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
                standardAccessList.getReferers().put(this, msg);
             }
             if (_routing) {
-               disjuncts.add(new MatchPrefix6Set(new DestinationNetwork6(),
+               disjuncts.add(new MatchPrefix6Set(
+                     new DestinationNetwork6(),
                      new NamedPrefix6Set(listName)));
             }
             else {

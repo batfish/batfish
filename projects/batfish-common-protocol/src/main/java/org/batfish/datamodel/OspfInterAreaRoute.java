@@ -8,14 +8,15 @@ public class OspfInterAreaRoute extends OspfRoute {
    private static final String AREA_VAR = "area";
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private final long _area;
 
    @JsonCreator
-   public OspfInterAreaRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+   public OspfInterAreaRoute(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
          @JsonProperty(METRIC_VAR) int metric,

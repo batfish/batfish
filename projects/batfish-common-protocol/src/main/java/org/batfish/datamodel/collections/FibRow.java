@@ -14,7 +14,8 @@ public class FibRow implements Comparable<FibRow>, Serializable {
    private String _nextHopInterface;
    private Prefix _prefix;
 
-   public FibRow(Prefix prefix, String iface, String nextHop,
+   public FibRow(
+         Prefix prefix, String iface, String nextHop,
          String nextHopInterface) {
       _prefix = prefix;
       _interface = iface;
@@ -27,7 +28,8 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       int prefixComparison = _prefix.getAddress()
             .compareTo(rhs._prefix.getAddress());
       if (prefixComparison == 0) {
-         int lengthComparison = Integer.compare(_prefix.getPrefixLength(),
+         int lengthComparison = Integer.compare(
+               _prefix.getPrefixLength(),
                rhs._prefix.getPrefixLength());
          if (lengthComparison == 0) {
             int interfaceComparison = _interface.compareTo(rhs._interface);

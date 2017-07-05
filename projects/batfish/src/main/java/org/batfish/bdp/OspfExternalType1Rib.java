@@ -14,7 +14,8 @@ public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
    }
 
    @Override
-   public int comparePreference(OspfExternalType1Route lhs,
+   public int comparePreference(
+         OspfExternalType1Route lhs,
          OspfExternalType1Route rhs) {
       // reversed on purpose
       return Integer.compare(rhs.getMetric(), lhs.getMetric());

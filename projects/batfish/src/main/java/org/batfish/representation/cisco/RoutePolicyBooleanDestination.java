@@ -25,7 +25,8 @@ public class RoutePolicyBooleanDestination extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
       if (prefixSetExpr != null) {

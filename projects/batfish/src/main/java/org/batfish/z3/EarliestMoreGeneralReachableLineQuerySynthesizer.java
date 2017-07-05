@@ -60,11 +60,12 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
          queryConditions.addConjunct(SaneExpr.INSTANCE);
          NumberedQueryExpr queryRel = new NumberedQueryExpr(earlierLineIndex);
          String queryRelName = queryRel.getRelations()
-               .toArray(new String[] {})[0];
+               .toArray(new String[]{})[0];
          List<Integer> sizes = new ArrayList<>();
          sizes.addAll(Synthesizer.PACKET_VAR_SIZES.values());
          DeclareRelExpr declaration = new DeclareRelExpr(queryRelName, sizes);
-         baseProgram.getRelationDeclarations().put(queryRelName,
+         baseProgram.getRelationDeclarations().put(
+               queryRelName,
                declaration.toFuncDecl(ctx));
          RuleExpr queryRule = new RuleExpr(queryConditions, queryRel);
          List<BoolExpr> rules = program.getRules();
@@ -78,7 +79,8 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
    }
 
    @Override
-   public NodProgram synthesizeBaseProgram(Synthesizer synthesizer,
+   public NodProgram synthesizeBaseProgram(
+         Synthesizer synthesizer,
          Context ctx) {
       return synthesizer.synthesizeNodAclProgram(_hostname, _aclName, ctx);
    }

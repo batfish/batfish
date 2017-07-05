@@ -167,13 +167,15 @@ public class DbAuthorizer implements Authorizer {
       return apiKey + "::" + containerName;
    }
 
-   private synchronized void insertInCache(Map<String, Date> cache,
+   private synchronized void insertInCache(
+         Map<String, Date> cache,
          String key) {
       cache.put(key, new Date());
    }
 
    @Override
-   public boolean isAccessibleContainer(String apiKey, String containerName,
+   public boolean isAccessibleContainer(
+         String apiKey, String containerName,
          boolean logError) {
 
       String cacheKey = getPermsCacheKey(apiKey, containerName);
@@ -235,7 +237,8 @@ public class DbAuthorizer implements Authorizer {
       return false;
    }
 
-   private synchronized boolean isValidInCache(Map<String, Date> cache,
+   private synchronized boolean isValidInCache(
+         Map<String, Date> cache,
          String key) {
       if (cache.containsKey(key)) {
          // check if the entry is expired
@@ -272,7 +275,8 @@ public class DbAuthorizer implements Authorizer {
          authorized = rs != null && rs.first();
       }
       catch (SQLException e) {
-         throw new BatfishException("Could not example users query result set",
+         throw new BatfishException(
+               "Could not example users query result set",
                e);
       }
       if (authorized) {
@@ -317,7 +321,8 @@ public class DbAuthorizer implements Authorizer {
                throw new BatfishException(
                      "No tries left loading JDBC driver: " + driverClassName);
             }
-            _logger.errorf("SQLException while opening Db connection: %s\n",
+            _logger.errorf(
+                  "SQLException while opening Db connection: %s\n",
                   ExceptionUtils.getStackTrace(e));
             _logger.errorf("Tries left = %d\n", triesLeft);
 

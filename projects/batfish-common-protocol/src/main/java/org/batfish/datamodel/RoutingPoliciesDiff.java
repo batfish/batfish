@@ -10,7 +10,8 @@ public class RoutingPoliciesDiff extends ConfigDiffElement {
    public RoutingPoliciesDiff() {
    }
 
-   public RoutingPoliciesDiff(NavigableMap<String, RoutingPolicy> before,
+   public RoutingPoliciesDiff(
+         NavigableMap<String, RoutingPolicy> before,
          NavigableMap<String, RoutingPolicy> after) {
       super(before, after, false);
    }

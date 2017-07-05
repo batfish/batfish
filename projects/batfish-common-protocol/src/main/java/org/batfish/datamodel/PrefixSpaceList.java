@@ -16,11 +16,13 @@ public class PrefixSpaceList {
          if (currentAction != rflAction) {
             currentAction = rflAction;
             currentPrefixSpace = new PrefixSpace();
-            currentLine = new PrefixSpaceLine(currentPrefixSpace,
+            currentLine = new PrefixSpaceLine(
+                  currentPrefixSpace,
                   currentAction);
             lines.add(currentLine);
          }
-         PrefixRange rflRange = new PrefixRange(rfLine.getPrefix(),
+         PrefixRange rflRange = new PrefixRange(
+               rfLine.getPrefix(),
                rfLine.getLengthRange());
          currentPrefixSpace.addPrefixRange(rflRange);
       }

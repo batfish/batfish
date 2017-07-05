@@ -148,13 +148,15 @@ public class Synthesizer {
    public static final String TCP_FLAGS_URG_VAR = "tcp_flags_urg";
 
    @SuppressWarnings("unused")
-   private static void debug(BooleanExpr condition,
+   private static void debug(
+         BooleanExpr condition,
          List<Statement> statements) {
       RuleExpr rule = new RuleExpr(condition, DebugExpr.INSTANCE);
       statements.add(rule);
    }
 
-   private static BooleanExpr getMatchAclRules_portHelper(Set<SubRange> ranges,
+   private static BooleanExpr getMatchAclRules_portHelper(
+         Set<SubRange> ranges,
          String portVar) {
       return new RangeMatchExpr(portVar, PORT_BITS, ranges);
    }
@@ -313,7 +315,8 @@ public class Synthesizer {
          for (IpProtocol protocol : ipProtocols) {
             int protocolNumber = protocol.number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchesSomeProtocol.addDisjunct(matchProtocol);
@@ -327,7 +330,8 @@ public class Synthesizer {
          for (IpProtocol protocol : notIpProtocols) {
             int protocolNumber = protocol.number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchesSomeProtocol.addDisjunct(matchProtocol);
@@ -342,7 +346,8 @@ public class Synthesizer {
             AndExpr matchProtocolAndPort = new AndExpr();
             int protocolNumber = protocol.getIpProtocol().number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchProtocolAndPort.addConjunct(matchProtocol);
@@ -365,7 +370,8 @@ public class Synthesizer {
             AndExpr matchProtocolAndPort = new AndExpr();
             int protocolNumber = protocol.getIpProtocol().number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchProtocolAndPort.addConjunct(matchProtocol);
@@ -389,7 +395,8 @@ public class Synthesizer {
             AndExpr matchProtocolAndPort = new AndExpr();
             int protocolNumber = protocol.getIpProtocol().number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchProtocolAndPort.addConjunct(matchProtocol);
@@ -412,7 +419,8 @@ public class Synthesizer {
             AndExpr matchProtocolAndPort = new AndExpr();
             int protocolNumber = protocol.getIpProtocol().number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchProtocolAndPort.addConjunct(matchProtocol);
@@ -436,7 +444,8 @@ public class Synthesizer {
             AndExpr matchProtocolAndPort = new AndExpr();
             int protocolNumber = protocol.getIpProtocol().number();
             VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+            LitIntExpr protocolLit = new LitIntExpr(
+                  protocolNumber,
                   PROTOCOL_BITS);
             EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
             matchProtocolAndPort.addConjunct(matchProtocol);
@@ -493,7 +502,8 @@ public class Synthesizer {
                            currentBitIndex, currentBitIndex);
                      LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
                            currentBitIndex, currentBitIndex);
-                     EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                     EqExpr matchSrcIpBit = new EqExpr(
+                           extractSrcIp,
                            srcIpMatchLit);
                      matchSrcIp.addConjunct(matchSrcIpBit);
                   }
@@ -540,7 +550,8 @@ public class Synthesizer {
                            currentBitIndex, currentBitIndex);
                      LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
                            currentBitIndex, currentBitIndex);
-                     EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                     EqExpr matchSrcIpBit = new EqExpr(
+                           extractSrcIp,
                            srcIpMatchLit);
                      matchSrcIp.addConjunct(matchSrcIpBit);
                   }
@@ -570,9 +581,11 @@ public class Synthesizer {
                         srcOrDstIpStart, srcOrDstIpEnd);
                   LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(srcOrDstIp,
                         srcOrDstIpStart, srcOrDstIpEnd);
-                  EqExpr matchSrcIp = new EqExpr(extractSrcIp,
+                  EqExpr matchSrcIp = new EqExpr(
+                        extractSrcIp,
                         srcOrDstIpMatchLit);
-                  EqExpr matchDstIp = new EqExpr(extractDstIp,
+                  EqExpr matchDstIp = new EqExpr(
+                        extractDstIp,
                         srcOrDstIpMatchLit);
                   matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
                   matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
@@ -597,9 +610,11 @@ public class Synthesizer {
                            currentBitIndex, currentBitIndex);
                      LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(srcOrDstIp,
                            currentBitIndex, currentBitIndex);
-                     EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                     EqExpr matchSrcIpBit = new EqExpr(
+                           extractSrcIp,
                            srcOrDstIpMatchLit);
-                     EqExpr matchDstIpBit = new EqExpr(extractDstIp,
+                     EqExpr matchDstIpBit = new EqExpr(
+                           extractDstIp,
                            srcOrDstIpMatchLit);
                      matchSrcIp.addConjunct(matchSrcIpBit);
                      matchDstIp.addConjunct(matchDstIpBit);
@@ -648,7 +663,8 @@ public class Synthesizer {
                            currentBitIndex, currentBitIndex);
                      LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
                            currentBitIndex, currentBitIndex);
-                     EqExpr matchDstIpBit = new EqExpr(extractSrcIp,
+                     EqExpr matchDstIpBit = new EqExpr(
+                           extractSrcIp,
                            dstIpMatchLit);
                      matchDstIp.addConjunct(matchDstIpBit);
                   }
@@ -695,7 +711,8 @@ public class Synthesizer {
                            currentBitIndex, currentBitIndex);
                      LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
                            currentBitIndex, currentBitIndex);
-                     EqExpr matchDstIpBit = new EqExpr(extractSrcIp,
+                     EqExpr matchDstIpBit = new EqExpr(
+                           extractSrcIp,
                            dstIpMatchLit);
                      matchDstIp.addConjunct(matchDstIpBit);
                   }
@@ -708,7 +725,8 @@ public class Synthesizer {
 
       // match srcPort
       if (srcPortRanges != null && srcPortRanges.size() > 0) {
-         BooleanExpr matchSrcPort = getMatchAclRules_portHelper(srcPortRanges,
+         BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
+               srcPortRanges,
                SRC_PORT_VAR);
          match.addConjunct(matchSrcPort);
       }
@@ -734,7 +752,8 @@ public class Synthesizer {
 
       // match dstPort
       if (dstPortRanges != null && dstPortRanges.size() > 0) {
-         BooleanExpr matchDstPort = getMatchAclRules_portHelper(dstPortRanges,
+         BooleanExpr matchDstPort = getMatchAclRules_portHelper(
+               dstPortRanges,
                DST_PORT_VAR);
          match.addConjunct(matchDstPort);
       }
@@ -751,7 +770,8 @@ public class Synthesizer {
          OrExpr matchSomeDscp = new OrExpr();
          match.addConjunct(matchSomeDscp);
          for (int dscp : dscps) {
-            EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(DSCP_VAR),
+            EqExpr matchCurrentDscp = new EqExpr(
+                  new VarIntExpr(DSCP_VAR),
                   new LitIntExpr(dscp, DSCP_BITS));
             matchSomeDscp.addDisjunct(matchCurrentDscp);
          }
@@ -762,7 +782,8 @@ public class Synthesizer {
          OrExpr matchSomeDscp = new OrExpr();
          match.addConjunct(new NotExpr(matchSomeDscp));
          for (int dscp : notDscps) {
-            EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(DSCP_VAR),
+            EqExpr matchCurrentDscp = new EqExpr(
+                  new VarIntExpr(DSCP_VAR),
                   new LitIntExpr(dscp, DSCP_BITS));
             matchSomeDscp.addDisjunct(matchCurrentDscp);
          }
@@ -773,7 +794,8 @@ public class Synthesizer {
          OrExpr matchSomeEcn = new OrExpr();
          match.addConjunct(matchSomeEcn);
          for (int ecn : ecns) {
-            EqExpr matchCurrentEcn = new EqExpr(new VarIntExpr(ECN_VAR),
+            EqExpr matchCurrentEcn = new EqExpr(
+                  new VarIntExpr(ECN_VAR),
                   new LitIntExpr(ecn, ECN_BITS));
             matchSomeEcn.addDisjunct(matchCurrentEcn);
          }
@@ -784,7 +806,8 @@ public class Synthesizer {
          OrExpr matchSomeEcn = new OrExpr();
          match.addConjunct(new NotExpr(matchSomeEcn));
          for (int ecn : notEcns) {
-            EqExpr matchCurrentEcn = new EqExpr(new VarIntExpr(ECN_VAR),
+            EqExpr matchCurrentEcn = new EqExpr(
+                  new VarIntExpr(ECN_VAR),
                   new LitIntExpr(ecn, ECN_BITS));
             matchSomeEcn.addDisjunct(matchCurrentEcn);
          }
@@ -811,7 +834,8 @@ public class Synthesizer {
          OrExpr matchSomeState = new OrExpr();
          match.addConjunct(matchSomeState);
          for (State state : states) {
-            EqExpr matchCurrentState = new EqExpr(new VarIntExpr(STATE_VAR),
+            EqExpr matchCurrentState = new EqExpr(
+                  new VarIntExpr(STATE_VAR),
                   new LitIntExpr(state.number(), STATE_BITS));
             matchSomeState.addDisjunct(matchCurrentState);
          }
@@ -870,49 +894,57 @@ public class Synthesizer {
             LitIntExpr zero = new LitIntExpr(0, 1);
             if (currentTcpFlags.getUseCwr()) {
                LitIntExpr bit = currentTcpFlags.getCwr() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_CWR_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_CWR_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUseEce()) {
                LitIntExpr bit = currentTcpFlags.getEce() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_ECE_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_ECE_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUseUrg()) {
                LitIntExpr bit = currentTcpFlags.getUrg() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_URG_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_URG_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUseAck()) {
                LitIntExpr bit = currentTcpFlags.getAck() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_ACK_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_ACK_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUsePsh()) {
                LitIntExpr bit = currentTcpFlags.getPsh() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_PSH_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_PSH_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUseRst()) {
                LitIntExpr bit = currentTcpFlags.getRst() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_RST_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_RST_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUseSyn()) {
                LitIntExpr bit = currentTcpFlags.getSyn() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_SYN_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_SYN_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
             if (currentTcpFlags.getUseFin()) {
                LitIntExpr bit = currentTcpFlags.getFin() ? one : zero;
-               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_FIN_VAR),
+               EqExpr matchFlag = new EqExpr(
+                     new VarIntExpr(TCP_FLAGS_FIN_VAR),
                      bit);
                matchCurrentTcpFlags.addConjunct(matchFlag);
             }
@@ -931,7 +963,8 @@ public class Synthesizer {
       return newExtractExpr(var, varSize, low, high);
    }
 
-   private static IntExpr newExtractExpr(String var, int varSize, int low,
+   private static IntExpr newExtractExpr(
+         String var, int varSize, int low,
          int high) {
       if (low == 0 && high == varSize - 1) {
          return new VarIntExpr(var);
@@ -957,7 +990,8 @@ public class Synthesizer {
 
    private List<String> _warnings;
 
-   public Synthesizer(Map<String, Configuration> configurations,
+   public Synthesizer(
+         Map<String, Configuration> configurations,
          boolean simplify) {
       _configurations = configurations;
       _fibs = null;
@@ -969,7 +1003,8 @@ public class Synthesizer {
       _warnings = new ArrayList<>();
    }
 
-   public Synthesizer(Map<String, Configuration> configurations,
+   public Synthesizer(
+         Map<String, Configuration> configurations,
          DataPlane dataPlane, boolean simplify) {
       _configurations = configurations;
       _fibs = dataPlane.getFibs();
@@ -1018,7 +1053,8 @@ public class Synthesizer {
       statements.add(new Comment("Node accept lead to universal accept"));
       for (String nodeName : _configurations.keySet()) {
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(nodeName);
-         RuleExpr connectAccepts = new RuleExpr(nodeAccept,
+         RuleExpr connectAccepts = new RuleExpr(
+               nodeAccept,
                AcceptExpr.INSTANCE);
          statements.add(connectAccepts);
       }
@@ -1041,7 +1077,7 @@ public class Synthesizer {
                      FibRow.DROP_INTERFACE, "", "");
                fibSet.add(dropDefaultRow);
             }
-            FibRow[] fib = fibSet.toArray(new FibRow[] {});
+            FibRow[] fib = fibSet.toArray(new FibRow[]{});
             for (int i = 0; i < fib.length; i++) {
                FibRow currentRow = fib[i];
                Set<FibRow> notRows = new TreeSet<>();
@@ -1066,9 +1102,9 @@ public class Synthesizer {
                      if (currentRow.getInterface()
                            .equals(specificRow.getInterface())
                            && currentRow.getNextHop()
-                                 .equals(specificRow.getNextHop())
+                           .equals(specificRow.getNextHop())
                            && currentRow.getNextHopInterface()
-                                 .equals(specificRow.getNextHopInterface())) {
+                           .equals(specificRow.getNextHopInterface())) {
                         // no need to exclude packets matching the more specific
                         // prefix,
                         // since they would go out same edge
@@ -1118,7 +1154,8 @@ public class Synthesizer {
                   IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
                         last);
                   NotExpr noPrefixMatch = new NotExpr();
-                  EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
+                  EqExpr prefixMatch = new EqExpr(
+                        prefixFragmentExt,
                         prefixFragmentLit);
                   noPrefixMatch.SetArgument(prefixMatch);
                   conditions.addConjunct(noPrefixMatch);
@@ -1134,7 +1171,8 @@ public class Synthesizer {
                         last);
                   IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
                         last);
-                  EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
+                  EqExpr prefixMatch = new EqExpr(
+                        prefixFragmentExt,
                         prefixFragmentLit);
                   conditions.addConjunct(prefixMatch);
                }
@@ -1185,7 +1223,8 @@ public class Synthesizer {
             new Comment("Node drop_acl_out lead to universal drop_acl_out"));
       for (String nodeName : _configurations.keySet()) {
          NodeDropAclOutExpr nodeDrop = new NodeDropAclOutExpr(nodeName);
-         RuleExpr connectDrops = new RuleExpr(nodeDrop,
+         RuleExpr connectDrops = new RuleExpr(
+               nodeDrop,
                DropAclOutExpr.INSTANCE);
          statements.add(connectDrops);
          NodeDropAclExpr nodeDropBase = new NodeDropAclExpr(nodeName);
@@ -1199,7 +1238,8 @@ public class Synthesizer {
             new Comment("Node drop_no_route lead to universal drop_no_route"));
       for (String nodeName : _configurations.keySet()) {
          NodeDropNoRouteExpr nodeDrop = new NodeDropNoRouteExpr(nodeName);
-         RuleExpr connectDrops = new RuleExpr(nodeDrop,
+         RuleExpr connectDrops = new RuleExpr(
+               nodeDrop,
                DropNoRouteExpr.INSTANCE);
          statements.add(connectDrops);
          NodeDropExpr nodeDropBase = new NodeDropExpr(nodeName);
@@ -1212,7 +1252,8 @@ public class Synthesizer {
             "Node drop_null_route lead to universal drop_null_route"));
       for (String nodeName : _configurations.keySet()) {
          NodeDropNullRouteExpr nodeDrop = new NodeDropNullRouteExpr(nodeName);
-         RuleExpr connectDrops = new RuleExpr(nodeDrop,
+         RuleExpr connectDrops = new RuleExpr(
+               nodeDrop,
                DropNullRouteExpr.INSTANCE);
          statements.add(connectDrops);
          NodeDropExpr nodeDropBase = new NodeDropExpr(nodeName);
@@ -1250,7 +1291,8 @@ public class Synthesizer {
                .addDisjunct(dstIpMatchesSpecificInterfaceIp);
       }
       NotExpr externalDstIp = new NotExpr(dstIpMatchesSomeInterfaceIp);
-      RuleExpr externalDstIpRule = new RuleExpr(externalDstIp,
+      RuleExpr externalDstIpRule = new RuleExpr(
+            externalDstIp,
             ExternalDestinationIpExpr.INSTANCE);
       statements.add(externalDstIpRule);
       return statements;
@@ -1281,7 +1323,8 @@ public class Synthesizer {
                .addDisjunct(srcIpMatchesSpecificInterfaceIp);
       }
       NotExpr externalSrcIp = new NotExpr(srcIpMatchesSomeInterfaceIp);
-      RuleExpr externalSrcIpRule = new RuleExpr(externalSrcIp,
+      RuleExpr externalSrcIpRule = new RuleExpr(
+            externalSrcIp,
             ExternalSourceIpExpr.INSTANCE);
       statements.add(externalSrcIpRule);
       return statements;
@@ -1332,7 +1375,8 @@ public class Synthesizer {
             if (inboundZone != null) {
                IpAccessList hostFilter = inboundZone.getToHostFilter();
                if (hostFilter != null) {
-                  AclPermitExpr hostFilterPermit = new AclPermitExpr(hostname,
+                  AclPermitExpr hostFilterPermit = new AclPermitExpr(
+                        hostname,
                         hostFilter.getName());
                   acceptConditions.addConjunct(hostFilterPermit);
                }
@@ -1346,7 +1390,8 @@ public class Synthesizer {
                   IpAccessList inboundFilter = inboundZone.getInboundFilter();
                   inboundFilterName = inboundFilter.getName();
                }
-               AclPermitExpr inboundFilterPermit = new AclPermitExpr(hostname,
+               AclPermitExpr inboundFilterPermit = new AclPermitExpr(
+                     hostname,
                      inboundFilterName);
                acceptConditions.addConjunct(inboundFilterPermit);
             }
@@ -1379,7 +1424,8 @@ public class Synthesizer {
                   crossZoneConditions.addConjunct(nonInboundSrcZone);
 
                   if (crossZoneFilter != null) {
-                     AclPermitExpr crossZonePermit = new AclPermitExpr(hostname,
+                     AclPermitExpr crossZonePermit = new AclPermitExpr(
+                           hostname,
                            crossZoneFilter.getName());
                      crossZoneConditions.addConjunct(crossZonePermit);
                      crossFilterSatisfied.addDisjunct(crossZoneConditions);
@@ -1425,7 +1471,8 @@ public class Synthesizer {
             if (inboundZone != null) {
                IpAccessList hostFilter = inboundZone.getToHostFilter();
                if (hostFilter != null) {
-                  AclDenyExpr hostFilterDeny = new AclDenyExpr(hostname,
+                  AclDenyExpr hostFilterDeny = new AclDenyExpr(
+                        hostname,
                         hostFilter.getName());
                   failConditions.addDisjunct(hostFilterDeny);
                }
@@ -1439,7 +1486,8 @@ public class Synthesizer {
                   IpAccessList inboundFilter = inboundZone.getInboundFilter();
                   inboundFilterName = inboundFilter.getName();
                }
-               AclDenyExpr inboundFilterDeny = new AclDenyExpr(hostname,
+               AclDenyExpr inboundFilterDeny = new AclDenyExpr(
+                     hostname,
                      inboundFilterName);
                failConditions.addDisjunct(inboundFilterDeny);
             }
@@ -1463,7 +1511,8 @@ public class Synthesizer {
                   crossZoneConditions.addConjunct(nonInboundSrcZone);
 
                   if (crossZoneFilter != null) {
-                     AclDenyExpr crossZoneDeny = new AclDenyExpr(hostname,
+                     AclDenyExpr crossZoneDeny = new AclDenyExpr(
+                           hostname,
                            crossZoneFilter.getName());
                      crossZoneConditions.addConjunct(crossZoneDeny);
                      crossFilterFailed.addDisjunct(crossZoneConditions);
@@ -1481,7 +1530,8 @@ public class Synthesizer {
                failConditions.addDisjunct(crossFilterFailed);
             }
             dropConditions.addConjunct(failConditions);
-            RuleExpr inboundInterfaceToNodeDrop = new RuleExpr(dropConditions,
+            RuleExpr inboundInterfaceToNodeDrop = new RuleExpr(
+                  dropConditions,
                   nodeDrop);
             statements.add(inboundInterfaceToNodeDrop);
          }
@@ -1554,7 +1604,8 @@ public class Synthesizer {
                }
                for (IpAccessList inboundInterfaceFilter : zone
                      .getInboundInterfaceFilters().values()) {
-                  aclMap.put(inboundInterfaceFilter.getName(),
+                  aclMap.put(
+                        inboundInterfaceFilter.getName(),
                         inboundInterfaceFilter);
                }
                for (IpAccessList toZoneFilter : zone.getToZonePolicies()
@@ -1882,7 +1933,8 @@ public class Synthesizer {
             Prefix prefix = i.getPrefix();
             if (prefix != null) {
                Ip ip = prefix.getAddress();
-               EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
+               EqExpr dstIpMatches = new EqExpr(
+                     new VarIntExpr(DST_IP_VAR),
                      new LitIntExpr(ip));
                dstIpMatchesInterface.addDisjunct(dstIpMatches);
             }
@@ -1928,17 +1980,21 @@ public class Synthesizer {
          for (Interface i : interfaces) {
             String vrfName = i.getVrfName();
             String ifaceName = i.getName();
-            PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
+            PostInInterfaceExpr postInIface = new PostInInterfaceExpr(
+                  hostname,
                   ifaceName);
             PostInExpr postIn = new PostInExpr(hostname);
-            RuleExpr postInInterfaceToPostIn = new RuleExpr(postInIface,
+            RuleExpr postInInterfaceToPostIn = new RuleExpr(
+                  postInIface,
                   postIn);
             statements.add(postInInterfaceToPostIn);
             PostInVrfExpr postInVrf = new PostInVrfExpr(hostname, vrfName);
-            RuleExpr postInInterfaceToPostInVrf = new RuleExpr(postInIface,
+            RuleExpr postInInterfaceToPostInVrf = new RuleExpr(
+                  postInIface,
                   postInVrf);
             statements.add(postInInterfaceToPostInVrf);
-            RuleExpr postInInterfaceToUnoriginal = new RuleExpr(postInIface,
+            RuleExpr postInInterfaceToUnoriginal = new RuleExpr(
+                  postInIface,
                   unoriginal);
             statements.add(postInInterfaceToUnoriginal);
          }
@@ -1959,7 +2015,8 @@ public class Synthesizer {
             Prefix prefix = i.getPrefix();
             if (prefix != null) {
                Ip ip = prefix.getAddress();
-               EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
+               EqExpr dstIpMatches = new EqExpr(
+                     new VarIntExpr(DST_IP_VAR),
                      new LitIntExpr(ip));
                dstIpMatchesInterface.addDisjunct(dstIpMatches);
             }
@@ -2008,7 +2065,8 @@ public class Synthesizer {
     */
    private List<Statement> getPostInToPreOutRules() {
       List<Statement> statements = new ArrayList<>();
-      statements.add(new Comment("postin ==> preout:",
+      statements.add(new Comment(
+            "postin ==> preout:",
             "forward to preout if for each ip address on an interface, destination ip does not match"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
@@ -2017,7 +2075,8 @@ public class Synthesizer {
             Prefix prefix = i.getPrefix();
             if (prefix != null) {
                Ip ip = prefix.getAddress();
-               EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR),
+               EqExpr dstIpMatches = new EqExpr(
+                     new VarIntExpr(DST_IP_VAR),
                      new LitIntExpr(ip));
                someDstIpMatch.addDisjunct(dstIpMatches);
             }
@@ -2065,9 +2124,11 @@ public class Synthesizer {
                continue;
             }
             NodeDropAclInExpr nodeDrop = new NodeDropAclInExpr(hostname);
-            PreInInterfaceExpr preInIface = new PreInInterfaceExpr(hostname,
+            PreInInterfaceExpr preInIface = new PreInInterfaceExpr(
+                  hostname,
                   ifaceName);
-            PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
+            PostInInterfaceExpr postInIface = new PostInInterfaceExpr(
+                  hostname,
                   ifaceName);
             AndExpr conditions = new AndExpr();
             conditions.addConjunct(preInIface);
@@ -2100,7 +2161,8 @@ public class Synthesizer {
          String intIn = Interface.FLOW_SINK_TERMINATION_NAME;
          PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
                hostnameIn, intIn);
-         PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(hostnameOut,
+         PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(
+               hostnameOut,
                intOut);
          RuleExpr rule = new RuleExpr(preOutEdge, preOutInt);
          statements.add(rule);
@@ -2112,7 +2174,8 @@ public class Synthesizer {
          String intIn = edge.getInt2();
          PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
                hostnameIn, intIn);
-         PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(hostnameOut,
+         PreOutInterfaceExpr preOutInt = new PreOutInterfaceExpr(
+               hostnameOut,
                intOut);
          RuleExpr rule = new RuleExpr(preOutEdge, preOutInt);
          statements.add(rule);
@@ -2132,7 +2195,8 @@ public class Synthesizer {
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
             NodeDropAclOutExpr nodeDrop = new NodeDropAclOutExpr(hostname);
-            PreOutInterfaceExpr preOutIface = new PreOutInterfaceExpr(hostname,
+            PreOutInterfaceExpr preOutIface = new PreOutInterfaceExpr(
+                  hostname,
                   ifaceName);
             PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
                   hostname, ifaceName);
@@ -2170,13 +2234,15 @@ public class Synthesizer {
                IpAccessList fromHostFilter = outZone.getFromHostFilter();
                if (fromHostFilter != null) {
                   String fromHostFilterName = fromHostFilter.getName();
-                  AclPermitExpr hostFilterPermit = new AclPermitExpr(hostname,
+                  AclPermitExpr hostFilterPermit = new AclPermitExpr(
+                        hostname,
                         fromHostFilterName);
                   AndExpr originateCrossZonePermit = new AndExpr();
                   originateCrossZonePermit.addConjunct(hostFilterPermit);
                   originateCrossZonePermit.addConjunct(originate);
                   crossZonePermit.addDisjunct(originateCrossZonePermit);
-                  AclDenyExpr hostFilterDeny = new AclDenyExpr(hostname,
+                  AclDenyExpr hostFilterDeny = new AclDenyExpr(
+                        hostname,
                         fromHostFilterName);
                   AndExpr originateCrossZoneDeny = new AndExpr();
                   originateCrossZoneDeny.addConjunct(hostFilterDeny);
@@ -2221,7 +2287,8 @@ public class Synthesizer {
                      String crossZoneFilterName = crossZoneFilter.getName();
                      AclPermitExpr crossZoneFilterPermit = new AclPermitExpr(
                            hostname, crossZoneFilterName);
-                     AclDenyExpr crossZoneFilterDeny = new AclDenyExpr(hostname,
+                     AclDenyExpr crossZoneFilterDeny = new AclDenyExpr(
+                           hostname,
                            crossZoneFilterName);
                      AndExpr deniedByCrossZoneFilter = new AndExpr();
                      deniedByCrossZoneFilter.addConjunct(nonInboundSrcZone);
@@ -2239,7 +2306,8 @@ public class Synthesizer {
             outConditions.addConjunct(crossZonePermit);
             RuleExpr drop = new RuleExpr(dropConditions, nodeDrop);
             statements.add(drop);
-            RuleExpr preOutToPostOut = new RuleExpr(outConditions,
+            RuleExpr preOutToPostOut = new RuleExpr(
+                  outConditions,
                   postOutIface);
             statements.add(preOutToPostOut);
          }
@@ -2290,7 +2358,8 @@ public class Synthesizer {
             receivedDestRouteConditions.addConjunct(preOut);
             String policyName = i.getRoutingPolicyName();
             if (policyName != null) {
-               PolicyDenyExpr policyDeny = new PolicyDenyExpr(hostname,
+               PolicyDenyExpr policyDeny = new PolicyDenyExpr(
+                     hostname,
                      policyName);
                receivedDestRouteConditions.addConjunct(policyDeny);
             }
@@ -2326,9 +2395,11 @@ public class Synthesizer {
       List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Make sure packet fields make sense"));
       AndExpr noPortNumbers = new AndExpr();
-      EqExpr noDstPort = new EqExpr(new VarIntExpr(DST_PORT_VAR),
+      EqExpr noDstPort = new EqExpr(
+            new VarIntExpr(DST_PORT_VAR),
             new LitIntExpr(0, PORT_BITS));
-      EqExpr noSrcPort = new EqExpr(new VarIntExpr(SRC_PORT_VAR),
+      EqExpr noSrcPort = new EqExpr(
+            new VarIntExpr(SRC_PORT_VAR),
             new LitIntExpr(0, PORT_BITS));
       noPortNumbers.addConjunct(noDstPort);
       noPortNumbers.addConjunct(noSrcPort);
@@ -2350,18 +2421,23 @@ public class Synthesizer {
             .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_SYN_VAR), zero));
       noTcpFlags
             .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_FIN_VAR), zero));
-      EqExpr noIcmpCode = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
+      EqExpr noIcmpCode = new EqExpr(
+            new VarIntExpr(ICMP_CODE_VAR),
             new LitIntExpr(IcmpCode.UNSET, ICMP_CODE_BITS));
-      EqExpr noIcmpType = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
+      EqExpr noIcmpType = new EqExpr(
+            new VarIntExpr(ICMP_TYPE_VAR),
             new LitIntExpr(IcmpType.UNSET, ICMP_TYPE_BITS));
       AndExpr noIcmp = new AndExpr();
       noIcmp.addConjunct(noIcmpType);
       noIcmp.addConjunct(noIcmpCode);
-      EqExpr icmpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+      EqExpr icmpProtocol = new EqExpr(
+            new VarIntExpr(IP_PROTOCOL_VAR),
             new LitIntExpr(IpProtocol.ICMP.number(), PROTOCOL_BITS));
-      EqExpr tcpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+      EqExpr tcpProtocol = new EqExpr(
+            new VarIntExpr(IP_PROTOCOL_VAR),
             new LitIntExpr(IpProtocol.TCP.number(), PROTOCOL_BITS));
-      EqExpr udpProtocol = new EqExpr(new VarIntExpr(IP_PROTOCOL_VAR),
+      EqExpr udpProtocol = new EqExpr(
+            new VarIntExpr(IP_PROTOCOL_VAR),
             new LitIntExpr(IpProtocol.UDP.number(), PROTOCOL_BITS));
       AndExpr tcp = new AndExpr();
       tcp.addConjunct(tcpProtocol);
@@ -2404,7 +2480,8 @@ public class Synthesizer {
                hostnameOut, intOut);
          PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(hostnameOut, intOut,
                hostnameIn, intIn);
-         PreInInterfaceExpr preInIface = new PreInInterfaceExpr(hostnameIn,
+         PreInInterfaceExpr preInIface = new PreInInterfaceExpr(
+               hostnameIn,
                intIn);
          AndExpr conditions = new AndExpr();
          conditions.addConjunct(postOutIface);
@@ -2447,7 +2524,8 @@ public class Synthesizer {
       }
    }
 
-   public NodProgram synthesizeNodAclProgram(String hostname, String aclName,
+   public NodProgram synthesizeNodAclProgram(
+         String hostname, String aclName,
          Context ctx) throws Z3Exception {
 
       List<Statement> ruleStatements = new ArrayList<>();
@@ -2469,7 +2547,8 @@ public class Synthesizer {
       List<Statement> originateToPostInRules = getOriginateToPostInRules();
       List<Statement> originateVrfToPostInVrfRules = getOriginateVrfToPostInVrfRules();
       List<Statement> postInInterfaceToPostInRules = getPostInInterfaceToPostInRules();
-      List<Statement> postInInterfaceToNonInboundSrcInterface = getPostInInterfaceToNonInboundSrcInterface();
+      List<Statement> postInInterfaceToNonInboundSrcInterface =
+            getPostInInterfaceToNonInboundSrcInterface();
       List<Statement> postInToInboundInterface = getPostInToInboundInterface();
       List<Statement> inboundInterfaceToNodeAccept = getInboundInterfaceToNodeAccept();
       List<Statement> inboundInterfaceToNodeDrop = getInboundInterfaceToNodeDrop();
@@ -2480,8 +2559,10 @@ public class Synthesizer {
       List<Statement> policyRouteRules = getPolicyRouteRules();
       List<Statement> matchAclRules = getMatchAclRules();
       List<Statement> toNeighborsRules = getToNeighborsRules();
-      List<Statement> preInInterfaceToPostInInterfaceRules = getPreInInterfaceToPostInInterfaceRules();
-      List<Statement> preOutInterfaceToPostOutInterfaceRules = getPreOutInterfaceToPostOutInterfaceRules();
+      List<Statement> preInInterfaceToPostInInterfaceRules =
+            getPreInInterfaceToPostInInterfaceRules();
+      List<Statement> preOutInterfaceToPostOutInterfaceRules =
+            getPreOutInterfaceToPostOutInterfaceRules();
       List<Statement> nodeAcceptToRoleAcceptRules = getNodeAcceptToRoleAcceptRules();
       List<Statement> externalSrcIpRules = getExternalSrcIpRules();
       List<Statement> externalDstIpRules = getExternalDstIpRules();
@@ -2517,7 +2598,8 @@ public class Synthesizer {
       return synthesizeNodProgram(ctx, ruleStatements);
    }
 
-   private NodProgram synthesizeNodProgram(Context ctx,
+   private NodProgram synthesizeNodProgram(
+         Context ctx,
          List<Statement> ruleStatements) {
       NodProgram nodProgram = new NodProgram(ctx);
       Map<String, FuncDecl> relDeclFuncDecls = getRelDeclFuncDecls(
@@ -2530,9 +2612,11 @@ public class Synthesizer {
       for (Entry<String, Integer> e : PACKET_VAR_SIZES.entrySet()) {
          String var = e.getKey();
          int size = e.getValue();
-         BitVecExpr varExpr = (BitVecExpr) ctx.mkBound(deBruinIndex,
+         BitVecExpr varExpr = (BitVecExpr) ctx.mkBound(
+               deBruinIndex,
                ctx.mkBitVecSort(size));
-         BitVecExpr varAsConstExpr = (BitVecExpr) ctx.mkConst(var,
+         BitVecExpr varAsConstExpr = (BitVecExpr) ctx.mkConst(
+               var,
                ctx.mkBitVecSort(size));
          variables.put(var, varExpr);
          variablesAsConsts.put(var, varAsConstExpr);

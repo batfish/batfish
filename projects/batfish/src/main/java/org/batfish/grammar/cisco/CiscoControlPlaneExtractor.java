@@ -250,13 +250,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final String DUPLICATE = "DUPLICATE";
 
-   private static final String F_ALLOWAS_IN_NUMBER = "bgp -  allowas-in with number - ignored and effectively infinite for now";
+   private static final String F_ALLOWAS_IN_NUMBER =
+         "bgp -  allowas-in with number - ignored and effectively infinite for now";
 
    private static final String F_BGP_AUTO_SUMMARY = "bgp - auto-summary";
 
-   private static final String F_BGP_INHERIT_PEER_OTHER = "bgp - inherit peer - inheritance not implemented for this peer type";
+   private static final String F_BGP_INHERIT_PEER_OTHER =
+         "bgp - inherit peer - inheritance not implemented for this peer type";
 
-   private static final String F_BGP_INHERIT_PEER_SESSION_OTHER = "bgp - inherit peer-session - inheritance not implemented for this peer type";
+   private static final String F_BGP_INHERIT_PEER_SESSION_OTHER =
+         "bgp - inherit peer-session - inheritance not implemented for this peer type";
 
    private static final String F_BGP_MAXIMUM_PEERS = "bgp - maximum-peers";
 
@@ -551,7 +554,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private final Warnings _w;
 
-   public CiscoControlPlaneExtractor(String text,
+   public CiscoControlPlaneExtractor(
+         String text,
          BatfishCombinedParser<?, ?> parser, ConfigurationFormat format,
          Warnings warnings, boolean unrecognizedAsRedFlag) {
       _text = text;
@@ -564,7 +568,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentBlockNeighborAddressFamilies = new HashSet<>();
    }
 
-   private Interface addInterface(String name, Interface_nameContext ctx,
+   private Interface addInterface(
+         String name, Interface_nameContext ctx,
          boolean explicit) {
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
@@ -835,9 +840,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentExpandedCommunityList = _configuration.getExpandedCommunityLists()
             .get(name);
       if (_currentExpandedCommunityList == null) {
-         _currentExpandedCommunityList = new ExpandedCommunityList(name,
+         _currentExpandedCommunityList = new ExpandedCommunityList(
+               name,
                definitionLine);
-         _configuration.getExpandedCommunityLists().put(name,
+         _configuration.getExpandedCommunityLists().put(
+               name,
                _currentExpandedCommunityList);
       }
    }
@@ -861,9 +868,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentStandardCommunityList = _configuration.getStandardCommunityLists()
             .get(name);
       if (_currentStandardCommunityList == null) {
-         _currentStandardCommunityList = new StandardCommunityList(name,
+         _currentStandardCommunityList = new StandardCommunityList(
+               name,
                definitionLine);
-         _configuration.getStandardCommunityLists().put(name,
+         _configuration.getStandardCommunityLists().put(
+               name,
                _currentStandardCommunityList);
       }
    }
@@ -1871,7 +1880,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.DEC() != null) {
          target = toInteger(ctx.DEC());
       }
-      RouteMapContinue continueLine = new RouteMapContinue(target,
+      RouteMapContinue continueLine = new RouteMapContinue(
+            target,
             statementLine);
       _currentRouteMapClause.setContinueLine(continueLine);
    }
@@ -1993,9 +2003,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String srcAddressGroup = getAddressGroup(ctx.srcipr);
       String dstAddressGroup = getAddressGroup(ctx.dstipr);
       List<SubRange> srcPortRanges = ctx.alps_src != null
-            ? toPortRanges(ctx.alps_src) : Collections.<SubRange> emptyList();
+            ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null
-            ? toPortRanges(ctx.alps_dst) : Collections.<SubRange> emptyList();
+            ? toPortRanges(ctx.alps_dst) : Collections.<SubRange>emptyList();
       Integer icmpType = null;
       Integer icmpCode = null;
       List<TcpFlags> tcpFlags = new ArrayList<>();
@@ -2156,9 +2166,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String srcAddressGroup = getAddressGroup(ctx.srcipr);
       String dstAddressGroup = getAddressGroup(ctx.dstipr);
       List<SubRange> srcPortRanges = ctx.alps_src != null
-            ? toPortRanges(ctx.alps_src) : Collections.<SubRange> emptyList();
+            ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null
-            ? toPortRanges(ctx.alps_dst) : Collections.<SubRange> emptyList();
+            ? toPortRanges(ctx.alps_dst) : Collections.<SubRange>emptyList();
       Integer icmpType = null;
       Integer icmpCode = null;
       List<TcpFlags> tcpFlags = new ArrayList<>();
@@ -2391,7 +2401,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.STANDBY() != null) {
          Ip standbyAddress = toIp(ctx.standby_address);
-         Prefix standbyPrefix = new Prefix(standbyAddress,
+         Prefix standbyPrefix = new Prefix(
+               standbyAddress,
                prefix.getPrefixLength());
          for (Interface currentInterface : _currentInterfaces) {
             currentInterface.setStandbyPrefix(standbyPrefix);
@@ -2793,7 +2804,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Token remainder : ctx.remainder) {
          regex += remainder.getText();
       }
-      ExpandedCommunityListLine line = new ExpandedCommunityListLine(action,
+      ExpandedCommunityListLine line = new ExpandedCommunityListLine(
+            action,
             regex);
       _currentExpandedCommunityList.addLine(line);
    }
@@ -2813,7 +2825,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          long community = toLong(communityCtx);
          communities.add(community);
       }
-      StandardCommunityListLine line = new StandardCommunityListLine(action,
+      StandardCommunityListLine line = new StandardCommunityListLine(
+            action,
             communities);
       _currentStandardCommunityList.getLines().add(line);
    }
@@ -3817,7 +3830,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             }
             Prefix6 prefix6;
             if (ctx.ipv6a != null) {
-               prefix6 = new Prefix6(toIp6(ctx.ipv6a),
+               prefix6 = new Prefix6(
+                     toIp6(ctx.ipv6a),
                      Prefix6.MAX_PREFIX_LENGTH);
             }
             else {
@@ -5021,7 +5035,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitUnrecognized_line(Unrecognized_lineContext ctx) {
-      String line = _text.substring(ctx.start.getStartIndex(),
+      String line = _text.substring(
+            ctx.start.getStartIndex(),
             ctx.stop.getStopIndex());
       String msg = String.format("Line %d unrecognized: %s",
             ctx.start.getLine(), line);
@@ -6407,7 +6422,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                upper = Prefix.MAX_PREFIX_LENGTH;
             }
             else if (pctxt.ipv6a != null) {
-               prefix6 = new Prefix6(toIp6(pctxt.ipv6a),
+               prefix6 = new Prefix6(
+                     toIp6(pctxt.ipv6a),
                      Prefix6.MAX_PREFIX_LENGTH);
                lower = prefix6.getPrefixLength();
                upper = Prefix6.MAX_PREFIX_LENGTH;
@@ -6462,7 +6478,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          boolean negated = (ctx.NOT() != null);
-         return new RoutePolicyDeleteCommunityStatement(negated,
+         return new RoutePolicyDeleteCommunityStatement(
+               negated,
                toRoutePolicyCommunitySet(ctx.rp_community_set()));
       }
    }

@@ -28,7 +28,9 @@ public abstract class BatfishLexer extends Lexer {
    public void mode(int m) {
       _parser.updateTokenModes(_mode);
       super.mode(m);
-   };
+   }
+
+   ;
 
    /**
     * Print custom lexer state (should be overridden)

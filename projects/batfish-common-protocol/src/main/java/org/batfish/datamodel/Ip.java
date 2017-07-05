@@ -100,8 +100,8 @@ public class Ip implements Comparable<Ip>, Serializable {
          int addressAsInt = (int) (_ip);
          ByteBuffer b = ByteBuffer.allocate(NUM_BYTES);
          b.order(ByteOrder.LITTLE_ENDIAN); // optional, the initial order of a
-                                           // byte
-                                           // buffer is always BIG_ENDIAN.
+         // byte
+         // buffer is always BIG_ENDIAN.
          b.putInt(addressAsInt);
          BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
          bits = new BitSet(Prefix.MAX_PREFIX_LENGTH);

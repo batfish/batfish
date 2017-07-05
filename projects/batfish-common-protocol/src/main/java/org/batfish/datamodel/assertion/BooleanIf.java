@@ -8,7 +8,8 @@ public class BooleanIf implements BooleanExpr {
 
    private BooleanExpr _trueExpr;
 
-   public BooleanIf(BooleanExpr guard, BooleanExpr trueExpr,
+   public BooleanIf(
+         BooleanExpr guard, BooleanExpr trueExpr,
          BooleanExpr falseExpr) {
       _guard = guard;
       _trueExpr = trueExpr;

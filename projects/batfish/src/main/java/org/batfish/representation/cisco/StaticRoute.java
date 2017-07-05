@@ -22,7 +22,8 @@ public class StaticRoute implements Serializable {
 
    private Integer _track;
 
-   public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,
+   public StaticRoute(
+         Prefix prefix, Ip nextHopIp, String nextHopInterface,
          int distance, Integer tag, Integer track, boolean permanent) {
       _prefix = prefix;
       _nextHopIp = nextHopIp;

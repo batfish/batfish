@@ -10,7 +10,8 @@ public final class Version {
 
    private static final String VERSION = "0.28.1";
 
-   public static void checkCompatibleVersion(String myName, String otherName,
+   public static void checkCompatibleVersion(
+         String myName, String otherName,
          String otherVersion) {
       if (otherVersion == null) {
          otherVersion = UNKNOWN_VERSION;
@@ -26,7 +27,8 @@ public final class Version {
       return VERSION;
    }
 
-   public static List<Integer> getVersionBreakdown(String name,
+   public static List<Integer> getVersionBreakdown(
+         String name,
          String version) {
       List<Integer> result;
       try {
@@ -45,7 +47,8 @@ public final class Version {
       return result;
    }
 
-   public static boolean isCompatibleVersion(String myName, String otherName,
+   public static boolean isCompatibleVersion(
+         String myName, String otherName,
          String otherVersion) {
       if (otherVersion == null) {
          otherVersion = UNKNOWN_VERSION;

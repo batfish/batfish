@@ -34,7 +34,8 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
 
    private boolean _reenablePathRecording;
 
-   public GroupTreeBuilder(FlatJuniperCombinedParser combinedParser,
+   public GroupTreeBuilder(
+         FlatJuniperCombinedParser combinedParser,
          Hierarchy hierarchy) {
       _combinedParser = combinedParser;
       _hierarchy = hierarchy;

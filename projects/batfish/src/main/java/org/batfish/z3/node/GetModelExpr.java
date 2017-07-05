@@ -11,7 +11,7 @@ public class GetModelExpr extends Statement implements ComplexExpr {
 
    private GetModelExpr() {
       _subExpressions = Collections
-            .<Expr> singletonList(new IdExpr("get-model"));
+            .<Expr>singletonList(new IdExpr("get-model"));
       _printer = new CollapsedComplexExprPrinter(this);
    }
 

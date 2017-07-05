@@ -27,7 +27,8 @@ public class PoolMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
       _logger.info("PMS:getInfo\n");
-      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+      return new JSONArray(Arrays.asList(
+            CoordConsts.SVC_KEY_SUCCESS,
             "Batfish coordinator v" + Version.getVersion()
                   + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
    }
@@ -96,7 +97,8 @@ public class PoolMgrService {
             }
 
             else {
-               return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
+               return new JSONArray(Arrays.asList(
+                     CoordConsts.SVC_KEY_FAILURE,
                      "Got unknown command " + entry.getKey()));
             }
          }
@@ -108,12 +110,14 @@ public class PoolMgrService {
 
          if (workersToAdd.size() > 0) {
             if (workerVersion == null) {
-               return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
+               return new JSONArray(Arrays.asList(
+                     CoordConsts.SVC_KEY_FAILURE,
                      "Worker version not specified"));
             }
             if (!Version.isCompatibleVersion("Service", "Worker",
                   workerVersion)) {
-               return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
+               return new JSONArray(Arrays.asList(
+                     CoordConsts.SVC_KEY_FAILURE,
                      "Worker version " + workerVersion
                            + "is incompatible with coordinator version "
                            + Version.getVersion()));

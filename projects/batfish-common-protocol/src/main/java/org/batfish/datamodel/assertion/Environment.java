@@ -19,7 +19,8 @@ public class Environment {
 
    private ConcurrentMap<String, ArrayNode> _pathCache;
 
-   public Environment(IBatfish batfish, Object jsonObject,
+   public Environment(
+         IBatfish batfish, Object jsonObject,
          ConcurrentMap<String, ArrayNode> pathCache, Configuration c) {
       _batfish = batfish;
       _pathCache = pathCache;

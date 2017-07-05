@@ -13,7 +13,8 @@ import org.batfish.z3.node.SaneExpr;
 
 public class RoleReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
-   public RoleReachabilityQuerySynthesizer(String hostname, String vrf,
+   public RoleReachabilityQuerySynthesizer(
+         String hostname, String vrf,
          String role) {
       OriginateVrfExpr originate = new OriginateVrfExpr(hostname, vrf);
       RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
@@ -23,7 +24,8 @@ public class RoleReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       queryConditions.addConjunct(ExternalSourceIpExpr.INSTANCE);
       queryConditions.addConjunct(ExternalDestinationIpExpr.INSTANCE);
-      RuleExpr queryRule = new RuleExpr(queryConditions,
+      RuleExpr queryRule = new RuleExpr(
+            queryConditions,
             QueryRelationExpr.INSTANCE);
       QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
       StringBuilder sb = new StringBuilder();

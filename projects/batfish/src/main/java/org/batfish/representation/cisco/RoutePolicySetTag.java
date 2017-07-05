@@ -21,7 +21,8 @@ public class RoutePolicySetTag extends RoutePolicySetStatement {
    }
 
    @Override
-   protected Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+   protected Statement toSetStatement(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new SetTag(_tag);
    }

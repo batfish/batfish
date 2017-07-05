@@ -12,7 +12,8 @@ public class BatfishTopologyCombinedParser extends
    private static String getHeader() {
       String headerTextWithQuotes = BatfishTopologyLexer.VOCABULARY
             .getLiteralName(BatfishTopologyLexer.HEADER);
-      String headerText = headerTextWithQuotes.substring(1,
+      String headerText = headerTextWithQuotes.substring(
+            1,
             headerTextWithQuotes.length() - 1);
       return headerText;
    }

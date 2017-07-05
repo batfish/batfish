@@ -32,7 +32,8 @@ public class WorkItem {
             responseParams);
    }
 
-   private static void PopulateHashMap(HashMap<String, String> map,
+   private static void PopulateHashMap(
+         HashMap<String, String> map,
          JSONObject jsonObject) throws JSONException {
 
       Iterator<?> keys = jsonObject.keys();
@@ -57,7 +58,8 @@ public class WorkItem {
       _responseParams = new HashMap<>();
    }
 
-   public WorkItem(UUID id, String containerName, String testrigName,
+   public WorkItem(
+         UUID id, String containerName, String testrigName,
          HashMap<String, String> reqParams, HashMap<String, String> resParams) {
       _id = id;
       _containerName = containerName;

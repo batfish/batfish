@@ -15,7 +15,8 @@ public class RoutePolicySetCommunity extends RoutePolicySetStatement {
 
    private RoutePolicyCommunitySet _commSet;
 
-   public RoutePolicySetCommunity(RoutePolicyCommunitySet commSet,
+   public RoutePolicySetCommunity(
+         RoutePolicyCommunitySet commSet,
          boolean additive) {
       _commSet = commSet;
       _additive = additive;
@@ -30,7 +31,8 @@ public class RoutePolicySetCommunity extends RoutePolicySetStatement {
    }
 
    @Override
-   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+   public Statement toSetStatement(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       CommunitySetExpr expr = _commSet.toCommunitySetExpr(cc, c, w);
       if (_additive) {

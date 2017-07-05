@@ -104,7 +104,8 @@ public class FlowHistory implements AnswerElement {
                i++;
                sb.append("  Trace: " + i + "\n");
                String rawTraceString = trace.toString();
-               String traceString = CommonUtil.getIndentedString(rawTraceString,
+               String traceString = CommonUtil.getIndentedString(
+                     rawTraceString,
                      3);
                sb.append(traceString);
             }

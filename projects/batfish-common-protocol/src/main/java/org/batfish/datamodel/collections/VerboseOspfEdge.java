@@ -24,12 +24,14 @@ public class VerboseOspfEdge
    protected final IpEdge edge;
 
    @JsonCreator
-   public VerboseOspfEdge(@JsonProperty(NODE1_VAR) Configuration node1,
+   public VerboseOspfEdge(
+         @JsonProperty(NODE1_VAR) Configuration node1,
          @JsonProperty(NODE1_SESSION_VAR) OspfNeighbor s1,
          @JsonProperty(NODE2_VAR) Configuration node2,
          @JsonProperty(NODE2_SESSION_VAR) OspfNeighbor s2,
          @JsonProperty(EDGE_SUMMARY_VAR) IpEdge e) {
-      super(new NodeOspfSessionPair(node1, s1),
+      super(
+            new NodeOspfSessionPair(node1, s1),
             new NodeOspfSessionPair(node2, s2));
       this.edge = e;
    }

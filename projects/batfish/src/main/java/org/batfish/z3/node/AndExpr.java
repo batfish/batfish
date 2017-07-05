@@ -130,7 +130,7 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
          BoolExpr be = conjunct.toBoolExpr(nodProgram);
          args.add(be);
       }
-      BoolExpr result = ctx.mkAnd(args.toArray(new BoolExpr[] {}));
+      BoolExpr result = ctx.mkAnd(args.toArray(new BoolExpr[]{}));
       return result;
    }
 

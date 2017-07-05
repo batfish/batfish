@@ -15,7 +15,8 @@ public class NodeBgpSessionPair extends Pair<Configuration, BgpNeighbor> {
    private static final String SESSION_VAR = "session";
 
    @JsonCreator
-   public NodeBgpSessionPair(@JsonProperty(NODE_VAR) Configuration t1,
+   public NodeBgpSessionPair(
+         @JsonProperty(NODE_VAR) Configuration t1,
          @JsonProperty(SESSION_VAR) BgpNeighbor t2) {
       super(t1, t2);
    }

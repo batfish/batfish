@@ -9,7 +9,8 @@ public class InterfacesDiff extends ConfigDiffElement {
    public InterfacesDiff() {
    }
 
-   public InterfacesDiff(NavigableMap<String, Interface> before,
+   public InterfacesDiff(
+         NavigableMap<String, Interface> before,
          NavigableMap<String, Interface> after) {
       super(before, after, true);
    }

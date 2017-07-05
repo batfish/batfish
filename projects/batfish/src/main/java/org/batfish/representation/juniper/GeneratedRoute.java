@@ -8,8 +8,8 @@ import org.batfish.datamodel.Prefix;
 public class GeneratedRoute implements Serializable {
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private Integer _metric;

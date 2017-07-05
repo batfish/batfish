@@ -59,7 +59,8 @@ public class IsisSettings implements Serializable {
 
    public void setTrafficEngineeringCredibilityProtocolPreference(
          boolean trafficEngineeringCredibilityProtocolPreference) {
-      _trafficEngineeringCredibilityProtocolPreference = trafficEngineeringCredibilityProtocolPreference;
+      _trafficEngineeringCredibilityProtocolPreference =
+            trafficEngineeringCredibilityProtocolPreference;
    }
 
    public void setTrafficEngineeringShortcuts(

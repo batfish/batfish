@@ -131,7 +131,7 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
          BoolExpr be = disjunct.toBoolExpr(nodProgram);
          args.add(be);
       }
-      BoolExpr result = ctx.mkOr(args.toArray(new BoolExpr[] {}));
+      BoolExpr result = ctx.mkOr(args.toArray(new BoolExpr[]{}));
       return result;
    }
 

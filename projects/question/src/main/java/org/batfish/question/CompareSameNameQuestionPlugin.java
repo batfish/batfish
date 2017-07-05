@@ -48,7 +48,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          _equivalenceSets.put(className, sets);
       }
 
-      private String equivalenceSetToString(String indent, String name,
+      private String equivalenceSetToString(
+            String indent, String name,
             NamedStructureEquivalenceSets<?> nseSets) {
          StringBuilder sb = new StringBuilder(indent + name + "\n");
          sb.append(nseSets.prettyPrint(indent + indent));
@@ -96,11 +97,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          super(question, batfish);
       }
 
-      private <T> void add(Class<T> structureClass,
+      private <T> void add(
+            Class<T> structureClass,
             Function<Configuration, Map<String, T>> structureMapRetriever) {
          if (_namedStructTypes.isEmpty() || _namedStructTypes
                .contains(structureClass.getSimpleName().toLowerCase())) {
-            _answerElement.add(structureClass.getSimpleName(),
+            _answerElement.add(
+                  structureClass.getSimpleName(),
                   processStructures(structureClass, _nodes, _configurations,
                         structureMapRetriever));
          }
@@ -114,7 +117,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          _configurations = _batfish.loadConfigurations();
          _answerElement = new CompareSameNameAnswerElement();
          // collect relevant nodes in a list.
-         _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(),
+         _nodes = CommonUtil.getMatchingStrings(
+               question.getNodeRegex(),
                _configurations.keySet());
          _namedStructTypes = question.getNamedStructTypes().stream()
                .map(s -> s.toLowerCase()).collect(Collectors.toSet());
@@ -161,6 +165,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Compares named structures with identical names across multiple nodes.
     * <p>

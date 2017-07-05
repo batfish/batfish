@@ -63,7 +63,8 @@ public class Route implements Serializable {
       }
    }
 
-   public StaticRoute toStaticRoute(AwsVpcConfiguration awsVpcConfiguration,
+   public StaticRoute toStaticRoute(
+         AwsVpcConfiguration awsVpcConfiguration,
          Ip vpcAddress, Ip igwAddress, Ip vgwAddress, Subnet subnet,
          Configuration subnetCfgNode) {
       StaticRoute staticRoute;
@@ -111,7 +112,7 @@ public class Route implements Serializable {
                Set<Ip> networkInterfaceIps = new TreeSet<>();
                networkInterfaceIps.addAll(
                      networkInterface.getIpAddressAssociations().keySet());
-               Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
+               Ip lowestIp = networkInterfaceIps.toArray(new Ip[]{})[0];
                if (!subnet.getCidrBlock().contains(lowestIp)) {
                   throw new BatfishException(
                         "Ip of network interface specified in static route not in containing subnet");
@@ -134,7 +135,8 @@ public class Route implements Serializable {
                Prefix instanceLinkPrefix = awsVpcConfiguration
                      .getNextGeneratedLinkSubnet();
                Prefix subnetIfacePrefix = instanceLinkPrefix;
-               Interface subnetIface = new Interface(subnetIfaceName,
+               Interface subnetIface = new Interface(
+                     subnetIfaceName,
                      subnetCfgNode);
                subnetCfgNode.getDefaultVrf().getInterfaces()
                      .put(subnetIfaceName, subnetIface);
@@ -149,7 +151,8 @@ public class Route implements Serializable {
                Prefix instanceIfacePrefix = new Prefix(
                      instanceLinkPrefix.getEndAddress(),
                      instanceLinkPrefix.getPrefixLength());
-               Interface instanceIface = new Interface(instanceIfaceName,
+               Interface instanceIface = new Interface(
+                     instanceIfaceName,
                      instanceCfgNode);
                instanceCfgNode.getDefaultVrf().getInterfaces()
                      .put(instanceIfaceName, instanceIface);
@@ -197,7 +200,8 @@ public class Route implements Serializable {
                Prefix peeringLinkPrefix = awsVpcConfiguration
                      .getNextGeneratedLinkSubnet();
                Prefix subnetIfacePrefix = peeringLinkPrefix;
-               Interface subnetIface = new Interface(subnetIfaceName,
+               Interface subnetIface = new Interface(
+                     subnetIfaceName,
                      subnetCfgNode);
                subnetCfgNode.getDefaultVrf().getInterfaces()
                      .put(subnetIfaceName, subnetIface);
@@ -208,7 +212,8 @@ public class Route implements Serializable {
                Prefix remoteVpcIfacePrefix = new Prefix(
                      peeringLinkPrefix.getEndAddress(),
                      peeringLinkPrefix.getPrefixLength());
-               Interface remoteVpcIface = new Interface(remoteVpcIfaceName,
+               Interface remoteVpcIface = new Interface(
+                     remoteVpcIfaceName,
                      remoteVpcCfgNode);
                remoteVpcCfgNode.getDefaultVrf().getInterfaces()
                      .put(remoteVpcIfaceName, remoteVpcIface);

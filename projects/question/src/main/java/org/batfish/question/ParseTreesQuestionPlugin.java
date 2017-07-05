@@ -64,6 +64,7 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs parse trees from test-rig initialization.
     *
@@ -99,7 +100,8 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected ParseTreesAnswerer createAnswerer(Question question,
+   protected ParseTreesAnswerer createAnswerer(
+         Question question,
          IBatfish batfish) {
       return new ParseTreesAnswerer(question, batfish);
    }

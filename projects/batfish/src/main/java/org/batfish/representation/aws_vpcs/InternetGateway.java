@@ -58,11 +58,13 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          String vpcIfaceName = _internetGatewayId;
          Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
          Ip vpcIfaceIp = igwIfacePrefix.getEndAddress();
-         Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp,
+         Prefix vpcIfacePrefix = new Prefix(
+               vpcIfaceIp,
                igwIfacePrefix.getPrefixLength());
          vpcIface.setPrefix(vpcIfacePrefix);
          vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
-         vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName,
+         vpcConfigNode.getDefaultVrf().getInterfaces().put(
+               vpcIfaceName,
                vpcIface);
 
          // associate this gateway with the vpc

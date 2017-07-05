@@ -13,7 +13,8 @@ public class RoutePolicySetNextHop extends RoutePolicySetStatement {
 
    private RoutePolicyNextHop _nextHop;
 
-   public RoutePolicySetNextHop(RoutePolicyNextHop nextHop,
+   public RoutePolicySetNextHop(
+         RoutePolicyNextHop nextHop,
          boolean destinationVrf) {
       _nextHop = nextHop;
       _destinationVrf = destinationVrf;
@@ -28,7 +29,8 @@ public class RoutePolicySetNextHop extends RoutePolicySetStatement {
    }
 
    @Override
-   protected Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+   protected Statement toSetStatement(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new SetNextHop(_nextHop.toNextHopExpr(cc, c, w), _destinationVrf);
    }

@@ -115,7 +115,8 @@ public class RangeMatchExpr extends BooleanExpr {
       return leExpr;
    }
 
-   private static IntExpr newExtractExpr(String var, int varSize, int low,
+   private static IntExpr newExtractExpr(
+         String var, int varSize, int low,
          int high) {
       if (low == 0 && high == varSize - 1) {
          return new VarIntExpr(var);

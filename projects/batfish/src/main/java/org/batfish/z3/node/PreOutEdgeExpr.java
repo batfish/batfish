@@ -10,7 +10,8 @@ public class PreOutEdgeExpr extends PacketRelExpr {
       this(edge.getNode1(), edge.getInt1(), edge.getNode2(), edge.getInt2());
    }
 
-   public PreOutEdgeExpr(String node, String outInt, String nextHop,
+   public PreOutEdgeExpr(
+         String node, String outInt, String nextHop,
          String inInt) {
       super(BASE_NAME + "_" + node + "_" + outInt + "_" + nextHop + "_"
             + inInt);

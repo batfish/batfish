@@ -86,7 +86,8 @@ public class PoolMgr {
       for (Entry<String, WorkerStatus> workerEntry : workerPool.entrySet()) {
          if (workerEntry.getValue()
                .getStatus() == WorkerStatus.StatusCode.IDLE) {
-            updateWorkerStatus(workerEntry.getKey(),
+            updateWorkerStatus(
+                  workerEntry.getKey(),
                   WorkerStatus.StatusCode.TRYINGTOASSIGN);
             return workerEntry.getKey();
          }
@@ -104,7 +105,8 @@ public class PoolMgr {
       }
    }
 
-   public void markAssignmentResult(String worker,
+   public void markAssignmentResult(
+         String worker,
          boolean assignmentSuccessful) {
       updateWorkerStatus(worker, assignmentSuccessful
             ? WorkerStatus.StatusCode.BUSY : WorkerStatus.StatusCode.IDLE);
@@ -125,7 +127,8 @@ public class PoolMgr {
       try {
          // Client client = ClientBuilder.newClient();
          Client client = CommonUtil
-               .createHttpClientBuilder(_settings.getSslPoolDisable(),
+               .createHttpClientBuilder(
+                     _settings.getSslPoolDisable(),
                      _settings.getSslPoolTrustAllCerts(),
                      _settings.getSslPoolKeystoreFile(),
                      _settings.getSslPoolKeystorePassword(),
@@ -202,7 +205,8 @@ public class PoolMgr {
 
    }
 
-   private synchronized void updateWorkerStatus(String worker,
+   private synchronized void updateWorkerStatus(
+         String worker,
          WorkerStatus.StatusCode statusCode) {
       if (workerPool.containsKey(worker)) {
          workerPool.get(worker).UpdateStatus(statusCode);

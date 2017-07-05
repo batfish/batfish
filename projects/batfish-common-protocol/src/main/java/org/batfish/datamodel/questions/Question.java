@@ -373,7 +373,8 @@ public abstract class Question implements IQuestion {
          return mapper.writeValueAsString(this);
       }
       catch (JsonProcessingException e) {
-         throw new BatfishException("Failed to convert question to JSON string",
+         throw new BatfishException(
+               "Failed to convert question to JSON string",
                e);
       }
    }

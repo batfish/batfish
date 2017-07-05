@@ -245,7 +245,8 @@ public abstract class BgpPeerGroup implements Serializable {
       return _outboundRouteMapLine;
    }
 
-   protected final BgpPeerGroup getParentGroup(BgpProcess proc,
+   protected final BgpPeerGroup getParentGroup(
+         BgpProcess proc,
          CiscoConfiguration cv) {
       BgpPeerGroup parent = null;
       if (_groupName != null) {
@@ -262,7 +263,8 @@ public abstract class BgpPeerGroup implements Serializable {
       return parent;
    }
 
-   protected final BgpPeerGroup getParentSession(BgpProcess proc,
+   protected final BgpPeerGroup getParentSession(
+         BgpProcess proc,
          CiscoConfiguration cv) {
       BgpPeerGroup parent = null;
       if (_peerSession != null) {

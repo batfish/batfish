@@ -63,7 +63,8 @@ public abstract class AbstractRoute
       if (ret != 0) {
          return ret;
       }
-      ret = Integer.compare(getAdministrativeCost(),
+      ret = Integer.compare(
+            getAdministrativeCost(),
             rhs.getAdministrativeCost());
       if (ret != 0) {
          return ret;
@@ -243,7 +244,8 @@ public abstract class AbstractRoute
             + ">";
    }
 
-   public Route toSummaryRoute(String hostname, String vrfName,
+   public Route toSummaryRoute(
+         String hostname, String vrfName,
          Map<Ip, String> ipOwners) {
       RouteBuilder rb = new RouteBuilder();
       rb.setNode(hostname);
@@ -251,7 +253,7 @@ public abstract class AbstractRoute
       Ip nextHopIp = getNextHopIp();
       if (getProtocol() == RoutingProtocol.CONNECTED
             || (getProtocol() == RoutingProtocol.STATIC
-                  && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
+            && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
             || Interface.NULL_INTERFACE_NAME.equals(getNextHopInterface())) {
          rb.setNextHop(Configuration.NODE_NONE_NAME);
       }

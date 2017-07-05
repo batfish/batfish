@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-@JsonPropertyOrder({ Route6.DIFF_SYMBOL_VAR })
+@JsonPropertyOrder({Route6.DIFF_SYMBOL_VAR})
 public class Route6 implements Comparable<Route6>, Serializable {
 
    private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
@@ -74,7 +74,8 @@ public class Route6 implements Comparable<Route6>, Serializable {
    private final String _vrf;
 
    @JsonCreator
-   public Route6(@JsonProperty(NODE_VAR) String node,
+   public Route6(
+         @JsonProperty(NODE_VAR) String node,
          @JsonProperty(VRF_VAR) String vrf,
          @JsonProperty(NETWORK_VAR) Prefix6 network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip6 nextHopIp,

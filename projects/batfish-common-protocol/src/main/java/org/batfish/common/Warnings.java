@@ -50,7 +50,7 @@ public class Warnings implements Serializable {
 
       private void fillWarningList(List<Warning> warnings, JsonNode node) {
          for (Iterator<Entry<String, JsonNode>> iter = node.fields(); iter
-               .hasNext();) {
+               .hasNext(); ) {
             Entry<String, JsonNode> e = iter.next();
             String msg = e.getValue().asText();
             int colonIndex = msg.indexOf(":");
@@ -66,7 +66,8 @@ public class Warnings implements Serializable {
    public static class Serializer extends JsonSerializer<Warnings> {
 
       @Override
-      public void serialize(Warnings value, JsonGenerator jgen,
+      public void serialize(
+            Warnings value, JsonGenerator jgen,
             SerializerProvider provider)
             throws IOException, JsonProcessingException {
          jgen.writeStartObject();
@@ -154,7 +155,8 @@ public class Warnings implements Serializable {
 
    }
 
-   public Warnings(boolean pedanticAsError, boolean pedanticRecord,
+   public Warnings(
+         boolean pedanticAsError, boolean pedanticRecord,
          boolean redFlagAsError, boolean redFlagRecord,
          boolean unimplementedAsError, boolean unimplementedRecord,
          boolean printParseTree) {
@@ -212,7 +214,8 @@ public class Warnings implements Serializable {
       }
    }
 
-   public void todo(ParserRuleContext ctx, String feature,
+   public void todo(
+         ParserRuleContext ctx, String feature,
          BatfishCombinedParser<?, ?> parser, String text) {
       if (!_unimplementedRecord && !_unimplementedAsError) {
          return;

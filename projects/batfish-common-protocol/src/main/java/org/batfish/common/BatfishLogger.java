@@ -167,7 +167,8 @@ public class BatfishLogger {
       _history = new BatfishLoggerHistory();
    }
 
-   public BatfishLogger(String logLevel, boolean timestamp,
+   public BatfishLogger(
+         String logLevel, boolean timestamp,
          PrintStream stream) {
       _history = null;
       _timestamp = timestamp;
@@ -176,7 +177,8 @@ public class BatfishLogger {
       _ps = stream;
    }
 
-   public BatfishLogger(String logLevel, boolean timestamp, String logFile,
+   public BatfishLogger(
+         String logLevel, boolean timestamp, String logFile,
          boolean logTee, boolean rotateLog) {
       _history = null;
       _timestamp = timestamp;

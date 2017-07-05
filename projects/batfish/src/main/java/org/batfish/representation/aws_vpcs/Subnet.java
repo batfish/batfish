@@ -144,9 +144,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
       String instancesIfaceName = _subnetId;
       Interface instancesIface = new Interface(instancesIfaceName, cfgNode);
       cfgNode.getInterfaces().put(instancesIfaceName, instancesIface);
-      cfgNode.getDefaultVrf().getInterfaces().put(instancesIfaceName,
+      cfgNode.getDefaultVrf().getInterfaces().put(
+            instancesIfaceName,
             instancesIface);
-      Prefix instancesIfacePrefix = new Prefix(_cidrBlock.getEndAddress(),
+      Prefix instancesIfacePrefix = new Prefix(
+            _cidrBlock.getEndAddress(),
             _cidrBlock.getPrefixLength());
       instancesIface.setPrefix(instancesIfacePrefix);
       instancesIface.getAllPrefixes().add(instancesIfacePrefix);
@@ -155,7 +157,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Prefix vpcSubnetLinkPrefix = awsVpcConfiguration
             .getNextGeneratedLinkSubnet();
       Prefix subnetIfacePrefix = vpcSubnetLinkPrefix;
-      Prefix vpcIfacePrefix = new Prefix(vpcSubnetLinkPrefix.getEndAddress(),
+      Prefix vpcIfacePrefix = new Prefix(
+            vpcSubnetLinkPrefix.getEndAddress(),
             vpcSubnetLinkPrefix.getPrefixLength());
 
       // add an interface that faces the VPC router
@@ -198,7 +201,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
          String subnetIgwIfaceName = _internetGatewayId;
          Interface subnetIgwIface = new Interface(subnetIgwIfaceName, cfgNode);
          cfgNode.getInterfaces().put(subnetIgwIfaceName, subnetIgwIface);
-         cfgNode.getDefaultVrf().getInterfaces().put(subnetIgwIfaceName,
+         cfgNode.getDefaultVrf().getInterfaces().put(
+               subnetIgwIfaceName,
                subnetIgwIface);
          subnetIgwIface.getAllPrefixes().add(subnetIgwIfacePrefix);
          subnetIgwIface.setPrefix(subnetIgwIfacePrefix);
@@ -207,12 +211,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
          Configuration igwConfigNode = awsVpcConfiguration
                .getConfigurationNodes().get(_internetGatewayId);
          String igwSubnetIfaceName = _subnetId;
-         Interface igwSubnetIface = new Interface(igwSubnetIfaceName,
+         Interface igwSubnetIface = new Interface(
+               igwSubnetIfaceName,
                igwConfigNode);
          igwSubnetIface.setPrefix(igwSubnetIfacePrefix);
          igwSubnetIface.getAllPrefixes().add(igwSubnetIfacePrefix);
          igwConfigNode.getInterfaces().put(igwSubnetIfaceName, igwSubnetIface);
-         igwConfigNode.getDefaultVrf().getInterfaces().put(igwSubnetIfaceName,
+         igwConfigNode.getDefaultVrf().getInterfaces().put(
+               igwSubnetIfaceName,
                igwSubnetIface);
          igwAddress = igwSubnetIfacePrefix.getAddress();
       }
@@ -234,7 +240,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
          String subnetVgwIfaceName = _vpnGatewayId;
          Interface subnetVgwIface = new Interface(subnetVgwIfaceName, cfgNode);
          cfgNode.getInterfaces().put(subnetVgwIfaceName, subnetVgwIface);
-         cfgNode.getDefaultVrf().getInterfaces().put(subnetVgwIfaceName,
+         cfgNode.getDefaultVrf().getInterfaces().put(
+               subnetVgwIfaceName,
                subnetVgwIface);
          subnetVgwIface.getAllPrefixes().add(subnetVgwIfacePrefix);
          subnetVgwIface.setPrefix(subnetVgwIfacePrefix);
@@ -243,12 +250,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
          Configuration vgwConfigNode = awsVpcConfiguration
                .getConfigurationNodes().get(_vpnGatewayId);
          String vgwSubnetIfaceName = _subnetId;
-         Interface vgwSubnetIface = new Interface(vgwSubnetIfaceName,
+         Interface vgwSubnetIface = new Interface(
+               vgwSubnetIfaceName,
                vgwConfigNode);
          vgwSubnetIface.setPrefix(vgwSubnetIfacePrefix);
          vgwSubnetIface.getAllPrefixes().add(vgwSubnetIfacePrefix);
          vgwConfigNode.getInterfaces().put(vgwSubnetIfaceName, vgwSubnetIface);
-         vgwConfigNode.getDefaultVrf().getInterfaces().put(vgwSubnetIfaceName,
+         vgwConfigNode.getDefaultVrf().getInterfaces().put(
+               vgwSubnetIfaceName,
                vgwSubnetIface);
          igwAddress = vgwSubnetIfacePrefix.getAddress();
       }
@@ -289,7 +298,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
          String ifaceName = eIface.getKey();
          if (awsVpcConfiguration.getVpcs().containsKey(ifaceName)
                || awsVpcConfiguration.getInternetGateways()
-                     .containsKey(ifaceName)
+               .containsKey(ifaceName)
                || awsVpcConfiguration.getVpnGateways().containsKey(ifaceName)) {
             Interface iface = eIface.getValue();
             iface.setIncomingFilter(inAcl);

@@ -25,7 +25,8 @@ public final class GraphvizResult
 
    private final Path _svgFile;
 
-   public GraphvizResult(long elapsedTime, BatfishLoggerHistory history,
+   public GraphvizResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Path graphFile, byte[] graphBytes, Path svgFile, byte[] svgBytes,
          Path htmlFile, byte[] htmlBytes, Prefix prefix) {
       super(elapsedTime, history);
@@ -38,7 +39,8 @@ public final class GraphvizResult
       _svgFile = svgFile;
    }
 
-   public GraphvizResult(long elapsedTime, BatfishLoggerHistory history,
+   public GraphvizResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Prefix prefix, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _graphBytes = null;
@@ -56,7 +58,8 @@ public final class GraphvizResult
    }
 
    @Override
-   public void applyTo(Map<Path, byte[]> output, BatfishLogger logger,
+   public void applyTo(
+         Map<Path, byte[]> output, BatfishLogger logger,
          GraphvizAnswerElement answerElement) {
       output.put(_graphFile, _graphBytes);
       output.put(_svgFile, _svgBytes);

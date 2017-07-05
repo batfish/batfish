@@ -20,7 +20,8 @@ public final class FwFromSourceAddressExcept extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       IpWildcard wildcard = new IpWildcard(_prefix);
       line.getNotSrcIps().add(wildcard);

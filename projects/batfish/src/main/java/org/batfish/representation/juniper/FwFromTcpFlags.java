@@ -20,7 +20,8 @@ public final class FwFromTcpFlags extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       line.getTcpFlags().addAll(_tcpFlags);
    }

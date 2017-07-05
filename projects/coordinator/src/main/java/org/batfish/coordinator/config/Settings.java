@@ -252,17 +252,19 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
       setDefaultProperty(ARG_ALLOW_DEFAULT_KEY_LISTINGS, false);
       setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers");
-      setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
+      setDefaultProperty(
+            ARG_DB_AUTHORIZER_CONN_STRING,
             "jdbc:mysql://localhost/batfish?user=batfish&password=batfish");
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); // 15
-                                                                             // minutes
+      // minutes
       setDefaultProperty(ARG_DRIVER_CLASS, null);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
       setDefaultProperty(ARG_FILE_AUTHORIZER_USERS_FILE, "users.json");
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
-      setDefaultProperty(ARG_LOG_LEVEL,
+      setDefaultProperty(
+            ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
       setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
@@ -273,14 +275,16 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
-      setDefaultProperty(ARG_SSL_POOL_DISABLE,
+      setDefaultProperty(
+            ARG_SSL_POOL_DISABLE,
             CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
       setDefaultProperty(ARG_SSL_POOL_KEYSTORE_FILE, null);
       setDefaultProperty(ARG_SSL_POOL_KEYSTORE_PASSWORD, null);
       setDefaultProperty(ARG_SSL_POOL_TRUST_ALL_CERTS, false);
       setDefaultProperty(ARG_SSL_POOL_TRUSTSTORE_FILE, null);
       setDefaultProperty(ARG_SSL_POOL_TRUSTSTORE_PASSWORD, null);
-      setDefaultProperty(ARG_SSL_WORK_DISABLE,
+      setDefaultProperty(
+            ARG_SSL_WORK_DISABLE,
             CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
       setDefaultProperty(ARG_SSL_WORK_KEYSTORE_FILE, null);
       setDefaultProperty(ARG_SSL_WORK_KEYSTORE_PASSWORD, null);
@@ -289,7 +293,8 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_SSL_WORK_TRUSTSTORE_PASSWORD, null);
       // setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
       // setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
-      setDefaultProperty(ARG_STORAGE_ACCOUNT_KEY,
+      setDefaultProperty(
+            ARG_STORAGE_ACCOUNT_KEY,
             "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==");
       setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
       setDefaultProperty(ARG_STORAGE_PROTOCOL, "http");
@@ -299,7 +304,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_AUTHORIZER_TYPE, "type of authorizer to use",
             "authorizer type");
 
-      addBooleanOption(ARG_ALLOW_DEFAULT_KEY_LISTINGS,
+      addBooleanOption(
+            ARG_ALLOW_DEFAULT_KEY_LISTINGS,
             "allow default API key to list containers and testrigs");
 
       addOption(ARG_CONTAINERS_LOCATION, "where to store containers",
@@ -308,11 +314,13 @@ public class Settings extends BaseSettings {
       addOption(ARG_DB_AUTHORIZER_CONN_STRING,
             "connection string for authorizer db", "connection string");
 
-      addOption(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS,
+      addOption(
+            ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS,
             "when to expire information from authorizer database",
             "expiration time (ms)");
 
-      addBooleanOption(ARG_DRIVER_CLASS,
+      addBooleanOption(
+            ARG_DRIVER_CLASS,
             "jdbc driver class to load explicitly");
 
       addBooleanOption(ARG_HELP, "print this message");
@@ -321,7 +329,8 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_LOG_LEVEL, "log level", "loglevel");
 
-      addOption(ARG_PERIOD_WORKER_STATUS_REFRESH_MS,
+      addOption(
+            ARG_PERIOD_WORKER_STATUS_REFRESH_MS,
             "period with which to check worker status (ms)",
             "period_worker_status_refresh_ms");
 
@@ -342,16 +351,20 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
-      addBooleanOption(ARG_SSL_POOL_DISABLE,
+      addBooleanOption(
+            ARG_SSL_POOL_DISABLE,
             "disable SSL on pool manager service");
 
-      addBooleanOption(ARG_SSL_POOL_TRUST_ALL_CERTS,
+      addBooleanOption(
+            ARG_SSL_POOL_TRUST_ALL_CERTS,
             "trust all SSL certs for outgoing connections from pool manager");
 
-      addBooleanOption(ARG_SSL_WORK_DISABLE,
+      addBooleanOption(
+            ARG_SSL_WORK_DISABLE,
             "disable SSL on work manager service");
 
-      addBooleanOption(ARG_SSL_WORK_TRUST_ALL_CERTS,
+      addBooleanOption(
+            ARG_SSL_WORK_TRUST_ALL_CERTS,
             "trust all SSL certs for outgoing connections from work manager");
 
    }

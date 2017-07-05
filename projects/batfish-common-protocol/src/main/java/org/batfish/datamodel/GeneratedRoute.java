@@ -88,7 +88,8 @@ public final class GeneratedRoute extends AbstractRoute {
    private final Ip _nextHopIp;
 
    @JsonCreator
-   public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+   public GeneratedRoute(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(AS_PATH_VAR) AsPath asPath,

@@ -9,7 +9,8 @@ public class PolicyRouteNextHopInterfaceEntry {
    private final Ip _nextHopIp;
    private final String _node;
 
-   public PolicyRouteNextHopInterfaceEntry(String node, Ip nextHopIp,
+   public PolicyRouteNextHopInterfaceEntry(
+         String node, Ip nextHopIp,
          List<String> nextHopInterfaces) {
       _node = node;
       _nextHopIp = nextHopIp;

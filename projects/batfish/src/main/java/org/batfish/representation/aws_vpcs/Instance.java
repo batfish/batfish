@@ -164,7 +164,7 @@ public class Instance implements AwsVpcEntity, Serializable {
             Prefix prefix = new Prefix(ip, ifaceSubnet.getPrefixLength());
             iface.getAllPrefixes().add(prefix);
          }
-         Ip lowestIp = privateIpAddresses.toArray(new Ip[] {})[0];
+         Ip lowestIp = privateIpAddresses.toArray(new Ip[]{})[0];
          iface.setPrefix(new Prefix(lowestIp, ifaceSubnet.getPrefixLength()));
 
          // apply ACLs to interface

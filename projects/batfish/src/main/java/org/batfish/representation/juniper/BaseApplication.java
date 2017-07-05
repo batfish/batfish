@@ -56,7 +56,8 @@ public class BaseApplication extends ComparableStructure<String>
    }
 
    @Override
-   public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines,
+   public void applyTo(
+         IpAccessListLine srcLine, List<IpAccessListLine> lines,
          Warnings w) {
       Collection<Term> terms;
       if (_terms.isEmpty()) {

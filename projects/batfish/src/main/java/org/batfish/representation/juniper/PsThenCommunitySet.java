@@ -26,7 +26,8 @@ public final class PsThenCommunitySet extends PsThen {
    }
 
    @Override
-   public void applyTo(List<Statement> statements,
+   public void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
       CommunityList namedList = _configuration.getCommunityLists().get(_name);

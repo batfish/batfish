@@ -31,7 +31,8 @@ public abstract class BaseSettings {
    private static Configuration loadFileConfiguration(File configFile) {
       try {
          return new Configurations().properties(configFile);
-      } catch (ConfigurationException e) {
+      }
+      catch (ConfigurationException e) {
          throw new BatfishException("Error loading configuration from "
                + configFile.getAbsolutePath(), e);
       }
@@ -51,13 +52,15 @@ public abstract class BaseSettings {
             .optionalArg(true).desc(description).longOpt(key).build());
    }
 
-   protected final void addListOption(String key, String description,
+   protected final void addListOption(
+         String key, String description,
          String argName) {
       _options.addOption(Option.builder().argName(argName).hasArgs()
             .valueSeparator(',').desc(description).longOpt(key).build());
    }
 
-   protected final void addOption(String key, String description,
+   protected final void addOption(
+         String key, String description,
          String argName) {
       _options.addOption(Option.builder().argName(argName).hasArg()
             .desc(description).longOpt(key).build());
@@ -117,7 +120,7 @@ public abstract class BaseSettings {
       if (_line.hasOption(key)) {
          String[] optionValues = _line.getOptionValues(key);
          if (optionValues == null) {
-            return Collections.<Path> emptyList();
+            return Collections.<Path>emptyList();
          }
          else {
             return Arrays.stream(optionValues)
@@ -141,7 +144,7 @@ public abstract class BaseSettings {
       if (_line.hasOption(key)) {
          String[] optionValues = _line.getOptionValues(key);
          if (optionValues == null) {
-            return Collections.<String> emptyList();
+            return Collections.<String>emptyList();
          }
          else {
             return Arrays.asList(optionValues);

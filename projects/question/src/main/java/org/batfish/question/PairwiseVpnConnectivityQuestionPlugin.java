@@ -65,7 +65,8 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
 
    public static class PairwiseVpnConnectivityAnswerer extends Answerer {
 
-      public PairwiseVpnConnectivityAnswerer(Question question,
+      public PairwiseVpnConnectivityAnswerer(
+            Question question,
             IBatfish batfish) {
          super(question, batfish);
       }
@@ -86,7 +87,8 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
                   question.getNode1Regex(), question.getNode2Regex()), e);
          }
 
-         PairwiseVpnConnectivityAnswerElement answerElement = new PairwiseVpnConnectivityAnswerElement();
+         PairwiseVpnConnectivityAnswerElement answerElement =
+               new PairwiseVpnConnectivityAnswerElement();
 
          _batfish.checkConfigurations();
          Map<String, Configuration> configurations = _batfish
@@ -130,9 +132,11 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
                missingNeighbors.addAll(node2RegexNodes);
                missingNeighbors.removeAll(currentNeighbors);
                missingNeighbors.remove(hostname);
-               answerElement.getConnectedNeighbors().put(hostname,
+               answerElement.getConnectedNeighbors().put(
+                     hostname,
                      currentNeighbors);
-               answerElement.getMissingNeighbors().put(hostname,
+               answerElement.getMissingNeighbors().put(
+                     hostname,
                      missingNeighbors);
             }
          }
@@ -143,6 +147,7 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Checks if VPN connectivity between pairs of nodes is correctly configured.
     * <p>
@@ -158,7 +163,7 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
     *           the sessions. Default is '.*' (all nodes).
     *
     * @example bf_answer("PairwiseVpnConnectivity", node1Regex="as1.*",
-    *          node2Regex="as2.*") Checks pairwise VPN connectivity between
+    *node2Regex="as2.*") Checks pairwise VPN connectivity between
     *          nodes that start with as1 and those that start with as2.
     */
    public static class PairwiseVpnConnectivityQuestion extends Question {

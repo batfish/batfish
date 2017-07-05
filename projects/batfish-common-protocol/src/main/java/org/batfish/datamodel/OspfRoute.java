@@ -18,7 +18,8 @@ public abstract class OspfRoute extends AbstractRoute {
    protected final Ip _nextHopIp;
 
    @JsonCreator
-   public OspfRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+   public OspfRoute(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
          @JsonProperty(METRIC_VAR) int metric) {

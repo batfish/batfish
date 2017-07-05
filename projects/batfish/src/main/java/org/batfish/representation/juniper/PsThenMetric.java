@@ -21,7 +21,8 @@ public final class PsThenMetric extends PsThen {
    }
 
    @Override
-   public void applyTo(List<Statement> statements,
+   public void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
       statements.add(new SetMetric(new LiteralInt(_metric)));

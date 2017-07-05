@@ -23,7 +23,8 @@ public class VerboseEdge
    protected final Edge edge;
 
    @JsonCreator
-   public VerboseEdge(@JsonProperty(NODE1_VAR) Configuration node1,
+   public VerboseEdge(
+         @JsonProperty(NODE1_VAR) Configuration node1,
          @JsonProperty(NODE1_INTERFACE_VAR) Interface int1,
          @JsonProperty(NODE2_VAR) Configuration node2,
          @JsonProperty(NODE2_INTERFACE_VAR) Interface int2,
@@ -32,7 +33,8 @@ public class VerboseEdge
             new VerboseNodeInterfacePair(node2, int2), e);
    }
 
-   public VerboseEdge(VerboseNodeInterfacePair p1, VerboseNodeInterfacePair p2,
+   public VerboseEdge(
+         VerboseNodeInterfacePair p1, VerboseNodeInterfacePair p2,
          Edge e) {
       super(p1, p2);
       this.edge = e;

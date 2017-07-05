@@ -23,14 +23,16 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
 
    private final int _statementLine;
 
-   public RouteMapSetCommunityListLine(Set<String> communityLists,
+   public RouteMapSetCommunityListLine(
+         Set<String> communityLists,
          int statementLine) {
       _communityLists = communityLists;
       _statementLine = statementLine;
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       List<Long> communities = new ArrayList<>();
       for (String communityListName : _communityLists) {

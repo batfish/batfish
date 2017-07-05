@@ -8,8 +8,8 @@ import org.batfish.datamodel.SubRange;
 public final class FwFromPort extends FwFrom {
 
    /**
-       *
-       */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private final SubRange _portRange;
@@ -23,7 +23,8 @@ public final class FwFromPort extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       line.getSrcOrDstPorts().add(_portRange);
    }

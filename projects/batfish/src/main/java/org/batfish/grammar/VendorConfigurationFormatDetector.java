@@ -6,9 +6,11 @@ import org.batfish.datamodel.ConfigurationFormat;
 
 public final class VendorConfigurationFormatDetector {
 
-   public static final String BATFISH_FLATTENED_JUNIPER_HEADER = "####BATFISH FLATTENED JUNIPER CONFIG####\n";
+   public static final String BATFISH_FLATTENED_JUNIPER_HEADER =
+         "####BATFISH FLATTENED JUNIPER CONFIG####\n";
 
-   public static final String BATFISH_FLATTENED_VYOS_HEADER = "####BATFISH FLATTENED VYOS CONFIG####\n";
+   public static final String BATFISH_FLATTENED_VYOS_HEADER =
+         "####BATFISH FLATTENED VYOS CONFIG####\n";
 
    public static ConfigurationFormat identifyConfigurationFormat(
          String fileText) {
@@ -157,9 +159,9 @@ public final class VendorConfigurationFormatDetector {
       }
       else if (_firstChar == '#'
             || (_fileText.contains("version") && _fileText.contains("system")
-                  && _fileText.contains("{") && _fileText.contains("}")
-                  && _fileText.contains("host-name")
-                  && _fileText.contains("interfaces"))
+            && _fileText.contains("{") && _fileText.contains("}")
+            && _fileText.contains("host-name")
+            && _fileText.contains("interfaces"))
             || juniperAclMatcher.find() || juniperPolicyOptionsMatcher.find()
             || juniperSnmpMatcher.find()) {
          return ConfigurationFormat.JUNIPER;
@@ -207,7 +209,7 @@ public final class VendorConfigurationFormatDetector {
             .matcher(_fileText);
       if (rancidCisco.find()) {
          return checkCisco(); // unfortunately, old RANCID cannot distinguish
-                              // subtypes
+         // subtypes
       }
       else if (rancidCiscoNx.find()) {
          return ConfigurationFormat.CISCO_NX;

@@ -40,6 +40,7 @@ public class FileMapQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs mapping of hostnames to filenames
     *
@@ -76,7 +77,8 @@ public class FileMapQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected FileMapAnswerer createAnswerer(Question question,
+   protected FileMapAnswerer createAnswerer(
+         Question question,
          IBatfish batfish) {
       return new FileMapAnswerer(question, batfish);
    }

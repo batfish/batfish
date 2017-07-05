@@ -24,7 +24,8 @@ public abstract class FirstUnsatQuerySynthesizer<Key, Result>
       return _resultsByQueryIndex;
    }
 
-   public abstract NodProgram synthesizeBaseProgram(Synthesizer synthesizer,
+   public abstract NodProgram synthesizeBaseProgram(
+         Synthesizer synthesizer,
          Context ctx);
 
 }

@@ -32,7 +32,8 @@ public class UrlZipExplorer {
       while ((ze = _stream.getNextEntry()) != null) {
          String entryName = ze.getName();
          if (filter.accept(entryName)) {
-            Path dstPath = Paths.get(destinationDir.getAbsolutePath(),
+            Path dstPath = Paths.get(
+                  destinationDir.getAbsolutePath(),
                   entryName);
             File parentDir = dstPath.toFile().getParentFile();
             parentDir.mkdirs();

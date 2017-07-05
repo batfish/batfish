@@ -19,7 +19,8 @@ public class RouteMapMatchNeighborLine extends RouteMapMatchLine {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+   public BooleanExpr toBooleanExpr(
+         Configuration c, CiscoConfiguration cc,
          Warnings w) {
       throw new UnsupportedOperationException(
             "no implementation for generated method");

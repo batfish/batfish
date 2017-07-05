@@ -70,7 +70,8 @@ public class ExtendedCommunity implements Serializable {
       else {
          // type 0x02, 1-byte subtype, 4-byte number ga, 2-byte number la
          typeByte = 0x02;
-         String globalAdministratorDigits = globalAdministrator.substring(0,
+         String globalAdministratorDigits = globalAdministrator.substring(
+               0,
                globalAdministrator.length() - 1);
          gaLong = Long.parseLong(globalAdministratorDigits);
          gaBytes = 4;

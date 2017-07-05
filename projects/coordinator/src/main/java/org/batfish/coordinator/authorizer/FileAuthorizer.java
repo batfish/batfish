@@ -40,7 +40,8 @@ public class FileAuthorizer implements Authorizer {
    }
 
    @Override
-   public synchronized void authorizeContainer(String apiKey,
+   public synchronized void authorizeContainer(
+         String apiKey,
          String containerName) {
       _logger.infof("Authorizing %s for %s\n", apiKey, containerName);
       String allPerms = CommonUtil.readFile(_permsFile);
@@ -60,14 +61,16 @@ public class FileAuthorizer implements Authorizer {
          newAllPerms = jObj.toString();
       }
       catch (JSONException e) {
-         throw new BatfishException("Could not update JSON permissions object",
+         throw new BatfishException(
+               "Could not update JSON permissions object",
                e);
       }
       CommonUtil.writeFile(_permsFile, newAllPerms);
    }
 
    @Override
-   public boolean isAccessibleContainer(String apiKey, String containerName,
+   public boolean isAccessibleContainer(
+         String apiKey, String containerName,
          boolean logError) {
       String allPerms = CommonUtil.readFile(_permsFile);
       try {

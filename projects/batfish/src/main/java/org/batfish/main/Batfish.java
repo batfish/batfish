@@ -205,7 +205,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
 
-   public static void applyBaseDir(TestrigSettings settings, Path containerDir,
+   public static void applyBaseDir(
+         TestrigSettings settings, Path containerDir,
          String testrig, String envName, String questionName) {
       Path testrigDir = containerDir.resolve(testrig);
       settings.setName(testrig);
@@ -268,11 +269,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   public static String flatten(String input, BatfishLogger logger,
+   public static String flatten(
+         String input, BatfishLogger logger,
          Settings settings, ConfigurationFormat format, String header) {
       switch (format) {
       case JUNIPER: {
-         JuniperCombinedParser parser = new JuniperCombinedParser(input,
+         JuniperCombinedParser parser = new JuniperCombinedParser(
+               input,
                settings);
          ParserRuleContext tree = parse(parser, logger, settings);
          JuniperFlattener flattener = new JuniperFlattener(header);
@@ -392,7 +395,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return "   " + warning.getTag() + ": " + warning.getText() + "\n";
    }
 
-   public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
+   public static ParserRuleContext parse(
+         BatfishCombinedParser<?, ?> parser,
          BatfishLogger logger, Settings settings) {
       ParserRuleContext tree;
       try {
@@ -433,9 +437,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
 
-   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> _cachedEnvironmentBgpTables;
+   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+         _cachedEnvironmentBgpTables;
 
-   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> _cachedEnvironmentRoutingTables;
+   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+         _cachedEnvironmentRoutingTables;
 
    private DataPlanePlugin _dataPlanePlugin;
 
@@ -459,7 +465,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private long _timerCount;
 
-   public Batfish(Settings settings,
+   public Batfish(
+         Settings settings,
          Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
          Map<TestrigSettings, DataPlane> cachedDataPlanes,
          Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
@@ -554,7 +561,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public AnswerElement answerAclReachability(String aclNameRegexStr,
+   public AnswerElement answerAclReachability(
+         String aclNameRegexStr,
          NamedStructureEquivalenceSets<?> aclEqSets) {
       if (SystemUtils.IS_OS_MAC_OSX) {
          // TODO: remove when z3 parallelism bug on OSX is fixed
@@ -660,8 +668,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                         toCheck.add(earlierLine);
                      }
                   }
-                  EarliestMoreGeneralReachableLineQuerySynthesizer query = new EarliestMoreGeneralReachableLineQuerySynthesizer(
-                        line, toCheck, ipAccessList);
+                  EarliestMoreGeneralReachableLineQuerySynthesizer query =
+                        new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                              line, toCheck, ipAccessList);
                   NodFirstUnsatJob<AclLine, Integer> job = new NodFirstUnsatJob<>(
                         _settings, aclSynthesizer, query);
                   step2Jobs.add(job);
@@ -703,7 +712,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          IpAccessList ipAccessList = configurations.get(hostname)
                .getIpAccessLists().get(aclName);
          IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(index);
-         AclReachabilityEntry line = new AclReachabilityEntry(index,
+         AclReachabilityEntry line = new AclReachabilityEntry(
+               index,
                ipAccessListLine.getName());
          if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
             if (sat) {
@@ -859,9 +869,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path indepConfigsDir = envSettings.getDeltaCompiledConfigurationsDir();
       if (deltaConfigurationsDir != null) {
          if (Files.exists(deltaConfigurationsDir)) {
-            answer.append(serializeVendorConfigs(envSettings.getEnvPath(),
+            answer.append(serializeVendorConfigs(
+                  envSettings.getEnvPath(),
                   vendorConfigsDir));
-            answer.append(serializeIndependentConfigs(vendorConfigsDir,
+            answer.append(serializeIndependentConfigs(
+                  vendorConfigsDir,
                   indepConfigsDir));
          }
          return answer;
@@ -872,13 +884,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   public Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs,
+   public Set<Flow> computeCompositeNodOutput(
+         List<CompositeNodJob> jobs,
          NodAnswerElement answerElement) {
       _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
-      BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, true, "Composite NOD");
+      BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor =
+            new BatfishJobExecutor<>(
+                  _settings, _logger, true, "Composite NOD");
       executor.executeJobs(jobs, flows, answerElement);
       printElapsedTime();
       return flows;
@@ -1041,7 +1055,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          List<NodFirstUnsatJob<Key, Result>> jobs, Map<Key, Result> output) {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
       resetTimer();
-      BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger, true, "NOD First-UNSAT");
       executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
       printElapsedTime();
@@ -1051,19 +1066,22 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
-      BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, true, "NOD");
+      BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor =
+            new BatfishJobExecutor<>(
+                  _settings, _logger, true, "NOD");
       // todo: do something with nod answer element
       executor.executeJobs(jobs, flows, new NodAnswerElement());
       printElapsedTime();
       return flows;
    }
 
-   public <Key> void computeNodSatOutput(List<NodSatJob<Key>> jobs,
+   public <Key> void computeNodSatOutput(
+         List<NodSatJob<Key>> jobs,
          Map<Key, Boolean> output) {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
-      BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger, true, "NOD SAT");
       executor.executeJobs(jobs, output, new NodSatAnswerElement());
       printElapsedTime();
@@ -1072,7 +1090,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public Topology computeTopology(Map<String, Configuration> configurations) {
       resetTimer();
-      Topology topology = computeTopology(_testrigSettings.getTestRigPath(),
+      Topology topology = computeTopology(
+            _testrigSettings.getTestRigPath(),
             configurations);
       EdgeSet blacklistEdges = getEdgeBlacklist();
       if (blacklistEdges != null) {
@@ -1098,7 +1117,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return prunedTopology;
    }
 
-   private Topology computeTopology(Path testRigPath,
+   private Topology computeTopology(
+         Path testRigPath,
          Map<String, Configuration> configurations) {
       Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
       Topology topology;
@@ -1124,7 +1144,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = new TreeMap<>();
       List<ConvertConfigurationJob> jobs = new ArrayList<>();
       for (String hostname : vendorConfigurations.keySet()) {
-         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+         Warnings warnings = new Warnings(
+               _settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
                _settings.getRedFlagAsError(),
@@ -1139,7 +1160,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                vc, hostname, warnings);
          jobs.add(job);
       }
-      BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger, _settings.getHaltOnConvertError(),
             "Convert configurations to vendor-independent format");
       executor.executeJobs(jobs, configurations, answerElement);
@@ -1148,7 +1170,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public EnvironmentCreationAnswerElement createEnvironment(String newEnvName,
+   public EnvironmentCreationAnswerElement createEnvironment(
+         String newEnvName,
          SortedSet<String> nodeBlacklist,
          SortedSet<NodeInterfacePair> interfaceBlacklist,
          SortedSet<Edge> edgeBlacklist, boolean dp) {
@@ -1192,7 +1215,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          catch (JsonProcessingException e) {
             throw new BatfishException("Could not serialize node blacklist", e);
          }
-         CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(),
+         CommonUtil.writeFile(
+               newEnvSettings.getNodeBlacklistPath(),
                nodeBlacklistStr);
       }
       // write interface blacklist from question
@@ -1206,7 +1230,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             throw new BatfishException(
                   "Could not serialize interface blacklist", e);
          }
-         CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(),
+         CommonUtil.writeFile(
+               newEnvSettings.getInterfaceBlacklistPath(),
                interfaceBlacklistStr);
       }
 
@@ -1220,7 +1245,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          catch (JsonProcessingException e) {
             throw new BatfishException("Could not serialize edge blacklist", e);
          }
-         CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(),
+         CommonUtil.writeFile(
+               newEnvSettings.getEdgeBlacklistPath(),
                edgeBlacklistStr);
       }
 
@@ -1355,7 +1381,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       catch (IOException e) {
-         throw new BatfishException("Error reading vendor configs directory",
+         throw new BatfishException(
+               "Error reading vendor configs directory",
                e);
       }
       Map<String, GenericConfigObject> vendorConfigurations = deserializeObjects(
@@ -1376,7 +1403,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          for (Interface iface : c.getInterfaces().values()) {
             if ((iface.getInterfaceType() == InterfaceType.VLAN)
                   && ((vlanNumber = CommonUtil
-                        .getInterfaceVlanNumber(iface.getName())) != null)) {
+                  .getInterfaceVlanNumber(iface.getName())) != null)) {
                vlanInterfaces.put(vlanNumber, iface);
                vlanMemberCounts.put(vlanNumber, 0);
             }
@@ -1397,7 +1424,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             for (SubRange sr : vlans) {
                for (int vlanId = sr.getStart(); vlanId <= sr
                      .getEnd(); ++vlanId) {
-                  vlanMemberCounts.compute(vlanId,
+                  vlanMemberCounts.compute(
+                        vlanId,
                         (k, v) -> (v == null) ? 1 : (v + 1));
                }
             }
@@ -1471,7 +1499,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    private void flatten(Path inputPath, Path outputPath) {
-      Map<Path, String> configurationData = readConfigurationFiles(inputPath,
+      Map<Path, String> configurationData = readConfigurationFiles(
+            inputPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
       Map<Path, String> outputConfigurationData = new TreeMap<>();
       Path outputConfigDir = outputPath
@@ -1481,7 +1510,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       List<FlattenVendorConfigurationJob> jobs = new ArrayList<>();
       for (Path inputFile : configurationData.keySet()) {
-         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+         Warnings warnings = new Warnings(
+               _settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
                _settings.getRedFlagAsError(),
@@ -1498,7 +1528,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
       }
-      BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<Path, String>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<Path, String>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger,
             _settings.getFlatten() || _settings.getHaltOnParseError(),
             "Flatten configurations");
@@ -1532,9 +1563,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (Edge edge : topology.getEdges()) {
          allNodes.add(edge.getNode1());
          allNodes.add(edge.getNode2());
-         NodeInterfacePair interface1 = new NodeInterfacePair(edge.getNode1(),
+         NodeInterfacePair interface1 = new NodeInterfacePair(
+               edge.getNode1(),
                edge.getInt1());
-         NodeInterfacePair interface2 = new NodeInterfacePair(edge.getNode2(),
+         NodeInterfacePair interface2 = new NodeInterfacePair(
+               edge.getNode2(),
                edge.getInt2());
          Set<NodeInterfacePair> interfaceSet = interfaceMap.get(interface1);
          if (interfaceSet == null) {
@@ -1572,7 +1605,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             Ip ip = new Ip(currentStartingIpAsLong + offset);
             Prefix prefix = new Prefix(ip, subnetBits);
             String ifaceName = currentPair.getInterface();
-            Interface iface = new Interface(ifaceName,
+            Interface iface = new Interface(
+                  ifaceName,
                   configs.get(currentPair.getHostname()));
             iface.setPrefix(prefix);
 
@@ -1608,7 +1642,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       serializeIndependentConfigs(configs, outputPath);
    }
 
-   private void generateStubs(String inputRole, int stubAs,
+   private void generateStubs(
+         String inputRole, int stubAs,
          String interfaceDescriptionRegex) {
       // Map<String, Configuration> configs = loadConfigurations();
       // Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
@@ -1860,7 +1895,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
          return new TreeMap<>();
       }
-      SortedMap<Path, String> inputData = readFiles(inputPath,
+      SortedMap<Path, String> inputData = readFiles(
+            inputPath,
             "Environment BGP Tables");
       SortedMap<String, BgpAdvertisementsByVrf> bgpTables = parseEnvironmentBgpTables(
             inputData, answerElement);
@@ -1877,7 +1913,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
          return new TreeMap<>();
       }
-      SortedMap<Path, String> inputData = readFiles(inputPath,
+      SortedMap<Path, String> inputData = readFiles(
+            inputPath,
             "Environment Routing Tables");
       SortedMap<String, RoutesByVrf> routingTables = parseEnvironmentRoutingTables(
             inputData, answerElement);
@@ -1983,7 +2020,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (consumedEdges.contains(edge)) {
             continue;
          }
-         Edge reverseEdge = new Edge(edge.getInterface2(),
+         Edge reverseEdge = new Edge(
+               edge.getInterface2(),
                edge.getInterface1());
          consumedEdges.add(edge);
          consumedEdges.add(reverseEdge);
@@ -2016,7 +2054,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    private void histogram(Path testRigPath) {
-      Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
+      Map<Path, String> configurationData = readConfigurationFiles(
+            testRigPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
       // todo: either remove histogram function or do something userful with
       // answer
@@ -2036,7 +2075,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   private void initAnalysisQuestionPath(String analysisName,
+   private void initAnalysisQuestionPath(
+         String analysisName,
          String questionName) {
       Path questionDir = _testrigSettings.getBasePath()
             .resolve(Paths
@@ -2215,12 +2255,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public InitInfoAnswerElement initInfo(boolean summary,
+   public InitInfoAnswerElement initInfo(
+         boolean summary,
          boolean environmentRoutes) {
       checkConfigurations();
       InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
       if (environmentRoutes) {
-         ParseEnvironmentRoutingTablesAnswerElement parseAnswer = loadParseEnvironmentRoutingTablesAnswerElement();
+         ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
+               loadParseEnvironmentRoutingTablesAnswerElement();
          if (!summary) {
             SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
                   .getWarnings();
@@ -2229,7 +2271,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          answerElement.setParseStatus(parseAnswer.getParseStatus());
       }
       else {
-         ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+         ParseVendorConfigurationAnswerElement parseAnswer =
+               loadParseVendorConfigurationAnswerElement();
          ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
          if (!summary) {
             SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
@@ -2259,7 +2302,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answerElement;
    }
 
-   private void initQuestionEnvironment(Question question, boolean dp,
+   private void initQuestionEnvironment(
+         Question question, boolean dp,
          boolean differentialContext) {
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
@@ -2279,7 +2323,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   private void initQuestionEnvironments(Question question, boolean diff,
+   private void initQuestionEnvironments(
+         Question question, boolean diff,
          boolean diffActive, boolean dp) {
       if (diff || !diffActive) {
          pushBaseEnvironment();
@@ -2294,7 +2339,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
+   public void initRemoteBgpNeighbors(
+         Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners) {
       // TODO: handle duplicate ips on different vrfs
       Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
@@ -2371,7 +2417,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      .get(externalAddress);
                if (vpnsUsingExternalAddress == null) {
                   vpnsUsingExternalAddress = new HashSet<>();
-                  externalAddresses.put(externalAddress,
+                  externalAddresses.put(
+                        externalAddress,
                         vpnsUsingExternalAddress);
                }
                vpnsUsingExternalAddress.add(ipsecVpn);
@@ -2452,7 +2499,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                                           .get(areaNum);
                                     if (remoteArea != null
                                           && remoteArea.getInterfaceNames()
-                                                .contains(remoteIfaceName)) {
+                                          .contains(remoteIfaceName)) {
                                        Ip remoteIp = remoteIface.getPrefix()
                                              .getAddress();
                                        Pair<Ip, Ip> localKey = new Pair<>(
@@ -2468,7 +2515,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                                           neighbor.setVrf(vrfName);
                                           neighbor.setOwner(c);
                                           neighbor.setInterface(iface);
-                                          proc.getOspfNeighbors().put(localKey,
+                                          proc.getOspfNeighbors().put(
+                                                localKey,
                                                 neighbor);
 
                                           // initialize remote neighbor
@@ -2633,15 +2681,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       SortedMap<String, RoutesByVrf> environmentRoutingTables = _cachedEnvironmentRoutingTables
             .get(envSettings);
       if (environmentRoutingTables == null) {
-         ParseEnvironmentRoutingTablesAnswerElement pertae = loadParseEnvironmentRoutingTablesAnswerElement();
-         if (!Version.isCompatibleVersion("Service",
+         ParseEnvironmentRoutingTablesAnswerElement pertae =
+               loadParseEnvironmentRoutingTablesAnswerElement();
+         if (!Version.isCompatibleVersion(
+               "Service",
                "Old processed environment routing tables",
                pertae.getVersion())) {
             repairEnvironmentRoutingTables();
          }
          environmentRoutingTables = deserializeEnvironmentRoutingTables(
                envSettings.getSerializeEnvironmentRoutingTablesPath());
-         _cachedEnvironmentRoutingTables.put(envSettings,
+         _cachedEnvironmentRoutingTables.put(
+               envSettings,
                environmentRoutingTables);
       }
       return environmentRoutingTables;
@@ -2659,7 +2710,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (!Files.exists(answerPath)) {
          repairEnvironmentBgpTables();
       }
-      ParseEnvironmentBgpTablesAnswerElement ae = deserializeObject(answerPath,
+      ParseEnvironmentBgpTablesAnswerElement ae = deserializeObject(
+            answerPath,
             ParseEnvironmentBgpTablesAnswerElement.class);
       if (!Version.isCompatibleVersion("Service",
             "Old processed environment BGP tables", ae.getVersion())) {
@@ -2756,8 +2808,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       List<NodJob> jobs = new ArrayList<>();
       configurations.forEach((node, configuration) -> {
          for (String vrf : configuration.getVrfs().keySet()) {
-            MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
-                  node, vrf, headerSpace);
+            MultipathInconsistencyQuerySynthesizer query =
+                  new MultipathInconsistencyQuerySynthesizer(
+                        node, vrf, headerSpace);
             NodeVrfSet nodes = new NodeVrfSet();
             nodes.add(new Pair<>(node, vrf));
             NodJob job = new NodJob(settings, dataPlaneSynthesizer, query,
@@ -2806,10 +2859,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          writeJsonAnswer(structuredAnswerString, prettyAnswerString);
       }
       catch (Exception e) {
-         BatfishException be = new BatfishException("Error in sending answer",
+         BatfishException be = new BatfishException(
+               "Error in sending answer",
                e);
          try {
-            Answer failureAnswer = Answer.failureAnswer(e.toString(),
+            Answer failureAnswer = Answer.failureAnswer(
+                  e.toString(),
                   answer.getQuestion());
             failureAnswer.addAnswerElement(be.getBatfishStackTrace());
             Answer structuredAnswer = failureAnswer;
@@ -2874,10 +2929,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                prettyAnswerString);
       }
       catch (Exception e) {
-         BatfishException be = new BatfishException("Error in sending answer",
+         BatfishException be = new BatfishException(
+               "Error in sending answer",
                e);
          try {
-            Answer failureAnswer = Answer.failureAnswer(e.toString(),
+            Answer failureAnswer = Answer.failureAnswer(
+                  e.toString(),
                   answer.getQuestion());
             failureAnswer.addAnswerElement(be.getBatfishStackTrace());
             Answer structuredAnswer = failureAnswer;
@@ -2919,7 +2976,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return parse(parser, _logger, _settings);
    }
 
-   public ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
+   public ParserRuleContext parse(
+         BatfishCombinedParser<?, ?> parser,
          String filename) {
       _logger.info("Parsing: \"" + filename + "\"...");
       return parse(parser);
@@ -2927,11 +2985,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AssertionAst parseAssertion(String text) {
-      AssertionCombinedParser parser = new AssertionCombinedParser(text,
+      AssertionCombinedParser parser = new AssertionCombinedParser(
+            text,
             _settings);
       AssertionContext tree = (AssertionContext) parse(parser);
       ParseTreeWalker walker = new ParseTreeWalker();
-      AssertionExtractor extractor = new AssertionExtractor(text,
+      AssertionExtractor extractor = new AssertionExtractor(
+            text,
             parser.getParser());
       walker.walk(extractor, tree);
       AssertionAst ast = extractor.getAst();
@@ -2946,7 +3006,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          // we stop classic link processing here because it interferes with VPC
          // processing
          if (file.toString().contains("classic-link")) {
-            _logger.errorf("%s has classic link configuration\n",
+            _logger.errorf(
+                  "%s has classic link configuration\n",
                   file.toString());
             continue;
          }
@@ -2976,7 +3037,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       String edgeBlacklistText = CommonUtil.readFile(edgeBlacklistPath);
       SortedSet<Edge> edges;
       try {
-         edges = new BatfishObjectMapper().<SortedSet<Edge>> readValue(
+         edges = new BatfishObjectMapper().<SortedSet<Edge>>readValue(
                edgeBlacklistText, new TypeReference<SortedSet<Edge>>() {
                });
       }
@@ -2998,13 +3059,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String hostname = currentFile.getFileName().toString();
          String optionalSuffix = ".bgp";
          if (hostname.endsWith(optionalSuffix)) {
-            hostname = hostname.substring(0,
+            hostname = hostname.substring(
+                  0,
                   hostname.length() - optionalSuffix.length());
          }
          if (!configurations.containsKey(hostname)) {
             continue;
          }
-         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+         Warnings warnings = new Warnings(
+               _settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
                _settings.getRedFlagAsError(),
@@ -3020,7 +3083,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                _bgpTablePlugins);
          jobs.add(job);
       }
-      BatfishJobExecutor<ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement, ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement, ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger, _settings.getHaltOnParseError(),
             "Parse environment BGP tables");
       executor.executeJobs(jobs, bgpTables, answerElement);
@@ -3041,7 +3105,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (!configurations.containsKey(hostname)) {
             continue;
          }
-         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+         Warnings warnings = new Warnings(
+               _settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
                _settings.getRedFlagAsError(),
@@ -3056,7 +3121,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                _settings, fileText, currentFile, warnings, this);
          jobs.add(job);
       }
-      BatfishJobExecutor<ParseEnvironmentRoutingTableJob, ParseEnvironmentRoutingTablesAnswerElement, ParseEnvironmentRoutingTableResult, SortedMap<String, RoutesByVrf>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<ParseEnvironmentRoutingTableJob, ParseEnvironmentRoutingTablesAnswerElement, ParseEnvironmentRoutingTableResult, SortedMap<String, RoutesByVrf>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger, _settings.getHaltOnParseError(),
             "Parse environment routing tables");
       executor.executeJobs(jobs, routingTables, answerElement);
@@ -3071,7 +3137,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       SortedSet<NodeInterfacePair> ifaces;
       try {
          ifaces = new BatfishObjectMapper()
-               .<SortedSet<NodeInterfacePair>> readValue(interfaceBlacklistText,
+               .<SortedSet<NodeInterfacePair>>readValue(
+                     interfaceBlacklistText,
                      new TypeReference<SortedSet<NodeInterfacePair>>() {
                      });
       }
@@ -3085,7 +3152,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
       SortedSet<String> nodes;
       try {
-         nodes = new BatfishObjectMapper().<SortedSet<String>> readValue(
+         nodes = new BatfishObjectMapper().<SortedSet<String>>readValue(
                nodeBlacklistText, new TypeReference<SortedSet<String>>() {
                });
       }
@@ -3099,7 +3166,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path rolePath = testRigPath.resolve("node_roles");
       String roleFileText = CommonUtil.readFile(rolePath);
       _logger.info("Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
-      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText,
+      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(
+            roleFileText,
             _settings);
       RoleExtractor extractor = new RoleExtractor();
       ParserRuleContext tree = parse(parser);
@@ -3139,7 +3207,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       else if (topologyFileText
             .startsWith(BatfishTopologyCombinedParser.HEADER)) {
-         parser = new BatfishTopologyCombinedParser(topologyFileText,
+         parser = new BatfishTopologyCombinedParser(
+               topologyFileText,
                _settings);
          extractor = new BatfishTopologyExtractor();
       }
@@ -3167,7 +3236,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
       List<ParseVendorConfigurationJob> jobs = new ArrayList<>();
       for (Path currentFile : configurationData.keySet()) {
-         Warnings warnings = new Warnings(_settings.getPedanticAsError(),
+         Warnings warnings = new Warnings(
+               _settings.getPedanticAsError(),
                _settings.getPedanticRecord()
                      && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
                _settings.getRedFlagAsError(),
@@ -3182,7 +3252,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                _settings, fileText, currentFile, warnings, configurationFormat);
          jobs.add(job);
       }
-      BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<>(
+      BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>>
+            executor = new BatfishJobExecutor<>(
             _settings, _logger, _settings.getHaltOnParseError(),
             "Parse configurations");
       executor.executeJobs(jobs, vendorConfigurations, answerElement);
@@ -3312,7 +3383,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _testrigSettingsStack.remove(lastIndex);
    }
 
-   private void populateFlowHistory(FlowHistory flowHistory,
+   private void populateFlowHistory(
+         FlowHistory flowHistory,
          String environmentName, String tag) {
       List<Flow> flows = _dataPlanePlugin.getHistoryFlows();
       List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces();
@@ -3346,7 +3418,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                && !jobj.isNull(Question.INSTANCE_VAR)) {
             String instanceDataStr = jobj.getString(Question.INSTANCE_VAR);
             BatfishObjectMapper mapper = new BatfishObjectMapper();
-            InstanceData instanceData = mapper.<InstanceData> readValue(
+            InstanceData instanceData = mapper.<InstanceData>readValue(
                   instanceDataStr, new TypeReference<InstanceData>() {
                   });
             for (Entry<String, Variable> e : instanceData.getVariables()
@@ -3387,7 +3459,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   else {
                      String valueJsonString = new ObjectMapper()
                            .writeValueAsString(value);
-                     jobj.put(varName,
+                     jobj.put(
+                           varName,
                            new JSONObject(preprocessQuestion(valueJsonString)));
                   }
                }
@@ -3410,22 +3483,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   String topLevelReplacement = valueJsonString;
                   String inlineReplacement;
                   if (stringType && !setType) {
-                     inlineReplacement = valueJsonString.substring(1,
+                     inlineReplacement = valueJsonString.substring(
+                           1,
                            valueJsonString.length() - 1);
                   }
                   else {
                      String quotedValueJsonString = JSONObject
                            .quote(valueJsonString);
-                     inlineReplacement = quotedValueJsonString.substring(1,
+                     inlineReplacement = quotedValueJsonString.substring(
+                           1,
                            quotedValueJsonString.length() - 1);
                   }
                   String inlineReplacementRegex = Matcher
                         .quoteReplacement(inlineReplacement);
                   String topLevelReplacementRegex = Matcher
                         .quoteReplacement(topLevelReplacement);
-                  questionText = questionText.replaceAll(topLevelVarNameRegex,
+                  questionText = questionText.replaceAll(
+                        topLevelVarNameRegex,
                         topLevelReplacementRegex);
-                  questionText = questionText.replaceAll(inlineVarNameRegex,
+                  questionText = questionText.replaceAll(
+                        inlineVarNameRegex,
                         inlineReplacementRegex);
                }
             }
@@ -3435,7 +3512,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       catch (JSONException | IOException e) {
          throw new BatfishException(
-               String.format("Could not convert raw question text [%s] to JSON",
+               String.format(
+                     "Could not convert raw question text [%s] to JSON",
                      rawQuestionText),
                e);
       }
@@ -3523,7 +3601,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                JSONObject announcement = new JSONObject();
                announcement.put("@id", index);
                JSONObject announcementSrc = announcements.getJSONObject(index);
-               for (Iterator<?> i = announcementSrc.keys(); i.hasNext();) {
+               for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
                   String key = (String) i.next();
                   if (!key.equals("@id")) {
                      announcement.put(key, announcementSrc.get(key));
@@ -3604,14 +3682,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _testrigSettings = _deltaTestrigSettings;
    }
 
-   private Map<Path, String> readConfigurationFiles(Path testRigPath,
+   private Map<Path, String> readConfigurationFiles(
+         Path testRigPath,
          String configsType) {
       _logger.infof("\n*** READING %s FILES ***\n", configsType);
       resetTimer();
       Map<Path, String> configurationData = new TreeMap<>();
       Path configsPath = testRigPath.resolve(configsType);
       List<Path> configFilePaths = listAllFiles(configsPath);
-      AtomicInteger completed = newBatch("Reading network configuration files",
+      AtomicInteger completed = newBatch(
+            "Reading network configuration files",
             configFilePaths.size());
       for (Path file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
@@ -3639,16 +3719,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   private SortedMap<Path, String> readFiles(Path directory,
+   private SortedMap<Path, String> readFiles(
+         Path directory,
          String description) {
       _logger.infof("\n*** READING FILES: %s ***\n", description);
       resetTimer();
       SortedMap<Path, String> fileData = new TreeMap<>();
       Path[] filePaths = CommonUtil.list(directory)
             .filter(path -> !path.getFileName().toString().startsWith("."))
-            .collect(Collectors.toList()).toArray(new Path[] {});
+            .collect(Collectors.toList()).toArray(new Path[]{});
       Arrays.sort(filePaths);
-      AtomicInteger completed = newBatch("Reading files: " + description,
+      AtomicInteger completed = newBatch(
+            "Reading files: " + description,
             filePaths.length);
       for (Path file : filePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
@@ -3713,10 +3795,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             nodeVrfs.put(node, Collections.singleton(vrf));
             ReachabilityQuerySynthesizer acceptQuery = new ReachabilityQuerySynthesizer(
                   Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-                  Collections.<String> emptySet(), nodeVrfs);
+                  Collections.<String>emptySet(), nodeVrfs);
             ReachabilityQuerySynthesizer notAcceptQuery = new ReachabilityQuerySynthesizer(
                   Collections.singleton(ForwardingAction.ACCEPT),
-                  new HeaderSpace(), Collections.<String> emptySet(), nodeVrfs);
+                  new HeaderSpace(), Collections.<String>emptySet(), nodeVrfs);
             notAcceptQuery.setNegate(true);
             NodeVrfSet nodes = new NodeVrfSet();
             nodes.add(new Pair<>(node, vrf));
@@ -3744,14 +3826,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void registerAnswerer(String questionName, String questionClassName,
+   public void registerAnswerer(
+         String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator) {
       _questionMap.put(questionName, questionClassName);
       _answererCreators.put(questionName, answererCreator);
    }
 
    @Override
-   public void registerBgpTablePlugin(BgpTableFormat format,
+   public void registerBgpTablePlugin(
+         BgpTableFormat format,
          BgpTablePlugin bgpTablePlugin) {
       _bgpTablePlugins.put(format, bgpTablePlugin);
    }
@@ -3826,11 +3910,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON),
                      !questionDirPath.getFileName().startsWith(".")
                            && Files.exists(questionDirPath
-                                 .resolve(BfConsts.RELPATH_ANSWER_JSON))
-                                       ? CommonUtil
-                                             .readFile(questionDirPath.resolve(
-                                                   BfConsts.RELPATH_ANSWER_JSON))
-                                       : ""));
+                           .resolve(BfConsts.RELPATH_ANSWER_JSON))
+                           ? CommonUtil
+                           .readFile(questionDirPath.resolve(
+                                 BfConsts.RELPATH_ANSWER_JSON))
+                           : ""));
       }
       catch (IOException e1) {
          throw new BatfishException("Could not create directory stream for '"
@@ -3865,7 +3949,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _dataPlanePlugin = new BdpDataPlanePlugin();
          _dataPlanePlugin.initialize(this);
       }
-      JsonExternalBgpAdvertisementPlugin jsonExternalBgpAdvertisementsPlugin = new JsonExternalBgpAdvertisementPlugin();
+      JsonExternalBgpAdvertisementPlugin jsonExternalBgpAdvertisementsPlugin =
+            new JsonExternalBgpAdvertisementPlugin();
       jsonExternalBgpAdvertisementsPlugin.initialize(this);
       _externalBgpAdvertisementPlugins.add(jsonExternalBgpAdvertisementsPlugin);
       boolean action = false;
@@ -3897,7 +3982,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (_settings.getGenerateOspfTopologyPath() != null) {
-         generateOspfConfigs(_settings.getGenerateOspfTopologyPath(),
+         generateOspfConfigs(
+               _settings.getGenerateOspfTopologyPath(),
                _testrigSettings.getSerializeIndependentPath());
          return answer;
       }
@@ -3987,7 +4073,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private Answer serializeAwsVpcConfigs(Path testRigPath, Path outputPath) {
       Answer answer = new Answer();
-      Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
+      Map<Path, String> configurationData = readConfigurationFiles(
+            testRigPath,
             BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
       AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
 
@@ -4004,10 +4091,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
    }
 
-   private Answer serializeEnvironmentBgpTables(Path inputPath,
+   private Answer serializeEnvironmentBgpTables(
+         Path inputPath,
          Path outputPath) {
       Answer answer = new Answer();
-      ParseEnvironmentBgpTablesAnswerElement answerElement = new ParseEnvironmentBgpTablesAnswerElement();
+      ParseEnvironmentBgpTablesAnswerElement answerElement =
+            new ParseEnvironmentBgpTablesAnswerElement();
       answerElement.setVersion(Version.getVersion());
       answer.addAnswerElement(answerElement);
       SortedMap<String, BgpAdvertisementsByVrf> bgpTables = getEnvironmentBgpTables(
@@ -4035,10 +4124,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       printElapsedTime();
    }
 
-   private Answer serializeEnvironmentRoutingTables(Path inputPath,
+   private Answer serializeEnvironmentRoutingTables(
+         Path inputPath,
          Path outputPath) {
       Answer answer = new Answer();
-      ParseEnvironmentRoutingTablesAnswerElement answerElement = new ParseEnvironmentRoutingTablesAnswerElement();
+      ParseEnvironmentRoutingTablesAnswerElement answerElement =
+            new ParseEnvironmentRoutingTablesAnswerElement();
       answerElement.setVersion(Version.getVersion());
       answer.addAnswerElement(answerElement);
       SortedMap<String, RoutesByVrf> routingTables = getEnvironmentRoutingTables(
@@ -4066,9 +4157,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       printElapsedTime();
    }
 
-   private void serializeHostConfigs(Path testRigPath, Path outputPath,
+   private void serializeHostConfigs(
+         Path testRigPath, Path outputPath,
          ParseVendorConfigurationAnswerElement answerElement) {
-      Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
+      Map<Path, String> configurationData = readConfigurationFiles(
+            testRigPath,
             BfConsts.RELPATH_HOST_CONFIGS_DIR);
       // read the host files
       Map<String, VendorConfiguration> hostConfigurations = parseVendorConfigurations(
@@ -4103,7 +4196,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
          if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(),
+            Path path = Paths.get(
+                  testRigPath.toString(),
                   hostConfig.getIptablesFile());
 
             // ensure that the iptables file is not taking us outside of the
@@ -4131,7 +4225,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
          if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(),
+            Path path = Paths.get(
+                  testRigPath.toString(),
                   hostConfig.getIptablesFile());
             String relativePathStr = _testrigSettings.getBasePath()
                   .relativize(path).toString();
@@ -4182,7 +4277,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       printElapsedTime();
    }
 
-   private Answer serializeIndependentConfigs(Path vendorConfigPath,
+   private Answer serializeIndependentConfigs(
+         Path vendorConfigPath,
          Path outputPath) {
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
@@ -4197,9 +4293,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
    }
 
-   private void serializeNetworkConfigs(Path testRigPath, Path outputPath,
+   private void serializeNetworkConfigs(
+         Path testRigPath, Path outputPath,
          ParseVendorConfigurationAnswerElement answerElement) {
-      Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
+      Map<Path, String> configurationData = readConfigurationFiles(
+            testRigPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
             configurationData, answerElement, ConfigurationFormat.UNKNOWN);
@@ -4233,10 +4331,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (name.contains(File.separator)) {
             // iptables will get a hostname like configs/iptables-save if they
             // are not set up correctly using host files
-            _logger.errorf("Cannot serialize configuration with hostname %s\n",
+            _logger.errorf(
+                  "Cannot serialize configuration with hostname %s\n",
                   name);
             answerElement
-                  .addRedFlagWarning(name,
+                  .addRedFlagWarning(
+                        name,
                         new Warning(
                               "Cannot serialize network config. Bad hostname "
                                     + name.replace("\\", "/"),
@@ -4292,7 +4392,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // look for network configs
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      ParseVendorConfigurationAnswerElement answerElement =
+            new ParseVendorConfigurationAnswerElement();
       answerElement.setVersion(Version.getVersion());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
@@ -4338,7 +4439,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public AnswerElement standard(HeaderSpace headerSpace,
+   public AnswerElement standard(
+         HeaderSpace headerSpace,
          Set<ForwardingAction> actions, String ingressNodeRegexStr,
          String notIngressNodeRegexStr, String finalNodeRegexStr,
          String notFinalNodeRegexStr) {
@@ -4480,9 +4582,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   && iface.getActive()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
                   if (prefix.getPrefixLength() < 32) {
-                     Prefix network = new Prefix(prefix.getNetworkAddress(),
+                     Prefix network = new Prefix(
+                           prefix.getNetworkAddress(),
                            prefix.getPrefixLength());
-                     NodeInterfacePair pair = new NodeInterfacePair(nodeName,
+                     NodeInterfacePair pair = new NodeInterfacePair(
+                           nodeName,
                            ifaceName);
                      Set<NodeInterfacePair> interfaceBucket = prefixInterfaces
                            .get(network);
@@ -4512,13 +4616,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
       _cachedDataPlanes.put(_testrigSettings, dp);
-      serializeObject(dp,
+      serializeObject(
+            dp,
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
-      serializeObject(ae,
+      serializeObject(
+            ae,
             _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
    }
 
-   private void writeJsonAnswer(String structuredAnswerString,
+   private void writeJsonAnswer(
+         String structuredAnswerString,
          String prettyAnswerString) {
       Path questionPath = _settings.getQuestionPath();
       if (questionPath != null) {
@@ -4552,7 +4659,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
-   private void writeJsonAnswerWithLog(String answerString,
+   private void writeJsonAnswerWithLog(
+         String answerString,
          String structuredAnswerString, String prettyAnswerString) {
       Path jsonPath = _settings.getAnswerJsonPath();
       if (jsonPath != null) {

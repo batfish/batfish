@@ -7,7 +7,8 @@ import org.batfish.grammar.routing_table.eos.EosRoutingTableParser.Eos_routing_t
 public class EosRoutingTableCombinedParser extends
       BatfishCombinedParser<EosRoutingTableParser, EosRoutingTableLexer> {
 
-   public EosRoutingTableCombinedParser(String input,
+   public EosRoutingTableCombinedParser(
+         String input,
          GrammarSettings settings) {
       super(EosRoutingTableParser.class, EosRoutingTableLexer.class, input,
             settings);

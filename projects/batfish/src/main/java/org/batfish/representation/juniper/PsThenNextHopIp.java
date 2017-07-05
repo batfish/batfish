@@ -23,7 +23,8 @@ public final class PsThenNextHopIp extends PsThen {
    }
 
    @Override
-   public void applyTo(List<Statement> statements,
+   public void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
       // todo: something with destination-vrf

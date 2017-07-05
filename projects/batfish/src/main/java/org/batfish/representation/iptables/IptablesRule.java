@@ -45,7 +45,8 @@ public class IptablesRule implements Serializable {
       _matchList = new LinkedList<>();
    }
 
-   public void addMatch(boolean inverted, MatchType matchType,
+   public void addMatch(
+         boolean inverted, MatchType matchType,
          Object matchData) {
       IptablesMatch match = new IptablesMatch(inverted, matchType, matchData);
       _matchList.add(match);

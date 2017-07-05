@@ -464,7 +464,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return answerElement;
       }
 
-      private void initRemoteBgpNeighbors(IBatfish batfish,
+      private void initRemoteBgpNeighbors(
+            IBatfish batfish,
             Map<String, Configuration> configurations) {
          if (!_remoteBgpNeighborsInitialized) {
             Map<Ip, Set<String>> ipOwners = _batfish
@@ -474,7 +475,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          }
       }
 
-      private void initRemoteOspfNeighbors(IBatfish batfish,
+      private void initRemoteOspfNeighbors(
+            IBatfish batfish,
             Map<String, Configuration> configurations, Topology topology) {
          if (!_remoteOspfNeighborsInitialized) {
             Map<Ip, Set<String>> ipOwners = _batfish
@@ -493,6 +495,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists neighbor relationships in the testrig.
     * <p>
@@ -516,7 +519,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     *           nodes/interfaces is returned.
     *
     * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"]
-    *          node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
+    *node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
     *          neighbor relationships between nodes that start with as1 and
     *          those that start with as2.
     *

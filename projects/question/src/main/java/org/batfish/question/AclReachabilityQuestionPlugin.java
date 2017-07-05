@@ -36,13 +36,15 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
          NamedStructureEquivalenceSets<?> aclEqSets = csnAnswer
                .getEquivalenceSets().get(IpAccessList.class.getSimpleName());
 
-         return _batfish.answerAclReachability(question.getAclNameRegex(),
+         return _batfish.answerAclReachability(
+               question.getAclNameRegex(),
                aclEqSets);
       }
 
    }
 
    // <question_page_comment>
+
    /**
     * Identifies unreachable lines in ACLs.
     * <p>

@@ -408,17 +408,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
-   private static final String F_BGP_LOCAL_AS_LOOPS = "protocols - bgp - group? - local-as - loops - currently we allow infinite occurences of local as";
+   private static final String F_BGP_LOCAL_AS_LOOPS =
+         "protocols - bgp - group? - local-as - loops - currently we allow infinite occurences of local as";
 
-   private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
+   private static final String F_BGP_LOCAL_AS_PRIVATE =
+         "protocols - bgp - group? - local-as - private";
 
-   private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE = "firewall - filter - term - then - routing-instance";
+   private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE =
+         "firewall - filter - term - then - routing-instance";
 
    private static final String F_IPV6 = "ipv6 - other";
 
-   private static final String F_PERMIT_TUNNEL = "security - policies - from-zone - to-zone - policy - then - permit - tunnel";
+   private static final String F_PERMIT_TUNNEL =
+         "security - policies - from-zone - to-zone - policy - then - permit - tunnel";
 
-   private static final String F_POLICY_TERM_THEN_NEXT_HOP = "policy-statement - term - then - next-hop";
+   private static final String F_POLICY_TERM_THEN_NEXT_HOP =
+         "policy-statement - term - then - next-hop";
 
    public static NamedPort getNamedPort(PortContext ctx) {
       if (ctx.AFS() != null) {
@@ -1823,7 +1828,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private final Warnings _w;
 
-   public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
+   public ConfigurationBuilder(
+         FlatJuniperCombinedParser parser, String text,
          Warnings warnings, Set<String> unimplementedFeatures) {
       _parser = parser;
       _text = text;
@@ -2230,13 +2236,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineExact(
                _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(
+               line,
                Route4FilterLine.class);
       }
       else if (_currentRoute6FilterPrefix != null) { // ipv6
          Route6FilterLine line = new Route6FilterLineExact(
                _currentRoute6FilterPrefix);
-         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(
+               line,
                Route6FilterLine.class);
       }
    }
@@ -2246,13 +2254,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineLonger(
                _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(
+               line,
                Route4FilterLine.class);
       }
       else if (_currentRoute6FilterPrefix != null) { // ipv6
          Route6FilterLine line = new Route6FilterLineLonger(
                _currentRoute6FilterPrefix);
-         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(
+               line,
                Route6FilterLine.class);
       }
    }
@@ -2262,13 +2272,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineOrLonger(
                _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(
+               line,
                Route4FilterLine.class);
       }
       else if (_currentRoute6FilterPrefix != null) { // ipv6
          Route6FilterLine line = new Route6FilterLineOrLonger(
                _currentRoute6FilterPrefix);
-         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(
+               line,
                Route6FilterLine.class);
       }
    }
@@ -2281,13 +2293,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineLengthRange(
                _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
-         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(
+               line,
                Route4FilterLine.class);
       }
       else if (_currentRoute6FilterPrefix != null) { // ipv6
          Route6FilterLine line = new Route6FilterLineLengthRange(
                _currentRoute6FilterPrefix, minPrefixLength, maxPrefixLength);
-         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(
+               line,
                Route6FilterLine.class);
       }
    }
@@ -2310,14 +2324,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
          Route4FilterLine line = new Route4FilterLineThrough(
                _currentRouteFilterPrefix, throughPrefix);
-         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(
+               line,
                Route4FilterLine.class);
       }
       else if (_currentRoute6FilterPrefix != null) { // ipv6
          Prefix6 throughPrefix6 = new Prefix6(ctx.IPV6_PREFIX().getText());
          Route6FilterLine line = new Route6FilterLineThrough(
                _currentRoute6FilterPrefix, throughPrefix6);
-         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(
+               line,
                Route6FilterLine.class);
       }
    }
@@ -2328,13 +2344,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineUpTo(
                _currentRouteFilterPrefix, maxPrefixLength);
-         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(
+               line,
                Route4FilterLine.class);
       }
       else if (_currentRoute6FilterPrefix != null) { // ipv6
          Route6FilterLine line = new Route6FilterLineUpTo(
                _currentRoute6FilterPrefix, maxPrefixLength);
-         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(
+               line,
                Route6FilterLine.class);
       }
    }
@@ -2347,7 +2365,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentRoutingInstance = _configuration.getRoutingInstances().get(name);
       if (_currentRoutingInstance == null) {
          _currentRoutingInstance = new RoutingInstance(name);
-         _configuration.getRoutingInstances().put(name,
+         _configuration.getRoutingInstances().put(
+               name,
                _currentRoutingInstance);
       }
    }
@@ -2516,7 +2535,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          if (ctx.from.JUNOS_HOST() == null) {
             _currentFromZone = _configuration.getZones().get(fromName);
             if (_currentFromZone == null) {
-               _currentFromZone = new Zone(fromName,
+               _currentFromZone = new Zone(
+                     fromName,
                      _configuration.getGlobalAddressBooks());
                _configuration.getZones().put(fromName, _currentFromZone);
                _configuration.getFirewallFilters().put(
@@ -2527,7 +2547,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          if (ctx.to.JUNOS_HOST() == null) {
             _currentToZone = _configuration.getZones().get(toName);
             if (_currentToZone == null) {
-               _currentToZone = new Zone(toName,
+               _currentToZone = new Zone(
+                     toName,
                      _configuration.getGlobalAddressBooks());
                _configuration.getFirewallFilters().put(
                      _currentToZone.getInboundFilter().getName(),
@@ -2539,7 +2560,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             _currentFilter = _currentToZone.getFromHostFilter();
             if (_currentFilter == null) {
                _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
-               _configuration.getFirewallFilters().put(policyName,
+               _configuration.getFirewallFilters().put(
+                     policyName,
                      _currentFilter);
                _currentToZone.setFromHostFilter(_currentFilter);
             }
@@ -2548,7 +2570,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             _currentFilter = _currentFromZone.getToHostFilter();
             if (_currentFilter == null) {
                _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
-               _configuration.getFirewallFilters().put(policyName,
+               _configuration.getFirewallFilters().put(
+                     policyName,
                      _currentFilter);
                _currentFromZone.setToHostFilter(_currentFilter);
             }
@@ -2557,7 +2580,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
             if (_currentFilter == null) {
                _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
-               _configuration.getFirewallFilters().put(policyName,
+               _configuration.getFirewallFilters().put(
+                     policyName,
                      _currentFilter);
                _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
             }
@@ -2580,7 +2604,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String zoneName = ctx.zone().getText();
       _currentZone = _configuration.getZones().get(zoneName);
       if (_currentZone == null) {
-         _currentZone = new Zone(zoneName,
+         _currentZone = new Zone(
+               zoneName,
                _configuration.getGlobalAddressBooks());
          _configuration.getFirewallFilters().put(
                _currentZone.getInboundFilter().getName(),
@@ -2606,9 +2631,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                   + "~INTERFACE~" + _currentZoneInterface.getName();
             _currentZoneInboundFilter = new FirewallFilter(name, Family.INET,
                   -1);
-            _configuration.getFirewallFilters().put(name,
+            _configuration.getFirewallFilters().put(
+                  name,
                   _currentZoneInboundFilter);
-            _currentZone.getInboundInterfaceFilters().put(_currentZoneInterface,
+            _currentZone.getInboundInterfaceFilters().put(
+                  _currentZoneInterface,
                   _currentZoneInboundFilter);
          }
       }
@@ -2634,7 +2661,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       catch (ClassCastException e) {
          throw new BatfishException(
                "Cannot create address-set address-book entry \"" + name
-                     + "\" because a different type of address-book entry with that name already exists",
+                     +
+                     "\" because a different type of address-book entry with that name already exists",
                e);
       }
    }
@@ -2828,7 +2856,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             prefix = new Prefix(ctx.IP_PREFIX().getText());
          }
          else {
-            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
+            prefix = new Prefix(
+                  new Ip(ctx.IP_ADDRESS().getText()),
                   Prefix.MAX_PREFIX_LENGTH);
          }
          FwFrom from;
@@ -3006,7 +3035,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             prefix = new Prefix(ctx.IP_PREFIX().getText());
          }
          else {
-            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
+            prefix = new Prefix(
+                  new Ip(ctx.IP_ADDRESS().getText()),
                   Prefix.MAX_PREFIX_LENGTH);
          }
          FwFrom from;
@@ -3587,7 +3617,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitPopst_community_delete(Popst_community_deleteContext ctx) {
       String name = ctx.name.getText();
-      PsThenCommunityDelete then = new PsThenCommunityDelete(name,
+      PsThenCommunityDelete then = new PsThenCommunityDelete(
+            name,
             _configuration);
       _currentPsThens.add(then);
    }
@@ -4021,7 +4052,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          String name = ctx.name.getText();
-         FwFromApplication from = new FwFromApplication(name,
+         FwFromApplication from = new FwFromApplication(
+               name,
                _configuration.getApplications());
          _currentFwTerm.getFromApplications().add(from);
       }
@@ -4406,7 +4438,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                conjuncts);
          conjunctionPolicyTerm.getFroms().add(from);
          conjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
-         _configuration.getPolicyStatements().put(conjunctionPolicyName,
+         _configuration.getPolicyStatements().put(
+               conjunctionPolicyName,
                conjunctionPolicy);
          return conjunctionPolicyName;
       }
@@ -4428,7 +4461,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             disjunctionPolicyTerm.getFroms().add(from);
          }
          disjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
-         _configuration.getPolicyStatements().put(disjunctionPolicyName,
+         _configuration.getPolicyStatements().put(
+               disjunctionPolicyName,
                disjunctionPolicy);
          return disjunctionPolicyName;
       }

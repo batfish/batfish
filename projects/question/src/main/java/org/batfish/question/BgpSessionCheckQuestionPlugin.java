@@ -78,7 +78,8 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
       private static final String REMOTE_IP_UNKNOWN_VAR = "remoteIpUnknown";
 
-      private SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> _allBgpNeighbors;
+      private SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>>
+            _allBgpNeighbors;
 
       private SortedMap<String, SortedMap<String, SortedSet<Prefix>>> _broken;
 
@@ -174,8 +175,9 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       public void addToAll(
             SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> neighborsByHostname,
             String hostname, String vrf, BgpNeighborSummary bgpNeighbor) {
-         SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> neighborsByVrf = neighborsByHostname
-               .get(hostname);
+         SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> neighborsByVrf =
+               neighborsByHostname
+                     .get(hostname);
          if (neighborsByVrf == null) {
             neighborsByVrf = new TreeMap<>();
             neighborsByHostname.put(hostname, neighborsByVrf);
@@ -313,18 +315,23 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
-         sb.append(prettyPrintCategory(_ebgpLocalIpOnLoopback,
+         sb.append(prettyPrintCategory(
+               _ebgpLocalIpOnLoopback,
                EBGP_LOCAL_IP_ON_LOOPBACK_VAR));
-         sb.append(prettyPrintCategory(_ebgpRemoteIpOnLoopback,
+         sb.append(prettyPrintCategory(
+               _ebgpRemoteIpOnLoopback,
                EBGP_REMOTE_IP_ON_LOOPBACK_VAR));
          sb.append(prettyPrintCategory(_halfOpen, HALF_OPEN_VAR));
-         sb.append(prettyPrintCategory(_ibgpLocalIpOnNonLoopback,
+         sb.append(prettyPrintCategory(
+               _ibgpLocalIpOnNonLoopback,
                IBGP_LOCAL_IP_ON_NON_LOOPBACK_VAR));
-         sb.append(prettyPrintCategory(_ibgpRemoteIpOnNonLoopback,
+         sb.append(prettyPrintCategory(
+               _ibgpRemoteIpOnNonLoopback,
                IBGP_REMOTE_IP_ON_NON_LOOPBACK_VAR));
          sb.append(prettyPrintCategory(_localIpUnknown, LOCAL_IP_UNKNOWN_VAR));
          sb.append(prettyPrintCategory(_missingLocalIp, MISSING_LOCAL_IP_VAR));
-         sb.append(prettyPrintCategory(_nonUniqueEndpoint,
+         sb.append(prettyPrintCategory(
+               _nonUniqueEndpoint,
                NON_UNIQUE_ENDPOINT_VAR));
          sb.append(
                prettyPrintCategory(_remoteIpUnknown, REMOTE_IP_UNKNOWN_VAR));
@@ -589,7 +596,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                            hostname, vrfName, bgpNeighborSummary);
                      boolean foreign = bgpNeighbor.getGroup() != null
                            && question.getForeignBgpGroups()
-                                 .contains(bgpNeighbor.getGroup());
+                           .contains(bgpNeighbor.getGroup());
                      boolean ebgp = !bgpNeighbor.getRemoteAs()
                            .equals(bgpNeighbor.getLocalAs());
                      boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
@@ -672,7 +679,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                               if (!ebgpMultihop
                                     && loopbackIps.contains(remoteIp)
                                     && node2RegexMatchesIp(remoteIp, ipOwners,
-                                          node2Regex)) {
+                                    node2Regex)) {
                                  answerElement.add(
                                        answerElement
                                              .getEbgpRemoteIpOnLoopback(),
@@ -683,7 +690,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                            if (localIp != null
                                  && allInterfaceIps.contains(remoteIp)
                                  && node2RegexMatchesIp(remoteIp, ipOwners,
-                                       node2Regex)) {
+                                 node2Regex)) {
                               if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                                  answerElement.add(answerElement.getBroken(),
                                        hostname, vrfName, bgpNeighborSummary);
@@ -732,7 +739,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                            else {
                               if (!loopbackIps.contains(remoteIp)
                                     && node2RegexMatchesIp(remoteIp, ipOwners,
-                                          node2Regex)) {
+                                    node2Regex)) {
                                  answerElement.add(
                                        answerElement
                                              .getIbgpRemoteIpOnNonLoopback(),
@@ -742,7 +749,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                            if (localIp != null
                                  && allInterfaceIps.contains(remoteIp)
                                  && node2RegexMatchesIp(remoteIp, ipOwners,
-                                       node2Regex)) {
+                                 node2Regex)) {
                               if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                                  answerElement.add(answerElement.getBroken(),
                                        hostname, vrfName, bgpNeighborSummary);
@@ -775,7 +782,8 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
          return answerElement;
       }
 
-      private boolean node2RegexMatchesIp(Ip ip, Map<Ip, Set<String>> ipOwners,
+      private boolean node2RegexMatchesIp(
+            Ip ip, Map<Ip, Set<String>> ipOwners,
             Pattern node2Regex) {
          Set<String> owners = ipOwners.get(ip);
          if (owners == null) {
@@ -793,6 +801,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Checks if BGP sessions are correctly configured.
     * <p>
@@ -810,7 +819,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
     *           the sessions. Default is '.*' (all nodes).
     *
     * @example bf_answer("BgpSessionCheck", node1Regex="as1.*",
-    *          node2Regex="as2.*") Checks all BGP sessions between nodes that
+    *node2Regex="as2.*") Checks all BGP sessions between nodes that
     *          start with as1 and those that start with as2.
     */
    public static class BgpSessionCheckQuestion extends Question {

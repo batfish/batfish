@@ -20,7 +20,8 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
    public static class UnusedStructuresAnswerElement
          extends ProblemsAnswerElement {
 
-      private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> _unusedStructures;
+      private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
+            _unusedStructures;
 
       public UnusedStructuresAnswerElement() {
          _unusedStructures = new TreeMap<>();
@@ -110,6 +111,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs cases where structures (e.g., ACL, routemaps) are defined but not
     * used.

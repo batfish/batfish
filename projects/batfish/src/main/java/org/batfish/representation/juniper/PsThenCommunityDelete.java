@@ -19,14 +19,16 @@ public final class PsThenCommunityDelete extends PsThen {
 
    private final String _name;
 
-   public PsThenCommunityDelete(String name,
+   public PsThenCommunityDelete(
+         String name,
          JuniperConfiguration configuration) {
       _name = name;
       _configuration = configuration;
    }
 
    @Override
-   public void applyTo(List<Statement> statements,
+   public void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
       CommunityList namedList = _configuration.getCommunityLists().get(_name);

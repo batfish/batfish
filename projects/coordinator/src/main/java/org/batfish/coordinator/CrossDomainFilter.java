@@ -20,7 +20,8 @@ public class CrossDomainFilter implements ContainerResponseFilter {
     * @return The output request with cross domain if needed
     */
    @Override
-   public void filter(ContainerRequestContext creq,
+   public void filter(
+         ContainerRequestContext creq,
          ContainerResponseContext cres) {
       // cres.getHeaders().add("Access-Control-Allow-Origin", "*");
       // cres.getHeaders().add("Access-Control-Allow-Headers",
@@ -29,10 +30,12 @@ public class CrossDomainFilter implements ContainerResponseFilter {
       // cres.getHeaders().add("Access-Control-Allow-Methods",
       // "GET, POST, PUT, DELETE, OPTIONS, HEAD");
       cres.getHeaders().add("Access-Control-Allow-Origin", "*");
-      cres.getHeaders().add("Access-Control-Allow-Headers",
+      cres.getHeaders().add(
+            "Access-Control-Allow-Headers",
             "Host, User-Agent, Accept, Authorization, Accept-Language, Accept-Encoding, Content-Type, Referer, Content-Length, Origin, DNT, Connection");
       cres.getHeaders().add("Access-Control-Allow-Credentials", "true");
-      cres.getHeaders().add("Access-Control-Allow-Methods",
+      cres.getHeaders().add(
+            "Access-Control-Allow-Methods",
             "GET, POST, PUT, DELETE, OPTIONS, HEAD");
       // cres.getHeaders().add("Access-Control-Max-Age", "");
 

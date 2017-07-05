@@ -10,7 +10,8 @@ public interface Authorizer {
 
    void authorizeContainer(String apiKey, String containerName);
 
-   boolean isAccessibleContainer(String apiKey, String containerName,
+   boolean isAccessibleContainer(
+         String apiKey, String containerName,
          boolean logError);
 
    boolean isValidWorkApiKey(String apiKey);

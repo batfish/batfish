@@ -125,11 +125,11 @@ public class JsonDiff {
          Set<String> commonKeys = new TreeSet<>();
          Set<String> lhsOnlyKeys = new TreeSet<>();
          Set<String> rhsOnlyKeys = new TreeSet<>();
-         for (Iterator<?> i = lhs.keys(); i.hasNext();) {
+         for (Iterator<?> i = lhs.keys(); i.hasNext(); ) {
             String key = (String) i.next();
             lhsKeys.add(key);
          }
-         for (Iterator<?> i = rhs.keys(); i.hasNext();) {
+         for (Iterator<?> i = rhs.keys(); i.hasNext(); ) {
             String key = (String) i.next();
             rhsKeys.add(key);
          }
@@ -231,7 +231,7 @@ public class JsonDiff {
       if (object instanceof JSONObject) {
          JSONObject j = (JSONObject) object;
          Map<String, Object> map = new TreeMap<>();
-         for (Iterator<?> i = j.keys(); i.hasNext();) {
+         for (Iterator<?> i = j.keys(); i.hasNext(); ) {
             String key = (String) i.next();
             Object value = j.get(key);
             Object jdValue = getValue(value);

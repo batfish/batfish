@@ -19,7 +19,8 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
 
    private final Synthesizer _synthesizer;
 
-   public NodSatJob(Settings settings, Synthesizer synthesizer,
+   public NodSatJob(
+         Settings settings, Synthesizer synthesizer,
          SatQuerySynthesizer<Key> query) {
       super(settings);
       _synthesizer = synthesizer;
@@ -32,7 +33,8 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
       try (Context ctx = new Context()) {
-         NodProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer,
+         NodProgram baseProgram = _query.synthesizeBaseProgram(
+               _synthesizer,
                ctx);
          NodProgram queryProgram = _query.getNodProgram(baseProgram);
          NodProgram program = baseProgram.append(queryProgram);

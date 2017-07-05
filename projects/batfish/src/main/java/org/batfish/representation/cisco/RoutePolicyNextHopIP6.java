@@ -22,7 +22,8 @@ public class RoutePolicyNextHopIP6 extends RoutePolicyNextHop {
    }
 
    @Override
-   public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c,
+   public NextHopExpr toNextHopExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new Ip6NextHop(Collections.singletonList(_address));
    }

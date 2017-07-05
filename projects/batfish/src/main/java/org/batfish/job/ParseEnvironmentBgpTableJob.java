@@ -33,7 +33,8 @@ public class ParseEnvironmentBgpTableJob
 
    private Warnings _warnings;
 
-   public ParseEnvironmentBgpTableJob(Settings settings, String fileText,
+   public ParseEnvironmentBgpTableJob(
+         Settings settings, String fileText,
          String hostname, Path file, Warnings warnings,
          SortedMap<BgpTableFormat, BgpTablePlugin> bgpTablePlugins) {
       super(settings);
@@ -109,13 +110,15 @@ public class ParseEnvironmentBgpTableJob
       BgpTableExtractor extractor;
       try {
          _logger.info("\tParsing...");
-         BatfishCombinedParser<?, ?> combinedParser = plugin.parser(_fileText,
+         BatfishCombinedParser<?, ?> combinedParser = plugin.parser(
+               _fileText,
                _settings);
          extractor = plugin.extractor(_hostname, _fileText, combinedParser,
                _warnings);
          tree = Batfish.parse(combinedParser, _logger, _settings);
          if (_settings.printParseTree()) {
-            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree,
+            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(
+                  tree,
                   combinedParser);
          }
          _logger.info("\tPost-processing...");

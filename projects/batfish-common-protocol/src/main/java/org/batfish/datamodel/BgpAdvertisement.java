@@ -145,7 +145,8 @@ public class BgpAdvertisement
    private final int _weight;
 
    @JsonCreator
-   public BgpAdvertisement(@JsonProperty(TYPE_VAR) BgpAdvertisementType type,
+   public BgpAdvertisement(
+         @JsonProperty(TYPE_VAR) BgpAdvertisementType type,
          @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(SRC_NODE_VAR) String srcNode,

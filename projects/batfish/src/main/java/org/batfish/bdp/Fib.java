@@ -37,7 +37,8 @@ public class Fib implements Serializable {
       }
    }
 
-   private void collectNextHopInterfaces(AbstractRoute route,
+   private void collectNextHopInterfaces(
+         AbstractRoute route,
          Ip mostRecentNextHopIp,
          Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces,
          Set<Prefix> seenNetworks, int depth) {
@@ -68,14 +69,16 @@ public class Fib implements Serializable {
                   .get(nextHopInterface);
             if (nextHopInterfaceRoutesByFinalNextHopIp == null) {
                nextHopInterfaceRoutesByFinalNextHopIp = new HashMap<>();
-               nextHopInterfaces.put(nextHopInterface,
+               nextHopInterfaces.put(
+                     nextHopInterface,
                      nextHopInterfaceRoutesByFinalNextHopIp);
             }
             Set<AbstractRoute> nextHopInterfaceRoutes = nextHopInterfaceRoutesByFinalNextHopIp
                   .get(mostRecentNextHopIp);
             if (nextHopInterfaceRoutes == null) {
                nextHopInterfaceRoutes = new TreeSet<>();
-               nextHopInterfaceRoutesByFinalNextHopIp.put(mostRecentNextHopIp,
+               nextHopInterfaceRoutesByFinalNextHopIp.put(
+                     mostRecentNextHopIp,
                      nextHopInterfaceRoutes);
             }
             nextHopInterfaceRoutes.add(route);
@@ -95,11 +98,13 @@ public class Fib implements Serializable {
                .get(nextHopRoute);
          currentNextHopInterfaces.forEach(
                (nextHopInterface, nextHopInterfaceRoutesByFinalNextHopIp) -> {
-                  Map<Ip, Set<AbstractRoute>> outputNextHopInterfaceRoutesByFinalNextHopIp = outputNextHopInterfaces
-                        .get(nextHopInterface);
+                  Map<Ip, Set<AbstractRoute>> outputNextHopInterfaceRoutesByFinalNextHopIp =
+                        outputNextHopInterfaces
+                              .get(nextHopInterface);
                   if (outputNextHopInterfaceRoutesByFinalNextHopIp == null) {
                      outputNextHopInterfaceRoutesByFinalNextHopIp = new TreeMap<>();
-                     outputNextHopInterfaces.put(nextHopInterface,
+                     outputNextHopInterfaces.put(
+                           nextHopInterface,
                            outputNextHopInterfaceRoutesByFinalNextHopIp);
                   }
                   outputNextHopInterfaceRoutesByFinalNextHopIp
@@ -111,7 +116,8 @@ public class Fib implements Serializable {
 
    public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
          Ip dstIp) {
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute = new HashMap<>();
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
+            new HashMap<>();
       Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(dstIp);
       for (AbstractRoute nextHopRoute : nextHopRoutes) {
          Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = _nextHopInterfaces

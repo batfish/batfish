@@ -96,7 +96,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
    private static final String F_INTERFACES_ADDRESS_DHCP = "interfaces address dhcp";
 
-   public static final String SALT = "3H28tI(LMcx.k_Q9xZ*G8\".,?wL~cMMaQS~3y$j-@znQi3{2A%m/@{n)QMgDy=xb&#.C?.'.*,V>a<Il=4=x$Im#alhhDTvO(Hnv^M$l\\Bu:awuW<ILJ?*\"D+bAkG@5t$:&;>BdpcsZ]*RyDfZ7XYEL5z8!Jk\"d-+WRiX1[Kn<wK.mz7?x1W`1^sxTZ&FKWh}Q?&}/iFfaM$!%R?gQ_5k}/)s5'SbVp,gsiaN4yo,/IG{=o&~Hr`M>ykiagEb[Ov%9'_)&G]^rkV2#ITp(g\"efG/#B;sl)_<&Nt=2@f4l-<\\\"El<g?dit82gYT`%-k:c!pLg|YQ8T2fv&Z}hIkZz[aD`6GIkC8L#i{j>-zX3GCt{BW6VHdlN.ku)>NrU%Zp+nK;6eMQufd$}b8xyr6PW/:M\\y\\Z-}1x0T\"YtxDjEnoV/)Yu%<x.HtO|Q4}vQFXQ*%XybfZ9%`P79yqp~)zDQ7pm~}VxLJRs.c@djs0xUrZabAW?K19iK9?|33K{`kyG.GH7(8VxnA+E|'?7+~=Jl1*Gf>5a#.{o>>X`R4nF?|t$X\"6#m6ql>ZM/<49sms&2Q<g~-|_j7&;CeZ3TK3dV,H*G715PUFr+xx|}jpYC?3b4,sU^F~G|0LaS$i,;mG2.u!4K4qN\\8})RL-^,HD=-<a~h5FnRWJ./|X\"Vov3tLaWBRKx(^>|M?2x&RuVY4hf27^~PRtWdd\"iJ2_S(2!_^H\\y:U[>Py9lQ\"h#bk2]G~U&#8J`.qX3\\tLtL=?u,C/{/&aH*ZP:?eLYmf6xxz7o~E(tld`+::IfL6~d0K`$Pj=\\I=^uOaK^VM?@TH2Y?2LIZ'T%]P~f>pK%h_X]cZ8wx3A/`B2{^CoqrUr;IBIx6c3bxN<l$xAV5es_of*[iK3-kN{7KQh%WF%!u(,DQ6ulvFV&R6Cd4c]Aw-Z6p:\\=c8sp_S\"8ER;l$muldWlZ`V@E$V2K_ztsl(9.gK7wR<DC0DS)$ggN7GxbtsjrBq#NT\\5EudN2WIMHYDSW]inc&$;e<C";
+   public static final String SALT =
+         "3H28tI(LMcx.k_Q9xZ*G8\".,?wL~cMMaQS~3y$j-@znQi3{2A%m/@{n)QMgDy=xb&#.C?.'.*,V>a<Il=4=x$Im#alhhDTvO(Hnv^M$l\\Bu:awuW<ILJ?*\"D+bAkG@5t$:&;>BdpcsZ]*RyDfZ7XYEL5z8!Jk\"d-+WRiX1[Kn<wK.mz7?x1W`1^sxTZ&FKWh}Q?&}/iFfaM$!%R?gQ_5k}/)s5'SbVp,gsiaN4yo,/IG{=o&~Hr`M>ykiagEb[Ov%9'_)&G]^rkV2#ITp(g\"efG/#B;sl)_<&Nt=2@f4l-<\\\"El<g?dit82gYT`%-k:c!pLg|YQ8T2fv&Z}hIkZz[aD`6GIkC8L#i{j>-zX3GCt{BW6VHdlN.ku)>NrU%Zp+nK;6eMQufd$}b8xyr6PW/:M\\y\\Z-}1x0T\"YtxDjEnoV/)Yu%<x.HtO|Q4}vQFXQ*%XybfZ9%`P79yqp~)zDQ7pm~}VxLJRs.c@djs0xUrZabAW?K19iK9?|33K{`kyG.GH7(8VxnA+E|'?7+~=Jl1*Gf>5a#.{o>>X`R4nF?|t$X\"6#m6ql>ZM/<49sms&2Q<g~-|_j7&;CeZ3TK3dV,H*G715PUFr+xx|}jpYC?3b4,sU^F~G|0LaS$i,;mG2.u!4K4qN\\8})RL-^,HD=-<a~h5FnRWJ./|X\"Vov3tLaWBRKx(^>|M?2x&RuVY4hf27^~PRtWdd\"iJ2_S(2!_^H\\y:U[>Py9lQ\"h#bk2]G~U&#8J`.qX3\\tLtL=?u,C/{/&aH*ZP:?eLYmf6xxz7o~E(tld`+::IfL6~d0K`$Pj=\\I=^uOaK^VM?@TH2Y?2LIZ'T%]P~f>pK%h_X]cZ8wx3A/`B2{^CoqrUr;IBIx6c3bxN<l$xAV5es_of*[iK3-kN{7KQh%WF%!u(,DQ6ulvFV&R6Cd4c]Aw-Z6p:\\=c8sp_S\"8ER;l$muldWlZ`V@E$V2K_ztsl(9.gK7wR<DC0DS)$ggN7GxbtsjrBq#NT\\5EudN2WIMHYDSW]inc&$;e<C";
 
    private static LineAction toAction(Line_actionContext ctx) {
       if (ctx.DENY() != null) {
@@ -229,7 +230,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
    private final Warnings _w;
 
-   public FlatVyosControlPlaneExtractor(String text,
+   public FlatVyosControlPlaneExtractor(
+         String text,
          FlatVyosCombinedParser parser, Warnings warnings) {
       _text = text;
       _parser = parser;

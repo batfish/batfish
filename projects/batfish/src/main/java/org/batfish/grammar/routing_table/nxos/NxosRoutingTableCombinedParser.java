@@ -7,7 +7,8 @@ import org.batfish.grammar.routing_table.nxos.NxosRoutingTableParser.Nxos_routin
 public class NxosRoutingTableCombinedParser extends
       BatfishCombinedParser<NxosRoutingTableParser, NxosRoutingTableLexer> {
 
-   public NxosRoutingTableCombinedParser(String input,
+   public NxosRoutingTableCombinedParser(
+         String input,
          GrammarSettings settings) {
       super(NxosRoutingTableParser.class, NxosRoutingTableLexer.class, input,
             settings);

@@ -71,7 +71,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
    private final int _costToAdvertiser;
 
    @JsonCreator
-   public OspfExternalRoute(@JsonProperty(NETWORK_VAR) Prefix prefix,
+   public OspfExternalRoute(
+         @JsonProperty(NETWORK_VAR) Prefix prefix,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin, int metric,
          @JsonProperty(ADVERTISER_VAR) String advertiser,

@@ -10,10 +10,12 @@ public abstract class RoutePolicyPrefixSet implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   public abstract Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc,
+   public abstract Prefix6SetExpr toPrefix6SetExpr(
+         CiscoConfiguration cc,
          Configuration c, Warnings w);
 
-   public abstract PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc,
+   public abstract PrefixSetExpr toPrefixSetExpr(
+         CiscoConfiguration cc,
          Configuration c, Warnings w);
 
 }

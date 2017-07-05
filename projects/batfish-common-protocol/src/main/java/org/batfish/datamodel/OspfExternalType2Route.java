@@ -11,7 +11,8 @@ public class OspfExternalType2Route extends OspfExternalRoute {
    private static final long serialVersionUID = 1L;
 
    @JsonCreator
-   public OspfExternalType2Route(@JsonProperty(NETWORK_VAR) Prefix network,
+   public OspfExternalType2Route(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
          @JsonProperty(METRIC_VAR) int metric,
@@ -59,7 +60,8 @@ public class OspfExternalType2Route extends OspfExternalRoute {
          return 0;
       }
       OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
-      int ret = Integer.compare(getCostToAdvertiser(),
+      int ret = Integer.compare(
+            getCostToAdvertiser(),
             castRhs.getCostToAdvertiser());
       return ret;
    }

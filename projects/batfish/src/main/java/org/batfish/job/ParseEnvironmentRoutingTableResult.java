@@ -26,7 +26,8 @@ public class ParseEnvironmentRoutingTableResult extends
 
    private Warnings _warnings;
 
-   public ParseEnvironmentRoutingTableResult(long elapsedTime,
+   public ParseEnvironmentRoutingTableResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, String name,
          RoutesByVrf routingTable, Warnings warnings,
          ParseTreeSentences parseTree) {
@@ -40,14 +41,16 @@ public class ParseEnvironmentRoutingTableResult extends
       _status = null;
    }
 
-   public ParseEnvironmentRoutingTableResult(long elapsedTime,
+   public ParseEnvironmentRoutingTableResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _file = file;
       _status = ParseStatus.FAILED;
    }
 
-   public ParseEnvironmentRoutingTableResult(long elapsedTime,
+   public ParseEnvironmentRoutingTableResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, Warnings warnings,
          ParseStatus status) {
       super(elapsedTime, history);
@@ -72,7 +75,8 @@ public class ParseEnvironmentRoutingTableResult extends
    }
 
    @Override
-   public void applyTo(SortedMap<String, RoutesByVrf> routingTables,
+   public void applyTo(
+         SortedMap<String, RoutesByVrf> routingTables,
          BatfishLogger logger,
          ParseEnvironmentRoutingTablesAnswerElement answerElement) {
       appendHistory(logger);
@@ -90,7 +94,8 @@ public class ParseEnvironmentRoutingTableResult extends
                answerElement.getParseTrees().put(hostname, _parseTree);
             }
             if (_routingTable.getUnrecognized()) {
-               answerElement.getParseStatus().put(hostname,
+               answerElement.getParseStatus().put(
+                     hostname,
                      ParseStatus.PARTIALLY_UNRECOGNIZED);
             }
             else {

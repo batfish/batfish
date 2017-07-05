@@ -18,14 +18,16 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
 
    private final AddressBook _localAddressBook;
 
-   public FwFromSourceAddressBookEntry(AddressBook localAddressBook,
+   public FwFromSourceAddressBookEntry(
+         AddressBook localAddressBook,
          String addressBookEntryName) {
       _localAddressBook = localAddressBook;
       _addressBookEntryName = addressBookEntryName;
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       Set<Prefix> prefixes = _localAddressBook
             .getPrefixes(_addressBookEntryName, w);

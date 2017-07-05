@@ -13,14 +13,16 @@ public class FlattenVendorConfigurationResult extends
 
    private final Path _outputFile;
 
-   public FlattenVendorConfigurationResult(long elapsedTime,
+   public FlattenVendorConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path outputFile, String flattenedText) {
       super(elapsedTime, history);
       _outputFile = outputFile;
       _flattenedText = flattenedText;
    }
 
-   public FlattenVendorConfigurationResult(long elapsedTime,
+   public FlattenVendorConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path outputFile,
          Throwable failureCause) {
       super(elapsedTime, history, failureCause);
@@ -41,7 +43,8 @@ public class FlattenVendorConfigurationResult extends
    }
 
    @Override
-   public void applyTo(Map<Path, String> outputConfigurationData,
+   public void applyTo(
+         Map<Path, String> outputConfigurationData,
          BatfishLogger logger,
          FlattenVendorConfigurationAnswerElement answerElement) {
       appendHistory(logger);

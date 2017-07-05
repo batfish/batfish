@@ -25,7 +25,8 @@ public class CommunityListLine implements Serializable {
    private final String _regex;
 
    @JsonCreator
-   public CommunityListLine(@JsonProperty(ACTION_VAR) LineAction action,
+   public CommunityListLine(
+         @JsonProperty(ACTION_VAR) LineAction action,
          @JsonProperty(REGEX_VAR) String regex) {
       _action = action;
       _regex = regex;
@@ -66,7 +67,8 @@ public class CommunityListLine implements Serializable {
       return matchingCommunitites;
    }
 
-   public Set<Long> getMatchingCommunities(Set<Long> allCommunities,
+   public Set<Long> getMatchingCommunities(
+         Set<Long> allCommunities,
          boolean invertMatch) {
       Pattern p = Pattern.compile(_regex);
       Set<Long> matchingCommunitites = new LinkedHashSet<>();

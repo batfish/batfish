@@ -40,7 +40,8 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
          private static final long serialVersionUID = 1L;
 
          @JsonCreator
-         public InterfaceIpPair(@JsonProperty(INTERFACE_NAME_VAR) String t1,
+         public InterfaceIpPair(
+               @JsonProperty(INTERFACE_NAME_VAR) String t1,
                @JsonProperty(IP_VAR) Ip t2) {
             super(t1, t2);
          }
@@ -63,7 +64,8 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
          _selfAdjacencies = new TreeMap<>();
       }
 
-      public void add(String hostname, Prefix prefix, String interfaceName,
+      public void add(
+            String hostname, Prefix prefix, String interfaceName,
             Ip address) {
          SortedMap<Prefix, SortedSet<InterfaceIpPair>> prefixMap = _selfAdjacencies
                .get(hostname);
@@ -151,6 +153,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs cases where two interfaces on the same node are in the same
     * subnet.

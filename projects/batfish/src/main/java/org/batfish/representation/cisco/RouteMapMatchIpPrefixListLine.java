@@ -28,7 +28,8 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+   public BooleanExpr toBooleanExpr(
+         Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();
       List<BooleanExpr> disjuncts = d.getDisjuncts();
@@ -36,7 +37,8 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
          PrefixList list = cc.getPrefixLists().get(listName);
          if (list != null) {
             list.getReferers().put(this, "route-map match prefix-list");
-            disjuncts.add(new MatchPrefixSet(new DestinationNetwork(),
+            disjuncts.add(new MatchPrefixSet(
+                  new DestinationNetwork(),
                   new NamedPrefixSet(listName)));
          }
          else {

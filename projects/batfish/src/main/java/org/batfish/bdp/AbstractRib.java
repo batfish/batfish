@@ -121,7 +121,8 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
          }
       }
 
-      public boolean mergeRoute(R route, BitSet bits, int prefixLength,
+      public boolean mergeRoute(
+            R route, BitSet bits, int prefixLength,
             int firstUnmatchedBitIndex) {
          if (prefixLength == _prefix.getPrefixLength()) {
             // no routes with this prefix, so just add it
@@ -175,7 +176,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
                   boolean currentRightAddressBit;
                   for (nextUnmatchedBit = firstUnmatchedBitIndex
                         + 1; nextUnmatchedBit < rightPrefixLength
-                              && nextUnmatchedBit < prefixLength; nextUnmatchedBit++) {
+                        && nextUnmatchedBit < prefixLength; nextUnmatchedBit++) {
                      currentAddressBit = bits.get(nextUnmatchedBit);
                      currentRightAddressBit = rightAddressBits
                            .get(nextUnmatchedBit);
@@ -206,7 +207,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
                      Prefix newNetwork = new Prefix(
                            route.getNetwork().getAddress(), nextUnmatchedBit)
-                                 .getNetworkPrefix();
+                           .getNetworkPrefix();
                      _right = new ByteTrieNode(newNetwork);
                      if (currentAddressBit) {
                         _right._left = oldRight;
@@ -238,7 +239,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
                   boolean currentLeftAddressBit;
                   for (nextUnmatchedBit = firstUnmatchedBitIndex
                         + 1; nextUnmatchedBit < leftPrefixLength
-                              && nextUnmatchedBit < prefixLength; nextUnmatchedBit++) {
+                        && nextUnmatchedBit < prefixLength; nextUnmatchedBit++) {
                      currentAddressBit = bits.get(nextUnmatchedBit);
                      currentLeftAddressBit = leftAddressBits
                            .get(nextUnmatchedBit);
@@ -268,7 +269,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
                      ByteTrieNode oldLeft = _left;
                      Prefix newPrefix = new Prefix(
                            route.getNetwork().getAddress(), nextUnmatchedBit)
-                                 .getNetworkPrefix();
+                           .getNetworkPrefix();
                      _left = new ByteTrieNode(newPrefix);
                      if (currentAddressBit) {
                         _left._left = oldLeft;

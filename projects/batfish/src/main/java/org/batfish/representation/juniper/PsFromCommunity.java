@@ -24,7 +24,8 @@ public final class PsFromCommunity extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       return new MatchCommunitySet(new NamedCommunitySet(_name));
    }

@@ -43,7 +43,8 @@ public class AllInOne {
          System.exit(1);
       }
 
-      String argString = String.format("%s -%s %s -%s %s",
+      String argString = String.format(
+            "%s -%s %s -%s %s",
             _settings.getClientArgs(),
             org.batfish.client.config.Settings.ARG_LOG_LEVEL,
             _settings.getLogLevel(),
@@ -51,19 +52,22 @@ public class AllInOne {
             _settings.getRunMode());
 
       if (_settings.getLogFile() != null) {
-         argString += String.format(" -%s %s",
+         argString += String.format(
+               " -%s %s",
                org.batfish.client.config.Settings.ARG_LOG_FILE,
                _settings.getLogFile());
       }
 
       if (_settings.getCommandFile() != null) {
-         argString += String.format(" -%s %s",
+         argString += String.format(
+               " -%s %s",
                org.batfish.client.config.Settings.ARG_COMMAND_FILE,
                _settings.getCommandFile());
       }
 
       if (_settings.getTestrigDir() != null) {
-         argString += String.format(" -%s %s",
+         argString += String.format(
+               " -%s %s",
                org.batfish.client.config.Settings.ARG_TESTRIG_DIR,
                _settings.getTestrigDir());
       }
@@ -71,7 +75,8 @@ public class AllInOne {
       // if we are not running the client, we were like not specified a cmdfile.
       // lets do a dummy cmdfile do client initialization does not barf
       if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
-         argString += String.format(" -%s %s",
+         argString += String.format(
+               " -%s %s",
                org.batfish.client.config.Settings.ARG_COMMAND_FILE,
                "dummy_allinone");
       }
@@ -88,12 +93,13 @@ public class AllInOne {
          }
          clientArgs.add(sb.toString());
       }
-      final String[] argArray = clientArgs.toArray(new String[] {});
+      final String[] argArray = clientArgs.toArray(new String[]{});
 
       try {
          _client = new Client(argArray);
          _logger = _client.getLogger();
-         _logger.debugf("Started client with args: %s\n",
+         _logger.debugf(
+               "Started client with args: %s\n",
                Arrays.toString(argArray));
       }
       catch (Exception e) {
@@ -147,8 +153,9 @@ public class AllInOne {
          }
          args.add(sb.toString());
       }
-      final String[] argArray = args.toArray(new String[] {});
-      _logger.debugf("Starting batfish worker with args: %s\n",
+      final String[] argArray = args.toArray(new String[]{});
+      _logger.debugf(
+            "Starting batfish worker with args: %s\n",
             Arrays.toString(argArray));
       Thread thread = new Thread("batfishThread") {
          @Override
@@ -170,7 +177,8 @@ public class AllInOne {
 
       final String[] argArray = getArgArrayFromString(
             _settings.getCoordinatorArgs());
-      _logger.debugf("Starting coordinator with args: %s\n",
+      _logger.debugf(
+            "Starting coordinator with args: %s\n",
             Arrays.toString(argArray));
 
       Thread thread = new Thread("coordinatorThread") {

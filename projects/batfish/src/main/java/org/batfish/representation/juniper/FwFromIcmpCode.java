@@ -19,7 +19,8 @@ public class FwFromIcmpCode extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       line.getIcmpCodes().add(_icmpCodeRange);
    }

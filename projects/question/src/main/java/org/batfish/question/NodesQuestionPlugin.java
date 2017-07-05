@@ -286,7 +286,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       private final SortedMap<String, NodeSummary> _nodesSummary;
 
-      public NodesAnswerElement(SortedMap<String, Configuration> nodes,
+      public NodesAnswerElement(
+            SortedMap<String, Configuration> nodes,
             boolean summary) {
 
          if (summary) {
@@ -383,12 +384,14 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          _batfish.checkEnvironmentExists();
          _batfish.popEnvironment();
          _batfish.pushBaseEnvironment();
-         NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question,
+         NodesAnswerer beforeAnswerer = (NodesAnswerer) create(
+               _question,
                _batfish);
          NodesAnswerElement before = beforeAnswerer.answer();
          _batfish.popEnvironment();
          _batfish.pushDeltaEnvironment();
-         NodesAnswerer afterAnswerer = (NodesAnswerer) create(_question,
+         NodesAnswerer afterAnswerer = (NodesAnswerer) create(
+               _question,
                _batfish);
          NodesAnswerElement after = afterAnswerer.answer();
          _batfish.popEnvironment();
@@ -424,7 +427,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       private NodesDiffAnswerElement() {
       }
 
-      public NodesDiffAnswerElement(NodesAnswerElement before,
+      public NodesDiffAnswerElement(
+            NodesAnswerElement before,
             NodesAnswerElement after) {
          _before = before;
          _after = after;
@@ -445,7 +449,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          for (String node : commonNodes) {
             Configuration before = _before._nodes.get(node);
             Configuration after = _after._nodes.get(node);
-            ConfigurationDiff currentDiff = new ConfigurationDiff(before,
+            ConfigurationDiff currentDiff = new ConfigurationDiff(
+                  before,
                   after);
             if (!currentDiff.isEmpty()) {
                _configDiff.put(node, currentDiff);
@@ -519,6 +524,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs the configuration of nodes in the network.
     * <p>
@@ -538,7 +544,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     *           summarized view should be output. Default is True.
     *
     * @example bf_answer("Nodes", nodeType=["bgp"], nodeRegex="as1.*",
-    *          summary=False) Outputs the full configuration of all nodes whose
+    *summary=False) Outputs the full configuration of all nodes whose
     *          names begin with "as1" and run BGP.
     */
    public static class NodesQuestion extends Question {

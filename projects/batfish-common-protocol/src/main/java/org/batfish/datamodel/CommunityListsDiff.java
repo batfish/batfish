@@ -9,7 +9,8 @@ public class CommunityListsDiff extends ConfigDiffElement {
    public CommunityListsDiff() {
    }
 
-   public CommunityListsDiff(NavigableMap<String, CommunityList> before,
+   public CommunityListsDiff(
+         NavigableMap<String, CommunityList> before,
          NavigableMap<String, CommunityList> after) {
       super(before, after, false);
    }

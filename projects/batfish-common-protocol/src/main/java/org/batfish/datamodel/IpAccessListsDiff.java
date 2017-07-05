@@ -15,10 +15,12 @@ public class IpAccessListsDiff extends ConfigDiffElement {
    public IpAccessListsDiff() {
    }
 
-   public IpAccessListsDiff(NavigableMap<String, IpAccessList> before,
+   public IpAccessListsDiff(
+         NavigableMap<String, IpAccessList> before,
          NavigableMap<String, IpAccessList> after) {
       super(before.keySet(), after.keySet());
-      _seq = Pattern.compile("(Seq [0-9]+) (.*)",
+      _seq = Pattern.compile(
+            "(Seq [0-9]+) (.*)",
             Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
       for (String name : super.common()) {
          if (before.get(name).unorderedEqual(after.get(name))) {
@@ -31,7 +33,8 @@ public class IpAccessListsDiff extends ConfigDiffElement {
       }
    }
 
-   private void genDiffInfo(NavigableMap<String, IpAccessList> before,
+   private void genDiffInfo(
+         NavigableMap<String, IpAccessList> before,
          NavigableMap<String, IpAccessList> after, String name) {
       Set<String> beforeNames = new TreeSet<>();
       Set<String> afterNames = new TreeSet<>();

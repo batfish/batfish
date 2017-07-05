@@ -43,7 +43,7 @@ public class JsonExternalBgpAdvertisementPlugin
                JSONObject announcement = new JSONObject();
                announcement.put("@id", index);
                JSONObject announcementSrc = announcements.getJSONObject(index);
-               for (Iterator<?> i = announcementSrc.keys(); i.hasNext();) {
+               for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
                   String key = (String) i.next();
                   if (!key.equals("@id")) {
                      announcement.put(key, announcementSrc.get(key));

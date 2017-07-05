@@ -9,7 +9,9 @@ public abstract class Expr {
 
    public Set<String> getRelations() {
       return Collections.emptySet();
-   };
+   }
+
+   ;
 
    public Set<String> getVariables() {
       return Collections.emptySet();

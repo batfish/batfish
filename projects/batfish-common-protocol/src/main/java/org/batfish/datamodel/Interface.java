@@ -214,7 +214,8 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
-   public static InterfaceType computeInterfaceType(String name,
+   public static InterfaceType computeInterfaceType(
+         String name,
          ConfigurationFormat format) {
       switch (format) {
       case ALCATEL_AOS:
@@ -406,7 +407,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private void computeInterfaceType() {
       if ((_key != null) && (_owner != null)) {
-         _interfaceType = computeInterfaceType(_key,
+         _interfaceType = computeInterfaceType(
+               _key,
                _owner.getConfigurationFormat());
       }
    }
@@ -438,12 +440,14 @@ public final class Interface extends ComparableStructure<String> {
       }
       // we check ACLs for name match only -- full ACL diff can be done
       // elsewhere.
-      if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(),
+      if (!IpAccessList.bothNullOrSameName(
+            this.getInboundFilter(),
             other.getInboundFilter())) {
          return false;
       }
 
-      if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(),
+      if (!IpAccessList.bothNullOrSameName(
+            this.getIncomingFilter(),
             other.getIncomingFilter())) {
          return false;
       }
@@ -461,7 +465,8 @@ public final class Interface extends ComparableStructure<String> {
       }
       // TODO: check OSPF settings for equality.
 
-      if (!IpAccessList.bothNullOrSameName(this._outgoingFilter,
+      if (!IpAccessList.bothNullOrSameName(
+            this._outgoingFilter,
             other._outgoingFilter)) {
          return false;
       }
@@ -470,12 +475,14 @@ public final class Interface extends ComparableStructure<String> {
          return false;
       }
 
-      if (!CommonUtil.bothNullOrEqual(this._routingPolicy,
+      if (!CommonUtil.bothNullOrEqual(
+            this._routingPolicy,
             other._routingPolicy)) {
          return false;
       }
 
-      if (!CommonUtil.bothNullOrEqual(this._switchportMode,
+      if (!CommonUtil.bothNullOrEqual(
+            this._switchportMode,
             other._switchportMode)) {
          return false;
       }

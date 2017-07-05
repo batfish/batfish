@@ -44,7 +44,8 @@ public class ExtendedAccessListLine implements Serializable {
 
    private final List<TcpFlags> _tcpFlags;
 
-   public ExtendedAccessListLine(String name, LineAction action,
+   public ExtendedAccessListLine(
+         String name, LineAction action,
          IpProtocol protocol, IpWildcard srcIpWildcard, String srcAddressGroup,
          IpWildcard dstIpWildcard, String dstAddressGroup,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,

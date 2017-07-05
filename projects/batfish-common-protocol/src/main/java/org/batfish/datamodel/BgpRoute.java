@@ -144,7 +144,8 @@ public class BgpRoute extends AbstractRoute {
 
    private static final String ORIGINATOR_IP_VAR = "originatorIp";
 
-   private static final String RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR = "receivedFromRouteReflectorClient";
+   private static final String RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR =
+         "receivedFromRouteReflectorClient";
 
    /**
     *
@@ -182,7 +183,8 @@ public class BgpRoute extends AbstractRoute {
    private final int _weight;
 
    @JsonCreator
-   public BgpRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+   public BgpRoute(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
          @JsonProperty(AS_PATH_VAR) AsPath asPath,

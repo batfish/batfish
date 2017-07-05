@@ -18,14 +18,16 @@ public class RoutePolicyBooleanAsPathNeighborIs extends RoutePolicyBoolean {
 
    private List<SubRangeExpr> _range;
 
-   public RoutePolicyBooleanAsPathNeighborIs(List<SubRangeExpr> range,
+   public RoutePolicyBooleanAsPathNeighborIs(
+         List<SubRangeExpr> range,
          boolean exact) {
       _range = range;
       _exact = exact;
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new NeighborIsAsPath(_range, _exact);
    }

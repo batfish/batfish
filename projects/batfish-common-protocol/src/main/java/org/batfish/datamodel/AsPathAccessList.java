@@ -36,7 +36,8 @@ public final class AsPathAccessList extends ComparableStructure<String>
    }
 
    @JsonCreator
-   public AsPathAccessList(@JsonProperty(NAME_VAR) String name,
+   public AsPathAccessList(
+         @JsonProperty(NAME_VAR) String name,
          @JsonProperty(LINES_VAR) List<AsPathAccessListLine> lines) {
       super(name);
       _lines = lines;

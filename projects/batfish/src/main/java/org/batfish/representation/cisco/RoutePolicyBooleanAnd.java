@@ -14,7 +14,8 @@ public class RoutePolicyBooleanAnd extends RoutePolicyBoolean {
 
    private RoutePolicyBoolean _right;
 
-   public RoutePolicyBooleanAnd(RoutePolicyBoolean left,
+   public RoutePolicyBooleanAnd(
+         RoutePolicyBoolean left,
          RoutePolicyBoolean right) {
       _left = left;
       _right = right;
@@ -29,7 +30,8 @@ public class RoutePolicyBooleanAnd extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       Conjunction conj = new Conjunction();
       BooleanExpr left = _left.toBooleanExpr(cc, c, w);

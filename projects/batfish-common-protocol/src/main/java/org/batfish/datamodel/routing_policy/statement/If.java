@@ -141,7 +141,7 @@ public class If extends Statement {
       }
       else if (simpleTrueStatements.size() == 0
             && simpleFalseStatements.size() == 0) {
-         return Collections.<Statement> emptyList();
+         return Collections.<Statement>emptyList();
       }
       else {
          If simple = new If();

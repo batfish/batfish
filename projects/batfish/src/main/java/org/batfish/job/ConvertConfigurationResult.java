@@ -19,13 +19,15 @@ public class ConvertConfigurationResult extends
 
    private Warnings _warnings;
 
-   public ConvertConfigurationResult(long elapsedTime,
+   public ConvertConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, String name, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _name = name;
    }
 
-   public ConvertConfigurationResult(long elapsedTime,
+   public ConvertConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Warnings warnings, String name,
          Map<String, Configuration> configurations,
          ConvertConfigurationAnswerElement answerElement) {
@@ -49,7 +51,8 @@ public class ConvertConfigurationResult extends
    }
 
    @Override
-   public void applyTo(Map<String, Configuration> configurations,
+   public void applyTo(
+         Map<String, Configuration> configurations,
          BatfishLogger logger,
          ConvertConfigurationAnswerElement answerElement) {
       appendHistory(logger);

@@ -78,7 +78,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
          NodesQuestion nodesQuestion = new NodesQuestion();
          nodesQuestion.setSummary(false);
-         NodesAnswerer nodesAnswerer = new NodesAnswerer(nodesQuestion,
+         NodesAnswerer nodesAnswerer = new NodesAnswerer(
+               nodesQuestion,
                _batfish);
          AnswerElement nodesAnswer = nodesAnswerer.answer();
          BatfishObjectMapper mapper = new BatfishObjectMapper();
@@ -96,7 +97,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          for (int i = 0; i < paths.size(); i++) {
             indices.add(i);
          }
-         AtomicInteger completed = _batfish.newBatch("NodesPath queries",
+         AtomicInteger completed = _batfish.newBatch(
+               "NodesPath queries",
                indices.size());
          indices.parallelStream().forEach(i -> {
             JsonPathQuery nodesPath = paths.get(i);
@@ -132,7 +134,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                prefixes = JsonNodeFactory.instance.arrayNode();
             }
             catch (Exception e) {
-               throw new BatfishException("Error reading JSON path: " + path,
+               throw new BatfishException(
+                     "Error reading JSON path: " + path,
                      e);
             }
             int numResults = prefixes.size();
@@ -153,7 +156,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   }
                   ConcreteJsonPath concretePath = new ConcreteJsonPath(
                         prefixStr);
-                  result.put(concretePath.toString(),
+                  result.put(
+                        concretePath.toString(),
                         new JsonPathResultEntry(concretePath, suffix));
                }
                nodePathResult.setResult(result);
@@ -181,7 +185,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          NodesPathAnswerElement before = beforeAnswerer.answer();
          _batfish.popEnvironment();
          _batfish.pushDeltaEnvironment();
-         NodesPathAnswerer afterAnswerer = (NodesPathAnswerer) create(_question,
+         NodesPathAnswerer afterAnswerer = (NodesPathAnswerer) create(
+               _question,
                _batfish);
          NodesPathAnswerElement after = afterAnswerer.answer();
          _batfish.popEnvironment();
@@ -197,13 +202,15 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       public NodesPathDiffAnswerElement() {
       }
 
-      public NodesPathDiffAnswerElement(NodesPathAnswerElement before,
+      public NodesPathDiffAnswerElement(
+            NodesPathAnswerElement before,
             NodesPathAnswerElement after) {
          _results = new TreeMap<>();
          for (Integer index : before._results.keySet()) {
             JsonPathResult nprBefore = before._results.get(index);
             JsonPathResult nprAfter = after._results.get(index);
-            JsonPathDiffResult diff = new JsonPathDiffResult(nprBefore,
+            JsonPathDiffResult diff = new JsonPathDiffResult(
+                  nprBefore,
                   nprAfter);
             _results.put(index, diff);
          }
@@ -226,6 +233,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Runs JsonPath <https://github.com/jayway/JsonPath> queries on the JSON
     * data model that is the output of the 'Nodes' question.
@@ -256,7 +264,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     *         If true, then instead of outputting each matching path, only the
     *         count of matching paths will be output.
     *
-    * @example bf_answer("NodesPath",paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu!=1500)].mtu"}])
+    * @example bf_answer("NodesPath", paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu!=1500)].mtu"}])
     *          Return all interfaces with MTUs not equal to 1500
     *
     */

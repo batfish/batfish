@@ -78,7 +78,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
    }
 
    private IpAccessList toIpAccessList(String aclName, IptablesChain chain) {
-      IpAccessList acl = new IpAccessList(aclName,
+      IpAccessList acl = new IpAccessList(
+            aclName,
             new LinkedList<IpAccessListLine>());
 
       for (IptablesRule rule : chain.getRules()) {

@@ -185,7 +185,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _roles = new RoleSet();
       _routeFilters = new TreeMap<>();
       _routingInstances = new TreeMap<>();
-      _routingInstances.put(Configuration.DEFAULT_VRF_NAME,
+      _routingInstances.put(
+            Configuration.DEFAULT_VRF_NAME,
             _defaultRoutingInstance);
       _syslogHosts = new TreeSet<>();
       _tacplusServers = new TreeSet<>();
@@ -294,13 +295,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   PolicyStatement importPolicy = _policyStatements
                         .get(importPolicyName);
                   if (importPolicy == null) {
-                     undefined(JuniperStructureType.POLICY_STATEMENT,
+                     undefined(
+                           JuniperStructureType.POLICY_STATEMENT,
                            importPolicyName,
                            JuniperStructureUsage.BGP_IMPORT_POLICY,
                            importPolicyLine);
                   }
                   else {
-                     setPolicyStatementReferent(importPolicyName,
+                     setPolicyStatementReferent(
+                           importPolicyName,
                            ig.getImportPolicies(),
                            "BGP import policy for neighbor: "
                                  + ig.getRemoteAddress().toString());
@@ -340,13 +343,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   PolicyStatement exportPolicy = _policyStatements
                         .get(exportPolicyName);
                   if (exportPolicy == null) {
-                     undefined(JuniperStructureType.POLICY_STATEMENT,
+                     undefined(
+                           JuniperStructureType.POLICY_STATEMENT,
                            exportPolicyName,
                            JuniperStructureUsage.BGP_EXPORT_POLICY,
                            exportPolicyLine);
                   }
                   else {
-                     setPolicyStatementReferent(exportPolicyName,
+                     setPolicyStatementReferent(
+                           exportPolicyName,
                            ig.getExportPolicies(),
                            "BGP export policy for neighbor: "
                                  + ig.getRemoteAddress().toString());
@@ -418,7 +423,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
          if (localAddress == null) {
             // assign the ip of the interface that is likely connected to this
             // peer
-            outerloop: for (org.batfish.datamodel.Interface iface : vrf
+            outerloop:
+            for (org.batfish.datamodel.Interface iface : vrf
                   .getInterfaces().values()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
                   if (prefix.contains(ip)) {
@@ -455,7 +461,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return proc;
    }
 
-   private IsisProcess createIsisProcess(RoutingInstance routingInstance,
+   private IsisProcess createIsisProcess(
+         RoutingInstance routingInstance,
          IsoAddress netAddress) {
       IsisProcess newProc = new IsisProcess();
       // newProc.setNetAddress(netAddress);
@@ -494,7 +501,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String vrfName = routingInstance.getName();
       // export policies
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
-      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName,
+      RoutingPolicy ospfExportPolicy = new RoutingPolicy(
+            ospfExportPolicyName,
             _c);
       _c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
       newProc.setExportPolicy(ospfExportPolicyName);
@@ -515,13 +523,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
                PolicyStatement exportPolicy = _policyStatements
                      .get(exportPolicyName);
                if (exportPolicy == null) {
-                  undefined(JuniperStructureType.POLICY_STATEMENT,
+                  undefined(
+                        JuniperStructureType.POLICY_STATEMENT,
                         exportPolicyName,
                         JuniperStructureUsage.OSPF_EXPORT_POLICY,
                         exportPolicyLine);
                }
                else {
-                  setPolicyStatementReferent(exportPolicyName,
+                  setPolicyStatementReferent(
+                        exportPolicyName,
                         routingInstance.getOspfExportPolicies(),
                         "OSPF export policies");
                   CallExpr callPolicy = new CallExpr(exportPolicyName);
@@ -677,7 +687,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // set up default export policy (accept bgp routes)
       RoutingPolicy defaultBgpExportPolicy = new RoutingPolicy(
             DEFAULT_BGP_EXPORT_POLICY_NAME, _c);
-      _c.getRoutingPolicies().put(DEFAULT_BGP_EXPORT_POLICY_NAME,
+      _c.getRoutingPolicies().put(
+            DEFAULT_BGP_EXPORT_POLICY_NAME,
             defaultBgpExportPolicy);
 
       If defaultBgpExportPolicyConditional = new If();
@@ -705,7 +716,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // set up default import policy (accept all routes)
       RoutingPolicy defaultBgpImportPolicy = new RoutingPolicy(
             DEFAULT_BGP_IMPORT_POLICY_NAME, _c);
-      _c.getRoutingPolicies().put(DEFAULT_BGP_IMPORT_POLICY_NAME,
+      _c.getRoutingPolicies().put(
+            DEFAULT_BGP_IMPORT_POLICY_NAME,
             defaultBgpImportPolicy);
       PsThenAccept.INSTANCE.applyTo(defaultBgpImportPolicy.getStatements(),
             this, _c, _w);
@@ -797,7 +809,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _defaultRoutingInstance.setHostname(hostname);
    }
 
-   private void setPolicyStatementReferent(String policyName, Object referer,
+   private void setPolicyStatementReferent(
+         String policyName, Object referer,
          String description) {
       PolicyStatement policy = _policyStatements.get(policyName);
       if (policy == null) {
@@ -815,7 +828,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                setPolicyStatementReferent(subPolicyName, referer, description);
             }
             else if (from instanceof PsFromPolicyStatementConjunction) {
-               PsFromPolicyStatementConjunction fromPolicyStatementConjunction = (PsFromPolicyStatementConjunction) from;
+               PsFromPolicyStatementConjunction fromPolicyStatementConjunction =
+                     (PsFromPolicyStatementConjunction) from;
                for (String subPolicyName : fromPolicyStatementConjunction
                      .getConjuncts()) {
                   setPolicyStatementReferent(subPolicyName, referer,
@@ -862,7 +876,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RouteFilterList rfList = new RouteFilterList(rflName);
       rfList.addLine(new org.batfish.datamodel.RouteFilterLine(
             LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32)));
-      org.batfish.datamodel.GeneratedRoute.Builder newRoute = new org.batfish.datamodel.GeneratedRoute.Builder();
+      org.batfish.datamodel.GeneratedRoute.Builder newRoute =
+            new org.batfish.datamodel.GeneratedRoute.Builder();
       newRoute.setNetwork(prefix);
       newRoute.setAdmin(administrativeCost);
       newRoute.setDiscard(true);
@@ -879,8 +894,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (CommunityListLine line : cl.getLines()) {
          String regex = line.getRegex();
          String javaRegex = communityRegexToJavaRegex(regex);
-         org.batfish.datamodel.CommunityListLine newLine = new org.batfish.datamodel.CommunityListLine(
-               LineAction.ACCEPT, javaRegex);
+         org.batfish.datamodel.CommunityListLine newLine =
+               new org.batfish.datamodel.CommunityListLine(
+                     LineAction.ACCEPT, javaRegex);
          newLines.add(newLine);
       }
       org.batfish.datamodel.CommunityList newCl = new org.batfish.datamodel.CommunityList(
@@ -930,7 +946,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             }
          });
       }
-      org.batfish.datamodel.GeneratedRoute.Builder newRoute = new org.batfish.datamodel.GeneratedRoute.Builder();
+      org.batfish.datamodel.GeneratedRoute.Builder newRoute =
+            new org.batfish.datamodel.GeneratedRoute.Builder();
       newRoute.setNetwork(prefix);
       newRoute.setAdmin(administrativeCost);
       newRoute.setMetric(metric);
@@ -980,7 +997,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY, ikePolicyLine);
       }
       else {
-         _ikePolicies.get(ikePolicyName).getReferers().put(oldIkeGateway,
+         _ikePolicies.get(ikePolicyName).getReferers().put(
+               oldIkeGateway,
                "IKE policy for IKE gateway: " + oldIkeGateway);
          newIkeGateway.setIkePolicy(newIkePolicy);
       }
@@ -1037,7 +1055,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             if (zoneInboundInterfaceFilter != null) {
                String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter
                      .getName();
-               zoneInboundInterfaceFilter.getReferers().put(iface,
+               zoneInboundInterfaceFilter.getReferers().put(
+                     iface,
                      "Interface: '" + iface.getName()
                            + "' refers to inbound filter for interface in zone : '"
                            + zoneName + "'");
@@ -1049,7 +1068,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                // filter for zone
                FirewallFilter zoneInboundFilter = zone.getInboundFilter();
                String zoneInboundFilterName = zoneInboundFilter.getName();
-               zoneInboundFilter.getReferers().put(iface,
+               zoneInboundFilter.getReferers().put(
+                     iface,
                      "Interface: '" + iface.getName()
                            + "' refers to inbound filter for zone : '"
                            + zoneName + "'");
@@ -1069,7 +1089,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
          }
          else {
             FirewallFilter inFilter = _filters.get(inAclName);
-            inFilter.getReferers().put(iface,
+            inFilter.getReferers().put(
+                  iface,
                   "Incoming ACL for interface: " + iface.getName());
             newIface.setIncomingFilter(inAcl);
             if (inFilter.getRoutingPolicy()) {
@@ -1094,7 +1115,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   JuniperStructureUsage.INTERFACE_OUTGOING_FILTER, outAclLine);
          }
          else {
-            _filters.get(outAclName).getReferers().put(iface,
+            _filters.get(outAclName).getReferers().put(
+                  iface,
                   "Outgoing ACL for interface: " + iface.getName());
             newIface.setOutgoingFilter(outAcl);
          }
@@ -1231,7 +1253,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                IpsecProposal ipsecProposal = _c.getIpsecProposals()
                      .get(ipsecProposalName);
                if (ipsecProposal == null) {
-                  undefined(JuniperStructureType.IPSEC_PROPOSAL,
+                  undefined(
+                        JuniperStructureType.IPSEC_PROPOSAL,
                         ipsecProposalName,
                         JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL,
                         ipsecProposalLine);
@@ -1240,7 +1263,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   _ipsecProposals.get(ipsecProposalName).getReferers().put(
                         oldIpsecPolicy,
                         "IPSEC proposal for IPSEC policy: " + oldIpsecPolicy);
-                  newIpsecPolicy.getProposals().put(ipsecProposalName,
+                  newIpsecPolicy.getProposals().put(
+                        ipsecProposalName,
                         ipsecProposal);
                }
             });
@@ -1269,7 +1293,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   bindInterfaceLine);
          }
          else {
-            oldBindInterface.getReferers().put(oldIpsecVpn,
+            oldBindInterface.getReferers().put(
+                  oldIpsecVpn,
                   "Bind interface for IPSEC VPN: " + name);
             newIpsecVpn.setBindInterface(newBindInterface);
          }
@@ -1289,7 +1314,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY, ikeGatewayLine);
          }
          else {
-            _ikeGateways.get(ikeGatewayName).getReferers().put(oldIpsecVpn,
+            _ikeGateways.get(ikeGatewayName).getReferers().put(
+                  oldIpsecVpn,
                   "IKE gateway for IPSEC VPN: " + name);
             newIpsecVpn.setIkeGateway(ikeGateway);
          }
@@ -1310,7 +1336,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   ipsecPolicyLine);
          }
          else {
-            _ipsecPolicies.get(ipsecPolicyName).getReferers().put(oldIpsecVpn,
+            _ipsecPolicies.get(ipsecPolicyName).getReferers().put(
+                  oldIpsecVpn,
                   "IPSEC policy for IPSEC VPN: " + name);
             newIpsecVpn.setIpsecPolicy(ipsecPolicy);
          }
@@ -1450,7 +1477,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                               lineListName);
                         line.applyTo(lineSpecificList);
                         actionLineCounter++;
-                        _c.getRouteFilterLists().put(lineListName,
+                        _c.getRouteFilterLists().put(
+                              lineListName,
                               lineSpecificList);
                         If lineSpecificIfStatement = new If();
                         String lineSpecificClauseName = routeFilterName
@@ -1681,7 +1709,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
          org.batfish.datamodel.Vrf vrf = newUnitIface.getVrf();
          String vrfName = vrf.getName();
          vrf.getInterfaces().put(unitName, newUnitIface);
-         _routingInstances.get(vrfName).getInterfaces().put(unitName,
+         _routingInstances.get(vrfName).getInterfaces().put(
+               unitName,
                unitIface);
       }
 
@@ -1769,7 +1798,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   int listLine = community.getAccessListLine();
                   PrefixList prefixList = _prefixLists.get(listName);
                   if (prefixList != null) {
-                     prefixList.getReferers().put(community,
+                     prefixList.getReferers().put(
+                           community,
                            "prefix-list for community: " + community.getName());
                   }
                   else {
@@ -1852,7 +1882,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   _defaultRoutingInstance, "Forwarding-table export policy");
          }
          else {
-            undefined(JuniperStructureType.POLICY_STATEMENT,
+            undefined(
+                  JuniperStructureType.POLICY_STATEMENT,
                   forwardingTableExportPolicyName,
                   JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
                   forwardingTableExportPolicyLine);
@@ -1879,7 +1910,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       FirewallFilter inboundFilter = zone.getInboundFilter();
       IpAccessList inboundFilterList = null;
       if (inboundFilter != null) {
-         inboundFilter.getReferers().put(zone,
+         inboundFilter.getReferers().put(
+               zone,
                "inbound filter for zone: '" + zone.getName() + "'");
          inboundFilterList = _c.getIpAccessLists().get(inboundFilter.getName());
       }
@@ -1887,7 +1919,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       FirewallFilter fromHostFilter = zone.getFromHostFilter();
       IpAccessList fromHostFilterList = null;
       if (fromHostFilter != null) {
-         fromHostFilter.getReferers().put(zone,
+         fromHostFilter.getReferers().put(
+               zone,
                "filter from junos-host to zone: '" + zone.getName() + "'");
          fromHostFilterList = _c.getIpAccessLists()
                .get(fromHostFilter.getName());
@@ -1896,7 +1929,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       FirewallFilter toHostFilter = zone.getToHostFilter();
       IpAccessList toHostFilterList = null;
       if (toHostFilter != null) {
-         toHostFilter.getReferers().put(zone,
+         toHostFilter.getReferers().put(
+               zone,
                "filter from zone: '" + zone.getName() + "' to junos-host");
          toHostFilterList = _c.getIpAccessLists().get(toHostFilter.getName());
       }
@@ -1909,7 +1943,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
          Interface inboundInterface = e.getKey();
          FirewallFilter inboundInterfaceFilter = e.getValue();
          String inboundInterfaceName = inboundInterface.getName();
-         inboundInterfaceFilter.getReferers().put(zone,
+         inboundInterfaceFilter.getReferers().put(
+               zone,
                "inbound interface filter for zone: '" + zone.getName()
                      + "', interface: '" + inboundInterfaceName + "'");
          String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
@@ -1917,7 +1952,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                .get(inboundInterfaceName);
          IpAccessList inboundInterfaceFilterList = _c.getIpAccessLists()
                .get(inboundInterfaceFilterName);
-         newZone.getInboundInterfaceFilters().put(newIface.getName(),
+         newZone.getInboundInterfaceFilters().put(
+               newIface.getName(),
                inboundInterfaceFilterList);
       }
 
@@ -1925,7 +1961,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .entrySet()) {
          String toZoneName = e.getKey();
          FirewallFilter toZoneFilter = e.getValue();
-         toZoneFilter.getReferers().put(zone,
+         toZoneFilter.getReferers().put(
+               zone,
                "cross-zone firewall filter from zone: '" + zone.getName()
                      + "' to zone: '" + toZoneName + "'");
          String toZoneFilterName = toZoneFilter.getName();
@@ -1949,7 +1986,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
          else {
             inboundInterfaceFilterList = inboundFilterList;
          }
-         newZone.getInboundInterfaceFilters().put(newIface.getName(),
+         newZone.getInboundInterfaceFilters().put(
+               newIface.getName(),
                inboundInterfaceFilterList);
       }
 
@@ -1959,7 +1997,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
    private void warnAndDisableUnreferencedStInterfaces() {
       _routingInstances.forEach((riName, ri) -> {
          ri.getInterfaces().forEach((name, iface) -> {
-            if (org.batfish.datamodel.Interface.computeInterfaceType(name,
+            if (org.batfish.datamodel.Interface.computeInterfaceType(
+                  name,
                   _vendor) == InterfaceType.VPN && iface.isUnused()) {
                unused(JuniperStructureType.SECURE_TUNNEL_INTERFACE, name,
                      iface.getDefinitionLine());

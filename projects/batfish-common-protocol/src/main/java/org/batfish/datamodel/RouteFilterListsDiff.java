@@ -12,7 +12,8 @@ public class RouteFilterListsDiff extends ConfigDiffElement {
    public RouteFilterListsDiff() {
    }
 
-   public RouteFilterListsDiff(NavigableMap<String, RouteFilterList> before,
+   public RouteFilterListsDiff(
+         NavigableMap<String, RouteFilterList> before,
          NavigableMap<String, RouteFilterList> after) {
       super(before.keySet(), after.keySet());
       for (String name : super.common()) {
@@ -26,7 +27,8 @@ public class RouteFilterListsDiff extends ConfigDiffElement {
       }
    }
 
-   private void genDiffInfo(NavigableMap<String, RouteFilterList> before,
+   private void genDiffInfo(
+         NavigableMap<String, RouteFilterList> before,
          NavigableMap<String, RouteFilterList> after, String name) {
       Set<String> beforeNames = new TreeSet<>();
       Set<String> afterNames = new TreeSet<>();

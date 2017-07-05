@@ -25,7 +25,8 @@ public class StandardIpv6AccessListLine implements Serializable {
 
    private final String _name;
 
-   public StandardIpv6AccessListLine(String name, LineAction action,
+   public StandardIpv6AccessListLine(
+         String name, LineAction action,
          Ip6Wildcard ipWildcard, Set<Integer> dscps, Set<Integer> ecns) {
       _name = name;
       _action = action;
@@ -49,9 +50,9 @@ public class StandardIpv6AccessListLine implements Serializable {
    public ExtendedIpv6AccessListLine toExtendedIpv6AccessListLine() {
       return new ExtendedIpv6AccessListLine(_name, _action, IpProtocol.IP,
             _ipWildcard, null, Ip6Wildcard.ANY, null,
-            Collections.<SubRange> emptyList(),
-            Collections.<SubRange> emptyList(), _dscps, _ecns, null, null,
-            EnumSet.noneOf(State.class), Collections.<TcpFlags> emptyList());
+            Collections.<SubRange>emptyList(),
+            Collections.<SubRange>emptyList(), _dscps, _ecns, null, null,
+            EnumSet.noneOf(State.class), Collections.<TcpFlags>emptyList());
    }
 
 }

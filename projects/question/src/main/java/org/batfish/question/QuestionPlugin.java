@@ -9,7 +9,8 @@ import org.batfish.datamodel.questions.Question;
 
 public abstract class QuestionPlugin extends Plugin implements IQuestionPlugin {
 
-   protected abstract Answerer createAnswerer(Question question,
+   protected abstract Answerer createAnswerer(
+         Question question,
          IBatfish batfish);
 
    protected abstract Question createQuestion();

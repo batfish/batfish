@@ -8,8 +8,8 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 public class SetTag extends Statement {
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private IntExpr _tag;

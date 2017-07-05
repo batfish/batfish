@@ -17,12 +17,14 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @Override
       public InitInfoAnswerElement answer() {
          InitInfoQuestion question = (InitInfoQuestion) _question;
-         return _batfish.initInfo(question._summary,
+         return _batfish.initInfo(
+               question._summary,
                question._environmentRoutes);
       }
    }
 
    // <question_page_comment>
+
    /**
     * Outputs results of test-rig initialization.
     *
@@ -83,7 +85,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected InitInfoAnswerer createAnswerer(Question question,
+   protected InitInfoAnswerer createAnswerer(
+         Question question,
          IBatfish batfish) {
       return new InitInfoAnswerer(question, batfish);
    }

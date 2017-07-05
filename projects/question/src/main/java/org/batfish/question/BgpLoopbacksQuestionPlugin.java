@@ -39,7 +39,8 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
          _missing = new TreeMap<>();
       }
 
-      public void add(SortedMap<String, SortedSet<String>> map, String hostname,
+      public void add(
+            SortedMap<String, SortedSet<String>> map, String hostname,
             String interfaceName) {
          SortedSet<String> interfacesByHostname = map.get(hostname);
          if (interfacesByHostname == null) {
@@ -58,7 +59,8 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
          return _missing;
       }
 
-      private Object interfacesToString(String indent, String header,
+      private Object interfacesToString(
+            String indent, String header,
             SortedMap<String, SortedSet<String>> interfaces) {
          StringBuilder sb = new StringBuilder(indent + header + "\n");
          for (String node : interfaces.keySet()) {
@@ -153,8 +155,10 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
                   if (iface.isLoopback(c.getConfigurationFormat())) {
                      boolean exported = false;
 
-                     outerloop: for (Prefix prefix : iface.getAllPrefixes()) {
-                        ConnectedRoute route = new ConnectedRoute(prefix,
+                     outerloop:
+                     for (Prefix prefix : iface.getAllPrefixes()) {
+                        ConnectedRoute route = new ConnectedRoute(
+                              prefix,
                               interfaceName);
                         for (RoutingPolicy exportPolicy : exportPolicies) {
                            if (exportPolicy.process(route,
@@ -183,6 +187,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists which loopback interfaces are being announced into BGP.
     * <p>

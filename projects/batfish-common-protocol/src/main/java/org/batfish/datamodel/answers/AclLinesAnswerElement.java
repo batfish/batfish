@@ -28,7 +28,8 @@ public class AclLinesAnswerElement implements AnswerElement {
       private final String _name;
 
       @JsonCreator
-      public AclReachabilityEntry(@JsonProperty(INDEX_VAR) int index,
+      public AclReachabilityEntry(
+            @JsonProperty(INDEX_VAR) int index,
             @JsonProperty(NAME_VAR) String name) {
          _index = index;
          _name = name;
@@ -110,7 +111,8 @@ public class AclLinesAnswerElement implements AnswerElement {
       _unreachableLines = new TreeMap<>();
    }
 
-   public void addEquivalenceClass(String aclName, String hostname,
+   public void addEquivalenceClass(
+         String aclName, String hostname,
          SortedSet<String> eqClassNodes) {
       SortedMap<String, SortedSet<String>> byRep = _equivalenceClasses
             .get(aclName);
@@ -148,12 +150,14 @@ public class AclLinesAnswerElement implements AnswerElement {
       linesByAcl.add(entry);
    }
 
-   public void addReachableLine(String hostname, IpAccessList ipAccessList,
+   public void addReachableLine(
+         String hostname, IpAccessList ipAccessList,
          AclReachabilityEntry entry) {
       addLine(_reachableLines, hostname, ipAccessList, entry);
    }
 
-   public void addUnreachableLine(String hostname, IpAccessList ipAccessList,
+   public void addUnreachableLine(
+         String hostname, IpAccessList ipAccessList,
          AclReachabilityEntry entry) {
       addLine(_unreachableLines, hostname, ipAccessList, entry);
    }

@@ -33,7 +33,8 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
        * juniper)
        */
 
-      res = Integer.compare(getAggregatePreference(lhs.getProtocol()),
+      res = Integer.compare(
+            getAggregatePreference(lhs.getProtocol()),
             getAggregatePreference(rhs.getProtocol()));
       if (res != 0) {
          return res;
@@ -50,7 +51,8 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
       /*
        * origin type (IGP better than EGP, which is better than INCOMPLETE)
        */
-      res = Integer.compare(lhs.getOriginType().getPreference(),
+      res = Integer.compare(
+            lhs.getOriginType().getPreference(),
             rhs.getOriginType().getPreference());
 
       /*
@@ -68,7 +70,8 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
       /*
        * next prefer eBGP over iBGP
        */
-      res = Integer.compare(getTypeCost(rhs.getProtocol()),
+      res = Integer.compare(
+            getTypeCost(rhs.getProtocol()),
             getTypeCost(lhs.getProtocol()));
       if (res != 0) {
          return res;

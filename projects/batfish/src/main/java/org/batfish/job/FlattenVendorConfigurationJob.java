@@ -20,7 +20,8 @@ public class FlattenVendorConfigurationJob
 
    private Warnings _warnings;
 
-   public FlattenVendorConfigurationJob(Settings settings, String fileText,
+   public FlattenVendorConfigurationJob(
+         Settings settings, String fileText,
          Path inputFile, Path outputFile, Warnings warnings) {
       super(settings);
       _fileText = fileText;

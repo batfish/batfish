@@ -91,7 +91,8 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected CompositeAnswerer createAnswerer(Question question,
+   protected CompositeAnswerer createAnswerer(
+         Question question,
          IBatfish batfish) {
       return new CompositeAnswerer(question, batfish);
    }

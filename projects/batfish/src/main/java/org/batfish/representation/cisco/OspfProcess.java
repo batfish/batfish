@@ -90,7 +90,8 @@ public class OspfProcess extends ComparableStructure<String> {
             if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
                // since we have a match, we add the INTERFACE network, ignoring
                // the wildcard stuff from before
-               Prefix newOspfNetwork = new Prefix(intPrefix.getNetworkAddress(),
+               Prefix newOspfNetwork = new Prefix(
+                     intPrefix.getNetworkAddress(),
                      intPrefix.getPrefixLength());
                _networks.add(new OspfNetwork(newOspfNetwork, wn.getArea()));
                break;

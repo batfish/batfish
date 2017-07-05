@@ -108,7 +108,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                         .map(prefix -> prefix.getAddress())
                         .collect(Collectors.toSet()));
                   if (!ips.isEmpty()) {
-                     Ip lowestIp = ips.toArray(new Ip[] {})[0];
+                     Ip lowestIp = ips.toArray(new Ip[]{})[0];
                      flowBuilder.setSrcIp(lowestIp);
                   }
                   else {
@@ -132,6 +132,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Perform a traceroute.
     * <p>
@@ -196,7 +197,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     *           Details coming
     *
     * @example bf_answer("Traceroute", ingressNode="as2border1",
-    *          dstIp="2.128.0.101", dstPort=53, ipProtocol="UDP") Show the path
+    *dstIp="2.128.0.101", dstPort=53, ipProtocol="UDP") Show the path
     *          of a DNS packet (UDP to port 53) from as2border1
     */
    public static class TracerouteQuestion extends Question

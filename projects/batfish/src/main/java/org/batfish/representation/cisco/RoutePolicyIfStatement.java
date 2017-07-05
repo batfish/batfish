@@ -20,7 +20,8 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
 
    private List<RoutePolicyStatement> _stmtList;
 
-   public RoutePolicyIfStatement(RoutePolicyBoolean guard,
+   public RoutePolicyIfStatement(
+         RoutePolicyBoolean guard,
          List<RoutePolicyStatement> stmtList,
          List<RoutePolicyElseIfBlock> elseIfBlocks,
          RoutePolicyElseBlock elseBlock) {
@@ -35,7 +36,8 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       If mainIf = new If();
       mainIf.setGuard(_guard.toBooleanExpr(cc, c, w));

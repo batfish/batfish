@@ -25,9 +25,11 @@ public final class PsFromLocalPreference extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
-      return new MatchLocalPreference(IntComparator.EQ,
+      return new MatchLocalPreference(
+            IntComparator.EQ,
             new LiteralInt(_localPreference));
    }
 

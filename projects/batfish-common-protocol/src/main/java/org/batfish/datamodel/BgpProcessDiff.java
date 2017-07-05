@@ -28,7 +28,8 @@ public class BgpProcessDiff {
          _inAfterOnly = true;
       }
       else if (before != null && after != null) {
-         _neighborsDiff = new NeighborsDiff(before.getNeighbors(),
+         _neighborsDiff = new NeighborsDiff(
+               before.getNeighbors(),
                after.getNeighbors());
          if (_neighborsDiff.isEmpty()) {
             _neighborsDiff = null;

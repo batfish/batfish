@@ -33,7 +33,8 @@ public class IptablesMatch implements Serializable {
 
    private MatchType _matchType;
 
-   public IptablesMatch(boolean inverted, MatchType matchType,
+   public IptablesMatch(
+         boolean inverted, MatchType matchType,
          Object matchData) {
       _inverted = inverted;
       _matchType = matchType;

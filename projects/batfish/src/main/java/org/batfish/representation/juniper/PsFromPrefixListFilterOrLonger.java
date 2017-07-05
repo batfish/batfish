@@ -27,7 +27,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       PrefixList pl = jc.getPrefixLists().get(_prefixList);
       if (pl != null) {
@@ -52,7 +53,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
                c.getRouteFilterLists().put(orLongerListName, orLongerList);
             }
          }
-         return new MatchPrefixSet(new DestinationNetwork(),
+         return new MatchPrefixSet(
+               new DestinationNetwork(),
                new NamedPrefixSet(orLongerListName));
       }
       else {

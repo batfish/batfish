@@ -16,7 +16,8 @@ public class ErrorQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-         throw new BatfishException("error question debugging outer exception",
+         throw new BatfishException(
+               "error question debugging outer exception",
                new BatfishException(
                      "error question debugging inner exception"));
       }

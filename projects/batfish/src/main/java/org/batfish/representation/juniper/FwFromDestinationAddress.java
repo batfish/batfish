@@ -20,7 +20,8 @@ public final class FwFromDestinationAddress extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       line.getDstIps().add(new IpWildcard(_prefix));
    }

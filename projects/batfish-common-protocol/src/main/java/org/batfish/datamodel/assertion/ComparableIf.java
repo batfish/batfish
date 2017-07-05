@@ -8,7 +8,8 @@ public class ComparableIf implements ComparableExpr {
 
    private ComparableExpr _trueExpr;
 
-   public ComparableIf(BooleanExpr guard, ComparableExpr trueExpr,
+   public ComparableIf(
+         BooleanExpr guard, ComparableExpr trueExpr,
          ComparableExpr falseExpr) {
       _guard = guard;
       _trueExpr = trueExpr;

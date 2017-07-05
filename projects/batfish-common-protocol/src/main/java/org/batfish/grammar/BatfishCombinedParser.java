@@ -36,7 +36,8 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
    private final List<String> _warnings;
 
-   public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input,
+   public BatfishCombinedParser(
+         Class<P> pClass, Class<L> lClass, String input,
          GrammarSettings settings) {
       _settings = settings;
       _tokenModes = new ArrayList<>();
@@ -52,7 +53,8 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       catch (InstantiationException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException
             | NoSuchMethodException | SecurityException e) {
-         throw new BatfishException("Error constructing lexer using reflection",
+         throw new BatfishException(
+               "Error constructing lexer using reflection",
                e);
       }
       _lexer.initErrorListener(this);

@@ -13,7 +13,8 @@ public abstract class BatfishJob<R extends BatfishJobResult<?, ?>>
 
    public BatfishJob(Settings settings) {
       _settings = settings;
-      _logger = new BatfishLogger(_settings.getLogLevel(),
+      _logger = new BatfishLogger(
+            _settings.getLogLevel(),
             _settings.getTimestamp());
 
    }

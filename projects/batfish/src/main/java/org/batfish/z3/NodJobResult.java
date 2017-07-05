@@ -18,16 +18,18 @@ public class NodJobResult
 
    public NodJobResult(long elapsedTime, BatfishLoggerHistory history) {
       super(elapsedTime, history);
-      _flows = Collections.<Flow> emptySet();
+      _flows = Collections.<Flow>emptySet();
    }
 
-   public NodJobResult(long elapsedTime, BatfishLoggerHistory history,
+   public NodJobResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Set<Flow> flows) {
       super(elapsedTime, history);
       _flows = flows;
    }
 
-   public NodJobResult(long elapsedTime, BatfishLoggerHistory history,
+   public NodJobResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Throwable failureCause) {
       super(elapsedTime, history, failureCause);
    }
@@ -38,7 +40,8 @@ public class NodJobResult
    }
 
    @Override
-   public void applyTo(Set<Flow> flows, BatfishLogger logger,
+   public void applyTo(
+         Set<Flow> flows, BatfishLogger logger,
          NodAnswerElement answerElement) {
       flows.addAll(_flows);
    }

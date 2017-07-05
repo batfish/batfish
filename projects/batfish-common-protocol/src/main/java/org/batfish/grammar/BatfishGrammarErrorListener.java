@@ -17,7 +17,8 @@ public abstract class BatfishGrammarErrorListener
 
    protected BatfishSyntaxErrorHandler _syntaxErrorHandler;
 
-   public BatfishGrammarErrorListener(String grammarName,
+   public BatfishGrammarErrorListener(
+         String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       _grammarName = grammarName;
       _combinedParser = parser;
@@ -25,17 +26,20 @@ public abstract class BatfishGrammarErrorListener
    }
 
    @Override
-   public void reportAmbiguity(Parser arg0, DFA arg1, int arg2, int arg3,
+   public void reportAmbiguity(
+         Parser arg0, DFA arg1, int arg2, int arg3,
          boolean arg4, BitSet arg5, ATNConfigSet arg6) {
    }
 
    @Override
-   public void reportAttemptingFullContext(Parser arg0, DFA arg1, int arg2,
+   public void reportAttemptingFullContext(
+         Parser arg0, DFA arg1, int arg2,
          int arg3, BitSet arg4, ATNConfigSet arg5) {
    }
 
    @Override
-   public void reportContextSensitivity(Parser arg0, DFA arg1, int arg2,
+   public void reportContextSensitivity(
+         Parser arg0, DFA arg1, int arg2,
          int arg3, int arg4, ATNConfigSet arg5) {
    }
 

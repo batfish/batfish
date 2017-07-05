@@ -11,13 +11,15 @@ public class NodSatResult<Key>
 
    private final Map<Key, Boolean> _results;
 
-   public NodSatResult(long elapsedTime, BatfishLoggerHistory history,
+   public NodSatResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _results = null;
    }
 
-   public NodSatResult(Map<Key, Boolean> results, BatfishLoggerHistory history,
+   public NodSatResult(
+         Map<Key, Boolean> results, BatfishLoggerHistory history,
          long elapsedTime) {
       super(elapsedTime, history);
       _results = results;
@@ -29,7 +31,8 @@ public class NodSatResult<Key>
    }
 
    @Override
-   public void applyTo(Map<Key, Boolean> output, BatfishLogger logger,
+   public void applyTo(
+         Map<Key, Boolean> output, BatfishLogger logger,
          NodSatAnswerElement answerElement) {
       output.putAll(_results);
    }

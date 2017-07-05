@@ -43,7 +43,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
 
       private static final String MISMATCH_LINK_COST_VAR = "mismatchLinkCost";
 
-      private SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>> _allOspfNeighbors;
+      private SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>>
+            _allOspfNeighbors;
 
       private SortedMap<String, SortedMap<String, SortedSet<IpPair>>> _broken;
 
@@ -75,7 +76,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
             neighbors = new TreeSet<>();
             neighborsByVrf.put(vrf, neighbors);
          }
-         IpPair ipPair = new IpPair(ospfNeighbor.getLocalIp(),
+         IpPair ipPair = new IpPair(
+               ospfNeighbor.getLocalIp(),
                ospfNeighbor.getRemoteIp());
          neighbors.add(ipPair);
       }
@@ -83,8 +85,9 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       public void addToAll(
             SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>> neighborsByHostname,
             String hostname, String vrf, OspfNeighborSummary ospfNeighbor) {
-         SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>> neighborsByVrf = neighborsByHostname
-               .get(hostname);
+         SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>> neighborsByVrf =
+               neighborsByHostname
+                     .get(hostname);
          if (neighborsByVrf == null) {
             neighborsByVrf = new TreeMap<>();
             neighborsByHostname.put(hostname, neighborsByVrf);
@@ -95,7 +98,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
             neighborsByIp = new TreeMap<>();
             neighborsByVrf.put(vrf, neighborsByIp);
          }
-         IpPair ipPair = new IpPair(ospfNeighbor.getLocalIp(),
+         IpPair ipPair = new IpPair(
+               ospfNeighbor.getLocalIp(),
                ospfNeighbor.getRemoteIp());
          neighborsByIp.put(ipPair, ospfNeighbor);
       }
@@ -318,6 +322,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Checks if OSPF sessions are correctly configured.
     * <p>
@@ -335,7 +340,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
     *           the sessions. Default is '.*' (all nodes).
     *
     * @example bf_answer("OspfSessionCheck", node1Regex="as1.*",
-    *          node2Regex="as2.*") Checks all OSPF sessions between nodes that
+    *node2Regex="as2.*") Checks all OSPF sessions between nodes that
     *          start with as1 and those that start with as2.
     */
    public static class OspfSessionCheckQuestion extends Question {
@@ -407,7 +412,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected OspfSessionCheckAnswerer createAnswerer(Question question,
+   protected OspfSessionCheckAnswerer createAnswerer(
+         Question question,
          IBatfish batfish) {
       return new OspfSessionCheckAnswerer(question, batfish);
    }

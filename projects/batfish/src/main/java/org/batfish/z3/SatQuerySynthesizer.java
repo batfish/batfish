@@ -16,7 +16,8 @@ public abstract class SatQuerySynthesizer<Key> extends BaseQuerySynthesizer {
       return _keys;
    }
 
-   public abstract NodProgram synthesizeBaseProgram(Synthesizer synthesizer,
+   public abstract NodProgram synthesizeBaseProgram(
+         Synthesizer synthesizer,
          Context ctx);
 
 }

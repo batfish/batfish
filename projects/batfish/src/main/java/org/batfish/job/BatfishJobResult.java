@@ -18,7 +18,8 @@ public abstract class BatfishJobResult<Output, AE extends AnswerElement> {
       _failureCause = null;
    }
 
-   public BatfishJobResult(long elapsedTime, BatfishLoggerHistory history,
+   public BatfishJobResult(
+         long elapsedTime, BatfishLoggerHistory history,
          Throwable failureCause) {
       _elapsedTime = elapsedTime;
       _history = history;
@@ -27,7 +28,8 @@ public abstract class BatfishJobResult<Output, AE extends AnswerElement> {
 
    public abstract void appendHistory(BatfishLogger logger);
 
-   public abstract void applyTo(Output output, BatfishLogger logger,
+   public abstract void applyTo(
+         Output output, BatfishLogger logger,
          AE answerElement);
 
    public final long getElapsedTime() {

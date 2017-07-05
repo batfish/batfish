@@ -16,7 +16,8 @@ public final class Route6FilterLineLengthRange extends Route6FilterLine {
 
    private final int _minPrefixLength;
 
-   public Route6FilterLineLengthRange(Prefix6 prefix6, int minPrefixLength,
+   public Route6FilterLineLengthRange(
+         Prefix6 prefix6, int minPrefixLength,
          int maxPrefixLength) {
       super(prefix6);
       _minPrefixLength = minPrefixLength;

@@ -9,13 +9,15 @@ import org.batfish.common.DebugBatfishException;
 
 public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
 
-   public BatfishLexerErrorListener(String grammarName,
+   public BatfishLexerErrorListener(
+         String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
    }
 
    @Override
-   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+   public void syntaxError(
+         Recognizer<?, ?> recognizer, Object offendingSymbol,
          int line, int charPositionInLine, String msg, RecognitionException e) {
       if (_syntaxErrorHandler != null && _syntaxErrorHandler.handle(recognizer,
             offendingSymbol, line, charPositionInLine, msg, e)) {

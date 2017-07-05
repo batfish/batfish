@@ -19,9 +19,11 @@ public class ConvertConfigurationAnswerElement
 
    private Set<String> _failed;
 
-   private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> _undefinedReferences;
+   private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+         _undefinedReferences;
 
-   private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> _unusedStructures;
+   private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
+         _unusedStructures;
 
    private String _version;
 

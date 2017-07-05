@@ -22,7 +22,8 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       CommunityList list = c.getCommunityLists().get(_listName);
       if (list != null) {

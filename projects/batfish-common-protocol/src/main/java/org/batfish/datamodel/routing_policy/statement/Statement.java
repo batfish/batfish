@@ -10,7 +10,8 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-@JsonSubTypes({ @JsonSubTypes.Type(value = AddCommunity.class),
+@JsonSubTypes({
+      @JsonSubTypes.Type(value = AddCommunity.class),
       @JsonSubTypes.Type(value = BufferedStatement.class),
       @JsonSubTypes.Type(value = CallStatement.class),
       @JsonSubTypes.Type(value = Comment.class),
@@ -28,7 +29,7 @@ import org.batfish.datamodel.routing_policy.Result;
       @JsonSubTypes.Type(value = SetOspfMetricType.class),
       @JsonSubTypes.Type(value = SetTag.class),
       @JsonSubTypes.Type(value = SetVarMetricType.class),
-      @JsonSubTypes.Type(value = SetWeight.class) })
+      @JsonSubTypes.Type(value = SetWeight.class)})
 public abstract class Statement implements Serializable {
 
    private static final String COMMENT_VAR = "comment";

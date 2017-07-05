@@ -15,7 +15,8 @@ public class OspfIntraAreaRoute extends OspfRoute {
    private final long _area;
 
    @JsonCreator
-   public OspfIntraAreaRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+   public OspfIntraAreaRoute(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
          @JsonProperty(METRIC_VAR) int metric,

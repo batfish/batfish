@@ -32,18 +32,21 @@ public final class PsFromRouteFilter extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       RouteFilterList rfl = c.getRouteFilterLists().get(_routeFilterName);
       Route6FilterList rfl6 = c.getRoute6FilterLists().get(_routeFilterName);
       BooleanExpr match4 = null;
       BooleanExpr match6 = null;
       if (rfl != null) {
-         match4 = new MatchPrefixSet(new DestinationNetwork(),
+         match4 = new MatchPrefixSet(
+               new DestinationNetwork(),
                new NamedPrefixSet(_routeFilterName));
       }
       if (rfl6 != null) {
-         match6 = new MatchPrefix6Set(new DestinationNetwork6(),
+         match6 = new MatchPrefix6Set(
+               new DestinationNetwork6(),
                new NamedPrefix6Set(_routeFilterName));
       }
       if (match4 != null && match6 == null) {

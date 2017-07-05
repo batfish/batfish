@@ -26,7 +26,8 @@ public class ParseEnvironmentBgpTableResult extends
 
    private Warnings _warnings;
 
-   public ParseEnvironmentBgpTableResult(long elapsedTime,
+   public ParseEnvironmentBgpTableResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, String name,
          BgpAdvertisementsByVrf bgpTable, Warnings warnings,
          ParseTreeSentences parseTree) {
@@ -40,14 +41,16 @@ public class ParseEnvironmentBgpTableResult extends
       _status = null;
    }
 
-   public ParseEnvironmentBgpTableResult(long elapsedTime,
+   public ParseEnvironmentBgpTableResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _file = file;
       _status = ParseStatus.FAILED;
    }
 
-   public ParseEnvironmentBgpTableResult(long elapsedTime,
+   public ParseEnvironmentBgpTableResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, Warnings warnings,
          ParseStatus status) {
       super(elapsedTime, history);
@@ -72,7 +75,8 @@ public class ParseEnvironmentBgpTableResult extends
    }
 
    @Override
-   public void applyTo(SortedMap<String, BgpAdvertisementsByVrf> bgpTables,
+   public void applyTo(
+         SortedMap<String, BgpAdvertisementsByVrf> bgpTables,
          BatfishLogger logger,
          ParseEnvironmentBgpTablesAnswerElement answerElement) {
       appendHistory(logger);
@@ -90,7 +94,8 @@ public class ParseEnvironmentBgpTableResult extends
                answerElement.getParseTrees().put(hostname, _parseTree);
             }
             if (_bgpTable.getUnrecognized()) {
-               answerElement.getParseStatus().put(hostname,
+               answerElement.getParseStatus().put(
+                     hostname,
                      ParseStatus.PARTIALLY_UNRECOGNIZED);
             }
             else {

@@ -17,7 +17,8 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
    private final String _notes;
 
-   public FlowTrace(@JsonProperty(DISPOSITION_VAR) FlowDisposition disposition,
+   public FlowTrace(
+         @JsonProperty(DISPOSITION_VAR) FlowDisposition disposition,
          @JsonProperty(HOPS_VAR) List<FlowTraceHop> hops,
          @JsonProperty(NOTES_VAR) String notes) {
       _disposition = disposition;

@@ -12,7 +12,8 @@ public abstract class FwFrom implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   public abstract void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public abstract void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c);
 
 }

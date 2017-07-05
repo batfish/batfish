@@ -13,7 +13,8 @@ public class AssertionAst {
       _expr = expr;
    }
 
-   public boolean execute(IBatfish batfish, Object jsonObject,
+   public boolean execute(
+         IBatfish batfish, Object jsonObject,
          ConcurrentMap<String, ArrayNode> pathCache, Configuration c) {
       Environment env = new Environment(batfish, jsonObject, pathCache, c);
       boolean pass = _expr.evaluate(env);

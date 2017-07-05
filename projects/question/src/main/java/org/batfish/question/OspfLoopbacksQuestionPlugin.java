@@ -46,7 +46,8 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
          _running = new TreeMap<>();
       }
 
-      public void add(SortedMap<String, SortedSet<String>> map, String hostname,
+      public void add(
+            SortedMap<String, SortedSet<String>> map, String hostname,
             String interfaceName) {
          SortedSet<String> interfacesByHostname = map.get(hostname);
          if (interfacesByHostname == null) {
@@ -80,7 +81,8 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
          return _running;
       }
 
-      private Object interfacesToString(String indent, String header,
+      private Object interfacesToString(
+            String indent, String header,
             SortedMap<String, SortedSet<String>> interfaces) {
          StringBuilder sb = new StringBuilder(indent + header + "\n");
          for (String node : interfaces.keySet()) {
@@ -236,6 +238,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists which loopbacks interfaces are being announced into OSPF.
     * <p>

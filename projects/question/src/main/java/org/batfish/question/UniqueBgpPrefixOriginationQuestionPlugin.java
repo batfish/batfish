@@ -31,7 +31,8 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
          _prefixSpaces = new TreeMap<>();
       }
 
-      public void addIntersection(String node1, String node2,
+      public void addIntersection(
+            String node1, String node2,
             PrefixSpace intersection) {
          SortedMap<String, PrefixSpace> intersections = _intersections
                .get(node1);
@@ -63,7 +64,8 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
 
    public static class UniqueBgpPrefixOriginationAnswerer extends Answerer {
 
-      public UniqueBgpPrefixOriginationAnswerer(Question question,
+      public UniqueBgpPrefixOriginationAnswerer(
+            Question question,
             IBatfish batfish) {
          super(question, batfish);
       }
@@ -71,7 +73,8 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
       @Override
       public AnswerElement answer() {
 
-         UniqueBgpPrefixOriginationQuestion question = (UniqueBgpPrefixOriginationQuestion) _question;
+         UniqueBgpPrefixOriginationQuestion question =
+               (UniqueBgpPrefixOriginationQuestion) _question;
          Pattern nodeRegex;
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -83,7 +86,8 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
                   e);
          }
 
-         UniqueBgpPrefixOriginationAnswerElement answerElement = new UniqueBgpPrefixOriginationAnswerElement();
+         UniqueBgpPrefixOriginationAnswerElement answerElement =
+               new UniqueBgpPrefixOriginationAnswerElement();
          _batfish.checkConfigurations();
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
@@ -137,6 +141,7 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists cases where the same prefix is originated by multiple BGP speakers.
     * <p>

@@ -23,7 +23,8 @@ public final class FwFromDestinationPrefixList extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       PrefixList pl = jc.getPrefixLists().get(_name);
       if (pl != null) {

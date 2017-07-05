@@ -10,8 +10,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 public class PsFromMetric extends PsFrom {
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private final int _metric;
@@ -25,7 +25,8 @@ public class PsFromMetric extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       return new MatchMetric(IntComparator.EQ, new LiteralInt(_metric));
    }

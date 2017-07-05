@@ -38,7 +38,8 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
 
    private String _tag;
 
-   public CompositeNodJob(Settings settings,
+   public CompositeNodJob(
+         Settings settings,
          List<Synthesizer> dataPlaneSynthesizer,
          List<QuerySynthesizer> querySynthesizer, NodeVrfSet nodeVrfSet,
          String tag) {
@@ -107,7 +108,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
                List<Expr> reversedVarList = new ArrayList<>();
                reversedVarList.addAll(program.getVariablesAsConsts().values());
                Collections.reverse(reversedVarList);
-               Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
+               Expr[] reversedVars = reversedVarList.toArray(new Expr[]{});
                Expr substitutedAnswer = answer.substituteVars(reversedVars);
                solverInput = (BoolExpr) substitutedAnswer;
             }
@@ -167,7 +168,8 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
       }
    }
 
-   private Flow createFlow(String node, String vrf,
+   private Flow createFlow(
+         String node, String vrf,
          Map<String, Long> constraints) {
       return NodJob.createFlow(node, vrf, constraints, _tag);
    }

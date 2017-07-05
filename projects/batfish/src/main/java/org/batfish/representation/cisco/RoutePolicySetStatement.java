@@ -18,7 +18,8 @@ public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
    private static final long serialVersionUID = 1L;
 
    @Override
-   public final void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public final void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       Statement setStatement = toSetStatement(cc, c, w);
       Statement bufferedStatement = new BufferedStatement(setStatement);
@@ -32,7 +33,8 @@ public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
       statements.add(ifStatement);
    }
 
-   protected abstract Statement toSetStatement(CiscoConfiguration cc,
+   protected abstract Statement toSetStatement(
+         CiscoConfiguration cc,
          Configuration c, Warnings w);
 
 }

@@ -20,7 +20,8 @@ import org.batfish.z3.node.VarIntExpr;
 public class ConcretizerQuery {
 
    public static final ConcretizerQuery UNSAT = new ConcretizerQuery(
-         Collections.<Statement> singletonList(new UnsatExpr()));;
+         Collections.<Statement>singletonList(new UnsatExpr()));
+   ;
 
    public static ConcretizerQuery blacklistDstIpQuery(Set<Ip> blacklistDstIps) {
       AndExpr conditions = new AndExpr();

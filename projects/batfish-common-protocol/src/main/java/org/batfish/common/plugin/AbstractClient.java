@@ -22,7 +22,8 @@ public abstract class AbstractClient extends PluginConsumer implements IClient {
    }
 
    @Override
-   public final void registerQuestion(String questionName,
+   public final void registerQuestion(
+         String questionName,
          Supplier<Question> questionCreator) {
       _questions.put(questionName, questionCreator);
    }

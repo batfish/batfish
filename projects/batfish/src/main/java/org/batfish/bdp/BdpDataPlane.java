@@ -118,7 +118,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                            for (Prefix prefix : nextHopInInt.getAllPrefixes()) {
                               Ip address = prefix.getAddress();
                               if (network.contains(address)) {
-                                 Prefix neighborPrefix = new Prefix(address,
+                                 Prefix neighborPrefix = new Prefix(
+                                       address,
                                        Prefix.MAX_PREFIX_LENGTH);
                                  FibRow neighborRow = new FibRow(neighborPrefix,
                                        outInt, nextHopName, nextHopInIntName);
@@ -143,18 +144,21 @@ public class BdpDataPlane implements Serializable, DataPlane {
                      // TODO: implement above condition
                      if (srNextHopInterface
                            .equals(Interface.NULL_INTERFACE_NAME)) {
-                        FibRow row = new FibRow(network,
+                        FibRow row = new FibRow(
+                              network,
                               Interface.NULL_INTERFACE_NAME,
                               Configuration.NODE_NONE_NAME,
                               Interface.NULL_INTERFACE_NAME);
                         fibSet.add(row);
-                        interfaceRouteRows.put(route,
+                        interfaceRouteRows.put(
+                              route,
                               Collections.singleton(row));
                      }
                      else {
                         Set<FibRow> currentRows = new HashSet<>();
                         EdgeSet edges = _topology.getInterfaceEdges()
-                              .get(new NodeInterfacePair(hostname,
+                              .get(new NodeInterfacePair(
+                                    hostname,
                                     srNextHopInterface));
                         interfaceRouteRows.put(route, currentRows);
                         for (Edge edge : edges) {
@@ -177,18 +181,21 @@ public class BdpDataPlane implements Serializable, DataPlane {
                      // TODO: implement above condition
                      if (srNextHopInterface
                            .equals(Interface.NULL_INTERFACE_NAME)) {
-                        FibRow row = new FibRow(network,
+                        FibRow row = new FibRow(
+                              network,
                               Interface.NULL_INTERFACE_NAME,
                               Configuration.NODE_NONE_NAME,
                               Interface.NULL_INTERFACE_NAME);
                         fibSet.add(row);
-                        interfaceRouteRows.put(route,
+                        interfaceRouteRows.put(
+                              route,
                               Collections.singleton(row));
                      }
                      else {
                         Set<FibRow> currentRows = new HashSet<>();
                         EdgeSet edges = _topology.getInterfaceEdges()
-                              .get(new NodeInterfacePair(hostname,
+                              .get(new NodeInterfacePair(
+                                    hostname,
                                     srNextHopInterface));
                         interfaceRouteRows.put(route, currentRows);
                         for (Edge edge : edges) {
@@ -218,7 +225,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                case AGGREGATE: {
                   GeneratedRoute gr = (GeneratedRoute) route;
                   if (gr.getDiscard()) {
-                     FibRow row = new FibRow(network,
+                     FibRow row = new FibRow(
+                           network,
                            Interface.NULL_INTERFACE_NAME,
                            Configuration.NODE_NONE_NAME,
                            Interface.NULL_INTERFACE_NAME);
@@ -248,7 +256,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
                Ip currentNextHopIp = route.getNextHopIp();
                Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = vr._fib
                      .getNextHopInterfaces(currentNextHopIp);
-               nextHopInterfaces.forEach((nextHopInterface,
+               nextHopInterfaces.forEach((
+                     nextHopInterface,
                      nextHopInterfaceRoutesByFinalNextHopIp) -> {
                   if (nextHopInterfaceRoutesByFinalNextHopIp.size() > 1) {
                      throw new BatfishException("Did not expect this");
@@ -319,7 +328,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
       return _topology.getEdges();
    }
 
-   protected void initIpOwners(Map<String, Configuration> configurations,
+   protected void initIpOwners(
+         Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners, Map<Ip, String> ipOwnersSimple) {
       setIpOwners(ipOwners);
       setIpOwnersSimple(ipOwnersSimple);

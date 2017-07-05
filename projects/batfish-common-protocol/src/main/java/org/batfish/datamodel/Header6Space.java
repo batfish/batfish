@@ -25,7 +25,8 @@ public class Header6Space implements Serializable {
       return false;
    }
 
-   private static boolean wildcardsContain(Collection<Ip6Wildcard> wildcards,
+   private static boolean wildcardsContain(
+         Collection<Ip6Wildcard> wildcards,
          Ip6 ip) {
       for (Ip6Wildcard wildcard : wildcards) {
          if (wildcard.contains(ip)) {
@@ -358,12 +359,12 @@ public class Header6Space implements Serializable {
       }
       if (!_srcOrDstIps.isEmpty()
             && !(wildcardsContain(_srcOrDstIps, flow.getSrcIp())
-                  || wildcardsContain(_srcOrDstIps, flow.getDstIp()))) {
+            || wildcardsContain(_srcOrDstIps, flow.getDstIp()))) {
          return false;
       }
       if (!_srcOrDstPorts.isEmpty()
             && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
-                  || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
+            || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
          return false;
       }
       if (!_srcIps.isEmpty() && !wildcardsContain(_srcIps, flow.getSrcIp())) {

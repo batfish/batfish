@@ -20,7 +20,8 @@ public class CommunitySetElem implements Serializable {
    private CommunitySetElem() {
    }
 
-   public CommunitySetElem(CommunitySetElemHalfExpr prefix,
+   public CommunitySetElem(
+         CommunitySetElemHalfExpr prefix,
          CommunitySetElemHalfExpr suffix) {
       _prefix = prefix;
       _suffix = suffix;

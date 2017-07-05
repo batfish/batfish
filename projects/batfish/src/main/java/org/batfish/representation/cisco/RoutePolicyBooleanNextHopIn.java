@@ -29,17 +29,20 @@ public class RoutePolicyBooleanNextHopIn extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
       if (prefixSetExpr != null) {
-         return new MatchPrefixSet(new IpPrefix(new NextHopIp(),
+         return new MatchPrefixSet(new IpPrefix(
+               new NextHopIp(),
                new LiteralInt(Prefix.MAX_PREFIX_LENGTH)), prefixSetExpr);
       }
       else {
          Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
          return new MatchPrefix6Set(
-               new Ip6Prefix(new NextHopIp6(),
+               new Ip6Prefix(
+                     new NextHopIp6(),
                      new LiteralInt(Prefix6.MAX_PREFIX_LENGTH)),
                prefix6SetExpr);
       }

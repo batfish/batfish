@@ -93,7 +93,8 @@ public final class Flow6 implements Comparable<Flow6> {
    private final int _tcpFlagsUrg;
 
    @JsonCreator
-   public Flow6(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
+   public Flow6(
+         @JsonProperty(INGRESS_NODE_VAR) String ingressNode,
          @JsonProperty(SRC_IP_VAR) Ip6 srcIp,
          @JsonProperty(DST_IP_VAR) Ip6 dstIp,
          @JsonProperty(SRC_PORT_VAR) int srcPort,

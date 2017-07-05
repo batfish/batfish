@@ -25,13 +25,15 @@ public class RoutePolicyInlinePrefixSet extends RoutePolicyPrefixSet {
    }
 
    @Override
-   public Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc,
+   public Prefix6SetExpr toPrefix6SetExpr(
+         CiscoConfiguration cc,
          Configuration c, Warnings w) {
       return null;
    }
 
    @Override
-   public PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c,
+   public PrefixSetExpr toPrefixSetExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new ExplicitPrefixSet(_prefixSpace);
    }

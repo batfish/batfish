@@ -13,7 +13,8 @@ public class PsFromFamilyInet6 extends PsFrom {
    private static final long serialVersionUID = 1L;
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       return new MatchIpv6();
    }

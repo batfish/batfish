@@ -28,7 +28,8 @@ public final class StandardCommunityList extends ComparableStructure<String> {
    }
 
    public ExpandedCommunityList toExpandedCommunityList() {
-      ExpandedCommunityList newList = new ExpandedCommunityList(_key,
+      ExpandedCommunityList newList = new ExpandedCommunityList(
+            _key,
             _definitionLine);
       for (StandardCommunityListLine line : _lines) {
          List<Long> standardCommunities = line.getCommunities();

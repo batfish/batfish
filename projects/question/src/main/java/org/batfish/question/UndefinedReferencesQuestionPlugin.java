@@ -20,7 +20,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
    public static class UndefinedReferencesAnswerElement
          extends ProblemsAnswerElement {
 
-      private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> _undefinedReferences;
+      private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+            _undefinedReferences;
 
       public UndefinedReferencesAnswerElement() {
          _undefinedReferences = new TreeMap<>();
@@ -103,7 +104,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                                  + type + "' with usage: '" + usage
                                  + "' named '" + name + "'";
                            problem.setDescription(problemLong);
-                           answerElement.getProblems().put(problemShort,
+                           answerElement.getProblems().put(
+                                 problemShort,
                                  problem);
                         }
                         problem.getFiles().put(filename, lines);
@@ -117,6 +119,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs cases where undefined structures (e.g., ACL, routemaps) are
     * referenced.

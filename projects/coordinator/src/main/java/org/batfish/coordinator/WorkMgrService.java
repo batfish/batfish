@@ -32,6 +32,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 /**
  *
  */
+
 /**
  *
  */
@@ -62,11 +63,13 @@ public class WorkMgrService {
          checkClientVersion(clientVersion);
 
          if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
-            return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+            return new JSONArray(Arrays.asList(
+                  CoordConsts.SVC_KEY_SUCCESS,
                   new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, true)));
          }
          else {
-            return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+            return new JSONArray(Arrays.asList(
+                  CoordConsts.SVC_KEY_SUCCESS,
                   new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, false)));
          }
       }
@@ -252,7 +255,8 @@ public class WorkMgrService {
 
          Main.getWorkMgr().delContainer(containerName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put("result", "true"))));
 
       }
@@ -304,7 +308,8 @@ public class WorkMgrService {
 
          Main.getWorkMgr().delEnvironment(containerName, testrigName, envName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put("result", "true"))));
 
       }
@@ -357,7 +362,8 @@ public class WorkMgrService {
          Main.getWorkMgr().delTestrigQuestion(containerName, testrigName,
                questionName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put("result", "true"))));
 
       }
@@ -405,7 +411,8 @@ public class WorkMgrService {
 
          Main.getWorkMgr().delTestrig(containerName, testrigName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put("result", "true"))));
 
       }
@@ -469,7 +476,8 @@ public class WorkMgrService {
          BatfishObjectMapper mapper = new BatfishObjectMapper();
          String answersStr = mapper.writeValueAsString(answers);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                new JSONObject().put(CoordConsts.SVC_KEY_ANSWERS, answersStr)));
       }
       catch (FileExistsException | FileNotFoundException
@@ -529,7 +537,8 @@ public class WorkMgrService {
          String answer = Main.getWorkMgr().getAnswer(containerName, testrigName,
                baseEnv, deltaTestrig, deltaEnv, questionName, pretty);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer)));
       }
       catch (FileExistsException | FileNotFoundException
@@ -554,7 +563,8 @@ public class WorkMgrService {
          JSONObject map = new JSONObject();
          map.put("Service name", "Batfish coordinator");
          map.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
-         map.put("APIs",
+         map.put(
+               "APIs",
                "Enter ../application.wadl (relative to your URL) to see supported methods");
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, map));
@@ -609,7 +619,8 @@ public class WorkMgrService {
 
          String filename = file.getFileName().toString();
          return Response.ok(file.toFile(), MediaType.APPLICATION_OCTET_STREAM)
-               .header("Content-Disposition",
+               .header(
+                     "Content-Disposition",
                      "attachment; filename=\"" + filename + "\"")
                .header(CoordConsts.SVC_FILENAME_HDR, filename).build();
       }
@@ -672,20 +683,24 @@ public class WorkMgrService {
          QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
          if (work == null) {
-            return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
+            return new JSONArray(Arrays.asList(
+                  CoordConsts.SVC_KEY_FAILURE,
                   "work with the specified id does not exist or is not inaccessible"));
          }
 
-         checkContainerAccessibility(apiKey,
+         checkContainerAccessibility(
+               apiKey,
                work.getWorkItem().getContainerName());
 
          BatfishObjectMapper mapper = new BatfishObjectMapper();
          String taskStr = mapper
                .writeValueAsString(work.getLastTaskCheckResult());
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject()
-                     .put(CoordConsts.SVC_KEY_WORKSTATUS,
+                     .put(
+                           CoordConsts.SVC_KEY_WORKSTATUS,
                            work.getStatus().toString())
                      .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr))));
       }
@@ -735,8 +750,10 @@ public class WorkMgrService {
 
          Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-               (new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_NAME,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
+               (new JSONObject().put(
+                     CoordConsts.SVC_KEY_CONTAINER_NAME,
                      outputContainerName))));
       }
       catch (FileExistsException | FileNotFoundException
@@ -845,8 +862,10 @@ public class WorkMgrService {
          SortedSet<String> containerList = Main.getWorkMgr()
                .listContainers(apiKey);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-               (new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_LIST,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
+               (new JSONObject().put(
+                     CoordConsts.SVC_KEY_CONTAINER_LIST,
                      new JSONArray(containerList)))));
       }
       catch (FileExistsException | FileNotFoundException
@@ -896,8 +915,10 @@ public class WorkMgrService {
          SortedSet<String> environmentList = Main.getWorkMgr()
                .listEnvironments(containerName, testrigName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-               (new JSONObject().put(CoordConsts.SVC_KEY_ENVIRONMENT_LIST,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
+               (new JSONObject().put(
+                     CoordConsts.SVC_KEY_ENVIRONMENT_LIST,
                      new JSONArray(environmentList)))));
       }
       catch (FileExistsException | FileNotFoundException
@@ -947,8 +968,10 @@ public class WorkMgrService {
          SortedSet<String> questions = Main.getWorkMgr()
                .listQuestions(containerName, testrigName);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-               (new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
+               (new JSONObject().put(
+                     CoordConsts.SVC_KEY_QUESTION_LIST,
                      new JSONArray(questions)))));
       }
       catch (FileExistsException | FileNotFoundException
@@ -997,7 +1020,8 @@ public class WorkMgrService {
                .listTestrigs(containerName);
 
          for (String testrig : testrigList) {
-            String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName,
+            String testrigInfo = Main.getWorkMgr().getTestrigInfo(
+                  containerName,
                   testrig);
 
             JSONObject jObject = new JSONObject()
@@ -1114,7 +1138,8 @@ public class WorkMgrService {
 
          boolean result = Main.getWorkMgr().queueWork(workItem);
 
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                (new JSONObject().put("result", result))));
       }
       catch (FileExistsException | FileNotFoundException
@@ -1137,7 +1162,8 @@ public class WorkMgrService {
    public String test() {
       try {
          _logger.info("WMS:getInfo\n");
-         JSONArray id = new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+         JSONArray id = new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
                Main.getWorkMgr().getStatusJson()));
 
          return id.toString();

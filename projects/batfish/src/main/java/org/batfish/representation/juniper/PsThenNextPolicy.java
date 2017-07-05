@@ -19,7 +19,8 @@ public final class PsThenNextPolicy extends PsThen {
    }
 
    @Override
-   public void applyTo(List<Statement> statements,
+   public void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings w) {
       statements.add(Statements.FallThrough.toStaticStatement());

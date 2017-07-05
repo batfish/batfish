@@ -12,7 +12,8 @@ public abstract class PsFrom implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   public abstract BooleanExpr toBooleanExpr(JuniperConfiguration jc,
+   public abstract BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc,
          Configuration c, Warnings warnings);
 
 }

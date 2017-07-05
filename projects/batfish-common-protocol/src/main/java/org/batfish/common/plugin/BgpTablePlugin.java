@@ -23,10 +23,12 @@ public abstract class BgpTablePlugin extends BatfishPlugin
 
    protected abstract void bgpTablePluginInitialize();
 
-   public abstract BgpTableExtractor extractor(String hostname, String fileText,
+   public abstract BgpTableExtractor extractor(
+         String hostname, String fileText,
          BatfishCombinedParser<?, ?> combinedParser, Warnings warnings);
 
-   public abstract BatfishCombinedParser<?, ?> parser(String fileText,
+   public abstract BatfishCombinedParser<?, ?> parser(
+         String fileText,
          GrammarSettings settings);
 
 }

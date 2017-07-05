@@ -78,7 +78,8 @@ public class Prefix6Space implements Serializable {
          _prefix6Ranges = new HashSet<>();
       }
 
-      public void addPrefix6Range(Prefix6Range prefix6Range, BitSet bits,
+      public void addPrefix6Range(
+            Prefix6Range prefix6Range, BitSet bits,
             int prefixLength, int depth) {
          for (Prefix6Range nodeRange : _prefix6Ranges) {
             if (nodeRange.includesPrefix6Range(prefix6Range)) {
@@ -118,7 +119,8 @@ public class Prefix6Space implements Serializable {
          }
       }
 
-      public boolean containsPrefix6Range(Prefix6Range prefix6Range,
+      public boolean containsPrefix6Range(
+            Prefix6Range prefix6Range,
             BitSet bits, int prefixLength, int depth) {
          for (Prefix6Range nodeRange : _prefix6Ranges) {
             if (nodeRange.includesPrefix6Range(prefix6Range)) {

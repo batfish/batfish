@@ -9,7 +9,8 @@ public abstract class RoutePolicyBoolean implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   public abstract BooleanExpr toBooleanExpr(CiscoConfiguration cc,
+   public abstract BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc,
          Configuration c, Warnings w);
 
 }

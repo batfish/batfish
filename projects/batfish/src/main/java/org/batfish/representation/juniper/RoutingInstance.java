@@ -73,20 +73,26 @@ public class RoutingInstance implements Serializable {
       _ospfExportPolicies = new LinkedHashMap<>();
       _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
       _ribs = new TreeMap<>();
-      _ribs.put(RoutingInformationBase.RIB_IPV4_UNICAST,
+      _ribs.put(
+            RoutingInformationBase.RIB_IPV4_UNICAST,
             new RoutingInformationBase(
                   RoutingInformationBase.RIB_IPV4_UNICAST));
-      _ribs.put(RoutingInformationBase.RIB_IPV4_MULTICAST,
+      _ribs.put(
+            RoutingInformationBase.RIB_IPV4_MULTICAST,
             new RoutingInformationBase(
                   RoutingInformationBase.RIB_IPV4_MULTICAST));
-      _ribs.put(RoutingInformationBase.RIB_IPV4_MPLS,
+      _ribs.put(
+            RoutingInformationBase.RIB_IPV4_MPLS,
             new RoutingInformationBase(RoutingInformationBase.RIB_IPV4_MPLS));
-      _ribs.put(RoutingInformationBase.RIB_IPV6_UNICAST,
+      _ribs.put(
+            RoutingInformationBase.RIB_IPV6_UNICAST,
             new RoutingInformationBase(
                   RoutingInformationBase.RIB_IPV6_UNICAST));
-      _ribs.put(RoutingInformationBase.RIB_MPLS,
+      _ribs.put(
+            RoutingInformationBase.RIB_MPLS,
             new RoutingInformationBase(RoutingInformationBase.RIB_MPLS));
-      _ribs.put(RoutingInformationBase.RIB_ISIS,
+      _ribs.put(
+            RoutingInformationBase.RIB_ISIS,
             new RoutingInformationBase(RoutingInformationBase.RIB_ISIS));
       _system = new JuniperSystem();
    }

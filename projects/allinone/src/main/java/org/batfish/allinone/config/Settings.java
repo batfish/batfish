@@ -13,7 +13,8 @@ public class Settings extends BaseSettings {
 
    private static final String ARG_BATFISH_ARGS = "batfishargs";
    private static final String ARG_CLIENT_ARGS = "clientargs";
-   private static final String ARG_COMMAND_FILE = org.batfish.client.config.Settings.ARG_COMMAND_FILE;
+   private static final String ARG_COMMAND_FILE =
+         org.batfish.client.config.Settings.ARG_COMMAND_FILE;
    private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
@@ -94,15 +95,17 @@ public class Settings extends BaseSettings {
       // .toAbsolutePath().toString());
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
-      setDefaultProperty(ARG_LOG_LEVEL,
+      setDefaultProperty(
+            ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_BATFISH_ARGS, "");
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");
       setDefaultProperty(ARG_RUN_CLIENT, true);
       setDefaultProperty(ARG_RUN_MODE, "batch");
-      setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
-            Collections.<String> emptyList());
+      setDefaultProperty(
+            BfConsts.ARG_PLUGIN_DIRS,
+            Collections.<String>emptyList());
       setDefaultProperty(ARG_VERSION, false);
    }
 
@@ -134,11 +137,13 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
-      addOption(BfConsts.ARG_PLUGIN_DIRS,
+      addOption(
+            BfConsts.ARG_PLUGIN_DIRS,
             "plugin directories to be passed to batfish and client processes",
             "paths");
 
-      addBooleanOption(ARG_VERSION,
+      addBooleanOption(
+            ARG_VERSION,
             "print the version number of the code and exit");
    }
 

@@ -41,7 +41,8 @@ public class VrfDiff extends ConfigDiffElement {
    }
 
    public VrfDiff(Vrf before, Vrf after) {
-      _bgpProcessDiff = new BgpProcessDiff(before.getBgpProcess(),
+      _bgpProcessDiff = new BgpProcessDiff(
+            before.getBgpProcess(),
             after.getBgpProcess());
       if (_bgpProcessDiff.isEmpty()) {
          _bgpProcessDiff = null;

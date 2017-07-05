@@ -67,7 +67,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          _sentIbgpAdvertisements = new TreeMap<>();
       }
 
-      public BgpAdvertisementsAnswerElement(AdvertisementSet externalAdverts,
+      public BgpAdvertisementsAnswerElement(
+            AdvertisementSet externalAdverts,
             Map<String, Configuration> configurations, Pattern nodeRegex,
             PrefixSpace prefixSpace) {
          this();
@@ -91,7 +92,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          }
       }
 
-      public BgpAdvertisementsAnswerElement(BgpAdvertisementsAnswerElement base,
+      public BgpAdvertisementsAnswerElement(
+            BgpAdvertisementsAnswerElement base,
             BgpAdvertisementsAnswerElement delta) {
          this();
          _removed = CommonUtil.difference(base._allRequestedAdvertisements,
@@ -145,7 +147,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
          }
       }
 
-      private void fill(Map<String, SortedSet<BgpAdvertisement>> map,
+      private void fill(
+            Map<String, SortedSet<BgpAdvertisement>> map,
             String hostname, Set<BgpAdvertisement> advertisements,
             PrefixSpace prefixSpace) {
          SortedSet<BgpAdvertisement> placedAdvertisements = new TreeSet<>();
@@ -305,6 +308,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists BGP adverstisements in the network.
     * <p>

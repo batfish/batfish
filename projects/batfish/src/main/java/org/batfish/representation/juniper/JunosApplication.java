@@ -208,7 +208,8 @@ public enum JunosApplication implements Application {
    private boolean _initialized;
 
    @Override
-   public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines,
+   public void applyTo(
+         IpAccessListLine srcLine, List<IpAccessListLine> lines,
          Warnings w) {
       init();
       _baseApplication.applyTo(srcLine, lines, w);

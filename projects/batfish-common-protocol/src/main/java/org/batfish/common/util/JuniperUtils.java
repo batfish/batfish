@@ -20,7 +20,8 @@ public final class JuniperUtils {
 
    private static final JuniperUtils INSTANCE = new JuniperUtils();
 
-   public static final String SALT = "'rn5;/Jq_g,ROS-ObQ.l+h)*+(Amq?]Wn75zq3eN6kI}VZon03etYA>}{&{[~|)/}l}QXAgpG_wnv[w~JG?|(LfWe88#omyZv.PcOSDU5j2_9C5p9kZ7`UiHry67%<;mHO*Mz=Mn/G-R%(=Onc6A^ps^28%4xAU*i5&/Y<3L/v-dzI0dtjw=[p1=[pn[Z_8W~uW5K{9{HOCKwi6@6DfrG?Ds*HZ!ai,a$+LzpC/,bvp2:}t4<Ol3sE|I&|6'<NNZ}SE#voQd9*[yZjrnP~?1R^+Un%oOee!D#7}<=QEJ<@*&IRpC,5LH+OKVg,?^M4IAq9x8tvcRC]g7KG:U?Q@PvD[Od's|.`sH1#/IEzMoDu+k`1DnW+XsAt3?*n1=z:W&O!VQ--:U&wF]&Bj4O(51NsSU4{I0%3$}bi3_[_[y<A}Zbil%Rd^Q{)4F_lIoNl.AVyEM)O<d%pD+Q~X&:P0CyTcAfav[|zE;Q$x%ib^oS_epZ20)l.w&ZaBJHTE1D^dM$/w~Zs6[ED2K++PRF1z/ENxaL3^?}tvYWoFRez~dY2E~uk[Y=~7T7E&ME)$LA/%0g'W{oA3j9Q-'gV1YB*)'.fNdIPr'krar)}k[md:V5x]rhze(8?1jEWJJBICH!At<U-:{XSpRCSa_S7d<Pv(oW_Zu^&#UuI6BjydC>ZkDK8_W;zbBJ9T'<:`<!~JL|z4b2o4t'.M??:nU/QF'F0U0H,KO2L8xPL|z`%8w-v,,js/8`Bkg8TR6S<x)z3x,du31n=_0-|xU$0;5/A8zjdJ19hYYOw-g8c_L.9bh^/Ekv-6tHo{x=x!f0P/(P+~j0c]|LQ1kbU-VBs~PiJJXH1h^Bo{3It[Itar%g4b=Jd'YnKA_}okjW72Hy_I_#KnI^784F}0XD}8{W4*#Ceo#l!5qB`ozr._=/$}iEULC?$eB|1hlvZta-*[R31Njig~_c#FQS1N(Y5k{wgC.U1,y-+rx[~HN`Om_}-#vKeOIU'0T0/Y>glh/Fz<rc^cV2Lpi.%T.";
+   public static final String SALT =
+         "'rn5;/Jq_g,ROS-ObQ.l+h)*+(Amq?]Wn75zq3eN6kI}VZon03etYA>}{&{[~|)/}l}QXAgpG_wnv[w~JG?|(LfWe88#omyZv.PcOSDU5j2_9C5p9kZ7`UiHry67%<;mHO*Mz=Mn/G-R%(=Onc6A^ps^28%4xAU*i5&/Y<3L/v-dzI0dtjw=[p1=[pn[Z_8W~uW5K{9{HOCKwi6@6DfrG?Ds*HZ!ai,a$+LzpC/,bvp2:}t4<Ol3sE|I&|6'<NNZ}SE#voQd9*[yZjrnP~?1R^+Un%oOee!D#7}<=QEJ<@*&IRpC,5LH+OKVg,?^M4IAq9x8tvcRC]g7KG:U?Q@PvD[Od's|.`sH1#/IEzMoDu+k`1DnW+XsAt3?*n1=z:W&O!VQ--:U&wF]&Bj4O(51NsSU4{I0%3$}bi3_[_[y<A}Zbil%Rd^Q{)4F_lIoNl.AVyEM)O<d%pD+Q~X&:P0CyTcAfav[|zE;Q$x%ib^oS_epZ20)l.w&ZaBJHTE1D^dM$/w~Zs6[ED2K++PRF1z/ENxaL3^?}tvYWoFRez~dY2E~uk[Y=~7T7E&ME)$LA/%0g'W{oA3j9Q-'gV1YB*)'.fNdIPr'krar)}k[md:V5x]rhze(8?1jEWJJBICH!At<U-:{XSpRCSa_S7d<Pv(oW_Zu^&#UuI6BjydC>ZkDK8_W;zbBJ9T'<:`<!~JL|z4b2o4t'.M??:nU/QF'F0U0H,KO2L8xPL|z`%8w-v,,js/8`Bkg8TR6S<x)z3x,du31n=_0-|xU$0;5/A8zjdJ19hYYOw-g8c_L.9bh^/Ekv-6tHo{x=x!f0P/(P+~j0c]|LQ1kbU-VBs~PiJJXH1h^Bo{3It[Itar%g4b=Jd'YnKA_}okjW72Hy_I_#KnI^784F}0XD}8{W4*#Ceo#l!5qB`ozr._=/$}iEULC?$eB|1hlvZta-*[R31Njig~_c#FQS1N(Y5k{wgC.U1,y-+rx[~HN`Om_}-#vKeOIU'0T0/Y>glh/Fz<rc^cV2Lpi.%T.";
 
    public static String decryptAndHashJuniper9CipherText(String key) {
       String privateSecret = decryptJuniper9CipherText(key);
@@ -47,8 +48,9 @@ public final class JuniperUtils {
 
    private JuniperUtils() {
       _codeMatrix = initCodeMatrix();
-      _characterFamilies = new String[] { "QzF3n6/9CAtpu0O",
-            "B1IREhcSyrleKvMW8LXx", "7N-dVbwsY2g4oaJZGUDj", "iHkq.mPf5T" };
+      _characterFamilies = new String[]{
+            "QzF3n6/9CAtpu0O",
+            "B1IREhcSyrleKvMW8LXx", "7N-dVbwsY2g4oaJZGUDj", "iHkq.mPf5T"};
       _characterFamilyReverseIndexMap = initCharacterFamilyReverseIndexMap();
       _allCharacters = initAllCharacters();
       _allCharactersIndexMap = initAllCharactersIndexMap();
@@ -61,7 +63,7 @@ public final class JuniperUtils {
          throw new BatfishException(
                "Invalid Juniper $9$ ciphertext: \"" + key + "\"");
       }
-      String[] chars = new String[] { key.substring("$9$".length()) };
+      String[] chars = new String[]{key.substring("$9$".length())};
       char first = nibble(chars, 1).charAt(0);
       nibble(chars, _characterFamilyReverseIndexMap.get(first));
       char prev = first;
@@ -124,7 +126,9 @@ public final class JuniperUtils {
 
    private Map<Character, Integer> initCharacterFamilyReverseIndexMap() {
       Map<Character, Integer> extra = new HashMap<>();
-      for (int characterFamilyIndex = 0; characterFamilyIndex < _characterFamilies.length; characterFamilyIndex++) {
+      for (int characterFamilyIndex = 0;
+            characterFamilyIndex < _characterFamilies.length;
+            characterFamilyIndex++) {
          String characterFamily = _characterFamilies[characterFamilyIndex];
          for (int i = 0; i < characterFamily.length(); i++) {
             char c = characterFamily.charAt(i);
@@ -136,13 +140,13 @@ public final class JuniperUtils {
 
    private List<List<Integer>> initCodeMatrix() {
       List<List<Integer>> codeMatrix = new ArrayList<>();
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 4, 32 }));
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 16, 32 }));
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 8, 32 }));
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 64 }));
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 32 }));
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 4, 16, 128 }));
-      codeMatrix.add(Arrays.asList(new Integer[] { 1, 32, 64 }));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 4, 32}));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 16, 32}));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 8, 32}));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 64}));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 32}));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 4, 16, 128}));
+      codeMatrix.add(Arrays.asList(new Integer[]{1, 32, 64}));
       return codeMatrix;
    }
 

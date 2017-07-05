@@ -38,7 +38,8 @@ public class NamedCommunitySet extends CommunitySetExpr {
    }
 
    @Override
-   public SortedSet<Long> communities(Environment environment,
+   public SortedSet<Long> communities(
+         Environment environment,
          SortedSet<Long> communityCandidates) {
       SortedSet<Long> matchingCommunities = new TreeSet<>();
       for (Long community : communityCandidates) {
@@ -87,7 +88,8 @@ public class NamedCommunitySet extends CommunitySetExpr {
    }
 
    @Override
-   public boolean matchSingleCommunity(Environment environment,
+   public boolean matchSingleCommunity(
+         Environment environment,
          SortedSet<Long> communities) {
       CommunityList cl = environment.getConfiguration().getCommunityLists()
             .get(_name);

@@ -19,7 +19,8 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       // TODO: something with destination-vrf
       statements.add(new SetNextHop(new IpNextHop(_nextHops), false));

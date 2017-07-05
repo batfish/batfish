@@ -47,7 +47,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       private boolean _detail;
 
-      private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> _detailRoutesByHostname;
+      private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
+            _detailRoutesByHostname;
 
       private SortedSet<Route> _removed;
 
@@ -61,7 +62,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          _removed = new TreeSet<>();
       }
 
-      public RoutesAnswerElement(RoutesAnswerElement base,
+      public RoutesAnswerElement(
+            RoutesAnswerElement base,
             RoutesAnswerElement delta) {
          this();
          Set<String> hosts = new LinkedHashSet<>();
@@ -202,7 +204,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                            || protocols.contains(detailRoute.getProtocol());
                      boolean matchPrefixSpace = prefixSpace.isEmpty()
                            || prefixSpace
-                                 .containsPrefix(detailRoute.getNetwork());
+                           .containsPrefix(detailRoute.getNetwork());
                      if (matchProtocol && matchPrefixSpace) {
                         filteredDetailRoutes.add(detailRoute);
                      }
@@ -347,7 +349,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          RoutesQuestion question = (RoutesQuestion) _question;
          if (question._againstEnvironment && question._fromEnvironment) {
             throw new BatfishException(
-                  String.format("%s and %s flags are mutually exclusive",
+                  String.format(
+                        "%s and %s flags are mutually exclusive",
                         RoutesQuestion.AGAINST_ENVIRONMENT_VAR,
                         RoutesQuestion.FROM_ENVIRONMENT_VAR));
          }
@@ -377,8 +380,9 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   environmentRoutes, nodeRegex, question._protocols);
          }
          if (!question._fromEnvironment) {
-            SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname = _batfish
-                  .getRoutes();
+            SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
+                  _batfish
+                        .getRoutes();
             Map<String, Configuration> configurations = _batfish
                   .loadConfigurations();
             Map<Ip, Set<String>> ipOwners = _batfish
@@ -396,7 +400,8 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             answerElement = batfishAnswerElement;
          }
          else {
-            answerElement = new RoutesAnswerElement(environmentAnswerElement,
+            answerElement = new RoutesAnswerElement(
+                  environmentAnswerElement,
                   batfishAnswerElement);
          }
          answerElement.setAgainstEnvironment(question._againstEnvironment);
@@ -425,6 +430,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs all routes (RIB) at nodes in the network.
     * <p>

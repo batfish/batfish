@@ -15,7 +15,8 @@ public class NodeOspfSessionPair extends Pair<Configuration, OspfNeighbor> {
    private static final String SESSION_VAR = "session";
 
    @JsonCreator
-   public NodeOspfSessionPair(@JsonProperty(NODE_VAR) Configuration t1,
+   public NodeOspfSessionPair(
+         @JsonProperty(NODE_VAR) Configuration t1,
          @JsonProperty(SESSION_VAR) OspfNeighbor t2) {
       super(t1, t2);
    }

@@ -60,7 +60,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       public BgpNeighborSummary(BgpNeighbor bgpNeighbor) {
          super(bgpNeighbor.getOwner().getName() + ":"
                + (bgpNeighbor.getDynamic() ? bgpNeighbor.getPrefix().toString()
-                     : bgpNeighbor.getAddress().toString()));
+               : bgpNeighbor.getAddress().toString()));
          _description = bgpNeighbor._description;
          _group = bgpNeighbor._group;
          _localAs = bgpNeighbor._localAs;
@@ -72,7 +72,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       }
 
       @JsonCreator
-      public BgpNeighborSummary(@JsonProperty(NAME_VAR) String name,
+      public BgpNeighborSummary(
+            @JsonProperty(NAME_VAR) String name,
             @JsonProperty(DESCRIPTION_VAR) String description,
             @JsonProperty(GROUP_VAR) String group,
             @JsonProperty(LOCAL_AS_VAR) int localAs,
@@ -344,7 +345,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (!CommonUtil.bothNullOrEqual(this._group, other._group)) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._importPolicy,
+      if (!CommonUtil.bothNullOrEqual(
+            this._importPolicy,
             other._importPolicy)) {
          return false;
       }

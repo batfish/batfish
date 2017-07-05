@@ -80,7 +80,8 @@ public class PrefixSpace implements Serializable {
          _prefixRanges = new HashSet<>();
       }
 
-      public void addPrefixRange(PrefixRange prefixRange, BitSet bits,
+      public void addPrefixRange(
+            PrefixRange prefixRange, BitSet bits,
             int prefixLength, int depth) {
          for (PrefixRange nodeRange : _prefixRanges) {
             if (nodeRange.includesPrefixRange(prefixRange)) {
@@ -119,7 +120,8 @@ public class PrefixSpace implements Serializable {
          }
       }
 
-      public boolean containsPrefixRange(PrefixRange prefixRange, BitSet bits,
+      public boolean containsPrefixRange(
+            PrefixRange prefixRange, BitSet bits,
             int prefixLength, int depth) {
          for (PrefixRange nodeRange : _prefixRanges) {
             if (nodeRange.includesPrefixRange(prefixRange)) {

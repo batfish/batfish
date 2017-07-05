@@ -38,7 +38,8 @@ import org.batfish.grammar.GrammarSettings;
 
 public interface IBatfish extends IPluginConsumer {
 
-   AnswerElement answerAclReachability(String aclNameRegexStr,
+   AnswerElement answerAclReachability(
+         String aclNameRegexStr,
          NamedStructureEquivalenceSets<?> aclEqSets);
 
    void checkConfigurations();
@@ -47,7 +48,8 @@ public interface IBatfish extends IPluginConsumer {
 
    void checkEnvironmentExists();
 
-   InterfaceSet computeFlowSinks(Map<String, Configuration> configurations,
+   InterfaceSet computeFlowSinks(
+         Map<String, Configuration> configurations,
          boolean differentialContext, Topology topology);
 
    Map<Ip, Set<String>> computeIpOwners(
@@ -57,7 +59,8 @@ public interface IBatfish extends IPluginConsumer {
 
    Topology computeTopology(Map<String, Configuration> configurations);
 
-   AnswerElement createEnvironment(String environmentName,
+   AnswerElement createEnvironment(
+         String environmentName,
          SortedSet<String> nodeBlacklist,
          SortedSet<NodeInterfacePair> interfaceBlacklist,
          SortedSet<Edge> edgeBlacklist, boolean dp);
@@ -83,12 +86,14 @@ public interface IBatfish extends IPluginConsumer {
 
    InitInfoAnswerElement initInfo(boolean summary, boolean environmentRoutes);
 
-   void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
+   void initRemoteBgpNeighbors(
+         Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners);
 
    void initRemoteIpsecVpns(Map<String, Configuration> configurations);
 
-   void initRemoteOspfNeighbors(Map<String, Configuration> configurations,
+   void initRemoteOspfNeighbors(
+         Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners, Topology topology);
 
    SortedMap<String, Configuration> loadConfigurations();
@@ -132,10 +137,12 @@ public interface IBatfish extends IPluginConsumer {
 
    AnswerElement reducedReachability(HeaderSpace headerSpace);
 
-   void registerAnswerer(String questionName, String questionClassName,
+   void registerAnswerer(
+         String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator);
 
-   void registerBgpTablePlugin(BgpTableFormat format,
+   void registerBgpTablePlugin(
+         BgpTableFormat format,
          BgpTablePlugin bgpTablePlugin);
 
    void registerExternalBgpAdvertisementPlugin(
@@ -145,7 +152,8 @@ public interface IBatfish extends IPluginConsumer {
 
    void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
 
-   AnswerElement standard(HeaderSpace headerSpace,
+   AnswerElement standard(
+         HeaderSpace headerSpace,
          Set<ForwardingAction> actions, String ingressNodeRegexStr,
          String notIngressNodeRegexStr, String finalNodeRegexStr,
          String notFinalNodeRegexStr);

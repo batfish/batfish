@@ -20,7 +20,8 @@ public class CompositeBatfishException extends RuntimeException
       public CompositeBatfishExceptionAnswerElement() {
       }
 
-      public CompositeBatfishExceptionAnswerElement(BatfishException cause,
+      public CompositeBatfishExceptionAnswerElement(
+            BatfishException cause,
             List<BatfishException> contributingCauses) {
          _cause = cause.getBatfishStackTrace();
          _contributingCauses = contributingCauses.stream().map(
@@ -53,10 +54,12 @@ public class CompositeBatfishException extends RuntimeException
 
    private CompositeBatfishExceptionAnswerElement _answerElement;
 
-   public CompositeBatfishException(BatfishException cause,
+   public CompositeBatfishException(
+         BatfishException cause,
          List<BatfishException> contributingCauses) {
       super(cause);
-      _answerElement = new CompositeBatfishExceptionAnswerElement(cause,
+      _answerElement = new CompositeBatfishExceptionAnswerElement(
+            cause,
             contributingCauses);
    }
 

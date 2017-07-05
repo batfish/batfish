@@ -25,7 +25,8 @@ public class NamedStructureEquivalenceSets<T> {
 
    public void add(String node, String name, T namedStructure) {
       if (!_sameNamedStructures.containsKey(name)) {
-         _sameNamedStructures.put(name,
+         _sameNamedStructures.put(
+               name,
                new TreeSet<NamedStructureEquivalenceSet<T>>());
       }
       SortedSet<NamedStructureEquivalenceSet<T>> equiClasses = _sameNamedStructures

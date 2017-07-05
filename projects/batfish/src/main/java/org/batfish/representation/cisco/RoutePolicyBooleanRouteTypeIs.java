@@ -30,7 +30,8 @@ public class RoutePolicyBooleanRouteTypeIs extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new MatchRouteType(_type);
    }

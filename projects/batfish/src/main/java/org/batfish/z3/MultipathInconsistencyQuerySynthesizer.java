@@ -22,7 +22,8 @@ public class MultipathInconsistencyQuerySynthesizer
 
    private String _vrf;
 
-   public MultipathInconsistencyQuerySynthesizer(String hostname, String vrf,
+   public MultipathInconsistencyQuerySynthesizer(
+         String hostname, String vrf,
          HeaderSpace headerSpace) {
       _hostname = hostname;
       _vrf = vrf;
@@ -39,7 +40,8 @@ public class MultipathInconsistencyQuerySynthesizer
       queryConditions.addConjunct(DropExpr.INSTANCE);
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       queryConditions.addConjunct(Synthesizer.matchHeaderSpace(_headerSpace));
-      RuleExpr queryRule = new RuleExpr(queryConditions,
+      RuleExpr queryRule = new RuleExpr(
+            queryConditions,
             QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();
       BoolExpr injectSymbolicPacketsBoolExpr = injectSymbolicPackets

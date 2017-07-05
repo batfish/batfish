@@ -12,7 +12,8 @@ import org.batfish.common.util.CommonUtil;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
-   public BatfishParserErrorListener(String grammarName,
+   public BatfishParserErrorListener(
+         String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
    }
@@ -39,7 +40,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
             + tokenText + "  <== mode:" + mode;
    }
 
-   public void syntaxError(ParserRuleContext ctx, Object offendingSymbol,
+   public void syntaxError(
+         ParserRuleContext ctx, Object offendingSymbol,
          int line, int charPositionInLine, String msg) {
       if (_syntaxErrorHandler != null && _syntaxErrorHandler.handle(ctx,
             offendingSymbol, line, charPositionInLine, msg)) {
@@ -50,7 +52,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       String ruleStack = ctx.toString(ruleNames);
       List<Token> tokens = _combinedParser.getTokens().getTokens();
       int startTokenIndex = parser.getInputStream().index();
-      int lookbackIndex = Math.max(0,
+      int lookbackIndex = Math.max(
+            0,
             startTokenIndex - _settings.getMaxParserContextTokens());
       int endTokenIndex = tokens.size();
       StringBuilder sb = new StringBuilder();
@@ -116,7 +119,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
    }
 
    @Override
-   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+   public void syntaxError(
+         Recognizer<?, ?> recognizer, Object offendingSymbol,
          int line, int charPositionInLine, String msg, RecognitionException e) {
       BatfishParser parser = _combinedParser.getParser();
       syntaxError(parser.getContext(), offendingSymbol, line,

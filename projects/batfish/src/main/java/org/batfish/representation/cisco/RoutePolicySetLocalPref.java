@@ -21,7 +21,8 @@ public class RoutePolicySetLocalPref extends RoutePolicySetStatement {
    }
 
    @Override
-   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+   public Statement toSetStatement(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new SetLocalPreference(_pref);
    }

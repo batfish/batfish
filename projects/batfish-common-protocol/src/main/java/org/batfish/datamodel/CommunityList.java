@@ -45,7 +45,8 @@ public class CommunityList extends ComparableStructure<String> {
     * @param lines
     */
    @JsonCreator
-   public CommunityList(@JsonProperty(NAME_VAR) String name,
+   public CommunityList(
+         @JsonProperty(NAME_VAR) String name,
          @JsonProperty(LINES_VAR) List<CommunityListLine> lines) {
       super(name);
       _lines = lines;

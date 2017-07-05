@@ -15,18 +15,22 @@ import org.batfish.common.util.CommonUtil;
 
 public class ParseTreePrettyPrinter implements ParseTreeListener {
 
-   public static ParseTreeSentences getParseTreeSentences(ParserRuleContext ctx,
+   public static ParseTreeSentences getParseTreeSentences(
+         ParserRuleContext ctx,
          BatfishCombinedParser<?, ?> combinedParser) {
       ParseTreeWalker walker = new ParseTreeWalker();
-      ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx,
+      ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(
+            ctx,
             combinedParser);
       walker.walk(printer, ctx);
       return printer._ptSentences;
    }
 
-   public static String print(ParserRuleContext ctx,
+   public static String print(
+         ParserRuleContext ctx,
          BatfishCombinedParser<?, ?> combinedParser) {
-      return String.join("\n",
+      return String.join(
+            "\n",
             getParseTreeSentences(ctx, combinedParser).getSentences());
    }
 
@@ -42,7 +46,8 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    private Vocabulary _vocabulary;
 
-   private ParseTreePrettyPrinter(ParserRuleContext ctx,
+   private ParseTreePrettyPrinter(
+         ParserRuleContext ctx,
          BatfishCombinedParser<?, ?> combinedParser) {
       Parser grammar = combinedParser.getParser();
       List<String> ruleNames = Arrays.asList(grammar.getRuleNames());

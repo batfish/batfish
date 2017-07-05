@@ -79,13 +79,17 @@ public class BfConsts {
    public static final String RELPATH_ANSWER_PRETTY_JSON = "answer-pretty.json";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
    public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_vpc_configs";
-   public static final String ABSPATH_CONFIG_FILE_NAME_ALLINONE = "/org/batfish/allinone/config/allinone.properties";
+   public static final String ABSPATH_CONFIG_FILE_NAME_ALLINONE =
+         "/org/batfish/allinone/config/allinone.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
-   public static final String ABSPATH_CONFIG_FILE_NAME_BATFISH = "/org/batfish/  config/batfish.properties";
+   public static final String ABSPATH_CONFIG_FILE_NAME_BATFISH =
+         "/org/batfish/  config/batfish.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_BATFISH = "batfish.properties";
-   public static final String ABSPATH_CONFIG_FILE_NAME_CLIENT = "/org/batfish/client/config/client.properties";
+   public static final String ABSPATH_CONFIG_FILE_NAME_CLIENT =
+         "/org/batfish/client/config/client.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
-   public static final String ABSPATH_CONFIG_FILE_NAME_COORDINATOR = "/org/batfish/coordinator/config/coordinator.properties";
+   public static final String ABSPATH_CONFIG_FILE_NAME_COORDINATOR =
+         "/org/batfish/coordinator/config/coordinator.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
@@ -102,7 +106,8 @@ public class BfConsts {
    public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
    public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
-   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
+   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS =
+         "external_bgp_announcements.json";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";

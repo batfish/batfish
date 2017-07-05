@@ -143,7 +143,8 @@ public class WorkQueueMgr {
       work.setStatus(WorkStatusCode.UNASSIGNED);
    }
 
-   public synchronized void markAssignmentSuccess(QueuedWork work,
+   public synchronized void markAssignmentSuccess(
+         QueuedWork work,
          String assignedWorker) {
       work.setAssignment(assignedWorker);
    }

@@ -10,7 +10,8 @@ public class NeighborsDiff extends ConfigDiffElement {
    private NeighborsDiff() {
    }
 
-   public NeighborsDiff(Map<Prefix, BgpNeighbor> before,
+   public NeighborsDiff(
+         Map<Prefix, BgpNeighbor> before,
          Map<Prefix, BgpNeighbor> after) {
       super(new TreeSet<>(), new TreeSet<>());
 

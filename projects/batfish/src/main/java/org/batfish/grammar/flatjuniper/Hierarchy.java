@@ -256,12 +256,14 @@ public class Hierarchy {
          _root = new HierarchyRootNode();
       }
 
-      private void addGroupPaths(Set_lineContext groupLine,
+      private void addGroupPaths(
+            Set_lineContext groupLine,
             Collection<HierarchyChildNode> currentGroupChildren,
             HierarchyTree masterTree, HierarchyPath path, List<ParseTree> lines,
             Flat_juniper_configurationContext configurationContext) {
          if (groupLine != null) {
-            Set_lineContext setLine = new Set_lineContext(configurationContext,
+            Set_lineContext setLine = new Set_lineContext(
+                  configurationContext,
                   -1);
             if (masterTree.addPath(path, setLine,
                   _groupName) == AddPathResult.BLACKLISTED) {
@@ -279,7 +281,8 @@ public class Hierarchy {
                   + "\n";
             TerminalNode set = new TerminalNodeImpl(
                   new CommonToken(FlatJuniperLexer.SET, "set"));
-            Set_line_tailContext setLineTail = new Set_line_tailContext(setLine,
+            Set_line_tailContext setLineTail = new Set_line_tailContext(
+                  setLine,
                   -1);
             TerminalNode newline = new TerminalNodeImpl(
                   new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
@@ -310,7 +313,8 @@ public class Hierarchy {
          }
       }
 
-      public AddPathResult addPath(HierarchyPath path, Set_lineContext ctx,
+      public AddPathResult addPath(
+            HierarchyPath path, Set_lineContext ctx,
             String group) {
          AddPathResult result = AddPathResult.UNMODIFIED;
          HierarchyNode currentNode = _root;
@@ -332,7 +336,8 @@ public class Hierarchy {
          return result;
       }
 
-      public List<ParseTree> applyWildcardPath(HierarchyPath path,
+      public List<ParseTree> applyWildcardPath(
+            HierarchyPath path,
             Flat_juniper_configurationContext configurationContext) {
          HierarchyChildNode wildcardNode = findExactPathMatchNode(path);
          String sourceGroup = wildcardNode._sourceGroup;
@@ -350,7 +355,8 @@ public class Hierarchy {
          return lines;
       }
 
-      private void applyWildcardPath(HierarchyPath path,
+      private void applyWildcardPath(
+            HierarchyPath path,
             Flat_juniper_configurationContext configurationContext,
             String sourceGroup, HierarchyNode destinationTreeRoot,
             int startingIndex, int remainingWildcards,
@@ -372,14 +378,16 @@ public class Hierarchy {
                   return;
                }
                newDestinationTreeRoot = currentPathNode.copy();
-               destinationTreeRoot._children.put(newDestinationTreeRoot._text,
+               destinationTreeRoot._children.put(
+                     newDestinationTreeRoot._text,
                      newDestinationTreeRoot);
             }
             newPath._nodes.add(newDestinationTreeRoot);
             if (startingIndex == path._nodes.size() - 1) {
                newDestinationTreeRoot._sourceWildcards = new ArrayList<>();
                newDestinationTreeRoot._sourceWildcards.addAll(appliedWildcards);
-               newDestinationTreeRoot._line = generateSetLine(newPath,
+               newDestinationTreeRoot._line = generateSetLine(
+                     newPath,
                      configurationContext);
                lines.add(newDestinationTreeRoot._line);
             }
@@ -443,9 +451,11 @@ public class Hierarchy {
          return matchNode;
       }
 
-      private Set_lineContext generateSetLine(HierarchyPath path,
+      private Set_lineContext generateSetLine(
+            HierarchyPath path,
             Flat_juniper_configurationContext configurationContext) {
-         Set_lineContext setLine = new Set_lineContext(configurationContext,
+         Set_lineContext setLine = new Set_lineContext(
+               configurationContext,
                -1);
          StringBuilder sb = new StringBuilder();
          for (HierarchyChildNode pathNode : path._nodes) {
@@ -457,7 +467,8 @@ public class Hierarchy {
                + "\n";
          TerminalNode set = new TerminalNodeImpl(
                new CommonToken(FlatJuniperLexer.SET, "set"));
-         Set_line_tailContext setLineTail = new Set_line_tailContext(setLine,
+         Set_line_tailContext setLineTail = new Set_line_tailContext(
+               setLine,
                -1);
          TerminalNode newline = new TerminalNodeImpl(
                new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
@@ -480,7 +491,8 @@ public class Hierarchy {
          return setLine;
       }
 
-      public List<ParseTree> getApplyGroupsLines(HierarchyPath path,
+      public List<ParseTree> getApplyGroupsLines(
+            HierarchyPath path,
             Flat_juniper_configurationContext configurationContext,
             HierarchyTree masterTree) {
          List<ParseTree> lines = new ArrayList<>();
@@ -517,7 +529,8 @@ public class Hierarchy {
          return lines;
       }
 
-      public List<ParseTree> getApplyPathLines(HierarchyPath basePath,
+      public List<ParseTree> getApplyPathLines(
+            HierarchyPath basePath,
             HierarchyPath applyPathPath,
             Flat_juniper_configurationContext configurationContext) {
          List<ParseTree> lines = new ArrayList<>();
@@ -553,7 +566,8 @@ public class Hierarchy {
                      + candidatePrefix + "\"", e);
             }
             basePath.addNode(finalPrefixStr);
-            Set_lineContext setLine = generateSetLine(basePath,
+            Set_lineContext setLine = generateSetLine(
+                  basePath,
                   configurationContext);
             lines.add(setLine);
             basePath._nodes.remove(basePath._nodes.size() - 1);
@@ -567,7 +581,8 @@ public class Hierarchy {
          return prefixes;
       }
 
-      private void getApplyPathPrefixes(HierarchyPath path,
+      private void getApplyPathPrefixes(
+            HierarchyPath path,
             HierarchyNode currentNode, int currentDepth,
             List<String> prefixes) {
          if (currentDepth == path._nodes.size() - 1) {
@@ -618,7 +633,8 @@ public class Hierarchy {
       _deactivateTree = new HierarchyTree(null);
    }
 
-   public void addDeactivatePath(HierarchyPath path,
+   public void addDeactivatePath(
+         HierarchyPath path,
          Deactivate_lineContext ctx) {
       if (isDeactivated(path)) {
          return;
@@ -631,7 +647,8 @@ public class Hierarchy {
       _masterTree.addPath(path, ctx, null);
    }
 
-   public List<ParseTree> getApplyGroupsLines(String groupName,
+   public List<ParseTree> getApplyGroupsLines(
+         String groupName,
          HierarchyPath path,
          Flat_juniper_configurationContext configurationContext) {
       HierarchyTree tree = _trees.get(groupName);
@@ -642,7 +659,8 @@ public class Hierarchy {
       return tree.getApplyGroupsLines(path, configurationContext, _masterTree);
    }
 
-   public List<ParseTree> getApplyPathLines(HierarchyPath basePath,
+   public List<ParseTree> getApplyPathLines(
+         HierarchyPath basePath,
          HierarchyPath applyPathPath,
          Flat_juniper_configurationContext configurationContext) {
       return _masterTree.getApplyPathLines(basePath, applyPathPath,

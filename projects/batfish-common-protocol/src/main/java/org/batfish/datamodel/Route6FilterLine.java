@@ -24,7 +24,8 @@ public class Route6FilterLine implements Serializable {
    private final Prefix6 _prefix;
 
    @JsonCreator
-   public Route6FilterLine(@JsonProperty(ACTION_VAR) LineAction action,
+   public Route6FilterLine(
+         @JsonProperty(ACTION_VAR) LineAction action,
          @JsonProperty(PREFIX_VAR) Prefix6 prefix,
          @JsonProperty(LENGTH_RANGE_VAR) SubRange lengthRange) {
       _action = action;

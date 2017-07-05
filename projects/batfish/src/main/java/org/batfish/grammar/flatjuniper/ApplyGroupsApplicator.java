@@ -40,7 +40,8 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    private final Warnings _w;
 
-   public ApplyGroupsApplicator(FlatJuniperCombinedParser combinedParser,
+   public ApplyGroupsApplicator(
+         FlatJuniperCombinedParser combinedParser,
          Hierarchy hierarchy, Warnings warnings) {
       _hierarchy = hierarchy;
       _w = warnings;

@@ -18,7 +18,8 @@ public class NodFirstUnsatJob<Key, Result>
 
    private final Synthesizer _synthesizer;
 
-   public NodFirstUnsatJob(Settings settings, Synthesizer synthesizer,
+   public NodFirstUnsatJob(
+         Settings settings, Synthesizer synthesizer,
          FirstUnsatQuerySynthesizer<Key, Result> query) {
       super(settings);
       _synthesizer = synthesizer;
@@ -30,7 +31,8 @@ public class NodFirstUnsatJob<Key, Result>
       long startTime = System.currentTimeMillis();
       long elapsedTime;
       try (Context ctx = new Context()) {
-         NodProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer,
+         NodProgram baseProgram = _query.synthesizeBaseProgram(
+               _synthesizer,
                ctx);
          NodProgram queryProgram = _query.getNodProgram(baseProgram);
          NodProgram program = baseProgram.append(queryProgram);
@@ -56,7 +58,8 @@ public class NodFirstUnsatJob<Key, Result>
             case SATISFIABLE:
                break;
             case UNKNOWN:
-               return new NodFirstUnsatResult<>(elapsedTime,
+               return new NodFirstUnsatResult<>(
+                     elapsedTime,
                      _logger.getHistory(),
                      new BatfishException("Query satisfiability unknown"));
             case UNSATISFIABLE:
@@ -64,7 +67,8 @@ public class NodFirstUnsatJob<Key, Result>
                      _query.getResultsByQueryIndex().get(queryNum),
                      _logger.getHistory(), elapsedTime);
             default:
-               return new NodFirstUnsatResult<>(elapsedTime,
+               return new NodFirstUnsatResult<>(
+                     elapsedTime,
                      _logger.getHistory(),
                      new BatfishException("invalid status"));
             }

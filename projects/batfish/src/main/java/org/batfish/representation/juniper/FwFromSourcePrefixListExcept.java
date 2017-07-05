@@ -12,8 +12,8 @@ import org.batfish.datamodel.RouteFilterList;
 public class FwFromSourcePrefixListExcept extends FwFrom {
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private final String _name;
@@ -23,7 +23,8 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       PrefixList pl = jc.getPrefixLists().get(_name);
       if (pl != null) {

@@ -28,7 +28,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
 
    private final Path _svgFile;
 
-   public GraphvizJob(Settings settings, GraphvizInput input, Path graphFile,
+   public GraphvizJob(
+         Settings settings, GraphvizInput input, Path graphFile,
          Path svgFile, Path htmlFile, Prefix prefix) {
       super(settings);
       _input = input;
@@ -73,7 +74,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
          graphBytes = _input.toString().getBytes("UTF-8");
       }
       catch (UnsupportedEncodingException e) {
-         throw new BatfishException("Failed to convert graphviz input to bytes",
+         throw new BatfishException(
+               "Failed to convert graphviz input to bytes",
                e);
       }
       return graphBytes;

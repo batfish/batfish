@@ -29,7 +29,8 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
 
    private final Settings _settings;
 
-   public BatfishJobExecutor(Settings settings, BatfishLogger logger,
+   public BatfishJobExecutor(
+         Settings settings, BatfishLogger logger,
          boolean haltOnProcessingError, String description) {
       _settings = settings;
       _logger = logger;
@@ -42,7 +43,8 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       boolean shuffle;
       if (!_settings.getSequential()) {
          int maxConcurrentThreads = Runtime.getRuntime().availableProcessors();
-         int numConcurrentThreads = Math.min(maxConcurrentThreads,
+         int numConcurrentThreads = Math.min(
+               maxConcurrentThreads,
                _settings.getJobs());
          pool = Executors.newFixedThreadPool(numConcurrentThreads);
          shuffle = _settings.getShuffleJobs();
@@ -95,10 +97,11 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                   String failureMessage = "Failure running job after elapsed time: "
                         + time + "\n-----BEGIN JOB LOG-----\n"
                         + result.getHistory()
-                              .toString(BatfishLogger
-                                    .getLogLevel(_settings.getLogLevel()))
+                        .toString(BatfishLogger
+                              .getLogLevel(_settings.getLogLevel()))
                         + "\n-----END JOB LOG-----";
-                  BatfishException bfc = new BatfishException(failureMessage,
+                  BatfishException bfc = new BatfishException(
+                        failureMessage,
                         failureCause);
                   if (_settings.getExitOnFirstError()) {
                      result.appendHistory(_logger);

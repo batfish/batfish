@@ -43,7 +43,8 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
    private Map<String, Set<String>> _ingressNodeVrfs;
 
-   public ReachabilityQuerySynthesizer(Set<ForwardingAction> actions,
+   public ReachabilityQuerySynthesizer(
+         Set<ForwardingAction> actions,
          HeaderSpace headerSpace, Set<String> finalNodes,
          Map<String, Set<String>> ingressNodeVrfs) {
       _actions = actions;
@@ -60,7 +61,8 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       List<RuleExpr> originateRules = new ArrayList<>();
       for (String ingressNode : _ingressNodeVrfs.keySet()) {
          for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
-            OriginateVrfExpr originate = new OriginateVrfExpr(ingressNode,
+            OriginateVrfExpr originate = new OriginateVrfExpr(
+                  ingressNode,
                   ingressVrf);
             RuleExpr originateRule = new RuleExpr(originate);
             originateRules.add(originateRule);
@@ -174,7 +176,8 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       BooleanExpr matchHeaderSpace = Synthesizer.matchHeaderSpace(_headerSpace);
       queryConditions.addConjunct(matchHeaderSpace);
 
-      RuleExpr queryRule = new RuleExpr(queryConditions,
+      RuleExpr queryRule = new RuleExpr(
+            queryConditions,
             QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();
       for (RuleExpr originateRule : originateRules) {

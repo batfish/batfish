@@ -25,7 +25,8 @@ public class RouteMapMatchTagLine extends RouteMapMatchLine {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+   public BooleanExpr toBooleanExpr(
+         Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();
       List<BooleanExpr> disjuncts = d.getDisjuncts();

@@ -35,7 +35,8 @@ public class ParseVendorConfigurationJob
    private static Pattern BANNER_PATTERN = Pattern.compile(
          "(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
-   private static String preprocessBanner(String fileText,
+   private static String preprocessBanner(
+         String fileText,
          ConfigurationFormat format) {
       Matcher matcher = BANNER_PATTERN.matcher(fileText);
       if (matcher.find()) {
@@ -50,9 +51,11 @@ public class ParseVendorConfigurationJob
          if (finalDelimiterMatcher.find(delimiterIndex + 1)) {
             int finalDelimiterIndex = finalDelimiterMatcher.start();
             String beforeDelimiter = fileText.substring(0, delimiterIndex);
-            String betweenDelimiters = fileText.substring(delimiterIndex + 1,
+            String betweenDelimiters = fileText.substring(
+                  delimiterIndex + 1,
                   finalDelimiterIndex);
-            String afterDelimiter = fileText.substring(finalDelimiterIndex + 1,
+            String afterDelimiter = fileText.substring(
+                  finalDelimiterIndex + 1,
                   fileText.length());
             String newFileText = beforeDelimiter + "^C" + betweenDelimiters
                   + "^C" + afterDelimiter;
@@ -77,7 +80,8 @@ public class ParseVendorConfigurationJob
 
    private Warnings _warnings;
 
-   public ParseVendorConfigurationJob(Settings settings, String fileText,
+   public ParseVendorConfigurationJob(
+         Settings settings, String fileText,
          Path file, Warnings warnings,
          ConfigurationFormat configurationFormat) {
       super(settings);
@@ -246,7 +250,8 @@ public class ParseVendorConfigurationJob
          break;
 
       case MRV:
-         MrvCombinedParser mrvParser = new MrvCombinedParser(_fileText,
+         MrvCombinedParser mrvParser = new MrvCombinedParser(
+               _fileText,
                _settings);
          combinedParser = mrvParser;
          extractor = new MrvControlPlaneExtractor(_fileText, mrvParser,
@@ -299,7 +304,8 @@ public class ParseVendorConfigurationJob
          _logger.info("\tParsing...");
          tree = Batfish.parse(combinedParser, _logger, _settings);
          if (_settings.printParseTree()) {
-            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree,
+            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(
+                  tree,
                   combinedParser);
          }
          _logger.info("\tPost-processing...");

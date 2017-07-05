@@ -185,7 +185,8 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
       _loggingServers = new TreeSet<>();
-      _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT,
+      _normalVlanRange = new SubRange(
+            VLAN_NORMAL_MIN_DEFAULT,
             VLAN_NORMAL_MAX_DEFAULT);
       _ntpServers = new TreeSet<>();
       _roles = new RoleSet();
@@ -664,7 +665,7 @@ public final class Configuration extends ComparableStructure<String> {
       NavigableMap<String, RoutingPolicy> simpleRoutingPolicies = new TreeMap<>();
       simpleRoutingPolicies.putAll(_routingPolicies.entrySet().stream()
             .collect(Collectors
-                  .<Entry<String, RoutingPolicy>, String, RoutingPolicy> toMap(
+                  .<Entry<String, RoutingPolicy>, String, RoutingPolicy>toMap(
                         e -> e.getKey(), e -> e.getValue().simplify())));
       _routingPolicies = simpleRoutingPolicies;
    }

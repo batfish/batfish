@@ -83,7 +83,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       }
    }
 
-   private void addConfigElement(String elementType, JSONObject jsonObject,
+   private void addConfigElement(
+         String elementType, JSONObject jsonObject,
          BatfishLogger logger) throws JSONException {
       switch (elementType) {
       case AwsVpcEntity.JSON_KEY_ADDRESSES:
@@ -107,7 +108,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
          _networkAcls.put(networkAcl.getId(), networkAcl);
          break;
       case AwsVpcEntity.JSON_KEY_NETWORK_INTERFACES:
-         NetworkInterface networkInterface = new NetworkInterface(jsonObject,
+         NetworkInterface networkInterface = new NetworkInterface(
+               jsonObject,
                logger);
          _networkInterfaces.put(networkInterface.getId(), networkInterface);
          break;
@@ -138,7 +140,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
          _vpcs.put(vpc.getId(), vpc);
          break;
       case AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS:
-         VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject,
+         VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(
+               jsonObject,
                logger);
          _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
          break;

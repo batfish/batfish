@@ -24,7 +24,8 @@ public class Service {
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
-      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
+      return new JSONArray(Arrays.asList(
+            BfConsts.SVC_SUCCESS_KEY,
             "Batfish service: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
@@ -33,7 +34,8 @@ public class Service {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getStatus() {
       try {
-         return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
+         return new JSONArray(Arrays.asList(
+               BfConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("idle", Driver.getIdle())).toString()));
       }
       catch (Exception e) {
@@ -51,7 +53,8 @@ public class Service {
       try {
 
          if (taskId == null || taskId.equals("")) {
-            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
+            return new JSONArray(Arrays.asList(
+                  BfConsts.SVC_FAILURE_KEY,
                   "taskid not supplied"));
          }
 
@@ -72,13 +75,15 @@ public class Service {
    @GET
    @Path(BfConsts.SVC_RUN_TASK_RSC)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray runTask(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId,
+   public JSONArray runTask(
+         @QueryParam(BfConsts.SVC_TASKID_KEY) String taskId,
          @QueryParam(BfConsts.SVC_TASK_KEY) String task) {
       _logger.info("BFS:runTask(" + taskId + ", " + task + ")\n");
       try {
 
          if (taskId == null || taskId.equals("")) {
-            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
+            return new JSONArray(Arrays.asList(
+                  BfConsts.SVC_FAILURE_KEY,
                   "taskid not supplied"));
          }
 

@@ -12,7 +12,8 @@ public class RoutePolicyBooleanOr extends RoutePolicyBoolean {
    private RoutePolicyBoolean _left;
    private RoutePolicyBoolean _right;
 
-   public RoutePolicyBooleanOr(RoutePolicyBoolean left,
+   public RoutePolicyBooleanOr(
+         RoutePolicyBoolean left,
          RoutePolicyBoolean right) {
       _left = left;
       _right = right;
@@ -27,7 +28,8 @@ public class RoutePolicyBooleanOr extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       Disjunction disj = new Disjunction();
       BooleanExpr left = _left.toBooleanExpr(cc, c, w);

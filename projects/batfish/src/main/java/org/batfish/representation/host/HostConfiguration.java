@@ -69,7 +69,8 @@ public class HostConfiguration extends VendorConfiguration {
    public static HostConfiguration fromJson(String text, Warnings warnings)
          throws JsonParseException, JsonMappingException, IOException {
       ObjectMapper mapper = new BatfishObjectMapper();
-      HostConfiguration hostConfiguration = mapper.readValue(text,
+      HostConfiguration hostConfiguration = mapper.readValue(
+            text,
             HostConfiguration.class);
       hostConfiguration._w = warnings;
       return hostConfiguration;
@@ -162,9 +163,10 @@ public class HostConfiguration extends VendorConfiguration {
    }
 
    private boolean simple() {
-      String[] aclsToCheck = new String[] { RAW_PREROUTING, MANGLE_PREROUTING,
+      String[] aclsToCheck = new String[]{
+            RAW_PREROUTING, MANGLE_PREROUTING,
             NAT_PREROUTING, MANGLE_INPUT, RAW_OUTPUT, MANGLE_OUTPUT, NAT_OUTPUT,
-            MANGLE_FORWARD, FILTER_FORWARD, MANGLE_POSTROUTING };
+            MANGLE_FORWARD, FILTER_FORWARD, MANGLE_POSTROUTING};
       for (String aclName : aclsToCheck) {
          IpAccessList acl = _c.getIpAccessLists().get(aclName);
          if (acl != null) {
@@ -190,7 +192,8 @@ public class HostConfiguration extends VendorConfiguration {
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       _c.setDefaultInboundAction(LineAction.ACCEPT);
       _c.setRoles(_roles);
-      _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME,
+      _c.getVrfs().put(
+            Configuration.DEFAULT_VRF_NAME,
             new Vrf(Configuration.DEFAULT_VRF_NAME));
 
       // add interfaces

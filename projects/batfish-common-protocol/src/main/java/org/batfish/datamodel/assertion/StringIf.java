@@ -8,7 +8,8 @@ public class StringIf implements StringExpr {
 
    private StringExpr _trueExpr;
 
-   public StringIf(BooleanExpr guard, StringExpr trueExpr,
+   public StringIf(
+         BooleanExpr guard, StringExpr trueExpr,
          StringExpr falseExpr) {
       _guard = guard;
       _trueExpr = trueExpr;

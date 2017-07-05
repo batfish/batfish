@@ -36,7 +36,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
          _enabledIps = new TreeMap<>();
       }
 
-      public void add(SortedMap<Ip, SortedSet<NodeInterfacePair>> map, Ip ip,
+      public void add(
+            SortedMap<Ip, SortedSet<NodeInterfacePair>> map, Ip ip,
             String hostname, String interfaceName) {
          SortedSet<NodeInterfacePair> interfaces = map.get(ip);
          if (interfaces == null) {
@@ -54,7 +55,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
          return _enabledIps;
       }
 
-      private Object ipsToString(String indent, String header,
+      private Object ipsToString(
+            String indent, String header,
             SortedMap<Ip, SortedSet<NodeInterfacePair>> ips) {
          StringBuilder sb = new StringBuilder(indent + header + "\n");
          for (Ip ip : ips.keySet()) {
@@ -205,6 +207,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists IP addresses that are assigned to multiple interfaces.
     * <p>

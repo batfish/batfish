@@ -5,7 +5,8 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class Utils {
 
-   public static boolean tryGetBoolean(JSONObject jsonObject, String key,
+   public static boolean tryGetBoolean(
+         JSONObject jsonObject, String key,
          boolean defaultValue) throws JSONException {
       if (jsonObject.has(key)) {
          return jsonObject.getBoolean(key);
@@ -13,7 +14,8 @@ public class Utils {
       return defaultValue;
    }
 
-   public static int tryGetInt(JSONObject jsonObject, String key,
+   public static int tryGetInt(
+         JSONObject jsonObject, String key,
          int defaultValue) throws JSONException {
       if (jsonObject.has(key)) {
          return jsonObject.getInt(key);

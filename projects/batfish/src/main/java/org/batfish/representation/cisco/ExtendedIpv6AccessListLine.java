@@ -44,7 +44,8 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
    private final List<TcpFlags> _tcpFlags;
 
-   public ExtendedIpv6AccessListLine(String name, LineAction action,
+   public ExtendedIpv6AccessListLine(
+         String name, LineAction action,
          IpProtocol protocol, Ip6Wildcard srcIpWildcard, String srcAddressGroup,
          Ip6Wildcard dstIpWildcard, String dstAddressGroup,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,

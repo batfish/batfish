@@ -41,8 +41,9 @@ public abstract class PluginConsumer implements IPluginConsumer {
     * A byte-array containing the first 4 bytes of the header for a file that is
     * the output of java serialization
     */
-   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
-         (byte) 0xed, (byte) 0x00, (byte) 0x05 };
+   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = {
+         (byte) 0xac,
+         (byte) 0xed, (byte) 0x00, (byte) 0x05};
 
    private ClassLoader _currentClassLoader;
 
@@ -69,7 +70,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
    }
 
-   protected <S extends Serializable> S deserializeObject(byte[] data,
+   protected <S extends Serializable> S deserializeObject(
+         byte[] data,
          Class<S> outputClass) {
       try {
          boolean isJavaSerializationData = isJavaSerializationData(data);
@@ -93,7 +95,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
       }
    }
 
-   public <S extends Serializable> S deserializeObject(Path inputFile,
+   public <S extends Serializable> S deserializeObject(
+         Path inputFile,
          Class<S> outputClass) {
       byte[] data = fromGzipFile(inputFile);
       return deserializeObject(data, outputClass);
@@ -139,8 +142,9 @@ public abstract class PluginConsumer implements IPluginConsumer {
       String pathString = path.toString();
       if (pathString.endsWith(".jar")) {
          try {
-            URL[] urls = { new URL("jar:file:" + pathString + "!/") };
-            URLClassLoader cl = URLClassLoader.newInstance(urls,
+            URL[] urls = {new URL("jar:file:" + pathString + "!/")};
+            URLClassLoader cl = URLClassLoader.newInstance(
+                  urls,
                   _currentClassLoader);
             _currentClassLoader = cl;
             Thread.currentThread().setContextClassLoader(cl);
@@ -207,7 +211,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
             try {
                Files.walkFileTree(pluginDir, new SimpleFileVisitor<Path>() {
                   @Override
-                  public FileVisitResult visitFile(Path path,
+                  public FileVisitResult visitFile(
+                        Path path,
                         BasicFileAttributes attrs) throws IOException {
                      loadPluginJar(path);
                      return FileVisitResult.CONTINUE;

@@ -18,7 +18,8 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
 
    private final int _statementLine;
 
-   public RouteMapMatchIpv6PrefixListLine(Set<String> names,
+   public RouteMapMatchIpv6PrefixListLine(
+         Set<String> names,
          int statementLine) {
       _listNames = names;
       _statementLine = statementLine;
@@ -29,7 +30,8 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+   public BooleanExpr toBooleanExpr(
+         Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();
       List<BooleanExpr> disjuncts = d.getDisjuncts();
@@ -37,7 +39,8 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
          Prefix6List list = cc.getPrefix6Lists().get(listName);
          if (list != null) {
             list.getReferers().put(this, "route-map match prefix-list");
-            disjuncts.add(new MatchPrefix6Set(new DestinationNetwork6(),
+            disjuncts.add(new MatchPrefix6Set(
+                  new DestinationNetwork6(),
                   new NamedPrefix6Set(listName)));
          }
          else {

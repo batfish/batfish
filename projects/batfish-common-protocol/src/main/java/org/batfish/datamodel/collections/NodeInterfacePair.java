@@ -15,7 +15,8 @@ public class NodeInterfacePair extends Pair<String, String> {
    private static final long serialVersionUID = 1L;
 
    @JsonCreator
-   public NodeInterfacePair(@JsonProperty(HOSTNAME_VAR) String node,
+   public NodeInterfacePair(
+         @JsonProperty(HOSTNAME_VAR) String node,
          @JsonProperty(INTERFACE_VAR) String iface) {
       super(node, iface);
    }

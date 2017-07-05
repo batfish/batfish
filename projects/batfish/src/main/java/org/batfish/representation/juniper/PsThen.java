@@ -13,7 +13,8 @@ public abstract class PsThen implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   public abstract void applyTo(List<Statement> statements,
+   public abstract void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings);
 

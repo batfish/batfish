@@ -24,7 +24,8 @@ public class HeaderSpace implements Serializable {
       return false;
    }
 
-   private static boolean wildcardsContain(Collection<IpWildcard> wildcards,
+   private static boolean wildcardsContain(
+         Collection<IpWildcard> wildcards,
          Ip ip) {
       for (IpWildcard wildcard : wildcards) {
          if (wildcard.contains(ip)) {
@@ -493,12 +494,12 @@ public class HeaderSpace implements Serializable {
       }
       if (!_srcOrDstIps.isEmpty()
             && !(wildcardsContain(_srcOrDstIps, flow.getSrcIp())
-                  || wildcardsContain(_srcOrDstIps, flow.getDstIp()))) {
+            || wildcardsContain(_srcOrDstIps, flow.getDstIp()))) {
          return false;
       }
       if (!_srcOrDstPorts.isEmpty()
             && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
-                  || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
+            || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
          return false;
       }
       if (!_srcOrDstProtocols.isEmpty()) {

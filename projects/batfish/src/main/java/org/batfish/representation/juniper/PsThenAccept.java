@@ -22,7 +22,8 @@ public final class PsThenAccept extends PsThen {
    }
 
    @Override
-   public void applyTo(List<Statement> statements,
+   public void applyTo(
+         List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings w) {
       If ifStatement = new If();

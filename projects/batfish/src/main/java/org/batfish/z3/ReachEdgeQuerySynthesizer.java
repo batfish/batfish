@@ -27,7 +27,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
    private boolean _requireAcceptance;
 
-   public ReachEdgeQuerySynthesizer(String originationNode, String ingressVrf,
+   public ReachEdgeQuerySynthesizer(
+         String originationNode, String ingressVrf,
          Edge edge, boolean requireAcceptance, HeaderSpace headerSpace) {
       _originationNode = originationNode;
       _ingressVrf = ingressVrf;
@@ -39,7 +40,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
    @Override
    public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
       NodProgram program = new NodProgram(baseProgram.getContext());
-      OriginateVrfExpr originate = new OriginateVrfExpr(_originationNode,
+      OriginateVrfExpr originate = new OriginateVrfExpr(
+            _originationNode,
             _ingressVrf);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
@@ -51,7 +53,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
          queryConditions.addConjunct(AcceptExpr.INSTANCE);
       }
       queryConditions.addConjunct(SaneExpr.INSTANCE);
-      RuleExpr queryRule = new RuleExpr(queryConditions,
+      RuleExpr queryRule = new RuleExpr(
+            queryConditions,
             QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();
       BoolExpr injectSymbolicPacketsBoolExpr = injectSymbolicPackets

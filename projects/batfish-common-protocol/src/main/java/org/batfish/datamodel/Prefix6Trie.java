@@ -55,7 +55,8 @@ public class Prefix6Trie implements Serializable {
 
       private ByteTrieNode _right;
 
-      public void addPrefix6(Prefix6 prefix6, BitSet bits, int prefixLength,
+      public void addPrefix6(
+            Prefix6 prefix6, BitSet bits, int prefixLength,
             int depth) {
          if (prefixLength == depth) {
             _prefix6 = prefix6;
@@ -78,7 +79,8 @@ public class Prefix6Trie implements Serializable {
          }
       }
 
-      public boolean containsPathFromPrefix(BitSet bits, int prefixLength,
+      public boolean containsPathFromPrefix(
+            BitSet bits, int prefixLength,
             int depth) {
          if (prefixLength == depth) {
             if (depth == 0 && _prefix6 == null) {
@@ -120,7 +122,8 @@ public class Prefix6Trie implements Serializable {
          }
       }
 
-      public Prefix6 getLongestPrefixMatch(Ip6 address6, BitSet bits,
+      public Prefix6 getLongestPrefixMatch(
+            Ip6 address6, BitSet bits,
             int index) {
          Prefix6 longestPrefixMatch = getLongestPrefixMatch(address6, bits);
          if (index == Prefix6.MAX_PREFIX_LENGTH) {

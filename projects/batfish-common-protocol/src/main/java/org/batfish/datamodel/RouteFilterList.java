@@ -56,7 +56,8 @@ public class RouteFilterList extends ComparableStructure<String> {
       for (RouteFilterLine line : _lines) {
          Prefix linePrefix = line.getPrefix();
          int lineBits = linePrefix.getPrefixLength();
-         Prefix truncatedLinePrefix = new Prefix(linePrefix.getAddress(),
+         Prefix truncatedLinePrefix = new Prefix(
+               linePrefix.getAddress(),
                lineBits);
          Prefix relevantPortion = new Prefix(prefix.getAddress(), lineBits)
                .getNetworkPrefix();

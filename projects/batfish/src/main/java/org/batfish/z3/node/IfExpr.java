@@ -96,7 +96,8 @@ public class IfExpr extends BooleanExpr implements ComplexExpr {
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
       Context ctx = nodProgram.getContext();
-      BoolExpr result = ctx.mkImplies(_antecedent.toBoolExpr(nodProgram),
+      BoolExpr result = ctx.mkImplies(
+            _antecedent.toBoolExpr(nodProgram),
             _consequent.toBoolExpr(nodProgram));
       return result;
    }

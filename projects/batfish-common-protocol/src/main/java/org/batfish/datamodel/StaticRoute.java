@@ -19,7 +19,8 @@ public class StaticRoute extends AbstractRoute {
    private final int _tag;
 
    @JsonCreator
-   public StaticRoute(@JsonProperty(NETWORK_VAR) Prefix network,
+   public StaticRoute(
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,

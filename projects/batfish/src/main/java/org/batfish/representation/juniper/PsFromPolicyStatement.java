@@ -23,7 +23,8 @@ public final class PsFromPolicyStatement extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       return new CallExpr(_policyStatement);
    }

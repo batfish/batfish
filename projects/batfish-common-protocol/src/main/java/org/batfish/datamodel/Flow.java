@@ -421,7 +421,8 @@ public final class Flow implements Comparable<Flow> {
    private final int _tcpFlagsUrg;
 
    @JsonCreator
-   public Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
+   public Flow(
+         @JsonProperty(INGRESS_NODE_VAR) String ingressNode,
          @JsonProperty(INGRESS_INTERFACE_VAR) String ingressInterface,
          @JsonProperty(INGRESS_VRF_VAR) String ingressVrf,
          @JsonProperty(SRC_IP_VAR) Ip srcIp, @JsonProperty(DST_IP_VAR) Ip dstIp,

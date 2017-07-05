@@ -72,7 +72,8 @@ public class QuestionHelper {
       return retString;
    }
 
-   public static Question getQuestion(String questionTypeStr,
+   public static Question getQuestion(
+         String questionTypeStr,
          Map<String, Supplier<Question>> questions) {
       Supplier<Question> supplier = questions.get(questionTypeStr);
       if (supplier == null) {
@@ -82,7 +83,8 @@ public class QuestionHelper {
       return question;
    }
 
-   public static String getQuestionString(String questionTypeStr,
+   public static String getQuestionString(
+         String questionTypeStr,
          Map<String, Supplier<Question>> questions, boolean full) {
       Question question = getQuestion(questionTypeStr, questions);
       if (full) {
@@ -93,7 +95,8 @@ public class QuestionHelper {
       }
    }
 
-   public static IQuestion getReachabilityQuestion(String dstIp,
+   public static IQuestion getReachabilityQuestion(
+         String dstIp,
          String protocolStr, String ingressNodeRegex, ForwardingAction action,
          Map<String, Supplier<Question>> questions) {
       IReachabilityQuestion question = (IReachabilityQuestion) questions
@@ -128,7 +131,8 @@ public class QuestionHelper {
       return question;
    }
 
-   public static String resolveMacro(String macroName, String paramsLine,
+   public static String resolveMacro(
+         String macroName, String paramsLine,
          Map<String, Supplier<Question>> questions) {
       String macro = macroName.replace(MACRO_PREFIX, "");
       MacroType macroType = MacroType.fromName(macro);
@@ -139,7 +143,8 @@ public class QuestionHelper {
          if (words.length < 2 || words.length > 3) {
             throw new BatfishException(
                   "Incorrect usage for noreachability macro. "
-                        + "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
+                        +
+                        "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
          String dstIp = words[0];
          String protocol = words[1];
@@ -153,7 +158,8 @@ public class QuestionHelper {
          if (words.length < 2 || words.length > 3) {
             throw new BatfishException(
                   "Incorrect usage for noreachability macro. "
-                        + "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
+                        +
+                        "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
          String dstIp = words[0];
          String protocol = words[1];

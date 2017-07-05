@@ -24,14 +24,16 @@ public final class RouteMapSetAdditiveCommunityListLine
 
    private final int _statementLine;
 
-   public RouteMapSetAdditiveCommunityListLine(Set<String> communityLists,
+   public RouteMapSetAdditiveCommunityListLine(
+         Set<String> communityLists,
          int statementLine) {
       _communityLists = communityLists;
       _statementLine = statementLine;
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       SortedSet<Long> communities = new TreeSet<>();
       for (String communityListName : _communityLists) {

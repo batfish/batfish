@@ -38,6 +38,7 @@ public class FileTreeQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Outputs file tree of test-rig directory
     *
@@ -74,7 +75,8 @@ public class FileTreeQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected FileTreeAnswerer createAnswerer(Question question,
+   protected FileTreeAnswerer createAnswerer(
+         Question question,
          IBatfish batfish) {
       return new FileTreeAnswerer(question, batfish);
    }

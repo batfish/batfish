@@ -61,7 +61,8 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
 
       if (jObj.has(JSON_KEY_ATTACHMENT)) {
          JSONObject attachJson = jObj.getJSONObject(JSON_KEY_ATTACHMENT);
-         _attachmentInstanceId = Utils.tryGetString(attachJson,
+         _attachmentInstanceId = Utils.tryGetString(
+               attachJson,
                JSON_KEY_INSTANCE_ID);
 
          if (!attachJson.getString(JSON_KEY_STATUS).equals("attached")) {
@@ -107,7 +108,8 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
       return _vpcId;
    }
 
-   private void initIpAddressAssociations(JSONArray associations,
+   private void initIpAddressAssociations(
+         JSONArray associations,
          BatfishLogger logger) throws JSONException {
 
       for (int index = 0; index < associations.length(); index++) {

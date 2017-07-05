@@ -22,7 +22,8 @@ public enum DiffieHellmanGroup {
    GROUP26(26),
    GROUP5(5);
 
-   private static final Map<Integer, DiffieHellmanGroup> FROM_GROUP_NUMBER_MAP = initFromGroupNumberMap();
+   private static final Map<Integer, DiffieHellmanGroup> FROM_GROUP_NUMBER_MAP =
+         initFromGroupNumberMap();
 
    public static DiffieHellmanGroup fromGroupNumber(int num) {
       DiffieHellmanGroup dhGroup = FROM_GROUP_NUMBER_MAP.get(num);

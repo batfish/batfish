@@ -14,9 +14,11 @@ public class IpsecTunnel implements Serializable {
       return element.getElementsByTagName(tag).item(0).getTextContent();
    }
 
-   private static String getText(Element element, String outerTag,
+   private static String getText(
+         Element element, String outerTag,
          String innerTag) {
-      return getText((Element) element.getElementsByTagName(outerTag).item(0),
+      return getText(
+            (Element) element.getElementsByTagName(outerTag).item(0),
             innerTag);
    }
 
@@ -69,7 +71,8 @@ public class IpsecTunnel implements Serializable {
             .getElementsByTagName(
                   AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
             .getLength() > 0) {
-         _vpnConnectionAttributes = getText(vpnConnection,
+         _vpnConnectionAttributes = getText(
+               vpnConnection,
                AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES);
       }
       Element cgwElement = (Element) ipsecTunnel
@@ -120,13 +123,16 @@ public class IpsecTunnel implements Serializable {
       Element ikeElement = (Element) ipsecTunnel
             .getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
 
-      _ikeAuthProtocol = getText(ikeElement,
+      _ikeAuthProtocol = getText(
+            ikeElement,
             AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL);
-      _ikeEncryptionProtocol = getText(ikeElement,
+      _ikeEncryptionProtocol = getText(
+            ikeElement,
             AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL);
       _ikeLifetime = Integer
             .parseInt(getText(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME));
-      _ikePerfectForwardSecrecy = getText(ikeElement,
+      _ikePerfectForwardSecrecy = getText(
+            ikeElement,
             AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY);
       _ikeMode = getText(ikeElement, AwsVpcEntity.XML_KEY_MODE);
       _ikePreSharedKeyHash = CommonUtil
@@ -137,13 +143,16 @@ public class IpsecTunnel implements Serializable {
             .getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
 
       _ipsecProtocol = getText(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL);
-      _ipsecAuthProtocol = getText(ipsecElement,
+      _ipsecAuthProtocol = getText(
+            ipsecElement,
             AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL);
-      _ipsecEncryptionProtocol = getText(ipsecElement,
+      _ipsecEncryptionProtocol = getText(
+            ipsecElement,
             AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL);
       _ipsecLifetime = Integer
             .parseInt(getText(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME));
-      _ipsecPerfectForwardSecrecy = getText(ipsecElement,
+      _ipsecPerfectForwardSecrecy = getText(
+            ipsecElement,
             AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY);
       _ipsecMode = getText(ipsecElement, AwsVpcEntity.XML_KEY_MODE);
 

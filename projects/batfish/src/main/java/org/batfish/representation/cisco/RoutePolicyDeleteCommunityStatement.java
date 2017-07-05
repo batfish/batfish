@@ -15,7 +15,8 @@ public class RoutePolicyDeleteCommunityStatement
 
    private boolean negated;
 
-   public RoutePolicyDeleteCommunityStatement(boolean negated,
+   public RoutePolicyDeleteCommunityStatement(
+         boolean negated,
          RoutePolicyCommunitySet commset) {
       this.negated = negated;
       this.commset = commset;
@@ -35,7 +36,8 @@ public class RoutePolicyDeleteCommunityStatement
    }
 
    @Override
-   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+   public Statement toSetStatement(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       if (negated) {
          return new RetainCommunity(commset.toCommunitySetExpr(cc, c, w));

@@ -37,7 +37,7 @@ public class DeclareRelExpr extends Statement implements ComplexExpr {
       for (int size : _sizes) {
          argTypes.add(ctx.mkBitVecSort(size));
       }
-      BitVecSort[] argTypesArray = argTypes.toArray(new BitVecSort[] {});
+      BitVecSort[] argTypesArray = argTypes.toArray(new BitVecSort[]{});
       FuncDecl output = ctx.mkFuncDecl(_name, argTypesArray, ctx.mkBoolSort());
       return output;
    }

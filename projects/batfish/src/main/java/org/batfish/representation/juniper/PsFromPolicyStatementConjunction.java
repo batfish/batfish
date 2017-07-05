@@ -25,7 +25,8 @@ public final class PsFromPolicyStatementConjunction extends PsFrom {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       Conjunction conj = new Conjunction();
       for (String conjunct : _conjuncts) {

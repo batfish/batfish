@@ -225,14 +225,17 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
          vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
          ikePolicy.getProposals().put(vpnId, ikeProposal);
          String externalInterfaceName = "external" + idNum;
-         Interface externalInterface = new Interface(externalInterfaceName,
+         Interface externalInterface = new Interface(
+               externalInterfaceName,
                vpnGatewayCfgNode);
          vpnGatewayCfgNode.getDefaultVrf().getInterfaces()
                .put(externalInterfaceName, externalInterface);
          String vpnInterfaceName = "vpn" + idNum;
-         Interface vpnInterface = new Interface(vpnInterfaceName,
+         Interface vpnInterface = new Interface(
+               vpnInterfaceName,
                vpnGatewayCfgNode);
-         vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName,
+         vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(
+               vpnInterfaceName,
                vpnInterface);
 
          // Set fields within representation structures
@@ -310,7 +313,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             String originationPolicyName = vpnId + "_origination";
             RoutingPolicy originationRoutingPolicy = new RoutingPolicy(
                   originationPolicyName, vpnGatewayCfgNode);
-            vpnGatewayCfgNode.getRoutingPolicies().put(originationPolicyName,
+            vpnGatewayCfgNode.getRoutingPolicies().put(
+                  originationPolicyName,
                   originationRoutingPolicy);
             cgBgpNeighbor.setExportPolicy(originationPolicyName);
             If originationIf = new If();
@@ -322,7 +326,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                   .add(Statements.ExitAccept.toStaticStatement());
             RouteFilterList originationRouteFilter = new RouteFilterList(
                   originationPolicyName);
-            vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName,
+            vpnGatewayCfgNode.getRouteFilterLists().put(
+                  originationPolicyName,
                   originationRouteFilter);
             RouteFilterLine matchOutgoingPrefix = new RouteFilterLine(
                   LineAction.ACCEPT, outgoingPrefix,
@@ -331,7 +336,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             Conjunction conj = new Conjunction();
             originationIf.setGuard(conj);
             conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
-            conj.getConjuncts().add(new MatchPrefixSet(new DestinationNetwork(),
+            conj.getConjuncts().add(new MatchPrefixSet(
+                  new DestinationNetwork(),
                   new NamedPrefixSet(originationPolicyName)));
          }
 

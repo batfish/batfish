@@ -62,11 +62,14 @@ public class Driver {
 
    private static final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
-   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>> CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
+   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+         CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
 
-   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
+   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+         CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-   private static final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS = buildTestrigCache();
+   private static final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+         buildTestrigCache();
 
    private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000;
 
@@ -74,7 +77,7 @@ public class Driver {
 
    private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1
          * 1000; // 1
-                 // second
+   // second
 
    static Logger httpServerLogger = Logger.getLogger(
          org.glassfish.grizzly.http.server.HttpServer.class.getName());
@@ -236,7 +239,7 @@ public class Driver {
                // died and come back.
                if (_mainSettings.getCoordinatorRegister()
                      && new Date().getTime() - _lastPollFromCoordinator
-                           .getTime() > COORDINATOR_POLL_TIMEOUT_MS) {
+                     .getTime() > COORDINATOR_POLL_TIMEOUT_MS) {
                   // this function does not return until registration succeeds
                   registerWithCoordinatorPersistent();
                }
@@ -267,7 +270,8 @@ public class Driver {
       _idle = true;
    }
 
-   public static synchronized AtomicInteger newBatch(Settings settings,
+   public static synchronized AtomicInteger newBatch(
+         Settings settings,
          String description, int jobs) {
       Batch batch = null;
       Task task = getTask(settings);
@@ -284,7 +288,8 @@ public class Driver {
    private static boolean registerWithCoordinator(String poolRegUrl) {
       try {
          Client client = CommonUtil
-               .createHttpClientBuilder(_mainSettings.getSslDisable(),
+               .createHttpClientBuilder(
+                     _mainSettings.getSslDisable(),
                      _mainSettings.getSslTrustAllCerts(),
                      _mainSettings.getSslKeystoreFile(),
                      _mainSettings.getSslKeystorePassword(),
@@ -292,7 +297,8 @@ public class Driver {
                      _mainSettings.getSslTruststorePassword())
                .build();
          WebTarget webTarget = client.target(poolRegUrl)
-               .queryParam(CoordConsts.SVC_KEY_ADD_WORKER,
+               .queryParam(
+                     CoordConsts.SVC_KEY_ADD_WORKER,
                      _mainSettings.getServiceHost() + ":"
                            + _mainSettings.getServicePort())
                .queryParam(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
@@ -439,7 +445,8 @@ public class Driver {
       }
    }
 
-   public static List<String> RunBatfishThroughService(final String taskId,
+   public static List<String> RunBatfishThroughService(
+         final String taskId,
          String[] args) {
       final Settings settings;
       try {
@@ -450,7 +457,8 @@ public class Driver {
          settings.setTaskId(taskId);
       }
       catch (Exception e) {
-         return Arrays.asList("failure",
+         return Arrays.asList(
+               "failure",
                "Initialization failed: " + ExceptionUtils.getFullStackTrace(e));
       }
 
@@ -458,7 +466,8 @@ public class Driver {
          Batfish.initTestrigSettings(settings);
       }
       catch (Exception e) {
-         return Arrays.asList("failure",
+         return Arrays.asList(
+               "failure",
                "Failed while applying auto basedir. (All arguments are supplied?): "
                      + e.getMessage());
       }
@@ -515,7 +524,8 @@ public class Driver {
          }
       }
       else {
-         return Arrays.asList(BfConsts.SVC_FAILURE_KEY,
+         return Arrays.asList(
+               BfConsts.SVC_FAILURE_KEY,
                "Non-executable command");
       }
    }

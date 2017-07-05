@@ -268,7 +268,8 @@ public enum IpProtocol {
    public static final Comparator<IpProtocol> BY_NUMBER = (p1, p2) -> Integer
          .compare(p1.number(), p2.number());
 
-   private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
+   private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP =
+         buildNumberToProtocolMap();
 
    private synchronized static Map<Integer, IpProtocol> buildNumberToProtocolMap() {
       Map<Integer, IpProtocol> map = new HashMap<>();

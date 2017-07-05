@@ -31,7 +31,8 @@ public class StandardIpv6AccessList extends ComparableStructure<String> {
    }
 
    public ExtendedIpv6AccessList toExtendedIpv6AccessList() {
-      ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(_key,
+      ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(
+            _key,
             _definitionLine);
       eal.setParent(this);
       eal.getLines().clear();

@@ -27,9 +27,11 @@ public abstract class VendorConfiguration
 
    protected String _filename;
 
-   protected final SortedMap<StructureType, SortedMap<String, SortedSet<Integer>>> _structureDefinitions;
+   protected final SortedMap<StructureType, SortedMap<String, SortedSet<Integer>>>
+         _structureDefinitions;
 
-   protected final SortedMap<StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>> _structureReferences;
+   protected final SortedMap<StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>>
+         _structureReferences;
 
    private transient boolean _unrecognized;
 
@@ -75,7 +77,8 @@ public abstract class VendorConfiguration
       return _w;
    }
 
-   public void referenceStructure(StructureType type, String name,
+   public void referenceStructure(
+         StructureType type, String name,
          StructureUsage usage, int line) {
       SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName = _structureReferences
             .get(type);
@@ -122,13 +125,15 @@ public abstract class VendorConfiguration
    public abstract Configuration toVendorIndependentConfiguration()
          throws VendorConversionException;
 
-   public void undefined(StructureType structureType, String name,
+   public void undefined(
+         StructureType structureType, String name,
          StructureUsage usage, int line) {
       String hostname = getHostname();
       String type = structureType.getDescription();
       String usageStr = usage.getDescription();
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType = _answerElement
-            .getUndefinedReferences().get(hostname);
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
+            _answerElement
+                  .getUndefinedReferences().get(hostname);
       if (byType == null) {
          byType = new TreeMap<>();
          _answerElement.getUndefinedReferences().put(hostname, byType);

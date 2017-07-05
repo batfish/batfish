@@ -54,7 +54,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
    private Warnings _w;
 
-   public IptablesControlPlaneExtractor(String fileText,
+   public IptablesControlPlaneExtractor(
+         String fileText,
          IptablesCombinedParser iptablesParser, Warnings warnings,
          String fileName) {
       _text = fileText;
@@ -210,12 +211,14 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
             rule.setAction(policy);
          }
          else if (ctx.action().chain() != null) {
-            rule.setAction(IptablesActionType.CHAIN,
+            rule.setAction(
+                  IptablesActionType.CHAIN,
                   ctx.action().chain().getText());
          }
       }
       else if (ctx.action().OPTION_GOTO() != null) {
-         rule.setAction(IptablesActionType.GOTO,
+         rule.setAction(
+               IptablesActionType.GOTO,
                ctx.action().chain().getText());
       }
       else {

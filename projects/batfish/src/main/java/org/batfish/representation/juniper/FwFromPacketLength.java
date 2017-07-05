@@ -23,7 +23,8 @@ public class FwFromPacketLength extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+   public void applyTo(
+         IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       if (_except) {
          line.getNotPacketLengths().addAll(_range);

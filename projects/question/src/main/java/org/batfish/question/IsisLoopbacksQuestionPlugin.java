@@ -48,7 +48,8 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
          _running = new TreeMap<>();
       }
 
-      public void add(SortedMap<String, SortedSet<String>> map, String hostname,
+      public void add(
+            SortedMap<String, SortedSet<String>> map, String hostname,
             String interfaceName) {
          SortedSet<String> interfacesByHostname = map.get(hostname);
          if (interfacesByHostname == null) {
@@ -211,6 +212,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
+
    /**
     * Lists which loopbacks interfaces are being announced into ISIS.
     * <p>

@@ -37,21 +37,24 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       initIpPerms(_ipPermsIngress, permsIngress, logger);
    }
 
-   private void addEgressAccessLines(List<IpPermissions> permsList,
+   private void addEgressAccessLines(
+         List<IpPermissions> permsList,
          List<IpAccessListLine> accessList) {
       for (IpPermissions ipPerms : permsList) {
          accessList.add(ipPerms.toEgressIpAccessListLine());
       }
    }
 
-   private void addIngressAccessLines(List<IpPermissions> permsList,
+   private void addIngressAccessLines(
+         List<IpPermissions> permsList,
          List<IpAccessListLine> accessList) {
       for (IpPermissions ipPerms : permsList) {
          accessList.add(ipPerms.toIngressIpAccessListLine());
       }
    }
 
-   public void addInOutAccessLines(List<IpAccessListLine> inboundRules,
+   public void addInOutAccessLines(
+         List<IpAccessListLine> inboundRules,
          List<IpAccessListLine> outboundRules) {
       addIngressAccessLines(_ipPermsIngress, inboundRules);
       addEgressAccessLines(_ipPermsEgress, outboundRules);
@@ -78,7 +81,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       return _ipPermsIngress;
    }
 
-   private void initIpPerms(List<IpPermissions> ipPermsList,
+   private void initIpPerms(
+         List<IpPermissions> ipPermsList,
          JSONArray ipPermsJson, BatfishLogger logger) throws JSONException {
 
       for (int index = 0; index < ipPermsJson.length(); index++) {

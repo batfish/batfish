@@ -52,7 +52,8 @@ public final class Zone extends ComparableStructure<String> {
       super(name);
    }
 
-   public Zone(String name, IpAccessList inboundFilter,
+   public Zone(
+         String name, IpAccessList inboundFilter,
          IpAccessList fromHostFilter, IpAccessList toHostFilter) {
       super(name);
       _inboundFilter = inboundFilter;
@@ -244,21 +245,24 @@ public final class Zone extends ComparableStructure<String> {
       if (!this._inboundFilter.unorderedEqual(other._inboundFilter)) {
          return false;
       }
-      if (unorderedEqualSortedMap(this._inboundInterfaceFilters,
+      if (unorderedEqualSortedMap(
+            this._inboundInterfaceFilters,
             other._inboundInterfaceFilters)) {
          return false;
       }
       if (!this._toHostFilter.unorderedEqual(other._toHostFilter)) {
          return false;
       }
-      if (unorderedEqualSortedMap(this._toZonePolicies,
+      if (unorderedEqualSortedMap(
+            this._toZonePolicies,
             other._toZonePolicies)) {
          return false;
       }
       return true;
    }
 
-   private boolean unorderedEqualSortedMap(SortedMap<String, IpAccessList> a,
+   private boolean unorderedEqualSortedMap(
+         SortedMap<String, IpAccessList> a,
          SortedMap<String, IpAccessList> b) {
       if (!a.keySet().equals(b.keySet())) {
          return false;

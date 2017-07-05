@@ -11,7 +11,7 @@ public class CheckSatExpr extends Statement implements ComplexExpr {
 
    private CheckSatExpr() {
       _subExpressions = Collections
-            .<Expr> singletonList(new IdExpr("check-sat"));
+            .<Expr>singletonList(new IdExpr("check-sat"));
       _printer = new CollapsedComplexExprPrinter(this);
    }
 

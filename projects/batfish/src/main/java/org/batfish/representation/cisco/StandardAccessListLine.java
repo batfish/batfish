@@ -25,7 +25,8 @@ public class StandardAccessListLine implements Serializable {
 
    private final String _name;
 
-   public StandardAccessListLine(String name, LineAction action,
+   public StandardAccessListLine(
+         String name, LineAction action,
          IpWildcard ipWildcard, Set<Integer> dscps, Set<Integer> ecns) {
       _name = name;
       _action = action;
@@ -49,9 +50,9 @@ public class StandardAccessListLine implements Serializable {
    public ExtendedAccessListLine toExtendedAccessListLine() {
       return new ExtendedAccessListLine(_name, _action, IpProtocol.IP,
             _ipWildcard, null, IpWildcard.ANY, null,
-            Collections.<SubRange> emptyList(),
-            Collections.<SubRange> emptyList(), _dscps, _ecns, null, null,
-            EnumSet.noneOf(State.class), Collections.<TcpFlags> emptyList());
+            Collections.<SubRange>emptyList(),
+            Collections.<SubRange>emptyList(), _dscps, _ecns, null, null,
+            EnumSet.noneOf(State.class), Collections.<TcpFlags>emptyList());
    }
 
 }

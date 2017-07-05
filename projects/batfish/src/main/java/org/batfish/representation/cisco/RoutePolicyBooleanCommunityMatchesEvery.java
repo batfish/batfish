@@ -22,7 +22,8 @@ public class RoutePolicyBooleanCommunityMatchesEvery
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new MatchEntireCommunitySet(_commSet.toCommunitySetExpr(cc, c, w));
    }

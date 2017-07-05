@@ -20,7 +20,8 @@ public class RoutePolicyCommunitySetName extends RoutePolicyCommunitySet {
    }
 
    @Override
-   public CommunitySetExpr toCommunitySetExpr(CiscoConfiguration cc,
+   public CommunitySetExpr toCommunitySetExpr(
+         CiscoConfiguration cc,
          Configuration c, Warnings w) {
       return new NamedCommunitySet(_name);
    }

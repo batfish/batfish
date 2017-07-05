@@ -91,10 +91,13 @@ public enum Command {
 
    private static Map<Command, Pair<String, String>> buildUsageMap() {
       Map<Command, Pair<String, String>> descs = new TreeMap<>();
-      descs.put(ADD_ANALYSIS_QUESTIONS,
-            new Pair<>("<analysis-name> <question-directory>",
+      descs.put(
+            ADD_ANALYSIS_QUESTIONS,
+            new Pair<>(
+                  "<analysis-name> <question-directory>",
                   "Add questions from the directory to the analysis"));
-      descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> <option-value>",
+      descs.put(ADD_BATFISH_OPTION, new Pair<>(
+            "<option-key> <option-value>",
             "Additional options to pass to Batfish"));
       descs.put(ANSWER, new Pair<>(
             "<question-name>  [param1=value1 [param2=value2] ...]",
@@ -102,120 +105,172 @@ public enum Command {
       descs.put(ANSWER_DELTA, new Pair<>(
             "<question-name>  [param1=value1 [param2=value2] ...]",
             "Answer the template question by name for the delta environment"));
-      descs.put(CAT,
+      descs.put(
+            CAT,
             new Pair<>("<filename>", "Print the contents of the file"));
       descs.put(CHECK_API_KEY, new Pair<>("", "Check if API Key is valid"));
       // descs.put(CHANGE_DIR, CHANGE_DIR
       // + " <dirname>\n"
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
-      descs.put(DEL_ANALYSIS,
+      descs.put(
+            DEL_ANALYSIS,
             new Pair<>("<analysis-name>", "Delete the analysis completely"));
-      descs.put(DEL_ANALYSIS_QUESTIONS,
-            new Pair<>("<analysis-name> qname1 [qname2 [qname3] ...]",
+      descs.put(
+            DEL_ANALYSIS_QUESTIONS,
+            new Pair<>(
+                  "<analysis-name> qname1 [qname2 [qname3] ...]",
                   "Delete questions from the analysis"));
-      descs.put(DEL_BATFISH_OPTION,
+      descs.put(
+            DEL_BATFISH_OPTION,
             new Pair<>("<option-key>", "Stop passing this option to Batfish"));
-      descs.put(DEL_CONTAINER,
+      descs.put(
+            DEL_CONTAINER,
             new Pair<>("<container-name>", "Delete the specified container"));
-      descs.put(DEL_ENVIRONMENT, new Pair<>("<environment-name>",
+      descs.put(DEL_ENVIRONMENT, new Pair<>(
+            "<environment-name>",
             "Delete the specified environment"));
-      descs.put(DEL_QUESTION,
+      descs.put(
+            DEL_QUESTION,
             new Pair<>("<question-name>", "Delete the specified question"));
-      descs.put(DEL_TESTRIG,
+      descs.put(
+            DEL_TESTRIG,
             new Pair<>("<testrig-name>", "Delete the specified testrig"));
       descs.put(DIR, new Pair<>("<dir>", "List directory contents"));
       descs.put(ECHO, new Pair<>("<message>", "Echo the message"));
       descs.put(EXIT, new Pair<>("", "Terminate interactive client session"));
-      descs.put(GEN_DELTA_DP,
+      descs.put(
+            GEN_DELTA_DP,
             new Pair<>("", "Generate dataplane for the delta environment"));
-      descs.put(GEN_DP,
+      descs.put(
+            GEN_DP,
             new Pair<>("", "Generate dataplane for the default environment"));
-      descs.put(GET,
-            new Pair<>("<question-type>  [param1=value1 [param2=value2] ...]",
+      descs.put(
+            GET,
+            new Pair<>(
+                  "<question-type>  [param1=value1 [param2=value2] ...]",
                   "Answer the question by type for the base environment"));
-      descs.put(GET_ANALYSIS_ANSWERS, new Pair<>("<analysis-name>",
+      descs.put(GET_ANALYSIS_ANSWERS, new Pair<>(
+            "<analysis-name>",
             "Get the answers for a previously run analysis"));
-      descs.put(GET_ANSWER, new Pair<>("<question-name>",
+      descs.put(GET_ANSWER, new Pair<>(
+            "<question-name>",
             "Get the answer for a previously answered question"));
-      descs.put(GET_DELTA,
-            new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
+      descs.put(
+            GET_DELTA,
+            new Pair<>(
+                  "<question-file>  [param1=value1 [param2=value2] ...]",
                   "Answer the question by type for the delta environment"));
-      descs.put(GET_QUESTION, new Pair<>("<question-name>",
+      descs.put(GET_QUESTION, new Pair<>(
+            "<question-name>",
             "Get the question and parameter files"));
-      descs.put(HELP,
+      descs.put(
+            HELP,
             new Pair<>("[command]", "Print the list of supported commands"));
-      descs.put(INIT_ANALYSIS,
-            new Pair<>("<analysis-name> <question-directory>",
+      descs.put(
+            INIT_ANALYSIS,
+            new Pair<>(
+                  "<analysis-name> <question-directory>",
                   "Initialize a new analysis for the container"));
-      descs.put(INIT_CONTAINER, new Pair<>("[<container-name-prefix>]",
+      descs.put(INIT_CONTAINER, new Pair<>(
+            "[<container-name-prefix>]",
             "Initialize a new container"));
-      descs.put(INIT_DELTA_ENV,
+      descs.put(
+            INIT_DELTA_ENV,
             new Pair<>(
                   "<environment zipfile or directory> [<environment-name>]",
                   "Initialize the delta environment"));
-      descs.put(INIT_DELTA_TESTRIG,
-            new Pair<>("<testrig zipfile or directory> [<testrig-name>]",
+      descs.put(
+            INIT_DELTA_TESTRIG,
+            new Pair<>(
+                  "<testrig zipfile or directory> [<testrig-name>]",
                   "Initialize the delta testrig with default environment"));
-      descs.put(INIT_TESTRIG,
-            new Pair<>("<testrig zipfile or directory> [<testrig-name>]",
+      descs.put(
+            INIT_TESTRIG,
+            new Pair<>(
+                  "<testrig zipfile or directory> [<testrig-name>]",
                   "Initialize the testrig with default environment"));
-      descs.put(LIST_ANALYSES,
+      descs.put(
+            LIST_ANALYSES,
             new Pair<>("", "List the analyses and their configuration"));
-      descs.put(LIST_CONTAINERS,
+      descs.put(
+            LIST_CONTAINERS,
             new Pair<>("", "List the containers to which you have access"));
-      descs.put(LIST_ENVIRONMENTS, new Pair<>("",
+      descs.put(LIST_ENVIRONMENTS, new Pair<>(
+            "",
             "List the environments under current container and testrig"));
-      descs.put(LIST_QUESTIONS, new Pair<>("",
+      descs.put(LIST_QUESTIONS, new Pair<>(
+            "",
             "List the questions under current container and testrig"));
-      descs.put(LIST_TESTRIGS,
+      descs.put(
+            LIST_TESTRIGS,
             new Pair<>("", "List the testrigs within the current container"));
-      descs.put(LOAD_QUESTIONS,
-            new Pair<>("<path to directory containing question json files",
+      descs.put(
+            LOAD_QUESTIONS,
+            new Pair<>(
+                  "<path to directory containing question json files",
                   "Load questions from library directory"));
       descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
       descs.put(PWD, new Pair<>("", "Prints the working directory"));
       descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
-      descs.put(REINIT_DELTA_TESTRIG, new Pair<>("",
+      descs.put(REINIT_DELTA_TESTRIG, new Pair<>(
+            "",
             "Reinitialize the delta testrig with default environment"));
-      descs.put(REINIT_TESTRIG, new Pair<>("",
+      descs.put(REINIT_TESTRIG, new Pair<>(
+            "",
             "Reinitialize the testrig with default environment"));
-      descs.put(RUN_ANALYSIS, new Pair<>("<analysis-name>",
+      descs.put(RUN_ANALYSIS, new Pair<>(
+            "<analysis-name>",
             "Run the (previously configured) analysis"));
-      descs.put(SET_BATFISH_LOGLEVEL,
-            new Pair<>("<debug|info|output|warn|error>",
+      descs.put(
+            SET_BATFISH_LOGLEVEL,
+            new Pair<>(
+                  "<debug|info|output|warn|error>",
                   "Set the batfish loglevel. Default is warn"));
-      descs.put(SET_CONTAINER,
+      descs.put(
+            SET_CONTAINER,
             new Pair<>("<container-name>", "Set the current container"));
-      descs.put(SET_DELTA_ENV,
+      descs.put(
+            SET_DELTA_ENV,
             new Pair<>("<environment-name>", "Set the delta environment"));
       descs.put(SET_DELTA_TESTRIG, new Pair<>(
             "<testrig-name> [environment name]", "Set the delta testrig"));
-      descs.put(SET_ENV, new Pair<>("<environment-name>",
+      descs.put(SET_ENV, new Pair<>(
+            "<environment-name>",
             "Set the current base environment"));
-      descs.put(SET_LOGLEVEL, new Pair<>("<debug|info|output|warn|error>",
+      descs.put(SET_LOGLEVEL, new Pair<>(
+            "<debug|info|output|warn|error>",
             "Set the client loglevel. Default is output"));
-      descs.put(SET_PRETTY_PRINT,
+      descs.put(
+            SET_PRETTY_PRINT,
             new Pair<>("<true|false>", "Whether to pretty print answers"));
-      descs.put(SET_TESTRIG, new Pair<>("<testrig-name> [environment name]",
+      descs.put(SET_TESTRIG, new Pair<>(
+            "<testrig-name> [environment name]",
             "Set the base testrig"));
       descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
-      descs.put(SHOW_BATFISH_LOGLEVEL,
+      descs.put(
+            SHOW_BATFISH_LOGLEVEL,
             new Pair<>("", "Show current batfish loglevel"));
-      descs.put(SHOW_BATFISH_OPTIONS, new Pair<>("",
+      descs.put(SHOW_BATFISH_OPTIONS, new Pair<>(
+            "",
             "Show the additional options that will be sent to batfish"));
       descs.put(SHOW_CONTAINER, new Pair<>("", "Show active container"));
       descs.put(SHOW_COORDINATOR_HOST, new Pair<>("", "Show coordinator host"));
       descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
-      descs.put(SHOW_DELTA_TESTRIG,
+      descs.put(
+            SHOW_DELTA_TESTRIG,
             new Pair<>("", "Show delta testrig and environment"));
-      descs.put(SHOW_TESTRIG,
+      descs.put(
+            SHOW_TESTRIG,
             new Pair<>("", "Show base testrig and environment"));
-      descs.put(SHOW_VERSION,
+      descs.put(
+            SHOW_VERSION,
             new Pair<>("", "Show the version of Client and Service"));
-      descs.put(TEST, new Pair<>("<reference file> <command>",
+      descs.put(TEST, new Pair<>(
+            "<reference file> <command>",
             "Show base testrig and environment"));
-      descs.put(UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>",
+      descs.put(UPLOAD_CUSTOM_OBJECT, new Pair<>(
+            "<object-name> <object-file>",
             "Uploads a custom object"));
       return descs;
    }

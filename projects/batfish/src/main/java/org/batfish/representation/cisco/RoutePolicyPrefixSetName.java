@@ -25,7 +25,8 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
    }
 
    @Override
-   public Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc,
+   public Prefix6SetExpr toPrefix6SetExpr(
+         CiscoConfiguration cc,
          Configuration c, Warnings w) {
       if (cc.getPrefixLists().containsKey(_name)) {
          return null;
@@ -36,14 +37,16 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
       }
       else {
          Prefix6List list = cc.getPrefix6Lists().get(_name);
-         list.getReferers().put(this,
+         list.getReferers().put(
+               this,
                "route policy named ipv6 prefix-set: '" + _name + "'");
       }
       return new NamedPrefix6Set(_name);
    }
 
    @Override
-   public PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c,
+   public PrefixSetExpr toPrefixSetExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       if (cc.getPrefix6Lists().containsKey(_name)) {
          return null;
@@ -54,7 +57,8 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
       }
       else {
          PrefixList list = cc.getPrefixLists().get(_name);
-         list.getReferers().put(this,
+         list.getReferers().put(
+               this,
                "route policy named ipv4 prefix-set: '" + _name + "'");
       }
       return new NamedPrefixSet(_name);

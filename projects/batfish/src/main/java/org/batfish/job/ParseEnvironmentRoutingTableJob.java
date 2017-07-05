@@ -36,7 +36,8 @@ public class ParseEnvironmentRoutingTableJob
 
    private Warnings _warnings;
 
-   public ParseEnvironmentRoutingTableJob(Settings settings, String fileText,
+   public ParseEnvironmentRoutingTableJob(
+         Settings settings, String fileText,
          Path file, Warnings warnings, IBatfish batfish) {
       super(settings);
       _batfish = batfish;
@@ -123,7 +124,8 @@ public class ParseEnvironmentRoutingTableJob
          _logger.info("\tParsing...");
          tree = Batfish.parse(combinedParser, _logger, _settings);
          if (_settings.printParseTree()) {
-            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree,
+            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(
+                  tree,
                   combinedParser);
          }
          _logger.info("\tPost-processing...");

@@ -9,8 +9,8 @@ import org.batfish.datamodel.Prefix;
 public class StaticRoute implements Serializable {
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private boolean _drop;

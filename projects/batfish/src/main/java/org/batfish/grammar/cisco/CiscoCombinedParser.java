@@ -9,7 +9,8 @@ import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 public class CiscoCombinedParser
       extends BatfishCombinedParser<CiscoParser, CiscoLexer> {
 
-   public CiscoCombinedParser(String input, Settings settings,
+   public CiscoCombinedParser(
+         String input, Settings settings,
          ConfigurationFormat format) {
       super(CiscoParser.class, CiscoLexer.class, input, settings);
       boolean multilineBgpNeighbors;

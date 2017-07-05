@@ -37,7 +37,8 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
       }
 
       @JsonCreator
-      public OspfNeighborSummary(@JsonProperty(NAME_VAR) String name,
+      public OspfNeighborSummary(
+            @JsonProperty(NAME_VAR) String name,
             @JsonProperty(LOCAL_IP_VAR) Ip localIp,
             @JsonProperty(REMOTE_IP_VAR) Ip remoteIp,
             @JsonProperty(VRF_VAR) String vrf) {
@@ -65,8 +66,8 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
    }
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private long _area;

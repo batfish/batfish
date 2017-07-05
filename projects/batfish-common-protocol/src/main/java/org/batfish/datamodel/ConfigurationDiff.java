@@ -45,17 +45,20 @@ public class ConfigurationDiff implements AnswerElement {
       if (_asPathAccessListsDiff.isEmpty()) {
          _asPathAccessListsDiff = null;
       }
-      _communityListsDiff = new CommunityListsDiff(before.getCommunityLists(),
+      _communityListsDiff = new CommunityListsDiff(
+            before.getCommunityLists(),
             after.getCommunityLists());
       if (_communityListsDiff.isEmpty()) {
          _communityListsDiff = null;
       }
-      _interfacesDiff = new InterfacesDiff(before.getInterfaces(),
+      _interfacesDiff = new InterfacesDiff(
+            before.getInterfaces(),
             after.getInterfaces());
       if (_interfacesDiff.isEmpty()) {
          _interfacesDiff = null;
       }
-      _ipAccessListsDiff = new IpAccessListsDiff(before.getIpAccessLists(),
+      _ipAccessListsDiff = new IpAccessListsDiff(
+            before.getIpAccessLists(),
             after.getIpAccessLists());
       if (_ipAccessListsDiff.isEmpty()) {
          _ipAccessListsDiff = null;

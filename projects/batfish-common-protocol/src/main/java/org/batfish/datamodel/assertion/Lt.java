@@ -13,7 +13,7 @@ public class Lt implements BooleanExpr {
       _rhs = rhs;
    }
 
-   @SuppressWarnings({ "rawtypes", "unchecked" })
+   @SuppressWarnings({"rawtypes", "unchecked"})
    @Override
    public Boolean evaluate(Environment env) {
       Comparable lhs = _lhs.evaluate(env);

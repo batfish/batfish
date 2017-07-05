@@ -24,14 +24,16 @@ public class ParseVendorConfigurationResult extends
 
    private Warnings _warnings;
 
-   public ParseVendorConfigurationResult(long elapsedTime,
+   public ParseVendorConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _file = file;
       _status = ParseStatus.FAILED;
    }
 
-   public ParseVendorConfigurationResult(long elapsedTime,
+   public ParseVendorConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, VendorConfiguration vc,
          Warnings warnings, ParseTreeSentences parseTree) {
       super(elapsedTime, history);
@@ -43,7 +45,8 @@ public class ParseVendorConfigurationResult extends
       _status = null;
    }
 
-   public ParseVendorConfigurationResult(long elapsedTime,
+   public ParseVendorConfigurationResult(
+         long elapsedTime,
          BatfishLoggerHistory history, Path file, Warnings warnings,
          ParseStatus status) {
       super(elapsedTime, history);
@@ -68,7 +71,8 @@ public class ParseVendorConfigurationResult extends
    }
 
    @Override
-   public void applyTo(Map<String, VendorConfiguration> vendorConfigurations,
+   public void applyTo(
+         Map<String, VendorConfiguration> vendorConfigurations,
          BatfishLogger logger,
          ParseVendorConfigurationAnswerElement answerElement) {
       appendHistory(logger);
@@ -86,12 +90,14 @@ public class ParseVendorConfigurationResult extends
                answerElement.getParseTrees().put(hostname, _parseTree);
             }
             if (_vc.getUnrecognized()) {
-               answerElement.getParseStatus().put(hostname,
+               answerElement.getParseStatus().put(
+                     hostname,
                      ParseStatus.PARTIALLY_UNRECOGNIZED);
             }
             else {
                answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
-               answerElement.getFileMap().put(hostname,
+               answerElement.getFileMap().put(
+                     hostname,
                      _file.getFileName().toString());
             }
          }

@@ -46,7 +46,8 @@ public class InlineCommunitySet extends CommunitySetExpr {
    }
 
    @Override
-   public SortedSet<Long> communities(Environment environment,
+   public SortedSet<Long> communities(
+         Environment environment,
          SortedSet<Long> communityCandidates) {
       return CommonUtil.intersection(communities(environment),
             communityCandidates, TreeSet::new);
@@ -99,7 +100,8 @@ public class InlineCommunitySet extends CommunitySetExpr {
    }
 
    @Override
-   public boolean matchSingleCommunity(Environment environment,
+   public boolean matchSingleCommunity(
+         Environment environment,
          SortedSet<Long> communities) {
       for (Long community : communities) {
          // BAD

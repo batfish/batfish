@@ -9,7 +9,8 @@ public class AsPathAccessListsDiff extends ConfigDiffElement {
    public AsPathAccessListsDiff() {
    }
 
-   public AsPathAccessListsDiff(NavigableMap<String, AsPathAccessList> before,
+   public AsPathAccessListsDiff(
+         NavigableMap<String, AsPathAccessList> before,
          NavigableMap<String, AsPathAccessList> after) {
       super(before, after, false);
    }

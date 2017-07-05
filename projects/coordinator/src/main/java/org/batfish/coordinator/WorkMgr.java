@@ -127,22 +127,26 @@ public class WorkMgr {
          String testrigName = work.getWorkItem().getTestrigName();
          Path testrigBaseDir = containerDir.resolve(testrigName)
                .toAbsolutePath();
-         task.put(BfConsts.ARG_CONTAINER_DIR,
+         task.put(
+               BfConsts.ARG_CONTAINER_DIR,
                containerDir.toAbsolutePath().toString());
          task.put(BfConsts.ARG_TESTRIG, testrigName);
-         task.put(BfConsts.ARG_LOG_FILE,
+         task.put(
+               BfConsts.ARG_LOG_FILE,
                testrigBaseDir
                      .resolve(
                            work.getId().toString() + BfConsts.SUFFIX_LOG_FILE)
                      .toString());
-         task.put(BfConsts.ARG_ANSWER_JSON_PATH,
+         task.put(
+               BfConsts.ARG_ANSWER_JSON_PATH,
                testrigBaseDir.resolve(
                      work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE)
                      .toString());
 
          // Client client = ClientBuilder.newClient();
          Client client = CommonUtil
-               .createHttpClientBuilder(_settings.getSslWorkDisable(),
+               .createHttpClientBuilder(
+                     _settings.getSslWorkDisable(),
                      _settings.getSslWorkTrustAllCerts(),
                      _settings.getSslWorkKeystoreFile(),
                      _settings.getSslWorkKeystorePassword(),
@@ -153,11 +157,15 @@ public class WorkMgr {
          WebTarget webTarget = client
                .target(String.format("%s://%s%s/%s", protocol, worker,
                      BfConsts.SVC_BASE_RSC, BfConsts.SVC_RUN_TASK_RSC))
-               .queryParam(BfConsts.SVC_TASKID_KEY,
-                     UriComponent.encode(work.getId().toString(),
+               .queryParam(
+                     BfConsts.SVC_TASKID_KEY,
+                     UriComponent.encode(
+                           work.getId().toString(),
                            UriComponent.Type.QUERY_PARAM_SPACE_ENCODED))
-               .queryParam(BfConsts.SVC_TASK_KEY,
-                     UriComponent.encode(task.toString(),
+               .queryParam(
+                     BfConsts.SVC_TASK_KEY,
+                     UriComponent.encode(
+                           task.toString(),
                            UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
 
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
@@ -243,8 +251,10 @@ public class WorkMgr {
          WebTarget webTarget = client
                .target(String.format("%s://%s%s/%s", protocol, worker,
                      BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_TASKSTATUS_RSC))
-               .queryParam(BfConsts.SVC_TASKID_KEY,
-                     UriComponent.encode(work.getId().toString(),
+               .queryParam(
+                     BfConsts.SVC_TASKID_KEY,
+                     UriComponent.encode(
+                           work.getId().toString(),
                            UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
@@ -313,7 +323,8 @@ public class WorkMgr {
     *           be deleted from the analysis. Incompatible with
     *           {@code newAnalysis}.
     */
-   public void configureAnalysis(String containerName, boolean newAnalysis,
+   public void configureAnalysis(
+         String containerName, boolean newAnalysis,
          String aName, InputStream addQuestionsFileStream,
          String delQuestionsStr) {
       Path containerDir = getdirContainer(containerName);
@@ -417,7 +428,8 @@ public class WorkMgr {
       CommonUtil.deleteDirectory(containerDir);
    }
 
-   public void delEnvironment(String containerName, String testrigName,
+   public void delEnvironment(
+         String containerName, String testrigName,
          String envName) {
       Path envDir = getdirEnvironment(containerName, testrigName, envName);
       CommonUtil.deleteDirectory(envDir);
@@ -428,18 +440,21 @@ public class WorkMgr {
       CommonUtil.deleteDirectory(testrigDir);
    }
 
-   public void delTestrigQuestion(String containerName, String testrigName,
+   public void delTestrigQuestion(
+         String containerName, String testrigName,
          String qName) {
       Path qDir = getdirTestrigQuestion(containerName, testrigName, qName);
       CommonUtil.deleteDirectory(qDir);
    }
 
-   public Map<String, String> getAnalysisAnswers(String containerName,
+   public Map<String, String> getAnalysisAnswers(
+         String containerName,
          String baseTestrig, String baseEnv, String deltaTestrig,
          String deltaEnv, String analysisName, boolean pretty) {
       Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
       Path testrigDir = getdirTestrig(containerName, baseTestrig);
-      SortedSet<String> questions = listAnalysisQuestions(containerName,
+      SortedSet<String> questions = listAnalysisQuestions(
+            containerName,
             analysisName);
       Map<String, String> retMap = new TreeMap<>();
       for (String questionName : questions) {
@@ -482,7 +497,8 @@ public class WorkMgr {
       return retMap;
    }
 
-   public String getAnalysisQuestion(String containerName, String analysisName,
+   public String getAnalysisQuestion(
+         String containerName, String analysisName,
          String questionName) {
       Path questionDir = getdirAnalysisQuestion(containerName, analysisName,
             questionName);
@@ -494,7 +510,8 @@ public class WorkMgr {
       return CommonUtil.readFile(qFile);
    }
 
-   public String getAnswer(String containerName, String baseTestrig,
+   public String getAnswer(
+         String containerName, String baseTestrig,
          String baseEnv, String deltaTestrig, String deltaEnv,
          String questionName, boolean pretty) {
       Path questionDir = getdirTestrigQuestion(containerName, baseTestrig,
@@ -529,7 +546,8 @@ public class WorkMgr {
       return answer;
    }
 
-   private Path getdirAnalysisQuestion(String containerName,
+   private Path getdirAnalysisQuestion(
+         String containerName,
          String analysisName, String qName) {
       Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
       Path qDir = analysisDir
@@ -550,7 +568,8 @@ public class WorkMgr {
       return containerDir;
    }
 
-   private Path getdirContainerAnalysis(String containerName,
+   private Path getdirContainerAnalysis(
+         String containerName,
          String analysisName) {
       Path containerDir = getdirContainer(containerName);
       Path aDir = containerDir
@@ -562,7 +581,8 @@ public class WorkMgr {
       return aDir;
    }
 
-   private Path getdirEnvironment(String containerName, String testrigName,
+   private Path getdirEnvironment(
+         String containerName, String testrigName,
          String envName) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path envDir = testrigDir
@@ -585,7 +605,8 @@ public class WorkMgr {
       return testrigDir;
    }
 
-   private Path getdirTestrigQuestion(String containerName, String testrigName,
+   private Path getdirTestrigQuestion(
+         String containerName, String testrigName,
          String qName) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path qDir = testrigDir
@@ -615,7 +636,7 @@ public class WorkMgr {
          if (Files.isDirectory(entry)) {
             String[] subdirEntryNames = CommonUtil.getEntries(entry).stream()
                   .map(subdirEntry -> subdirEntry.getFileName().toString())
-                  .collect(Collectors.toList()).toArray(new String[] {});
+                  .collect(Collectors.toList()).toArray(new String[]{});
             retStringBuilder.append("/\n");
             // now append a maximum of MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES
             for (int index = 0; index < subdirEntryNames.length
@@ -625,7 +646,7 @@ public class WorkMgr {
             if (subdirEntryNames.length > 10) {
                retStringBuilder.append("  ...... "
                      + (subdirEntryNames.length
-                           - MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES)
+                     - MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES)
                      + " more entries\n");
             }
          }
@@ -636,7 +657,8 @@ public class WorkMgr {
       return retStringBuilder.toString();
    }
 
-   public Path getTestrigObject(String containerName, String testrigName,
+   public Path getTestrigObject(
+         String containerName, String testrigName,
          String objectName) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path file = testrigDir.resolve(objectName);
@@ -706,7 +728,8 @@ public class WorkMgr {
       return analyses;
    }
 
-   public SortedSet<String> listAnalysisQuestions(String containerName,
+   public SortedSet<String> listAnalysisQuestions(
+         String containerName,
          String analysisName) {
       Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
       Path questionsDir = analysisDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -738,7 +761,8 @@ public class WorkMgr {
       return authorizedContainers;
    }
 
-   public SortedSet<String> listEnvironments(String containerName,
+   public SortedSet<String> listEnvironments(
+         String containerName,
          String testrigName) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path environmentsDir = testrigDir
@@ -753,7 +777,8 @@ public class WorkMgr {
       return environments;
    }
 
-   public SortedSet<String> listQuestions(String containerName,
+   public SortedSet<String> listQuestions(
+         String containerName,
          String testrigName) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path questionsDir = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -780,7 +805,8 @@ public class WorkMgr {
       return testrigs;
    }
 
-   public void putObject(String containerName, String testrigName,
+   public void putObject(
+         String containerName, String testrigName,
          String objectName, InputStream fileStream) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path file = testrigDir.resolve(objectName);
@@ -869,7 +895,8 @@ public class WorkMgr {
     *           A stream providing the zip file containing the file structure of
     *           the new environment.
     */
-   public void uploadEnvironment(String containerName, String testrigName,
+   public void uploadEnvironment(
+         String containerName, String testrigName,
          String baseEnvName, String newEnvName, InputStream fileStream) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path environmentsDir = testrigDir
@@ -940,7 +967,8 @@ public class WorkMgr {
       CommonUtil.deleteIfExists(zipFile);
    }
 
-   public void uploadQuestion(String containerName, String testrigName,
+   public void uploadQuestion(
+         String containerName, String testrigName,
          String qName, InputStream fileStream, InputStream paramFileStream) {
       Path testrigDir = getdirTestrig(containerName, testrigName);
       Path qDir = testrigDir
@@ -957,7 +985,8 @@ public class WorkMgr {
       CommonUtil.writeStreamToFile(fileStream, file);
    }
 
-   public void uploadTestrig(String containerName, String testrigName,
+   public void uploadTestrig(
+         String containerName, String testrigName,
          InputStream fileStream) {
       Path containerDir = getdirContainer(containerName);
       Path testrigDir = containerDir
@@ -991,7 +1020,8 @@ public class WorkMgr {
 
       // create empty default environment
       Path defaultEnvironmentLeafDir = testrigDir
-            .resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR,
+            .resolve(Paths.get(
+                  BfConsts.RELPATH_ENVIRONMENTS_DIR,
                   BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
                   BfConsts.RELPATH_ENV_DIR));
       defaultEnvironmentLeafDir.toFile().mkdirs();

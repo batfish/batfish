@@ -20,7 +20,8 @@ public class ConvertConfigurationJob
 
    private Warnings _warnings;
 
-   public ConvertConfigurationJob(Settings settings, Object configObject,
+   public ConvertConfigurationJob(
+         Settings settings, Object configObject,
          String name, Warnings warnings) {
       super(settings);
       _configObject = configObject;

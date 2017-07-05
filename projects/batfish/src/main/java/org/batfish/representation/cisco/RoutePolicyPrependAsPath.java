@@ -26,7 +26,8 @@ public class RoutePolicyPrependAsPath extends RoutePolicyStatement {
    }
 
    @Override
-   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+   public void applyTo(
+         List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       statements.add(new PrependAsPath(new MultipliedAs(_expr, _number)));
    }

@@ -50,7 +50,8 @@ public class ConfigDiffElement implements AnswerElement {
     * @param before
     * @param after
     */
-   protected <T> ConfigDiffElement(NavigableMap<String, T> before,
+   protected <T> ConfigDiffElement(
+         NavigableMap<String, T> before,
          NavigableMap<String, T> after, boolean summarizeIdentical) {
       this(before.keySet(), after.keySet());
       for (String name : common()) {

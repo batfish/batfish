@@ -16,7 +16,8 @@ public class ZipUtility {
    /*
     * recursively add files to the zip files
     */
-   private static void addFileToZip(String path, String srcFile,
+   private static void addFileToZip(
+         String path, String srcFile,
          ZipOutputStream zip, boolean flag) throws Exception {
       /*
        * create the file object for inputs
@@ -61,7 +62,8 @@ public class ZipUtility {
    /*
     * add folder to the zip file
     */
-   private static void addFolderToZip(String path, String srcFolder,
+   private static void addFolderToZip(
+         String path, String srcFolder,
          ZipOutputStream zip) throws Exception {
       File folder = new File(srcFolder);
 

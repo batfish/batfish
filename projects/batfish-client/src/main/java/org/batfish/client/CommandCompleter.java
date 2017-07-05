@@ -16,7 +16,8 @@ public class CommandCompleter implements Completer {
    }
 
    @Override
-   public int complete(String buffer, int cursor,
+   public int complete(
+         String buffer, int cursor,
          List<CharSequence> candidates) {
       checkNotNull(candidates);
 

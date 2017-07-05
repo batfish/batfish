@@ -22,7 +22,8 @@ public class RoleTransitQuerySynthesizer extends BaseQuerySynthesizer {
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       queryConditions.addConjunct(ExternalSourceIpExpr.INSTANCE);
       queryConditions.addConjunct(ExternalDestinationIpExpr.INSTANCE);
-      RuleExpr queryRule = new RuleExpr(queryConditions,
+      RuleExpr queryRule = new RuleExpr(
+            queryConditions,
             QueryRelationExpr.INSTANCE);
       QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
       StringBuilder sb = new StringBuilder();

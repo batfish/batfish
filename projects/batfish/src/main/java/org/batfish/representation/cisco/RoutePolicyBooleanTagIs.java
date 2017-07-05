@@ -10,8 +10,8 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 public class RoutePolicyBooleanTagIs extends RoutePolicyBoolean {
 
    /**
-   *
-   */
+    *
+    */
    private static final long serialVersionUID = 1L;
 
    private IntComparator _cmp;
@@ -28,7 +28,8 @@ public class RoutePolicyBooleanTagIs extends RoutePolicyBoolean {
    }
 
    @Override
-   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+   public BooleanExpr toBooleanExpr(
+         CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new MatchTag(_cmp, _expr);
    }

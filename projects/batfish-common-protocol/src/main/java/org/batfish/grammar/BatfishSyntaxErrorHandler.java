@@ -6,12 +6,14 @@ import org.antlr.v4.runtime.Recognizer;
 
 public abstract class BatfishSyntaxErrorHandler {
 
-   public boolean handle(ParserRuleContext ctx, Object offendingSymbol,
+   public boolean handle(
+         ParserRuleContext ctx, Object offendingSymbol,
          int line, int charPositionInLine, String msg) {
       return false;
    }
 
-   public boolean handle(Recognizer<?, ?> recognizer, Object offendingSymbol,
+   public boolean handle(
+         Recognizer<?, ?> recognizer, Object offendingSymbol,
          int line, int charPositionInLine, String msg, RecognitionException e) {
       return false;
    }
