@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -780,9 +781,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          throw new CleanBatfishException(
                "Missing compiled vendor-independent configurations for this test-rig\n");
       }
-      else if (CommonUtil.list(path).count() == 0) {
-         throw new CleanBatfishException(
-               "Nothing to do: Set of vendor-independent configurations for this test-rig is empty\n");
+      else {
+         try (Stream<Path> paths = CommonUtil.list(path)) {
+             if (!paths.iterator().hasNext()) {
+                throw new CleanBatfishException(
+                      "Nothing to do: Set of vendor-independent configurations for this test-rig is empty\n");
+             }
+         }
       }
    }
 
