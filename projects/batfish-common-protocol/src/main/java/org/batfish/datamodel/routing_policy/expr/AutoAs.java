@@ -26,8 +26,8 @@ public class AutoAs extends AsExpr {
    @Override
    public int evaluate(Environment environment) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    @Override

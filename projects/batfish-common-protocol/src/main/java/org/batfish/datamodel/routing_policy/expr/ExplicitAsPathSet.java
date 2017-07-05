@@ -59,8 +59,8 @@ public class ExplicitAsPathSet extends AsPathSetExpr {
    @Override
    public boolean matches(Environment environment) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    public void setElems(List<AsPathSetElem> elems) {

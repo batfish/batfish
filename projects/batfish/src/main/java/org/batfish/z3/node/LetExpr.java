@@ -47,8 +47,8 @@ public class LetExpr extends BooleanExpr implements ComplexExpr {
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
 }

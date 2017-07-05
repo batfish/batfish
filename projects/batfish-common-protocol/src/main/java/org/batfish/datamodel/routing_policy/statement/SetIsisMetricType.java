@@ -43,8 +43,8 @@ public class SetIsisMetricType extends Statement {
    @Override
    public Result execute(Environment environment) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    public IsisMetricType getMetricType() {

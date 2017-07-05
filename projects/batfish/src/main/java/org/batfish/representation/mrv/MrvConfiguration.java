@@ -29,15 +29,15 @@ public class MrvConfiguration extends VendorConfiguration {
    @Override
    public RoleSet getRoles() {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    @Override
    public Set<String> getUnimplementedFeatures() {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    public ConfigurationFormat getVendor() {
@@ -52,8 +52,8 @@ public class MrvConfiguration extends VendorConfiguration {
    @Override
    public void setRoles(RoleSet roles) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    @Override

@@ -22,8 +22,8 @@ public class RouteMapMatchNeighborLine extends RouteMapMatchLine {
    public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
          Warnings w) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
 }

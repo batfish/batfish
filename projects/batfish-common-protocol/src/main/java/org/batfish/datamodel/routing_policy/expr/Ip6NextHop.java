@@ -53,8 +53,8 @@ public class Ip6NextHop extends NextHopExpr {
    @Override
    public Ip getNextHopIp(Environment environment) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    @Override

@@ -61,8 +61,8 @@ public class ExplicitPrefix6Set extends Prefix6SetExpr {
    @Override
    public boolean matches(Prefix6 prefix6, Environment environment) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    public void setPrefix6Space(Prefix6Space prefix6Space) {

@@ -849,8 +849,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    @Override
    public IbgpTopology getIbgpNeighbors() {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    @Override

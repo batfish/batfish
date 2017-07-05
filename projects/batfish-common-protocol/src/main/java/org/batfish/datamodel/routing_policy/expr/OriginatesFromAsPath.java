@@ -54,8 +54,8 @@ public class OriginatesFromAsPath extends BooleanExpr {
    @Override
    public Result evaluate(Environment environment) {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
    public List<SubRangeExpr> getAsRange() {

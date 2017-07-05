@@ -37,8 +37,8 @@ public class RoleTransitQuerySynthesizer extends BaseQuerySynthesizer {
    @Override
    public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
       throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+            "no implementation for generated method");
+      // TODO Auto-generated method stub
    }
 
 }
