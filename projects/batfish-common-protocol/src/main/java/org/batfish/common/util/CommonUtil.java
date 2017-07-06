@@ -62,7 +62,6 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.skyscreamer.jsonassert.JSONAssert;
-import sun.reflect.Reflection;
 
 public class CommonUtil {
 
@@ -739,7 +738,7 @@ public class CommonUtil {
          ResourceConfig resourceConfig, URI mgrUri,
          Path keystorePath, String keystorePassword, boolean trustAllCerts,
          Path truststorePath, String truststorePassword,
-         Class<?> configurationLocatorClass) {
+         Class<?> configurationLocatorClass, Class<?> callerClass) {
       if (keystorePath == null) {
          throw new BatfishException(
                "Cannot start SSL server without keystore. If you have none, you must disable SSL.");
@@ -753,7 +752,7 @@ public class CommonUtil {
                .resolve(keystorePath);
       }
       if (!Files.exists(keystoreAbsolutePath)) {
-         String callingClass = Reflection.getCallerClass().getCanonicalName();
+         String callingClass = callerClass.getCanonicalName();
          System.err.printf("%s: keystore file not found at %s or %s\n",
                callingClass, keystorePath, keystoreAbsolutePath.toString());
          System.exit(1);
