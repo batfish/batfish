@@ -25,13 +25,22 @@ public class FileAuthorizer implements Authorizer {
 
    public FileAuthorizer() {
       _logger = Main.getLogger();
-      _usersFile = Main.getSettings().getFileAuthorizerRootDir()
-            .resolve(Main.getSettings().getFileAuthorizerUsersFile());
-      _permsFile = Main.getSettings().getFileAuthorizerRootDir()
-            .resolve(Main.getSettings().getFileAuthorizerPermsFile());
+      try {
+         _usersFile = Main.getSettings().getFileAuthorizerRootDir()
+                 .resolve(Main.getSettings().getFileAuthorizerUsersFile());
+         _permsFile = Main.getSettings().getFileAuthorizerRootDir()
+                 .resolve(Main.getSettings().getFileAuthorizerPermsFile());
+      }
+      catch (Exception e) {
+         throw new BatfishException(String.format("Could not initialize FileAuthorizer with "
+                 + " RootDir = %s UsersFile=%s. PermsFile=%s",
+                 Main.getSettings().getFileAuthorizerRootDir(),
+                 Main.getSettings().getFileAuthorizerUsersFile(),
+                 Main.getSettings().getFileAuthorizerPermsFile()));
+      }
       if (!Files.exists(_usersFile)) {
          throw new BatfishException("Users file not found: '"
-               + _usersFile.toAbsolutePath().toString() + "'");
+                 + _usersFile.toAbsolutePath().toString() + "'");
       }
       if (!Files.exists(_permsFile)) {
          throw new BatfishException("Perms file not found: '"
