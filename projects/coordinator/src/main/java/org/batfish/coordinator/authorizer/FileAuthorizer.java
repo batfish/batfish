@@ -1,5 +1,6 @@
 package org.batfish.coordinator.authorizer;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.batfish.common.BatfishException;
@@ -30,6 +31,14 @@ public class FileAuthorizer implements Authorizer {
                  .resolve(Main.getSettings().getFileAuthorizerUsersFile());
          _permsFile = Main.getSettings().getFileAuthorizerRootDir()
                  .resolve(Main.getSettings().getFileAuthorizerPermsFile());
+         if (!Files.exists(_usersFile)) {
+            throw new FileNotFoundException("Users file not found: '"
+                    + _usersFile.toAbsolutePath().toString() + "'");
+         }
+         if (!Files.exists(_permsFile)) {
+            throw new FileNotFoundException("Perms file not found: '"
+                    + _permsFile.toAbsolutePath().toString() + "'");
+         }
       }
       catch (Exception e) {
          throw new BatfishException(String.format("Could not initialize FileAuthorizer with "
@@ -37,14 +46,6 @@ public class FileAuthorizer implements Authorizer {
                  Main.getSettings().getFileAuthorizerRootDir(),
                  Main.getSettings().getFileAuthorizerUsersFile(),
                  Main.getSettings().getFileAuthorizerPermsFile()));
-      }
-      if (!Files.exists(_usersFile)) {
-         throw new BatfishException("Users file not found: '"
-                 + _usersFile.toAbsolutePath().toString() + "'");
-      }
-      if (!Files.exists(_permsFile)) {
-         throw new BatfishException("Perms file not found: '"
-               + _permsFile.toAbsolutePath().toString() + "'");
       }
    }
 
