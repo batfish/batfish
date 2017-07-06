@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -1656,7 +1657,7 @@ public class Synthesizer {
          String hostname = e.getKey();
          Configuration c = e.getValue();
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
-         RoleSet roles = c.getRoles();
+         SortedSet<String> roles = c.getRoles();
          if (roles != null) {
             for (String role : roles) {
                RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
@@ -2312,7 +2313,7 @@ public class Synthesizer {
          String hostname = e.getKey();
          Configuration c = e.getValue();
          OriginateExpr nodeOriginate = new OriginateExpr(hostname);
-         RoleSet roles = c.getRoles();
+         SortedSet<String> roles = c.getRoles();
          if (roles != null) {
             for (String role : roles) {
                RoleOriginateExpr roleOriginate = new RoleOriginateExpr(role);

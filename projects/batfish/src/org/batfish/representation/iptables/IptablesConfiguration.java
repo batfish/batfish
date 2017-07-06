@@ -2,6 +2,8 @@ package org.batfish.representation.iptables;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
@@ -14,12 +16,12 @@ public abstract class IptablesConfiguration extends VendorConfiguration {
     */
    private static final long serialVersionUID = 1L;
 
-   protected final RoleSet _roles;
+   protected final SortedSet<String> _roles;
 
    Map<String, IptablesTable> _tables = new HashMap<>();
 
    public IptablesConfiguration() {
-      _roles = new RoleSet();
+      _roles = new TreeSet<String>();
    }
 
    public void addChain(String tableName, String chainName) {

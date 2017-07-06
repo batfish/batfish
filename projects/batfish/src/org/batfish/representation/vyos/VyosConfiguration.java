@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -310,7 +311,7 @@ public class VyosConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public void setRoles(RoleSet roles) {
+   public void setRoles(SortedSet<String> roles) {
       _roles.addAll(roles);
    }
 

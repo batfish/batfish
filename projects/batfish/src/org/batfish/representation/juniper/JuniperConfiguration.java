@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -142,7 +143,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private final Map<String, PrefixList> _prefixLists;
 
-   private final RoleSet _roles;
+   private final SortedSet<String> _roles;
 
    private final Map<String, RouteFilter> _routeFilters;
 
@@ -642,7 +643,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public RoleSet getRoles() {
+   public SortedSet<String> getRoles() {
       return _roles;
    }
 
@@ -828,7 +829,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public void setRoles(RoleSet roles) {
+   public void setRoles(SortedSet<String> roles) {
       _roles.addAll(roles);
    }
 

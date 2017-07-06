@@ -56,7 +56,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
          private SortedSet<String> _ipsecVpns;
 
-         private RoleSet _roles;
+         private SortedSet<String> _roles;
 
          private SortedSet<String> _routeFilterLists;
 
@@ -195,7 +195,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
             return _routingPolicies;
          }
 
-         public RoleSet getRoles() {
+         public SortedSet<String> getRoles() {
             return _roles;
          }
 

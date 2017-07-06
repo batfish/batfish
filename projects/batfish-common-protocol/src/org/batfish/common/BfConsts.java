@@ -105,6 +105,7 @@ public class BfConsts {
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
    public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
+   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_QUERIES_DIR = "queries";

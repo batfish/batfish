@@ -31,6 +31,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
+import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -233,7 +234,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     *           class for nodes that are missing a structure of a given name.
     * 
     */
-   public static final class CompareSameNameQuestion extends Question {
+   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
       private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
 
