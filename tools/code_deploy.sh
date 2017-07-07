@@ -21,11 +21,11 @@ fi
 export BATFISH_SOURCED_SCRIPT=$BASH_SOURCE
 export BATFISH_TOOLS_PATH="$($GNU_READLINK -f $(dirname $BATFISH_SOURCED_SCRIPT))"
 
-export SRC_OUTDIR="${BATFISH_TOOLS_PATH}/../projects/${BINARY}/out/"
+export SRC_OUTDIR="${BATFISH_TOOLS_PATH}/../projects/${BINARY}/target/"
 
 # the person doing ssh should have access to this directory
 # i have set this directory to be writeable by everyone for now 
-export DST_OUTDIR="/home/batfish_services/batfish/projects/${BINARY}/out/"
+export DST_OUTDIR="/home/batfish_services/batfish/projects/${BINARY}/target/"
 
 # copy the pieces to the target host
 rsync -rvzL ${SRC_OUTDIR} ${TARGET_HOST}:${DST_OUTDIR} 
