@@ -449,8 +449,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private BatfishLogger _logger;
 
-   private SortedMap<String, String> _questionMap;
-
    private Settings _settings;
 
    // this variable is used communicate with parent thread on how the job
@@ -484,7 +482,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _terminatedWithException = false;
       _answererCreators = new HashMap<>();
       _testrigSettingsStack = new ArrayList<>();
-      _questionMap = new TreeMap<>();
    }
 
    private Answer analyze() {
@@ -3832,7 +3829,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public void registerAnswerer(
          String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator) {
-      _questionMap.put(questionName, questionClassName);
       _answererCreators.put(questionName, answererCreator);
    }
 
