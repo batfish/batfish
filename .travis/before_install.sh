@@ -18,6 +18,6 @@ sudo ln -s $MAVEN_DIR maven
 sudo tee /etc/profile.d/maven.sh <<EOF
 export M2_HOME=/opt/maven
 export MAVEN_HOME=/opt/maven
-export PATH=${M2_HOME}/bin:${PATH}
+export PATH=\${M2_HOME}/bin:\${PATH}
 EOF
 
