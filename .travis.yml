@@ -13,4 +13,4 @@ matrix:
         sudo: true
         before_install: .travis/before_install.sh
         install: ./.travis/install.sh
-        script: ./.travis/build.sh
+        script: ". /etc/profile.d/maven.sh && ./.travis/build.sh"
