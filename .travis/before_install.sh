@@ -22,5 +22,5 @@ export M2_HOME=/opt/maven
 export MAVEN_HOME=/opt/maven
 export PATH=\${M2_HOME}/bin:\${PATH}
 EOF
-cat /etc/profile.d/maven.sh || exit 1
+. /etc/profile.d/maven.sh
 
