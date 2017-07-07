@@ -148,7 +148,7 @@
 
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
-      <artifactId>grizzly-http-all</artifactId>
+      <artifactId>grizzly-http-server</artifactId>
     </dependency>
 
     <dependency>
