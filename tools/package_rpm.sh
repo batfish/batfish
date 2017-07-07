@@ -248,8 +248,6 @@ package() {
    BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
    SCRIPT_NAME="$(basename $BATFISH_SOURCED_SCRIPT)"
    BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
-   VERSION_FILE=$BATFISH_PATH/projects/batfish-common-protocol/src/org/batfish/common/Version.java
-   BATFISH_VERSION=$(grep 'private static final String VERSION' $VERSION_FILE | sed -e 's/^[^"]*"\([^"]*\)".*$/\1/g')
    SECONDARY_VERSION=$(echo $BATFISH_VERSION | cut -d'.' -f1,2)
    ARCHITECTURE=$(architecture)
    REDHAT_VERSION=$(redhat_version)
