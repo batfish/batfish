@@ -5,10 +5,12 @@ matrix:
       #        script: ./.travis/build.sh
       - os: linux
         dist: trusty
+        language: generic
         addons:
-           apt:
-              packages:
-                 - oracle-java8-installer
+          apt:
+            sources:
+              - sourceline: 'ppa:webupd8team/java'
         sudo: true
+        before_install: .travis/before_install.sh
         install: ./.travis/install.sh
-        script: ./.travis/build.sh
+        script: ". /etc/profile.d/maven.sh && ./.travis/build.sh"
