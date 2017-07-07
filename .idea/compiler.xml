@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <option name="BUILD_PROCESS_HEAP_SIZE" value="2048" />
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="allinone" />
+        <module name="batfish" />
+        <module name="batfish-client" />
+        <module name="batfish-common-protocol" />
+        <module name="coordinator" />
+        <module name="question" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="allinone" target="1.8" />
+      <module name="batfish" target="1.8" />
+      <module name="batfish-client" target="1.8" />
+      <module name="batfish-common-protocol" target="1.8" />
+      <module name="batfish-parent" target="1.5" />
+      <module name="coordinator" target="1.8" />
+      <module name="question" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -4,6 +4,11 @@
 .DS_Store
 *.testout
 
-# IntelliJ project files
-.idea/
+# IntelliJ project files that should not be shared, per:
+# https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
+workspace.xml
+tasks.xml
+# Additionally, per the lower level section, we should also not share
+# the following files that are auto-generated from Maven.
+.idea/libraries/
 *.iml

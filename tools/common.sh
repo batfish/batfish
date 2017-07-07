@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 export BATFISH_ROOT="$($GNU_READLINK -f "$BATFISH_TOOLS_PATH/..")"
-export BATFISH_PATH="$BATFISH_ROOT/projects/batfish"
+export PROJECTS_PATH="$BATFISH_ROOT/projects"
+export BATFISH_PATH="$PROJECTS_PATH/batfish"
 export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
 export BATFISH_Z3=z3
@@ -10,7 +11,7 @@ export BATFISH_NLS=nls
 export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
 export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
-export BATFISH_CLIENT_PATH="$BATFISH_ROOT/projects/batfish-client"
+export BATFISH_CLIENT_PATH="$PROJECTS_PATH/batfish-client"
 export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
 
 export BATFISH_DOCS_ROOT="$BATFISH_ROOT/docs"
@@ -26,22 +27,25 @@ if [ -d "$BATFISH_ROOT/../pybatfish" ]; then
    export BATFISH_QUESTIONS_PAGE_SCRIPT="${PYBATFISH_ROOT}/questions_page.py"
 fi
 
-export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
+export COORDINATOR_PATH="$PROJECTS_PATH/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
 
-export ALLINONE_PATH="$BATFISH_ROOT/projects/allinone"
+export ALLINONE_PATH="$PROJECTS_PATH/allinone"
 export ALLINONE="$ALLINONE_PATH/allinone"
 
-export COMMON_PATH="$BATFISH_ROOT/projects/batfish-common-protocol"
-export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
+export COMMON_PATH="$PROJECTS_PATH/batfish-common-protocol"
+export COMMON_JAR="$COMMON_PATH/target/batfish-common-protocol-${BATFISH_VERSION}.jar"
 
-export QUESTION_PATH="$BATFISH_ROOT/projects/question"
-export BATFISH_QUESTION_PLUGIN_DIR="$BATFISH_ROOT/projects/question/out"
+export QUESTION_PATH="$PROJECTS_PATH/question"
+export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
 
 export ALLINONE_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-allinone.tmp
 export BATFISH_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish.tmp
 export BATFISH_CLIENT_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish-client.tmp
 export COORDINATOR_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-coordinator.tmp
+
+# Use Maven to print the current Batfish java version
+export BATFISH_VERSION=$(grep -1 batfish-parent ${PROJECTS_PATH}/pom.xml | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -90,41 +94,40 @@ export -f batfish_answer_example_cp
 
 batfish_build() {
    bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
-   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
+}
+export -f batfish_build
+
+_batfish_build() {
+   _pre_build || return 1
+   mvn install -DskipTests -pl batfish -am || return 1
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file (after batfish_build) ..."
       BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
       . "${BATFISH_TOOLS_PATH}/completion-batfish.sh"
       echo "OK"
    fi
 }
-export -f batfish_build
-
-_batfish_build() {
-   common_build || return 1
-   cd "$BATFISH_PATH"
-   ant "$@" || return 1
-}
 export -f _batfish_build
 
 batfish_build_all() {
    bash -c '_batfish_build_all "$@"' _batfish_build_all "$@" || return 1
-   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/out/allinone.jar" -a -e "$ALLINONE_PATH/out/allinone.jar" ]; then
+   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" -a -e "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for allinone (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$ALLINONE_COMPLETION_FILE"
       . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
       echo "OK"
    fi
-   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/out/batfish.jar" -a -e "$BATFISH_PATH/out/batfish.jar" ]; then
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
       echo "OK"
    fi
-   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/out/batfish-client.jar" -a -e "$BATFISH_CLIENT_PATH/out/batfish-client.jar" ]; then
+   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish-client (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
       echo "OK"
    fi
-   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/out/coordinator.jar" -a -e "$COORDINATOR_PATH/out/coordinator.jar" ]; then
+   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for coordinator (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$COORDINATOR_COMPLETION_FILE"
       echo "OK"
@@ -133,17 +136,9 @@ batfish_build_all() {
 export -f batfish_build_all
 
 _batfish_build_all() {
-   common_build "$@" || return 1
-   cd "$BATFISH_PATH"
-   ant "$@" || return 1
-   cd "$COORDINATOR_PATH"
-   ant "$@" || return 1
-   cd "$BATFISH_CLIENT_PATH"
-   ant "$@" || return 1
-   cd "$QUESTION_PATH"
-   ant "$@" || return 1  
-   cd "$ALLINONE_PATH"
-   ant "$@" || return 1  
+   _pre_build || return 1
+   cd "${PROJECTS_PATH}"
+   mvn install -DskipTest || return 1
 }
 export -f _batfish_build_all
 
@@ -722,6 +717,12 @@ coordinator() {
 }
 export -f coordinator
 
+_pre_build() {
+  batfish_replace_symlinks || exit 1
+  cd ${PROJECTS_PATH} || return 1
+}
+export -f _pre_build
+
 batfish_client() {
    # if cygwin, shift and replace each parameter
    if batfish_cygwin; then
@@ -746,10 +747,9 @@ client_build() {
 export -f client_build
 
 _client_build() {
-   common_build || return 1
-   cd "$BATFISH_CLIENT_PATH"
-   ant "$@" || return 1
-   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/out/batfish-client.jar" -a -e "$BATFISH_CLIENT_PATH/out/batfish-client.jar" ]; then
+   _pre_build || return 1
+   mvn install -DskipTests -pl batfish-client -am || return 1
+   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish-client (via client_build) ..."
       BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
       echo "OK"
@@ -780,16 +780,9 @@ allinone_build() {
 }
 
 _allinone_build() {
-   common_build || return 1
-   cd "$BATFISH_PATH"
-   ant "$@" || return 1
-   cd "$COORDINATOR_PATH"
-   ant "$@" || return 1
-   cd "$BATFISH_CLIENT_PATH"
-   ant "$@" || return 1
-   cd "$ALLINONE_PATH"
-   ant "$@" || return 1
-   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/out/allinone.jar" -a -e "$ALLINONE_PATH/out/allinone.jar" ]; then
+   _pre_build || return 1
+   mvn install -DskipTests -pl allinone -am || return 1
+   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" -a -e "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for allinone (via allinone_build) ..."
       BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$ALLINONE_COMPLETION_FILE"
       . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
@@ -804,10 +797,9 @@ coordinator_build() {
 export -f coordinator_build
 
 _coordinator_build() {
-   common_build || return 1
-   cd "$COORDINATOR_PATH"
-   ant "$@" || return 1
-   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/out/coordinator.jar" -a -e "$COORDINATOR_PATH/out/coordinator.jar" ]; then
+   _pre_build || return 1
+   mvn install -DskipTests -pl coordinator -am || return 1
+   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for coordinator (via coordinator_build) ..."
       BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$COORDINATOR_COMPLETION_FILE"
       echo "OK"
@@ -821,9 +813,8 @@ common_build() {
 export -f common_build
 
 _common_build() {
-   batfish_replace_symlinks || return 1
-   cd "$COMMON_PATH"
-   ant "$@" || return 1
+   _pre_build || return 1
+   mvn install -DskipTests -pl batfish-common-protocol -am || return 1
 }
 export -f _common_build
 

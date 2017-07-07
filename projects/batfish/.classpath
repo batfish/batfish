@@ -1,59 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/commons/commons-codec-1.6.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/eclipse/jetty-client-7.6.7.v20120910.jar"/>
-	<classpathentry kind="lib" path="lib/eclipse/jetty-http-7.6.7.v20120910.jar"/>
-	<classpathentry kind="lib" path="lib/eclipse/jetty-io-7.6.7.v20120910.jar"/>
-	<classpathentry kind="lib" path="lib/eclipse/jetty-util-7.6.7.v20120910.jar"/>
-	<classpathentry kind="lib" path="lib/httpcomponents/fluent-hc-4.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/httpcomponents/httpclient-4.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/httpcomponents/httpclient-cache-4.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/httpcomponents/httpcore-4.2.4.jar"/>
-	<classpathentry kind="lib" path="lib/httpcomponents/httpmime-4.2.5.jar"/>
-	<classpathentry kind="lib" path="lib/protobuf/protobuf-2.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/z3/com.microsoft.z3.jar" sourcepath="lib/z3/com.microsoft.z3-sources.jar"/>
-	<classpathentry kind="lib" path="lib/grizzly/grizzly-http-all-2.3.18.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-exec-1.3.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
-	<classpathentry kind="lib" path="lib/commons/commons-cli-1.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/aopalliance-repackaged-2.4.0-b09.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/asm-debug-all-5.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/hk2-api-2.4.0-b09.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/hk2-locator-2.4.0-b09.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/hk2-utils-2.4.0-b09.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/javassist-3.18.1-GA.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/javax.annotation-api-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/javax.inject-2.4.0-b09.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/javax.servlet-api-3.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/jaxb-api-2.2.7.jar" sourcepath="lib/jaxrs-ri/ext/jaxb-api-2.2.7-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/jersey-guava-2.16.jar" sourcepath="lib/jaxrs-ri/ext/jersey-guava-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar" sourcepath="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/grizzly/jersey-container-grizzly2-http-2.16.jar" sourcepath="lib/jaxrs-ri/grizzly/jersey-container-grizzly2-http-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jersey/jersey-media-json-jettison-2.16.jar" sourcepath="lib/jersey/jersey-media-json-jettison-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-client-2.16.jar" sourcepath="lib/jaxrs-ri/lib/jersey-client-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-common-2.16.jar" sourcepath="lib/jaxrs-ri/lib/jersey-common-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-container-servlet-2.16.jar" sourcepath="lib/jaxrs-ri/lib/jersey-container-servlet-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-container-servlet-core-2.16.jar" sourcepath="lib/jaxrs-ri/lib/jersey-container-servlet-core-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-media-jaxb-2.16.jar" sourcepath="lib/jaxrs-ri/lib/jersey-media-jaxb-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-server-2.16.jar" sourcepath="lib/jaxrs-ri/lib/jersey-server-2.16-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jettison/jettison-1.3.jar" sourcepath="lib/jettison/jettison-1.3-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/org.osgi.core-4.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/osgi-resource-locator-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/persistence-api-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/validation-api-1.1.0.Final.jar"/>
-	<classpathentry kind="lib" path="lib/java-json/java-json.jar"/>
-	<classpathentry kind="lib" path="lib/jsonassert/jsonassert-1.2.3.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.9.0-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.9.0-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/guava/guava-21.0.jar" sourcepath="lib/guava/guava-21.0-sources.jar"/>
-	<classpathentry kind="lib" path="lib/commons/commons-collections4-4.1.jar" sourcepath="lib/commons/commons-collections4-4.1-sources.jar"/>
-	<classpathentry kind="lib" path="lib/antlr/antlr-4.7-complete.jar" sourcepath="lib/antlr/antlr4-4.7-runtime-sources.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/classes" path="target/generated-sources/antlr4">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
