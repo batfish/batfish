@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.batfish</groupId>
     <artifactId>batfish-parent</artifactId>
-    <version>0.29.0-SNAPSHOT</version>
+    <version>0.28.1</version>
   </parent>
 
   <artifactId>batfish</artifactId>
@@ -148,7 +148,7 @@
 
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
-      <artifactId>grizzly-http-all</artifactId>
+      <artifactId>grizzly-http-server</artifactId>
     </dependency>
 
     <dependency>
