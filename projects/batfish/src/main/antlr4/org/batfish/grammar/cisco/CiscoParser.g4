@@ -150,16 +150,6 @@ cp_service_policy
    ) name = variable NEWLINE
 ;
 
-color_setter
-:
-   SET_COLOR
-   (
-      RED
-      | YELLOW
-      | GREEN
-   )
-;
-
 cqg_null
 :
    NO?

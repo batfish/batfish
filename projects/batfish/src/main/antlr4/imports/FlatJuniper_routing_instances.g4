@@ -1,6 +1,6 @@
 parser grammar FlatJuniper_routing_instances;
 
-import FlatJuniper_common, FlatJuniper_protocols;
+import FlatJuniper_common, FlatJuniper_protocols, FlatJuniper_snmp;
 
 options {
    tokenVocab = FlatJuniperLexer;

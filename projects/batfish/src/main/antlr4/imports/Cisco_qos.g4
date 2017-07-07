@@ -148,6 +148,16 @@ cmm_redirect
    REDIRECT ~NEWLINE NEWLINE
 ;
 
+color_setter
+:
+   SET_COLOR
+   (
+      RED
+      | YELLOW
+      | GREEN
+   )
+;
+
 o_network
 :
    NETWORK name = variable NEWLINE

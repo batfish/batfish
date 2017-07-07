@@ -100,7 +100,7 @@ public class Main {
                _settings.getSslPoolTrustAllCerts(),
                _settings.getSslPoolTruststoreFile(),
                _settings.getSslPoolTruststorePassword(),
-               ConfigurationLocator.class);
+               ConfigurationLocator.class, Main.class);
       }
 
       _poolManager = new PoolMgr(_settings, _logger);
@@ -134,7 +134,7 @@ public class Main {
                _settings.getSslWorkTrustAllCerts(),
                _settings.getSslWorkTruststoreFile(),
                _settings.getSslWorkTruststorePassword(),
-               ConfigurationLocator.class);
+               ConfigurationLocator.class, Main.class);
       }
 
       _workManager = new WorkMgr(_settings, _logger);
