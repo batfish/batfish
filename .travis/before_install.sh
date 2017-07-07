@@ -10,9 +10,10 @@ MAVEN_VERSION=3.3.9
 MAVEN_DIR=apache-maven-${MAVEN_VERSION}
 MAVEN_TARBALL=${MAVEN_DIR}-bin.tar.gz
 MAVEN_URL=http://www-eu.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/$MAVEN_TARBALL
-wget $MAVEN_URL || exit 1
+
 cd /opt
-sudo tar -xf $HOME/$MAVEN_TARBALL
+sudo wget $MAVEN_URL || exit 1
+sudo tar -xf $MAVEN_TARBALL
 sudo ln -s $MAVEN_DIR maven
 sudo tee /etc/profile.d/maven.sh <<EOF
 export M2_HOME=/opt/maven
