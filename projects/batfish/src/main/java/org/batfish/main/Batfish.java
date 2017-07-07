@@ -207,7 +207,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public static void applyBaseDir(
          TestrigSettings settings, Path containerDir,
-         String testrig, String envName, String questionName) {
+         String testrig, String envName) {
       Path testrigDir = containerDir.resolve(testrig);
       settings.setName(testrig);
       settings.setBasePath(testrigDir);
@@ -315,7 +315,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path containerDir = settings.getContainerDir();
       if (testrig != null) {
          applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig,
-               envName, questionName);
+               envName);
          String deltaTestrig = settings.getDeltaTestrig();
          String deltaEnvName = settings.getDeltaEnvironmentName();
          TestrigSettings deltaTestrigSettings = settings
@@ -330,7 +330,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
          if (deltaTestrig != null) {
             applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig,
-                  deltaEnvName, questionName);
+                  deltaEnvName);
          }
          if (settings.getDiffActive()) {
             settings
@@ -1187,8 +1187,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
       applyBaseDir(_testrigSettings, _settings.getContainerDir(),
-            _testrigSettings.getName(), newEnvName,
-            _settings.getQuestionName());
+            _testrigSettings.getName(), newEnvName
+      );
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
