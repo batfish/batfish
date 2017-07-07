@@ -51,8 +51,10 @@
     <jline.version>2.14.5</jline.version>
     <jsonassert.version>1.2.3</jsonassert.version>
     <jsonpath.version>2.3.0-batfish-internal</jsonpath.version>
+    <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <jackson-jsonschema.version>1.0.11-batfish-internal</jackson-jsonschema.version>
+    <maven-artifact.version>3.5.0</maven-artifact.version>
     <slf4j.version>1.7.25</slf4j.version>
     <xstream.version>1.4.7</xstream.version>
   </properties>
@@ -226,6 +228,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>${jsr305.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
@@ -331,6 +339,12 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons-exec.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-artifact</artifactId>
+        <version>${maven-artifact.version}</version>
       </dependency>
 
       <dependency>
