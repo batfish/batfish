@@ -3566,9 +3566,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     *
     * @param configurations
     *           The vendor-independent configurations to be modified
-    * @param envSettings
-    *           The settings for the environment, containing e.g. the path to
-    *           the external announcements file
     * @param allCommunities
     */
    public AdvertisementSet processExternalBgpAnnouncements(
