@@ -367,8 +367,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     */
    static List<Path> listAllFiles(Path configsPath) {
       List<Path> configFilePaths;
-      try {
-         configFilePaths = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)
+      try (Stream<Path> allFiles = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)) {
+         configFilePaths = allFiles
                .filter(path -> !path.getFileName().toString().startsWith(".")
                      && Files.isRegularFile(path))
                .sorted().collect(Collectors.toList());
@@ -500,16 +500,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                + analysisQuestionsDir.toString() + "'");
       }
       RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
-      CommonUtil.list(analysisQuestionsDir).forEach(analysisQuestionDir -> {
-         String questionName = analysisQuestionDir.getFileName().toString();
-         Path analysisQuestionPath = analysisQuestionDir
-               .resolve(BfConsts.RELPATH_QUESTION_FILE);
-         _settings.setQuestionPath(analysisQuestionPath);
-         Answer currentAnswer = answer();
-         initAnalysisQuestionPath(analysisName, questionName);
-         outputAnswer(currentAnswer);
-         ae.getAnswers().put(questionName, currentAnswer);
-      });
+      try (Stream<Path> questions = CommonUtil.list(analysisQuestionsDir)) {
+         questions.forEach(analysisQuestionDir -> {
+            String questionName = analysisQuestionDir.getFileName().toString();
+            Path analysisQuestionPath = analysisQuestionDir
+                  .resolve(BfConsts.RELPATH_QUESTION_FILE);
+            _settings.setQuestionPath(analysisQuestionPath);
+            Answer currentAnswer = answer();
+            initAnalysisQuestionPath(analysisName, questionName);
+            outputAnswer(currentAnswer);
+            ae.getAnswers().put(questionName, currentAnswer);
+         });
+      }
       answer.addAnswerElement(ae);
       return answer;
    }
@@ -3725,13 +3727,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.infof("\n*** READING FILES: %s ***\n", description);
       resetTimer();
       SortedMap<Path, String> fileData = new TreeMap<>();
-      Path[] filePaths = CommonUtil.list(directory)
-            .filter(path -> !path.getFileName().toString().startsWith("."))
-            .collect(Collectors.toList()).toArray(new Path[]{});
-      Arrays.sort(filePaths);
+      List<Path> filePaths;
+      try (Stream<Path> paths = CommonUtil.list(directory)) {
+         filePaths = paths
+               .filter(path -> !path.getFileName().toString().startsWith("."))
+               .sorted()
+               .collect(Collectors.toList());
+      }
       AtomicInteger completed = newBatch(
             "Reading files: " + description,
-            filePaths.length);
+            filePaths.size());
       for (Path file : filePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
@@ -3904,8 +3909,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path questionsDir = _settings.getActiveTestrigSettings().getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       ConcurrentMap<Path, String> answers = new ConcurrentHashMap<>();
-      try {
-         Files.newDirectoryStream(questionsDir)
+      try (DirectoryStream<Path> questions = Files.newDirectoryStream(questionsDir)) {
+         questions
                .forEach(questionDirPath -> answers.put(
                      questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON),
                      !questionDirPath.getFileName().startsWith(".")
