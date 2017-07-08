@@ -12,4 +12,3 @@ tasks.xml
 # the following files that are auto-generated from Maven.
 .idea/dictionaries/
 .idea/libraries/
-*.iml
