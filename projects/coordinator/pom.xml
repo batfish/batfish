@@ -130,6 +130,11 @@
       <artifactId>jersey-media-multipart</artifactId>
     </dependency>
 
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+    </dependency>
+
     <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>
