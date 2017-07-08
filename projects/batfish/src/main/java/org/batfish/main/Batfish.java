@@ -206,65 +206,63 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public static void applyBaseDir(
          TestrigSettings settings, Path containerDir,
-         String testrig, String envName, String questionName) {
+         String testrig, String envName) {
       Path testrigDir = containerDir.resolve(testrig);
       settings.setName(testrig);
       settings.setBasePath(testrigDir);
-      if (containerDir != null) {
-         EnvironmentSettings envSettings = settings.getEnvironmentSettings();
-         settings.setSerializeIndependentPath(testrigDir
+      EnvironmentSettings envSettings = settings.getEnvironmentSettings();
+      settings.setSerializeIndependentPath(testrigDir
+            .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
+      settings.setSerializeVendorPath(
+            testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+      settings.setTestRigPath(
+            testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
+      settings.setParseAnswerPath(
+            testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
+      settings.setConvertAnswerPath(
+            testrigDir.resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+      if (envName != null) {
+         envSettings.setName(envName);
+         Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
+               .resolve(envName);
+         envSettings.setEnvironmentBasePath(envPath);
+         envSettings.setDataPlanePath(
+               envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
+         envSettings.setDataPlaneAnswerPath(
+               envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
+         envSettings.setParseEnvironmentBgpTablesAnswerPath(envPath
+               .resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
+         envSettings.setParseEnvironmentRoutingTablesAnswerPath(envPath
+               .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
+         envSettings.setSerializeEnvironmentBgpTablesPath(envPath
+               .resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
+         envSettings
+               .setSerializeEnvironmentRoutingTablesPath(envPath.resolve(
+                     BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
+         Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
+         envSettings.setEnvPath(envDirPath);
+         envSettings.setNodeBlacklistPath(
+               envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
+         envSettings.setInterfaceBlacklistPath(envDirPath
+               .resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
+         envSettings.setEdgeBlacklistPath(
+               envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
+         envSettings.setSerializedTopologyPath(
+               envDirPath.resolve(BfConsts.RELPATH_TOPOLOGY_FILE));
+         envSettings.setDeltaConfigurationsDir(
+               envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+         envSettings.setExternalBgpAnnouncementsPath(envDirPath
+               .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
+         envSettings.setEnvironmentBgpTablesPath(
+               envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+         envSettings.setEnvironmentRoutingTablesPath(envDirPath
+               .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
+         envSettings.setPrecomputedRoutesPath(
+               envPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
+         envSettings.setDeltaCompiledConfigurationsDir(envPath
                .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
-         settings.setSerializeVendorPath(
-               testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
-         settings.setTestRigPath(
-               testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
-         settings.setParseAnswerPath(
-               testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
-         settings.setConvertAnswerPath(
-               testrigDir.resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH));
-         if (envName != null) {
-            envSettings.setName(envName);
-            Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
-                  .resolve(envName);
-            envSettings.setEnvironmentBasePath(envPath);
-            envSettings.setDataPlanePath(
-                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
-            envSettings.setDataPlaneAnswerPath(
-                  envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
-            envSettings.setParseEnvironmentBgpTablesAnswerPath(envPath
-                  .resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER));
-            envSettings.setParseEnvironmentRoutingTablesAnswerPath(envPath
-                  .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER));
-            envSettings.setSerializeEnvironmentBgpTablesPath(envPath
-                  .resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
-            envSettings
-                  .setSerializeEnvironmentRoutingTablesPath(envPath.resolve(
-                        BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
-            Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
-            envSettings.setEnvPath(envDirPath);
-            envSettings.setNodeBlacklistPath(
-                  envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
-            envSettings.setInterfaceBlacklistPath(envDirPath
-                  .resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE));
-            envSettings.setEdgeBlacklistPath(
-                  envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
-            envSettings.setSerializedTopologyPath(
-                  envDirPath.resolve(BfConsts.RELPATH_TOPOLOGY_FILE));
-            envSettings.setDeltaConfigurationsDir(
-                  envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
-            envSettings.setExternalBgpAnnouncementsPath(envDirPath
-                  .resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
-            envSettings.setEnvironmentBgpTablesPath(
-                  envDirPath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
-            envSettings.setEnvironmentRoutingTablesPath(envDirPath
-                  .resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES));
-            envSettings.setPrecomputedRoutesPath(
-                  envPath.resolve(BfConsts.RELPATH_PRECOMPUTED_ROUTES));
-            envSettings.setDeltaCompiledConfigurationsDir(envPath
-                  .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
-            envSettings.setDeltaVendorConfigurationsDir(
-                  envPath.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
-         }
+         envSettings.setDeltaVendorConfigurationsDir(
+               envPath.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
       }
    }
 
@@ -316,7 +314,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path containerDir = settings.getContainerDir();
       if (testrig != null) {
          applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig,
-               envName, questionName);
+               envName);
          String deltaTestrig = settings.getDeltaTestrig();
          String deltaEnvName = settings.getDeltaEnvironmentName();
          TestrigSettings deltaTestrigSettings = settings
@@ -331,7 +329,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
          if (deltaTestrig != null) {
             applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig,
-                  deltaEnvName, questionName);
+                  deltaEnvName);
          }
          if (settings.getDiffActive()) {
             settings
@@ -450,8 +448,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private BatfishLogger _logger;
 
-   private SortedMap<String, String> _questionMap;
-
    private Settings _settings;
 
    // this variable is used communicate with parent thread on how the job
@@ -485,7 +481,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _terminatedWithException = false;
       _answererCreators = new HashMap<>();
       _testrigSettingsStack = new ArrayList<>();
-      _questionMap = new TreeMap<>();
    }
 
    private Answer analyze() {
@@ -630,17 +625,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (Entry<AclLine, Boolean> e : output.entrySet()) {
          AclLine line = e.getKey();
          String hostname = line.getHostname();
-         Map<String, List<AclLine>> byAclName = arrangedAclLines.get(hostname);
-         if (byAclName == null) {
-            byAclName = new TreeMap<>();
-            arrangedAclLines.put(hostname, byAclName);
-         }
+         Map<String, List<AclLine>> byAclName =
+               arrangedAclLines.computeIfAbsent(hostname, k -> new TreeMap<>());
          String aclName = line.getAclName();
-         List<AclLine> aclLines = byAclName.get(aclName);
-         if (aclLines == null) {
-            aclLines = new ArrayList<>();
-            byAclName.put(aclName, aclLines);
-         }
+         List<AclLine> aclLines = byAclName.computeIfAbsent(aclName, k -> new ArrayList<>());
          aclLines.add(line);
       }
 
@@ -987,22 +975,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                i.getVrrpGroups().forEach((groupNum, vrrpGroup) -> {
                   Prefix prefix = vrrpGroup.getVirtualAddress();
                   Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
-                  Set<Interface> candidates = vrrpGroups.get(key);
-                  if (candidates == null) {
-                     candidates = Collections.newSetFromMap(
-                           new IdentityHashMap<Interface, Boolean>());
-                     vrrpGroups.put(key, candidates);
-                  }
+                  Set<Interface> candidates =
+                        vrrpGroups.computeIfAbsent(
+                              key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
                   candidates.add(i);
                });
                // collect prefixes
                i.getAllPrefixes().stream().map(p -> p.getAddress())
                      .forEach(ip -> {
-                        Set<String> owners = ipOwners.get(ip);
-                        if (owners == null) {
-                           owners = new HashSet<>();
-                           ipOwners.put(ip, owners);
-                        }
+                        Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
                         owners.add(hostname);
                      });
             }
@@ -1031,11 +1012,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             throw new BatfishException(
                   "multiple best vrrp candidates:" + bestCandidates);
          }
-         Set<String> owners = ipOwners.get(ip);
-         if (owners == null) {
-            owners = new HashSet<>();
-            ipOwners.put(ip, owners);
-         }
+         Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
          owners.add(bestCandidate);
       });
       return ipOwners;
@@ -1188,8 +1165,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
       applyBaseDir(_testrigSettings, _settings.getContainerDir(),
-            _testrigSettings.getName(), newEnvName,
-            _settings.getQuestionName());
+            _testrigSettings.getName(), newEnvName
+      );
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
@@ -2371,13 +2348,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      continue;
                   }
                   remoteAddresses.put(bgpNeighbor, remoteAddress);
-                  Set<BgpNeighbor> localAddressOwners = localAddresses
-                        .get(localAddress);
-                  if (localAddressOwners == null) {
-                     localAddressOwners = Collections.newSetFromMap(
-                           new IdentityHashMap<BgpNeighbor, Boolean>());
-                     localAddresses.put(localAddress, localAddressOwners);
-                  }
+                  Set<BgpNeighbor> localAddressOwners =
+                        localAddresses.computeIfAbsent(
+                              localAddress,
+                              k -> Collections.newSetFromMap(new IdentityHashMap<>()));
                   localAddressOwners.add(bgpNeighbor);
                }
             }
@@ -2414,14 +2388,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .getExternalInterface().getAllPrefixes();
             for (Prefix externalPrefix : externalPrefixes) {
                Ip externalAddress = externalPrefix.getAddress();
-               Set<IpsecVpn> vpnsUsingExternalAddress = externalAddresses
-                     .get(externalAddress);
-               if (vpnsUsingExternalAddress == null) {
-                  vpnsUsingExternalAddress = new HashSet<>();
-                  externalAddresses.put(
-                        externalAddress,
-                        vpnsUsingExternalAddress);
-               }
+               Set<IpsecVpn> vpnsUsingExternalAddress =
+                     externalAddresses.computeIfAbsent(externalAddress, k -> new HashSet<>());
                vpnsUsingExternalAddress.add(ipsecVpn);
             }
          }
@@ -3570,9 +3538,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     *
     * @param configurations
     *           The vendor-independent configurations to be modified
-    * @param envSettings
-    *           The settings for the environment, containing e.g. the path to
-    *           the external announcements file
     * @param allCommunities
     */
    public AdvertisementSet processExternalBgpAnnouncements(
@@ -3833,7 +3798,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public void registerAnswerer(
          String questionName, String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator) {
-      _questionMap.put(questionName, questionClassName);
       _answererCreators.put(questionName, answererCreator);
    }
 
@@ -4592,12 +4556,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      NodeInterfacePair pair = new NodeInterfacePair(
                            nodeName,
                            ifaceName);
-                     Set<NodeInterfacePair> interfaceBucket = prefixInterfaces
-                           .get(network);
-                     if (interfaceBucket == null) {
-                        interfaceBucket = new HashSet<>();
-                        prefixInterfaces.put(network, interfaceBucket);
-                     }
+                     Set<NodeInterfacePair> interfaceBucket =
+                           prefixInterfaces.computeIfAbsent(network, k -> new HashSet<>());
                      interfaceBucket.add(pair);
                   }
                }
