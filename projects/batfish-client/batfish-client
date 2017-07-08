@@ -1,7 +1,7 @@
 #!/bin/bash
 BATFISH_CLIENT=${BASH_SOURCE[0]}
 BATFISH_CLIENT_PATH=$(dirname $BATFISH_CLIENT)
-BATFISH_CLIENT_JAR=$BATFISH_CLIENT_PATH/target/batfish-client-bundle-${VERSION}.jar
+BATFISH_CLIENT_JAR=$BATFISH_CLIENT_PATH/target/batfish-client-bundle-${BATFISH_VERSION}.jar
 if batfish_cygwin; then
    BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
    BATFISH_CLIENT_JAVA_ARGS="$BATFISH_CLIENT_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"

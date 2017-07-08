@@ -34,7 +34,7 @@ export ALLINONE_PATH="$PROJECTS_PATH/allinone"
 export ALLINONE="$ALLINONE_PATH/allinone"
 
 export COMMON_PATH="$PROJECTS_PATH/batfish-common-protocol"
-export COMMON_JAR="$COMMON_PATH/target/batfish-common-protocol-${VERSION}.jar"
+export COMMON_JAR="$COMMON_PATH/target/batfish-common-protocol-${BATFISH_VERSION}.jar"
 
 export QUESTION_PATH="$PROJECTS_PATH/question"
 export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
@@ -45,9 +45,7 @@ export BATFISH_CLIENT_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish-cli
 export COORDINATOR_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-coordinator.tmp
 
 # Use Maven to print the current Batfish java version
-export VERSION=$(mvn -q -f ${PROJECTS_PATH}/pom.xml \
-    -Dexec.executable="echo" -Dexec.args='${project.version}' \
-    --non-recursive exec:exec)             
+export BATFISH_VERSION=$(grep -1 batfish-parent ${PROJECTS_PATH}/pom.xml | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -102,7 +100,7 @@ export -f batfish_build
 _batfish_build() {
    _pre_build || return 1
    mvn install -DskipTests -pl batfish -am || return 1
-   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${VERSION}.jar" ]; then
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file (after batfish_build) ..."
       BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
       . "${BATFISH_TOOLS_PATH}/completion-batfish.sh"
@@ -113,23 +111,23 @@ export -f _batfish_build
 
 batfish_build_all() {
    bash -c '_batfish_build_all "$@"' _batfish_build_all "$@" || return 1
-   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/target/allinone-${VERSION}.jar" -a -e "$ALLINONE_PATH/target/allinone-${VERSION}.jar" ]; then
+   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" -a -e "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for allinone (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$ALLINONE_COMPLETION_FILE"
       . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
       echo "OK"
    fi
-   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${VERSION}.jar" ]; then
+   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_COMPLETION_FILE"
       echo "OK"
    fi
-   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${VERSION}.jar" ]; then
+   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish-client (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
       echo "OK"
    fi
-   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${VERSION}.jar" ]; then
+   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for coordinator (via batfish_build_all) ..."
       BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$COORDINATOR_COMPLETION_FILE"
       echo "OK"
@@ -751,7 +749,7 @@ export -f client_build
 _client_build() {
    _pre_build || return 1
    mvn install -DskipTests -pl batfish-client -am || return 1
-   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${VERSION}.jar" ]; then
+   if [ "$BATFISH_CLIENT_COMPLETION_FILE" -ot "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" -a -e "$BATFISH_CLIENT_PATH/target/batfish-client-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for batfish-client (via client_build) ..."
       BATFISH_PRINT_CMDLINE=no batfish_client -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$BATFISH_CLIENT_COMPLETION_FILE"
       echo "OK"
@@ -784,7 +782,7 @@ allinone_build() {
 _allinone_build() {
    _pre_build || return 1
    mvn install -DskipTests -pl allinone -am || return 1
-   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/target/allinone-${VERSION}.jar" -a -e "$ALLINONE_PATH/target/allinone-${VERSION}.jar" ]; then
+   if [ "$ALLINONE_COMPLETION_FILE" -ot "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" -a -e "$ALLINONE_PATH/target/allinone-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for allinone (via allinone_build) ..."
       BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$ALLINONE_COMPLETION_FILE"
       . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
@@ -801,7 +799,7 @@ export -f coordinator_build
 _coordinator_build() {
    _pre_build || return 1
    mvn install -DskipTests -pl coordinator -am || return 1
-   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${VERSION}.jar" ]; then
+   if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
       echo -n "Generating bash completion file for coordinator (via coordinator_build) ..."
       BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' > "$COORDINATOR_COMPLETION_FILE"
       echo "OK"
