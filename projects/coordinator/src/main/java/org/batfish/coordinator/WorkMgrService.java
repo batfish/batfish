@@ -937,58 +937,6 @@ public class WorkMgrService {
    }
 
    /**
-    * Lists the questions under the specified container, testrig
-    *
-    * @param apiKey
-    * @param containerName
-    * @param testrigName
-    * @return
-    */
-   @POST
-   @Path(CoordConsts.SVC_RSC_LIST_QUESTIONS)
-   @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray listQuestions(
-         @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-         @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-         @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-         @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
-      try {
-         _logger.info(
-               "WMS:listQuestions " + apiKey + " " + containerName + "\n");
-
-         checkStringParam(apiKey, "API key");
-         checkStringParam(clientVersion, "Client version");
-         checkStringParam(containerName, "Container name");
-         checkStringParam(testrigName, "Testrig name");
-
-         checkApiKeyValidity(apiKey);
-         checkClientVersion(clientVersion);
-         checkContainerAccessibility(apiKey, containerName);
-
-         SortedSet<String> questions = Main.getWorkMgr()
-               .listQuestions(containerName, testrigName);
-
-         return new JSONArray(Arrays.asList(
-               CoordConsts.SVC_KEY_SUCCESS,
-               (new JSONObject().put(
-                     CoordConsts.SVC_KEY_QUESTION_LIST,
-                     new JSONArray(questions)))));
-      }
-      catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:listQuestion exception: " + e.getMessage() + "\n");
-         return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
-      }
-      catch (Exception e) {
-         String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:listQuestion exception: " + stackTrace);
-         return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
-      }
-   }
-
-   /**
     * Lists the testrigs under the specified container
     *
     * @param apiKey
@@ -1046,6 +994,64 @@ public class WorkMgrService {
          _logger.error("WMS:listTestrig exception: " + stackTrace);
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+      }
+   }
+
+   /**
+    * Lists the questions under the specified container, testrig
+    *
+    * @param apiKey
+    * @param containerName
+    * @param testrigName
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_RSC_LIST_QUESTIONS)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray listTestrigQuestions(
+           @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+           @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+           @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+           @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+      try {
+         _logger.info(
+                 "WMS:listTestrigQuestions " + apiKey + " " + containerName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         checkContainerAccessibility(apiKey, containerName);
+
+         JSONObject retObject = new JSONObject();
+
+         for (String questionName : Main.getWorkMgr().listQuestions(containerName, testrigName)) {
+            String questionText = Main.getWorkMgr().getTestrigQuestion(
+                    containerName, testrigName, questionName);
+
+            retObject.put(questionName, new JSONObject(questionText));
+         }
+
+         return new JSONArray(Arrays.asList(
+                 CoordConsts.SVC_KEY_SUCCESS,
+                 (new JSONObject().put(
+                         CoordConsts.SVC_KEY_QUESTION_LIST,
+                         retObject))));
+      }
+      catch (FileExistsException | FileNotFoundException
+              | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:listTestrigQuestions exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+                 Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:listTestrigQuestions exception: " + stackTrace);
+         return new JSONArray(
+                 Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
       }
    }
 

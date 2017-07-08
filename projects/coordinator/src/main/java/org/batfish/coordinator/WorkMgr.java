@@ -21,6 +21,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -33,6 +35,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -450,7 +454,8 @@ public class WorkMgr {
    public Map<String, String> getAnalysisAnswers(
          String containerName,
          String baseTestrig, String baseEnv, String deltaTestrig,
-         String deltaEnv, String analysisName, boolean pretty) {
+         String deltaEnv, String analysisName, boolean pretty)
+         throws JsonProcessingException {
       Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
       Path testrigDir = getdirTestrig(containerName, baseTestrig);
       SortedSet<String> questions = listAnalysisQuestions(
@@ -478,14 +483,32 @@ public class WorkMgr {
          }
          Path answerFile = answerDir.resolve(answerFilename);
          if (!Files.exists(answerFile)) {
-            answer = "Not answered";
+            if (pretty) {
+               answer = "Not answered";
+            }
+            else {
+               Answer ans = Answer.failureAnswer("Not answered", null);
+               ans.setStatus(AnswerStatus.NOTFOUND);
+
+               BatfishObjectMapper mapper = new BatfishObjectMapper();
+               answer = mapper.writeValueAsString(ans);
+            }
          }
          else {
             boolean answerIsStale;
             answerIsStale = CommonUtil.getLastModifiedTime(questionFile)
                   .compareTo(CommonUtil.getLastModifiedTime(answerFile)) > 0;
             if (answerIsStale) {
-               answer = "Not fresh";
+               if (pretty) {
+                  answer = "Not fresh";
+               }
+               else {
+                  Answer ans = Answer.failureAnswer("Not answered", null);
+                  ans.setStatus(AnswerStatus.STALE);
+
+                  BatfishObjectMapper mapper = new BatfishObjectMapper();
+                  answer = mapper.writeValueAsString(ans);
+               }
             }
             else {
                answer = CommonUtil.readFile(answerFile);
@@ -513,7 +536,7 @@ public class WorkMgr {
    public String getAnswer(
          String containerName, String baseTestrig,
          String baseEnv, String deltaTestrig, String deltaEnv,
-         String questionName, boolean pretty) {
+         String questionName, boolean pretty) throws JsonProcessingException {
       Path questionDir = getdirTestrigQuestion(containerName, baseTestrig,
             questionName);
       Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
@@ -532,12 +555,30 @@ public class WorkMgr {
       Path answerFile = answerDir.resolve(answerFilename);
       String answer = "unknown";
       if (!Files.exists(answerFile)) {
-         answer = "Not answered";
+         if (pretty) {
+            answer = "Not answered";
+         }
+         else {
+            Answer ans = Answer.failureAnswer("Not answered", null);
+            ans.setStatus(AnswerStatus.NOTFOUND);
+
+            BatfishObjectMapper mapper = new BatfishObjectMapper();
+            answer = mapper.writeValueAsString(ans);
+         }
       }
       else {
          if (CommonUtil.getLastModifiedTime(questionFile)
                .compareTo(CommonUtil.getLastModifiedTime(answerFile)) > 0) {
-            answer = "Not fresh";
+            if (pretty) {
+               answer = "Not fresh";
+            }
+            else {
+               Answer ans = Answer.failureAnswer("Not answered", null);
+               ans.setStatus(AnswerStatus.STALE);
+
+               BatfishObjectMapper mapper = new BatfishObjectMapper();
+               answer = mapper.writeValueAsString(ans);
+            }
          }
          else {
             answer = CommonUtil.readFile(answerFile);
@@ -687,6 +728,19 @@ public class WorkMgr {
       }
 
       return null;
+   }
+
+   public String getTestrigQuestion(
+           String containerName, String testrigName,
+           String questionName) {
+      Path questionDir = getdirTestrigQuestion(containerName, testrigName,
+              questionName);
+      Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      if (!Files.exists(qFile)) {
+         throw new BatfishException(
+                 "Question file not found for " + questionName);
+      }
+      return CommonUtil.readFile(qFile);
    }
 
    public QueuedWork getWork(UUID workItemId) {

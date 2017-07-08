@@ -141,4 +141,24 @@ public class BfConsts {
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
 
+   /*
+    * JSON key names
+    */
+   public static final String ALLOWED_VALUES_VAR = "allowedValues";
+   public static final String ANSWER_ELEMENTS_VAR = "answerElements";
+   public static final String DESCRIPTION_VAR = "description";
+   public static final String DIFFERENTIAL_VAR = "differential";
+   public static final String INNER_QUESTION_VAR = "innerQuestion";
+   public static final String INSTANCE_NAME_VAR = "instanceName";
+   public static final String INSTANCE_VAR = "instance";
+   public static final String LONG_DESCRIPTION_VAR = "longDescription";
+   public static final String MIN_ELEMENTS_VAR = "minElements";
+   public static final String MIN_LENGTH_VAR = "minLength";
+   public static final String OPTIONAL_VAR = "optional";
+   public static final String QUESTION_VAR = "question";
+   public static final String STATUS_VAR = "status";
+   public static final String TAGS_VAR = "tags";
+   public static final String TYPE_VAR = "type";
+   public static final String VALUE_VAR = "value";
+   public static final String VARIABLES_VAR = "variables";
 }

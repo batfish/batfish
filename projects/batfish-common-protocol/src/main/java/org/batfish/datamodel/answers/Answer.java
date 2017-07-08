@@ -1,10 +1,12 @@
 package org.batfish.datamodel.answers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
+import org.batfish.common.BfConsts;
 import org.batfish.common.QuestionException;
 import org.batfish.datamodel.questions.Question;
 
@@ -44,14 +46,17 @@ public class Answer {
       }
    }
 
+   @JsonProperty(BfConsts.ANSWER_ELEMENTS_VAR)
    public List<AnswerElement> getAnswerElements() {
       return _answerElements;
    }
 
+   @JsonProperty(BfConsts.QUESTION_VAR)
    public Question getQuestion() {
       return _question;
    }
 
+   @JsonProperty(BfConsts.STATUS_VAR)
    public AnswerStatus getStatus() {
       return _status;
    }
@@ -85,14 +90,17 @@ public class Answer {
       return answer;
    }
 
+   @JsonProperty(BfConsts.ANSWER_ELEMENTS_VAR)
    public void setAnswerElements(List<AnswerElement> answerElements) {
       _answerElements = answerElements;
    }
 
+   @JsonProperty(BfConsts.QUESTION_VAR)
    public void setQuestion(Question question) {
       _question = question;
    }
 
+   @JsonProperty(BfConsts.STATUS_VAR)
    public void setStatus(AnswerStatus status) {
       _status = status;
    }
