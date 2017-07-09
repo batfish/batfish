@@ -530,6 +530,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       boolean diffActive = _settings.getDiffActive() && !diff;
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
+
+      // Ensures configurations are parsed and ready
+      loadConfigurations();
+
       initQuestionEnvironments(question, diff, diffActive, dp);
       AnswerElement answerElement = null;
       BatfishException exception = null;
@@ -2590,22 +2594,22 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
          boolean firstAttempt) {
-      ConvertConfigurationAnswerElement ccae = deserializeObject(
-            _testrigSettings.getConvertAnswerPath(),
-            ConvertConfigurationAnswerElement.class);
-      if (!Version.isCompatibleVersion("Service",
-            "Old processed configurations", ccae.getVersion())) {
-         if (firstAttempt) {
-            repairConfigurations();
-            return loadConvertConfigurationAnswerElement(false);
-         }
-         else {
-            throw new BatfishException(
-                  "Version error repairing configurations for convert configuration answer element");
+      if (Files.exists(_testrigSettings.getConvertAnswerPath())) {
+         ConvertConfigurationAnswerElement ccae = deserializeObject(
+               _testrigSettings.getConvertAnswerPath(),
+               ConvertConfigurationAnswerElement.class);
+         if (Version.isCompatibleVersion("Service",
+               "Old processed configurations", ccae.getVersion())) {
+            return ccae;
          }
       }
+      if (firstAttempt) {
+         repairConfigurations();
+         return loadConvertConfigurationAnswerElement(false);
+      }
       else {
-         return ccae;
+         throw new BatfishException(
+               "Version error repairing configurations for convert configuration answer element");
       }
    }
 
@@ -2767,22 +2771,22 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
          boolean firstAttempt) {
-      ParseVendorConfigurationAnswerElement pvcae = deserializeObject(
-            _testrigSettings.getParseAnswerPath(),
-            ParseVendorConfigurationAnswerElement.class);
-      if (!Version.isCompatibleVersion("Service",
-            "Old processed configurations", pvcae.getVersion())) {
-         if (firstAttempt) {
-            repairVendorConfigurations();
-            return loadParseVendorConfigurationAnswerElement(false);
-         }
-         else {
-            throw new BatfishException(
-                  "Version error repairing vendor configurations for parse configuration answer element");
+      if (Files.exists(_testrigSettings.getParseAnswerPath())) {
+         ParseVendorConfigurationAnswerElement pvcae = deserializeObject(
+               _testrigSettings.getParseAnswerPath(),
+               ParseVendorConfigurationAnswerElement.class);
+         if (Version.isCompatibleVersion("Service",
+               "Old processed configurations", pvcae.getVersion())) {
+            return pvcae;
          }
       }
+      if (firstAttempt) {
+         repairVendorConfigurations();
+         return loadParseVendorConfigurationAnswerElement(false);
+      }
       else {
-         return pvcae;
+         throw new BatfishException(
+               "Version error repairing vendor configurations for parse configuration answer element");
       }
    }
 
