@@ -453,7 +453,7 @@ public class WorkMgrService {
          @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
          @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer) {
       try {
-         _logger.info("WMS:getAnswer " + apiKey + " " + containerName + " "
+         _logger.info("WMS:getAnalysisAnswers " + apiKey + " " + containerName + " "
                + testrigName + " " + analysisName + "\n");
 
          checkStringParam(apiKey, "API key");
@@ -489,7 +489,7 @@ public class WorkMgrService {
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:getAnswer exception: " + stackTrace);
+         _logger.error("WMS:getAnalsysisAnswers exception: " + stackTrace);
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
       }
