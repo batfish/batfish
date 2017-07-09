@@ -42,10 +42,11 @@ public class FileAuthorizer implements Authorizer {
       }
       catch (Exception e) {
          throw new BatfishException(String.format("Could not initialize FileAuthorizer with "
-                 + " RootDir = %s UsersFile=%s. PermsFile=%s",
-                 Main.getSettings().getFileAuthorizerRootDir(),
-                 Main.getSettings().getFileAuthorizerUsersFile(),
-                 Main.getSettings().getFileAuthorizerPermsFile()));
+                                               + " RootDir = %s UsersFile=%s. PermsFile=%s",
+                                               Main.getSettings().getFileAuthorizerRootDir(),
+                                               Main.getSettings().getFileAuthorizerUsersFile(),
+                                               Main.getSettings().getFileAuthorizerPermsFile()),
+                                     e);
       }
    }
 
