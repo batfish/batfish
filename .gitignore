@@ -10,5 +10,7 @@ workspace.xml
 tasks.xml
 # Additionally, per the lower level section, we should also not share
 # the following files that are auto-generated from Maven.
-.idea/dictionaries/
-.idea/libraries/
+/.idea/dictionaries/
+/.idea/libraries/
+*.iml
+/.idea/modules.xml
