@@ -1593,7 +1593,7 @@ public class Client extends AbstractClient implements IClient {
             _logger.errorf("Could not init container\n");
             return false;
          }
-         _logger.outputf("Init'ed and set active container");
+         _logger.output("Init'ed and set active container");
          _logger.infof(" to %s\n", _currContainerName);
          _logger.output("\n");
       }
@@ -1879,7 +1879,7 @@ public class Client extends AbstractClient implements IClient {
 
    private void logOutput(FileWriter outWriter, String message) {
       if (outWriter == null) {
-         _logger.outputf(message);
+         _logger.output(message);
       }
       else {
          try {
