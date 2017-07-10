@@ -604,7 +604,7 @@ public class Client extends AbstractClient implements IClient {
       }
       JSONObject instanceJson;
       try {
-         instanceJson = questionJson.getJSONObject(Question.INSTANCE_VAR);
+         instanceJson = questionJson.getJSONObject(BfConsts.INSTANCE_VAR);
       }
       catch (JSONException e) {
          throw new BatfishException("Question is missing instance data", e);
@@ -630,7 +630,7 @@ public class Client extends AbstractClient implements IClient {
          modifiedInstanceDataStr = mapper.writeValueAsString(instanceData);
          JSONObject modifiedInstanceData = new JSONObject(
                modifiedInstanceDataStr);
-         questionJson.put(Question.INSTANCE_VAR, modifiedInstanceData);
+         questionJson.put(BfConsts.INSTANCE_VAR, modifiedInstanceData);
       }
       catch (JSONException | JsonProcessingException e) {
          throw new BatfishException(
@@ -641,8 +641,8 @@ public class Client extends AbstractClient implements IClient {
       boolean questionJsonDifferential;
       // check whether question is valid modulo instance data
       try {
-         questionJsonDifferential = questionJson.has(Question.DIFFERENTIAL_VAR)
-               && questionJson.getBoolean(Question.DIFFERENTIAL_VAR);
+         questionJsonDifferential = questionJson.has(BfConsts.DIFFERENTIAL_VAR)
+               && questionJson.getBoolean(BfConsts.DIFFERENTIAL_VAR);
       }
       catch (JSONException e) {
          throw new BatfishException(
@@ -1782,10 +1782,10 @@ public class Client extends AbstractClient implements IClient {
       String questionText = CommonUtil.readFile(file);
       try {
          JSONObject questionObj = new JSONObject(questionText);
-         if (questionObj.has(Question.INSTANCE_VAR)
-               && !questionObj.isNull(Question.INSTANCE_VAR)) {
+         if (questionObj.has(BfConsts.INSTANCE_VAR)
+               && !questionObj.isNull(BfConsts.INSTANCE_VAR)) {
             JSONObject instanceDataObj = questionObj
-                  .getJSONObject(Question.INSTANCE_VAR);
+                  .getJSONObject(BfConsts.INSTANCE_VAR);
             String instanceDataStr = instanceDataObj.toString();
             BatfishObjectMapper mapper = new BatfishObjectMapper(
                   getCurrentClassLoader());

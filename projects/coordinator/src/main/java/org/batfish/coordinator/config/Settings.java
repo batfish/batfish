@@ -1,6 +1,8 @@
 package org.batfish.coordinator.config;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -68,7 +70,7 @@ public class Settings extends BaseSettings {
    private boolean _defaultKeyListings;
    private String _driverClass;
    private Path _fileAuthorizerPermsFile;
-   private Path _fileAuthorizerRotoDir;
+   private Path _fileAuthorizerRootDir;
    private Path _fileAuthorizerUsersFile;
    private String _logFile;
    private String _logLevel;
@@ -137,7 +139,7 @@ public class Settings extends BaseSettings {
    }
 
    public Path getFileAuthorizerRootDir() {
-      return _fileAuthorizerRotoDir;
+      return _fileAuthorizerRootDir;
    }
 
    public Path getFileAuthorizerUsersFile() {
@@ -385,6 +387,9 @@ public class Settings extends BaseSettings {
       _defaultKeyListings = getBooleanOptionValue(
             ARG_ALLOW_DEFAULT_KEY_LISTINGS);
       _driverClass = getStringOptionValue(ARG_DRIVER_CLASS);
+      _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
+      _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
+      _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
       _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));

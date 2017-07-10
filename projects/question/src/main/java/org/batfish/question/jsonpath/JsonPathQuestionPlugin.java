@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -350,7 +351,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @JsonProperty(INNER_QUESTION_VAR)
+      @JsonProperty(BfConsts.INNER_QUESTION_VAR)
       public Question getInnerQuestion() {
          return _innerQuestion;
       }
@@ -373,12 +374,12 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() {
          String retString = String.format("%s %s%s=\"%s\" %s=\"%s\"", getName(),
-               prettyPrintBase(), PATHS_VAR, _paths, INNER_QUESTION_VAR,
+               prettyPrintBase(), PATHS_VAR, _paths, BfConsts.INNER_QUESTION_VAR,
                _innerQuestion.prettyPrint());
          return retString;
       }
 
-      @JsonProperty(INNER_QUESTION_VAR)
+      @JsonProperty(BfConsts.INNER_QUESTION_VAR)
       public void setInnerQuestion(Question innerQuestion) {
          _innerQuestion = innerQuestion;
       }
