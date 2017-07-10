@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -25,11 +26,14 @@ public class ParseVendorConfigurationAnswerElement
 
    private SortedMap<String, Warnings> _warnings;
 
+   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
+
    public ParseVendorConfigurationAnswerElement() {
       _fileMap = new TreeMap<>();
       _parseStatus = new TreeMap<>();
       _parseTrees = new TreeMap<>();
       _warnings = new TreeMap<>();
+      _errors = new TreeMap<>();
    }
 
    public void addRedFlagWarning(String name, Warning warning) {
@@ -59,6 +63,10 @@ public class ParseVendorConfigurationAnswerElement
       return _warnings;
    }
 
+   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
+      return _errors;
+   }
+
    @Override
    public String prettyPrint() {
       StringBuilder retString = new StringBuilder(
@@ -78,6 +86,12 @@ public class ParseVendorConfigurationAnswerElement
          for (Warning warning : _warnings.get(name).getPedanticWarnings()) {
             retString.append("    Pedantic " + warning.getTag() + " : "
                   + warning.getText() + "\n");
+         }
+      }
+      for (String name : _errors.keySet()) {
+         retString.append("\n  " + name + "[Parser errors]\n");
+         for (String line : _errors.get(name).getLineMap()) {
+            retString.append("    " + line + "\n");
          }
       }
       for (String name : _parseTrees.keySet()) {
@@ -108,6 +122,10 @@ public class ParseVendorConfigurationAnswerElement
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {
       _warnings = warnings;
+   }
+
+   public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
+      _errors = errors;
    }
 
 }
