@@ -68,6 +68,11 @@ ACTIVE
    'active'
 ;
 
+ACTIVE_SERVER_GROUP
+:
+   'active-server-group'
+;
+
 ADD
 :
    'add'
@@ -720,6 +725,11 @@ DH_GROUP
 DHCP
 :
    'dhcp'
+;
+
+DHCP_RELAY
+:
+   'dhcp-relay'
 ;
 
 DIRECT
@@ -4060,6 +4070,11 @@ SECURITY_ZONE
 SERVER
 :
    'server'
+;
+
+SERVER_GROUP
+:
+   'server-group'
 ;
 
 SERVICE
