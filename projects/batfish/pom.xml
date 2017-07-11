@@ -37,14 +37,65 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
         <configuration>
-          <sourceDirectory>${basedir}/src/main/antlr4</sourceDirectory>
           <treatWarningsAsErrors>true</treatWarningsAsErrors>
         </configuration>
         <executions>
+          <!--
+          Some of the more complex grammars are broken up into main files and imports. Since the
+          antlr4-maven-plugin only supports imports in one directory, we need to have one execution
+          per grammar where we override the library (import) directory.
+          -->
           <execution>
+            <id>antlr4-cisco</id>
             <goals>
               <goal>antlr4</goal>
             </goals>
+            <configuration>
+              <includes>**/CiscoLexer.g4,**/CiscoParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cisco</libDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>antlr4-flatjuniper</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/FlatJuniperLexer.g4,**/FlatJuniperParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper</libDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>antlr4-flatvyos</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/FlatVyosLexer.g4,**/FlatVyosParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatvyos</libDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>antlr4-mrv</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/MrvLexer.g4,**/MrvParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/mrv</libDirectory>
+            </configuration>
+          </execution>
+
+          <!-- All the rest that do not have imports. Note that we exclude all the g4 files from above. -->
+          <execution>
+            <id>antlr4-simple</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/*.g4</includes>
+              <excludes>**/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4</excludes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
