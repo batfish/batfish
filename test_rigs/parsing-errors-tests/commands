@@ -1,0 +1,4 @@
+#parsing error
+test test_rigs/parsing-errors-tests/parsing-error.ref init-testrig test_rigs/example-parsing-error
+test test_rigs/parsing-errors-tests/no-verbose.ref get initinfo verboseError=false
+#test test_rigs/parsing-errors-tests/verbose.ref get initinfo verboseError=true

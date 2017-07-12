@@ -46,6 +46,7 @@ import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.bgp.JsonExternalBgpAdvertisementPlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
@@ -2198,7 +2199,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public InitInfoAnswerElement initInfo(boolean summary,
+   public InitInfoAnswerElement initInfo(
+         boolean summary,
+         boolean verboseError,
          boolean environmentRoutes) {
       checkConfigurations();
       InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
@@ -2215,6 +2218,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
          ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
          if (!summary) {
+            if (verboseError) {
+               SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
+               parseAnswer.getErrors().forEach((hostname, parseErrors) -> {
+                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
+               });
+               convertAnswer.getErrors().forEach((hostname, convertErrors) -> {
+                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
+               });
+            }
             SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
                   .getWarnings();
             warnings.putAll(parseAnswer.getWarnings());
@@ -3923,7 +3935,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (_settings.getInitInfo()) {
-         answer.addAnswerElement(initInfo(true, false));
+         answer.addAnswerElement(initInfo(true, false, false));
          action = true;
       }
 

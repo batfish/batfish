@@ -25,6 +25,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
+    <antlr4-maven-plugin.version>4.7-batfish-internal</antlr4-maven-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
@@ -95,7 +96,7 @@
         <plugin>
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
-          <version>${antlr.version}</version>
+          <version>${antlr4-maven-plugin.version}</version>
         </plugin>
 
         <plugin>
@@ -147,6 +148,22 @@
               <packaging>jar</packaging>
               <pomFile>${basedir}/lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-${jackson-jsonschema.version}.pom</pomFile>
               <file>${basedir}/lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-${jackson-jsonschema.version}.jar</file>
+            </configuration>
+          </execution>
+          <!-- Include our temporary version of the antlr4-maven-plugin until fixes are released. -->
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <id>install-antlr4-maven-plugin</id>
+            <configuration>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4-maven-plugin</artifactId>
+              <version>${antlr4-maven-plugin.version}</version>
+              <packaging>jar</packaging>
+              <pomFile>${basedir}/lib/antlr4-maven-plugin/antlr4-maven-plugin-${antlr4-maven-plugin.version}.pom</pomFile>
+              <file>${basedir}/lib/antlr4-maven-plugin/antlr4-maven-plugin-${antlr4-maven-plugin.version}.jar</file>
             </configuration>
           </execution>
         </executions>

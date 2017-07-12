@@ -80,6 +80,8 @@ public class ConvertConfigurationResult extends
       }
       else {
          answerElement.getFailed().add(_name);
+         answerElement.getErrors().put(_name,
+               ((BatfishException)_failureCause).getBatfishStackTrace());
       }
    }
 
