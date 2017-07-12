@@ -1134,6 +1134,12 @@
           "nat pool" : {
             "abc" : [
               4
+            ],
+            "example-1-dynamic-nat-pool" : [
+              8
+            ],
+            "example-2-dynamic-nat-pool" : [
+              10
             ]
           }
         },

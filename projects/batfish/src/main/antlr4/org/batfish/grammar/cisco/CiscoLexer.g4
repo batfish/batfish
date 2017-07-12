@@ -5411,6 +5411,11 @@ NETCONF
    'netconf'
 ;
 
+NETMASK
+:
+   'netmask'
+;
+
 NETWORK
 :
    'network'

@@ -2,8 +2,10 @@ package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
@@ -13,10 +15,13 @@ public class InitInfoAnswerElement implements AnswerElement {
 
    private SortedMap<String, Warnings> _warnings;
 
+   private SortedMap<String, Set<BatfishStackTrace>> _errors;
+
    @JsonCreator
    public InitInfoAnswerElement() {
       _parseStatus = new TreeMap<>();
       _warnings = new TreeMap<>();
+      _errors = new TreeMap<>();
    }
 
    public SortedMap<String, ParseStatus> getParseStatus() {
@@ -25,6 +30,10 @@ public class InitInfoAnswerElement implements AnswerElement {
 
    public SortedMap<String, Warnings> getWarnings() {
       return _warnings;
+   }
+
+   public SortedMap<String, Set<BatfishStackTrace>> getErrors() {
+      return _errors;
    }
 
    @Override
@@ -61,7 +70,6 @@ public class InitInfoAnswerElement implements AnswerElement {
                pedanticCount++;
             }
          }
-
       }
       sb.append("PARSING SUMMARY\n");
       for (Entry<String, ParseStatus> e : _parseStatus.entrySet()) {
@@ -102,6 +110,17 @@ public class InitInfoAnswerElement implements AnswerElement {
 
          default:
             break;
+         }
+      }
+      if (!_errors.isEmpty()) {
+         sb.append("DETAILED ERRORS\n");
+         for (String name : _errors.keySet()) {
+            sb.append("  Failed to parse " + name + ":\n");
+            for (BatfishStackTrace stackTrace : _errors.get(name)) {
+               for (String line : stackTrace.getLineMap()) {
+                  sb.append("    " + line + "\n");
+               }
+            }
          }
       }
       sb.append("STATISTICS\n");
@@ -150,6 +169,10 @@ public class InitInfoAnswerElement implements AnswerElement {
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {
       _warnings = warnings;
+   }
+
+   public void setErrors(SortedMap<String, Set<BatfishStackTrace>> errors) {
+      _errors = errors;
    }
 
 }

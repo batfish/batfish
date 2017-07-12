@@ -105,6 +105,10 @@ public class ParseVendorConfigurationResult extends
       else {
          String filename = _file.getFileName().toString();
          answerElement.getParseStatus().put(filename, _status);
+         if (_status == ParseStatus.FAILED) {
+            answerElement.getErrors().put(filename,
+                  ((BatfishException)_failureCause).getBatfishStackTrace());
+         }
       }
    }
 
