@@ -19,6 +19,11 @@ public class BatfishException extends RuntimeException {
 
    public static class BatfishStackTrace implements Serializable, AnswerElement {
 
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 1L;
+
       private static final String LINES_VAR = "answer";
 
       private final BatfishException _exception;
