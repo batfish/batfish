@@ -19,6 +19,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
          InitInfoQuestion question = (InitInfoQuestion) _question;
          return _batfish.initInfo(
                question._summary,
+               question._verboseError,
                question._environmentRoutes);
       }
    }
@@ -37,9 +38,13 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
       private static final String SUMMARY_VAR = "summary";
 
+      private static final String VERBOSE_ERROR_VAR = "verboseError";
+
       private boolean _environmentRoutes;
 
       private boolean _summary;
+
+      private boolean _verboseError;
 
       public InitInfoQuestion() {
       }
@@ -63,6 +68,11 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
          return _summary;
       }
 
+      @JsonProperty(VERBOSE_ERROR_VAR)
+      public boolean getVerboseError() {
+         return _verboseError;
+      }
+
       @Override
       public boolean getTraffic() {
          return false;
@@ -70,7 +80,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() {
-         return getName() + " " + SUMMARY_VAR + "=" + _summary;
+         return getName() + " " + SUMMARY_VAR + "=" + _summary
+               + " " + VERBOSE_ERROR_VAR + "=" + _verboseError;
       }
 
       public void setEnvironmentRoutes(boolean environmentRoutes) {
@@ -80,6 +91,11 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @JsonProperty(SUMMARY_VAR)
       public void setSummary(boolean summary) {
          _summary = summary;
+      }
+
+      @JsonProperty(VERBOSE_ERROR_VAR)
+      public void setVerboseError(boolean verboseError) {
+         _verboseError = verboseError;
       }
 
    }
