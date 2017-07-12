@@ -505,6 +505,11 @@ ip_nat_pool
 :
    POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
    ip_nat_pool_range*
+   | POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
+   (
+      NETMASK mask = IP_ADDRESS
+      | PREFIX_LENGTH prefix_length = DEC
+   ) NEWLINE
 ;
 
 ip_nat_pool_range
