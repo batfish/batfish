@@ -2221,16 +2221,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             if (verboseError) {
                SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
                parseAnswer.getErrors().forEach((hostname, parseErrors) -> {
-                  if (errors.get(hostname) == null) {
-                     errors.put(hostname, new HashSet<>());
-                  }
-                  errors.get(hostname).add(parseErrors);
+                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
                });
                convertAnswer.getErrors().forEach((hostname, convertErrors) -> {
-                  if (errors.get(hostname) == null) {
-                     errors.put(hostname, new HashSet<>());
-                  }
-                  errors.get(hostname).add(convertErrors);
+                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
                });
             }
             SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
