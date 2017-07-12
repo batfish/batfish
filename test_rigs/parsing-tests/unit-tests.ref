@@ -9154,6 +9154,32 @@
             "          IP_ADDRESS:'10.1.2.3'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.1.2.4'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_ip_nat",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      NAT:'nat'  <== mode:DEFAULT_MODE",
+            "      (ip_nat_pool",
+            "        POOL:'pool'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'example-1-dynamic-nat-pool'  <== mode:DEFAULT_MODE)",
+            "        IP_ADDRESS:'192.168.0.128'  <== mode:DEFAULT_MODE",
+            "        IP_ADDRESS:'192.168.0.254'  <== mode:DEFAULT_MODE",
+            "        PREFIX_LENGTH:'prefix-length'  <== mode:DEFAULT_MODE",
+            "        DEC:'24'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_ip_nat",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      NAT:'nat'  <== mode:DEFAULT_MODE",
+            "      (ip_nat_pool",
+            "        POOL:'pool'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'example-2-dynamic-nat-pool'  <== mode:DEFAULT_MODE)",
+            "        IP_ADDRESS:'192.168.0.128'  <== mode:DEFAULT_MODE",
+            "        IP_ADDRESS:'192.168.0.254'  <== mode:DEFAULT_MODE",
+            "        NETMASK:'netmask'  <== mode:DEFAULT_MODE",
+            "        IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -31153,6 +31179,12 @@
           "nat pool" : {
             "abc" : [
               4
+            ],
+            "example-1-dynamic-nat-pool" : [
+              8
+            ],
+            "example-2-dynamic-nat-pool" : [
+              10
             ]
           }
         },
