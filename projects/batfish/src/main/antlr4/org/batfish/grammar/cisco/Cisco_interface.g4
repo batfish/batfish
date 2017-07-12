@@ -128,7 +128,7 @@ if_ip_address_secondary
 
 if_ip_dhcp
 :
-   NO? DHCP
+   NO? IP DHCP
    (
       ifdhcp_null
       | ifdhcp_relay
@@ -137,7 +137,7 @@ if_ip_dhcp
 
 if_ip_helper_address
 :
-   HELPER_ADDRESS address = IP_ADDRESS NEWLINE
+   IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_ip_igmp

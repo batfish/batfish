@@ -1,6 +1,6 @@
 parser grammar FlatJuniper_routing_instances;
 
-import FlatJuniper_common, FlatJuniper_protocols, FlatJuniper_snmp;
+import FlatJuniper_common, FlatJuniper_forwarding_options, FlatJuniper_protocols, FlatJuniper_snmp;
 
 options {
    tokenVocab = FlatJuniperLexer;
@@ -10,6 +10,7 @@ ri_common
 :
    apply
    | ri_description
+   | s_forwarding_options
    | s_routing_options
 ;
 
@@ -62,7 +63,6 @@ ri_null
       | CHASSIS
       | CLASS_OF_SERVICE
       | EVENT_OPTIONS
-      | FORWARDING_OPTIONS
       | PROVIDER_TUNNEL
       | SERVICES
    ) null_filler

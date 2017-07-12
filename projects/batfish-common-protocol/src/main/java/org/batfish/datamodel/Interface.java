@@ -35,6 +35,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String DESCRIPTION_VAR = "description";
 
+   private static final String DHCP_RELAY_ADDRESS_VAR = "dhcpRelayAddress";
+
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
    private static final String INBOUND_FILTER_VAR = "inboundFilter";
@@ -303,6 +305,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private String _description;
 
+   private Ip _dhcpRelayAddress;
+
    private IpAccessList _inboundFilter;
 
    private transient String _inboundFilterName;
@@ -538,6 +542,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonPropertyDescription("Description of this interface")
    public String getDescription() {
       return _description;
+   }
+
+   @JsonProperty(DHCP_RELAY_ADDRESS_VAR)
+   public Ip getDhcpRelayAddress() {
+      return _dhcpRelayAddress;
    }
 
    @JsonIgnore
@@ -840,6 +849,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(DESCRIPTION_VAR)
    public void setDescription(String description) {
       _description = description;
+   }
+
+   @JsonProperty(DHCP_RELAY_ADDRESS_VAR)
+   public void setDhcpRelayAddress(Ip dhcpRelayAddress) {
+      _dhcpRelayAddress = dhcpRelayAddress;
    }
 
    @JsonIgnore
