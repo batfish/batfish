@@ -30,6 +30,8 @@ public class NodeRoleSpecifier {
    private List<String> _roleRegexes;
 
    public NodeRoleSpecifier() {
+      _roleMap = new TreeMap<>();
+      _roleRegexes = new ArrayList<>();
    }
 
    @JsonProperty(ROLE_MAP_VAR)
@@ -95,21 +97,19 @@ public class NodeRoleSpecifier {
       SortedMap<String, SortedSet<String>> nodeRolesMap = new TreeMap<>();
       
       // invert the map from roles to nodes, to create a map from nodes to roles
-      if(_roleMap != null)
-         _roleMap.forEach(
-               (role, nodes) -> {
-                  for (String node : nodes) {
-                     SortedSet<String> nodeRoles = nodeRolesMap.get(node);
-                     if (nodeRoles == null) {
-                        nodeRoles = new TreeSet<String>();
-                        nodeRolesMap.put(node, nodeRoles);
-                     }
-                     nodeRoles.add(role);
+      _roleMap.forEach(
+            (role, nodes) -> {
+               for (String node : nodes) {
+                  SortedSet<String> nodeRoles = nodeRolesMap.get(node);
+                  if (nodeRoles == null) {
+                     nodeRoles = new TreeSet<String>();
+                     nodeRolesMap.put(node, nodeRoles);
                   }
-               });
+                  nodeRoles.add(role);
+               }
+            });
       
-      if (_roleRegexes != null)
-         addToRoleMap(nodeRolesMap, allNodes);
+      addToRoleMap(nodeRolesMap, allNodes);
       return nodeRolesMap;
                
    }

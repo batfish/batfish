@@ -11,6 +11,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
+import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -146,7 +147,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     *           doing outlier detection for that named structure.  Default is false.
     *
     */
-   public static final class OutliersQuestion extends Question {
+   public static final class OutliersQuestion extends Question
+      implements INodeRegexQuestion {
 
       private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
 
