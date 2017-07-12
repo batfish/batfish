@@ -53,6 +53,7 @@
             <configuration>
               <includes>**/CiscoLexer.g4,**/CiscoParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cisco</libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-cisco</statusDirectory>
             </configuration>
           </execution>
           <execution>
@@ -63,6 +64,7 @@
             <configuration>
               <includes>**/FlatJuniperLexer.g4,**/FlatJuniperParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper</libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-flatjuniper</statusDirectory>
             </configuration>
           </execution>
           <execution>
@@ -73,6 +75,7 @@
             <configuration>
               <includes>**/FlatVyosLexer.g4,**/FlatVyosParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatvyos</libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-flatvyos</statusDirectory>
             </configuration>
           </execution>
           <execution>
@@ -83,6 +86,7 @@
             <configuration>
               <includes>**/MrvLexer.g4,**/MrvParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/mrv</libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-mrv</statusDirectory>
             </configuration>
           </execution>
 
