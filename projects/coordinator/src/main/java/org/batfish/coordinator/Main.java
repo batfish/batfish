@@ -80,7 +80,7 @@ public class Main {
 
       if (_settings.getSslPoolDisable()) {
          URI poolMgrUri = UriBuilder
-               .fromUri("http://" + _settings.getServiceHost())
+               .fromUri("http://" + _settings.getPoolBindHost())
                .port(_settings.getServicePoolPort()).build();
 
          _logger.info("Starting pool manager at " + poolMgrUri + "\n");
@@ -89,7 +89,7 @@ public class Main {
       }
       else {
          URI poolMgrUri = UriBuilder
-               .fromUri("https://" + _settings.getServiceHost())
+               .fromUri("https://" + _settings.getPoolBindHost())
                .port(_settings.getServicePoolPort()).build();
 
          _logger.info("Starting pool manager at " + poolMgrUri + "\n");
@@ -115,7 +115,7 @@ public class Main {
 
       if (_settings.getSslWorkDisable()) {
          URI workMgrUri = UriBuilder
-               .fromUri("http://" + _settings.getServiceHost())
+               .fromUri("http://" + _settings.getWorkBindHost())
                .port(_settings.getServiceWorkPort()).build();
 
          _logger.info("Starting work manager at " + workMgrUri + "\n");
@@ -124,7 +124,7 @@ public class Main {
       }
       else {
          URI workMgrUri = UriBuilder
-               .fromUri("https://" + _settings.getServiceHost())
+               .fromUri("https://" + _settings.getWorkBindHost())
                .port(_settings.getServiceWorkPort()).build();
 
          _logger.info("Starting work manager at " + workMgrUri + "\n");
