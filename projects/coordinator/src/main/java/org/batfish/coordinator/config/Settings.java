@@ -35,9 +35,9 @@ public class Settings extends BaseSettings {
    private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
    private static final String ARG_QUEUE_TYPE = "qtype";
 
-   private static final String ARG_SERVICE_POOL_HOST = "poolhost";
+   private static final String ARG_SERVICE_POOL_HOST = "poolbindhost";
    private static final String ARG_SERVICE_POOL_PORT = "poolport";
-   private static final String ARG_SERVICE_WORK_HOST = "workhost";
+   private static final String ARG_SERVICE_WORK_HOST = "workbindhost";
    private static final String ARG_SERVICE_WORK_PORT = "workport";
 
    private static final String ARG_SSL_POOL_DISABLE = "sslpooldisable";
