@@ -1,0 +1,4 @@
+#parsing error
+test test_rigs/parsing-flags-tests/parsing-error.ref init-testrig test_rigs/example-parsing-flag
+test test_rigs/parsing-flags-tests/no-verbose.ref get initinfo verboseError=false
+test test_rigs/parsing-flags-tests/no-verbose.ref get initinfo timestamp=false
