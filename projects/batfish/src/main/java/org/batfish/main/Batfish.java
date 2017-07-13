@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -2202,7 +2203,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public InitInfoAnswerElement initInfo(
          boolean summary,
          boolean verboseError,
-         boolean environmentRoutes) {
+         boolean environmentRoutes,
+         boolean timestamp) {
       checkConfigurations();
       InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
       if (environmentRoutes) {
@@ -2244,6 +2246,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                         .addAll(convertWarnings.getUnimplementedWarnings());
                }
             });
+         }
+         if (timestamp) {
+            answerElement.setStartTimestamp(parseAnswer.getStartTimestamp());
+            answerElement.setFinishTimestamp(convertAnswer.getFinishTimestamp());
          }
          answerElement.setParseStatus(parseAnswer.getParseStatus());
          for (String failed : convertAnswer.getFailed()) {
@@ -3935,7 +3941,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (_settings.getInitInfo()) {
-         answer.addAnswerElement(initInfo(true, false, false));
+         answer.addAnswerElement(initInfo(true, false, false, false));
          action = true;
       }
 
@@ -4174,6 +4180,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = getConfigurations(
             vendorConfigPath, answerElement);
       serializeIndependentConfigs(configurations, outputPath);
+      answerElement.setFinishTimestamp(new Date());
       serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
       return answer;
    }
@@ -4275,6 +4282,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
       answerElement.setVersion(Version.getVersion());
+      answerElement.setStartTimestamp(new Date());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }
