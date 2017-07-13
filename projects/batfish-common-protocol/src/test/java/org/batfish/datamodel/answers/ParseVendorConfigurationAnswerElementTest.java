@@ -1,9 +1,12 @@
 package org.batfish.datamodel.answers;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Date;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
@@ -51,6 +54,25 @@ public class ParseVendorConfigurationAnswerElementTest {
       errors.put("error", stackTrace);
       element.setErrors(errors);
       assertThat(element.getErrors().get("error"), is(stackTrace));
+   }
+
+   @Test
+   public void checkDefaultTimestamp() {
+      assertThat(element.getStartTimestamp(), is(nullValue()));
+   }
+
+   @Test
+   public void testSetTimestamp() {
+      Date date = new Date();
+      element.setStartTimestamp(date);
+      assertThat(element.getStartTimestamp(), is(notNullValue()));
+   }
+
+   @Test
+   public void testGetTimestamp() {
+      Date date = new Date();
+      element.setStartTimestamp(date);
+      assertThat(element.getStartTimestamp(), is(date));
    }
 
    @Test
