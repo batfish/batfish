@@ -574,6 +574,10 @@ public class Client extends AbstractClient implements IClient {
    private boolean addBatfishOption(
          String[] words, List<String> options,
          List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf(words[0] + " requires additional arguments\n");
+         return false;
+      }
       String optionKey = parameters.get(0);
       String optionValue = String.join(
             " ",
@@ -680,6 +684,10 @@ public class Client extends AbstractClient implements IClient {
          List<String> options, List<String> parameters, boolean isDelta) {
       if (!isSetTestrig() || !isSetContainer(true)
             || (isDelta && !isSetDeltaEnvironment())) {
+         return false;
+      }
+      if (parameters.isEmpty()) {
+         _logger.errorf(words[0] + " requires additional arguments\n");
          return false;
       }
       String qTypeStr = parameters.get(0);
@@ -791,6 +799,10 @@ public class Client extends AbstractClient implements IClient {
 
    private boolean cat(String[] words)
          throws IOException, FileNotFoundException {
+      if (words.length == 1) {
+         _logger.errorf(words[0] + " requires additional arguments\n");
+         return false;
+      }
       String filename = words[1];
 
       try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -902,6 +914,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delBatfishOption(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String optionKey = parameters.get(0);
 
       if (!_additionalBatfishOptions.containsKey(optionKey)) {
@@ -913,6 +929,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delContainer(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf( "Additional arguments required\n");
+         return false;
+      }
       String containerName = parameters.get(0);
       boolean result = _workHelper.delContainer(containerName);
       _logger.outputf("Result of deleting container: %s\n", result);
@@ -924,6 +944,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.isEmpty()) {
+         _logger.errorf( "Additional arguments required\n");
+         return false;
+      }
       String envName = parameters.get(0);
       boolean result = _workHelper.delEnvironment(_currContainerName,
             _currTestrig, envName);
@@ -936,6 +960,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.isEmpty()) {
+         _logger.errorf( "Additional arguments required\n");
+         return false;
+      }
       String qName = parameters.get(0);
       boolean result = _workHelper.delQuestion(_currContainerName, _currTestrig,
             qName);
@@ -948,6 +976,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.isEmpty()) {
+         _logger.errorf( "Additional arguments required\n");
+         return false;
+      }
       String testrigName = parameters.get(0);
       boolean result = _workHelper.delTestrig(_currContainerName, testrigName);
       logOutput(outWriter, "Result of deleting testrig: " + result + "\n");
@@ -955,6 +987,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean dir(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf( "Additional arguments required\n");
+         return false;
+      }
       String dirname = (parameters.size() == 1) ? parameters.get(0) : ".";
       File currDirectory = new File(dirname);
       for (File file : currDirectory.listFiles()) {
@@ -1221,7 +1257,7 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
       if (parameters.isEmpty()) {
-         _logger.output("Missing question type\n");
+         _logger.errorf(words[0] + " requires additional arguments\n");
          return false;
       }
       String qTypeStr = parameters.get(0).toLowerCase();
@@ -1402,6 +1438,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String questionName = parameters.get(0);
 
       String questionFileName = String.format("%s/%s/%s",
@@ -1457,6 +1497,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String deltaEnvLocation = parameters.get(0);
       String deltaEnvName = (parameters.size() > 1) ? parameters.get(1)
             : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID().toString();
@@ -1583,6 +1627,10 @@ public class Client extends AbstractClient implements IClient {
    private boolean initTestrig(
          FileWriter outWriter, List<String> parameters,
          boolean doDelta) throws Exception {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String testrigLocation = parameters.get(0);
       String testrigName = (parameters.size() > 1) ? parameters.get(1)
             : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID().toString();
@@ -1988,7 +2036,7 @@ public class Client extends AbstractClient implements IClient {
       return processCommand(words, null);
    }
 
-   private boolean processCommand(String[] words, FileWriter outWriter) {
+   boolean processCommand(String[] words, FileWriter outWriter) {
       try {
          List<String> options = getCommandOptions(words);
          List<String> parameters = getCommandParameters(words, options.size());
@@ -2348,6 +2396,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setBatfishLogLevel(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String logLevelStr = parameters.get(0).toLowerCase();
       if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
          _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
@@ -2359,6 +2411,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setContainer(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       _currContainerName = parameters.get(0);
       _logger.outputf(
             "Active container is now set to %s\n",
@@ -2367,6 +2423,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setDeltaEnv(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       _currDeltaEnv = parameters.get(0);
       if (_currDeltaTestrig == null) {
          _currDeltaTestrig = _currTestrig;
@@ -2377,6 +2437,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setDeltaTestrig(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       _currDeltaTestrig = parameters.get(0);
       _currDeltaEnv = (parameters.size() > 1) ? parameters.get(1)
             : DEFAULT_ENV_NAME;
@@ -2389,6 +2453,10 @@ public class Client extends AbstractClient implements IClient {
       if (!isSetTestrig()) {
          return false;
       }
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       _currEnv = parameters.get(0);
       _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig,
             _currEnv);
@@ -2396,6 +2464,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setLogLevel(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String logLevelStr = parameters.get(0).toLowerCase();
       if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
          _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
@@ -2408,6 +2480,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setPrettyPrint(List<String> parameters) {
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String ppStr = parameters.get(0).toLowerCase();
       boolean prettyPrint = Boolean.parseBoolean(ppStr);
       _settings.setPrettyPrintAnswers(prettyPrint);
@@ -2420,6 +2496,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.isEmpty()) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       _currTestrig = parameters.get(0);
       _currEnv = (parameters.size() > 1) ? parameters.get(1) : DEFAULT_ENV_NAME;
       _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig,
@@ -2509,6 +2589,10 @@ public class Client extends AbstractClient implements IClient {
       boolean missingReferenceFile = false;
       boolean testPassed = false;
       int testCommandIndex = 1;
+      if (parameters.size() < 2) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
          testCommandIndex++;
          failingTest = true;
@@ -2649,6 +2733,10 @@ public class Client extends AbstractClient implements IClient {
          return false;
       }
 
+      if (parameters.size() < 2) {
+         _logger.errorf("Additional arguments required\n");
+         return false;
+      }
       String objectName = parameters.get(0);
       String objectFile = parameters.get(1);
 
