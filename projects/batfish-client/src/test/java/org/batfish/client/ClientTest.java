@@ -860,5 +860,6 @@ public class ClientTest {
       assertFalse(client.processCommand(args, writer));
       args[0] = UPLOAD_CUSTOM_OBJECT.commandName();
       assertFalse(client.processCommand(args, writer));
+      writer.close();
    }
 }
