@@ -1220,10 +1220,6 @@ public class Client extends AbstractClient implements IClient {
             || (isDelta && !isSetDeltaEnvironment())) {
          return false;
       }
-      if (parameters.isEmpty()) {
-         _logger.output("Missing question type\n");
-         return false;
-      }
       String qTypeStr = parameters.get(0).toLowerCase();
       String paramsLine = String.join(
             " ",
