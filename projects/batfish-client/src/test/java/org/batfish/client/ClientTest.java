@@ -1,5 +1,27 @@
 package org.batfish.client;
 
+import static org.batfish.client.Command.ADD_BATFISH_OPTION;
+import static org.batfish.client.Command.ANSWER;
+import static org.batfish.client.Command.DEL_BATFISH_OPTION;
+import static org.batfish.client.Command.DEL_CONTAINER;
+import static org.batfish.client.Command.DEL_ENVIRONMENT;
+import static org.batfish.client.Command.DEL_QUESTION;
+import static org.batfish.client.Command.DEL_TESTRIG;
+import static org.batfish.client.Command.GET;
+import static org.batfish.client.Command.DIR;
+import static org.batfish.client.Command.GET_QUESTION;
+import static org.batfish.client.Command.INIT_DELTA_ENV;
+import static org.batfish.client.Command.INIT_DELTA_TESTRIG;
+import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
+import static org.batfish.client.Command.SET_CONTAINER;
+import static org.batfish.client.Command.SET_DELTA_ENV;
+import static org.batfish.client.Command.SET_DELTA_TESTRIG;
+import static org.batfish.client.Command.SET_ENV;
+import static org.batfish.client.Command.SET_LOGLEVEL;
+import static org.batfish.client.Command.SET_PRETTY_PRINT;
+import static org.batfish.client.Command.SET_TESTRIG;
+import static org.batfish.client.Command.TEST;
+import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_PROTOCOL;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.IP_WILDCARD;
@@ -11,9 +33,11 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -787,4 +811,54 @@ public class ClientTest {
       Client.checkVariableState(variables);
    }
 
+   // Tests for processCommand method
+   @Test
+   public void testProcessEmptyArgCommand() throws Exception {
+      Client client = new Client(new String[]{"-runmode", "gendatamodel"});
+      FileWriter writer = new FileWriter("writer");
+      String[] args = new String[]{ADD_BATFISH_OPTION.commandName()};
+      assertFalse(client.processCommand(args, writer));
+      args[0] = ANSWER.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = DEL_BATFISH_OPTION.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = DEL_CONTAINER.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = DEL_ENVIRONMENT.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = DEL_QUESTION.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = DEL_TESTRIG.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = DIR.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = GET.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = GET_QUESTION.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = INIT_DELTA_ENV.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = INIT_DELTA_TESTRIG.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_BATFISH_LOGLEVEL.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_CONTAINER.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_DELTA_ENV.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_ENV.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_DELTA_TESTRIG.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_LOGLEVEL.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_PRETTY_PRINT.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = SET_TESTRIG.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = TEST.commandName();
+      assertFalse(client.processCommand(args, writer));
+      args[0] = UPLOAD_CUSTOM_OBJECT.commandName();
+      assertFalse(client.processCommand(args, writer));
+   }
 }

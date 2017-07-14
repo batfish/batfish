@@ -953,13 +953,15 @@ public class BfCoordWorkHelper {
             return null;
          }
 
-         JSONArray questionArray = jObj
-               .getJSONArray(CoordConsts.SVC_KEY_QUESTION_LIST);
+         JSONObject questions = jObj
+               .getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
 
-         String[] questionList = new String[questionArray.length()];
+         String[] questionList = new String[questions.length()];
 
-         for (int index = 0; index < questionArray.length(); index++) {
-            questionList[index] = questionArray.getString(index);
+         int i = 0;
+         for (Iterator it = questions.keys(); it.hasNext(); ) {
+            questionList[i] = (String) it.next();
+            ++i;
          }
 
          return questionList;
