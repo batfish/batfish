@@ -353,7 +353,6 @@ public class Client extends AbstractClient implements IClient {
          }
          break;
       case IP:
-         // TODO: Need to double check isInetAddress()
          if (!(value.isTextual())) {
             throw new BatfishException(
                   String.format(
@@ -1219,6 +1218,10 @@ public class Client extends AbstractClient implements IClient {
          throws Exception {
       if (!isSetTestrig() || !isSetContainer(true)
             || (isDelta && !isSetDeltaEnvironment())) {
+         return false;
+      }
+      if (parameters.isEmpty()) {
+         _logger.output("Missing question type\n");
          return false;
       }
       String qTypeStr = parameters.get(0).toLowerCase();
