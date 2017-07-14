@@ -353,7 +353,6 @@ public class Client extends AbstractClient implements IClient {
          }
          break;
       case IP:
-         // TODO: Need to double check isInetAddress()
          if (!(value.isTextual())) {
             throw new BatfishException(
                   String.format(
