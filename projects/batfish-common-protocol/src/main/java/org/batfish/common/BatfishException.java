@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -16,7 +17,12 @@ import org.batfish.datamodel.answers.AnswerElement;
  */
 public class BatfishException extends RuntimeException {
 
-   public static class BatfishStackTrace implements AnswerElement {
+   public static class BatfishStackTrace implements Serializable, AnswerElement {
+
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 1L;
 
       private static final String LINES_VAR = "answer";
 

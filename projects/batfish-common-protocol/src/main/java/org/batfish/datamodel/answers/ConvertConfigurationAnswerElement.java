@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
@@ -29,11 +30,14 @@ public class ConvertConfigurationAnswerElement
 
    private SortedMap<String, Warnings> _warnings;
 
+   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
+
    public ConvertConfigurationAnswerElement() {
       _failed = new TreeSet<>();
       _warnings = new TreeMap<>();
       _undefinedReferences = new TreeMap<>();
       _unusedStructures = new TreeMap<>();
+      _errors = new TreeMap<>();
    }
 
    public Set<String> getFailed() {
@@ -56,6 +60,10 @@ public class ConvertConfigurationAnswerElement
       return _warnings;
    }
 
+   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
+      return _errors;
+   }
+
    @Override
    public String prettyPrint() {
       StringBuilder sb = new StringBuilder(
@@ -73,6 +81,12 @@ public class ConvertConfigurationAnswerElement
          for (Warning warning : warnings.getPedanticWarnings()) {
             sb.append("    Pedantic " + warning.getTag() + " : "
                   + warning.getText() + "\n");
+         }
+      });
+      _errors.forEach((name, errors) -> {
+         sb.append("\n  " + name + "[Conversion errors]\n");
+         for (String line : errors.getLineMap()) {
+            sb.append("    " + line + "\n");
          }
       });
       _undefinedReferences.forEach((hostname, byType) -> {
@@ -121,4 +135,9 @@ public class ConvertConfigurationAnswerElement
    public void setWarnings(SortedMap<String, Warnings> warnings) {
       _warnings = warnings;
    }
+
+   public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
+      _errors = errors;
+   }
+
 }
