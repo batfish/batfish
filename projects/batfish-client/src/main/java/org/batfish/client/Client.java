@@ -353,6 +353,7 @@ public class Client extends AbstractClient implements IClient {
          }
          break;
       case IP:
+         // TODO: Need to double check isInetAddress()
          if (!(value.isTextual())) {
             throw new BatfishException(
                   String.format(
@@ -741,7 +742,7 @@ public class Client extends AbstractClient implements IClient {
          catch (BatfishException e) {
             _logger.errorf("Could not find question: %s\n", e.getMessage());
             return false;
-         }init
+         }
       }
       JSONObject questionJson;
       try {
