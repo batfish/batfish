@@ -431,7 +431,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
             }
             if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
                retString += String.format(" | %s=%s", INGRESS_NODE_REGEX_VAR,
-                     _finalNodeRegex);
+                     _ingressNodeRegex);
             }
             if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
                retString += String.format(" | %s=%s", IP_PROTOCOLS_VAR,
