@@ -736,8 +736,13 @@ public class Client extends AbstractClient implements IClient {
          }
       }
       else {
-         questionString = QuestionHelper.getQuestionString(questionType,
-               _questions, false);
+         try {
+            questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
+         }
+         catch (BatfishException e) {
+            _logger.errorf("Could not find question: %s\n", e.getMessage());
+            return false;
+         }init
       }
       JSONObject questionJson;
       try {
