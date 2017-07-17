@@ -141,7 +141,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       public RoutesAnswerElement(
             SortedMap<String, RoutesByVrf> environmentRoutesByHostname,
-            Pattern nodeRegex, Set<RoutingProtocol> protocols) {
+            Pattern nodeRegex, Set<RoutingProtocol> protocols, PrefixSpace prefixSpace) {
          this();
          for (Entry<String, RoutesByVrf> e : environmentRoutesByHostname
                .entrySet()) {
@@ -156,16 +156,24 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                   .entrySet()) {
                String vrfName = e2.getKey();
                SortedSet<Route> routes = e2.getValue();
-               if (!protocols.isEmpty()) {
-                  SortedSet<Route> filteredRoutes = new TreeSet<>();
+               SortedSet<Route> filteredRoutes;
+               if (protocols.isEmpty() && prefixSpace.isEmpty()) {
+                  filteredRoutes = routes;
+               }
+               else {
+                  filteredRoutes = new TreeSet<>();
                   for (Route environmentRoute : routes) {
-                     if (protocols.contains(environmentRoute.getProtocol())) {
+                     boolean matchProtocol = protocols.isEmpty()
+                           || protocols.contains(environmentRoute.getProtocol());
+                     boolean matchPrefixSpace = prefixSpace.isEmpty()
+                           || prefixSpace
+                           .containsPrefix(environmentRoute.getNetwork());
+                     if (matchProtocol && matchPrefixSpace) {
                         filteredRoutes.add(environmentRoute);
                      }
                   }
-                  routes = filteredRoutes;
                }
-               routesByVrf.put(vrfName, routes);
+               routesByVrf.put(vrfName, filteredRoutes);
             }
          }
       }
@@ -377,7 +385,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             SortedMap<String, RoutesByVrf> environmentRoutes = _batfish
                   .loadEnvironmentRoutingTables();
             environmentAnswerElement = new RoutesAnswerElement(
-                  environmentRoutes, nodeRegex, question._protocols);
+                  environmentRoutes, nodeRegex, question._protocols, question._prefixSpace);
          }
          if (!question._fromEnvironment) {
             SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
