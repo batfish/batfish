@@ -173,17 +173,21 @@ public class ClientTest {
       Client.validateJsonPath(mapper.readTree(validJsonPath));
    }
 
-   // Tests for parseParaValue method
-   @Test
-   public void testParseInvalidJsonContent() {
-      String invalidJsonContent = "I am not valid";
-      thrown.expect(BatfishException.class);
-      thrown.expectMessage(equalTo(
-            String.format(
-                  "Variable value \"%s\" is not valid JSON",
-                  invalidJsonContent)));
-      Client.parseParaValue("content", invalidJsonContent);
-   }
+// ratul commented out this test
+//     parseParaValue should allow strings like "I am not valid" to parse.
+//     i can't think of what that new function will not parse
+//       TODO: remove test or give it some teeth
+//   // Tests for parseParaValue method
+//   @Test
+//   public void testParseInvalidJsonContent() {
+//      String invalidJsonContent = "I am not valid";
+//      thrown.expect(BatfishException.class);
+//      thrown.expectMessage(equalTo(
+//            String.format(
+//                  "Variable value \"%s\" is not valid JSON",
+//                  invalidJsonContent)));
+//      Client.parseParaValue("content", invalidJsonContent);
+//   }
 
    @Test
    public void testParseValidJsonContent() {
