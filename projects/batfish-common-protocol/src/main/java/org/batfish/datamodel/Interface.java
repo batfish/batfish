@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -35,7 +36,7 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String DESCRIPTION_VAR = "description";
 
-   private static final String DHCP_RELAY_ADDRESS_VAR = "dhcpRelayAddress";
+   private static final String DHCP_RELAY_ADDRESSES_VAR = "dhcpRelayAddresses";
 
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
@@ -305,7 +306,7 @@ public final class Interface extends ComparableStructure<String> {
 
    private String _description;
 
-   private Ip _dhcpRelayAddress;
+   private SortedSet<Ip> _dhcpRelayAddresses;
 
    private IpAccessList _inboundFilter;
 
@@ -544,9 +545,9 @@ public final class Interface extends ComparableStructure<String> {
       return _description;
    }
 
-   @JsonProperty(DHCP_RELAY_ADDRESS_VAR)
-   public Ip getDhcpRelayAddress() {
-      return _dhcpRelayAddress;
+   @JsonProperty(DHCP_RELAY_ADDRESSES_VAR)
+   public SortedSet<Ip> getDhcpRelayAddresses() {
+      return _dhcpRelayAddresses;
    }
 
    @JsonIgnore
@@ -851,9 +852,9 @@ public final class Interface extends ComparableStructure<String> {
       _description = description;
    }
 
-   @JsonProperty(DHCP_RELAY_ADDRESS_VAR)
-   public void setDhcpRelayAddress(Ip dhcpRelayAddress) {
-      _dhcpRelayAddress = dhcpRelayAddress;
+   @JsonProperty(DHCP_RELAY_ADDRESSES_VAR)
+   public void setDhcpRelayAddresses(SortedSet<Ip> dhcpRelayAddresses) {
+      _dhcpRelayAddresses = dhcpRelayAddresses;
    }
 
    @JsonIgnore

@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SnmpServer;
@@ -19,6 +20,10 @@ public class RoutingInstance implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private Integer _as;
+
+   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
+
+   private final SortedMap<String, DhcpRelayServerGroup> _dhcpRelayServerGroups;
 
    private String _domainName;
 
@@ -59,6 +64,8 @@ public class RoutingInstance implements Serializable {
    private final JuniperSystem _system;
 
    public RoutingInstance(String name) {
+      _dhcpRelayGroups = new TreeMap<>();
+      _dhcpRelayServerGroups = new TreeMap<>();
       _isisSettings = new IsisSettings();
       _interfaces = new TreeMap<>();
       _ipBgpGroups = new TreeMap<>();
@@ -99,6 +106,14 @@ public class RoutingInstance implements Serializable {
 
    public Integer getAs() {
       return _as;
+   }
+
+   public SortedMap<String, DhcpRelayGroup> getDhcpRelayGroups() {
+      return _dhcpRelayGroups;
+   }
+
+   public SortedMap<String, DhcpRelayServerGroup> getDhcpRelayServerGroups() {
+      return _dhcpRelayServerGroups;
    }
 
    public String getDomainName() {

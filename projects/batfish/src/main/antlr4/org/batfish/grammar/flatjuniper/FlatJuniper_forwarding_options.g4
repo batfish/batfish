@@ -99,7 +99,8 @@ foh_null
 
 fohb_common
 :
-   fohb_server
+   fohb_null
+   | fohb_server
 ;
 
 fohb_interface
