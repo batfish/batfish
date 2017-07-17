@@ -126,6 +126,20 @@ if_ip_address_secondary
    ) SECONDARY NEWLINE
 ;
 
+if_ip_dhcp
+:
+   NO? IP DHCP
+   (
+      ifdhcp_null
+      | ifdhcp_relay
+   )
+;
+
+if_ip_helper_address
+:
+   IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
+;
+
 if_ip_igmp
 :
    NO? IP IGMP
@@ -399,14 +413,12 @@ if_null_block
             | BROADCAST_ADDRESS
             | CGMP
             | CONTROL_APPS_USE_MGMT_PORT
-            | DHCP
             | DVMRP
             |
             (
                DIRECTED_BROADCAST
             )
             | FLOW
-            | HELPER_ADDRESS
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
@@ -835,6 +847,35 @@ if_vrf_member
    VRF MEMBER name = variable NEWLINE
 ;
 
+ifdhcp_null
+:
+   (
+      SNOOPING
+   ) ~NEWLINE* NEWLINE
+;
+
+ifdhcp_relay
+:
+   RELAY
+   (
+      ifdhcpr_address
+      | ifdhcpr_null
+   )
+;
+
+ifdhcpr_address
+:
+   ADDRESS address = IP_ADDRESS NEWLINE
+;
+
+ifdhcpr_null
+:
+   (
+      CLIENT
+      | INFORMATION
+   ) ~NEWLINE* NEWLINE
+;
+
 ifigmp_null
 :
    (
@@ -892,6 +933,8 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
+      | if_ip_dhcp
+      | if_ip_helper_address
       | if_ip_igmp
       | if_ip_nat_destination
       | if_ip_nat_source

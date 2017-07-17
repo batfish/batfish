@@ -1866,6 +1866,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setAutoState(iface.getAutoState());
       newIface.setVrf(c.getVrfs().get(vrfName));
       newIface.setBandwidth(iface.getBandwidth());
+      Ip dhcpRelayAddress = iface.getDhcpRelayAddress();
+      if (dhcpRelayAddress != null) {
+         newIface.setDhcpRelayAddresses(new TreeSet<>(Collections.singleton(dhcpRelayAddress)));
+      }
       newIface.setMtu(iface.getMtu());
       newIface.setProxyArp(iface.getProxyArp());
       newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());

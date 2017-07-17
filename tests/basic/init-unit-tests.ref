@@ -37,6 +37,7 @@
         "cisco_controller" : "cisco_controller",
         "cisco_crypto" : "cisco_crypto",
         "cisco_dhcp" : "cisco_dhcp",
+        "cisco_dhcp_helper" : "cisco_dhcp_helper",
         "cisco_domain" : "cisco_domain",
         "cisco_dot11" : "cisco_dot11",
         "cisco_dot1x" : "cisco_dot1x",
@@ -122,9 +123,11 @@
         "juniper_bgp" : "juniper_bgp",
         "juniper_extended_community" : "juniper_extended_community",
         "juniper_firewall" : "juniper_firewall",
+        "juniper_forwarding_options" : "juniper_forwarding_options",
         "juniper_interfaces" : "juniper_interfaces",
         "juniper_misc" : "juniper_misc",
         "juniper_ntp" : "juniper_ntp",
+        "juniper_relay" : "juniper_relay",
         "juniper_routing_options" : "juniper_routing_options",
         "juniper_snmp" : "juniper_snmp",
         "juniper_syslog" : "juniper_syslog",
@@ -211,6 +214,7 @@
         "cisco_controller" : "PASSED",
         "cisco_crypto" : "PASSED",
         "cisco_dhcp" : "PASSED",
+        "cisco_dhcp_helper" : "PASSED",
         "cisco_domain" : "PASSED",
         "cisco_dot11" : "PASSED",
         "cisco_dot1x" : "PASSED",
@@ -296,9 +300,11 @@
         "juniper_bgp" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
+        "juniper_forwarding_options" : "PASSED",
         "juniper_interfaces" : "PASSED",
         "juniper_misc" : "PASSED",
         "juniper_ntp" : "PASSED",
+        "juniper_relay" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",
@@ -772,6 +778,15 @@
               "bgp import policy-statement" : [
                 10,
                 24
+              ]
+            }
+          }
+        },
+        "juniper_forwarding_options" : {
+          "dhcp-relay server-group" : {
+            "site-dhcp" : {
+              "dhcp relay group active-server-group" : [
+                9
               ]
             }
           }
@@ -1296,6 +1311,23 @@
             ]
           }
         },
+        "juniper_forwarding_options" : {
+          "dhcp-relay server-group" : {
+            "dhcpgrp" : [
+              15
+            ],
+            "test2" : [
+              17
+            ]
+          }
+        },
+        "juniper_relay" : {
+          "dhcp-relay server-group" : {
+            "site-dhcp" : [
+              4
+            ]
+          }
+        },
         "local_v6_addr" : {
           "bgp group" : {
             "NEIGH" : [
@@ -1566,6 +1598,7 @@
         "cisco_controller" : "PASSED",
         "cisco_crypto" : "PASSED",
         "cisco_dhcp" : "PASSED",
+        "cisco_dhcp_helper" : "PASSED",
         "cisco_domain" : "PASSED",
         "cisco_dot11" : "PASSED",
         "cisco_dot1x" : "PASSED",
@@ -1651,9 +1684,11 @@
         "juniper_bgp" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
+        "juniper_forwarding_options" : "PASSED",
         "juniper_interfaces" : "PASSED",
         "juniper_misc" : "PASSED",
         "juniper_ntp" : "PASSED",
+        "juniper_relay" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",

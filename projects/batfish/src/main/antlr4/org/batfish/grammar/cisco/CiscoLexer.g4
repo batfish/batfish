@@ -3864,6 +3864,11 @@ INFORM
    'inform'
 ;
 
+INFORMATION
+:
+   'information'
+;
+
 INFORMATION_REPLY
 :
    'information-reply'
