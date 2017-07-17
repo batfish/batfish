@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jline.console.ConsoleReader;
@@ -353,6 +353,7 @@ public class Client extends AbstractClient implements IClient {
          }
          break;
       case IP:
+         // TODO: Need to double check isInetAddress()
          if (!(value.isTextual())) {
             throw new BatfishException(
                   String.format(
@@ -737,12 +738,16 @@ public class Client extends AbstractClient implements IClient {
    private boolean answerType(
          String questionType, String paramsLine,
          boolean isDelta, FileWriter outWriter) {
-      Map<String, String> parameters = parseParams(paramsLine);
-      String questionString;
+      JSONObject questionJson;
       if (questionType.startsWith(QuestionHelper.MACRO_PREFIX)) {
          try {
-            questionString = QuestionHelper.resolveMacro(questionType,
+            String questionString = QuestionHelper.resolveMacro(questionType,
                   paramsLine, _questions);
+            questionJson = new JSONObject(questionString);
+         }
+         catch (JSONException e) {
+            throw new BatfishException(
+                  "Failed to convert unmodified question string to JSON", e);
          }
          catch (BatfishException e) {
             _logger.errorf("Could not resolve macro: %s\n", e.getMessage());
@@ -750,31 +755,37 @@ public class Client extends AbstractClient implements IClient {
          }
       }
       else {
-         questionString = QuestionHelper.getQuestionString(questionType,
-               _questions, false);
-      }
-      JSONObject questionJson;
-      try {
-         questionJson = new JSONObject(questionString);
-      }
-      catch (JSONException e) {
-         throw new BatfishException(
-               "Failed to convert unmodified question string to JSON", e);
-      }
-      for (Entry<String, String> e : parameters.entrySet()) {
-         String parameterName = e.getKey();
-         String parameterValue = e.getValue();
-         Object parameterObj;
          try {
-            parameterObj = new JSONTokener(parameterValue).nextValue();
-            questionJson.put(parameterName, parameterObj);
+            String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
+            questionJson = new JSONObject(questionString);
+
+            Map<String, String> parameters = parseParams(paramsLine);
+            for (Entry<String, String> e : parameters.entrySet()) {
+               String parameterName = e.getKey();
+               String parameterValue = e.getValue();
+               Object parameterObj;
+               try {
+                  parameterObj = new JSONTokener(parameterValue).nextValue();
+                  questionJson.put(parameterName, parameterObj);
+               }
+               catch (JSONException e1) {
+                  throw new BatfishException("Failed to apply parameter: '"
+                        + parameterName + "' with value: '" + parameterValue
+                        + "' to question JSON", e1);
+               }
+            }
+
          }
-         catch (JSONException e1) {
-            throw new BatfishException("Failed to apply parameter: '"
-                  + parameterName + "' with value: '" + parameterValue
-                  + "' to question JSON", e1);
+         catch (JSONException e) {
+            throw new BatfishException(
+                  "Failed to convert unmodified question string to JSON", e);
+         }
+         catch (BatfishException e) {
+            _logger.errorf("Could not construct a question: %s\n", e.getMessage());
+            return false;
          }
       }
+
       String modifiedQuestionJson = questionJson.toString();
       BatfishObjectMapper mapper = new BatfishObjectMapper(
             getCurrentClassLoader());
@@ -1329,8 +1340,8 @@ public class Client extends AbstractClient implements IClient {
          String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX
                + UUID.randomUUID().toString();
 
-         String prefixString = (paramsLine.trim().length() > 0) ? " | " : "";
-         paramsLine += String.format("%s %s=%s", prefixString,
+         String prefixString = (paramsLine.trim().length() > 0) ? ", " : "";
+         paramsLine += String.format("%s %s='%s'", prefixString,
                IEnvironmentCreationQuestion.ENVIRONMENT_NAME_KEY, deltaEnvName);
 
          if (!answerType(qTypeStr, paramsLine, delta, outWriter)) {
@@ -2064,26 +2075,23 @@ public class Client extends AbstractClient implements IClient {
 
    private Map<String, String> parseParams(String paramsLine) {
       Map<String, String> parameters = new HashMap<>();
+      String jsonParamsStr = "{ " + paramsLine + " }";
+      try {
+         JSONObject jsonParamsObject = new JSONObject(jsonParamsStr);
 
-      Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");
-
-      String[] params = paramsLine.split("\\|");
-
-      _logger.debugf("Found %d parameters\n", params.length);
-
-      for (String param : params) {
-         Matcher matcher = pattern.matcher(param);
-
-         while (matcher.find()) {
-            String key = matcher.group(1).trim();
-            String value = matcher.group(2).trim();
+         Iterator<?> keys = jsonParamsObject.keys();
+         while( keys.hasNext() ) {
+            String key = (String)keys.next();
+            String value = jsonParamsObject.get(key).toString();
             _logger.debugf("key=%s value=%s\n", key, value);
 
             parameters.put(key, value);
          }
+         return parameters;
       }
-
-      return parameters;
+      catch (JSONException e){
+         throw new BatfishException("Failed to parse parameters. (Are all key-value pairs separated by commas? Are all values valid JSON?)", e);
+      }
    }
 
    private void printUsage() {
