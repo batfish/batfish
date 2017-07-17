@@ -555,30 +555,24 @@ public class WorkMgr {
       Path answerFile = answerDir.resolve(answerFilename);
       String answer = "unknown";
       if (!Files.exists(answerFile)) {
+         Answer ans = Answer.failureAnswer("Not answered", null);
+         ans.setStatus(AnswerStatus.NOTFOUND);
          if (pretty) {
-            answer = "Not answered";
+            ans = ans.prettyPrintAnswer();
          }
-         else {
-            Answer ans = Answer.failureAnswer("Not answered", null);
-            ans.setStatus(AnswerStatus.NOTFOUND);
-
-            BatfishObjectMapper mapper = new BatfishObjectMapper();
-            answer = mapper.writeValueAsString(ans);
-         }
+         BatfishObjectMapper mapper = new BatfishObjectMapper();
+         answer = mapper.writeValueAsString(ans);
       }
       else {
          if (CommonUtil.getLastModifiedTime(questionFile)
                .compareTo(CommonUtil.getLastModifiedTime(answerFile)) > 0) {
+            Answer ans = Answer.failureAnswer("Not fresh", null);
+            ans.setStatus(AnswerStatus.STALE);
             if (pretty) {
-               answer = "Not fresh";
+               ans = ans.prettyPrintAnswer();
             }
-            else {
-               Answer ans = Answer.failureAnswer("Not answered", null);
-               ans.setStatus(AnswerStatus.STALE);
-
-               BatfishObjectMapper mapper = new BatfishObjectMapper();
-               answer = mapper.writeValueAsString(ans);
-            }
+            BatfishObjectMapper mapper = new BatfishObjectMapper();
+            answer = mapper.writeValueAsString(ans);
          }
          else {
             answer = CommonUtil.readFile(answerFile);

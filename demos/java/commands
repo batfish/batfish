@@ -16,7 +16,7 @@ init-testrig test_rigs/example
 
 echo ################
 echo # The configurations are converted to JSON-based  vendor-independent data model:
-get nodes summary=False | nodeRegex='as2border1'
+get nodes summary=False, nodeRegex='as2border1'
 
 echo # Some checks can be expressed as JsonPath queries on this JSON.
 echo # For instance, to check whether the MTU of each interface is 1500,
@@ -97,7 +97,7 @@ echo #############
 echo # fault-tolerance can be ensured in a similar manner by studying the impact of failures
 
 echo # this command creates a network view after an interface failure
-get environmentcreation interfaceBlacklist=[{hostname=as2border2,interface="GigabitEthernet0/0"}]
+get environmentcreation interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
 
 echo # we can see if reachability changes at all after this failure
 get reachability type=reduced
