@@ -1918,7 +1918,7 @@ public class Client extends AbstractClient implements IClient {
          return parameters;
       }
       catch (JSONException e){
-         throw new BatfishException("Failed to parse paramters. (Are all key-value pairs separated by commas? Are all values valid JSON?)", e);
+         throw new BatfishException("Failed to parse parameters. (Are all key-value pairs separated by commas? Are all values valid JSON?)", e);
       }
    }
 
