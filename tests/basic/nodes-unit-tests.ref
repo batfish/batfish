@@ -2195,6 +2195,51 @@
             }
           }
         },
+        "cisco_dhcp_helper" : {
+          "name" : "cisco_dhcp_helper",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "dhcpRelayAddresses" : [
+                "1.2.3.4"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_dhcp_helper"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0"
+              ]
+            }
+          }
+        },
         "cisco_domain" : {
           "name" : "cisco_domain",
           "configurationFormat" : "CISCO_NX",
@@ -2564,6 +2609,9 @@
               "autostate" : true,
               "bandwidth" : 1.0E9,
               "description" : "description-goes-here",
+              "dhcpRelayAddresses" : [
+                "172.17.0.1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -6125,6 +6173,9 @@
               ],
               "autostate" : false,
               "bandwidth" : 1.0E12,
+              "dhcpRelayAddresses" : [
+                "10.22.33.112"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 9100,
@@ -7604,6 +7655,88 @@
             }
           }
         },
+        "juniper_forwarding_options" : {
+          "name" : "juniper_forwarding_options",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "et-0/0/10.0" : {
+              "name" : "et-0/0/10.0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "ge-0/2/5.0" : {
+              "name" : "ge-0/2/5.0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "dhcpRelayAddresses" : [
+                "3.4.5.6"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "xe-1/0/0.0" : {
+              "name" : "xe-1/0/0.0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E10,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "et-0/0/10.0",
+                "ge-0/2/5.0",
+                "xe-1/0/0.0"
+              ]
+            }
+          }
+        },
         "juniper_interfaces" : {
           "name" : "juniper_interfaces",
           "configurationFormat" : "FLAT_JUNIPER",
@@ -7742,6 +7875,70 @@
           "vrfs" : {
             "default" : {
               "name" : "default"
+            }
+          }
+        },
+        "juniper_relay" : {
+          "name" : "juniper_relay",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "irb.10" : {
+              "name" : "irb.10",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "dhcpRelayAddresses" : [
+                "1.2.3.4"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "irb.20" : {
+              "name" : "irb.20",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "dhcpRelayAddresses" : [
+                "1.2.3.4"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "irb.10",
+                "irb.20"
+              ]
             }
           }
         },

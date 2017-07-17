@@ -1787,6 +1787,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
          RoutingInstance ri = e.getValue();
          Vrf vrf = _c.getVrfs().get(riName);
 
+         // dhcp relay
+         for (Entry<String, DhcpRelayGroup> e2 : ri.getDhcpRelayGroups().entrySet()) {
+            DhcpRelayGroup rg = e2.getValue();
+            List<org.batfish.datamodel.Interface> interfaces = new ArrayList<>();
+            if (rg.getAllInterfaces()) {
+               interfaces.addAll(_c.getInterfaces().values()); 
+            }
+            else {
+               for (String ifaceName : rg.getInterfaces()) {
+                  org.batfish.datamodel.Interface iface = _c.getInterfaces().get(ifaceName);
+                  interfaces.add(iface);
+               }
+            }
+            String asgName = rg.getActiveServerGroup();
+            if (asgName != null) {
+               DhcpRelayServerGroup asg = ri.getDhcpRelayServerGroups().get(asgName);
+               if (asg == null) {
+                  int asgLine = rg.getActiveServerGroupLine();
+                  undefined(JuniperStructureType.DHCP_RELAY_SERVER_GROUP, asgName, JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP, asgLine);
+               }
+               else {
+                  for (org.batfish.datamodel.Interface iface : interfaces) {
+                     iface.setDhcpRelayAddresses(asg.getServers());
+                  }
+               }
+            }
+         }
+         
          // snmp
          SnmpServer snmpServer = ri.getSnmpServer();
          vrf.setSnmpServer(snmpServer);
@@ -1892,6 +1920,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // warn about unreferenced data structures
       warnUnreferencedBgpGroups();
+      warnUnreferencedDhcpRelayServerGroups();
       warnUnreferencedPolicyStatements();
       warnUnreferencedFirewallFilters();
       warnUnreferencedIkeProposals();
@@ -2088,6 +2117,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
          if (ipsecProposal.isUnused()) {
             unused(JuniperStructureType.IPSEC_PROPOSAL, name,
                   ipsecProposal.getDefinitionLine());
+         }
+      }
+   }
+
+   private void warnUnreferencedDhcpRelayServerGroups() {
+      for (RoutingInstance ri : _routingInstances.values()) {
+         for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
+            String name = e.getKey();
+            DhcpRelayServerGroup sg = e.getValue();
+            if (sg.isUnused()) {
+               unused(JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name,
+                     sg.getDefinitionLine());
+            }
          }
       }
    }
