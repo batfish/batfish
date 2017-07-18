@@ -1,6 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
@@ -30,7 +29,7 @@ public class ConvertConfigurationAnswerElement
 
    private String _version;
 
-   private Date _finishTimestamp = null;
+   private Date _timestamp;
 
    private SortedMap<String, Warnings> _warnings;
 
@@ -60,9 +59,8 @@ public class ConvertConfigurationAnswerElement
       return _version;
    }
 
-   @JsonIgnore
-   public Date getFinishTimestamp() {
-      return _finishTimestamp;
+   public Date getTimestamp() {
+      return _timestamp;
    }
 
    public SortedMap<String, Warnings> getWarnings() {
@@ -141,8 +139,8 @@ public class ConvertConfigurationAnswerElement
       _version = version;
    }
 
-   public void setFinishTimestamp(Date finishTimestamp) {
-      _finishTimestamp = finishTimestamp;
+   public void setTimestamp(Date timestamp) {
+      _timestamp = timestamp;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

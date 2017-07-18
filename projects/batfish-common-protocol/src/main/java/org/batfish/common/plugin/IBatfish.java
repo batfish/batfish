@@ -87,8 +87,7 @@ public interface IBatfish extends IPluginConsumer {
    InitInfoAnswerElement initInfo(
          boolean summary,
          boolean verboseError,
-         boolean environmentRoutes,
-         boolean timestamp);
+         boolean environmentRoutes);
 
    void initRemoteBgpNeighbors(
          Map<String, Configuration> configurations,

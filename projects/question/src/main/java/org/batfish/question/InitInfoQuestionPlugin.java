@@ -20,8 +20,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
          return _batfish.initInfo(
                question._summary,
                question._verboseError,
-               question._environmentRoutes,
-               question._timestamp);
+               question._environmentRoutes);
       }
    }
 
@@ -40,8 +39,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       private static final String SUMMARY_VAR = "summary";
 
       private static final String VERBOSE_ERROR_VAR = "verboseError";
-
-      private static final String TIMESTAMP_VAR = "timestamp";
 
       private boolean _environmentRoutes;
 
@@ -78,11 +75,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
          return _verboseError;
       }
 
-      @JsonProperty(TIMESTAMP_VAR)
-      public boolean getTimestamp() {
-         return _timestamp;
-      }
-
       @Override
       public boolean getTraffic() {
          return false;
@@ -91,8 +83,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() {
          return getName() + " " + SUMMARY_VAR + "=" + _summary
-               + " " + VERBOSE_ERROR_VAR + "=" + _verboseError
-               + " " + TIMESTAMP_VAR + "=" + _timestamp;
+               + " " + VERBOSE_ERROR_VAR + "=" + _verboseError;
       }
 
       public void setEnvironmentRoutes(boolean environmentRoutes) {
@@ -107,11 +98,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       @JsonProperty(VERBOSE_ERROR_VAR)
       public void setVerboseError(boolean verboseError) {
          _verboseError = verboseError;
-      }
-
-      @JsonProperty(TIMESTAMP_VAR)
-      public void setTimestamp(boolean timestamp) {
-         _timestamp = timestamp;
       }
 
    }

@@ -58,21 +58,21 @@ public class ParseVendorConfigurationAnswerElementTest {
 
    @Test
    public void checkDefaultTimestamp() {
-      assertThat(element.getStartTimestamp(), is(nullValue()));
+      assertThat(element.getTimestamp(), is(nullValue()));
    }
 
    @Test
    public void testSetTimestamp() {
       Date date = new Date();
-      element.setStartTimestamp(date);
-      assertThat(element.getStartTimestamp(), is(notNullValue()));
+      element.setTimestamp(date);
+      assertThat(element.getTimestamp(), is(notNullValue()));
    }
 
    @Test
    public void testGetTimestamp() {
       Date date = new Date();
-      element.setStartTimestamp(date);
-      assertThat(element.getStartTimestamp(), is(date));
+      element.setTimestamp(date);
+      assertThat(element.getTimestamp(), is(date));
    }
 
    @Test

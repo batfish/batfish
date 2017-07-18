@@ -2205,8 +2205,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public InitInfoAnswerElement initInfo(
          boolean summary,
          boolean verboseError,
-         boolean environmentRoutes,
-         boolean timestamp) {
+         boolean environmentRoutes) {
       checkConfigurations();
       InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
       if (environmentRoutes) {
@@ -2249,10 +2248,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                }
             });
          }
-         if (timestamp) {
-            answerElement.setStartTimestamp(parseAnswer.getStartTimestamp());
-            answerElement.setFinishTimestamp(convertAnswer.getFinishTimestamp());
-         }
+         answerElement.setStartTimestamp(parseAnswer.getTimestamp());
+         answerElement.setFinishTimestamp(convertAnswer.getTimestamp());
          answerElement.setParseStatus(parseAnswer.getParseStatus());
          for (String failed : convertAnswer.getFailed()) {
             answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
@@ -3943,7 +3940,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (_settings.getInitInfo()) {
-         answer.addAnswerElement(initInfo(true, false, false, false));
+         answer.addAnswerElement(initInfo(true, false, false));
          action = true;
       }
 
@@ -4185,7 +4182,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             configurations);
       serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
       serializeIndependentConfigs(configurations, outputPath);
-      answerElement.setFinishTimestamp(new Date());
+      answerElement.setTimestamp(new Date());
       serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
       return answer;
    }
@@ -4298,7 +4295,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
       answerElement.setVersion(Version.getVersion());
-      answerElement.setStartTimestamp(new Date());
+      answerElement.setTimestamp(new Date());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }
