@@ -249,6 +249,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       private Path _testRigPath;
 
+      private Path _topologyPath;
+
       public TestrigSettings() {
          _environmentSettings = new EnvironmentSettings();
       }
@@ -306,6 +308,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _testRigPath;
       }
 
+      public Path getTopologyPath() {
+         return _topologyPath;
+      }
+
       @Override
       public int hashCode() {
          final int prime = 31;
@@ -357,6 +363,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
       public void setTestRigPath(Path path) {
          _testRigPath = path;
+      }
+
+      public void setTopologyPath(Path path) {
+         _topologyPath = path;
       }
 
    }
