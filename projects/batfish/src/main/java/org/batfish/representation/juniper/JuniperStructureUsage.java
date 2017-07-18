@@ -5,6 +5,7 @@ import org.batfish.vendor.StructureUsage;
 public enum JuniperStructureUsage implements StructureUsage {
    BGP_EXPORT_POLICY("bgp export policy-statement"),
    BGP_IMPORT_POLICY("bgp import policy-statement"),
+   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
    FORWARDING_TABLE_EXPORT_POLICY("forwarding-table export policy-statement"),
    GENERATED_ROUTE_POLICY("generated route policy-statement"),
    IKE_GATEWAY_EXTERNAL_INTERFACE("ike gateway external-interface"),

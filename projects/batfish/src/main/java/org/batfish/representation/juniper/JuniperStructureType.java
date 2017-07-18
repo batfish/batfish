@@ -4,6 +4,7 @@ import org.batfish.vendor.StructureType;
 
 public enum JuniperStructureType implements StructureType {
    BGP_GROUP("bgp group"),
+   DHCP_RELAY_SERVER_GROUP("dhcp-relay server-group"),
    FIREWALL_FILTER("firewall filter"),
    IKE_GATEWAY("ike gateway"),
    IKE_POLICY("ike policy"),

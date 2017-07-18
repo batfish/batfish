@@ -77,7 +77,7 @@ public class QuestionHelper {
          Map<String, Supplier<Question>> questions) {
       Supplier<Question> supplier = questions.get(questionTypeStr);
       if (supplier == null) {
-         throw new BatfishException("No question of type: " + questionTypeStr);
+         throw new BatfishException("No question found of type: " + questionTypeStr + ". Did you include the questions plugins directory in your JVM arguments?");
       }
       Question question = supplier.get();
       return question;
@@ -99,6 +99,11 @@ public class QuestionHelper {
          String dstIp,
          String protocolStr, String ingressNodeRegex, ForwardingAction action,
          Map<String, Supplier<Question>> questions) {
+
+      if (!questions.containsKey(IReachabilityQuestion.NAME)) {
+         throw new BatfishException("Reachability question not found. Did you include the questions plugins directory in your JVM arguments?");
+      }
+
       IReachabilityQuestion question = (IReachabilityQuestion) questions
             .get(IReachabilityQuestion.NAME).get();
 

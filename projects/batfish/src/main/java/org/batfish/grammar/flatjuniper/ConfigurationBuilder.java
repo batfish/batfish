@@ -42,357 +42,10 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.VrrpGroup;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aa_termContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_destination_portContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_inactiveContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_peer_asContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_importContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Extended_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_portContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_prefix_listContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_first_fragmentContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_codeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_typeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_lengthContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_length_exceptContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_portContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_prefix_listContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_portContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_prefix_listContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_establishedContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_flagsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_initialContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_acceptContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_discardContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_ipContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_termContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_nopContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_rejectContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_routing_instanceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.FilterContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_primaryContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_vrrp_groupContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_preemptContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_priorityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_virtual_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_methodContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_namedContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_exportContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_levelContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv4_routingContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_levelContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_passiveContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_point_to_pointContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_enableContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_commonContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_termContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_local_preferenceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_exactContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_longerContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_orlongerContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_prefix_length_rangeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_thenContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_hopContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.RangeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instanceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_aggregateContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_generateContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_preferenceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_gatewayContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_proposalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_external_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_ike_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikg_local_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_pre_shared_keyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_proposal_setContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikp_proposalsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_authentication_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_authentication_methodContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_dh_groupContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_encryption_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seikpr_lifetime_secondsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seip_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seip_proposalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seip_vpnContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipp_perfect_forward_secrecyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipp_proposal_setContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipp_proposalsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_authentication_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_encryption_algorithmContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_lifetime_kilobytesContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_lifetime_secondsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seippr_protocolContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipv_bind_interfaceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_gatewayContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_default_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_from_zoneContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepf_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_applicationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_destination_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_source_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_source_identityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpt_denyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpt_permitContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sez_security_zoneContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_address_bookContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_host_inbound_trafficContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_interfacesContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsa_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsa_address_setContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaa_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaa_address_setContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_protocolsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_system_servicesContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_authorizationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_default_address_selectionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_domain_nameContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_host_nameContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_name_serverContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flagsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
-import org.batfish.representation.juniper.AddressAddressBookEntry;
-import org.batfish.representation.juniper.AddressBook;
-import org.batfish.representation.juniper.AddressBookEntry;
-import org.batfish.representation.juniper.AddressSetAddressBookEntry;
-import org.batfish.representation.juniper.AddressSetEntry;
-import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.Application;
-import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
+import org.batfish.representation.juniper.*;
 import org.batfish.representation.juniper.BaseApplication.Term;
-import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.representation.juniper.CommunityList;
-import org.batfish.representation.juniper.CommunityListLine;
-import org.batfish.representation.juniper.Family;
-import org.batfish.representation.juniper.FirewallFilter;
-import org.batfish.representation.juniper.FwFrom;
-import org.batfish.representation.juniper.FwFromApplication;
-import org.batfish.representation.juniper.FwFromDestinationAddress;
-import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
-import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
-import org.batfish.representation.juniper.FwFromDestinationPort;
-import org.batfish.representation.juniper.FwFromDestinationPrefixList;
-import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
-import org.batfish.representation.juniper.FwFromFragmentOffset;
-import org.batfish.representation.juniper.FwFromHostProtocol;
-import org.batfish.representation.juniper.FwFromHostService;
-import org.batfish.representation.juniper.FwFromIcmpCode;
-import org.batfish.representation.juniper.FwFromIcmpType;
-import org.batfish.representation.juniper.FwFromPacketLength;
-import org.batfish.representation.juniper.FwFromPort;
-import org.batfish.representation.juniper.FwFromPrefixList;
-import org.batfish.representation.juniper.FwFromProtocol;
-import org.batfish.representation.juniper.FwFromSourceAddress;
-import org.batfish.representation.juniper.FwFromSourceAddressBookEntry;
-import org.batfish.representation.juniper.FwFromSourceAddressExcept;
-import org.batfish.representation.juniper.FwFromSourcePort;
-import org.batfish.representation.juniper.FwFromSourcePrefixList;
-import org.batfish.representation.juniper.FwFromSourcePrefixListExcept;
-import org.batfish.representation.juniper.FwFromTcpFlags;
-import org.batfish.representation.juniper.FwTerm;
-import org.batfish.representation.juniper.FwThenAccept;
-import org.batfish.representation.juniper.FwThenDiscard;
-import org.batfish.representation.juniper.FwThenNextIp;
-import org.batfish.representation.juniper.FwThenNextTerm;
-import org.batfish.representation.juniper.FwThenNop;
-import org.batfish.representation.juniper.GeneratedRoute;
-import org.batfish.representation.juniper.HostProtocol;
-import org.batfish.representation.juniper.HostSystemService;
-import org.batfish.representation.juniper.IkeGateway;
-import org.batfish.representation.juniper.IkePolicy;
-import org.batfish.representation.juniper.Interface;
-import org.batfish.representation.juniper.IpBgpGroup;
-import org.batfish.representation.juniper.IpsecPolicy;
-import org.batfish.representation.juniper.IpsecVpn;
-import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
-import org.batfish.representation.juniper.IsisLevelSettings;
-import org.batfish.representation.juniper.IsisSettings;
-import org.batfish.representation.juniper.JuniperConfiguration;
-import org.batfish.representation.juniper.JunosApplication;
-import org.batfish.representation.juniper.NamedBgpGroup;
-import org.batfish.representation.juniper.NodeDevice;
-import org.batfish.representation.juniper.OspfArea;
-import org.batfish.representation.juniper.PolicyStatement;
-import org.batfish.representation.juniper.PrefixList;
-import org.batfish.representation.juniper.PsFrom;
-import org.batfish.representation.juniper.PsFromAsPath;
-import org.batfish.representation.juniper.PsFromColor;
-import org.batfish.representation.juniper.PsFromCommunity;
-import org.batfish.representation.juniper.PsFromFamilyInet;
-import org.batfish.representation.juniper.PsFromFamilyInet6;
-import org.batfish.representation.juniper.PsFromInterface;
-import org.batfish.representation.juniper.PsFromLocalPreference;
-import org.batfish.representation.juniper.PsFromMetric;
-import org.batfish.representation.juniper.PsFromPolicyStatement;
-import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
-import org.batfish.representation.juniper.PsFromPrefixList;
-import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
-import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
-import org.batfish.representation.juniper.PsFromProtocol;
-import org.batfish.representation.juniper.PsFromRouteFilter;
-import org.batfish.representation.juniper.PsTerm;
-import org.batfish.representation.juniper.PsThen;
-import org.batfish.representation.juniper.PsThenAccept;
-import org.batfish.representation.juniper.PsThenCommunityAdd;
-import org.batfish.representation.juniper.PsThenCommunityDelete;
-import org.batfish.representation.juniper.PsThenCommunitySet;
-import org.batfish.representation.juniper.PsThenLocalPreference;
-import org.batfish.representation.juniper.PsThenMetric;
-import org.batfish.representation.juniper.PsThenNextHopIp;
-import org.batfish.representation.juniper.PsThenNextPolicy;
-import org.batfish.representation.juniper.PsThenReject;
-import org.batfish.representation.juniper.Route4FilterLine;
-import org.batfish.representation.juniper.Route4FilterLineExact;
-import org.batfish.representation.juniper.Route4FilterLineLengthRange;
-import org.batfish.representation.juniper.Route4FilterLineLonger;
-import org.batfish.representation.juniper.Route4FilterLineOrLonger;
-import org.batfish.representation.juniper.Route4FilterLineThrough;
-import org.batfish.representation.juniper.Route4FilterLineUpTo;
-import org.batfish.representation.juniper.Route6FilterLine;
-import org.batfish.representation.juniper.Route6FilterLineExact;
-import org.batfish.representation.juniper.Route6FilterLineLengthRange;
-import org.batfish.representation.juniper.Route6FilterLineLonger;
-import org.batfish.representation.juniper.Route6FilterLineOrLonger;
-import org.batfish.representation.juniper.Route6FilterLineThrough;
-import org.batfish.representation.juniper.Route6FilterLineUpTo;
-import org.batfish.representation.juniper.RouteFilter;
-import org.batfish.representation.juniper.RoutingInformationBase;
-import org.batfish.representation.juniper.RoutingInstance;
-import org.batfish.representation.juniper.StaticRoute;
-import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -424,6 +77,63 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private static final String F_POLICY_TERM_THEN_NEXT_HOP =
          "policy-statement - term - then - next-hop";
+
+   private DhcpRelayGroup _currentDhcpRelayGroup;
+
+   @Override
+   public void enterFo_dhcp_relay(Fo_dhcp_relayContext ctx) {
+      _currentDhcpRelayGroup = _currentRoutingInstance.getDhcpRelayGroups()
+            .computeIfAbsent(DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME,
+                  k -> new DhcpRelayGroup(k));
+   }
+
+   @Override
+   public void exitFod_active_server_group(Fod_active_server_groupContext ctx) {
+      String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
+      _currentDhcpRelayGroup.setActiveServerGroup(name);
+      _currentDhcpRelayGroup.setActiveServerGroupLine(line);
+   }
+
+   @Override
+   public void enterFod_group(Fod_groupContext ctx) {
+      String name = ctx.name.getText();
+      _currentDhcpRelayGroup = _currentRoutingInstance.getDhcpRelayGroups()
+            .computeIfAbsent(name, k -> new DhcpRelayGroup(k));
+   }
+
+   @Override
+   public void exitFodg_interface(Fodg_interfaceContext ctx) {
+      if (ctx.ALL() != null) {
+         _currentDhcpRelayGroup.setAllInterfaces(true);
+      }
+      else {
+         Interface iface = initInterface(ctx.interface_id());
+         String interfaceName = iface.getName();
+         _currentDhcpRelayGroup.getInterfaces().add(interfaceName);
+      }
+   }
+
+   @Override
+   public void enterFod_server_group(Fod_server_groupContext ctx) {
+      String name = ctx.name.getText();
+      final int line = ctx.name.getStart().getLine();
+      DhcpRelayServerGroup serverGroup = _currentRoutingInstance
+            .getDhcpRelayServerGroups()
+            .computeIfAbsent(name, k -> new DhcpRelayServerGroup(k, line));
+      Ip ip = new Ip(ctx.address.getText());
+      serverGroup.getServers().add(ip);
+   }
+
+   @Override
+   public void exitFod_group(Fod_groupContext ctx) {
+      _currentDhcpRelayGroup = null;
+   }
+
+   @Override
+   public void exitFo_dhcp_relay(Fo_dhcp_relayContext ctx) {
+      _currentDhcpRelayGroup = null;
+   }
 
    public static NamedPort getNamedPort(PortContext ctx) {
       if (ctx.AFS() != null) {
