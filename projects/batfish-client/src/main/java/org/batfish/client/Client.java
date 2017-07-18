@@ -147,8 +147,13 @@ public class Client extends AbstractClient implements IClient {
          value = mapper.readTree(parameterValue);
       }
       catch (IOException e1) {
-         throw new BatfishException(String.format(
-               "Variable value \"%s\" is not valid JSON", parameterValue), e1);
+         try {
+            value = mapper.valueToTree(parameterValue);
+         }
+         catch (IllegalArgumentException e2) {
+            throw new BatfishException(
+                  String.format("Variable value \"%s\" is not valid JSON", parameterValue), e2);
+         }
       }
       return value;
    }
