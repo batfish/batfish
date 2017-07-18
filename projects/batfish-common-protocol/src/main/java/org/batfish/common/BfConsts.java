@@ -101,6 +101,7 @@ public class BfConsts {
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
+   public static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
    public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
    public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
    public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
@@ -123,7 +124,7 @@ public class BfConsts {
    public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
    public static final String RELPATH_TEST_RIG_DIR = "testrig";
    public static final String RELPATH_TESTRIGS_DIR = "";
-   public static final String RELPATH_TOPOLOGY_FILE = "topology";
+   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
    public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
