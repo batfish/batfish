@@ -578,10 +578,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean addBatfishOption(String[] words, List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() == 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.ADD_BATFISH_OPTION);
+      if (!isValidArgument(options, parameters, 0, 1,
+            Integer.MAX_VALUE, Command.ADD_BATFISH_OPTION)) {
          return false;
       }
       String optionKey = parameters.get(0);
@@ -688,15 +686,9 @@ public class Client extends AbstractClient implements IClient {
    private boolean answer(
          String[] words, FileWriter outWriter,
          List<String> options, List<String> parameters, boolean delta) {
-      if (options.size() != 0 || parameters.size() == 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (delta) {
-            printUsage(Command.ANSWER_DELTA);
-         }
-         else {
-            printUsage(Command.ANSWER);
-         }
+      Command command = delta ? Command.ANSWER_DELTA : Command.ANSWER;
+      if (!isValidArgument(options, parameters, 0, 1,
+            Integer.MAX_VALUE, command)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)
@@ -840,10 +832,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean checkApiKey(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.CHECK_API_KEY);
+      if (!isValidArgument(options, parameters, 0, 0,
+            0, Command.CHECK_API_KEY)) {
          return false;
       }
       String isValid = _workHelper.checkApiKey();
@@ -852,10 +842,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean clearScreen(List<String> options, List<String> parameters) throws IOException {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.CLEAR_SCREEN);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.CLEAR_SCREEN)) {
          return false;
       }
       _reader.clearScreen();
@@ -891,10 +878,7 @@ public class Client extends AbstractClient implements IClient {
    private boolean delAnalysis(
          FileWriter outWriter, List<String> options,
          List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_ANALYSIS);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_ANALYSIS)) {
          return false;
       }
       if (!isSetContainer(true)) {
@@ -915,10 +899,8 @@ public class Client extends AbstractClient implements IClient {
    private boolean delAnalysisQuestions(
          FileWriter outWriter,
          List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() < 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_ANALYSIS_QUESTIONS);
+      if (!isValidArgument(options, parameters, 0, 2,
+               Integer.MAX_VALUE, Command.DEL_ANALYSIS_QUESTIONS)) {
          return false;
       }
       if (!isSetContainer(true)) {
@@ -950,10 +932,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delBatfishOption(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_BATFISH_OPTION);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_BATFISH_OPTION)) {
          return false;
       }
       String optionKey = parameters.get(0);
@@ -967,10 +946,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delContainer(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_CONTAINER);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_CONTAINER)) {
          return false;
       }
       String containerName = parameters.get(0);
@@ -980,10 +956,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delEnvironment(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_ENVIRONMENT);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_ENVIRONMENT)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -998,10 +971,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delQuestion(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_QUESTION);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_QUESTION)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1016,10 +986,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean delTestrig(FileWriter outWriter, List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DEL_TESTRIG);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_TESTRIG)) {
          return false;
       }
       if (!isSetContainer(true)) {
@@ -1033,10 +1000,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean dir(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() > 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.DIR);
+      if (!isValidArgument(options, parameters, 0, 0, 1, Command.DIR)) {
          return false;
       }
       String dirname = (parameters.size() == 1) ? parameters.get(0) : ".";
@@ -1178,10 +1142,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean exit(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.EXIT);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.EXIT)) {
          return false;
       }
       _exit = true;
@@ -1246,10 +1207,7 @@ public class Client extends AbstractClient implements IClient {
 
    private boolean generateDataplane(FileWriter outWriter, List<String> options,
          List<String> parameters) throws Exception {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.GEN_DP);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DP)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1265,10 +1223,7 @@ public class Client extends AbstractClient implements IClient {
 
    private boolean generateDeltaDataplane(FileWriter outWriter, List<String> options,
          List<String> parameters) throws Exception {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.GEN_DELTA_DP);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DELTA_DP)) {
          return false;
       }
       if (!isSetDeltaEnvironment() || !isSetTestrig()
@@ -1319,15 +1274,8 @@ public class Client extends AbstractClient implements IClient {
          String[] words, FileWriter outWriter,
          List<String> options, List<String> parameters, boolean delta)
          throws Exception {
-      if (options.size() != 0 || parameters.size() == 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (delta) {
-            printUsage(Command.GET_DELTA);
-         }
-         else {
-            printUsage(Command.GET);
-         }
+      Command command = delta ? Command.GET_DELTA : Command.GET;
+      if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)
@@ -1372,18 +1320,9 @@ public class Client extends AbstractClient implements IClient {
          FileWriter outWriter,
          List<String> options, List<String> parameters, boolean delta,
          boolean differential) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (differential) {
-            printUsage(Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL);
-         }
-         else if (delta) {
-            printUsage(Command.GET_ANALYSIS_ANSWERS_DELTA);
-         }
-         else {
-            printUsage(Command.GET_ANALYSIS_ANSWERS);
-         }
+      Command command = differential ? Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL :
+            delta ? Command.GET_ANALYSIS_ANSWERS_DELTA : Command.GET_ANALYSIS_ANSWERS;
+      if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1430,18 +1369,9 @@ public class Client extends AbstractClient implements IClient {
    private boolean getAnswer(
          FileWriter outWriter, List<String> options, List<String> parameters,
          boolean delta, boolean differential) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (differential) {
-            printUsage(Command.GET_ANSWER_DIFFERENTIAL);
-         }
-         else if (delta) {
-            printUsage(Command.GET_ANSWER_DELTA);
-         }
-         else {
-            printUsage(Command.GET_ANSWER);
-         }
+      Command command = differential ? Command.GET_ANSWER_DIFFERENTIAL :
+            delta ? Command.GET_ANSWER_DELTA : Command.GET_ANSWER;
+      if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1525,10 +1455,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean getQuestion(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.GET_QUESTION);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_QUESTION)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1560,10 +1487,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean help(List<String> options, List<String> parameters) {
-      if (options.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.HELP);
+      if (!isValidArgument(options, parameters, 0, 0,
+            Integer.MAX_VALUE, Command.HELP)) {
          return false;
       }
       if (parameters.size() == 1) {
@@ -1595,12 +1520,9 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-   private boolean  initDeltaEnv(FileWriter outWriter, List<String> options, List<String> parameters)
+   private boolean initDeltaEnv(FileWriter outWriter, List<String> options, List<String> parameters)
          throws Exception {
-      if (options.size() != 0 || parameters.size() == 0 || parameters.size() > 3) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.INIT_DELTA_ENV);
+      if (!isValidArgument(options, parameters, 0, 1, 3, Command.INIT_DELTA_ENV)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1683,15 +1605,8 @@ public class Client extends AbstractClient implements IClient {
    private boolean initOrAddAnalysis(
          FileWriter outWriter, List<String> options,
          List<String> parameters, boolean newAnalysis) {
-      if (options.size() != 0 || parameters.size() != 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (newAnalysis) {
-            printUsage(Command.INIT_ANALYSIS);
-         }
-         else {
-            printUsage(Command.ADD_ANALYSIS_QUESTIONS);
-         }
+      Command command = newAnalysis ? Command.INIT_ANALYSIS : Command.ADD_ANALYSIS_QUESTIONS;
+      if (!isValidArgument(options, parameters, 0, 2, 2, command)) {
          return false;
       }
       if (!isSetContainer(true)) {
@@ -1738,15 +1653,8 @@ public class Client extends AbstractClient implements IClient {
    private boolean initTestrig(
          FileWriter outWriter, List<String> options, List<String> parameters,
          boolean delta) throws Exception {
-      if (options.size() != 0 || parameters.size() == 0 || parameters.size() > 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (delta) {
-            printUsage(Command.INIT_DELTA_TESTRIG);
-         }
-         else {
-            printUsage(Command.INIT_TESTRIG);
-         }
+      Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
+      if (!isValidArgument(options, parameters, 0, 1, 2, command)) {
          return false;
       }
       String testrigLocation = parameters.get(0);
@@ -1846,10 +1754,7 @@ public class Client extends AbstractClient implements IClient {
    private boolean listAnalyses(
          FileWriter outWriter, List<String> options,
          List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.LIST_ANALYSES);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_ANALYSES)) {
          return false;
       }
       if (!isSetContainer(true)) {
@@ -1898,10 +1803,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean listContainers(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.LIST_CONTAINERS);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_CONTAINERS)) {
          return false;
       }
       String[] containerList = _workHelper.listContainers();
@@ -1910,10 +1812,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean listEnvironments(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.LIST_ENVIRONMENTS);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_ENVIRONMENTS)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1927,10 +1826,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean listQuestions(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.LIST_QUESTIONS);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_QUESTIONS)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -1946,10 +1842,7 @@ public class Client extends AbstractClient implements IClient {
    private boolean listTestrigs(
          FileWriter outWriter, List<String> options,
          List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.LIST_TESTRIGS);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_TESTRIGS)) {
          return false;
       }
 
@@ -1996,10 +1889,7 @@ public class Client extends AbstractClient implements IClient {
    private boolean loadQuestions(
          FileWriter outWriter, List<String> options, List<String> parameters,
          Map<String, String> bfq) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.LOAD_QUESTIONS);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.LOAD_QUESTIONS)) {
          return false;
       }
       String questionsPathStr = parameters.get(0);
@@ -2344,10 +2234,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean prompt(List<String> options, List<String> parameters) throws IOException {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.PROMPT);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.PROMPT)) {
          return false;
       }
       if (_settings.getRunMode() == RunMode.interactive) {
@@ -2360,10 +2247,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean pwd(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.PWD);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.PWD)) {
          return false;
       }
       final String dir = System.getProperty("user.dir");
@@ -2388,15 +2272,8 @@ public class Client extends AbstractClient implements IClient {
 
    private boolean reinitTestrig(FileWriter outWriter, List<String> options,
          List<String> parameters, boolean delta) throws Exception {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (delta) {
-            printUsage(Command.REINIT_DELTA_TESTRIG);
-         }
-         else {
-            printUsage(Command.REINIT_TESTRIG);
-         }
+      Command command = delta ? Command.REINIT_DELTA_TESTRIG : Command.REINIT_TESTRIG;
+      if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
          return false;
       }
       String testrig;
@@ -2490,18 +2367,9 @@ public class Client extends AbstractClient implements IClient {
    private boolean runAnalysis(
          FileWriter outWriter, List<String> options,
          List<String> parameters, boolean delta, boolean differential) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         if (differential) {
-            printUsage(Command.RUN_ANALYSIS_DIFFERENTIAL);
-         }
-         else if (delta) {
-            printUsage(Command.RUN_ANALYSIS_DELTA);
-         }
-         else {
-            printUsage(Command.RUN_ANALYSIS);
-         }
+      Command command = differential ? Command.RUN_ANALYSIS_DIFFERENTIAL : delta
+            ? Command.RUN_ANALYSIS_DELTA : Command.RUN_ANALYSIS;
+      if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
          return false;
       }
       if (!isSetContainer(true) || !isSetTestrig()) {
@@ -2560,10 +2428,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setBatfishLogLevel(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_BATFISH_LOGLEVEL);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_BATFISH_LOGLEVEL)) {
          return false;
       }
       String logLevelStr = parameters.get(0).toLowerCase();
@@ -2577,10 +2442,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setContainer(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_CONTAINER);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_CONTAINER)) {
          return false;
       }
       _currContainerName = parameters.get(0);
@@ -2591,10 +2453,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setDeltaEnv(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_DELTA_ENV);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_DELTA_ENV)) {
          return false;
       }
       _currDeltaEnv = parameters.get(0);
@@ -2607,10 +2466,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setDeltaTestrig(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() == 0 || parameters.size() > 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_DELTA_TESTRIG);
+      if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_DELTA_TESTRIG)) {
          return false;
       }
       _currDeltaTestrig = parameters.get(0);
@@ -2622,10 +2478,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setEnv(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_ENV);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_ENV)) {
          return false;
       }
       if (!isSetTestrig()) {
@@ -2638,10 +2491,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setLogLevel(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_LOGLEVEL);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_LOGLEVEL)) {
          return false;
       }
       String logLevelStr = parameters.get(0).toLowerCase();
@@ -2656,10 +2506,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setPrettyPrint(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 1) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_PRETTY_PRINT);
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_PRETTY_PRINT)) {
          return false;
       }
       String ppStr = parameters.get(0).toLowerCase();
@@ -2670,10 +2517,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean setTestrig(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() == 0 || parameters.size() > 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SET_TESTRIG);
+      if (!isValidArgument(options, parameters, 0, 1, 2, Command.SET_TESTRIG)) {
          return false;
       }
       if (!isSetContainer(true)) {
@@ -2688,10 +2532,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showApiKey(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_API_KEY);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_API_KEY)) {
          return false;
       }
       _logger.outputf("Current API Key is %s\n", _settings.getApiKey());
@@ -2699,10 +2540,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showBatfishLogLevel(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_BATFISH_LOGLEVEL);
+      if (!isValidArgument(options, parameters, 0, 0, 0,
+            Command.SHOW_BATFISH_LOGLEVEL)) {
          return false;
       }
       _logger.outputf(
@@ -2712,10 +2551,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showBatfishOptions(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_BATFISH_OPTIONS);
+      if (!isValidArgument(options, parameters, 0, 0, 0,
+            Command.SHOW_BATFISH_OPTIONS)) {
          return false;
       }
       _logger.outputf(
@@ -2729,10 +2566,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showContainer(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_CONTAINER);
+      if (!isValidArgument(options, parameters, 0, 0, 0,
+            Command.SHOW_CONTAINER)) {
          return false;
       }
       _logger.outputf("Current container is %s\n", _currContainerName);
@@ -2740,10 +2575,8 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showCoordinatorHost(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_COORDINATOR_HOST);
+      if (!isValidArgument(options, parameters, 0, 0, 0,
+            Command.SHOW_COORDINATOR_HOST)) {
          return false;
       }
       _logger.outputf(
@@ -2753,10 +2586,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showDeltaTestrig(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_DELTA_TESTRIG);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_DELTA_TESTRIG)) {
          return false;
       }
       if (!isSetDeltaEnvironment()) {
@@ -2768,10 +2598,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showLogLevel(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_LOGLEVEL);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_LOGLEVEL)) {
          return false;
       }
       _logger.outputf(
@@ -2781,10 +2608,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showTestrig(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_TESTRIG);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_TESTRIG)) {
          return false;
       }
       if (!isSetTestrig()) {
@@ -2796,10 +2620,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean showVersion(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 0) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.SHOW_VERSION);
+      if (!isValidArgument(options, parameters, 0, 0, 0, Command.SHOW_VERSION)) {
          return false;
       }
       _logger.outputf("Client version is %s\n", Version.getVersion());
@@ -2823,10 +2644,7 @@ public class Client extends AbstractClient implements IClient {
       boolean missingReferenceFile = false;
       boolean testPassed = false;
       int testCommandIndex = 1;
-      if (options.size() != 0 || parameters.size() < 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.TEST);
+      if (!isValidArgument(options, parameters, 0, 2, Integer.MAX_VALUE, Command.TEST)) {
          return false;
       }
       if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
@@ -2965,10 +2783,7 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean uploadCustomObject(List<String> options, List<String> parameters) {
-      if (options.size() != 0 || parameters.size() != 2) {
-         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
-               parameters.toString());
-         printUsage(Command.UPLOAD_CUSTOM_OBJECT);
+      if (!isValidArgument(options, parameters, 0, 2, 2, Command.UPLOAD_CUSTOM_OBJECT)) {
          return false;
       }
       if (!isSetTestrig() || !isSetContainer(true)) {
@@ -3047,6 +2862,19 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean validCommandUsage(String[] words) {
+      return true;
+   }
+
+   private boolean isValidArgument(List<String> options, List<String> parameters,
+         int expectedOptionSize, int minNumParas, int maxNumParas, Command command) {
+      if (options.size() != expectedOptionSize
+            || !(parameters.size() >= minNumParas)
+            || !(parameters.size() <= maxNumParas)) {
+         _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
+               parameters.toString());
+         printUsage(command);
+         return false;
+      }
       return true;
    }
 
