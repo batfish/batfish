@@ -149,7 +149,7 @@ public class BatfishTest {
       assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.FAILED));
       assertThat(answerElement.getErrors().get("host1").prettyPrint(),
             containsString(failureMessage));
-      // When host file filed, check error message contains both failure messages
+      // When host file failed, verify that error message contains both failure messages
       answerElement.getErrors().clear();
       answerElement.getErrors().put("host1",
             new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
