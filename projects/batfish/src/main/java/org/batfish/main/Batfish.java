@@ -4134,7 +4134,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (_settings.getHaltOnParseError() && !failureCauses.isEmpty()) {
          throw new CompositeBatfishException(
                new BatfishException(
-               "Fatal exception due to at least one Iptables file is missing"), failureCauses);
+               "Fatal exception due to at least one Iptables file is not contained"
+                     + " within the testtig"), failureCauses);
       }
 
       Map<String, VendorConfiguration> iptablesConfigurations = parseVendorConfigurations(
