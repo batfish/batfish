@@ -50,6 +50,7 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.Directory;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -4082,6 +4083,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       // read and associate iptables files for specified hosts
+      List<BatfishException> failureCauses = new ArrayList<>();
       Map<Path, String> iptablesData = new TreeMap<>();
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
@@ -4092,21 +4094,48 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             // ensure that the iptables file is not taking us outside of the
             // testrig
             try {
-               if (testRigPath.toFile().getCanonicalPath()
-                     .contains(path.toFile().getCanonicalPath())) {
-                  throw new BatfishException(
-                        "Iptables file " + hostConfig.getIptablesFile()
-                              + " for host " + hostConfig.getHostname()
-                              + "is not contained within the testrig");
+               if (!path.toFile().getCanonicalPath()
+                     .contains(testRigPath.toFile().getCanonicalPath()) || !path.toFile().exists()) {
+                  String failureMessage = String
+                        .format("Iptables file %s for host %s is not contained within the testrig",
+                              hostConfig.getIptablesFile(), hostConfig.getHostname());
+                  BatfishException bfc;
+                  if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
+                     bfc = new BatfishException(failureMessage,
+                           answerElement.getErrors().get(hostConfig.getHostname()).getException());
+                     answerElement.getErrors()
+                           .put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
+                  }
+                  else {
+                     bfc = new BatfishException(failureMessage);
+                     if (_settings.getExitOnFirstError()) {
+                        throw bfc;
+                     }
+                     else {
+                        failureCauses.add(bfc);
+                        answerElement.getErrors().put(hostConfig.getHostname(),
+                              bfc.getBatfishStackTrace());
+                        answerElement.getParseStatus().put(hostConfig.getHostname(),
+                              ParseStatus.FAILED);
+                     }
+                  }
+               }
+               else {
+                  String fileText = CommonUtil.readFile(path);
+                  iptablesData.put(path, fileText);
                }
             }
             catch (IOException e) {
                throw new BatfishException("Could not get canonical path", e);
             }
-
-            String fileText = CommonUtil.readFile(path);
-            iptablesData.put(path, fileText);
          }
+      }
+
+      if (_settings.getHaltOnParseError() && !failureCauses.isEmpty()) {
+         throw new CompositeBatfishException(
+               new BatfishException(
+               "Fatal exception due to at least one Iptables file is not contained"
+                     + " within the testrig"), failureCauses);
       }
 
       Map<String, VendorConfiguration> iptablesConfigurations = parseVendorConfigurations(
@@ -4118,16 +4147,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   hostConfig.getIptablesFile());
             String relativePathStr = _testrigSettings.getBasePath()
                   .relativize(path).toString();
-            if (!iptablesConfigurations.containsKey(relativePathStr)) {
-               for (String key : iptablesConfigurations.keySet()) {
-                  _logger.errorf("key : %s\n", key);
-               }
-               throw new BatfishException(
-                     "Key not found for iptables: " + relativePathStr);
+            if (iptablesConfigurations.containsKey(relativePathStr)) {
+               hostConfig.setIptablesConfig(
+                     (IptablesVendorConfiguration) iptablesConfigurations
+                           .get(relativePathStr));
             }
-            hostConfig.setIptablesConfig(
-                  (IptablesVendorConfiguration) iptablesConfigurations
-                        .get(relativePathStr));
          }
       }
 
