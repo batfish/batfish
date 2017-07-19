@@ -97,7 +97,7 @@ public enum Command {
                   "<analysis-name> <question-directory>",
                   "Add questions from the directory to the analysis"));
       descs.put(ADD_BATFISH_OPTION, new Pair<>(
-            "<option-key> <option-value>",
+            "<option-key> [<option-value> [<option-value>] ... ]",
             "Additional options to pass to Batfish"));
       descs.put(ANSWER, new Pair<>(
             "<question-name>  [param1=value1 [param2=value2] ...]",
