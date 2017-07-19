@@ -34,9 +34,10 @@ public class Settings extends BaseSettings {
    private static final String ARG_QUEUE_COMPLETED_WORK = "qcompletedwork";
    private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
    private static final String ARG_QUEUE_TYPE = "qtype";
-   private static final String ARG_SERVICE_HOST = "servicehost";
 
+   private static final String ARG_POOL_BIND_HOST = "poolbindhost";
    private static final String ARG_SERVICE_POOL_PORT = "poolport";
+   private static final String ARG_WORK_BIND_HOST = "workbindhost";
    private static final String ARG_SERVICE_WORK_PORT = "workport";
 
    private static final String ARG_SSL_POOL_DISABLE = "sslpooldisable";
@@ -80,8 +81,9 @@ public class Settings extends BaseSettings {
    private String _queueCompletedWork;
    private WorkQueue.Type _queueType;
    private String _queuIncompleteWork;
-   private String _serviceHost;
+   private String _poolBindHost;
    private int _servicePoolPort;
+   private String _workBindHost;
    private int _serviceWorkPort;
    private boolean _sslPoolDisable;
    private Path _sslPoolKeystoreFile;
@@ -178,12 +180,16 @@ public class Settings extends BaseSettings {
       return _queueType;
    }
 
-   public String getServiceHost() {
-      return _serviceHost;
+   public String getPoolBindHost() {
+      return _poolBindHost;
    }
 
    public int getServicePoolPort() {
       return _servicePoolPort;
+   }
+
+   public String getWorkBindHost() {
+      return _workBindHost;
    }
 
    public int getServiceWorkPort() {
@@ -274,8 +280,9 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
       setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
       setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
-      setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
+      setDefaultProperty(ARG_POOL_BIND_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
+      setDefaultProperty(ARG_WORK_BIND_HOST, "0.0.0.0");
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
       setDefaultProperty(
             ARG_SSL_POOL_DISABLE,
@@ -344,11 +351,14 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_QUEUE_TYPE, "queue type to use {azure, memory}", "qtype");
 
-      addOption(ARG_SERVICE_HOST, "hostname for the service",
-            "base url for coordinator service");
+      addOption(ARG_POOL_BIND_HOST, "hostname for pool management service",
+            "base url for pool management service");
 
       addOption(ARG_SERVICE_POOL_PORT, "port for pool management service",
             "port_number_pool_service");
+
+      addOption(ARG_WORK_BIND_HOST, "hostname for work management service",
+            "base url for work management service");
 
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
@@ -393,9 +403,10 @@ public class Settings extends BaseSettings {
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
       _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
+      _poolBindHost = getStringOptionValue(ARG_POOL_BIND_HOST);
       _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
+      _workBindHost = getStringOptionValue(ARG_WORK_BIND_HOST);
       _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
-      _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
       _sslPoolDisable = getBooleanOptionValue(ARG_SSL_POOL_DISABLE);
       _sslPoolKeystoreFile = getPathOptionValue(ARG_SSL_POOL_KEYSTORE_FILE);
       _sslPoolKeystorePassword = getStringOptionValue(

@@ -220,6 +220,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             testrigDir.resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH));
       settings.setNodeRolesPath(
             testrigDir.resolve(Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
+      settings.setTopologyPath(
+            testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
       if (envName != null) {
          envSettings.setName(envName);
          Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
@@ -246,7 +248,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          envSettings.setEdgeBlacklistPath(
                envDirPath.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
          envSettings.setSerializedTopologyPath(
-               envDirPath.resolve(BfConsts.RELPATH_TOPOLOGY_FILE));
+               envDirPath.resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE));
          envSettings.setDeltaConfigurationsDir(
                envDirPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
          envSettings.setExternalBgpAnnouncementsPath(
@@ -4175,6 +4177,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       Map<String, Configuration> configurations = getConfigurations(
             vendorConfigPath, answerElement);
+      Topology topology = computeTopology(_testrigSettings.getTestRigPath(),
+            configurations);
+      serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
       serializeIndependentConfigs(configurations, outputPath);
       serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
       return answer;
@@ -4247,6 +4252,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          logger.debug("OK\n");
          writeCompleted.incrementAndGet();
       });
+   }
+
+   private void serializeAsJson(Path outputPath, Object object, String objectName) {
+      String str;
+      try {
+         str = new BatfishObjectMapper().writeValueAsString(object);
+      }
+      catch (JsonProcessingException e) {
+         throw new BatfishException("Could not serialize " + objectName + " ", e);
+      }
+      CommonUtil.writeFile(outputPath, str);
    }
 
    private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {

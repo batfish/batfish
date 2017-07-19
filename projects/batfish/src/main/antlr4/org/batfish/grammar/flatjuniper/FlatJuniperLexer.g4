@@ -68,6 +68,11 @@ ACTIVE
    'active'
 ;
 
+ACTIVE_SERVER_GROUP
+:
+   'active-server-group'
+;
+
 ADD
 :
    'add'
@@ -413,6 +418,11 @@ BOOT_SERVER
    'boot-server'
 ;
 
+BOOTP
+:
+   'bootp'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -722,6 +732,11 @@ DHCP
    'dhcp'
 ;
 
+DHCP_RELAY
+:
+   'dhcp-relay'
+;
+
 DIRECT
 :
    'direct'
@@ -840,6 +855,11 @@ ENCAPSULATION
 ENCRYPTION_ALGORITHM
 :
    'encryption-algorithm'
+;
+
+ENHANCED_HASH_KEY
+:
+   'enhanced-hash-key'
 ;
 
 ESP
@@ -1152,6 +1172,11 @@ GROUPS
    'groups'
 ;
 
+HASH_KEY
+:
+   'hash-key'
+;
+
 HELLO_AUTHENTICATION_KEY
 :
    'hello-authentication-key'
@@ -1170,6 +1195,11 @@ HELLO_INTERVAL
 HELLO_PADDING
 :
    'hello-padding'
+;
+
+HELPERS
+:
+   'helpers'
 ;
 
 HIGH
@@ -3342,6 +3372,11 @@ OVERRIDE_METRIC
    'override-metric'
 ;
 
+OVERRIDES
+:
+   'overrides'
+;
+
 P2P
 :
    'p2p'
@@ -3515,6 +3550,11 @@ PORTS
 PORT_MIRROR
 :
    'port-mirror'
+;
+
+PORT_MIRRORING
+:
+   'port-mirroring'
 ;
 
 PORT_MODE
@@ -3802,6 +3842,11 @@ REJECT
    'reject'
 ;
 
+RELAY_AGENT_OPTION
+:
+   'relay-agent-option'
+;
+
 REMOTE
 :
    'remote'
@@ -4062,6 +4107,11 @@ SERVER
    'server'
 ;
 
+SERVER_GROUP
+:
+   'server-group'
+;
+
 SERVICE
 :
    'service'
@@ -4275,6 +4325,11 @@ STATION_ADDRESS
 STATION_PORT
 :
    'station-port'
+;
+
+STORM_CONTROL_PROFILES
+:
+   'storm-control-profiles'
 ;
 
 STP

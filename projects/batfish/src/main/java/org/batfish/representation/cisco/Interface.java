@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -84,6 +85,8 @@ public class Interface extends ComparableStructure<String> {
    private Double _bandwidth;
 
    private String _description;
+
+   private Ip _dhcpRelayAddress;
 
    private String _incomingFilter;
 
@@ -223,6 +226,10 @@ public class Interface extends ComparableStructure<String> {
 
    public String getDescription() {
       return _description;
+   }
+
+   public Ip getDhcpRelayAddress() {
+      return _dhcpRelayAddress;
    }
 
    public String getIncomingFilter() {
@@ -367,6 +374,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setDescription(String description) {
       _description = description;
+   }
+
+   public void setDhcpRelayAddress(Ip dhcpRelayAddress) {
+      _dhcpRelayAddress = dhcpRelayAddress;
    }
 
    public void setIncomingFilter(String accessListName) {

@@ -514,9 +514,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private String _currentPrefixSetName;
 
    private RouteMap _currentRouteMap;
-
+   
    private RouteMapClause _currentRouteMapClause;
-
+   
    private RoutePolicy _currentRoutePolicy;
 
    private SnmpCommunity _currentSnmpCommunity;
@@ -2429,6 +2429,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
+      for (Interface iface : _currentInterfaces) {
+         Ip dhcpRelayAddress = toIp(ctx.address);
+         iface.setDhcpRelayAddress(dhcpRelayAddress);
+      }
+   }
+
+   @Override
    public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
       String acl = ctx.acl.getText();
       int line = ctx.acl.getStart().getLine();
@@ -2712,6 +2720,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setVrf(name);
          initVrf(name);
+      }
+   }
+
+   @Override
+   public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
+      for (Interface iface : _currentInterfaces) {
+         Ip address = toIp(ctx.address);
+         iface.setDhcpRelayAddress(address);
       }
    }
 
