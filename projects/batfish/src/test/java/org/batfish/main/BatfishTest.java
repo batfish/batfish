@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
@@ -8,10 +9,29 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.CompositeBatfishException;
+import org.batfish.config.Settings;
+import org.batfish.config.Settings.EnvironmentSettings;
+import org.batfish.config.Settings.TestrigSettings;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.answers.ParseStatus;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.representation.host.HostConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -85,6 +105,88 @@ public class BatfishTest {
       List<Path> actual = Batfish.listAllFiles(nestedFolder);
       Collections.sort(expected);
       assertThat(expected, equalTo(actual));
+   }
+
+   // Tests for readIptableFiles method
+   private Batfish initBatfish() {
+      Settings settings = new Settings(new String[]{});
+      settings.setLogger(new BatfishLogger("debug", false));
+      final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+            Collections.synchronizedMap(
+                  new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(
+                        5));
+      final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
+            Collections.synchronizedMap(
+                  new LRUMap<TestrigSettings, DataPlane>(2));
+      final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+            CACHED_ENVIRONMENT_BGP_TABLES = Collections.synchronizedMap(
+                  new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(4));
+      final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+            CACHED_ENVIRONMENT_ROUTING_TABLES = Collections.synchronizedMap(
+            new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(4));
+      Batfish batfish = new Batfish(settings, CACHED_TESTRIGS,
+            CACHED_DATA_PLANES, CACHED_ENVIRONMENT_BGP_TABLES,
+            CACHED_ENVIRONMENT_ROUTING_TABLES);
+      return batfish;
+   }
+
+   @Test
+   public void testReadMissingIptableFile() throws IOException {
+      HostConfiguration host1 = new HostConfiguration();
+      host1.setHostname("host1");
+      host1.setIptablesFile(Paths.get("iptables").resolve("host1.iptables").toString());
+      Map<String, VendorConfiguration> hostConfigurations = new HashMap<>();
+      hostConfigurations.put("host1", host1);
+      Map<Path, String> iptablesData = new TreeMap<>();
+      Path testRigPath = folder.newFolder("testrig").toPath();
+      ParseVendorConfigurationAnswerElement answerElement =
+            new ParseVendorConfigurationAnswerElement();
+      answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
+      Batfish batfish = initBatfish();
+      String failureMessage = "Iptables file iptables/host1.iptables for host host1 "
+            + "is not contained within the testrig";
+      batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+      assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.FAILED));
+      assertThat(answerElement.getErrors().get("host1").prettyPrint(),
+            containsString(failureMessage));
+      // When host file filed, check error message contains both failure messages
+      answerElement.getErrors().clear();
+      answerElement.getErrors().put("host1",
+            new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
+      batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+      assertThat(answerElement.getErrors().get("host1").prettyPrint(),
+            containsString(failureMessage));
+      assertThat(answerElement.getErrors().get("host1").prettyPrint(),
+            containsString("Failed to parse host file: host1"));
+      // When the haltonparseerror flag is set to true
+      batfish.getSettings().setHaltOnParseError(true);
+      answerElement.getErrors().clear();
+      String parseErrorMessage = "Fatal exception due to at least one Iptables file is not contained"
+            + " within the testrig";
+      thrown.expect(CompositeBatfishException.class);
+      thrown.expectMessage(parseErrorMessage);
+      batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+   }
+
+   @Test
+   public void testReadValidIptableFile() throws IOException {
+      HostConfiguration host1 = new HostConfiguration();
+      host1.setHostname("host1");
+      Path iptablePath = Paths.get("iptables").resolve("host1.iptables");
+      host1.setIptablesFile(iptablePath.toString());
+      Map<String, VendorConfiguration> hostConfigurations = new HashMap<>();
+      hostConfigurations.put("host1", host1);
+      Map<Path, String> iptablesData = new TreeMap<>();
+      Path testRigPath = folder.newFolder("testrig").toPath();
+      File iptableFile = Paths.get(testRigPath.toString(), iptablePath.toString()).toFile();
+      iptableFile.getParentFile().mkdir();
+      assertThat(iptableFile.createNewFile(), is(true));
+      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
+      Batfish batfish = initBatfish();
+      batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+      assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
+      assertThat(answerElement.getErrors().size(), is(0));
    }
 
 }

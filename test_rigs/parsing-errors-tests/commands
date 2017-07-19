@@ -4,7 +4,5 @@ test test_rigs/parsing-errors-tests/no-verbose.ref get initinfo verboseError=fal
 #test test_rigs/parsing-errors-tests/verbose.ref get initinfo verboseError=true
 
 #parsing Iptables error
-test test_rigs/parsing-errors-tests/init-missing-iptables.ref init-testrig test_rigs/example-parsing-error/missing-iptables
-test test_rigs/parsing-errors-tests/missing-ip-verbose.ref get initinfo verboseError=true
 test test_rigs/parsing-errors-tests/init-invalid-iptables.ref init-testrig test_rigs/example-parsing-error/invalid-iptables
-test test_rigs/parsing-errors-tests/invalid-ip-no-verbose.ref get initinfo 
+test test_rigs/parsing-errors-tests/invalid-ip-no-verbose.ref get initinfo
