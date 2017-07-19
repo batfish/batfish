@@ -19,5 +19,5 @@ hosts/
 iptables/
   host1.iptables
   host2.iptables
-node_roles
+node_roles.json
 
