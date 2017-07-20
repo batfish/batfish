@@ -2816,6 +2816,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSyr_encrypted_password(Syr_encrypted_passwordContext ctx) {
+      String hash = ctx.password.getText();
+      String rehashedPassword = CommonUtil.sha256Digest(hash + JuniperUtils.SALT);
+      _configuration.getJf().setRootAuthenticationEncryptedPassword(rehashedPassword);
+   }
+   
+   @Override
    public void exitFftf_tcp_established(Fftf_tcp_establishedContext ctx) {
       List<TcpFlags> tcpFlags = new ArrayList<>();
       TcpFlags alt1 = new TcpFlags();
