@@ -1,5 +1,6 @@
 package org.batfish.datamodel.collections;
 
+import java.util.Objects;
 import java.util.SortedSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -68,7 +69,12 @@ public class NamedStructureOutlierSet<T>
       NamedStructureOutlierSet<?> rhs = (NamedStructureOutlierSet<?>) o;
       return _structType.equals(rhs.getStructType()) && _name.equals(rhs.getName());
    }
-   
+
+   @Override
+   public int hashCode() {
+      return Objects.hash(_structType, _name);
+   }
+
    @JsonProperty(STRUCT_TYPE_VAR)
    public String getStructType() {
       return _structType;

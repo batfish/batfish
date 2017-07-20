@@ -9,6 +9,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 public class CiscoCombinedParser
       extends BatfishCombinedParser<CiscoParser, CiscoLexer> {
 
+   @SuppressWarnings("fallthrough")
    public CiscoCombinedParser(
          String input, Settings settings,
          ConfigurationFormat format) {
