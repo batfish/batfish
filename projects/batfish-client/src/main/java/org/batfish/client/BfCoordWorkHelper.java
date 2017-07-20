@@ -447,6 +447,46 @@ public class BfCoordWorkHelper {
             .register(MultiPartFeature.class);
    }
 
+   public String getContainer(String containerName) {
+      try {
+         Client client = getClientBuilder().build();
+         WebTarget webTarget = getTarget(
+               client,
+               CoordConsts.SVC_RSC_GET_CONTAINER);
+
+         MultiPart multiPart = new MultiPart();
+         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY,
+               _settings.getApiKey());
+         if (containerName != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME,
+                  containerName);
+         }
+
+         JSONObject jObj = postData(webTarget, multiPart);
+
+         if (jObj == null) {
+            return null;
+         }
+
+         if (!jObj.has(CoordConsts.SVC_KEY_CONTAINER_NAME)) {
+            _logger.errorf(
+                  "container key not found in: %s\n",
+                  jObj.toString());
+            return null;
+         }
+
+         String containerInfo = jObj.getString(CoordConsts.SVC_KEY_CONTAINER_NAME);
+         return containerInfo;
+      }
+      catch (Exception e) {
+         _logger.errorf("exception: ");
+         _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+         return null;
+      }
+   }
+
    public Map<String, String> getInfo() {
       try {
 

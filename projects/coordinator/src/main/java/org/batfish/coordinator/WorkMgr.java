@@ -575,6 +575,22 @@ public class WorkMgr {
       return answer;
    }
 
+   public String getContainer(String containerName) {
+      String a = Main.getSettings().getContainersLocation().toString();
+      Path containerDir = Main.getSettings().getContainersLocation()
+            .resolve(containerName).toAbsolutePath();
+      if (!Files.exists(containerDir)) {
+         return String.format("Container %s does not exist\n", containerName);
+      }
+      SortedSet<String> testrigs = new TreeSet<>(
+            CommonUtil.getSubdirectories(containerDir).stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      String containerInfo = String.format("Container: %s\n\tTestrigs in container: %s\n",
+            containerName, testrigs.toString());
+      return containerInfo;
+   }
+
    private Path getdirAnalysisQuestion(
          String containerName,
          String analysisName, String qName) {

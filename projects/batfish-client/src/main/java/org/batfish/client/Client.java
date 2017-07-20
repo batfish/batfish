@@ -2129,6 +2129,8 @@ public class Client extends AbstractClient implements IClient {
             return getAnswer(outWriter, options, parameters, true, false);
          case GET_ANSWER_DIFFERENTIAL:
             return getAnswer(outWriter, options, parameters, false, true);
+         case GET_CONTAINER:
+            return getContainer(options, parameters);
          case GET_QUESTION:
             return getQuestion(options, parameters);
          case HELP:
@@ -2875,6 +2877,16 @@ public class Client extends AbstractClient implements IClient {
          printUsage(command);
          return false;
       }
+      return true;
+   }
+
+   private boolean getContainer(List<String> options, List<String> parameters) {
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
+         return false;
+      }
+      String containerName = parameters.get(0);
+      String containerInfo = _workHelper.getContainer(containerName);
+      _logger.output(containerInfo);
       return true;
    }
 

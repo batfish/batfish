@@ -555,6 +555,46 @@ public class WorkMgrService {
       }
    }
 
+   @POST
+   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray getContainer(
+         @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+         @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+      try {
+         _logger.info("WMS:getContainer " + containerName + "\n");
+
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+
+         String containerInfo = Main.getWorkMgr().getContainer(containerName);
+
+         return new JSONArray(Arrays.asList(
+               CoordConsts.SVC_KEY_SUCCESS,
+               (new JSONObject().put(
+                     CoordConsts.SVC_KEY_CONTAINER_NAME,
+                     containerInfo))));
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:getContainer exception: " + e.getMessage() + "\n");
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:getContainer exception: " + stackTrace);
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+      }
+
+   }
+
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {

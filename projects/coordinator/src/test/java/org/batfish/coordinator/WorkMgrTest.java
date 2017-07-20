@@ -87,4 +87,43 @@ public class WorkMgrTest {
       assertThat(questions.size(), is(3));
       assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
    }
+
+   // Tests for getContainer method
+   @Test
+   public void getNonExistContainer() {
+      String containerName = "myContainer";
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String containerInfo = manager.getContainer(containerName);
+      String expectedInfo = String
+            .format("Container %s does not exist\n", containerName);
+      assertThat(containerInfo, equalTo(expectedInfo));
+   }
+
+   @Test
+   public void getEmptyContainer() throws IOException {
+      String containerName = "myContainer";
+      folder.newFolder(containerName);
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String containerInfo = manager.getContainer(containerName);
+      String expectedInfo = String
+            .format("Container: %s\n\tTestrigs in container: []\n", containerName);
+      assertThat(containerInfo, equalTo(expectedInfo));
+   }
+
+   @Test
+   public void getNonEmptyContainer() throws IOException {
+      String containerName = "myContainer";
+      Path containerPath = folder.newFolder(containerName).toPath();
+      Path oneTestrigPath = containerPath.resolve("oneTestrig");
+      Path anotherTestrigPath = containerPath.resolve("anotherTestrig");
+      assertThat(oneTestrigPath.toFile().mkdir(), is(true));
+      assertThat(anotherTestrigPath.toFile().mkdir(), is(true));
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String containerInfo = manager.getContainer(containerName);
+      String expectedInfo = String
+            .format("Container: %s\n\tTestrigs in container: [anotherTestrig, oneTestrig]\n",
+                  containerName);
+      assertThat(containerInfo, equalTo(expectedInfo));
+   }
+
 }
