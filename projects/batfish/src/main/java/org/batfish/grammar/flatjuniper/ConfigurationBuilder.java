@@ -42,6 +42,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.representation.juniper.*;
 import org.batfish.representation.juniper.BaseApplication.Term;
@@ -1538,6 +1539,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private final Warnings _w;
 
+   private TacplusServer _currentTacplusServer;
+
    public ConfigurationBuilder(
          FlatJuniperCombinedParser parser, String text,
          Warnings warnings, Set<String> unimplementedFeatures) {
@@ -2390,11 +2393,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSyt_secret(Syt_secretContext ctx) {
+      String cipherText = ctx.secret.getText();
+      _currentTacplusServer.setSecret(JuniperUtils.decryptAndHashJuniper9CipherText(cipherText));
+   }
+   
+   @Override
+   public void exitSyt_source_address(Syt_source_addressContext ctx) {
+      Ip sourceAddress = new Ip(ctx.address.getText());
+      _currentTacplusServer.setSourceAddress(sourceAddress);
+   }
+   
+   @Override
    public void enterSy_tacplus_server(Sy_tacplus_serverContext ctx) {
       String hostname = ctx.hostname.getText();
       _configuration.getTacplusServers().add(hostname);
+      _currentTacplusServer = _configuration.getJf().getTacplusServers().computeIfAbsent(hostname, k->new TacplusServer(k));
    }
 
+   @Override
+   public void exitSy_tacplus_server(Sy_tacplus_serverContext ctx) {
+      _currentTacplusServer = null;
+   }
+   
    @Override
    public void enterSyn_server(Syn_serverContext ctx) {
       String hostname = ctx.hostname.getText();

@@ -62,6 +62,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -159,6 +160,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private final Map<String, Zone> _zones;
 
+   private final JuniperFamily _jf;
+
    public JuniperConfiguration(Set<String> unimplementedFeatures) {
       _allStandardCommunities = new HashSet<>();
       _applications = new TreeMap<>();
@@ -178,6 +181,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _ipsecPolicies = new TreeMap<>();
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
+      _jf = new JuniperFamily();
       _nodeDevices = new TreeMap<>();
       _ntpServers = new TreeSet<>();
       _prefixLists = new TreeMap<>();
@@ -192,6 +196,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _tacplusServers = new TreeSet<>();
       _unimplementedFeatures = unimplementedFeatures;
       _zones = new TreeMap<>();
+   }
+
+   public JuniperFamily getJf() {
+      return _jf;
    }
 
    private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
