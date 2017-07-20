@@ -236,6 +236,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       private EnvironmentSettings _environmentSettings;
 
       private String _name;
+      
+      private Path _nodeRolesPath;
 
       private Path _parseAnswerPath;
 
@@ -284,6 +286,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          return _name;
       }
 
+      public Path getNodeRolesPath() {
+         return _nodeRolesPath;
+      }
+      
       public Path getParseAnswerPath() {
          return _parseAnswerPath;
       }
@@ -339,6 +345,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
          _name = name;
       }
 
+      public void setNodeRolesPath(Path nodeRolesPath) {
+         _nodeRolesPath = nodeRolesPath;
+      }
+      
       public void setParseAnswerPath(Path parseAnswerPath) {
          _parseAnswerPath = parseAnswerPath;
       }
@@ -562,8 +572,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
    private int _maxParserContextTokens;
 
    private int _maxRuntimeMs;
-
-   private Path _nodeRolesPath;
 
    private String _outputEnvironmentName;
 
@@ -842,10 +850,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public int getMaxRuntimeMs() {
       return _maxRuntimeMs;
-   }
-
-   public Path getNodeRolesPath() {
-      return _nodeRolesPath;
    }
 
    public String getOutputEnvironmentName() {
@@ -1547,10 +1551,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
    public void setMaxRuntimeMs(int runtimeMs) {
       _maxRuntimeMs = runtimeMs;
-   }
-
-   public void setNodeRolesPath(Path nodeRolesPath) {
-      _nodeRolesPath = nodeRolesPath;
    }
 
    public void setPluginDirs(List<Path> pluginDirs) {

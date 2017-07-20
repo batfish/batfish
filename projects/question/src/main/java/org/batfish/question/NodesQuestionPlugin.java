@@ -24,7 +24,6 @@ import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.questions.Question;
 
 public class NodesQuestionPlugin extends QuestionPlugin {
@@ -55,7 +54,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
          private SortedSet<String> _ipsecVpns;
 
-         private RoleSet _roles;
+         private SortedSet<String> _roles;
 
          private SortedSet<String> _routeFilterLists;
 
@@ -194,7 +193,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
             return _routingPolicies;
          }
 
-         public RoleSet getRoles() {
+         public SortedSet<String> getRoles() {
             return _roles;
          }
 
@@ -259,7 +258,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
             _routingPolicies = policySortedMaps;
          }
 
-         public void setRoles(RoleSet roles) {
+         public void setRoles(SortedSet<String> roles) {
             _roles = roles;
          }
 

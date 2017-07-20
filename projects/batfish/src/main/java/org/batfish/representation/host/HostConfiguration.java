@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -25,7 +26,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -86,7 +86,7 @@ public class HostConfiguration extends VendorConfiguration {
 
    private IptablesVendorConfiguration _iptablesVendorConfig;
 
-   protected final RoleSet _roles = new RoleSet();
+   protected final SortedSet<String> _roles = new TreeSet<String>();
 
    private final Set<HostStaticRoute> _staticRoutes;
 
@@ -127,7 +127,7 @@ public class HostConfiguration extends VendorConfiguration {
 
    @JsonIgnore
    @Override
-   public RoleSet getRoles() {
+   public SortedSet<String> getRoles() {
       return _roles;
    }
 
@@ -151,7 +151,7 @@ public class HostConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public void setRoles(RoleSet roles) {
+   public void setRoles(SortedSet<String> roles) {
       _roles.addAll(roles);
    }
 

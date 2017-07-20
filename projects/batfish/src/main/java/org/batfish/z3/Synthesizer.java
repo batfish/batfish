@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -42,7 +43,6 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AclDenyExpr;
 import org.batfish.z3.node.AclMatchExpr;
@@ -1705,7 +1705,7 @@ public class Synthesizer {
          String hostname = e.getKey();
          Configuration c = e.getValue();
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
-         RoleSet roles = c.getRoles();
+         SortedSet<String> roles = c.getRoles();
          if (roles != null) {
             for (String role : roles) {
                RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
@@ -2379,7 +2379,7 @@ public class Synthesizer {
          String hostname = e.getKey();
          Configuration c = e.getValue();
          OriginateExpr nodeOriginate = new OriginateExpr(hostname);
-         RoleSet roles = c.getRoles();
+         SortedSet<String> roles = c.getRoles();
          if (roles != null) {
             for (String role : roles) {
                RoleOriginateExpr roleOriginate = new RoleOriginateExpr(role);

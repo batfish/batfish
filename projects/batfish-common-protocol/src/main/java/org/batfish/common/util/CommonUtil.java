@@ -566,7 +566,7 @@ public class CommonUtil {
       }
       return matchingStrings;
    }
-
+   
    public static SortedSet<Path> getSubdirectories(Path directory) {
       SortedSet<Path> subdirectories = new TreeSet<>();
       try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {

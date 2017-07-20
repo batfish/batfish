@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -23,7 +24,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -60,7 +60,7 @@ public class VyosConfiguration extends VendorConfiguration {
 
    private final Map<String, PrefixList> _prefixLists;
 
-   private final RoleSet _roles;
+   private final SortedSet<String> _roles;
 
    private final Map<String, RouteMap> _routeMaps;
 
@@ -69,7 +69,7 @@ public class VyosConfiguration extends VendorConfiguration {
    private transient Set<String> _unimplementedFeatures;
 
    public VyosConfiguration() {
-      _roles = new RoleSet();
+      _roles = new TreeSet<>();
       _espGroups = new TreeMap<>();
       _ikeGroups = new TreeMap<>();
       _interfaces = new TreeMap<>();
@@ -289,7 +289,7 @@ public class VyosConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public RoleSet getRoles() {
+   public SortedSet<String> getRoles() {
       return _roles;
    }
 
@@ -316,7 +316,7 @@ public class VyosConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public void setRoles(RoleSet roles) {
+   public void setRoles(SortedSet<String> roles) {
       _roles.addAll(roles);
    }
 

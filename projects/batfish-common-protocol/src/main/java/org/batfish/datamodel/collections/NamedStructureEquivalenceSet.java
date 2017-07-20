@@ -12,6 +12,8 @@ public class NamedStructureEquivalenceSet<T>
 
    private static final String REPRESENTATIVE_ELEMENT_VAR = "representativeElement";
 
+   // a null _namedStructure represents an equivalence class for nodes that are missing
+   // a structure of a given name
    private T _namedStructure;
 
    private SortedSet<String> _nodes;
@@ -32,7 +34,10 @@ public class NamedStructureEquivalenceSet<T>
    }
 
    public boolean compareStructure(T s) {
-      return CommonUtil.checkJsonEqual(_namedStructure, s);
+      if (_namedStructure == null)
+         return (s == null);
+      else
+         return (s != null) && CommonUtil.checkJsonEqual(_namedStructure, s);
    }
 
    @Override
