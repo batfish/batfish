@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import com.google.common.collect.Iterators;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -956,16 +957,8 @@ public class BfCoordWorkHelper {
          JSONObject questions = jObj
                .getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
 
-         String[] questionList = new String[questions.length()];
-
-         @SuppressWarnings("unchecked")
-         Iterator<String> it = questions.keys();
-         int i = 0;
-         while (it.hasNext()) {
-            questionList[i] = it.next();
-            ++i;
-         }
-
+         @SuppressWarnings("unchecked") // JSONObject has String keys, so the implicit cast is safe.
+         String[] questionList = Iterators.toArray(questions.keys(), String.class);
          return questionList;
       }
       catch (Exception e) {
