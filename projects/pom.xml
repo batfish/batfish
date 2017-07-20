@@ -73,6 +73,7 @@
             <showWarnings>true</showWarnings>
             <compilerArgs>
               <arg>-Werror</arg>
+              <arg>-Xlint:all</arg>
             </compilerArgs>
           </configuration>
         </plugin>

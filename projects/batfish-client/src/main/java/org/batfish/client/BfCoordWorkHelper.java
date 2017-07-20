@@ -958,9 +958,11 @@ public class BfCoordWorkHelper {
 
          String[] questionList = new String[questions.length()];
 
+         @SuppressWarnings("unchecked")
+         Iterator<String> it = questions.keys();
          int i = 0;
-         for (Iterator it = questions.keys(); it.hasNext(); ) {
-            questionList[i] = (String) it.next();
+         while (it.hasNext()) {
+            questionList[i] = it.next();
             ++i;
          }
 
