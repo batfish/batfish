@@ -841,8 +841,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
-   public void close() throws Exception {
-   }
+   public void close() {}
 
    private Answer compileEnvironmentConfigurations(
          TestrigSettings testrigSettings) {

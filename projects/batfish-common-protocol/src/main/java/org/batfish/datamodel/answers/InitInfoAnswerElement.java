@@ -94,19 +94,23 @@ public class InitInfoAnswerElement implements AnswerElement {
          case EMPTY:
             sb.append("  " + hostname + ": empty file\n");
             emptyCount++;
+            break;
 
          case IGNORED:
             sb.append("  " + hostname + ": explicitly ignored by user\n");
             ignoredCount++;
+            break;
 
          case UNKNOWN:
             sb.append("  " + hostname + ": unknown configuration format\n");
             unknownCount++;
+            break;
 
          case UNSUPPORTED:
             sb.append("  " + hostname
                   + ": known but unsupported configuration format\n");
             unsupportedCount++;
+            break;
 
          default:
             break;

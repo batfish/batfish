@@ -92,6 +92,7 @@ public class ParseVendorConfigurationJob
       _format = configurationFormat;
    }
 
+   @SuppressWarnings("fallthrough")
    @Override
    public ParseVendorConfigurationResult call() throws Exception {
       long startTime = System.currentTimeMillis();
