@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.batfish.common.BfJson;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.codehaus.jettison.json.JSONException;
@@ -139,7 +139,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private transient boolean _resolved;
 
-   private RoleSet _roles;
+   private SortedSet<String> _roles;
 
    private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
@@ -189,7 +189,7 @@ public final class Configuration extends ComparableStructure<String> {
             VLAN_NORMAL_MIN_DEFAULT,
             VLAN_NORMAL_MAX_DEFAULT);
       _ntpServers = new TreeSet<>();
-      _roles = new RoleSet();
+      _roles = new TreeSet<String>();
       _routeFilterLists = new TreeMap<>();
       _route6FilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
@@ -367,7 +367,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    @JsonProperty(ROLES_VAR)
    @JsonPropertyDescription("Set of all roles in which this node serves.")
-   public RoleSet getRoles() {
+   public SortedSet<String> getRoles() {
       return _roles;
    }
 
@@ -609,7 +609,7 @@ public final class Configuration extends ComparableStructure<String> {
       _ntpSourceInterface = ntpSourceInterface;
    }
 
-   public void setRoles(RoleSet roles) {
+   public void setRoles(SortedSet<String> roles) {
       _roles = roles;
    }
 

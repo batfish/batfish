@@ -19,13 +19,19 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
+import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -37,8 +43,12 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
        * Equivalence sets are keyed by classname
        */
       private SortedMap<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
+      
+      private List<String> _nodes;
 
       private final String EQUIVALENCE_SETS_MAP_VAR = "equivalenceSetsMap";
+      
+      private final String NODES_VAR = "nodes";
 
       public CompareSameNameAnswerElement() {
          _equivalenceSets = new TreeMap<>();
@@ -60,6 +70,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       public SortedMap<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
          return _equivalenceSets;
       }
+      
+      @JsonProperty(NODES_VAR)
+      public List<String> getNodes() {
+         return _nodes;
+      }
 
       @Override
       public String prettyPrint() {
@@ -79,6 +94,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
             SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
          _equivalenceSets = equivalenceSets;
       }
+      
+      @JsonProperty(NODES_VAR)
+      public void setNodes(List<String> nodes) {
+         _nodes = nodes;
+      }
    }
 
    public static class CompareSameNameAnswerer extends Answerer {
@@ -92,6 +112,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       private List<String> _nodes;
 
       private boolean _singletons;
+      
+      private boolean _missing;
 
       public CompareSameNameAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
@@ -115,7 +137,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
          _batfish.checkConfigurations();
          _configurations = _batfish.loadConfigurations();
-         _answerElement = new CompareSameNameAnswerElement();
          // collect relevant nodes in a list.
          _nodes = CommonUtil.getMatchingStrings(
                question.getNodeRegex(),
@@ -123,18 +144,27 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          _namedStructTypes = question.getNamedStructTypes().stream()
                .map(s -> s.toLowerCase()).collect(Collectors.toSet());
          _singletons = question.getSingletons();
+         _missing = question.getMissing();
+         
+         _answerElement = new CompareSameNameAnswerElement();
+         _answerElement.setNodes(_nodes);
 
          add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
          add(CommunityList.class, c -> c.getCommunityLists());
          add(IkeGateway.class, c -> c.getIkeGateways());
          add(IkePolicy.class, c -> c.getIkePolicies());
          add(IkeProposal.class, c -> c.getIkeProposals());
+         add(Interface.class, c -> c.getInterfaces());
+         add(Ip6AccessList.class, c -> c.getIp6AccessLists());
          add(IpAccessList.class, c -> c.getIpAccessLists());
          add(IpsecPolicy.class, c -> c.getIpsecPolicies());
          add(IpsecProposal.class, c -> c.getIpsecProposals());
          add(IpsecVpn.class, c -> c.getIpsecVpns());
+         add(Route6FilterList.class, c -> c.getRoute6FilterLists());
          add(RouteFilterList.class, c -> c.getRouteFilterLists());
          add(RoutingPolicy.class, c -> c.getRoutingPolicies());
+         add(Vrf.class, c -> c.getVrfs());
+         add(Zone.class, c -> c.getZones());
 
          return _answerElement;
       }
@@ -145,15 +175,23 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
             Function<Configuration, Map<String, T>> structureMapRetriever) {
          NamedStructureEquivalenceSets<T> ae = new NamedStructureEquivalenceSets<>(
                structureClass.getSimpleName());
+         // collect the set of all names for structures of type T, across all nodes
+         Set<String> allNames = new TreeSet<String>();
          for (String hostname : hostnames) {
-            // Process route filters
             Configuration node = configurations.get(hostname);
-            Map<String, T> structureMap = structureMapRetriever.apply(node);
-            for (String listName : structureMap.keySet()) {
-               if (listName.startsWith("~")) {
+            Map<String,T> structureMap = structureMapRetriever.apply(node);
+            allNames.addAll(structureMap.keySet());
+         }
+         for (String hostname : hostnames) {
+            Configuration node = configurations.get(hostname);
+            Map<String, T> structureMap = structureMapRetriever.apply(node);            
+            for (String structName : allNames) {
+               if (structName.startsWith("~")) {
                   continue;
                }
-               ae.add(hostname, listName, structureMap.get(listName));
+               T struct = structureMap.get(structName);
+               if (struct != null || _missing)
+                  ae.add(hostname, structName, struct);
             }
          }
          if (!_singletons) {
@@ -195,20 +233,28 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     *           Defaults to false. Specifies whether or not to include named
     *           structures for which there is only one equivalence class.
     *
+    * @param missing
+    *           Defaults to false. Specifies whether or not to create an equivalence
+    *           class for nodes that are missing a structure of a given name.
+    * 
     */
-   public static final class CompareSameNameQuestion extends Question {
+   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
       private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
       private static final String SINGLETONS_VAR = "singletons";
+      
+      private static final String MISSING_VAR = "missing";
 
       private SortedSet<String> _namedStructTypes;
 
       private String _nodeRegex;
 
       private boolean _singletons;
+      
+      private boolean _missing;
 
       public CompareSameNameQuestion() {
          _namedStructTypes = new TreeSet<>();
@@ -239,6 +285,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       public boolean getSingletons() {
          return _singletons;
       }
+      
+      @JsonProperty(MISSING_VAR)
+      public boolean getMissing() {
+         return _missing;
+      }
 
       @Override
       public boolean getTraffic() {
@@ -259,16 +310,21 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       public void setSingletons(boolean singletons) {
          _singletons = singletons;
       }
+      
+      @JsonProperty(MISSING_VAR)
+      public void setMissing(boolean missing) {
+         _missing = missing;
+      }
 
    }
 
    @Override
-   protected Answerer createAnswerer(Question question, IBatfish batfish) {
+   protected CompareSameNameAnswerer createAnswerer(Question question, IBatfish batfish) {
       return new CompareSameNameAnswerer(question, batfish);
    }
 
    @Override
-   protected Question createQuestion() {
+   protected CompareSameNameQuestion createQuestion() {
       return new CompareSameNameQuestion();
    }
 

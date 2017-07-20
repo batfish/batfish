@@ -13,7 +13,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.collections.RoleSet;
 
 public abstract class VendorConfiguration
       implements Serializable, GenericConfigObject {
@@ -64,7 +63,7 @@ public abstract class VendorConfiguration
 
    public abstract String getHostname();
 
-   public abstract RoleSet getRoles();
+   public abstract SortedSet<String> getRoles();
 
    public abstract Set<String> getUnimplementedFeatures();
 
@@ -110,7 +109,7 @@ public abstract class VendorConfiguration
 
    public abstract void setHostname(String hostname);
 
-   public abstract void setRoles(RoleSet roles);
+   public abstract void setRoles(SortedSet<String> roles);
 
    public void setUnrecognized(boolean unrecognized) {
       _unrecognized = unrecognized;
