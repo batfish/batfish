@@ -60,7 +60,6 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -219,7 +218,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _referencedRouteMaps;
 
-   private final RoleSet _roles;
+   private final SortedSet<String> _roles;
 
    private final Map<String, RouteMap> _routeMaps;
 
@@ -294,7 +293,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       _prefixLists = new TreeMap<>();
       _prefix6Lists = new TreeMap<>();
       _referencedRouteMaps = new TreeSet<>();
-      _roles = new RoleSet();
+      _roles = new TreeSet<String>();
       _routeMaps = new TreeMap<>();
       _routePolicies = new TreeMap<>();
       _snmpAccessLists = new TreeSet<>();
@@ -596,7 +595,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public RoleSet getRoles() {
+   public SortedSet<String> getRoles() {
       return _roles;
    }
 
@@ -1029,7 +1028,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
    }
 
    @Override
-   public void setRoles(RoleSet roles) {
+   public void setRoles(SortedSet<String> roles) {
       _roles.addAll(roles);
    }
 

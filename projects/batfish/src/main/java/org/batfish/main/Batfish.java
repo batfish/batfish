@@ -87,6 +87,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
@@ -125,10 +126,8 @@ import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.NodeRoleMap;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.NodeVrfSet;
-import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
@@ -147,8 +146,6 @@ import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyExtractor;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
 import org.batfish.grammar.topology.GNS3TopologyExtractor;
-import org.batfish.grammar.topology.RoleCombinedParser;
-import org.batfish.grammar.topology.RoleExtractor;
 import org.batfish.grammar.topology.TopologyExtractor;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
@@ -221,6 +218,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
       settings.setConvertAnswerPath(
             testrigDir.resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+      settings.setNodeRolesPath(
+            testrigDir.resolve(Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
       settings.setTopologyPath(
             testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
       if (envName != null) {
@@ -2515,6 +2514,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          _cachedConfigurations.put(_testrigSettings, configurations);
       }
       processNodeBlacklist(configurations);
+      processNodeRoles(configurations);
       processInterfaceBlacklist(configurations);
       processDeltaConfigurations(configurations);
       disableUnusableVlanInterfaces(configurations);
@@ -3083,18 +3083,21 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return new NodeSet(nodes);
    }
 
-   private NodeRoleMap parseNodeRoles(Path testRigPath) {
-      Path rolePath = testRigPath.resolve("node_roles");
-      String roleFileText = CommonUtil.readFile(rolePath);
-      _logger.info("Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
-      BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText,
-            _settings);
-      RoleExtractor extractor = new RoleExtractor();
-      ParserRuleContext tree = parse(parser);
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(extractor, tree);
-      NodeRoleMap nodeRoles = extractor.getRoleMap();
-      return nodeRoles;
+   private SortedMap<String, SortedSet<String>> parseNodeRoles(Path nodeRolesPath, Set<String> nodes) {
+      _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath().toString() + "\"");
+      String roleFileText = CommonUtil.readFile(nodeRolesPath);
+      NodeRoleSpecifier specifier;
+      try {
+         specifier = new BatfishObjectMapper()
+               .<NodeRoleSpecifier> readValue(roleFileText,
+                     new TypeReference<NodeRoleSpecifier>() {
+                     });
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to parse node roles", e);
+      }
+      return specifier.createNodeRolesMap(nodes);
+     
    }
 
    private Question parseQuestion() {
@@ -3567,6 +3570,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   iface.setBlacklisted(true);
                }
             }
+         }
+      }
+   }
+   
+   private void processNodeRoles(
+         Map<String, Configuration> configurations) {
+      TestrigSettings settings = _settings.getActiveTestrigSettings();
+      Path nodeRolesPath = settings.getNodeRolesPath();
+      if (Files.exists(nodeRolesPath)) {
+         SortedMap<String, SortedSet<String>> nodeRoles = parseNodeRoles(nodeRolesPath, configurations.keySet());
+         for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
+            String hostname = nodeRolesEntry.getKey();
+            Configuration config = configurations.get(hostname);
+            if (config == null) {
+               throw new BatfishException(
+                     "role set assigned to non-existent node: \"" + hostname
+                     + "\"");
+            }
+            SortedSet<String> roles = nodeRolesEntry.getValue();
+            config.setRoles(roles);
          }
       }
    }
@@ -4060,27 +4083,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          throw new BatfishException("Exiting due to parser errors");
       }
 
-      // assign roles if that file exists
-      Path nodeRolesPath = _settings.getNodeRolesPath();
-      if (nodeRolesPath != null) {
-         NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
-         for (Entry<String, RoleSet> nodeRolesEntry : nodeRoles.entrySet()) {
-            String hostname = nodeRolesEntry.getKey();
-            VendorConfiguration config = hostConfigurations.get(hostname);
-            if (config == null) {
-               throw new BatfishException(
-                     "role set assigned to non-existent node: \"" + hostname
-                           + "\"");
-            }
-            RoleSet roles = nodeRolesEntry.getValue();
-            config.setRoles(roles);
-         }
-         _logger.info(
-               "Serializing node-roles mappings: \"" + nodeRolesPath + "\"...");
-         serializeObject(nodeRoles, nodeRolesPath);
-         _logger.info("OK\n");
-      }
-
       // read and associate iptables files for specified hosts
       Map<Path, String> iptablesData = new TreeMap<>();
       for (VendorConfiguration vc : hostConfigurations.values()) {
@@ -4191,25 +4193,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             configurationData, answerElement, ConfigurationFormat.UNKNOWN);
       if (vendorConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors");
-      }
-      Path nodeRolesPath = _settings.getNodeRolesPath();
-      if (nodeRolesPath != null) {
-         NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
-         for (Entry<String, RoleSet> nodeRolesEntry : nodeRoles.entrySet()) {
-            String hostname = nodeRolesEntry.getKey();
-            VendorConfiguration config = vendorConfigurations.get(hostname);
-            if (config == null) {
-               throw new BatfishException(
-                     "role set assigned to non-existent node: \"" + hostname
-                           + "\"");
-            }
-            RoleSet roles = nodeRolesEntry.getValue();
-            config.setRoles(roles);
-         }
-         _logger.info(
-               "Serializing node-roles mappings: \"" + nodeRolesPath + "\"...");
-         serializeObject(nodeRoles, nodeRolesPath);
-         _logger.info("OK\n");
       }
       _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();

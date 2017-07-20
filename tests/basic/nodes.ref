@@ -226,6 +226,9 @@
               ]
             }
           },
+          "roles" : [
+            "border"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -1399,6 +1402,9 @@
               ]
             }
           },
+          "roles" : [
+            "border"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2425,6 +2431,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "core"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2963,6 +2972,9 @@
               ]
             }
           },
+          "roles" : [
+            "border"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -4075,6 +4087,9 @@
               ]
             }
           },
+          "roles" : [
+            "border"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -5101,6 +5116,9 @@
               ]
             }
           },
+          "roles" : [
+            "core"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -5615,6 +5633,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "core"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -6290,6 +6311,9 @@
               ]
             }
           },
+          "roles" : [
+            "dept"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -7004,6 +7028,9 @@
               ]
             }
           },
+          "roles" : [
+            "dist"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -7671,6 +7698,9 @@
               ]
             }
           },
+          "roles" : [
+            "dist"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -8347,6 +8377,9 @@
               ]
             }
           },
+          "roles" : [
+            "border"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -9389,6 +9422,9 @@
               ]
             }
           },
+          "roles" : [
+            "border"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -10311,6 +10347,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "core"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -10855,6 +10894,9 @@
               ]
             }
           },
+          "roles" : [
+            "host"
+          ],
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
@@ -11026,6 +11068,9 @@
               ]
             }
           },
+          "roles" : [
+            "host"
+          ],
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
