@@ -113,8 +113,9 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       private SortedSet<NamedStructureOutlierSet<?>> rankOutliers(
             SortedMap<String, NamedStructureEquivalenceSets<?>> equivSets) {
          SortedSet<NamedStructureOutlierSet<?>> rankedOutliers = new TreeSet<>();
-         for (NamedStructureEquivalenceSets<?> entry : equivSets.values())
+         for (NamedStructureEquivalenceSets<?> entry : equivSets.values()) {
             addOutliers(entry, rankedOutliers);
+         }
          return rankedOutliers;
       }
       

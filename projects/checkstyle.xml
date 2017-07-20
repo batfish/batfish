@@ -10,6 +10,7 @@
   <module name="FileTabCharacter"/>
 
   <module name="TreeWalker">
+    <module name="NeedBraces"/>
     <module name="UnusedImports"/>
   </module>
 </module>
