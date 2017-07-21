@@ -119,7 +119,6 @@ public class ClientTest {
       mapper = new BatfishObjectMapper();
    }
 
-   //Tests for validateJsonPathRegex method
    @Test
    public void testEmptyJsonPathRegex() {
       thrown.expect(BatfishException.class);
@@ -176,7 +175,6 @@ public class ClientTest {
       Client.validateJsonPathRegex(jsonPathRegex);
    }
 
-   //Tests for validateJsonPath method
    @Test
    public void testEmptyJsonPath() throws IOException {
       JsonNode emptyPath = mapper.readTree("\"\"");
@@ -251,31 +249,14 @@ public class ClientTest {
       Client.validateJsonPath(mapper.readTree(validJsonPath));
    }
 
-// ratul commented out this test
-//     parseParaValue should allow strings like "I am not valid" to parse.
-//     i can't think of what that new function will not parse
-//       TODO: remove test or give it some teeth
-//   // Tests for parseParaValue method
-//   @Test
-//   public void testParseInvalidJsonContent() {
-//      String invalidJsonContent = "I am not valid";
-//      thrown.expect(BatfishException.class);
-//      thrown.expectMessage(equalTo(
-//            String.format(
-//                  "Variable value \"%s\" is not valid JSON",
-//                  invalidJsonContent)));
-//      Client.parseParaValue("content", invalidJsonContent);
-//   }
-
    @Test
    public void testParseValidJsonContent() {
       String validJsonContent = "true";
-      JsonNode node = Client.parseParaValue("boolean", validJsonContent);
+      JsonNode node = Client.parseParaValue(validJsonContent);
       assertThat(node.getNodeType(), is(JsonNodeType.BOOLEAN));
       assertThat(node.asBoolean(), is(equalTo(true)));
    }
 
-   // Tests for validateNode method
    @Test
    public void testValidateInvalidNode() throws IOException {
       String parameterName = "boolean";
@@ -300,7 +281,6 @@ public class ClientTest {
       Client.validateNode(invalidNode, variable, parameterName);
    }
 
-   // Tests for validateType method
    private void validateTypeWithInvalidInput(
          String input, String
          expectedMessage, Question.InstanceData.Variable.Type type)
@@ -317,13 +297,12 @@ public class ClientTest {
    @Test
    public void testUnStringInputWhenExpectString() throws IOException {
       String input = "10";
-      Question.InstanceData.Variable.Type expectedType
-            = Question.InstanceData.Variable.Type.STRING;
       String expectedMessage = String
             .format(
                   "A Batfish %s must be a JSON string",
                   Question.InstanceData.Variable.Type.STRING.getName());
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage,
+            Question.InstanceData.Variable.Type.STRING);
    }
 
    @Test
@@ -455,9 +434,8 @@ public class ClientTest {
    @Test
    public void testInvalidIPValue() throws IOException {
       String input = "\"0.0.0\"";
-      Question.InstanceData.Variable.Type expectedType = IP;
       String expectedMessage = String.format("Invalid ip string: %s", input);
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage, IP);
    }
 
    @Test
@@ -512,10 +490,9 @@ public class ClientTest {
    @Test
    public void testInvalidIpWildcardValue() throws IOException {
       String input = "\"10.168.5.5:10.168.100.$\"";
-      Question.InstanceData.Variable.Type expectedType = IP_WILDCARD;
       String expectedMessage = "Invalid ip segment: \"$\" in ip string: " +
             "\"10.168.100.$\"";
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage, IP_WILDCARD);
    }
 
    @Test
@@ -542,10 +519,9 @@ public class ClientTest {
    @Test
    public void testInvalidPrefixValue() throws IOException {
       String input = "\"10.168.5.5/30/20\"";
-      Question.InstanceData.Variable.Type expectedType = PREFIX;
       String expectedMessage = String
             .format("Invalid prefix string: %s", input);
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage, PREFIX);
    }
 
    @Test
@@ -572,9 +548,8 @@ public class ClientTest {
    @Test
    public void testInvalidPrefixRangeValue() throws IOException {
       String input = "\"10.168.5.5/30:s10-50\"";
-      Question.InstanceData.Variable.Type expectedType = PREFIX_RANGE;
       String expectedMessage = "Invalid subrange start: \"s10\"";
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage, PREFIX_RANGE);
    }
 
    @Test
@@ -601,9 +576,8 @@ public class ClientTest {
    @Test
    public void testInvalidSubRangeValue() throws IOException {
       String input = "\"10-s50\"";
-      Question.InstanceData.Variable.Type expectedType = SUBRANGE;
       String expectedMessage = "Invalid subrange end: \"s50\"";
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage, SUBRANGE);
    }
 
    @Test
@@ -640,11 +614,10 @@ public class ClientTest {
    @Test
    public void testInvalidProtocolValue() throws IOException {
       String input = "\"missing\"";
-      Question.InstanceData.Variable.Type expectedType = PROTOCOL;
       String expectedMessage = String
             .format("No %s with name: '%s'", Protocol.class.getSimpleName(),
                   mapper.readTree(input).textValue());
-      validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+      validateTypeWithInvalidInput(input, expectedMessage, PROTOCOL);
    }
 
    @Test
@@ -741,7 +714,6 @@ public class ClientTest {
       Client.validateType(mapper.readTree(longString), variable);
    }
 
-   // Tests for validateAndSet method
    @Test
    public void testValidateWithNullVariableInput() {
       Map<String, String> parameters = new HashMap<>();
@@ -826,7 +798,6 @@ public class ClientTest {
       Client.validateAndSet(parameters, variables);
    }
 
-   // Tests for checkRequiredPara method
    @Test
    public void testMissingNonOptionalParameterNoValue() {
       Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
@@ -869,7 +840,6 @@ public class ClientTest {
       Client.checkVariableState(variables);
    }
 
-   // Tests for processCommand method
    private void checkProcessCommandErrorMessage(Command command, String[] parameters, String expected)
          throws Exception {
       Client client = new Client(new String[]{"-runmode", "gendatamodel"});
@@ -910,53 +880,45 @@ public class ClientTest {
 
    @Test
    public void testAddAnalysisQuestionInvalidParas() throws Exception {
-      Command command = ADD_ANALYSIS_QUESTIONS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(ADD_ANALYSIS_QUESTIONS, new String[]{});
    }
 
    @Test
    public void testInitAnalysisQuestionInvalidParas() throws Exception {
-      Command command = INIT_ANALYSIS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(INIT_ANALYSIS, new String[]{});
    }
 
    @Test
    public void testAddBatfishOptionInvalidParas() throws Exception {
-      Command command = ADD_BATFISH_OPTION;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(ADD_BATFISH_OPTION, new String[]{});
    }
 
    @Test
    public void testAddBatfishOptionValidParas() throws Exception {
-      Command command = ADD_BATFISH_OPTION;
       String[] parameters = new String[]{"parameter1"};
-      testProcessCommandWithValidInput(command, parameters, "");
+      testProcessCommandWithValidInput(ADD_BATFISH_OPTION, parameters, "");
    }
 
    @Test
    public void testAnswerInvalidParas() throws Exception {
-      Command command = ANSWER;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(ANSWER, new String[]{});
    }
 
    @Test
    public void testAnswerValidParas() throws Exception {
-      Command command = ANSWER;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(ANSWER, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testAnswerDeltaInvalidParas() throws Exception {
-      Command command = ANSWER_DELTA;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(ANSWER_DELTA, new String[]{});
    }
 
    @Test
    public void testAnswerDeltaValidParas() throws Exception {
-      Command command = ANSWER_DELTA;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(ANSWER_DELTA, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
@@ -972,244 +934,208 @@ public class ClientTest {
 
    @Test
    public void testCatValidParas() throws Exception {
-      Command command = CAT;
       Path tempFilePath = folder.newFile("temp").toPath();
       String[] parameters = new String[]{tempFilePath.toString()};
-      testProcessCommandWithValidInput(command, parameters, "");
+      testProcessCommandWithValidInput(CAT, parameters, "");
    }
 
    @Test
    public void testCheckApiKeyInvalidParas() throws Exception {
-      Command command = CHECK_API_KEY;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(CHECK_API_KEY, parameters);
    }
 
    @Test
    public void testClearScreenInvalidParas() throws Exception {
-      Command command = CLEAR_SCREEN;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(CLEAR_SCREEN, parameters);
    }
 
    @Test
    public void testDelAnalysisInvalidParas() throws Exception {
-      Command command = DEL_ANALYSIS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_ANALYSIS, new String[]{});
    }
 
    @Test
    public void testDelAnalysisValidParas() throws Exception {
-      Command command = DEL_ANALYSIS;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(DEL_ANALYSIS, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testDelAnalysisQuestionInvalidParas() throws Exception {
-      Command command = DEL_ANALYSIS_QUESTIONS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_ANALYSIS_QUESTIONS, new String[]{});
    }
 
    @Test
    public void testDelAnalysisQuestionValidParas() throws Exception {
-      Command command = DEL_ANALYSIS_QUESTIONS;
       String[] parameters = new String[]{"parameter1", "parameter2"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(DEL_ANALYSIS_QUESTIONS, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testDelBatfishOptionInvalidParas() throws Exception {
-      Command command = DEL_BATFISH_OPTION;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_BATFISH_OPTION, new String[]{});
    }
 
    @Test
    public void testDelBatfishOptionValidParas() throws Exception {
-      Command command = DEL_BATFISH_OPTION;
       String[] parameters = new String[]{"parameter1"};
       String expected = "Batfish option parameter1 does not exist\n";
-      checkProcessCommandErrorMessage(command, parameters, expected);
+      checkProcessCommandErrorMessage(DEL_BATFISH_OPTION, parameters, expected);
    }
 
    @Test
    public void testDelContainerInvalidParas() throws Exception {
-      Command command = DEL_CONTAINER;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_CONTAINER, new String[]{});
    }
 
    @Test
    public void testDelEnvironmentInvalidParas() throws Exception {
-      Command command = DEL_ENVIRONMENT;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_ENVIRONMENT, new String[]{});
    }
 
    @Test
    public void testDelEnvironmentValidParas() throws Exception {
-      Command command = DEL_ENVIRONMENT;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(DEL_ENVIRONMENT, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testDelQuestionInvalidParas() throws Exception {
-      Command command = DEL_QUESTION;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_QUESTION, new String[]{});
    }
 
    @Test
    public void testDelQuestionValidParas() throws Exception {
-      Command command = DEL_QUESTION;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(DEL_QUESTION, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testDelTestrigInvalidParas() throws Exception {
-      Command command = DEL_TESTRIG;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(DEL_TESTRIG, new String[]{});
    }
 
    @Test
    public void testDelTestrigValidParas() throws Exception {
-      Command command = DEL_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(DEL_TESTRIG, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testDirInvalidParas() throws Exception {
-      Command command = DIR;
       String[] parameters = new String[]{"parameter1", "parameter2"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(DIR, parameters);
    }
 
    @Test
    public void testDirValidParas() throws Exception {
-      Command command = DIR;
       Path tempFilePath = folder.newFolder("temp").toPath();
       String[] parameters = new String[]{tempFilePath.toString()};
-      testProcessCommandWithValidInput(command, parameters, "");
+      testProcessCommandWithValidInput(DIR, parameters, "");
    }
 
    @Test
    public void testGenerateDataplaneInvalidParas() throws Exception {
-      Command command = GEN_DP;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(GEN_DP, parameters);
    }
 
    @Test
    public void testGenerateDataplaneValidParas() throws Exception {
-      Command command = GEN_DP;
-      checkProcessCommandErrorMessage(command, new String[]{}, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GEN_DP, new String[]{}, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGenerateDataplaneDeltaInvalidParas() throws Exception {
-      Command command = GEN_DELTA_DP;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(GEN_DELTA_DP, parameters);
    }
 
    @Test
    public void testGenerateDataplaneDeltaValidParas() throws Exception {
-      Command command = GEN_DELTA_DP;
-      checkProcessCommandErrorMessage(command, new String[]{},
+      checkProcessCommandErrorMessage(GEN_DELTA_DP, new String[]{},
             "Active delta testrig is not set\n");
    }
 
    @Test
    public void testGetInvalidParas() throws Exception {
-      Command command = GET;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(GET, new String[]{});
    }
 
    @Test
    public void testGetValidParas() throws Exception {
-      Command command = GET;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetDeltaInvalidParas() throws Exception {
-      Command command = GET_DELTA;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(GET_DELTA, new String[]{});
    }
 
    @Test
    public void testGetDeltaValidParas() throws Exception {
-      Command command = GET_DELTA;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_DELTA, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetAnalysisAnswersInvalidParas() throws Exception {
-      Command command = GET_ANALYSIS_ANSWERS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(GET_ANALYSIS_ANSWERS, new String[]{});
    }
 
    @Test
    public void testGetAnalysisAnswersValidParas() throws Exception {
-      Command command = GET_ANALYSIS_ANSWERS;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetAnalysisAnswersDeltaValidParas() throws Exception {
-      Command command = GET_ANALYSIS_ANSWERS_DELTA;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_DELTA, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetAnalysisAnswersDifferentialValidParas() throws Exception {
-      Command command = GET_ANALYSIS_ANSWERS_DIFFERENTIAL;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_DIFFERENTIAL, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetAnswersInvalidParas() throws Exception {
-      Command command = GET_ANSWER;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(GET_ANSWER, new String[]{});
    }
 
    @Test
    public void testGetAnswersValidParas() throws Exception {
-      Command command = GET_ANSWER;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_ANSWER, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetAnswersDeltaValidParas() throws Exception {
-      Command command = GET_ANSWER_DELTA;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_ANSWER_DELTA, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetAnswersDifferentialValidParas() throws Exception {
-      Command command = GET_ANSWER_DIFFERENTIAL;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_ANSWER_DIFFERENTIAL, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testGetQuestionInvalidParas() throws Exception {
-      Command command = GET_QUESTION;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(GET_QUESTION, new String[]{});
    }
 
    @Test
    public void testGetQuestionValidParas() throws Exception {
-      Command command = GET_QUESTION;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(GET_QUESTION, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
@@ -1225,19 +1151,17 @@ public class ClientTest {
 
    @Test
    public void testHelpValidParas() throws Exception {
-      Command command = HELP;
       String[] parameters = new String[]{"get"};
       Pair<String, String> usage = Command.getUsageMap().get(GET);
       String expected = String.format("%s %s\n\t%s\n\n", GET.commandName(),
             usage.getFirst(), usage.getSecond());
-      testProcessCommandWithValidInput(command, parameters, expected);
+      testProcessCommandWithValidInput(HELP, parameters, expected);
    }
 
    @Test
    public void testInitContainerInvalidParas() throws Exception {
-      Command command = INIT_CONTAINER;
       String[] parameters = new String[]{"parameter1", "parameter2", "parameter3"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(INIT_CONTAINER, parameters);
    }
 
    @Test
@@ -1263,404 +1187,345 @@ public class ClientTest {
 
    @Test
    public void testInitDeltaEnvInvalidParas() throws Exception {
-      Command command = INIT_DELTA_ENV;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(INIT_DELTA_ENV, new String[]{});
    }
 
    @Test
    public void testInitDeltaEnvValidParas() throws Exception {
-      Command command = INIT_DELTA_ENV;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(INIT_DELTA_ENV, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testInitTestrigInvalidParas() throws Exception {
-      Command command = INIT_TESTRIG;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(INIT_TESTRIG, new String[]{});
    }
 
    @Test
    public void testInitTestrigDeltaInvalidParas() throws Exception {
-      Command command = INIT_DELTA_TESTRIG;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(INIT_DELTA_TESTRIG, new String[]{});
    }
 
    @Test
    public void testListAnalysisInvalidParas() throws Exception {
-      Command command = LIST_ANALYSES;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(LIST_ANALYSES, parameters);
    }
 
    @Test
    public void testListAnalysisValidParas() throws Exception {
-      Command command = LIST_ANALYSES;
       String[] parameters = new String[]{};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(LIST_ANALYSES, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testListContainersInvalidParas() throws Exception {
-      Command command = LIST_CONTAINERS;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(LIST_CONTAINERS, parameters);
    }
 
    @Test
    public void testListEnvironmentsInvalidParas() throws Exception {
-      Command command = LIST_ENVIRONMENTS;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(LIST_ENVIRONMENTS, parameters);
    }
 
    @Test
    public void testListEnvironmentsValidParas() throws Exception {
-      Command command = LIST_ENVIRONMENTS;
-      checkProcessCommandErrorMessage(command, new String[]{}, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(LIST_ENVIRONMENTS, new String[]{}, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testListQuestionsInvalidParas() throws Exception {
-      Command command = LIST_QUESTIONS;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(LIST_QUESTIONS, parameters);
    }
 
    @Test
    public void testListQuestionsValidParas() throws Exception {
-      Command command = LIST_QUESTIONS;
-      checkProcessCommandErrorMessage(command, new String[]{}, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(LIST_QUESTIONS, new String[]{}, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testListTestrigsInvalidParas() throws Exception {
-      Command command = LIST_TESTRIGS;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(LIST_TESTRIGS, parameters);
    }
 
    @Test
    public void testLoadQuestionsInvalidParas() throws Exception {
-      Command command = LOAD_QUESTIONS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(LOAD_QUESTIONS, new String[]{});
    }
 
    @Test
    public void testLoadQuestionsValidParas() throws Exception {
-      Command command = LOAD_QUESTIONS;
       Path tempFilePath = folder.newFolder("temp").toPath();
       String[] parameters = new String[]{tempFilePath.toString()};
-      testProcessCommandWithValidInput(command, parameters, "");
+      testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
    }
 
    @Test
    public void testPromptInvalidParas() throws Exception {
-      Command command = PROMPT;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(PROMPT, parameters);
    }
 
    @Test
    public void testPromtValidParas() throws Exception {
-      Command command = PROMPT;
-      testProcessCommandWithValidInput(command, new String[]{}, "");
+      testProcessCommandWithValidInput(PROMPT, new String[]{}, "");
    }
 
    @Test
    public void testPwdInvalidParas() throws Exception {
-      Command command = PWD;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(PWD, parameters);
    }
 
    @Test
    public void testPwdValidParas() throws Exception {
-      Command command = PWD;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(PWD, new String[]{},
             String.format("working directory = %s\n", System.getProperty("user.dir")));
    }
 
    @Test
    public void testReinitTestrigInvalidParas() throws Exception {
-      Command command = REINIT_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(REINIT_TESTRIG, parameters);
    }
 
    @Test
    public void testReinitTestrigDeltaInvalidParas() throws Exception {
-      Command command = REINIT_DELTA_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(REINIT_DELTA_TESTRIG, parameters);
    }
 
    @Test
    public void testRunAnalysisInvalidParas() throws Exception {
-      Command command = RUN_ANALYSIS;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(RUN_ANALYSIS, new String[]{});
    }
 
    @Test
    public void testRunAnalysisValidParas() throws Exception {
-      Command command = RUN_ANALYSIS;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(RUN_ANALYSIS, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testRunAnalysisDeltaValidParas() throws Exception {
-      Command command = RUN_ANALYSIS_DELTA;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(RUN_ANALYSIS_DELTA, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testRunAnalysisDifferentialValidParas() throws Exception {
-      Command command = RUN_ANALYSIS_DIFFERENTIAL;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(RUN_ANALYSIS_DIFFERENTIAL, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testSetBatfishLogLevelInvalidParas() throws Exception {
-      Command command = SET_BATFISH_LOGLEVEL;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_BATFISH_LOGLEVEL, new String[]{});
    }
 
    @Test
    public void testSetBatfishLogLevelValidParas() throws Exception {
-      Command command = SET_BATFISH_LOGLEVEL;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters,
+      checkProcessCommandErrorMessage(SET_BATFISH_LOGLEVEL, parameters,
             "Undefined loglevel value: parameter1\n");
    }
 
    @Test
    public void testSetContainerInvalidParas() throws Exception {
-      Command command = SET_CONTAINER;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_CONTAINER, new String[]{});
    }
 
    @Test
    public void testSetContainerValidParas() throws Exception {
-      Command command = SET_CONTAINER;
       String[] parameters = new String[]{"parameter1"};
-      testProcessCommandWithValidInput(command, parameters,
+      testProcessCommandWithValidInput(SET_CONTAINER, parameters,
             String.format("Active container is now set to %s\n", parameters[0]));
    }
 
    @Test
    public void testSetDeltaEnvInvalidParas() throws Exception {
-      Command command = SET_DELTA_ENV;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_DELTA_ENV, new String[]{});
    }
 
    @Test
    public void testSetDeltaEnvValidParas() throws Exception {
-      Command command = SET_DELTA_ENV;
       String[] parameters = new String[]{"parameter1"};
-      testProcessCommandWithValidInput(command, parameters,
+      testProcessCommandWithValidInput(SET_DELTA_ENV, parameters,
             String.format("Active delta testrig->environment is now null->%s\n", parameters[0]));
    }
 
    @Test
    public void testSetEnvInvalidParas() throws Exception {
-      Command command = SET_ENV;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_ENV, new String[]{});
    }
 
    @Test
    public void testSetEnvValidParas() throws Exception {
-      Command command = SET_ENV;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(SET_ENV, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testSetDeltaTestrigInvalidParas() throws Exception {
-      Command command = SET_DELTA_TESTRIG;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_DELTA_TESTRIG, new String[]{});
    }
 
    @Test
    public void testSetDeltaTestrigValidParas() throws Exception {
-      Command command = SET_DELTA_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      testProcessCommandWithValidInput(command, parameters,
+      testProcessCommandWithValidInput(SET_DELTA_TESTRIG, parameters,
             String.format("Delta testrig->env is now %s->env_default\n", parameters[0]));
    }
 
    @Test
    public void testSetLogLevelInvalidParas() throws Exception {
-      Command command = SET_LOGLEVEL;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_LOGLEVEL, new String[]{});
    }
 
    @Test
    public void testSetLogLevelValidParas() throws Exception {
-      Command command = SET_LOGLEVEL;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters,
+      checkProcessCommandErrorMessage(SET_LOGLEVEL, parameters,
             "Undefined loglevel value: parameter1\n");
    }
 
    @Test
    public void testSetPrettyPrintInvalidParas() throws Exception {
-      Command command = SET_PRETTY_PRINT;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_PRETTY_PRINT, new String[]{});
    }
 
    @Test
    public void testSetPrettyPrintValidParas() throws Exception {
-      Command command = SET_PRETTY_PRINT;
       String[] parameters = new String[]{"true"};
-      testProcessCommandWithValidInput(command, parameters,
+      testProcessCommandWithValidInput(SET_PRETTY_PRINT, parameters,
             "Set pretty printing answers to true\n");
    }
 
    @Test
    public void testSetTestrigInvalidParas() throws Exception {
-      Command command = SET_TESTRIG;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(SET_TESTRIG, new String[]{});
    }
 
    @Test
    public void testSetTestrigValidParas() throws Exception {
-      Command command = SET_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      checkProcessCommandErrorMessage(command, parameters, CONTAINER_NOT_SET);
+      checkProcessCommandErrorMessage(SET_TESTRIG, parameters, CONTAINER_NOT_SET);
    }
 
    @Test
    public void testShowApiKeyInvalidParas() throws Exception {
-      Command command = SHOW_API_KEY;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_API_KEY, parameters);
    }
 
    @Test
    public void testShowApiKeyValidParas() throws Exception {
-      Command command = SHOW_API_KEY;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(SHOW_API_KEY, new String[]{},
             String.format("Current API Key is %s\n", DEFAULT_API_KEY));
    }
 
    @Test
    public void testShowBatfishLogLevelInvalidParas() throws Exception {
-      Command command = SHOW_BATFISH_LOGLEVEL;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_BATFISH_LOGLEVEL, parameters);
    }
 
    @Test
    public void testShowBatfishLogLevelValidParas() throws Exception {
-      Command command = SHOW_BATFISH_LOGLEVEL;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(SHOW_BATFISH_LOGLEVEL, new String[]{},
             "Current batfish log level is warn\n");
    }
 
    @Test
    public void testShowBatfishOptionsInvalidParas() throws Exception {
-      Command command = SHOW_BATFISH_OPTIONS;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_BATFISH_OPTIONS, parameters);
    }
 
    @Test
    public void testShowBatfishOptionsValidParas() throws Exception {
-      Command command = SHOW_BATFISH_OPTIONS;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(SHOW_BATFISH_OPTIONS, new String[]{},
             "There are 0 additional batfish options\n");
    }
 
    @Test
    public void testShowContainerInvalidParas() throws Exception {
-      Command command = SHOW_CONTAINER;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_CONTAINER, parameters);
    }
 
    @Test
    public void testShowConrainerValidParas() throws Exception {
-      Command command = SHOW_CONTAINER;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(SHOW_CONTAINER, new String[]{},
             "Current container is null\n");
    }
 
    @Test
    public void testShowCoordinatorHostInvalidParas() throws Exception {
-      Command command = SHOW_COORDINATOR_HOST;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_COORDINATOR_HOST, parameters);
    }
 
    @Test
    public void testShowCoordinatorHostValidParas() throws Exception {
-      Command command = SHOW_COORDINATOR_HOST;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(SHOW_COORDINATOR_HOST, new String[]{},
             "Current coordinator host is localhost\n");
    }
 
    @Test
    public void testShowDeltaTestrigInvalidParas() throws Exception {
-      Command command = SHOW_DELTA_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_DELTA_TESTRIG, parameters);
    }
 
    @Test
    public void testShowDeltaTestrigValidParas() throws Exception {
-      Command command = SHOW_DELTA_TESTRIG;
-      checkProcessCommandErrorMessage(command, new String[]{},
+      checkProcessCommandErrorMessage(SHOW_DELTA_TESTRIG, new String[]{},
             "Active delta testrig is not set\n");
    }
 
    @Test
    public void testShowLogLevelInvalidParas() throws Exception {
-      Command command = SHOW_LOGLEVEL;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_LOGLEVEL, parameters);
    }
 
    @Test
    public void testShowLogLevelValidParas() throws Exception {
-      Command command = SHOW_LOGLEVEL;
-      testProcessCommandWithValidInput(command, new String[]{},
+      testProcessCommandWithValidInput(SHOW_LOGLEVEL, new String[]{},
             "Current client log level is output\n");
    }
 
    @Test
    public void testShowTestrigInvalidParas() throws Exception {
-      Command command = SHOW_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_TESTRIG, parameters);
    }
 
    @Test
    public void testShowTestrigValidParas() throws Exception {
-      Command command = SHOW_TESTRIG;
       String[] parameters = new String[]{};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(SHOW_TESTRIG, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testShowVersionInvalidParas() throws Exception {
-      Command command = SHOW_TESTRIG;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(SHOW_TESTRIG, parameters);
    }
 
    @Test
    public void checkTestInvalidParas() throws Exception {
-      Command command = TEST;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(TEST, parameters);
    }
 
    @Test
    public void checkTestValidParas() throws Exception {
-      Command command = TEST;
       Path tempFilePath = folder.newFolder("temp").toPath();
       String[] parameters = new String[]{tempFilePath.toString(), GET.commandName()};
       Pair<String, String> usage = Command.getUsageMap().get(GET);
@@ -1670,34 +1535,30 @@ public class ClientTest {
       String additionalMessage = String.
             format("Test: 'get' matches %s: Fail\nCopied output to %s.testout\n",
                   tempFilePath.toString(), tempFilePath.toString());
-      testProcessCommandWithValidInput(command, parameters,
+      testProcessCommandWithValidInput(TEST, parameters,
             expected + additionalMessage);
    }
 
    @Test
    public void testUploadCustomObjectInvalidParas() throws Exception {
-      Command command = UPLOAD_CUSTOM_OBJECT;
-      testInvalidInput(command, new String[]{});
+      testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[]{});
    }
 
    @Test
    public void testUploadCustomObjectValidParas() throws Exception {
-      Command command = UPLOAD_CUSTOM_OBJECT;
       String[] parameters = new String[]{"parameter1", "parameter2"};
-      checkProcessCommandErrorMessage(command, parameters, TESTRIG_NOT_SET);
+      checkProcessCommandErrorMessage(UPLOAD_CUSTOM_OBJECT, parameters, TESTRIG_NOT_SET);
    }
 
    @Test
    public void testExitInvalidParas() throws Exception {
-      Command command = EXIT;
       String[] parameters = new String[]{"parameter1"};
-      testInvalidInput(command, parameters);
+      testInvalidInput(EXIT, parameters);
    }
 
    @Test
    public void testExitValidParas() throws Exception {
-      Command command = EXIT;
-      testProcessCommandWithValidInput(command, new String[]{}, "");
+      testProcessCommandWithValidInput(EXIT, new String[]{}, "");
    }
 
    @Test

@@ -139,7 +139,7 @@ public class Client extends AbstractClient implements IClient {
     * @throws BatfishException
     *            if contents of {@code parameterValue} is not valid JSON.
     */
-   static JsonNode parseParaValue(String parameterName, String parameterValue)
+   static JsonNode parseParaValue(String parameterValue)
          throws BatfishException {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       JsonNode value;
@@ -179,7 +179,7 @@ public class Client extends AbstractClient implements IClient {
             throw new BatfishException("No variable named: '" + parameterName
                   + "' in supplied question template");
          }
-         JsonNode value = parseParaValue(parameterName, parameterValue);
+         JsonNode value = parseParaValue(parameterValue);
          if (variable.getMinElements() != null) {
             // Value is an array, check size and validate each elements in it
             if (!value.isArray() || value.size() < variable.getMinElements()) {
