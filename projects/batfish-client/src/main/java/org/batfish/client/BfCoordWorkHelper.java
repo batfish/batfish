@@ -725,8 +725,14 @@ public class BfCoordWorkHelper {
 
          addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY,
                _settings.getApiKey());
-         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_PREFIX,
-               containerPrefix);
+         if (containerName != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME,
+                  containerName);
+         }
+         else {
+            addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_PREFIX,
+                  containerPrefix);
+         }
 
          JSONObject jObj = postData(webTarget, multiPart);
          if (jObj == null) {
@@ -958,7 +964,7 @@ public class BfCoordWorkHelper {
                .getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
 
          @SuppressWarnings("unchecked") // JSONObject has String keys, so the implicit cast is safe.
-         String[] questionList = Iterators.toArray(questions.keys(), String.class);
+         String[] questionList = Iterators.toArray((Iterator<String>)questions.keys(), String.class);
          return questionList;
       }
       catch (Exception e) {

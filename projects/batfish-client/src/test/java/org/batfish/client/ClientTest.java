@@ -275,7 +275,7 @@ public class ClientTest {
       assertThat(node.asBoolean(), is(equalTo(true)));
    }
 
-   // Tests for validateNde method
+   // Tests for validateNode method
    @Test
    public void testValidateInvalidNode() throws IOException {
       String parameterName = "boolean";
@@ -1236,14 +1236,29 @@ public class ClientTest {
    @Test
    public void testInitContainerInvalidParas() throws Exception {
       Command command = INIT_CONTAINER;
-      String[] args = new String[]{command.commandName(),
-            "parameter1", "parameter2", "parameter3"};
-      Pair<String, String> usage = Command.getUsageMap().get(command);
-      String expected = String
-            .format("Invalid arguments: %s\n%s %s\n\t%s\n\n", Arrays.toString(args),
-                  command.commandName(), usage.getFirst(), usage.getSecond());
       String[] parameters = new String[]{"parameter1", "parameter2", "parameter3"};
-      checkProcessCommandErrorMessage(command, parameters, expected);
+      testInvalidInput(command, parameters);
+   }
+
+   @Test
+   public void testInitContainerInvalidOptions() throws Exception {
+      Command command = INIT_CONTAINER;
+      String invalidOption = "-setcontainer";
+      String[] args = new String[]{invalidOption, "parameter1"};
+      Pair<String, String> usage = Command.getUsageMap().get(command);
+      String expected = String.format("Invalid arguments: %s %s\n%s %s\n\t%s\n\n", "[-setcontainer]",
+            "[parameter1]", command.commandName(), usage.getFirst(), usage.getSecond());
+      checkProcessCommandErrorMessage(command, args, expected);
+   }
+
+   @Test
+   public void testInitContainerEmptyParasWithOption() throws Exception {
+      Command command = INIT_CONTAINER;
+      String[] args = new String[]{"-setname"};
+      Pair<String, String> usage = Command.getUsageMap().get(command);
+      String expected = String.format("Invalid arguments: %s []\n%s %s\n\t%s\n\n", "[-setname]",
+             command.commandName(), usage.getFirst(), usage.getSecond());
+      checkProcessCommandErrorMessage(command, args, expected);
    }
 
    @Test
@@ -1315,7 +1330,6 @@ public class ClientTest {
    @Test
    public void testListQuestionsValidParas() throws Exception {
       Command command = LIST_QUESTIONS;
-      String[] parameters = new String[]{};
       checkProcessCommandErrorMessage(command, new String[]{}, TESTRIG_NOT_SET);
    }
 
