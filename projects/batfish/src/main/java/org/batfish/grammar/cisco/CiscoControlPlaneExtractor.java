@@ -26,6 +26,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DscpType;
@@ -113,6 +115,7 @@ import org.batfish.datamodel.vendor_family.cisco.Service;
 import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
+import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.*;
@@ -244,6 +247,32 @@ import org.batfish.vendor.VendorConfiguration;
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       implements ControlPlaneExtractor {
 
+   private User _currentUser;
+
+   @Override
+   public void enterS_username(S_usernameContext ctx) {
+      String username = ctx.user.getText();
+      _currentUser = _configuration.getCf().getUsers().computeIfAbsent(
+            username, k->new User(k));
+   }
+   
+   @Override
+   public void exitU_password(U_passwordContext ctx) {
+      String passwordRehash = CommonUtil.sha256Digest(ctx.pass.getText() + JuniperUtils.SALT);
+      _currentUser.setPassword(passwordRehash);
+   }
+   
+   @Override
+   public void exitU_role(U_roleContext ctx) {
+      String role = ctx.role.getText();
+      _currentUser.setRole(role);
+   }
+   
+   @Override
+   public void exitS_username(S_usernameContext ctx) {
+      _currentUser = null;
+   }
+   
    private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;

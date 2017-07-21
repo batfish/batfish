@@ -250,7 +250,6 @@ null_block
       | TUNNEL_GROUP
       | UDF
       | USERGROUP
-      | USERNAME
       | VDC
       | VER
       | VIRTUAL_SERVICE
