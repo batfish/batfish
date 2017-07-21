@@ -1,6 +1,10 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -20,6 +24,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.RoleEdge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Vrf;
@@ -49,6 +54,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private final static String VERBOSE_OSPF_NEIGHBORS_VAR = "verboseOspfNeighbors";
 
+      private final static String ROLE_EBGP_NEIGHBORS_VAR = "roleEbgpNeighbors";
+
+      private final static String ROLE_IBGP_NEIGHBORS_VAR = "roleIbgpNeighbors";
+
+      private final static String ROLE_LAN_NEIGHBORS_VAR = "roleLanNeighbors";
+
+      private final static String ROLE_OSPF_NEIGHBORS_VAR = "roleOspfNeighbors";
+
+
       private SortedSet<IpEdge> _ebgpNeighbors;
 
       private SortedSet<IpEdge> _ibgpNeighbors;
@@ -64,6 +78,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       private SortedSet<VerboseEdge> _verboseLanNeighbors;
 
       private SortedSet<VerboseOspfEdge> _verboseOspfNeighbors;
+
+      private SortedSet<RoleEdge> _roleEbgpNeighbors;
+
+      private SortedSet<RoleEdge> _roleIbgpNeighbors;
+
+      private SortedSet<RoleEdge> _roleLanNeighbors;
+
+      private SortedSet<RoleEdge> _roleOspfNeighbors;
 
       public void addLanEdge(Edge edge) {
          _lanNeighbors.add(edge);
@@ -109,6 +131,26 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return _verboseOspfNeighbors;
       }
 
+      @JsonProperty(ROLE_EBGP_NEIGHBORS_VAR)
+      public SortedSet<RoleEdge> getRoleEbgpNeighbors() {
+         return _roleEbgpNeighbors;
+      }
+
+      @JsonProperty(ROLE_IBGP_NEIGHBORS_VAR)
+      public SortedSet<RoleEdge> getRoleIbgpNeighbors() {
+         return _roleIbgpNeighbors;
+      }
+
+      @JsonProperty(ROLE_LAN_NEIGHBORS_VAR)
+      public SortedSet<RoleEdge> getRoleLanNeighbors() {
+         return _roleLanNeighbors;
+      }
+
+      @JsonProperty(ROLE_OSPF_NEIGHBORS_VAR)
+      public SortedSet<RoleEdge> getRoleOspfNeighbors() {
+         return _roleOspfNeighbors;
+      }
+
       public void initEbgpNeighbors() {
          _ebgpNeighbors = new TreeSet<>();
       }
@@ -147,6 +189,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             }
          }
 
+         if (_roleLanNeighbors != null) {
+            sb.append("  LAN neighbors\n");
+            for (RoleEdge edge : _roleLanNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
          if (_ebgpNeighbors != null) {
             sb.append("  eBGP Neighbors\n");
             for (IpEdge ipEdge : _ebgpNeighbors) {
@@ -157,6 +206,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          if (_verboseEbgpNeighbors != null) {
             sb.append("  eBGP neighbors\n");
             for (VerboseBgpEdge edge : _verboseEbgpNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
+         if (_roleEbgpNeighbors != null) {
+            sb.append("  eBGP neighbors\n");
+            for (RoleEdge edge : _roleEbgpNeighbors) {
                sb.append("    " + edge.toString() + "\n");
             }
          }
@@ -175,6 +231,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             }
          }
 
+         if (_roleIbgpNeighbors != null) {
+            sb.append("  iBGP neighbors\n");
+            for (RoleEdge edge : _roleIbgpNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
          if (_ospfNeighbors != null) {
             sb.append("  OSPF Neighbors\n");
             for (IpEdge ipEdge : _ospfNeighbors) {
@@ -185,6 +248,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          if (_verboseOspfNeighbors != null) {
             sb.append("  OSPF neighbors\n");
             for (VerboseOspfEdge edge : _verboseOspfNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
+         if (_roleOspfNeighbors != null) {
+            sb.append("  OSPF neighbors\n");
+            for (RoleEdge edge : _roleOspfNeighbors) {
                sb.append("    " + edge.toString() + "\n");
             }
          }
@@ -236,6 +306,31 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _verboseOspfNeighbors = verboseOspfNeighbors;
       }
 
+      @JsonProperty(ROLE_EBGP_NEIGHBORS_VAR)
+      public void setRoleEbgpNeighbors(
+            SortedSet<RoleEdge> roleEbgpNeighbors) {
+         _roleEbgpNeighbors = roleEbgpNeighbors;
+      }
+
+      @JsonProperty(ROLE_IBGP_NEIGHBORS_VAR)
+      public void setRoleIbgpNeighbors(
+            SortedSet<RoleEdge> roleIbgpNeighbors) {
+         _roleIbgpNeighbors = roleIbgpNeighbors;
+      }
+
+
+      @JsonProperty(ROLE_LAN_NEIGHBORS_VAR)
+      public void setRoleLanNeighbors(
+            SortedSet<RoleEdge> roleLanNeighbors) {
+         _roleLanNeighbors = roleLanNeighbors;
+      }
+
+      @JsonProperty(ROLE_OSPF_NEIGHBORS_VAR)
+      public void setRoleOspfNeighbors(
+            SortedSet<RoleEdge> roleOspfNeighbors) {
+         _roleOspfNeighbors = roleOspfNeighbors;
+      }
+
    }
 
    public static class NeighborsAnswerer extends Answerer {
@@ -271,26 +366,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
 
-         // for (NeighborType nType : question.getNeighborTypes()) {
-         // switch (nType) {
-         // case EBGP:
-         // answerElement.initEbgpNeighbors();
-         // initRemoteBgpNeighbors(_batfish, configurations);
-         // break;
-         // case IBGP:
-         // answerElement.initIbgpNeighbors();
-         // initRemoteBgpNeighbors(_batfish, configurations);
-         // break;
-         // case LAN:
-         // answerElement.initLanNeighbors();
-         // break;
-         // default:
-         // throw new BatfishException("Unsupported NeighborType: "
-         // + nType.toString());
-         //
-         // }
-         // }
-
          if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
             SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
             initTopology(configurations);
@@ -300,198 +375,266 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                for (Vrf vrf : c.getVrfs().values()) {
                   OspfProcess proc = vrf.getOspfProcess();
                   if (proc != null) {
-                     for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors()
-                           .values()) {
-                        OspfNeighbor remoteOspfNeighbor = ospfNeighbor
-                              .getRemoteOspfNeighbor();
+                     for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors().values()) {
+                        OspfNeighbor remoteOspfNeighbor = ospfNeighbor.getRemoteOspfNeighbor();
                         if (remoteOspfNeighbor != null) {
-                           Configuration remoteHost = remoteOspfNeighbor
-                                 .getOwner();
+                           Configuration remoteHost = remoteOspfNeighbor.getOwner();
                            String remoteHostname = remoteHost.getHostname();
                            Matcher node1Matcher = node1Regex.matcher(hostname);
-                           Matcher node2Matcher = node2Regex
-                                 .matcher(remoteHostname);
-                           if (node1Matcher.matches()
-                                 && node2Matcher.matches()) {
+                           Matcher node2Matcher = node2Regex.matcher(remoteHostname);
+                           if (node1Matcher.matches() && node2Matcher.matches()) {
                               Ip localIp = ospfNeighbor.getLocalIp();
                               Ip remoteIp = remoteOspfNeighbor.getLocalIp();
-                              IpEdge edge = new IpEdge(hostname, localIp,
-                                    remoteHostname, remoteIp);
-                              vedges.add(new VerboseOspfEdge(c, ospfNeighbor,
-                                    remoteHost, remoteOspfNeighbor, edge));
+                              IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
+                              vedges.add(new VerboseOspfEdge(c, ospfNeighbor, remoteHost,
+                                    remoteOspfNeighbor, edge));
                            }
                         }
                      }
                   }
                }
             }
-            if (question.getVerbose()) {
-               answerElement.setVerboseOspfNeighbors(vedges);
-            }
-            else {
+
+            switch (question.getStyle()) {
+            case SUMMARY:
                answerElement.initOspfNeighbors();
                for (VerboseOspfEdge vedge : vedges) {
                   answerElement.getOspfNeighbors().add(vedge.getEdgeSummary());
                }
+               break;
+            case VERBOSE:
+               answerElement.setVerboseOspfNeighbors(vedges);
+               break;
+            case ROLE:
+               SortedSet<RoleEdge> redges = new TreeSet<>();
+               for (VerboseOspfEdge vedge : vedges) {
+                  SortedSet<String> roles1 = vedge.getNode1().getRoles();
+                  SortedSet<String> roles2 = vedge.getNode2().getRoles();
+                  for (String r1 : roles1) {
+                     for (String r2 : roles2) {
+                        redges.add(new RoleEdge(r1, r2));
+                     }
+                  }
+               }
+               answerElement.setRoleOspfNeighbors(redges);
+               break;
             }
          }
 
-         if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
-            initRemoteBgpNeighbors(_batfish, configurations);
-            SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
-            for (Configuration c : configurations.values()) {
-               String hostname = c.getHostname();
-               for (Vrf vrf : c.getVrfs().values()) {
-                  BgpProcess proc = vrf.getBgpProcess();
-                  if (proc != null) {
-                     for (BgpNeighbor bgpNeighbor : proc.getNeighbors()
-                           .values()) {
-                        BgpNeighbor remoteBgpNeighbor = bgpNeighbor
-                              .getRemoteBgpNeighbor();
-                        if (remoteBgpNeighbor != null) {
-                           boolean ebgp = !bgpNeighbor.getRemoteAs()
-                                 .equals(bgpNeighbor.getLocalAs());
-                           if (ebgp) {
-                              Configuration remoteHost = remoteBgpNeighbor
-                                    .getOwner();
-                              String remoteHostname = remoteHost.getHostname();
-                              Matcher node1Matcher = node1Regex
-                                    .matcher(hostname);
-                              Matcher node2Matcher = node2Regex
-                                    .matcher(remoteHostname);
-                              if (node1Matcher.matches()
-                                    && node2Matcher.matches()) {
-                                 Ip localIp = bgpNeighbor.getLocalIp();
-                                 Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                                 IpEdge edge = new IpEdge(hostname, localIp,
-                                       remoteHostname, remoteIp);
-                                 vedges.add(new VerboseBgpEdge(c, bgpNeighbor,
-                                       remoteHost, remoteBgpNeighbor, edge));
+            if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
+               initRemoteBgpNeighbors(_batfish, configurations);
+               SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
+               for (Configuration c : configurations.values()) {
+                  String hostname = c.getHostname();
+                  for (Vrf vrf : c.getVrfs().values()) {
+                     BgpProcess proc = vrf.getBgpProcess();
+                     if (proc != null) {
+                        for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+                           BgpNeighbor remoteBgpNeighbor = bgpNeighbor.getRemoteBgpNeighbor();
+                           if (remoteBgpNeighbor != null) {
+                              boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
+                              if (ebgp) {
+                                 Configuration remoteHost = remoteBgpNeighbor.getOwner();
+                                 String remoteHostname = remoteHost.getHostname();
+                                 Matcher node1Matcher = node1Regex.matcher(hostname);
+                                 Matcher node2Matcher = node2Regex.matcher(remoteHostname);
+                                 if (node1Matcher.matches() && node2Matcher.matches()) {
+                                    Ip localIp = bgpNeighbor.getLocalIp();
+                                    Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+                                    IpEdge edge = new IpEdge(hostname, localIp, remoteHostname,
+                                          remoteIp);
+                                    vedges.add(new VerboseBgpEdge(c, bgpNeighbor, remoteHost,
+                                          remoteBgpNeighbor, edge));
+                                 }
                               }
                            }
                         }
                      }
                   }
                }
-            }
-            if (question.getVerbose()) {
-               answerElement.setVerboseEbgpNeighbors(vedges);
-            }
-            else {
-               answerElement.initEbgpNeighbors();
-               for (VerboseBgpEdge vedge : vedges) {
-                  answerElement.getEbgpNeighbors().add(vedge.getEdgeSummary());
+
+               switch (question.getStyle()) {
+               case SUMMARY:
+                  answerElement.initEbgpNeighbors();
+                  for (VerboseBgpEdge vedge : vedges) {
+                     answerElement.getEbgpNeighbors().add(vedge.getEdgeSummary());
+                  }
+                  break;
+               case VERBOSE:
+                  answerElement.setVerboseEbgpNeighbors(vedges);
+                  break;
+               case ROLE:
+                  answerElement.setRoleEbgpNeighbors(
+                        verboseToRoleEdges(vedges));
+                  break;
                }
             }
-         }
 
-         if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
-            SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
-            initRemoteBgpNeighbors(_batfish, configurations);
-            for (Configuration c : configurations.values()) {
-               String hostname = c.getHostname();
-               for (Vrf vrf : c.getVrfs().values()) {
-                  BgpProcess proc = vrf.getBgpProcess();
-                  if (proc != null) {
-                     for (BgpNeighbor bgpNeighbor : proc.getNeighbors()
-                           .values()) {
-                        BgpNeighbor remoteBgpNeighbor = bgpNeighbor
-                              .getRemoteBgpNeighbor();
-                        if (remoteBgpNeighbor != null) {
-                           boolean ibgp = bgpNeighbor.getRemoteAs()
-                                 .equals(bgpNeighbor.getLocalAs());
-                           if (ibgp) {
-                              Configuration remoteHost = remoteBgpNeighbor
-                                    .getOwner();
-                              String remoteHostname = remoteHost.getHostname();
-                              Matcher node1Matcher = node1Regex
-                                    .matcher(hostname);
-                              Matcher node2Matcher = node2Regex
-                                    .matcher(remoteHostname);
-                              if (node1Matcher.matches()
-                                    && node2Matcher.matches()) {
-                                 Ip localIp = bgpNeighbor.getLocalIp();
-                                 Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                                 IpEdge edge = new IpEdge(hostname, localIp,
-                                       remoteHostname, remoteIp);
-                                 vedges.add(new VerboseBgpEdge(c, bgpNeighbor,
-                                       remoteHost, remoteBgpNeighbor, edge));
+               if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
+                  SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
+                  initRemoteBgpNeighbors(_batfish, configurations);
+                  for (Configuration c : configurations.values()) {
+                     String hostname = c.getHostname();
+                     for (Vrf vrf : c.getVrfs().values()) {
+                        BgpProcess proc = vrf.getBgpProcess();
+                        if (proc != null) {
+                           for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+                              BgpNeighbor remoteBgpNeighbor = bgpNeighbor.getRemoteBgpNeighbor();
+                              if (remoteBgpNeighbor != null) {
+                                 boolean ibgp = bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
+                                 if (ibgp) {
+                                    Configuration remoteHost = remoteBgpNeighbor.getOwner();
+                                    String remoteHostname = remoteHost.getHostname();
+                                    Matcher node1Matcher = node1Regex.matcher(hostname);
+                                    Matcher node2Matcher = node2Regex.matcher(remoteHostname);
+                                    if (node1Matcher.matches() && node2Matcher.matches()) {
+                                       Ip localIp = bgpNeighbor.getLocalIp();
+                                       Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+                                       IpEdge edge = new IpEdge(hostname, localIp, remoteHostname,
+                                             remoteIp);
+                                       vedges.add(new VerboseBgpEdge(c, bgpNeighbor, remoteHost,
+                                             remoteBgpNeighbor, edge));
+                                    }
+                                 }
                               }
                            }
                         }
                      }
                   }
+                  switch (question.getStyle()) {
+                  case SUMMARY:
+                     answerElement.initIbgpNeighbors();
+                     for (VerboseBgpEdge vedge : vedges) {
+                        answerElement.getIbgpNeighbors().add(vedge.getEdgeSummary());
+                     }
+                     break;
+                  case VERBOSE:
+                     answerElement.setVerboseIbgpNeighbors(vedges);
+                     break;
+                  case ROLE:
+                     answerElement.setRoleIbgpNeighbors(
+                           verboseToRoleEdges(vedges));
+                     break;
+                  }
+               }
+
+               if (question.getNeighborTypes().isEmpty() || question.getNeighborTypes().contains(NeighborType.LAN)) {
+                  initTopology(configurations);
+                  SortedSet<Edge> matchingEdges = new TreeSet<>();
+                  for (Edge edge : _topology.getEdges()) {
+                     Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
+                     Matcher node2Matcher = node2Regex.matcher(edge.getNode2());
+                     if (node1Matcher.matches() && node2Matcher.matches()) {
+                        matchingEdges.add(edge);
+                     }
+                  }
+                  switch (question.getStyle()) {
+                  case SUMMARY:
+                     answerElement.setLanNeighbors(matchingEdges);
+                     break;
+                  case VERBOSE:
+                     SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
+                     for (Edge edge : matchingEdges) {
+                        Configuration n1 = configurations.get(edge.getNode1());
+                        Interface i1 = n1.getInterfaces().get(edge.getInt1());
+                        Configuration n2 = configurations.get(edge.getNode2());
+                        Interface i2 = n2.getInterfaces().get(edge.getInt2());
+                        vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge));
+                     }
+                     answerElement.setVerboseLanNeighbors(vMatchingEdges);
+                     break;
+                  case ROLE:
+                     SortedSet<RoleEdge> rMatchingEdges = new TreeSet<>();
+                     for (Edge edge : matchingEdges) {
+                        SortedSet<String> roles1 = configurations.get(edge.getNode1()).getRoles();
+                        SortedSet<String> roles2 = configurations.get(edge.getNode2()).getRoles();
+                        for (String r1 : roles1) {
+                           for (String r2 : roles2) {
+                              rMatchingEdges.add(new RoleEdge(r1, r2));
+                           }
+                        }
+                     }
+                     answerElement.setRoleLanNeighbors(rMatchingEdges);
+                     break;
+                  }
+               }
+
+               return answerElement;
+            }
+
+         private void initRemoteBgpNeighbors (IBatfish batfish, Map < String, Configuration > configurations){
+            if (!_remoteBgpNeighborsInitialized) {
+               Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
+               batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+               _remoteBgpNeighborsInitialized = true;
+            }
+         }
+
+         private void initRemoteOspfNeighbors (IBatfish batfish, Map < String, Configuration > configurations, Topology topology){
+            if (!_remoteOspfNeighborsInitialized) {
+               Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
+               batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+               _remoteOspfNeighborsInitialized = true;
+            }
+         }
+
+         private void initTopology (Map < String, Configuration > configurations){
+            if (_topology == null) {
+               _topology = _batfish.computeTopology(configurations);
+            }
+         }
+
+         private SortedSet<RoleEdge> verboseToRoleEdges(SortedSet<VerboseBgpEdge> vedges) {
+            SortedSet<RoleEdge> redges = new TreeSet<>();
+            for (VerboseBgpEdge vedge : vedges) {
+               SortedSet<String> roles1 = vedge.getNode1().getRoles();
+               SortedSet<String> roles2 = vedge.getNode2().getRoles();
+               for (String r1 : roles1) {
+                  for (String r2 : roles2) {
+                     redges.add(new RoleEdge(r1, r2));
+                  }
                }
             }
-            if (question.getVerbose()) {
-               answerElement.setVerboseIbgpNeighbors(vedges);
-            }
-            else {
-               answerElement.initIbgpNeighbors();
-               for (VerboseBgpEdge vedge : vedges) {
-                  answerElement.getIbgpNeighbors().add(vedge.getEdgeSummary());
-               }
-            }
+            return redges;
          }
+   }
 
-         if (question.getNeighborTypes().isEmpty()
-               || question.getNeighborTypes().contains(NeighborType.LAN)) {
-            initTopology(configurations);
-            SortedSet<Edge> matchingEdges = new TreeSet<>();
-            for (Edge edge : _topology.getEdges()) {
-               Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
-               Matcher node2Matcher = node2Regex.matcher(edge.getNode2());
-               if (node1Matcher.matches() && node2Matcher.matches()) {
-                  matchingEdges.add(edge);
-               }
-            }
-            if (!question.getVerbose()) {
-               answerElement.setLanNeighbors(matchingEdges);
-            }
-            else {
-               SortedSet<VerboseEdge> vMatchingEdges = new TreeSet<>();
-               for (Edge edge : matchingEdges) {
-                  Configuration n1 = configurations.get(edge.getNode1());
-                  Interface i1 = n1.getInterfaces().get(edge.getInt1());
-                  Configuration n2 = configurations.get(edge.getNode2());
-                  Interface i2 = n2.getInterfaces().get(edge.getInt2());
-                  vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge));
-               }
-               answerElement.setVerboseLanNeighbors(vMatchingEdges);
-            }
+   public enum EdgeStyle {
+      ROLE("role"),
+      SUMMARY("summary"),
+      VERBOSE("verbose");
+
+      private final static Map<String, EdgeStyle> _map = buildMap();
+
+      private synchronized static Map<String, EdgeStyle> buildMap() {
+         Map<String, EdgeStyle> map = new HashMap<>();
+         for (EdgeStyle value : EdgeStyle.values()) {
+            String name = value._name;
+            map.put(name, value);
          }
-
-         return answerElement;
+         return Collections.unmodifiableMap(map);
       }
 
-      private void initRemoteBgpNeighbors(
-            IBatfish batfish,
-            Map<String, Configuration> configurations) {
-         if (!_remoteBgpNeighborsInitialized) {
-            Map<Ip, Set<String>> ipOwners = _batfish
-                  .computeIpOwners(configurations, true);
-            batfish.initRemoteBgpNeighbors(configurations, ipOwners);
-            _remoteBgpNeighborsInitialized = true;
+      @JsonCreator
+      public static EdgeStyle fromName(String name) {
+         EdgeStyle instance = _map.get(name.toLowerCase());
+         if (instance == null) {
+            throw new BatfishException("No " + EdgeStyle.class.getSimpleName()
+                  + " with name: '" + name + "'");
          }
+         return instance;
       }
 
-      private void initRemoteOspfNeighbors(
-            IBatfish batfish,
-            Map<String, Configuration> configurations, Topology topology) {
-         if (!_remoteOspfNeighborsInitialized) {
-            Map<Ip, Set<String>> ipOwners = _batfish
-                  .computeIpOwners(configurations, true);
-            batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
-            _remoteOspfNeighborsInitialized = true;
-         }
+      private final String _name;
+
+      private EdgeStyle(String name) {
+         _name = name;
       }
 
-      private void initTopology(Map<String, Configuration> configurations) {
-         if (_topology == null) {
-            _topology = _batfish.computeTopology(configurations);
-         }
+      @JsonValue
+      public String edgeStyleName() {
+         return _name;
       }
-
    }
 
    // <question_page_comment>
@@ -512,11 +655,12 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     * @param node2Regex
     *           Regular expression to match the nodes names for the other end of
     *           the pair. Default is '.*' (all nodes).
-    * @param verbose
-    *           Boolean indicating whether full information about the
-    *           nodes/interfaces that make up each neighbor pair is requested.
-    *           Default is false, indicating that only the names of
-    *           nodes/interfaces is returned.
+    * @param style
+    *           String indicating the style of information requested about each
+    *           edge: "summary" is the default and returns only the names of
+    *           nodes/interfaces in the edge; "verbose" provides full configuration
+    *           information about those nodes/interfaces; "role" abstracts edges
+    *           to the role level.
     *
     * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"]
     *node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
@@ -532,7 +676,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE2_REGEX_VAR = "node2Regex";
 
-      private static final String VERBOSE_VAR = "verbose";
+      private static final String STYLE_VAR = "style";
 
       private SortedSet<NeighborType> _neighborTypes;
 
@@ -540,13 +684,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private String _node2Regex;
 
-      private boolean _verbose;
+      private EdgeStyle _style;
 
       public NeighborsQuestion() {
          _node1Regex = ".*";
          _node2Regex = ".*";
          _neighborTypes = new TreeSet<>();
-         _verbose = false;
+         _style = EdgeStyle.SUMMARY;
       }
 
       @Override
@@ -579,9 +723,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      @JsonProperty(VERBOSE_VAR)
-      public boolean getVerbose() {
-         return _verbose;
+      @JsonProperty(STYLE_VAR)
+      public EdgeStyle getStyle() {
+         return _style;
       }
 
       @Override
@@ -591,7 +735,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                   "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b",
                   prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex,
                   NODE2_REGEX_VAR, _node2Regex, NEIGHBOR_TYPES_VAR,
-                  _neighborTypes.toString(), VERBOSE_VAR, _verbose);
+                  _neighborTypes.toString(), STYLE_VAR, _style);
             return retString;
          }
          catch (Exception e) {
@@ -622,9 +766,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          _node2Regex = regex;
       }
 
-      @JsonProperty(VERBOSE_VAR)
-      public void setVerbose(boolean verbose) {
-         _verbose = verbose;
+      @JsonProperty(STYLE_VAR)
+      public void setStyle(EdgeStyle style) {
+         _style = style;
       }
    }
 

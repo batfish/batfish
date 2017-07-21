@@ -611,7 +611,7 @@
     ],
     "node1Regex" : ".*",
     "node2Regex" : ".*",
-    "verbose" : false
+    "style" : "summary"
   },
   "status" : "SUCCESS"
 }
