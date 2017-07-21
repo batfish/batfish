@@ -6791,6 +6791,11 @@ REACTION
    'reaction'
 ;
 
+READ_ONLY_PASSWORD
+:
+   'read-only-password'
+;
+
 REAL
 :
    'real'
@@ -8216,6 +8221,11 @@ SUN
 SUNRPC
 :
    'sunrpc'
+;
+
+SUPER_USER_PASSWORD
+:
+   'super-user-password'
 ;
 
 SUPPLEMENTARY_SERVICES

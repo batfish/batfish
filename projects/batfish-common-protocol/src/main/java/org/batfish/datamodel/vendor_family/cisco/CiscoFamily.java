@@ -40,6 +40,8 @@ public class CiscoFamily implements Serializable {
 
    private SortedMap<String, User> _users;
 
+   private String _enableSecret;
+
    public CiscoFamily() {
       _banners = new TreeMap<>();
       _features = new TreeMap<>();
@@ -158,6 +160,14 @@ public class CiscoFamily implements Serializable {
 
    public SortedMap<String, User> getUsers() {
       return _users;
+   }
+
+   public void setEnableSecret(String enableSecret) {
+      _enableSecret = enableSecret;
+   }
+
+   public String getEnableSecret() {
+      return _enableSecret;
    }
 
 }

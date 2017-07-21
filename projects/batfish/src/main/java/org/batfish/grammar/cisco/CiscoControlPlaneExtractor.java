@@ -250,6 +250,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private User _currentUser;
 
    @Override
+   public void exitEnable_secret(Enable_secretContext ctx) {
+      String passwordRehash = CommonUtil.sha256Digest(ctx.pass.getText() + JuniperUtils.SALT);
+      _configuration.getCf().setEnableSecret(passwordRehash);
+   }
+   
+   @Override
    public void enterS_username(S_usernameContext ctx) {
       String username = ctx.user.getText();
       _currentUser = _configuration.getCf().getUsers().computeIfAbsent(

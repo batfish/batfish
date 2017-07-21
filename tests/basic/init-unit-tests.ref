@@ -45,6 +45,7 @@
         "cisco_dspfarm" : "cisco_dscpfarm",
         "cisco_dynamic_access_policy_record" : "cisco_dynamic_access_policy_record",
         "cisco_eigrp" : "cisco_eigrp",
+        "cisco_enable" : "cisco_enable",
         "cisco_flow" : "cisco_flow",
         "cisco_hardware" : "cisco_hardware",
         "cisco_hsrp" : "cisco_hsrp",
@@ -83,6 +84,7 @@
         "cisco_tacacs" : "cisco_tacacs",
         "cisco_track" : "cisco_track",
         "cisco_username" : "cisco_username",
+        "cisco_username_without_password" : "cisco_username_without_password",
         "cisco_vdc" : "cisco_vdc",
         "cisco_vlan" : "cisco_vlan",
         "cisco_voice_port" : "cisco_voice_port",
@@ -225,6 +227,7 @@
         "cisco_dspfarm" : "PASSED",
         "cisco_dynamic_access_policy_record" : "PASSED",
         "cisco_eigrp" : "PASSED",
+        "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
         "cisco_hsrp" : "PASSED",
@@ -263,6 +266,7 @@
         "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_username" : "PASSED",
+        "cisco_username_without_password" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
         "cisco_voice_port" : "PASSED",
@@ -362,7 +366,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.29.0",
+      "version" : "0.29.1",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -1479,7 +1483,7 @@
           }
         }
       },
-      "version" : "0.29.0",
+      "version" : "0.29.1",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1612,6 +1616,7 @@
         "cisco_dspfarm" : "PASSED",
         "cisco_dynamic_access_policy_record" : "PASSED",
         "cisco_eigrp" : "PASSED",
+        "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
         "cisco_hsrp" : "PASSED",
@@ -1650,6 +1655,7 @@
         "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_username" : "PASSED",
+        "cisco_username_without_password" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
         "cisco_voice_port" : "PASSED",
