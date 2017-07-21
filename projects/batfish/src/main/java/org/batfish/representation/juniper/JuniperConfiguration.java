@@ -1583,6 +1583,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.setLoggingServers(_syslogHosts);
       _c.setNtpServers(_ntpServers);
       _c.setTacacsServers(_tacplusServers);
+      _c.getVendorFamily().setJuniper(_jf);
       for (String riName : _routingInstances.keySet()) {
          _c.getVrfs().put(riName, new Vrf(riName));
       }

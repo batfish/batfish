@@ -2,6 +2,8 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class User extends ComparableStructure<String> {
 
    /**
@@ -10,9 +12,9 @@ public class User extends ComparableStructure<String> {
    private static final long serialVersionUID = 1L;
 
    private String _password;
-   
+
    private String _role;
-   
+
    public String getRole() {
       return _role;
    }
@@ -29,7 +31,7 @@ public class User extends ComparableStructure<String> {
       _password = password;
    }
 
-   public User(String name) {
+   public User(@JsonProperty(NAME_VAR) String name) {
       super(name);
    }
 
