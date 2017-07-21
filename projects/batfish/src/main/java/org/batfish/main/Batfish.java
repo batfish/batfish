@@ -4577,6 +4577,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       printElapsedTime();
    }
 
+   /**
+    * Read Iptable Files for each host in the keyset of {@code hostConfigurations}, and store
+    * the contents in {@code iptablesDate}. Each task fails if the Iptable file specified by
+    * host is not under {@code testRigPath} or does not exist.
+    *
+    * @throws BatfishException if there is a failed task and {@code _exitOnFirstError} is set
+    *
+    * @throws CompositeBatfishException if there is at least one failed task,
+    *       {@code _exitOnFirstError} is not set, and {@code _haltOnParseError} is set.
+    */
    void readIptableFiles(
          Path testRigPath,
          Map<String, VendorConfiguration> hostConfigurations,
