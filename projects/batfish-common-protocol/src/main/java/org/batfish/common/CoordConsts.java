@@ -79,12 +79,12 @@ public class CoordConsts {
    public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
    public static final String SVC_RSC_DEL_QUESTION = "delquestion";
    public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
+   public static final String SVC_RSC_EXIST_CONTAINER = "existcontainer";
    public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
    public static final String SVC_RSC_GET_ANSWER = "getanswer";
    public static final String SVC_RSC_GET_OBJECT = "getobject";
    public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
    public static final String SVC_RSC_GETSTATUS = "getstatus";
-   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
    public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
    public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
    public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";

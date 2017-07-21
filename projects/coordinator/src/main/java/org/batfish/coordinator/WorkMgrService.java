@@ -556,7 +556,7 @@ public class WorkMgrService {
    }
 
    @POST
-   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
+   @Path(CoordConsts.SVC_RSC_EXIST_CONTAINER)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray existContainer(
          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
