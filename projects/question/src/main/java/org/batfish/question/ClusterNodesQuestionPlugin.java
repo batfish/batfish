@@ -99,8 +99,9 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
          List<Set<String>> clusters = new ArrayList<>(clusterSets.size());
          for(Set<String> clusterSet : clusterSets) {
             Set<String> cluster = new TreeSet<>();
-            for (String vector : clusterSet)
+            for (String vector : clusterSet) {
                cluster.addAll(dataVectors.get(vector));
+            }
             clusters.add(cluster);
          }
          _answerElement.setClusters(clusters);
@@ -115,12 +116,15 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
          for (Set<NamedStructureEquivalenceSet<T>> eSet : eSets.getSameNamedStructures().values()) {
             // make sure the number of nodes with this name is large enough
             int count = 0;
-            for(NamedStructureEquivalenceSet<T> eClass : eSet)
+            for(NamedStructureEquivalenceSet<T> eClass : eSet) {
                count += eClass.getNodes().size();
-            if (count < THRESHOLD)
+            }
+            if (count < THRESHOLD) {
                continue;
-            for(StringBuilder sb : vectors.values())
+            }
+            for(StringBuilder sb : vectors.values()) {
                sb.append('0');
+            }
             char className = 'a';
             for (NamedStructureEquivalenceSet<T> eClass : eSet) {
                for (String node : eClass.getNodes()) {
@@ -150,8 +154,9 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
          for (Map.Entry<String,StringBuilder> entry : vectors.entrySet()) {
             String vector = entry.getValue().toString();
             Set<String> nodes = invertedVectors.get(vector);
-            if (nodes != null)
+            if (nodes != null) {
                nodes.add(entry.getKey());
+            }
             else {
                nodes = new TreeSet<String>();
                nodes.add(entry.getKey());
@@ -165,8 +170,9 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
          // we assume the strings have the same length
          int dist = 0;
          for(int i = 0; i < s1.length(); i++) {
-            if (s1.charAt(i) != s2.charAt(i))
+            if (s1.charAt(i) != s2.charAt(i)) {
                dist++;
+            }
          }
          return dist;
       }
@@ -196,8 +202,9 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
                char c = vec.charAt(i);
                int count = 0;
                for(String vec2 : vectors) {
-                  if(c == vec2.charAt(i))
-                     count++;      
+                  if(c == vec2.charAt(i)) {
+                     count++;
+                  }
                }
                if (count > modeCount) {
                   modeCount = count;
@@ -250,8 +257,9 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
             // compute the cluster of each vector: 
             // the cluster whose center has the minimum hamming distance to the vector
             clusters = new ArrayList<>(k);
-            for(int i = 0; i < k; i++)
+            for(int i = 0; i < k; i++) {
                clusters.add(new TreeSet<>());
+            }
             for (String vector : vectors) {
                int cluster = minHammingDistance(vector, centers, centers.length).getFirst();
                Set<String> clusterSet = clusters.get(cluster);
