@@ -56,11 +56,13 @@ public class NamedStructureOutlierSet<T>
    // our hypothesis is correct
    public int compareTo(NamedStructureOutlierSet<T> other) {
       int zComp = Double.compare(other.zScore(), this.zScore());
-      if (zComp != 0)
+      if (zComp != 0) {
          return zComp;
+      }
       int structComp = _structType.compareTo(other.getStructType());
-      if (structComp != 0)
+      if (structComp != 0) {
          return structComp;
+      }
       return _name.compareTo(other.getName());
    }
 
