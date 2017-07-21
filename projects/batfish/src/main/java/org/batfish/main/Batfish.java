@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -2245,6 +2246,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                }
             });
          }
+         answerElement.setStartTimestamp(parseAnswer.getTimestamp());
+         answerElement.setFinishTimestamp(convertAnswer.getTimestamp());
          answerElement.setParseStatus(parseAnswer.getParseStatus());
          for (String failed : convertAnswer.getFailed()) {
             answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
@@ -4180,6 +4183,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             configurations);
       serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
       serializeIndependentConfigs(configurations, outputPath);
+      answerElement.setTimestamp(new Date());
       serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
       return answer;
    }
@@ -4273,6 +4277,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
       answerElement.setVersion(Version.getVersion());
+      answerElement.setTimestamp(new Date());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }

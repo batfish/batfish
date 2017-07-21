@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
@@ -23,6 +24,8 @@ public class ParseVendorConfigurationAnswerElement
    private SortedMap<String, ParseTreeSentences> _parseTrees;
 
    private String _version;
+
+   private Date _timestamp;
 
    private SortedMap<String, Warnings> _warnings;
 
@@ -57,6 +60,10 @@ public class ParseVendorConfigurationAnswerElement
 
    public String getVersion() {
       return _version;
+   }
+
+   public Date getTimestamp() {
+      return _timestamp;
    }
 
    public SortedMap<String, Warnings> getWarnings() {
@@ -118,6 +125,10 @@ public class ParseVendorConfigurationAnswerElement
 
    public void setVersion(String version) {
       _version = version;
+   }
+
+   public void setTimestamp(Date timestamp) {
+      _timestamp = timestamp;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

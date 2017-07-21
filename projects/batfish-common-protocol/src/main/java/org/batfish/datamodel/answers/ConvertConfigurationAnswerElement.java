@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -28,6 +29,8 @@ public class ConvertConfigurationAnswerElement
 
    private String _version;
 
+   private Date _timestamp;
+
    private SortedMap<String, Warnings> _warnings;
 
    private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
@@ -54,6 +57,10 @@ public class ConvertConfigurationAnswerElement
 
    public String getVersion() {
       return _version;
+   }
+
+   public Date getTimestamp() {
+      return _timestamp;
    }
 
    public SortedMap<String, Warnings> getWarnings() {
@@ -130,6 +137,10 @@ public class ConvertConfigurationAnswerElement
 
    public void setVersion(String version) {
       _version = version;
+   }
+
+   public void setTimestamp(Date timestamp) {
+      _timestamp = timestamp;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

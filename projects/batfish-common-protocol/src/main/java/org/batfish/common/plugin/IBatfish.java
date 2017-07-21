@@ -84,7 +84,10 @@ public interface IBatfish extends IPluginConsumer {
    void initBgpOriginationSpaceExplicit(
          Map<String, Configuration> configurations);
 
-   InitInfoAnswerElement initInfo(boolean summary, boolean verboseError, boolean environmentRoutes);
+   InitInfoAnswerElement initInfo(
+         boolean summary,
+         boolean verboseError,
+         boolean environmentRoutes);
 
    void initRemoteBgpNeighbors(
          Map<String, Configuration> configurations,

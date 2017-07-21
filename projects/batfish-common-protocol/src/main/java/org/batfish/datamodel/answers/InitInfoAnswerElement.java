@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -16,6 +17,10 @@ public class InitInfoAnswerElement implements AnswerElement {
    private SortedMap<String, Warnings> _warnings;
 
    private SortedMap<String, Set<BatfishStackTrace>> _errors;
+
+   private Date _startTimestamp = null;
+
+   private Date _finishTimestamp = null;
 
    @JsonCreator
    public InitInfoAnswerElement() {
@@ -34,6 +39,14 @@ public class InitInfoAnswerElement implements AnswerElement {
 
    public SortedMap<String, Set<BatfishStackTrace>> getErrors() {
       return _errors;
+   }
+
+   public Date getStartTimestamp() {
+      return _startTimestamp;
+   }
+
+   public Date getFinishTimestamp() {
+      return _finishTimestamp;
    }
 
    @Override
@@ -164,6 +177,12 @@ public class InitInfoAnswerElement implements AnswerElement {
          sb.append("    Known but unsupported configuration format: "
                + unsupportedCount + "\n");
       }
+      if (_startTimestamp != null &&  _finishTimestamp != null) {
+         sb.append("  Start time: " + _startTimestamp.toString() + "\n");
+         sb.append("  Finish time: " + _finishTimestamp.toString() + "\n");
+         long timeCost = _finishTimestamp.getTime() - _startTimestamp.getTime();
+         sb.append("  Time cost: " + timeCost + "ms\n");
+      }
       return sb.toString();
    }
 
@@ -177,6 +196,14 @@ public class InitInfoAnswerElement implements AnswerElement {
 
    public void setErrors(SortedMap<String, Set<BatfishStackTrace>> errors) {
       _errors = errors;
+   }
+
+   public void setStartTimestamp(Date startTimestamp) {
+      _startTimestamp = startTimestamp;
+   }
+
+   public void setFinishTimestamp(Date finishTimestamp) {
+      _finishTimestamp = finishTimestamp;
    }
 
 }

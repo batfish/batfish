@@ -46,6 +46,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
       private boolean _verboseError;
 
+      private boolean _timestamp;
+
       public InitInfoQuestion() {
       }
 
