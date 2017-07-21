@@ -1850,6 +1850,31 @@ s_tunnel_group
    )*
 ;
 
+s_username
+:
+   USERNAME user = variable
+   (
+      (
+         u+ NEWLINE
+      )
+      |
+      (
+         NEWLINE
+         (
+            u NEWLINE
+         )*
+      )
+   )
+;
+
+s_username_attributes
+:
+   USERNAME user = variable ATTRIBUTES NEWLINE
+   (
+      ua_null
+   )*
+;
+
 s_vlan
 :
    NO? VLAN
@@ -2239,6 +2264,8 @@ stanza
    | s_tap
    | s_track
    | s_tunnel_group
+   | s_username
+   | s_username_attributes
    | s_vlan
    | s_voice
    | s_voice_port
@@ -2401,6 +2428,36 @@ vi_address_family
    (
       viaf_vrrp
    )*
+;
+
+u
+:
+   u_password
+   | u_role
+;
+
+u_password
+:
+   (
+      PASSWORD
+      | SECRET
+   ) DEC pass = variable_secret
+;
+
+u_role
+:
+   (
+      GROUP
+      | ROLE
+   ) role = variable
+;
+
+ua_null
+:
+   (
+      GROUP_LOCK
+      | VPN_GROUP_POLICY
+   ) ~NEWLINE* NEWLINE
 ;
 
 viaf_vrrp

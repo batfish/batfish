@@ -175,7 +175,7 @@ sysh_null
 
 syt_secret
 :
-   SECRET secret = variable
+   SECRET secret = DOUBLE_QUOTED_STRING
 ;
 
 syt_source_address

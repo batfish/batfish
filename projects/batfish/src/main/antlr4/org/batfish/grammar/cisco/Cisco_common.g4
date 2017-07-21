@@ -480,3 +480,8 @@ variable_permissive
       ~( EXTENDED | NEWLINE | STANDARD | WS )
    )+
 ;
+
+variable_secret
+:
+   ~( NEWLINE | ROLE )+
+;

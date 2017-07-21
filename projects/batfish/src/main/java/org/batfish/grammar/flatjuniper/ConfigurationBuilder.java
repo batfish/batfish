@@ -2394,7 +2394,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSyt_secret(Syt_secretContext ctx) {
-      String cipherText = ctx.secret.getText();
+      String cipherText = unquote(ctx.secret.getText());
       _currentTacplusServer.setSecret(JuniperUtils.decryptAndHashJuniper9CipherText(cipherText));
    }
    

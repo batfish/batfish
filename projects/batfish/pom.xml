@@ -62,7 +62,7 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-              <includes>**/FlatJuniper*.g4</includes>
+               <includes>**/FlatJuniperLexer.g4,**/FlatJuniperParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper</libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-flatjuniper</statusDirectory>
             </configuration>
