@@ -26,6 +26,7 @@
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
     <antlr4-maven-plugin.version>4.7-batfish-internal</antlr4-maven-plugin.version>
+    <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
@@ -56,6 +57,7 @@
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <jackson-jsonschema.version>1.0.11-batfish-internal</jackson-jsonschema.version>
+    <puppycrawl.version>8.0</puppycrawl.version>
     <maven-artifact.version>3.5.0</maven-artifact.version>
     <slf4j.version>1.7.25</slf4j.version>
     <xstream.version>1.4.7</xstream.version>
@@ -75,6 +77,26 @@
               <arg>-Werror</arg>
               <arg>-Xlint:all</arg>
             </compilerArgs>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${maven-checkstyle-plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${puppycrawl.version}</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <configLocation>checkstyle.xml</configLocation>
+            <consoleOutput>true</consoleOutput>
+            <failOnViolation>true</failOnViolation>
+            <includeResources>false</includeResources>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
           </configuration>
         </plugin>
 
@@ -115,6 +137,17 @@
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <executions>
+          <execution><goals><goal>check</goal></goals></execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-install-plugin</artifactId>
