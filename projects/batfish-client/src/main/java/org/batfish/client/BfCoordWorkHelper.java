@@ -725,8 +725,14 @@ public class BfCoordWorkHelper {
 
          addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY,
                _settings.getApiKey());
-         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_PREFIX,
-               containerPrefix);
+         if (containerName != null) {
+            addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME,
+                  containerName);
+         }
+         else {
+            addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_PREFIX,
+                  containerPrefix);
+         }
 
          JSONObject jObj = postData(webTarget, multiPart);
          if (jObj == null) {
