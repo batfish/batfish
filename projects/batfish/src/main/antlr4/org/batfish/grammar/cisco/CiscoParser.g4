@@ -281,6 +281,20 @@ eh_null
    ) ~NEWLINE* NEWLINE
 ;
 
+enable_null
+:
+   (
+      READ_ONLY_PASSWORD
+      | SUPER_USER_PASSWORD
+      | TELNET
+   ) ~NEWLINE* NEWLINE
+;
+
+enable_secret
+:
+   SECRET DEC pass = variable_secret NEWLINE
+;
+
 event_null
 :
    NO?
@@ -1358,6 +1372,15 @@ s_dynamic_access_policy_record
    )*
 ;
 
+s_enable
+:
+   ENABLE
+   (
+      enable_null
+      | enable_secret
+   )
+;
+
 s_event
 :
    NO? EVENT ~NEWLINE* NEWLINE
@@ -2185,6 +2208,7 @@ stanza
    | s_dot11
    | s_dspfarm
    | s_dynamic_access_policy_record
+   | s_enable
    | s_ethernet_services
    | s_event
    | s_event_handler
