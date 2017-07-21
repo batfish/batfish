@@ -1513,7 +1513,7 @@ public class Client extends AbstractClient implements IClient {
          }
          else {
             if (parameters.isEmpty()) {
-               _logger.error("Container name is required when option '-setname' is set");
+               _logger.error("Container name is required when option '-setname' is set\n");
                printUsage(Command.INIT_CONTAINER);
                return false;
             }

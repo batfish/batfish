@@ -1,6 +1,5 @@
 package org.batfish.coordinator;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -125,5 +124,5 @@ public class WorkMgrTest {
       String initResult = manager.initContainer(null, null);
       assertThat(initResult, startsWith("null_"));
    }
-   
+
 }
