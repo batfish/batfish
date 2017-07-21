@@ -73,10 +73,12 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
          
          Question innerQuestion = question.getQuestion();
          INodeRegexQuestion innerNRQuestion;
-         if (innerQuestion instanceof INodeRegexQuestion)
+         if (innerQuestion instanceof INodeRegexQuestion) {
             innerNRQuestion = (INodeRegexQuestion) innerQuestion;
-         else
+         }
+         else {
             throw new BatfishException("The question " + innerQuestion.getName() + " does not implement INodeRegexQuestion");
+         }
          
          _batfish.checkConfigurations();
          SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
@@ -104,8 +106,9 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
             SortedMap<String, SortedSet<String>> newMap = new TreeMap<>();
             for (String desiredRole : desiredRoles) {
                SortedSet<String> members = roleNodeMap.get(desiredRole);
-               if (members != null)
+               if (members != null) {
                   newMap.put(desiredRole, members);
+               }
             }
             roleNodeMap = newMap;
          }

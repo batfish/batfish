@@ -190,8 +190,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                   continue;
                }
                T struct = structureMap.get(structName);
-               if (struct != null || _missing)
+               if (struct != null || _missing) {
                   ae.add(hostname, structName, struct);
+               }
             }
          }
          if (!_singletons) {
