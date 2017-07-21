@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -87,4 +88,40 @@ public class WorkMgrTest {
       assertThat(questions.size(), is(3));
       assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
    }
+
+   @Test
+   public void initExistingContainer() throws IOException {
+      String containerName = "myContainer";
+      folder.newFolder(containerName);
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String expectedMessage = String
+            .format("Container '%s' already exists!", containerName);
+      thrown.expect(BatfishException.class);
+      thrown.expectMessage(equalTo(expectedMessage));
+      manager.initContainer(containerName, null);
+   }
+
+   @Test
+   public void initContainerWithContainerName() throws IOException {
+      String containerName = "myContainer";
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String initResult = manager.initContainer(containerName, null);
+      assertThat(initResult, equalTo(containerName));
+   }
+
+   @Test
+   public void initContainerWithcontainerPrefix() throws IOException {
+      String containerPrefix = "myContainerPrefix";
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String initResult = manager.initContainer(null, containerPrefix);
+      assertThat(initResult, startsWith(containerPrefix));
+   }
+
+   @Test
+   public void initContainerWithNullInput() throws IOException {
+      Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
+      String initResult = manager.initContainer(null, null);
+      assertThat(initResult, startsWith("null_"));
+   }
+
 }

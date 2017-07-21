@@ -1501,15 +1501,21 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-   private boolean initContainer(String[] words) {
-      if (words.length > 2) {
-         _logger.errorf("Invalid arguments: %s\n", Arrays.toString(words));
-         printUsage(Command.INIT_CONTAINER);
-         return false;
+   private boolean initContainer(List<String> options, List<String> parameters) {
+      if (options.contains("-setname")) {
+         if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_CONTAINER)) {
+            return false;
+         }
+         _currContainerName = _workHelper.initContainer(parameters.get(0), null);
       }
-      String containerPrefix = (words.length > 1) ? words[1]
-            : DEFAULT_CONTAINER_PREFIX;
-      _currContainerName = _workHelper.initContainer(null, containerPrefix);
+      else {
+         if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_CONTAINER)) {
+            return false;
+         }
+         String containerPrefix = parameters.isEmpty() ? parameters.get(0)
+               : DEFAULT_CONTAINER_PREFIX;
+         _currContainerName = _workHelper.initContainer(null, containerPrefix);
+      }
       if (_currContainerName == null) {
          _logger.errorf("Could not init container\n");
          return false;
@@ -2136,7 +2142,7 @@ public class Client extends AbstractClient implements IClient {
          case INIT_ANALYSIS:
             return initOrAddAnalysis(outWriter, options, parameters, true);
          case INIT_CONTAINER:
-            return initContainer(words);
+            return initContainer(options, parameters);
          case INIT_DELTA_ENV:
             return initDeltaEnv(outWriter, options, parameters);
          case INIT_DELTA_TESTRIG:
@@ -2866,10 +2872,10 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean isValidArgument(List<String> options, List<String> parameters,
-         int expectedOptionSize, int minNumParas, int maxNumParas, Command command) {
-      if (options.size() != expectedOptionSize
-            || !(parameters.size() >= minNumParas)
-            || !(parameters.size() <= maxNumParas)) {
+         int maxNumOptions, int minNumParas, int maxNumParas, Command command) {
+      if (options.size() > maxNumOptions
+            || (parameters.size() < minNumParas)
+            || (parameters.size() > maxNumParas)) {
          _logger.errorf("Invalid arguments: %s %s\n", options.toString(),
                parameters.toString());
          printUsage(command);
