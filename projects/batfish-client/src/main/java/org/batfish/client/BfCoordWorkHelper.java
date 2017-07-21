@@ -447,7 +447,7 @@ public class BfCoordWorkHelper {
             .register(MultiPartFeature.class);
    }
 
-   public String getContainer(String containerName) {
+   public String existContainer(String containerName) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(

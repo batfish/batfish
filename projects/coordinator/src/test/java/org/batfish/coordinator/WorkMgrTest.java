@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -93,7 +94,7 @@ public class WorkMgrTest {
    public void getNonExistContainer() {
       String containerName = "myContainer";
       Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
-      String containerInfo = manager.getContainer(containerName);
+      String containerInfo = manager.existContainer(containerName);
       String expectedInfo = String
             .format("Container %s does not exist\n", containerName);
       assertThat(containerInfo, equalTo(expectedInfo));
@@ -104,26 +105,23 @@ public class WorkMgrTest {
       String containerName = "myContainer";
       folder.newFolder(containerName);
       Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
-      String containerInfo = manager.getContainer(containerName);
+      String containerInfo = manager.existContainer(containerName);
       String expectedInfo = String
-            .format("Container: %s\n\tTestrigs in container: []\n", containerName);
-      assertThat(containerInfo, equalTo(expectedInfo));
+            .format("Container %s created at:", containerName);
+      assertThat(containerInfo, containsString(expectedInfo));
    }
 
    @Test
    public void getNonEmptyContainer() throws IOException {
       String containerName = "myContainer";
       Path containerPath = folder.newFolder(containerName).toPath();
-      Path oneTestrigPath = containerPath.resolve("oneTestrig");
-      Path anotherTestrigPath = containerPath.resolve("anotherTestrig");
-      assertThat(oneTestrigPath.toFile().mkdir(), is(true));
-      assertThat(anotherTestrigPath.toFile().mkdir(), is(true));
+      Path testrigPath = containerPath.resolve("testrig");
+      assertThat(testrigPath.toFile().mkdir(), is(true));
       Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
-      String containerInfo = manager.getContainer(containerName);
+      String containerInfo = manager.existContainer(containerName);
       String expectedInfo = String
-            .format("Container: %s\n\tTestrigs in container: [anotherTestrig, oneTestrig]\n",
-                  containerName);
-      assertThat(containerInfo, equalTo(expectedInfo));
+            .format("Container %s created at:", containerName);
+      assertThat(containerInfo, containsString(expectedInfo));
    }
 
 }

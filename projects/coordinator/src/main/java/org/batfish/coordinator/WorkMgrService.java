@@ -558,12 +558,12 @@ public class WorkMgrService {
    @POST
    @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
    @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray getContainer(
+   public JSONArray existContainer(
          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
       try {
-         _logger.info("WMS:getContainer " + containerName + "\n");
+         _logger.info("WMS:existContainer " + containerName + "\n");
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
@@ -572,7 +572,7 @@ public class WorkMgrService {
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
 
-         String containerInfo = Main.getWorkMgr().getContainer(containerName);
+         String containerInfo = Main.getWorkMgr().existContainer(containerName);
 
          return new JSONArray(Arrays.asList(
                CoordConsts.SVC_KEY_SUCCESS,
@@ -582,13 +582,13 @@ public class WorkMgrService {
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:getContainer exception: " + e.getMessage() + "\n");
+         _logger.error("WMS:existContainer exception: " + e.getMessage() + "\n");
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:getContainer exception: " + stackTrace);
+         _logger.error("WMS:existContainer exception: " + stackTrace);
          return new JSONArray(
                Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
       }

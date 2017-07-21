@@ -24,6 +24,7 @@ public enum Command {
    DEL_TESTRIG("del-testrig"),
    DIR("dir"),
    ECHO("echo"),
+   EXIST_CONTAINER("exist-container"),
    EXIT("exit"),
    GEN_DELTA_DP("generate-delta-dataplane"),
    GEN_DP("generate-dataplane"),
@@ -34,7 +35,6 @@ public enum Command {
    GET_ANSWER("get-answer"),
    GET_ANSWER_DELTA("get-answer-delta"),
    GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
-   GET_CONTAINER("get-container"),
    GET_DELTA("get-delta"),
    GET_QUESTION("get-question"),
    HELP("help"),
@@ -157,9 +157,9 @@ public enum Command {
       descs.put(GET_ANSWER, new Pair<>(
             "<question-name>",
             "Get the answer for a previously answered question"));
-      descs.put(GET_CONTAINER, new Pair<>(
+      descs.put(EXIST_CONTAINER, new Pair<>(
             "<container-name>",
-            "Get the information of the container"
+            "Check if the container exists"
       ));
       descs.put(
             GET_DELTA,

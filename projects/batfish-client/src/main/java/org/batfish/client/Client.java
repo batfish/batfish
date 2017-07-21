@@ -2106,6 +2106,8 @@ public class Client extends AbstractClient implements IClient {
             return dir(options, parameters);
          case ECHO:
             return echo(words);
+         case EXIST_CONTAINER:
+            return existContainer(options, parameters);
          case GEN_DP:
             return generateDataplane(outWriter, options, parameters);
          case GEN_DELTA_DP:
@@ -2129,8 +2131,6 @@ public class Client extends AbstractClient implements IClient {
             return getAnswer(outWriter, options, parameters, true, false);
          case GET_ANSWER_DIFFERENTIAL:
             return getAnswer(outWriter, options, parameters, false, true);
-         case GET_CONTAINER:
-            return getContainer(options, parameters);
          case GET_QUESTION:
             return getQuestion(options, parameters);
          case HELP:
@@ -2880,12 +2880,12 @@ public class Client extends AbstractClient implements IClient {
       return true;
    }
 
-   private boolean getContainer(List<String> options, List<String> parameters) {
-      if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
+   private boolean existContainer(List<String> options, List<String> parameters) {
+      if (!isValidArgument(options, parameters, 0, 1, 1, Command.EXIST_CONTAINER)) {
          return false;
       }
       String containerName = parameters.get(0);
-      String containerInfo = _workHelper.getContainer(containerName);
+      String containerInfo = _workHelper.existContainer(containerName);
       _logger.output(containerInfo);
       return true;
    }
