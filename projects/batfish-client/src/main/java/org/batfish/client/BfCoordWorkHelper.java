@@ -964,7 +964,7 @@ public class BfCoordWorkHelper {
                .getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
 
          @SuppressWarnings("unchecked") // JSONObject has String keys, so the implicit cast is safe.
-         String[] questionList = Iterators.toArray(questions.keys(), String.class);
+         String[] questionList = Iterators.toArray((Iterator<String>)questions.keys(), String.class);
          return questionList;
       }
       catch (Exception e) {
