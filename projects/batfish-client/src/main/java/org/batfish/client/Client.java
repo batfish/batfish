@@ -1502,26 +1502,16 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private boolean initContainer(List<String> options, List<String> parameters) {
-      if (!isValidArgument(options, parameters, 1, 0, 1, Command.INIT_CONTAINER)) {
-         return false;
-      }
-      if (!options.isEmpty()) {
-         if (!options.get(0).equals("-setname")) {
-            _logger.errorf("Invalid options: %s\n", options.toString());
-            printUsage(Command.INIT_CONTAINER);
+      if (options.contains("-setname")) {
+         if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_CONTAINER)) {
             return false;
          }
-         else {
-            if (parameters.isEmpty()) {
-               _logger.error("Container name is required when option '-setname' is set\n");
-               printUsage(Command.INIT_CONTAINER);
-               return false;
-            }
-            String containerName = parameters.get(0);
-            _currContainerName = _workHelper.initContainer(containerName, null);
-         }
+         _currContainerName = _workHelper.initContainer(parameters.get(0), null);
       }
       else {
+         if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_CONTAINER)) {
+            return false;
+         }
          String containerPrefix = parameters.isEmpty() ? parameters.get(0)
                : DEFAULT_CONTAINER_PREFIX;
          _currContainerName = _workHelper.initContainer(null, containerPrefix);

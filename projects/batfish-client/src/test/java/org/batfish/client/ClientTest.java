@@ -1246,8 +1246,8 @@ public class ClientTest {
       String invalidOption = "-setcontainer";
       String[] args = new String[]{invalidOption, "parameter1"};
       Pair<String, String> usage = Command.getUsageMap().get(command);
-      String expected = String.format("Invalid options: %s\n%s %s\n\t%s\n\n", "[-setcontainer]",
-            command.commandName(), usage.getFirst(), usage.getSecond());
+      String expected = String.format("Invalid arguments: %s %s\n%s %s\n\t%s\n\n", "[-setcontainer]",
+            "[parameter1]", command.commandName(), usage.getFirst(), usage.getSecond());
       checkProcessCommandErrorMessage(command, args, expected);
    }
 
@@ -1256,8 +1256,8 @@ public class ClientTest {
       Command command = INIT_CONTAINER;
       String[] args = new String[]{"-setname"};
       Pair<String, String> usage = Command.getUsageMap().get(command);
-      String expected = String.format("Container name is required when option '-setname' is set\n"
-                  + "%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+      String expected = String.format("Invalid arguments: %s []\n%s %s\n\t%s\n\n", "[-setname]",
+             command.commandName(), usage.getFirst(), usage.getSecond());
       checkProcessCommandErrorMessage(command, args, expected);
    }
 

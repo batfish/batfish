@@ -89,7 +89,6 @@ public class WorkMgrTest {
       assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
    }
 
-   // Tests for initContainer method
    @Test
    public void initExistingContainer() throws IOException {
       String containerName = "myContainer";

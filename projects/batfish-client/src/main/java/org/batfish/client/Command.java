@@ -173,7 +173,7 @@ public enum Command {
                   "<analysis-name> <question-directory>",
                   "Initialize a new analysis for the container"));
       descs.put(INIT_CONTAINER, new Pair<>(
-            "<-setname><container-name> or [<container-name-prefix>]",
+            "[-setname <container-name> | <container-name-prefix>]",
             "Initialize a new container"));
       descs.put(
             INIT_DELTA_ENV,
