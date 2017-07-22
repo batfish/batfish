@@ -745,6 +745,34 @@
             }
           }
         },
+        "arista_username" : {
+          "name" : "arista_username",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "enableSecret" : "a450caf35b93cba6024429006d971e68a18697468c1999449b1240b07fb26a04",
+              "hostname" : "arista_username",
+              "users" : {
+                "admin" : {
+                  "name" : "admin",
+                  "password" : "68f3055315344bb16950b708cd7e9389077221ab2edbaff6c6edd5d2ec10f8be",
+                  "role" : "network-admin"
+                },
+                "network" : {
+                  "name" : "network",
+                  "password" : "26b6d23991f12e4b6d2bcc115981f8a1d7535451f98888b0dd55f35f96962473"
+                }
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "as_path_prepend" : {
           "name" : "as_path_prepend",
           "configurationFormat" : "CISCO_NX",
@@ -2456,6 +2484,23 @@
             }
           }
         },
+        "cisco_enable" : {
+          "name" : "cisco_enable",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "enableSecret" : "41fb440a375eb13f1ca17ea2d14b0d4c73c37c32d764f9a34584a62fe8837ca8",
+              "hostname" : "cisco_enable"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "cisco_flow" : {
           "name" : "cisco_flow",
           "configurationFormat" : "CISCO_NX",
@@ -4078,6 +4123,13 @@
                     "name" : "1.2.3.4"
                   }
                 }
+              },
+              "users" : {
+                "abc" : {
+                  "name" : "abc",
+                  "password" : "5514c1ad6173b3f5f18ecaf3d4393210891247bda114b989b961b0eabc73cc32",
+                  "role" : "def"
+                }
               }
             }
           },
@@ -4810,6 +4862,61 @@
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_track"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cisco_username" : {
+          "name" : "cisco_username",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_username",
+              "users" : {
+                "admin" : {
+                  "name" : "admin",
+                  "password" : "a5521bc2b747bd3730859fdc9513dfb9d1f392dd635973ba26ba3b5ed773480b",
+                  "role" : "network-admin"
+                },
+                "network" : {
+                  "name" : "network",
+                  "password" : "d6e1f4ab0f5447db4a5a3345fbdd584aad1ac24a75dc476ba7bdaad7e6cf07f5",
+                  "role" : "network-admin"
+                }
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cisco_username_without_password" : {
+          "name" : "cisco_username_without_password",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_username_without_password",
+              "users" : {
+                "barfoo" : {
+                  "name" : "barfoo",
+                  "password" : "be59343a049d615b82040dc3af33858a6308efc6f273756be6d4ea6afa7a8248",
+                  "role" : "bloop"
+                },
+                "foobar" : {
+                  "name" : "foobar",
+                  "role" : "bloop"
+                }
+              }
             }
           },
           "vrfs" : {
@@ -7283,7 +7390,9 @@
               ]
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -7346,7 +7455,9 @@
               ]
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7358,7 +7469,9 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7575,7 +7688,9 @@
               ]
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -7614,7 +7729,9 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7648,7 +7765,9 @@
               ]
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7725,7 +7844,9 @@
               "vrf" : "default"
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -7836,7 +7957,9 @@
               "vrf" : "default"
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -7855,7 +7978,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "my.domain.name",
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7871,7 +7996,41 @@
             "1.2.3.4",
             "2.3.4.5"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "juniper_passwords" : {
+          "name" : "juniper_passwords",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "tacacsServers" : [
+            "1.2.3.4",
+            "1.2.3.5"
+          ],
+          "vendorFamily" : {
+            "juniper" : {
+              "rootAuthenticationEncryptedPassword" : "afb9a6be03f8232c331c9b2a9537695acc8f4037591633ca55e81a2f8def821e",
+              "tacplusServers" : {
+                "1.2.3.4" : {
+                  "name" : "1.2.3.4",
+                  "secret" : "70f9a47453524fbb6fe2ea42b68f6c3453c1b02b9fea7c57205459003054b397",
+                  "sourceAddress" : "2.2.2.2"
+                },
+                "1.2.3.5" : {
+                  "name" : "1.2.3.5",
+                  "secret" : "d6e1f4ab0f5447db4a5a3345fbdd584aad1ac24a75dc476ba7bdaad7e6cf07f5",
+                  "sourceAddress" : "2.2.2.2"
+                }
+              }
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7931,7 +8090,9 @@
               "vrf" : "default"
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -7947,7 +8108,9 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -7959,7 +8122,9 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -7994,7 +8159,9 @@
           "loggingServers" : [
             "1.2.3.4"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -8006,7 +8173,9 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"
@@ -8019,9 +8188,24 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "tacacsServers" : [
-            "1.2.3.4"
+            "1.2.3.4",
+            "5.6.7.8"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "juniper" : {
+              "tacplusServers" : {
+                "1.2.3.4" : {
+                  "name" : "1.2.3.4",
+                  "secret" : "31dfc8d7c4c8d7a5c1c7dcbc68a1d3fcdb7c9f0a5feb507bf5415e3b0ef78fef",
+                  "sourceAddress" : "2.3.4.5"
+                },
+                "5.6.7.8" : {
+                  "name" : "5.6.7.8",
+                  "sourceAddress" : "8.7.6.5"
+                }
+              }
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default"

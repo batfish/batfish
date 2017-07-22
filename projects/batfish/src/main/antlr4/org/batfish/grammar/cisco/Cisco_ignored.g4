@@ -56,7 +56,6 @@ null_block
       | DOT1X_ENABLE
       | DUAL_MODE_DEFAULT_VLAN
       | DYNAMIC_ACCESS_POLICY_RECORD
-      | ENABLE
       | ENABLE_ACL_COUNTER
       | ENABLE_QOS_STATISTICS
       | END
@@ -250,7 +249,6 @@ null_block
       | TUNNEL_GROUP
       | UDF
       | USERGROUP
-      | USERNAME
       | VDC
       | VER
       | VIRTUAL_SERVICE
