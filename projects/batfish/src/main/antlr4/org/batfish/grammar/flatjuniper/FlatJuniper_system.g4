@@ -16,6 +16,7 @@ s_system
       | sy_name_server
       | sy_ntp
       | sy_null
+      | sy_root_authentication
       | sy_syslog
       | sy_tacplus_server
    )
@@ -75,7 +76,6 @@ sy_null
       | PROCESSES
       | RADIUS_OPTIONS
       | RADIUS_SERVER
-      | ROOT_AUTHENTICATION
       | SAVED_CORE_CONTEXT
       | SAVED_CORE_FILES
       | SCRIPTS
@@ -83,6 +83,14 @@ sy_null
       | SWITCHOVER_ON_ROUTING_CRASH
       | TIME_ZONE
    ) null_filler
+;
+
+sy_root_authentication
+:
+   ROOT_AUTHENTICATION
+   (
+      syr_encrypted_password
+   )
 ;
 
 sy_syslog
@@ -103,6 +111,8 @@ sy_tacplus_server
    )
    (
       apply
+      | syt_secret
+      | syt_source_address
       | syt_null
    )
 ;
@@ -119,6 +129,11 @@ syn_null
 syn_server
 :
    SERVER hostname = variable PREFER?
+;
+
+syr_encrypted_password
+:
+   ENCRYPTED_PASSWORD password = variable
 ;
 
 sys_host
@@ -158,13 +173,21 @@ sysh_null
    ) null_filler
 ;
 
+syt_secret
+:
+   SECRET secret = DOUBLE_QUOTED_STRING
+;
+
+syt_source_address
+:
+   SOURCE_ADDRESS address = IP_ADDRESS
+;
+
 syt_null
 :
    (
       PORT
-      | SECRET
       | SINGLE_CONNECTION
-      | SOURCE_ADDRESS
       | TIMEOUT
    ) null_filler
 ;

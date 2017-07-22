@@ -1,0 +1,9 @@
+!
+hostname arista_username
+!
+enable secret 5 SOMEPASSWORD3
+no aaa root
+!
+username admin role network-admin secret 5 SOMEPASSWORD4
+username network secret 5 SOMEPASSWORD5
+!

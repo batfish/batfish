@@ -4,6 +4,9 @@
 .DS_Store
 *.testout
 
+# ignore maven pom version backups
+pom.xml.versionsBackup
+
 # IntelliJ project files that should not be shared, per:
 # https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
 workspace.xml

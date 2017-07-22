@@ -1,0 +1,10 @@
+!
+hostname cisco_enable
+!
+enable read-only-password aaaaaaaaaaaaaaaaaaaaaa
+enable secret 5 $1$aaaaaaaaaaaaaaaaaaaaaaaaaaa
+enable super-user-password aaaaaaaaaaaaaaaaaaaaa
+enable telnet authentication
+enable telnet password aaaaaaaaaaaaaaaaaaaaaaaaa
+!
+

@@ -38,11 +38,20 @@ public class CiscoFamily implements Serializable {
 
    private SshSettings _ssh;
 
+   private SortedMap<String, User> _users;
+
+   private String _enableSecret;
+
    public CiscoFamily() {
       _banners = new TreeMap<>();
       _features = new TreeMap<>();
       _lines = new TreeMap<>();
       _services = new TreeMap<>();
+      _users = new TreeMap<>();
+   }
+
+   public void setUsers(SortedMap<String, User> users) {
+      _users = users;
    }
 
    public Aaa getAaa() {
@@ -147,6 +156,18 @@ public class CiscoFamily implements Serializable {
 
    public void setSsh(SshSettings ssh) {
       _ssh = ssh;
+   }
+
+   public SortedMap<String, User> getUsers() {
+      return _users;
+   }
+
+   public void setEnableSecret(String enableSecret) {
+      _enableSecret = enableSecret;
+   }
+
+   public String getEnableSecret() {
+      return _enableSecret;
    }
 
 }
