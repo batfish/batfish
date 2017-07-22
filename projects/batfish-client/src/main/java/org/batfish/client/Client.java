@@ -79,6 +79,7 @@ import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONTokener;
 
 public class Client extends AbstractClient implements IClient {
 
@@ -727,10 +728,18 @@ public class Client extends AbstractClient implements IClient {
             Map<String, JsonNode> parameters = parseParams(paramsLine);
             for (Entry<String, JsonNode> e : parameters.entrySet()) {
                String parameterName = e.getKey();
-               JsonNode parameterValue = e.getValue();
-               questionJson.put(parameterName, parameterValue);
+               String parameterValue = e.getValue().toString();
+               Object parameterObj;
+               try {
+                  parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
+                  questionJson.put(parameterName, parameterObj);
+               }
+               catch (JSONException e1) {
+                  throw new BatfishException("Failed to apply parameter: '"
+                        + parameterName + "' with value: '" + parameterValue
+                        + "' to question JSON", e1);
+               }
             }
-
          }
          catch (JSONException e) {
             throw new BatfishException(
