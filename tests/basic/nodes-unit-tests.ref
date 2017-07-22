@@ -752,6 +752,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
+              "enableSecret" : "a450caf35b93cba6024429006d971e68a18697468c1999449b1240b07fb26a04",
               "hostname" : "arista_username",
               "users" : {
                 "admin" : {
@@ -2475,6 +2476,23 @@
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_eigrp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cisco_enable" : {
+          "name" : "cisco_enable",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "enableSecret" : "41fb440a375eb13f1ca17ea2d14b0d4c73c37c32d764f9a34584a62fe8837ca8",
+              "hostname" : "cisco_enable"
             }
           },
           "vrfs" : {
@@ -4870,6 +4888,33 @@
                   "name" : "network",
                   "password" : "d6e1f4ab0f5447db4a5a3345fbdd584aad1ac24a75dc476ba7bdaad7e6cf07f5",
                   "role" : "network-admin"
+                }
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cisco_username_without_password" : {
+          "name" : "cisco_username_without_password",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_username_without_password",
+              "users" : {
+                "barfoo" : {
+                  "name" : "barfoo",
+                  "password" : "be59343a049d615b82040dc3af33858a6308efc6f273756be6d4ea6afa7a8248",
+                  "role" : "bloop"
+                },
+                "foobar" : {
+                  "name" : "foobar",
+                  "role" : "bloop"
                 }
               }
             }
@@ -8143,7 +8188,8 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "tacacsServers" : [
-            "1.2.3.4"
+            "1.2.3.4",
+            "5.6.7.8"
           ],
           "vendorFamily" : {
             "juniper" : {
@@ -8152,6 +8198,10 @@
                   "name" : "1.2.3.4",
                   "secret" : "31dfc8d7c4c8d7a5c1c7dcbc68a1d3fcdb7c9f0a5feb507bf5415e3b0ef78fef",
                   "sourceAddress" : "2.3.4.5"
+                },
+                "5.6.7.8" : {
+                  "name" : "5.6.7.8",
+                  "sourceAddress" : "8.7.6.5"
                 }
               }
             }
