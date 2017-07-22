@@ -281,6 +281,20 @@ eh_null
    ) ~NEWLINE* NEWLINE
 ;
 
+enable_null
+:
+   (
+      READ_ONLY_PASSWORD
+      | SUPER_USER_PASSWORD
+      | TELNET
+   ) ~NEWLINE* NEWLINE
+;
+
+enable_secret
+:
+   SECRET DEC pass = variable_secret NEWLINE
+;
+
 event_null
 :
    NO?
@@ -1358,6 +1372,15 @@ s_dynamic_access_policy_record
    )*
 ;
 
+s_enable
+:
+   ENABLE
+   (
+      enable_null
+      | enable_secret
+   )
+;
+
 s_event
 :
    NO? EVENT ~NEWLINE* NEWLINE
@@ -1850,6 +1873,31 @@ s_tunnel_group
    )*
 ;
 
+s_username
+:
+   USERNAME user = variable
+   (
+      (
+         u+ NEWLINE
+      )
+      |
+      (
+         NEWLINE
+         (
+            u NEWLINE
+         )*
+      )
+   )
+;
+
+s_username_attributes
+:
+   USERNAME user = variable ATTRIBUTES NEWLINE
+   (
+      ua_null
+   )*
+;
+
 s_vlan
 :
    NO? VLAN
@@ -2160,6 +2208,7 @@ stanza
    | s_dot11
    | s_dspfarm
    | s_dynamic_access_policy_record
+   | s_enable
    | s_ethernet_services
    | s_event
    | s_event_handler
@@ -2239,6 +2288,8 @@ stanza
    | s_tap
    | s_track
    | s_tunnel_group
+   | s_username
+   | s_username_attributes
    | s_vlan
    | s_voice
    | s_voice_port
@@ -2401,6 +2452,36 @@ vi_address_family
    (
       viaf_vrrp
    )*
+;
+
+u
+:
+   u_password
+   | u_role
+;
+
+u_password
+:
+   (
+      PASSWORD
+      | SECRET
+   ) DEC pass = variable_secret
+;
+
+u_role
+:
+   (
+      GROUP
+      | ROLE
+   ) role = variable
+;
+
+ua_null
+:
+   (
+      GROUP_LOCK
+      | VPN_GROUP_POLICY
+   ) ~NEWLINE* NEWLINE
 ;
 
 viaf_vrrp

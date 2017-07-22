@@ -852,6 +852,11 @@ ENCAPSULATION
    'encapsulation'
 ;
 
+ENCRYPTED_PASSWORD
+:
+   'encrypted-password'
+;
+
 ENCRYPTION_ALGORITHM
 :
    'encryption-algorithm'
