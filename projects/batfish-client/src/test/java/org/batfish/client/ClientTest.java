@@ -75,12 +75,10 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.SUBRANGE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -247,14 +245,6 @@ public class ClientTest {
    public void testValidJsonPath() throws IOException {
       String validJsonPath = "{\"path\" : \"I am path.\", \"suffix\" : true}";
       Client.validateJsonPath(mapper.readTree(validJsonPath));
-   }
-
-   @Test
-   public void testParseValidJsonContent() {
-      String validJsonContent = "true";
-      JsonNode node = Client.parseParaValue(validJsonContent);
-      assertThat(node.getNodeType(), is(JsonNodeType.BOOLEAN));
-      assertThat(node.asBoolean(), is(equalTo(true)));
    }
 
    @Test
@@ -715,10 +705,10 @@ public class ClientTest {
    }
 
    @Test
-   public void testValidateWithNullVariableInput() {
-      Map<String, String> parameters = new HashMap<>();
+   public void testValidateWithNullVariableInput() throws IOException {
+      Map<String, JsonNode> parameters = new HashMap<>();
       Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-      parameters.put("integer", "10");
+      parameters.put("integer", mapper.readTree("10"));
       variables.put("integer", null);
       thrown.expect(BatfishException.class);
       String errorMessage = "No variable named: 'integer' in supplied " +
@@ -728,15 +718,15 @@ public class ClientTest {
    }
 
    @Test
-   public void testValidateWithInvalidInput() {
-      Map<String, String> parameters = new HashMap<>();
+   public void testValidateWithInvalidInput() throws IOException {
+      Map<String, JsonNode> parameters = new HashMap<>();
       Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-      parameters.put("integer", "10");
+      parameters.put("integer", mapper.readTree("10"));
       Question.InstanceData.Variable integerVariable
             = new Question.InstanceData.Variable();
       integerVariable.setType(Question.InstanceData.Variable.Type.INTEGER);
       variables.put("integer", integerVariable);
-      parameters.put("boolean", "\"true\"");
+      parameters.put("boolean", mapper.readTree("\"true\""));
       Question.InstanceData.Variable booleanVariable
             = new Question.InstanceData.Variable();
       booleanVariable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
@@ -748,15 +738,15 @@ public class ClientTest {
    }
 
    @Test
-   public void testValidateWithValidInput() {
-      Map<String, String> parameters = new HashMap<>();
+   public void testValidateWithValidInput() throws IOException {
+      Map<String, JsonNode> parameters = new HashMap<>();
       Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-      parameters.put("integer", "10");
+      parameters.put("integer", mapper.readTree("10"));
       Question.InstanceData.Variable integerVariable
             = new Question.InstanceData.Variable();
       integerVariable.setType(Question.InstanceData.Variable.Type.INTEGER);
       variables.put("integer", integerVariable);
-      parameters.put("boolean", "true");
+      parameters.put("boolean", mapper.readTree("true"));
       Question.InstanceData.Variable booleanVariable
             = new Question.InstanceData.Variable();
       booleanVariable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
@@ -765,10 +755,10 @@ public class ClientTest {
    }
 
    @Test
-   public void testUnsatisfiedMinElementInput() {
-      Map<String, String> parameters = new HashMap<>();
+   public void testUnsatisfiedMinElementInput() throws IOException {
+      Map<String, JsonNode> parameters = new HashMap<>();
       Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
-      String jsonArray = "[\"action1\", \"action2\"]";
+      JsonNode jsonArray = mapper.readTree("[\"action1\", \"action2\"]");
       parameters.put("actions", jsonArray);
       Question.InstanceData.Variable actionsVariable
             = new Question.InstanceData.Variable();
@@ -784,12 +774,12 @@ public class ClientTest {
    }
 
    @Test
-   public void testSatisfiedMinElementInput() {
-      Map<String, String> parameters = new HashMap<>();
+   public void testSatisfiedMinElementInput() throws IOException {
+      Map<String, JsonNode> parameters = new HashMap<>();
       Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
       String jsonArray = "[\"action1\", \"action2\", \"action3\", " +
             "\"action4\", \"action5\", \"action6\"]";
-      parameters.put("actions", jsonArray);
+      parameters.put("actions", mapper.readTree(jsonArray));
       Question.InstanceData.Variable actionsVariable
             = new Question.InstanceData.Variable();
       actionsVariable.setType(Question.InstanceData.Variable.Type.STRING);

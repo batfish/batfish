@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +79,6 @@ import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.json.JSONTokener;
 
 public class Client extends AbstractClient implements IClient {
 
@@ -130,35 +128,6 @@ public class Client extends AbstractClient implements IClient {
    }
 
    /**
-    * Parse contents of {@code parameterValue} to build a {@link JsonNode
-    * JsonNode}.
-    *
-    * @return a json-encoded {@link JsonNode node} that contains the information
-    *         in {@code parameterValue}.
-    *
-    * @throws BatfishException
-    *            if contents of {@code parameterValue} is not valid JSON.
-    */
-   static JsonNode parseParaValue(String parameterValue)
-         throws BatfishException {
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
-      JsonNode value;
-      try {
-         value = mapper.readTree(parameterValue);
-      }
-      catch (IOException e1) {
-         try {
-            value = mapper.valueToTree(parameterValue);
-         }
-         catch (IllegalArgumentException e2) {
-            throw new BatfishException(
-                  String.format("Variable value \"%s\" is not valid JSON", parameterValue), e2);
-         }
-      }
-      return value;
-   }
-
-   /**
     * For each key in {@code parameters}, validate that its value satisfies the
     * requirements specified by {@code variables} for that specific key. Set
     * value to {@code variables} if validation passed.
@@ -169,17 +138,16 @@ public class Client extends AbstractClient implements IClient {
     *            {@code variables} for that specific key.
     */
    static void validateAndSet(
-         Map<String, String> parameters,
+         Map<String, JsonNode> parameters,
          Map<String, Variable> variables) throws BatfishException {
-      for (Entry<String, String> e : parameters.entrySet()) {
+      for (Entry<String, JsonNode> e : parameters.entrySet()) {
          String parameterName = e.getKey();
-         String parameterValue = e.getValue();
+         JsonNode value = e.getValue();
          Variable variable = variables.get(parameterName);
          if (variable == null) {
             throw new BatfishException("No variable named: '" + parameterName
                   + "' in supplied question template");
          }
-         JsonNode value = parseParaValue(parameterValue);
          if (variable.getMinElements() != null) {
             // Value is an array, check size and validate each elements in it
             if (!value.isArray() || value.size() < variable.getMinElements()) {
@@ -187,7 +155,7 @@ public class Client extends AbstractClient implements IClient {
                      "Invalid value for parameter %s: %s. "
                            + "Expecting a JSON array of at least %d "
                            + "elements",
-                     parameterName, parameterValue, variable.getMinElements()));
+                     parameterName, value, variable.getMinElements()));
             }
             for (JsonNode node : value) {
                validateNode(node, variable, parameterName);
@@ -601,7 +569,7 @@ public class Client extends AbstractClient implements IClient {
          throw new BatfishException("Invalid question template name: '"
                + questionTemplateName + "'");
       }
-      Map<String, String> parameters = parseParams(paramsLine);
+      Map<String, JsonNode> parameters = parseParams(paramsLine);
       JSONObject questionJson;
       try {
          questionJson = new JSONObject(questionContentUnmodified);
@@ -756,20 +724,11 @@ public class Client extends AbstractClient implements IClient {
             String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
             questionJson = new JSONObject(questionString);
 
-            Map<String, String> parameters = parseParams(paramsLine);
-            for (Entry<String, String> e : parameters.entrySet()) {
+            Map<String, JsonNode> parameters = parseParams(paramsLine);
+            for (Entry<String, JsonNode> e : parameters.entrySet()) {
                String parameterName = e.getKey();
-               String parameterValue = e.getValue();
-               Object parameterObj;
-               try {
-                  parameterObj = new JSONTokener(parameterValue).nextValue();
-                  questionJson.put(parameterName, parameterObj);
-               }
-               catch (JSONException e1) {
-                  throw new BatfishException("Failed to apply parameter: '"
-                        + parameterName + "' with value: '" + parameterValue
-                        + "' to question JSON", e1);
-               }
+               JsonNode parameterValue = e.getValue();
+               questionJson.put(parameterName, parameterValue);
             }
 
          }
@@ -1974,23 +1933,17 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
-   private Map<String, String> parseParams(String paramsLine) {
-      Map<String, String> parameters = new HashMap<>();
+   private Map<String, JsonNode> parseParams(String paramsLine) {
       String jsonParamsStr = "{ " + paramsLine + " }";
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, JsonNode> parameters;
       try {
-         JSONObject jsonParamsObject = new JSONObject(jsonParamsStr);
-
-         Iterator<?> keys = jsonParamsObject.keys();
-         while( keys.hasNext() ) {
-            String key = (String)keys.next();
-            String value = jsonParamsObject.get(key).toString();
-            _logger.debugf("key=%s value=%s\n", key, value);
-
-            parameters.put(key, value);
-         }
+         parameters = mapper.<Map<String, JsonNode>>readValue(
+               new JSONObject(jsonParamsStr).toString(),
+               new TypeReference<Map<String, JsonNode>>(){});
          return parameters;
       }
-      catch (JSONException e){
+      catch (JSONException | IOException e){
          throw new BatfishException("Failed to parse parameters. (Are all key-value pairs separated by commas? Are all values valid JSON?)", e);
       }
    }
