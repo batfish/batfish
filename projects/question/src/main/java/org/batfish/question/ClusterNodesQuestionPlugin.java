@@ -59,6 +59,8 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       // the names of all nodes being analyzed
       private List<String> _nodes;
 
+      private boolean _nameOnly;
+
       // the minimum size of a name set for it to be included in the clustering analysis
       private static double THRESHOLD;
       
@@ -71,6 +73,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
          ClusterNodesQuestion question = (ClusterNodesQuestion) _question;
          _answerElement = new ClusterNodesAnswerElement();
+         _nameOnly = question.getNameOnly();
          
          // first get the results of compareSameName
          CompareSameNameQuestionPlugin.CompareSameNameQuestion inner = 
@@ -88,7 +91,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
          _nodes = innerAnswer.getNodes();
          
          // TODO: Figure out the appropriate threshold, if any
-         THRESHOLD = 0.5 * _nodes.size() / question.getNumClusters();
+         THRESHOLD = 0.0 * _nodes.size() / question.getNumClusters();
          
          // use the CompareSameName info to create a data vector for each node
          Map<String,Set<String>> dataVectors = createDataVectors(equivalenceSets);
@@ -126,13 +129,15 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
                sb.append('0');
             }
             char className = 'a';
+            boolean nameOnly = _nameOnly;
             for (NamedStructureEquivalenceSet<T> eClass : eSet) {
                for (String node : eClass.getNodes()) {
                   StringBuilder sb = vectors.get(node);
-                  // TODO: Should we partition among equivalence classes, or just care about
-                  // whether the name exists or not?  
-//                  sb.setCharAt(sb.length() - 1, '1');
-                  sb.setCharAt(sb.length() - 1, className);
+                  if(nameOnly) {
+                     sb.setCharAt(sb.length() - 1, '1');
+                  } else {
+                     sb.setCharAt(sb.length() - 1, className);
+                  }
                }
                className++;
             }
@@ -303,6 +308,11 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     * @param numClusters
     *           The number of clusters to produce.  Default value is 5.
     *
+    * @param nameOnly
+    *           If true, the clustering is based only on the presence/absence of
+    *           structures of a given name in each configuration, but the definitions
+    *           of these structures are ignored.  Default value is false.
+    *
     */
    public static final class ClusterNodesQuestion extends Question {
 
@@ -312,11 +322,15 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       
       private static final String NUM_CLUSTERS_VAR = "numClusters";
 
+      private static final String NAME_ONLY_VAR = "nameOnly";
+
       private SortedSet<String> _namedStructTypes;
 
       private String _nodeRegex;
       
       private int _numClusters;
+
+      private boolean _nameOnly;
 
       public ClusterNodesQuestion() {
          _namedStructTypes = new TreeSet<>();
@@ -349,6 +363,11 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
          return _numClusters;
       }
 
+      @JsonProperty(NAME_ONLY_VAR)
+      public boolean getNameOnly() {
+         return _nameOnly;
+      }
+
       @Override
       public boolean getTraffic() {
          return false;
@@ -367,6 +386,11 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       @JsonProperty(NUM_CLUSTERS_VAR)
       public void setNumClusters(int numClusters) {
          _numClusters = numClusters;
+      }
+
+      @JsonProperty(NAME_ONLY_VAR)
+      public void setNameOnly(boolean nameOnly) {
+         _nameOnly = nameOnly;
       }
 
    }
