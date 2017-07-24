@@ -555,15 +555,22 @@ public class WorkMgrService {
       }
    }
 
+   /**
+    * Get information of the container
+    * @param apiKey
+    * @param clientVersion
+    * @param containerName
+    * @return
+    */
    @POST
-   @Path(CoordConsts.SVC_RSC_EXIST_CONTAINER)
-   @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray existContainer(
+   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
+   @Produces(MediaType.TEXT_PLAIN)
+   public Response getContainer(
          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
       try {
-         _logger.info("WMS:existContainer " + containerName + "\n");
+         _logger.info("WMS:getContainer " + containerName + "\n");
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
@@ -572,25 +579,28 @@ public class WorkMgrService {
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
 
-         String containerInfo = Main.getWorkMgr().existContainer(containerName);
+         java.nio.file.Path containerDir = Main.getSettings().getContainersLocation()
+               .resolve(containerName).toAbsolutePath();
+         if (containerDir == null || !Files.exists(containerDir)) {
+            return Response.status(Response.Status.NOT_FOUND)
+                  .entity("Container '" + containerName + "' not found")
+                  .type(MediaType.TEXT_PLAIN).build();
+         }
 
-         return new JSONArray(Arrays.asList(
-               CoordConsts.SVC_KEY_SUCCESS,
-               (new JSONObject().put(
-                     CoordConsts.SVC_KEY_CONTAINER_NAME,
-                     containerInfo))));
+         checkContainerAccessibility(apiKey, containerName);
+
+         SortedSet<String> testrigs = Main.getWorkMgr().getContainer(containerDir);
+         return Response.ok(testrigs.toString(), MediaType.TEXT_PLAIN).build();
       }
-      catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:existContainer exception: " + e.getMessage() + "\n");
-         return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+      catch (AccessControlException e) {
+         return Response.status(Response.Status.UNAUTHORIZED)
+               .entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:existContainer exception: " + stackTrace);
-         return new JSONArray(
-               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+         _logger.error("WMS:getContainer exception: " + stackTrace);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+               .entity(e.getCause()).type(MediaType.TEXT_PLAIN).build();
       }
 
    }

@@ -448,41 +448,47 @@ public class BfCoordWorkHelper {
             .register(MultiPartFeature.class);
    }
 
-   public String existContainer(String containerName) {
+   /**
+    * Return true if successfully get the information of the container,
+    * false if container {@code containerName} does not exist or the api
+    * key that is using has no access to the container
+    */
+   public String getContainer(String containerName) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(
                client,
-               CoordConsts.SVC_RSC_EXIST_CONTAINER);
+               CoordConsts.SVC_RSC_GET_CONTAINER);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
          addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY,
                _settings.getApiKey());
-         if (containerName != null) {
-            addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME,
-                  containerName);
-         }
+         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION,
+               Version.getVersion());
+         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME,
+               containerName);
 
-         JSONObject jObj = postData(webTarget, multiPart);
+         Response response = webTarget
+               .request(MediaType.TEXT_PLAIN)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         if (jObj == null) {
+         _logger.debug(response.getStatus() + " " + response.getStatusInfo()
+               + " " + response + "\n");
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _logger.errorf("GetContainer: Did not get an OK response\n");
+            _logger.errorf(response.readEntity(String.class) + "\n");
             return null;
          }
 
-         if (!jObj.has(CoordConsts.SVC_KEY_CONTAINER_NAME)) {
-            _logger.errorf(
-                  "container key not found in: %s\n",
-                  jObj.toString());
-            return null;
-         }
-
-         String containerInfo = jObj.getString(CoordConsts.SVC_KEY_CONTAINER_NAME);
-         return containerInfo;
+         String testrigs = response.readEntity(String.class) + "\n";
+         return testrigs;
       }
       catch (Exception e) {
-         _logger.errorf("exception: ");
+         _logger.errorf("Exception in getContainer from %s for %s\n",
+               _coordWorkMgr, containerName);
          _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
          return null;
       }

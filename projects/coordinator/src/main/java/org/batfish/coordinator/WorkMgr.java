@@ -1,15 +1,10 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -579,26 +574,16 @@ public class WorkMgr {
       return answer;
    }
 
-   public String existContainer(String containerName) {
-      Path containerDir = Main.getSettings().getContainersLocation()
-            .resolve(containerName).toAbsolutePath();
-      if (!Files.exists(containerDir)) {
-         return String.format("Container %s does not exist\n", containerName);
-      }
-      else {
-         try {
-            BasicFileAttributes view = Files
-                  .getFileAttributeView(containerDir, BasicFileAttributeView.class)
-                  .readAttributes();
-            String creationTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-                  .format(view.creationTime().toMillis());
-            return String.format("Container %s created at: %s\n",
-                  containerName, creationTime);
-         }
-         catch (IOException e) {
-            return String.format("Failed to get creation time for container: %s\n", containerName);
-         }
-      }
+   /**
+    * Return a {@link SortedSet SortedSet} contains all subdirectories under the path
+    * {@code containerDir}
+    */
+   public SortedSet<String> getContainer(Path containerDir) {
+      SortedSet<String> testrigs = new TreeSet<>(
+            CommonUtil.getSubdirectories(containerDir).stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+      return testrigs;
    }
 
    private Path getdirAnalysisQuestion(

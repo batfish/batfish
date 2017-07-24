@@ -1,6 +1,5 @@
 package org.batfish.coordinator;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -95,10 +94,11 @@ public class WorkMgrTest {
    public void getNonExistContainer() {
       String containerName = "myContainer";
       Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
-      String containerInfo = manager.existContainer(containerName);
-      String expectedInfo = String
-            .format("Container %s does not exist\n", containerName);
-      assertThat(containerInfo, equalTo(expectedInfo));
+      Path containerDir = Paths.get(folder.getRoot().toPath().resolve(containerName).toString());
+      thrown.expect(BatfishException.class);
+      thrown.expectMessage(equalTo(
+            "Error listing directory '" + containerDir.toString() + "'"));
+      manager.getContainer(containerDir);
    }
 
    @Test
@@ -106,22 +106,23 @@ public class WorkMgrTest {
       String containerName = "myContainer";
       folder.newFolder(containerName);
       Main.mainInit(new String[]{"-containerslocation", folder.getRoot().toString()});
-      String containerInfo = manager.existContainer(containerName);
-      String expectedInfo = String
-            .format("Container %s created at:", containerName);
-      assertThat(containerInfo, containsString(expectedInfo));
+      Path containerDir = Paths.get(folder.getRoot().toPath().resolve(containerName).toString());
+      SortedSet<String> containerInfo = manager.getContainer(containerDir);
+      assertThat(containerInfo.toString(), equalTo("[]"));
    }
 
    @Test
    public void getNonEmptyContainer() throws IOException {
       String containerName = "myContainer";
       Path containerPath = folder.newFolder(containerName).toPath();
-      Path testrigPath = containerPath.resolve("testrig");
+      Path testrigPath = containerPath.resolve("testrig1");
       assertThat(testrigPath.toFile().mkdir(), is(true));
+      Path testrigPath2 = containerPath.resolve("testrig2");
+      assertThat(testrigPath2.toFile().mkdir(), is(true));
       Main.mainInit(new String[] { "-containerslocation", folder.getRoot().toString() });
-      String containerInfo = manager.existContainer(containerName);
-      String expectedInfo = String.format("Container %s created at:", containerName);
-      assertThat(containerInfo, containsString(expectedInfo));
+      Path containerDir = Paths.get(folder.getRoot().toPath().resolve(containerName).toString());
+      SortedSet<String> containerInfo = manager.getContainer(containerDir);
+      assertThat(containerInfo.toString(), equalTo("[testrig1, testrig2]"));
    }
 
    @Test
