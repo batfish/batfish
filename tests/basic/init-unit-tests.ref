@@ -17,6 +17,7 @@
         "arista_ip_route" : "arista_ip_route",
         "arista_logging" : "arista-logging",
         "arista_misc" : "arista_misc",
+        "arista_username" : "arista_username",
         "as_path_prepend" : "as_path_prepend",
         "asa_acl" : "asa_acl",
         "asa_ssh" : "asa_ssh",
@@ -44,6 +45,7 @@
         "cisco_dspfarm" : "cisco_dscpfarm",
         "cisco_dynamic_access_policy_record" : "cisco_dynamic_access_policy_record",
         "cisco_eigrp" : "cisco_eigrp",
+        "cisco_enable" : "cisco_enable",
         "cisco_flow" : "cisco_flow",
         "cisco_hardware" : "cisco_hardware",
         "cisco_hsrp" : "cisco_hsrp",
@@ -81,6 +83,8 @@
         "cisco_system" : "cisco_system",
         "cisco_tacacs" : "cisco_tacacs",
         "cisco_track" : "cisco_track",
+        "cisco_username" : "cisco_username",
+        "cisco_username_without_password" : "cisco_username_without_password",
         "cisco_vdc" : "cisco_vdc",
         "cisco_vlan" : "cisco_vlan",
         "cisco_voice_port" : "cisco_voice_port",
@@ -127,6 +131,7 @@
         "juniper_interfaces" : "juniper_interfaces",
         "juniper_misc" : "juniper_misc",
         "juniper_ntp" : "juniper_ntp",
+        "juniper_passwords" : "juniper_passwords",
         "juniper_relay" : "juniper_relay",
         "juniper_routing_options" : "juniper_routing_options",
         "juniper_snmp" : "juniper_snmp",
@@ -194,6 +199,7 @@
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
+        "arista_username" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
         "asa_ssh" : "PASSED",
@@ -221,6 +227,7 @@
         "cisco_dspfarm" : "PASSED",
         "cisco_dynamic_access_policy_record" : "PASSED",
         "cisco_eigrp" : "PASSED",
+        "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
         "cisco_hsrp" : "PASSED",
@@ -258,6 +265,8 @@
         "cisco_system" : "PASSED",
         "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
+        "cisco_username" : "PASSED",
+        "cisco_username_without_password" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
         "cisco_voice_port" : "PASSED",
@@ -304,6 +313,7 @@
         "juniper_interfaces" : "PASSED",
         "juniper_misc" : "PASSED",
         "juniper_ntp" : "PASSED",
+        "juniper_passwords" : "PASSED",
         "juniper_relay" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
@@ -356,7 +366,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.28.1",
+      "version" : "0.29.1",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -1473,7 +1483,7 @@
           }
         }
       },
-      "version" : "0.28.1",
+      "version" : "0.29.1",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1578,6 +1588,7 @@
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
+        "arista_username" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
         "asa_ssh" : "PASSED",
@@ -1605,6 +1616,7 @@
         "cisco_dspfarm" : "PASSED",
         "cisco_dynamic_access_policy_record" : "PASSED",
         "cisco_eigrp" : "PASSED",
+        "cisco_enable" : "PASSED",
         "cisco_flow" : "PASSED",
         "cisco_hardware" : "PASSED",
         "cisco_hsrp" : "PASSED",
@@ -1642,6 +1654,8 @@
         "cisco_system" : "PASSED",
         "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
+        "cisco_username" : "PASSED",
+        "cisco_username_without_password" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
         "cisco_voice_port" : "PASSED",
@@ -1688,6 +1702,7 @@
         "juniper_interfaces" : "PASSED",
         "juniper_misc" : "PASSED",
         "juniper_ntp" : "PASSED",
+        "juniper_passwords" : "PASSED",
         "juniper_relay" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",

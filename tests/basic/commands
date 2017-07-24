@@ -17,6 +17,7 @@ test tests/basic/error.ref -error get error
 test tests/basic/ipsecVpnCheck.ref get ipsecVpnCheck
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
 test tests/basic/neighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"]
+test tests/basic/roleNeighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 test tests/basic/nodes-summary.ref get nodes summary=true
 test tests/basic/nodes.ref get nodes summary=false
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true

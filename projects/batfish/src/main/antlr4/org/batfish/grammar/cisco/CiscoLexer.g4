@@ -769,6 +769,11 @@ ATTRIBUTE_SET
    'attribute-set'
 ;
 
+ATTRIBUTES
+:
+   'attributes'
+;
+
 AUDIT
 :
    'audit'
@@ -5963,7 +5968,7 @@ PASSIVE_ONLY
 
 PASSWORD
 :
-   'password' -> pushMode ( M_COMMENT )
+   'password'
 ;
 
 PASSWORD_POLICY
@@ -6784,6 +6789,11 @@ REACT
 REACTION
 :
    'reaction'
+;
+
+READ_ONLY_PASSWORD
+:
+   'read-only-password'
 ;
 
 REAL
@@ -8213,6 +8223,11 @@ SUNRPC
    'sunrpc'
 ;
 
+SUPER_USER_PASSWORD
+:
+   'super-user-password'
+;
+
 SUPPLEMENTARY_SERVICES
 :
    'supplementary-services'
@@ -9223,24 +9238,14 @@ VPN
    'vpn'
 ;
 
-VPNV4
+VPN_GROUP_POLICY
 :
-   'vpnv4'
-;
-
-VPNV6
-:
-   'vpnv6'
+   'vpn-group-policy'
 ;
 
 VPN_FILTER
 :
    'vpn-filter'
-;
-
-VPN_GROUP_POLICY
-:
-   'vpn-group-policy'
 ;
 
 VPN_IDLE_TIMEOUT
@@ -9261,6 +9266,16 @@ VPN_SIMULTANEOUS_LOGINS
 VPN_TUNNEL_PROTOCOL
 :
    'vpn-tunnel-protocol'
+;
+
+VPNV4
+:
+   'vpnv4'
+;
+
+VPNV6
+:
+   'vpnv6'
 ;
 
 VRF
