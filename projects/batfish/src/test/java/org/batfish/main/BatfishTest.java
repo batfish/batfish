@@ -86,7 +86,7 @@ public class BatfishTest {
     Map<String, VendorConfiguration> hostConfigurations = new HashMap<>();
     hostConfigurations.put("host1", host1);
     Map<Path, String> iptablesData = new TreeMap<>();
-    Path testRigPath = folder.newFolder("testrig").toPath();
+    Path testRigPath = _folder.newFolder("testrig").toPath();
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
@@ -117,8 +117,8 @@ public class BatfishTest {
     String parseErrorMessage =
         "Fatal exception due to at least one Iptables file is not contained"
             + " within the testrig";
-    thrown.expect(CompositeBatfishException.class);
-    thrown.expectMessage(parseErrorMessage);
+    _thrown.expect(CompositeBatfishException.class);
+    _thrown.expectMessage(parseErrorMessage);
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
   }
 
@@ -175,7 +175,7 @@ public class BatfishTest {
     Map<String, VendorConfiguration> hostConfigurations = new HashMap<>();
     hostConfigurations.put("host1", host1);
     Map<Path, String> iptablesData = new TreeMap<>();
-    Path testRigPath = folder.newFolder("testrig").toPath();
+    Path testRigPath = _folder.newFolder("testrig").toPath();
     File iptableFile = Paths.get(testRigPath.toString(), iptablePath.toString()).toFile();
     iptableFile.getParentFile().mkdir();
     assertThat(iptableFile.createNewFile(), is(true));
