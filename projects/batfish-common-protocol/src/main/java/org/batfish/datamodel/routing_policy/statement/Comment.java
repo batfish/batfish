@@ -6,35 +6,31 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public class Comment extends Statement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   @JsonCreator
-   private Comment() {
-   }
+  @JsonCreator
+  private Comment() {}
 
-   public Comment(String text) {
-      setComment(text);
-   }
+  public Comment(String text) {
+    setComment(text);
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (obj == null) {
-         return false;
-      }
-      return obj.getClass() == this.getClass();
-   }
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    return obj.getClass() == this.getClass();
+  }
 
-   @Override
-   public Result execute(Environment environment) {
-      return new Result();
-   }
+  @Override
+  public Result execute(Environment environment) {
+    return new Result();
+  }
 
-   @Override
-   public int hashCode() {
-      return 0x12345678;
-   }
-
+  @Override
+  public int hashCode() {
+    return 0x12345678;
+  }
 }

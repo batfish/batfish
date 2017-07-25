@@ -7,18 +7,19 @@ import org.batfish.common.plugin.IBatfish;
 
 public class AssertionAst {
 
-   private BooleanExpr _expr;
+  private BooleanExpr _expr;
 
-   public AssertionAst(BooleanExpr expr) {
-      _expr = expr;
-   }
+  public AssertionAst(BooleanExpr expr) {
+    _expr = expr;
+  }
 
-   public boolean execute(
-         IBatfish batfish, Object jsonObject,
-         ConcurrentMap<String, ArrayNode> pathCache, Configuration c) {
-      Environment env = new Environment(batfish, jsonObject, pathCache, c);
-      boolean pass = _expr.evaluate(env);
-      return pass;
-   }
-
+  public boolean execute(
+      IBatfish batfish,
+      Object jsonObject,
+      ConcurrentMap<String, ArrayNode> pathCache,
+      Configuration c) {
+    Environment env = new Environment(batfish, jsonObject, pathCache, c);
+    boolean pass = _expr.evaluate(env);
+    return pass;
+  }
 }

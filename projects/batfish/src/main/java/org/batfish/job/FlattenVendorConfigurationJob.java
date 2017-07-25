@@ -9,89 +9,76 @@ import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 
-public class FlattenVendorConfigurationJob
-      extends BatfishJob<FlattenVendorConfigurationResult> {
+public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfigurationResult> {
 
-   private String _fileText;
+  private String _fileText;
 
-   private Path _inputFile;
+  private Path _inputFile;
 
-   private Path _outputFile;
+  private Path _outputFile;
 
-   private Warnings _warnings;
+  private Warnings _warnings;
 
-   public FlattenVendorConfigurationJob(
-         Settings settings, String fileText,
-         Path inputFile, Path outputFile, Warnings warnings) {
-      super(settings);
-      _fileText = fileText;
-      _inputFile = inputFile;
-      _outputFile = outputFile;
-      _warnings = warnings;
-   }
+  public FlattenVendorConfigurationJob(
+      Settings settings, String fileText, Path inputFile, Path outputFile, Warnings warnings) {
+    super(settings);
+    _fileText = fileText;
+    _inputFile = inputFile;
+    _outputFile = outputFile;
+    _warnings = warnings;
+  }
 
-   @Override
-   public FlattenVendorConfigurationResult call() throws Exception {
-      long startTime = System.currentTimeMillis();
-      long elapsedTime;
-      String inputFileAsString = _inputFile.toAbsolutePath().toString();
-      ConfigurationFormat format = VendorConfigurationFormatDetector
-            .identifyConfigurationFormat(_fileText);
+  @Override
+  public FlattenVendorConfigurationResult call() throws Exception {
+    long startTime = System.currentTimeMillis();
+    long elapsedTime;
+    String inputFileAsString = _inputFile.toAbsolutePath().toString();
+    ConfigurationFormat format =
+        VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
 
-      if (format == ConfigurationFormat.JUNIPER
-            || format == ConfigurationFormat.VYOS) {
-         String header = null;
-         if (format == ConfigurationFormat.JUNIPER) {
-            header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER;
-         }
-         if (format == ConfigurationFormat.VYOS) {
-            header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER;
-         }
-         _logger.debug(
-               "Flattening config: \"" + _inputFile.toString() + "\"...");
-         String flatConfigText = null;
-         try {
-            flatConfigText = Batfish.flatten(_fileText, _logger, _settings,
-                  format, header);
-         }
-         catch (ParserBatfishException e) {
-            String error = "Error parsing configuration file: \""
-                  + inputFileAsString + "\"";
-            elapsedTime = System.currentTimeMillis() - startTime;
-            return new FlattenVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _outputFile,
-                  new BatfishException(error, e));
-         }
-         catch (Exception e) {
-            String error = "Error post-processing parse tree of configuration file: \""
-                  + inputFileAsString + "\"";
-            elapsedTime = System.currentTimeMillis() - startTime;
-            return new FlattenVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _outputFile,
-                  new BatfishException(error, e));
-         }
-         finally {
-            Batfish.logWarnings(_logger, _warnings);
-         }
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new FlattenVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _outputFile, flatConfigText);
+    if (format == ConfigurationFormat.JUNIPER || format == ConfigurationFormat.VYOS) {
+      String header = null;
+      if (format == ConfigurationFormat.JUNIPER) {
+        header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER;
       }
-      else if (!_settings.ignoreUnsupported()
-            && format == ConfigurationFormat.UNKNOWN) {
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new FlattenVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _outputFile,
-               new BatfishException("Unknown configuration format for: \""
-                     + _inputFile.toString() + "\""));
+      if (format == ConfigurationFormat.VYOS) {
+        header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER;
       }
-      else {
-         _logger.debug("Skipping: \"" + _inputFile.toString() + "\"\n");
-         String flatConfigText = _fileText;
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new FlattenVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _outputFile, flatConfigText);
+      _logger.debug("Flattening config: \"" + _inputFile.toString() + "\"...");
+      String flatConfigText = null;
+      try {
+        flatConfigText = Batfish.flatten(_fileText, _logger, _settings, format, header);
+      } catch (ParserBatfishException e) {
+        String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";
+        elapsedTime = System.currentTimeMillis() - startTime;
+        return new FlattenVendorConfigurationResult(
+            elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
+      } catch (Exception e) {
+        String error =
+            "Error post-processing parse tree of configuration file: \"" + inputFileAsString + "\"";
+        elapsedTime = System.currentTimeMillis() - startTime;
+        return new FlattenVendorConfigurationResult(
+            elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
+      } finally {
+        Batfish.logWarnings(_logger, _warnings);
       }
-   }
-
+      elapsedTime = System.currentTimeMillis() - startTime;
+      return new FlattenVendorConfigurationResult(
+          elapsedTime, _logger.getHistory(), _outputFile, flatConfigText);
+    } else if (!_settings.ignoreUnsupported() && format == ConfigurationFormat.UNKNOWN) {
+      elapsedTime = System.currentTimeMillis() - startTime;
+      return new FlattenVendorConfigurationResult(
+          elapsedTime,
+          _logger.getHistory(),
+          _outputFile,
+          new BatfishException(
+              "Unknown configuration format for: \"" + _inputFile.toString() + "\""));
+    } else {
+      _logger.debug("Skipping: \"" + _inputFile.toString() + "\"\n");
+      String flatConfigText = _fileText;
+      elapsedTime = System.currentTimeMillis() - startTime;
+      return new FlattenVendorConfigurationResult(
+          elapsedTime, _logger.getHistory(), _outputFile, flatConfigText);
+    }
+  }
 }

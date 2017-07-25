@@ -8,26 +8,21 @@ import org.batfish.datamodel.Prefix;
 
 public final class FwFromDestinationAddressExcept extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Prefix _prefix;
+  private final Prefix _prefix;
 
-   public FwFromDestinationAddressExcept(Prefix prefix) {
-      _prefix = prefix;
-   }
+  public FwFromDestinationAddressExcept(Prefix prefix) {
+    _prefix = prefix;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      line.getNotDstIps().add(new IpWildcard(_prefix));
-   }
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    line.getNotDstIps().add(new IpWildcard(_prefix));
+  }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
-
+  public Prefix getPrefix() {
+    return _prefix;
+  }
 }

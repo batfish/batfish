@@ -12,29 +12,23 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   @Override
-   public final void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      Statement setStatement = toSetStatement(cc, c, w);
-      Statement bufferedStatement = new BufferedStatement(setStatement);
-      If ifStatement = new If();
-      ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-      ifStatement.setTrueStatements(Collections.singletonList(
-            Statements.SetLocalDefaultActionAccept.toStaticStatement()));
-      ifStatement.setFalseStatements(Collections.singletonList(
-            Statements.SetDefaultActionAccept.toStaticStatement()));
-      statements.add(bufferedStatement);
-      statements.add(ifStatement);
-   }
+  @Override
+  public final void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    Statement setStatement = toSetStatement(cc, c, w);
+    Statement bufferedStatement = new BufferedStatement(setStatement);
+    If ifStatement = new If();
+    ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+    ifStatement.setTrueStatements(
+        Collections.singletonList(Statements.SetLocalDefaultActionAccept.toStaticStatement()));
+    ifStatement.setFalseStatements(
+        Collections.singletonList(Statements.SetDefaultActionAccept.toStaticStatement()));
+    statements.add(bufferedStatement);
+    statements.add(ifStatement);
+  }
 
-   protected abstract Statement toSetStatement(
-         CiscoConfiguration cc,
-         Configuration c, Warnings w);
-
+  protected abstract Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w);
 }

@@ -5,8 +5,5 @@ import org.batfish.datamodel.questions.Question;
 
 public interface IClient extends IPluginConsumer {
 
-   void registerQuestion(
-         String questionName,
-         Supplier<Question> questionSupplier);
-
+  void registerQuestion(String questionName, Supplier<Question> questionSupplier);
 }

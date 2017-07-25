@@ -11,28 +11,25 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public final class PsThenReject extends PsThen {
 
-   public static final PsThenReject INSTANCE = new PsThenReject();
+  public static final PsThenReject INSTANCE = new PsThenReject();
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private PsThenReject() {
-   }
+  private PsThenReject() {}
 
-   @Override
-   public void applyTo(
-         List<Statement> statements,
-         JuniperConfiguration juniperVendorConfiguration, Configuration c,
-         Warnings warnings) {
-      If ifStatement = new If();
-      ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-      ifStatement.setTrueStatements(Collections
-            .singletonList(Statements.ReturnFalse.toStaticStatement()));
-      ifStatement.setFalseStatements(Collections
-            .singletonList(Statements.ExitReject.toStaticStatement()));
-      statements.add(ifStatement);
-   }
-
+  @Override
+  public void applyTo(
+      List<Statement> statements,
+      JuniperConfiguration juniperVendorConfiguration,
+      Configuration c,
+      Warnings warnings) {
+    If ifStatement = new If();
+    ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+    ifStatement.setTrueStatements(
+        Collections.singletonList(Statements.ReturnFalse.toStaticStatement()));
+    ifStatement.setFalseStatements(
+        Collections.singletonList(Statements.ExitReject.toStaticStatement()));
+    statements.add(ifStatement);
+  }
 }

@@ -4,19 +4,14 @@ import java.util.concurrent.Callable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.config.Settings;
 
-public abstract class BatfishJob<R extends BatfishJobResult<?, ?>>
-      implements Callable<R> {
+public abstract class BatfishJob<R extends BatfishJobResult<?, ?>> implements Callable<R> {
 
-   protected final BatfishLogger _logger;
+  protected final BatfishLogger _logger;
 
-   protected final Settings _settings;
+  protected final Settings _settings;
 
-   public BatfishJob(Settings settings) {
-      _settings = settings;
-      _logger = new BatfishLogger(
-            _settings.getLogLevel(),
-            _settings.getTimestamp());
-
-   }
-
+  public BatfishJob(Settings settings) {
+    _settings = settings;
+    _logger = new BatfishLogger(_settings.getLogLevel(), _settings.getTimestamp());
+  }
 }

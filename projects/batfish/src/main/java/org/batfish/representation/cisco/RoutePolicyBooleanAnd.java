@@ -8,38 +8,33 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 
 public class RoutePolicyBooleanAnd extends RoutePolicyBoolean {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private RoutePolicyBoolean _left;
+  private RoutePolicyBoolean _left;
 
-   private RoutePolicyBoolean _right;
+  private RoutePolicyBoolean _right;
 
-   public RoutePolicyBooleanAnd(
-         RoutePolicyBoolean left,
-         RoutePolicyBoolean right) {
-      _left = left;
-      _right = right;
-   }
+  public RoutePolicyBooleanAnd(RoutePolicyBoolean left, RoutePolicyBoolean right) {
+    _left = left;
+    _right = right;
+  }
 
-   public RoutePolicyBoolean getLeft() {
-      return _left;
-   }
+  public RoutePolicyBoolean getLeft() {
+    return _left;
+  }
 
-   public RoutePolicyBoolean getRight() {
-      return _right;
-   }
+  public RoutePolicyBoolean getRight() {
+    return _right;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      Conjunction conj = new Conjunction();
-      BooleanExpr left = _left.toBooleanExpr(cc, c, w);
-      BooleanExpr right = _right.toBooleanExpr(cc, c, w);
-      List<BooleanExpr> conjuncts = conj.getConjuncts();
-      conjuncts.add(left);
-      conjuncts.add(right);
-      return conj.simplify();
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    Conjunction conj = new Conjunction();
+    BooleanExpr left = _left.toBooleanExpr(cc, c, w);
+    BooleanExpr right = _right.toBooleanExpr(cc, c, w);
+    List<BooleanExpr> conjuncts = conj.getConjuncts();
+    conjuncts.add(left);
+    conjuncts.add(right);
+    return conj.simplify();
+  }
 }

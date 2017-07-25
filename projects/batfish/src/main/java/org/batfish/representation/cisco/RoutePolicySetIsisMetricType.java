@@ -9,22 +9,18 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetIsisMetricType extends RoutePolicyStatement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private IsisMetricType _type;
+  private IsisMetricType _type;
 
-   public RoutePolicySetIsisMetricType(IsisMetricType type) {
-      _type = type;
-   }
+  public RoutePolicySetIsisMetricType(IsisMetricType type) {
+    _type = type;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      statements.add(new SetIsisMetricType(_type));
-   }
-
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    statements.add(new SetIsisMetricType(_type));
+  }
 }

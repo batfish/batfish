@@ -4,23 +4,18 @@ import java.io.Serializable;
 
 public class SshSettings implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Integer _version;
+  private Integer _version;
 
-   public SshSettings() {
+  public SshSettings() {}
 
-   }
+  public Integer getVersion() {
+    return _version;
+  }
 
-   public Integer getVersion() {
-      return _version;
-   }
-
-   public void setVersion(Integer version) {
-      _version = version;
-   }
-
+  public void setVersion(Integer version) {
+    _version = version;
+  }
 }

@@ -5,16 +5,12 @@ import java.util.TreeSet;
 
 public class NodeSet extends TreeSet<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public NodeSet() {
-   }
+  public NodeSet() {}
 
-   public NodeSet(Collection<String> c) {
-      super(c);
-   }
-
+  public NodeSet(Collection<String> c) {
+    super(c);
+  }
 }

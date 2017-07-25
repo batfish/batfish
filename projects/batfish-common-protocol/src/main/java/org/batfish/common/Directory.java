@@ -11,59 +11,54 @@ import org.batfish.common.util.ComparableStructure;
 
 public class Directory extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private SortedSet<Directory> _directories;
+  private SortedSet<Directory> _directories;
 
-   private SortedSet<String> _files;
+  private SortedSet<String> _files;
 
-   public Directory(Path path) {
-      super(path.getFileName().toString());
-      _directories = new TreeSet<>();
-      _files = new TreeSet<>();
-      try {
-         for (Path subPath : Files.newDirectoryStream(path)) {
-            String name = subPath.getFileName().toString();
-            if (!name.startsWith(".")) {
-               if (Files.isDirectory(subPath)) {
-                  Directory dir = new Directory(subPath);
-                  _directories.add(dir);
-               }
-               else if (Files.isRegularFile(subPath)) {
-                  _files.add(name);
-               }
-            }
-         }
+  public Directory(Path path) {
+    super(path.getFileName().toString());
+    _directories = new TreeSet<>();
+    _files = new TreeSet<>();
+    try {
+      for (Path subPath : Files.newDirectoryStream(path)) {
+        String name = subPath.getFileName().toString();
+        if (!name.startsWith(".")) {
+          if (Files.isDirectory(subPath)) {
+            Directory dir = new Directory(subPath);
+            _directories.add(dir);
+          } else if (Files.isRegularFile(subPath)) {
+            _files.add(name);
+          }
+        }
       }
-      catch (IOException e) {
-         throw new BatfishException("Could not iterate over path: " + path, e);
-      }
-   }
+    } catch (IOException e) {
+      throw new BatfishException("Could not iterate over path: " + path, e);
+    }
+  }
 
-   @JsonCreator
-   public Directory(@JsonProperty(NAME_VAR) String name) {
-      super(name);
-      _directories = new TreeSet<>();
-      _files = new TreeSet<>();
-   }
+  @JsonCreator
+  public Directory(@JsonProperty(NAME_VAR) String name) {
+    super(name);
+    _directories = new TreeSet<>();
+    _files = new TreeSet<>();
+  }
 
-   public SortedSet<Directory> getDirectories() {
-      return _directories;
-   }
+  public SortedSet<Directory> getDirectories() {
+    return _directories;
+  }
 
-   public SortedSet<String> getFiles() {
-      return _files;
-   }
+  public SortedSet<String> getFiles() {
+    return _files;
+  }
 
-   public void setDirectories(SortedSet<Directory> directories) {
-      _directories = directories;
-   }
+  public void setDirectories(SortedSet<Directory> directories) {
+    _directories = directories;
+  }
 
-   public void setFiles(SortedSet<String> files) {
-      _files = files;
-   }
-
+  public void setFiles(SortedSet<String> files) {
+    _files = files;
+  }
 }

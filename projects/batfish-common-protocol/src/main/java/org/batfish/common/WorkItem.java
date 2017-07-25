@@ -9,98 +9,105 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public class WorkItem {
-   public static WorkItem FromJsonString(String jsonString)
-         throws JSONException {
 
-      JSONArray array = new JSONArray(jsonString);
+  public static WorkItem fromJsonString(String jsonString) throws JSONException {
 
-      UUID id = UUID.fromString(array.get(0).toString());
+    JSONArray array = new JSONArray(jsonString);
 
-      String containerName = array.get(1).toString();
-      String testrigName = array.get(2).toString();
+    UUID id = UUID.fromString(array.get(0).toString());
 
-      HashMap<String, String> requestParams = new HashMap<>();
-      HashMap<String, String> responseParams = new HashMap<>();
+    String containerName = array.get(1).toString();
+    String testrigName = array.get(2).toString();
 
-      JSONObject requestObject = new JSONObject(array.get(3).toString());
-      JSONObject responseObject = new JSONObject(array.get(4).toString());
+    HashMap<String, String> requestParams = new HashMap<>();
+    HashMap<String, String> responseParams = new HashMap<>();
 
-      PopulateHashMap(requestParams, requestObject);
-      PopulateHashMap(responseParams, responseObject);
+    JSONObject requestObject = new JSONObject(array.get(3).toString());
+    JSONObject responseObject = new JSONObject(array.get(4).toString());
 
-      return new WorkItem(id, containerName, testrigName, requestParams,
-            responseParams);
-   }
+    populateHashMap(requestParams, requestObject);
+    populateHashMap(responseParams, responseObject);
 
-   private static void PopulateHashMap(
-         HashMap<String, String> map,
-         JSONObject jsonObject) throws JSONException {
+    return new WorkItem(id, containerName, testrigName, requestParams, responseParams);
+  }
 
-      Iterator<?> keys = jsonObject.keys();
+  private static void populateHashMap(HashMap<String, String> map, JSONObject jsonObject)
+      throws JSONException {
 
-      while (keys.hasNext()) {
-         String key = (String) keys.next();
-         map.put(key, jsonObject.getString(key));
-      }
-   }
+    Iterator<?> keys = jsonObject.keys();
 
-   private String _containerName;
-   private UUID _id;
-   private HashMap<String, String> _requestParams;
-   private HashMap<String, String> _responseParams;
-   private String _testrigName;
+    while (keys.hasNext()) {
+      String key = (String) keys.next();
+      map.put(key, jsonObject.getString(key));
+    }
+  }
 
-   public WorkItem(String containerName, String testrigName) {
-      _id = UUID.randomUUID();
-      _containerName = containerName;
-      _testrigName = testrigName;
-      _requestParams = new HashMap<>();
-      _responseParams = new HashMap<>();
-   }
+  private String _containerName;
+  private UUID _id;
+  private HashMap<String, String> _requestParams;
+  private HashMap<String, String> _responseParams;
+  private String _testrigName;
 
-   public WorkItem(
-         UUID id, String containerName, String testrigName,
-         HashMap<String, String> reqParams, HashMap<String, String> resParams) {
-      _id = id;
-      _containerName = containerName;
-      _testrigName = testrigName;
-      _requestParams = reqParams;
-      _responseParams = resParams;
-   }
+  public WorkItem(String containerName, String testrigName) {
+    _id = UUID.randomUUID();
+    _containerName = containerName;
+    _testrigName = testrigName;
+    _requestParams = new HashMap<>();
+    _responseParams = new HashMap<>();
+  }
 
-   public void addRequestParam(String key, String value) {
-      _requestParams.put(key, value);
-   }
+  public WorkItem(
+      UUID id,
+      String containerName,
+      String testrigName,
+      HashMap<String, String> reqParams,
+      HashMap<String, String> resParams) {
+    _id = id;
+    _containerName = containerName;
+    _testrigName = testrigName;
+    _requestParams = reqParams;
+    _responseParams = resParams;
+  }
 
-   public String getContainerName() {
-      return _containerName;
-   }
+  public void addRequestParam(String key, String value) {
+    _requestParams.put(key, value);
+  }
 
-   public UUID getId() {
-      return _id;
-   }
+  public String getContainerName() {
+    return _containerName;
+  }
 
-   public HashMap<String, String> getRequestParams() {
-      return _requestParams;
-   }
+  public UUID getId() {
+    return _id;
+  }
 
-   public String getTestrigName() {
-      return _testrigName;
-   }
+  public HashMap<String, String> getRequestParams() {
+    return _requestParams;
+  }
 
-   public void setId(String idString) {
-      _id = UUID.fromString(idString);
-   }
+  public String getTestrigName() {
+    return _testrigName;
+  }
 
-   public String toJsonString() {
-      JSONObject requestObject = new JSONObject(_requestParams);
-      JSONObject responseObject = new JSONObject(_responseParams);
-      JSONArray array = new JSONArray(Arrays.asList(_id, _containerName,
-            _testrigName, requestObject.toString(), responseObject.toString()));
-      return array.toString();
-   }
+  public void setId(String idString) {
+    _id = UUID.fromString(idString);
+  }
 
-   public JSONObject toTask() {
-      return new JSONObject(_requestParams);
-   }
+  public String toJsonString() {
+    JSONObject requestObject = new JSONObject(_requestParams);
+    JSONObject responseObject = new JSONObject(_responseParams);
+    JSONArray array =
+        new JSONArray(
+            Arrays.asList(
+                _id,
+                _containerName,
+                _testrigName,
+                requestObject.toString(),
+                responseObject.toString()));
+    return array.toString();
+  }
+
+  public JSONObject toTask() {
+    return new JSONObject(_requestParams);
+  }
 }

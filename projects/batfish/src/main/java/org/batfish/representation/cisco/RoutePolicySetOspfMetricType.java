@@ -9,22 +9,18 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetOspfMetricType extends RoutePolicyStatement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private OspfMetricType _type;
+  private OspfMetricType _type;
 
-   public RoutePolicySetOspfMetricType(OspfMetricType type) {
-      _type = type;
-   }
+  public RoutePolicySetOspfMetricType(OspfMetricType type) {
+    _type = type;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      statements.add(new SetOspfMetricType(_type));
-   }
-
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    statements.add(new SetOspfMetricType(_type));
+  }
 }

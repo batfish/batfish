@@ -1,8 +1,8 @@
 package org.batfish.datamodel.answers;
 
 public enum AnswerStatus {
-   FAILURE,
-   SUCCESS,
-   STALE,
-   NOTFOUND
+  FAILURE,
+  NOTFOUND,
+  STALE,
+  SUCCESS
 }

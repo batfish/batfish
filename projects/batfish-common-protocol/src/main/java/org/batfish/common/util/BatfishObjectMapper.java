@@ -15,54 +15,45 @@ import java.io.Writer;
 
 public class BatfishObjectMapper extends ObjectMapper {
 
-   private static class Factory extends JsonFactory {
-      /**
-       *
-       */
-      private static final long serialVersionUID = 1L;
+  private static class Factory extends JsonFactory {
+    /** */
+    private static final long serialVersionUID = 1L;
 
-      @Override
-      protected JsonGenerator _createGenerator(Writer out, IOContext ctxt)
-            throws IOException {
-         return super._createGenerator(out, ctxt)
-               .setPrettyPrinter(new PrettyPrinter());
-      }
-   }
+    @Override
+    protected JsonGenerator _createGenerator(Writer out, IOContext ctxt) throws IOException {
+      return super._createGenerator(out, ctxt).setPrettyPrinter(new PrettyPrinter());
+    }
+  }
 
-   private static class PrettyPrinter extends DefaultPrettyPrinter {
+  private static class PrettyPrinter extends DefaultPrettyPrinter {
 
-      /**
-       *
-       */
-      private static final long serialVersionUID = 1L;
+    /** */
+    private static final long serialVersionUID = 1L;
 
-      public PrettyPrinter() {
-         _arrayIndenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE;
-      }
-   }
+    public PrettyPrinter() {
+      _arrayIndenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE;
+    }
+  }
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public BatfishObjectMapper() {
-      this(true);
-   }
+  public BatfishObjectMapper() {
+    this(true);
+  }
 
-   public BatfishObjectMapper(boolean indent) {
-      super(indent ? new Factory() : new JsonFactory());
-      if (indent) {
-         enable(SerializationFeature.INDENT_OUTPUT);
-      }
-      enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-      setSerializationInclusion(Include.NON_EMPTY);
-   }
+  public BatfishObjectMapper(boolean indent) {
+    super(indent ? new Factory() : new JsonFactory());
+    if (indent) {
+      enable(SerializationFeature.INDENT_OUTPUT);
+    }
+    enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+    setSerializationInclusion(Include.NON_EMPTY);
+  }
 
-   public BatfishObjectMapper(ClassLoader cl) {
-      this();
-      TypeFactory tf = TypeFactory.defaultInstance().withClassLoader(cl);
-      setTypeFactory(tf);
-   }
-
+  public BatfishObjectMapper(ClassLoader cl) {
+    this();
+    TypeFactory tf = TypeFactory.defaultInstance().withClassLoader(cl);
+    setTypeFactory(tf);
+  }
 }

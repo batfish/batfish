@@ -14,90 +14,87 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-@JsonSchemaDescription("A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes")
+@JsonSchemaDescription(
+    "A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes")
 public class RoutingPolicy extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private static final String STATEMENTS_VAR = "statements";
+  private static final String STATEMENTS_VAR = "statements";
 
-   private Configuration _owner;
+  private Configuration _owner;
 
-   private List<Statement> _statements;
+  private List<Statement> _statements;
 
-   @JsonCreator
-   private RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
-      super(name);
-      _statements = new ArrayList<>();
-   }
+  @JsonCreator
+  private RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
+    super(name);
+    _statements = new ArrayList<>();
+  }
 
-   public RoutingPolicy(String name, Configuration owner) {
-      this(name);
-      _owner = owner;
-   }
+  public RoutingPolicy(String name, Configuration owner) {
+    this(name);
+    _owner = owner;
+  }
 
-   public Result call(Environment environment) {
-      for (Statement statement : _statements) {
-         Result result = statement.execute(environment);
-         if (result.getExit()) {
-            return result;
-         }
-         if (result.getReturn()) {
-            result.setReturn(false);
-            return result;
-         }
+  public Result call(Environment environment) {
+    for (Statement statement : _statements) {
+      Result result = statement.execute(environment);
+      if (result.getExit()) {
+        return result;
       }
-      Result result = new Result();
-      result.setFallThrough(true);
-      result.setBooleanValue(environment.getDefaultAction());
-      return result;
-   }
-
-   @Override
-   public boolean equals(Object o) {
-      if (this == o) {
-         return true;
+      if (result.getReturn()) {
+        result.setReturn(false);
+        return result;
       }
-      RoutingPolicy other = (RoutingPolicy) o;
-      return _statements.equals(other._statements);
-   }
+    }
+    Result result = new Result();
+    result.setFallThrough(true);
+    result.setBooleanValue(environment.getDefaultAction());
+    return result;
+  }
 
-   @JsonIgnore
-   public Configuration getOwner() {
-      return _owner;
-   }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    RoutingPolicy other = (RoutingPolicy) o;
+    return _statements.equals(other._statements);
+  }
 
-   @JsonProperty(STATEMENTS_VAR)
-   @JsonPropertyDescription("The list of routing-policy statements to execute")
-   public List<Statement> getStatements() {
-      return _statements;
-   }
+  @JsonIgnore
+  public Configuration getOwner() {
+    return _owner;
+  }
 
-   public boolean process(
-         AbstractRoute inputRoute,
-         AbstractRouteBuilder<?> outputRoute, Ip peerAddress, String vrf) {
-      Environment environment = new Environment(_owner, vrf, inputRoute, null,
-            outputRoute, peerAddress);
-      Result result = call(environment);
-      return result.getBooleanValue();
-   }
+  @JsonProperty(STATEMENTS_VAR)
+  @JsonPropertyDescription("The list of routing-policy statements to execute")
+  public List<Statement> getStatements() {
+    return _statements;
+  }
 
-   @JsonProperty(STATEMENTS_VAR)
-   public void setStatements(List<Statement> statements) {
-      _statements = statements;
-   }
+  public boolean process(
+      AbstractRoute inputRoute, AbstractRouteBuilder<?> outputRoute, Ip peerAddress, String vrf) {
+    Environment environment =
+        new Environment(_owner, vrf, inputRoute, null, outputRoute, peerAddress);
+    Result result = call(environment);
+    return result.getBooleanValue();
+  }
 
-   public RoutingPolicy simplify() {
-      List<Statement> simpleStatements = new ArrayList<>();
-      for (Statement statement : _statements) {
-         simpleStatements.addAll(statement.simplify());
-      }
-      RoutingPolicy simple = new RoutingPolicy(_key, _owner);
-      simple.setStatements(simpleStatements);
-      return simple;
-   }
+  @JsonProperty(STATEMENTS_VAR)
+  public void setStatements(List<Statement> statements) {
+    _statements = statements;
+  }
 
+  public RoutingPolicy simplify() {
+    List<Statement> simpleStatements = new ArrayList<>();
+    for (Statement statement : _statements) {
+      simpleStatements.addAll(statement.simplify());
+    }
+    RoutingPolicy simple = new RoutingPolicy(_key, _owner);
+    simple.setStatements(simpleStatements);
+    return simple;
+  }
 }

@@ -10,25 +10,22 @@ import org.batfish.common.util.BatfishObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public interface AnswerElement {
 
-   String SUMMARY_VAR = "summary";
+  String SUMMARY_VAR = "summary";
 
-   @JsonProperty(SUMMARY_VAR)
-   default String getSummary() {
-      return null;
-   }
+  @JsonProperty(SUMMARY_VAR)
+  default String getSummary() {
+    return null;
+  }
 
-   default String prettyPrint() {
-      ObjectMapper mapper = new BatfishObjectMapper();
-      try {
-         return mapper.writeValueAsString(this);
-      }
-      catch (JsonProcessingException e) {
-         throw new BatfishException("Failed to pretty print answer element", e);
-      }
-   }
+  default String prettyPrint() {
+    ObjectMapper mapper = new BatfishObjectMapper();
+    try {
+      return mapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      throw new BatfishException("Failed to pretty print answer element", e);
+    }
+  }
 
-   @JsonProperty(SUMMARY_VAR)
-   default void setSummary(String summary) {
-   }
-
+  @JsonProperty(SUMMARY_VAR)
+  default void setSummary(String summary) {}
 }

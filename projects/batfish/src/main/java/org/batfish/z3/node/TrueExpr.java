@@ -6,19 +6,17 @@ import org.batfish.z3.NodProgram;
 
 public class TrueExpr extends BooleanExpr {
 
-   public static final TrueExpr INSTANCE = new TrueExpr();
+  public static final TrueExpr INSTANCE = new TrueExpr();
 
-   private TrueExpr() {
-   }
+  private TrueExpr() {}
 
-   @Override
-   public void print(StringBuilder sb, int indent) {
-      sb.append("true");
-   }
+  @Override
+  public void print(StringBuilder sb, int indent) {
+    sb.append("true");
+  }
 
-   @Override
-   public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
-      return nodProgram.getContext().mkTrue();
-   }
-
+  @Override
+  public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
+    return nodProgram.getContext().mkTrue();
+  }
 }

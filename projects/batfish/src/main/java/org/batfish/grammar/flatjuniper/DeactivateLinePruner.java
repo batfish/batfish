@@ -8,27 +8,24 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 
 public class DeactivateLinePruner extends FlatJuniperParserBaseListener {
 
-   private Flat_juniper_configurationContext _configurationContext;
+  private Flat_juniper_configurationContext _configurationContext;
 
-   private List<ParseTree> _newConfigurationLines;
+  private List<ParseTree> _newConfigurationLines;
 
-   @Override
-   public void enterFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<>();
-      _newConfigurationLines.addAll(ctx.children);
-   }
+  @Override
+  public void enterFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    _configurationContext = ctx;
+    _newConfigurationLines = new ArrayList<>();
+    _newConfigurationLines.addAll(ctx.children);
+  }
 
-   @Override
-   public void exitDeactivate_line(Deactivate_lineContext ctx) {
-      _newConfigurationLines.remove(ctx);
-   }
+  @Override
+  public void exitDeactivate_line(Deactivate_lineContext ctx) {
+    _newConfigurationLines.remove(ctx);
+  }
 
-   @Override
-   public void exitFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext.children = _newConfigurationLines;
-   }
-
+  @Override
+  public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    _configurationContext.children = _newConfigurationLines;
+  }
 }

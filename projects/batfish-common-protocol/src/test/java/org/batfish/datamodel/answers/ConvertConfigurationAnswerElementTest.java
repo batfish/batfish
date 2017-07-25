@@ -11,60 +11,57 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Tests for {@link ConvertConfigurationAnswerElement}
- */
+/** Tests for {@link ConvertConfigurationAnswerElement} */
 public class ConvertConfigurationAnswerElementTest {
 
-   ConvertConfigurationAnswerElement element;
+  ConvertConfigurationAnswerElement _element;
 
-   @Before
-   public void setUp() {
-      element = new ConvertConfigurationAnswerElement();
-   }
+  @Test
+  public void checkEmptyErrors() {
+    assertThat(_element.getErrors().size(), is(0));
+  }
 
-   @Test
-   public void checkEmptyErrors() {
-      assertThat(element.getErrors().size(), is(0));
-   }
+  @Test
+  public void checkNonEmptyErrors() {
+    BatfishException exception = new BatfishException("sample exception");
+    _element.getErrors().put("error", new BatfishStackTrace(exception));
+    assertThat(_element.getErrors().size(), is(1));
+  }
 
-   @Test
-   public void checkNonEmptyErrors() {
-      BatfishException exception = new BatfishException("sample exception");
-      element.getErrors().put("error", new BatfishStackTrace(exception));
-      assertThat(element.getErrors().size(), is(1));
-   }
+  @Before
+  public void setUp() {
+    _element = new ConvertConfigurationAnswerElement();
+  }
 
-   @Test
-   public void testGetErrors() {
-      BatfishException exception = new BatfishException("sample exception");
-      BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-      element.getErrors().put("error", stackTrace);
-      assertThat(element.getErrors().get("error"), is(stackTrace));
-   }
+  @Test
+  public void testGetErrors() {
+    BatfishException exception = new BatfishException("sample exception");
+    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
+    _element.getErrors().put("error", stackTrace);
+    assertThat(_element.getErrors().get("error"), is(stackTrace));
+  }
 
-   @Test
-   public void testSetErrors() {
-      BatfishException exception = new BatfishException("sample exception");
-      BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-      SortedMap<String, BatfishStackTrace> errors = new TreeMap<>();
-      errors.put("error", stackTrace);
-      element.setErrors(errors);
-      assertThat(element.getErrors().get("error"), is(stackTrace));
-   }
+  @Test
+  public void testPrettyPrint() {
+    BatfishException exception = new BatfishException("sample exception");
+    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
+    _element.getErrors().put("sampleError", stackTrace);
+    StringBuilder expected = new StringBuilder();
+    expected.append("Results from converting vendor configurations\n");
+    expected.append("\n  sampleError[Conversion errors]\n");
+    for (String line : _element.getErrors().get("sampleError").getLineMap()) {
+      expected.append("    " + line + "\n");
+    }
+    assertThat(_element.prettyPrint(), equalTo(expected.toString()));
+  }
 
-   @Test
-   public void testPrettyPrint() {
-      BatfishException exception = new BatfishException("sample exception");
-      BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-      element.getErrors().put("sampleError", stackTrace);
-      StringBuilder expected = new StringBuilder();
-      expected.append("Results from converting vendor configurations\n");
-      expected.append("\n  sampleError[Conversion errors]\n");
-      for (String line : element.getErrors().get("sampleError").getLineMap()) {
-         expected.append("    " + line + "\n");
-      }
-      assertThat(element.prettyPrint(), equalTo(expected.toString()));
-   }
-
+  @Test
+  public void testSetErrors() {
+    BatfishException exception = new BatfishException("sample exception");
+    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
+    SortedMap<String, BatfishStackTrace> errors = new TreeMap<>();
+    errors.put("error", stackTrace);
+    _element.setErrors(errors);
+    assertThat(_element.getErrors().get("error"), is(stackTrace));
+  }
 }

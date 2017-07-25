@@ -9,23 +9,20 @@ import org.batfish.datamodel.questions.Question;
 
 public abstract class AbstractClient extends PluginConsumer implements IClient {
 
-   protected final Map<String, Supplier<Question>> _questions;
+  protected final Map<String, Supplier<Question>> _questions;
 
-   public AbstractClient(boolean serializeToText, List<Path> pluginDirs) {
-      super(serializeToText, pluginDirs);
-      _questions = new HashMap<>();
-   }
+  public AbstractClient(boolean serializeToText, List<Path> pluginDirs) {
+    super(serializeToText, pluginDirs);
+    _questions = new HashMap<>();
+  }
 
-   @Override
-   public final PluginClientType getType() {
-      return PluginClientType.CLIENT;
-   }
+  @Override
+  public final PluginClientType getType() {
+    return PluginClientType.CLIENT;
+  }
 
-   @Override
-   public final void registerQuestion(
-         String questionName,
-         Supplier<Question> questionCreator) {
-      _questions.put(questionName, questionCreator);
-   }
-
+  @Override
+  public final void registerQuestion(String questionName, Supplier<Question> questionCreator) {
+    _questions.put(questionName, questionCreator);
+  }
 }

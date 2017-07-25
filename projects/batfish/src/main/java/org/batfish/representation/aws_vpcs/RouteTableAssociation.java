@@ -7,29 +7,26 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class RouteTableAssociation implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private boolean _isMain;
-   private String _subnetId = null;
+  private boolean _isMain;
+  private String _subnetId = null;
 
-   public RouteTableAssociation(JSONObject jObj, BatfishLogger logger)
-         throws JSONException {
+  public RouteTableAssociation(JSONObject jObj, BatfishLogger logger) throws JSONException {
 
-      _isMain = jObj.getBoolean(AwsVpcEntity.JSON_KEY_MAIN);
+    _isMain = jObj.getBoolean(AwsVpcEntity.JSON_KEY_MAIN);
 
-      if (jObj.has(AwsVpcEntity.JSON_KEY_SUBNET_ID)) {
-         _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
-      }
-   }
+    if (jObj.has(AwsVpcEntity.JSON_KEY_SUBNET_ID)) {
+      _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
+    }
+  }
 
-   public String getSubnetId() {
-      return _subnetId;
-   }
+  public String getSubnetId() {
+    return _subnetId;
+  }
 
-   public boolean isMain() {
-      return _isMain;
-   }
+  public boolean isMain() {
+    return _isMain;
+  }
 }

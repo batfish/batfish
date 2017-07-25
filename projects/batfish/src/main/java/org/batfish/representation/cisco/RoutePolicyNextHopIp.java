@@ -9,23 +9,20 @@ import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 
 public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private Ip _address;
+  private Ip _address;
 
-   public RoutePolicyNextHopIp(Ip address) {
-      _address = address;
-   }
+  public RoutePolicyNextHopIp(Ip address) {
+    _address = address;
+  }
 
-   public Ip getAddress() {
-      return _address;
-   }
+  public Ip getAddress() {
+    return _address;
+  }
 
-   @Override
-   public NextHopExpr toNextHopExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new IpNextHop(Collections.singletonList(_address));
-   }
-
+  @Override
+  public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new IpNextHop(Collections.singletonList(_address));
+  }
 }

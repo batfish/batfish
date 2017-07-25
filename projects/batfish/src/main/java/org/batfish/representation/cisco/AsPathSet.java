@@ -7,27 +7,24 @@ import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 
 public class AsPathSet extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final int _definitionLine;
+  private final int _definitionLine;
 
-   private final List<AsPathSetElem> _elements;
+  private final List<AsPathSetElem> _elements;
 
-   public AsPathSet(String name, int definitionLine) {
-      super(name);
-      _definitionLine = definitionLine;
-      _elements = new ArrayList<>();
-   }
+  public AsPathSet(String name, int definitionLine) {
+    super(name);
+    _definitionLine = definitionLine;
+    _elements = new ArrayList<>();
+  }
 
-   public int getDefinitionLine() {
-      return _definitionLine;
-   }
+  public int getDefinitionLine() {
+    return _definitionLine;
+  }
 
-   public List<AsPathSetElem> getElements() {
-      return _elements;
-   }
-
+  public List<AsPathSetElem> getElements() {
+    return _elements;
+  }
 }

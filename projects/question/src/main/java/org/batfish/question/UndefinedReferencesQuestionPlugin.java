@@ -17,170 +17,178 @@ import org.batfish.datamodel.questions.Question;
 
 public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
-   public static class UndefinedReferencesAnswerElement
-         extends ProblemsAnswerElement {
+  public static class UndefinedReferencesAnswerElement extends ProblemsAnswerElement {
 
-      private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-            _undefinedReferences;
+    private SortedMap<
+            String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        _undefinedReferences;
 
-      public UndefinedReferencesAnswerElement() {
-         _undefinedReferences = new TreeMap<>();
-      }
+    public UndefinedReferencesAnswerElement() {
+      _undefinedReferences = new TreeMap<>();
+    }
 
-      public SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> getUndefinedReferences() {
-         return _undefinedReferences;
-      }
+    public SortedMap<
+            String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        getUndefinedReferences() {
+      return _undefinedReferences;
+    }
 
-      @Override
-      public String prettyPrint() {
-         final StringBuilder sb = new StringBuilder();
-         _undefinedReferences.forEach((hostname, byType) -> {
+    @Override
+    public String prettyPrint() {
+      final StringBuilder sb = new StringBuilder();
+      _undefinedReferences.forEach(
+          (hostname, byType) -> {
             sb.append(hostname + ":\n");
-            byType.forEach((type, byName) -> {
-               sb.append("  " + type + ":\n");
-               byName.forEach((name, byUsage) -> {
-                  sb.append("    " + name + ":\n");
-                  byUsage.forEach((usage, lines) -> {
-                     sb.append("      " + usage + ": lines " + lines.toString()
-                           + "\n");
-                  });
-               });
-            });
-         });
-         return sb.toString();
+            byType.forEach(
+                (type, byName) -> {
+                  sb.append("  " + type + ":\n");
+                  byName.forEach(
+                      (name, byUsage) -> {
+                        sb.append("    " + name + ":\n");
+                        byUsage.forEach(
+                            (usage, lines) -> {
+                              sb.append("      " + usage + ": lines " + lines.toString() + "\n");
+                            });
+                      });
+                });
+          });
+      return sb.toString();
+    }
+
+    public void setUndefinedReferences(
+        SortedMap<
+                String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+            undefinedReferences) {
+      _undefinedReferences = undefinedReferences;
+    }
+  }
+
+  public static class UndefinedReferencesAnswerer extends Answerer {
+
+    public UndefinedReferencesAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
+    }
+
+    @Override
+    public UndefinedReferencesAnswerElement answer() {
+      UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
+      Pattern nodeRegex;
+      try {
+        nodeRegex = Pattern.compile(question.getNodeRegex());
+      } catch (PatternSyntaxException e) {
+        throw new BatfishException(
+            "Supplied regex for nodes is not a valid java regex: \""
+                + question.getNodeRegex()
+                + "\"",
+            e);
       }
+      _batfish.checkConfigurations();
+      UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
+      ConvertConfigurationAnswerElement ccae = _batfish.loadConvertConfigurationAnswerElement();
+      ccae.getUndefinedReferences()
+          .forEach(
+              (hostname, byType) -> {
+                if (nodeRegex.matcher(hostname).matches()) {
+                  answerElement.getUndefinedReferences().put(hostname, byType);
+                }
+              });
+      ParseVendorConfigurationAnswerElement pvcae =
+          _batfish.loadParseVendorConfigurationAnswerElement();
+      SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
+      answerElement
+          .getUndefinedReferences()
+          .forEach(
+              (hostname, byType) -> {
+                String filename = hostnameFilenameMap.get(hostname);
+                if (filename != null) {
+                  byType.forEach(
+                      (type, byName) -> {
+                        byName.forEach(
+                            (name, byUsage) -> {
+                              byUsage.forEach(
+                                  (usage, lines) -> {
+                                    String problemShort =
+                                        "undefined:" + type + ":usage:" + usage + ":" + name;
+                                    Problem problem = answerElement.getProblems().get(problemShort);
+                                    if (problem == null) {
+                                      problem = new Problem();
+                                      String problemLong =
+                                          "Undefined reference to structure of type: '"
+                                              + type
+                                              + "' with usage: '"
+                                              + usage
+                                              + "' named '"
+                                              + name
+                                              + "'";
+                                      problem.setDescription(problemLong);
+                                      answerElement.getProblems().put(problemShort, problem);
+                                    }
+                                    problem.getFiles().put(filename, lines);
+                                  });
+                            });
+                      });
+                }
+              });
+      return answerElement;
+    }
+  }
 
-      public void setUndefinedReferences(
-            SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> undefinedReferences) {
-         _undefinedReferences = undefinedReferences;
-      }
+  // <question_page_comment>
 
-   }
+  /**
+   * Outputs cases where undefined structures (e.g., ACL, routemaps) are referenced.
+   *
+   * <p>Such occurrences indicate configuration errors and can have serious consequences with some
+   * vendors.
+   *
+   * @type UndefinedReferences onefile
+   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
+   *     nodes).
+   * @example bf_answer("Nodes", nodeRegex="as1.*") Analyze all nodes whose names begin with "as1".
+   */
+  public static class UndefinedReferencesQuestion extends Question {
 
-   public static class UndefinedReferencesAnswerer extends Answerer {
+    private static final String NODE_REGEX_VAR = "nodeRegex";
 
-      public UndefinedReferencesAnswerer(Question question, IBatfish batfish) {
-         super(question, batfish);
-      }
+    private String _nodeRegex;
 
-      @Override
-      public UndefinedReferencesAnswerElement answer() {
-         UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
-         Pattern nodeRegex;
-         try {
-            nodeRegex = Pattern.compile(question.getNodeRegex());
-         }
-         catch (PatternSyntaxException e) {
-            throw new BatfishException(
-                  "Supplied regex for nodes is not a valid java regex: \""
-                        + question.getNodeRegex() + "\"",
-                  e);
-         }
-         _batfish.checkConfigurations();
-         UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
-         ConvertConfigurationAnswerElement ccae = _batfish
-               .loadConvertConfigurationAnswerElement();
-         ccae.getUndefinedReferences().forEach((hostname, byType) -> {
-            if (nodeRegex.matcher(hostname).matches()) {
-               answerElement.getUndefinedReferences().put(hostname, byType);
-            }
-         });
-         ParseVendorConfigurationAnswerElement pvcae = _batfish
-               .loadParseVendorConfigurationAnswerElement();
-         SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
-         answerElement.getUndefinedReferences().forEach((hostname, byType) -> {
-            String filename = hostnameFilenameMap.get(hostname);
-            if (filename != null) {
-               byType.forEach((type, byName) -> {
-                  byName.forEach((name, byUsage) -> {
-                     byUsage.forEach((usage, lines) -> {
-                        String problemShort = "undefined:" + type + ":usage:"
-                              + usage + ":" + name;
-                        Problem problem = answerElement.getProblems()
-                              .get(problemShort);
-                        if (problem == null) {
-                           problem = new Problem();
-                           String problemLong = "Undefined reference to structure of type: '"
-                                 + type + "' with usage: '" + usage
-                                 + "' named '" + name + "'";
-                           problem.setDescription(problemLong);
-                           answerElement.getProblems().put(
-                                 problemShort,
-                                 problem);
-                        }
-                        problem.getFiles().put(filename, lines);
-                     });
-                  });
-               });
-            }
-         });
-         return answerElement;
-      }
-   }
+    public UndefinedReferencesQuestion() {
+      _nodeRegex = ".*";
+    }
 
-   // <question_page_comment>
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
-   /**
-    * Outputs cases where undefined structures (e.g., ACL, routemaps) are
-    * referenced.
-    * <p>
-    * Such occurrences indicate configuration errors and can have serious
-    * consequences with some vendors.
-    *
-    * @type UndefinedReferences onefile
-    *
-    * @param nodeRegex
-    *           Regular expression for names of nodes to include. Default value
-    *           is '.*' (all nodes).
-    *
-    * @example bf_answer("Nodes", nodeRegex="as1.*") Analyze all nodes whose
-    *          names begin with "as1".
-    */
-   public static class UndefinedReferencesQuestion extends Question {
+    @Override
+    public String getName() {
+      return "undefinedreferences";
+    }
 
-      private static final String NODE_REGEX_VAR = "nodeRegex";
+    @JsonProperty(NODE_REGEX_VAR)
+    public String getNodeRegex() {
+      return _nodeRegex;
+    }
 
-      private String _nodeRegex;
+    @Override
+    public boolean getTraffic() {
+      return false;
+    }
 
-      public UndefinedReferencesQuestion() {
-         _nodeRegex = ".*";
-      }
+    @JsonProperty(NODE_REGEX_VAR)
+    public void setNodeRegex(String nodeRegex) {
+      _nodeRegex = nodeRegex;
+    }
+  }
 
-      @Override
-      public boolean getDataPlane() {
-         return false;
-      }
+  @Override
+  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+    return new UndefinedReferencesAnswerer(question, batfish);
+  }
 
-      @Override
-      public String getName() {
-         return "undefinedreferences";
-      }
-
-      @JsonProperty(NODE_REGEX_VAR)
-      public String getNodeRegex() {
-         return _nodeRegex;
-      }
-
-      @Override
-      public boolean getTraffic() {
-         return false;
-      }
-
-      @JsonProperty(NODE_REGEX_VAR)
-      public void setNodeRegex(String nodeRegex) {
-         _nodeRegex = nodeRegex;
-      }
-
-   }
-
-   @Override
-   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-      return new UndefinedReferencesAnswerer(question, batfish);
-   }
-
-   @Override
-   protected Question createQuestion() {
-      return new UndefinedReferencesQuestion();
-   }
-
+  @Override
+  protected Question createQuestion() {
+    return new UndefinedReferencesQuestion();
+  }
 }

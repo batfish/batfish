@@ -8,18 +8,16 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      statements.add(Statements.DeleteAllCommunities.toStaticStatement());
-   }
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    statements.add(Statements.DeleteAllCommunities.toStaticStatement());
+  }
 
-   @Override
-   public RouteMapSetType getType() {
-      return RouteMapSetType.COMMUNITY_NONE;
-   }
-
+  @Override
+  public RouteMapSetType getType() {
+    return RouteMapSetType.COMMUNITY_NONE;
+  }
 }

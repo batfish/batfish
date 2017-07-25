@@ -14,72 +14,68 @@ import org.batfish.representation.mrv.MrvConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class MrvControlPlaneExtractor extends MrvParserBaseListener
-      implements ControlPlaneExtractor {
+    implements ControlPlaneExtractor {
 
-   private MrvConfiguration _configuration;
+  private MrvConfiguration _configuration;
 
-   private MrvCombinedParser _parser;
+  private MrvCombinedParser _parser;
 
-   private String _text;
+  private String _text;
 
-   private final Set<String> _unimplementedFeatures;
+  private final Set<String> _unimplementedFeatures;
 
-   private Warnings _w;
+  private Warnings _w;
 
-   public MrvControlPlaneExtractor(
-         String fileText, MrvCombinedParser mrvParser,
-         Warnings warnings) {
-      _text = fileText;
-      _parser = mrvParser;
-      _w = warnings;
-      _unimplementedFeatures = new TreeSet<>();
-   }
+  public MrvControlPlaneExtractor(String fileText, MrvCombinedParser mrvParser, Warnings warnings) {
+    _text = fileText;
+    _parser = mrvParser;
+    _w = warnings;
+    _unimplementedFeatures = new TreeSet<>();
+  }
 
-   @Override
-   public void enterMrv_configuration(Mrv_configurationContext ctx) {
-      _configuration = new MrvConfiguration();
-   }
+  @Override
+  public void enterMrv_configuration(Mrv_configurationContext ctx) {
+    _configuration = new MrvConfiguration();
+  }
 
-   @Override
-   public void exitA_system_systemname(A_system_systemnameContext ctx) {
-      String hostname = toString(ctx.nsdecl());
-      _configuration.setHostname(hostname);
-   }
+  @Override
+  public void exitA_system_systemname(A_system_systemnameContext ctx) {
+    String hostname = toString(ctx.nsdecl());
+    _configuration.setHostname(hostname);
+  }
 
-   private String getText(Quoted_stringContext ctx) {
-      if (ctx.text != null) {
-         return ctx.text.getText();
-      }
-      else {
-         return "";
-      }
-   }
+  private String getText(Quoted_stringContext ctx) {
+    if (ctx.text != null) {
+      return ctx.text.getText();
+    } else {
+      return "";
+    }
+  }
 
-   @Override
-   public Set<String> getUnimplementedFeatures() {
-      return _unimplementedFeatures;
-   }
+  @Override
+  public Set<String> getUnimplementedFeatures() {
+    return _unimplementedFeatures;
+  }
 
-   @Override
-   public VendorConfiguration getVendorConfiguration() {
-      return _configuration;
-   }
+  @Override
+  public VendorConfiguration getVendorConfiguration() {
+    return _configuration;
+  }
 
-   @Override
-   public void processParseTree(ParserRuleContext tree) {
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(this, tree);
-   }
+  @Override
+  public void processParseTree(ParserRuleContext tree) {
+    ParseTreeWalker walker = new ParseTreeWalker();
+    walker.walk(this, tree);
+  }
 
-   @SuppressWarnings("unused")
-   private void todo(ParserRuleContext ctx, String feature) {
-      _w.todo(ctx, feature, _parser, _text);
-      _unimplementedFeatures.add("Cisco: " + feature);
-   }
+  @SuppressWarnings("unused")
+  private void todo(ParserRuleContext ctx, String feature) {
+    _w.todo(ctx, feature, _parser, _text);
+    _unimplementedFeatures.add("Cisco: " + feature);
+  }
 
-   private String toString(NsdeclContext ctx) {
-      String text = getText(ctx.quoted_string());
-      return text;
-   }
-
+  private String toString(NsdeclContext ctx) {
+    String text = getText(ctx.quoted_string());
+    return text;
+  }
 }

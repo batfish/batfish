@@ -14,86 +14,88 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
  */
 public final class Version {
 
-   static final String UNKNOWN_VERSION = "0.0.0";
+  private static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
 
-   /**
-    * Checks whether the supplied version for another endpoint is compatible with the Batfish
-    * version of this process, and throws an error if not.
-    *
-    * @see #checkCompatibleVersion(String, String, String)
-    */
-   public static void checkCompatibleVersion(
-         String myName, String otherName,
-         @Nullable String otherVersion) {
-      checkCompatibleVersion(myName, getVersion(), otherName, otherVersion);
-   }
+  static final String UNKNOWN_VERSION = "0.0.0";
 
-   // Visible for testing.
-   static void checkCompatibleVersion(
-         String myName, String myVersion, String otherName, @Nullable String otherVersion) {
-      checkArgument(isCompatibleVersion(myName, myVersion, otherName, otherVersion),
-            "%s version: '%s' is not compatible with %s version: '%s'",
-            otherName, otherVersion, myName, myVersion);
-   }
+  /**
+   * Checks whether the supplied version for another endpoint is compatible with the Batfish version
+   * of this process, and throws an error if not.
+   *
+   * @see #checkCompatibleVersion(String, String, String)
+   */
+  public static void checkCompatibleVersion(
+      String myName, String otherName, @Nullable String otherVersion) {
+    checkCompatibleVersion(myName, getVersion(), otherName, otherVersion);
+  }
 
-   /**
-    * Returns {@code true} if the given version of some other endpoint is compatible with the
-    * Batfish version of this process.
-    *
-    * <p>At the time of writing, compatibility is determined on having identical major and minor
-    * versions.
-    */
-   public static boolean isCompatibleVersion(
-         String myName, String otherName, @Nullable String otherVersion) {
-      return isCompatibleVersion(myName, getVersion(), otherName, otherVersion);
-   }
+  // Visible for testing.
+  static void checkCompatibleVersion(
+      String myName, String myVersion, String otherName, @Nullable String otherVersion) {
+    checkArgument(
+        isCompatibleVersion(myName, myVersion, otherName, otherVersion),
+        "%s version: '%s' is not compatible with %s version: '%s'",
+        otherName,
+        otherVersion,
+        myName,
+        myVersion);
+  }
 
-   // Visible for testing.
-   static boolean isCompatibleVersion(
-         String myName, String myVersion, String otherName, @Nullable String otherVersion) {
-      otherVersion = MoreObjects.firstNonNull(otherVersion, UNKNOWN_VERSION);
-
-      if (otherVersion.equals(UNKNOWN_VERSION) || myVersion.equals(UNKNOWN_VERSION)) {
-         // Either version is unknown, assume compatible.
-         return true;
+  /**
+   * Returns the version of the current build of Batfish, or {@link #UNKNOWN_VERSION} if the version
+   * could not be detected.
+   */
+  public static String getVersion() {
+    try {
+      Configuration config = new Configurations().properties(PROPERTIES_PATH);
+      String version = config.getString("batfish_version");
+      if (version.contains("project.version")) {
+        // For whatever reason, resource filtering didn't work.
+        return UNKNOWN_VERSION;
       }
+      return version;
+    } catch (Exception e) {
+      return UNKNOWN_VERSION;
+    }
+  }
 
-      DefaultArtifactVersion myArtifactVersion = parseVersion(myVersion, myName);
-      DefaultArtifactVersion otherArtifactVersion = parseVersion(otherVersion, otherName);
-      return myArtifactVersion.getMajorVersion() == otherArtifactVersion.getMajorVersion() &&
-            myArtifactVersion.getMinorVersion() == otherArtifactVersion.getMinorVersion();
-   }
+  /**
+   * Returns {@code true} if the given version of some other endpoint is compatible with the Batfish
+   * version of this process.
+   *
+   * <p>At the time of writing, compatibility is determined on having identical major and minor
+   * versions.
+   */
+  public static boolean isCompatibleVersion(
+      String myName, String otherName, @Nullable String otherVersion) {
+    return isCompatibleVersion(myName, getVersion(), otherName, otherVersion);
+  }
 
-   private static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
+  // Visible for testing.
+  static boolean isCompatibleVersion(
+      String myName, String myVersion, String otherName, @Nullable String otherVersion) {
+    otherVersion = MoreObjects.firstNonNull(otherVersion, UNKNOWN_VERSION);
 
-   /**
-    * Returns the version of the current build of Batfish, or {@link #UNKNOWN_VERSION} if the
-    * version could not be detected.
-    */
-   public static String getVersion() {
-      try {
-         Configuration config = new Configurations().properties(PROPERTIES_PATH);
-         String version = config.getString("batfish_version");
-         if (version.contains("project.version")) {
-            // For whatever reason, resource filtering didn't work.
-            return UNKNOWN_VERSION;
-         }
-         return version;
-      }
-      catch (Exception e) {
-         return UNKNOWN_VERSION;
-      }
-   }
+    if (otherVersion.equals(UNKNOWN_VERSION) || myVersion.equals(UNKNOWN_VERSION)) {
+      // Either version is unknown, assume compatible.
+      return true;
+    }
 
-   /** Utility to parse versions, with error handling. */
-   private static DefaultArtifactVersion parseVersion(String version, String name) {
-      DefaultArtifactVersion artifactVersion = new DefaultArtifactVersion(version);
-      if (artifactVersion.getMajorVersion() == 0 && artifactVersion.getMinorVersion() == 0) {
-         throw new BatfishException(String.format("Illegal version '%s' for %s", version, name));
-      }
-      return artifactVersion;
-   }
+    DefaultArtifactVersion myArtifactVersion = parseVersion(myVersion, myName);
+    DefaultArtifactVersion otherArtifactVersion = parseVersion(otherVersion, otherName);
+    return myArtifactVersion.getMajorVersion() == otherArtifactVersion.getMajorVersion()
+        && myArtifactVersion.getMinorVersion() == otherArtifactVersion.getMinorVersion();
+  }
 
-   // Suppress instantiation of utility class.
-   private Version() {}
+  /** Utility to parse versions, with error handling. */
+  private static DefaultArtifactVersion parseVersion(String version, String name) {
+    DefaultArtifactVersion artifactVersion = new DefaultArtifactVersion(version);
+    if (artifactVersion.getMajorVersion() == 0 && artifactVersion.getMinorVersion() == 0) {
+      throw new BatfishException(String.format("Illegal version '%s' for %s", version, name));
+    }
+    return artifactVersion;
+  }
+
+  // Suppress instantiation of utility class.
+  private Version() {}
 }

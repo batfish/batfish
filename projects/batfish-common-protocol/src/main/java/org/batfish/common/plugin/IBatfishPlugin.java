@@ -1,5 +1,3 @@
 package org.batfish.common.plugin;
 
-public interface IBatfishPlugin {
-
-}
+public interface IBatfishPlugin {}

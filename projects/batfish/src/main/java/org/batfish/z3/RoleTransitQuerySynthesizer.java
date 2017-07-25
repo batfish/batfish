@@ -13,33 +13,29 @@ import org.batfish.z3.node.SaneExpr;
 
 public class RoleTransitQuerySynthesizer extends BaseQuerySynthesizer {
 
-   public RoleTransitQuerySynthesizer(String sourceRole, String transitNode) {
-      RoleOriginateExpr roleOriginate = new RoleOriginateExpr(sourceRole);
-      NodeTransitExpr nodeTransit = new NodeTransitExpr(transitNode);
-      RuleExpr injectSymbolicPackets = new RuleExpr(roleOriginate);
-      AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(nodeTransit);
-      queryConditions.addConjunct(SaneExpr.INSTANCE);
-      queryConditions.addConjunct(ExternalSourceIpExpr.INSTANCE);
-      queryConditions.addConjunct(ExternalDestinationIpExpr.INSTANCE);
-      RuleExpr queryRule = new RuleExpr(
-            queryConditions,
-            QueryRelationExpr.INSTANCE);
-      QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
-      StringBuilder sb = new StringBuilder();
-      injectSymbolicPackets.print(sb, 0);
-      sb.append("\n");
-      queryRule.print(sb, 0);
-      sb.append("\n");
-      query.print(sb, 0);
-      sb.append("\n");
-   }
+  public RoleTransitQuerySynthesizer(String sourceRole, String transitNode) {
+    RoleOriginateExpr roleOriginate = new RoleOriginateExpr(sourceRole);
+    NodeTransitExpr nodeTransit = new NodeTransitExpr(transitNode);
+    RuleExpr injectSymbolicPackets = new RuleExpr(roleOriginate);
+    AndExpr queryConditions = new AndExpr();
+    queryConditions.addConjunct(nodeTransit);
+    queryConditions.addConjunct(SaneExpr.INSTANCE);
+    queryConditions.addConjunct(ExternalSourceIpExpr.INSTANCE);
+    queryConditions.addConjunct(ExternalDestinationIpExpr.INSTANCE);
+    RuleExpr queryRule = new RuleExpr(queryConditions, QueryRelationExpr.INSTANCE);
+    QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
+    StringBuilder sb = new StringBuilder();
+    injectSymbolicPackets.print(sb, 0);
+    sb.append("\n");
+    queryRule.print(sb, 0);
+    sb.append("\n");
+    query.print(sb, 0);
+    sb.append("\n");
+  }
 
-   @Override
-   public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method");
-      // TODO Auto-generated method stub
-   }
-
+  @Override
+  public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+    throw new UnsupportedOperationException("no implementation for generated method");
+    // TODO Auto-generated method stub
+  }
 }

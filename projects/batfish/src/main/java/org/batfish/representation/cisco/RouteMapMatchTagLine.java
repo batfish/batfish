@@ -12,28 +12,25 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 
 public class RouteMapMatchTagLine extends RouteMapMatchLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private Set<Integer> _tags;
+  private Set<Integer> _tags;
 
-   public RouteMapMatchTagLine(Set<Integer> tags) {
-      _tags = tags;
-   }
+  public RouteMapMatchTagLine(Set<Integer> tags) {
+    _tags = tags;
+  }
 
-   public Set<Integer> getTags() {
-      return _tags;
-   }
+  public Set<Integer> getTags() {
+    return _tags;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         Configuration c, CiscoConfiguration cc,
-         Warnings w) {
-      Disjunction d = new Disjunction();
-      List<BooleanExpr> disjuncts = d.getDisjuncts();
-      for (int tag : _tags) {
-         disjuncts.add(new MatchTag(IntComparator.EQ, new LiteralInt(tag)));
-      }
-      return d.simplify();
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+    Disjunction d = new Disjunction();
+    List<BooleanExpr> disjuncts = d.getDisjuncts();
+    for (int tag : _tags) {
+      disjuncts.add(new MatchTag(IntComparator.EQ, new LiteralInt(tag)));
+    }
+    return d.simplify();
+  }
 }

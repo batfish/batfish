@@ -1,5 +1,3 @@
 package org.batfish.common.plugin;
 
-public interface IBgpTablePlugin extends IBatfishPlugin {
-
-}
+public interface IBgpTablePlugin extends IBatfishPlugin {}

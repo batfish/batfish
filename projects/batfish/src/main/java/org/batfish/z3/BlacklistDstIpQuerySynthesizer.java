@@ -26,76 +26,84 @@ import org.batfish.z3.node.VarIntExpr;
 
 public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
 
-   private Set<Ip> _blacklistIps;
+  private Set<Ip> _blacklistIps;
 
-   public BlacklistDstIpQuerySynthesizer(
-         Set<Ip> explicitBlacklistIps,
-         Set<String> blacklistNodes, Set<NodeInterfacePair> blacklistInterfaces,
-         EdgeSet blacklistEdges, Map<String, Configuration> configurations) {
-      _blacklistIps = new TreeSet<>();
-      if (explicitBlacklistIps != null) {
-         _blacklistIps.addAll(explicitBlacklistIps);
-      }
-      if (blacklistNodes != null) {
-         for (String hostname : blacklistNodes) {
-            Configuration node = configurations.get(hostname);
-            for (Interface iface : node.getInterfaces().values()) {
-               if (iface.getActive()) {
-                  Prefix prefix = iface.getPrefix();
-                  if (prefix != null) {
-                     _blacklistIps.add(prefix.getAddress());
-                  }
-               }
+  public BlacklistDstIpQuerySynthesizer(
+      Set<Ip> explicitBlacklistIps,
+      Set<String> blacklistNodes,
+      Set<NodeInterfacePair> blacklistInterfaces,
+      EdgeSet blacklistEdges,
+      Map<String, Configuration> configurations) {
+    _blacklistIps = new TreeSet<>();
+    if (explicitBlacklistIps != null) {
+      _blacklistIps.addAll(explicitBlacklistIps);
+    }
+    if (blacklistNodes != null) {
+      for (String hostname : blacklistNodes) {
+        Configuration node = configurations.get(hostname);
+        for (Interface iface : node.getInterfaces().values()) {
+          if (iface.getActive()) {
+            Prefix prefix = iface.getPrefix();
+            if (prefix != null) {
+              _blacklistIps.add(prefix.getAddress());
             }
-         }
+          }
+        }
       }
-      if (blacklistInterfaces != null) {
-         for (NodeInterfacePair p : blacklistInterfaces) {
-            String hostname = p.getHostname();
-            String ifaceName = p.getInterface();
-            Configuration node = configurations.get(hostname);
-            Interface iface = node.getInterfaces().get(ifaceName);
-            if (iface.getActive()) {
-               Prefix prefix = iface.getPrefix();
-               if (prefix != null) {
-                  _blacklistIps.add(prefix.getAddress());
-               }
-            }
-         }
+    }
+    if (blacklistInterfaces != null) {
+      for (NodeInterfacePair p : blacklistInterfaces) {
+        String hostname = p.getHostname();
+        String ifaceName = p.getInterface();
+        Configuration node = configurations.get(hostname);
+        Interface iface = node.getInterfaces().get(ifaceName);
+        if (iface.getActive()) {
+          Prefix prefix = iface.getPrefix();
+          if (prefix != null) {
+            _blacklistIps.add(prefix.getAddress());
+          }
+        }
       }
-      if (blacklistEdges != null) {
-         for (Edge edge : blacklistEdges) {
-            Ip ip1 = configurations.get(edge.getNode1()).getInterfaces()
-                  .get(edge.getInt1()).getPrefix().getAddress();
-            Ip ip2 = configurations.get(edge.getNode2()).getInterfaces()
-                  .get(edge.getInt2()).getPrefix().getAddress();
-            _blacklistIps.add(ip1);
-            _blacklistIps.add(ip2);
-         }
+    }
+    if (blacklistEdges != null) {
+      for (Edge edge : blacklistEdges) {
+        Ip ip1 =
+            configurations
+                .get(edge.getNode1())
+                .getInterfaces()
+                .get(edge.getInt1())
+                .getPrefix()
+                .getAddress();
+        Ip ip2 =
+            configurations
+                .get(edge.getNode2())
+                .getInterfaces()
+                .get(edge.getInt2())
+                .getPrefix()
+                .getAddress();
+        _blacklistIps.add(ip1);
+        _blacklistIps.add(ip2);
       }
-   }
+    }
+  }
 
-   @Override
-   public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
-      NodProgram program = new NodProgram(baseProgram.getContext());
-      AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(SaneExpr.INSTANCE);
-      for (Ip blacklistIp : _blacklistIps) {
-         BooleanExpr blacklistIpCondition = new NotExpr(
-               new EqExpr(
-                     new VarIntExpr(Synthesizer.DST_IP_VAR),
-                     new LitIntExpr(blacklistIp)));
-         queryConditions.addConjunct(blacklistIpCondition);
-      }
-      RuleExpr queryRule = new RuleExpr(
-            queryConditions,
-            QueryRelationExpr.INSTANCE);
-      List<BoolExpr> rules = program.getRules();
-      rules.add(queryRule.toBoolExpr(baseProgram));
-      QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
-      BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
-      program.getQueries().add(queryBoolExpr);
-      return program;
-   }
-
+  @Override
+  public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+    NodProgram program = new NodProgram(baseProgram.getContext());
+    AndExpr queryConditions = new AndExpr();
+    queryConditions.addConjunct(SaneExpr.INSTANCE);
+    for (Ip blacklistIp : _blacklistIps) {
+      BooleanExpr blacklistIpCondition =
+          new NotExpr(
+              new EqExpr(new VarIntExpr(Synthesizer.DST_IP_VAR), new LitIntExpr(blacklistIp)));
+      queryConditions.addConjunct(blacklistIpCondition);
+    }
+    RuleExpr queryRule = new RuleExpr(queryConditions, QueryRelationExpr.INSTANCE);
+    List<BoolExpr> rules = program.getRules();
+    rules.add(queryRule.toBoolExpr(baseProgram));
+    QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
+    BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
+    program.getQueries().add(queryBoolExpr);
+    return program;
+  }
 }

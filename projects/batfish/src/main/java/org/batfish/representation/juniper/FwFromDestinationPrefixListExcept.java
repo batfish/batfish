@@ -11,43 +11,33 @@ import org.batfish.datamodel.RouteFilterList;
 
 public final class FwFromDestinationPrefixListExcept extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final String _name;
+  private final String _name;
 
-   public FwFromDestinationPrefixListExcept(String name) {
-      _name = name;
-   }
+  public FwFromDestinationPrefixListExcept(String name) {
+    _name = name;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      PrefixList pl = jc.getPrefixLists().get(_name);
-      if (pl != null) {
-         pl.getReferers().put(this, "firewall from destination-prefix-list");
-         if (pl.getIpv6()) {
-            return;
-         }
-         RouteFilterList destinationPrefixList = c.getRouteFilterLists()
-               .get(_name);
-         for (RouteFilterLine rfLine : destinationPrefixList.getLines()) {
-            if (rfLine.getAction() != LineAction.ACCEPT) {
-               throw new BatfishException(
-                     "Expected accept action for routerfilterlist from juniper");
-            }
-            else {
-               line.getNotDstIps().add(new IpWildcard(rfLine.getPrefix()));
-            }
-         }
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    PrefixList pl = jc.getPrefixLists().get(_name);
+    if (pl != null) {
+      pl.getReferers().put(this, "firewall from destination-prefix-list");
+      if (pl.getIpv6()) {
+        return;
       }
-      else {
-         w.redFlag(
-               "Reference to undefined source prefix-list: \"" + _name + "\"");
+      RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(_name);
+      for (RouteFilterLine rfLine : destinationPrefixList.getLines()) {
+        if (rfLine.getAction() != LineAction.ACCEPT) {
+          throw new BatfishException("Expected accept action for routerfilterlist from juniper");
+        } else {
+          line.getNotDstIps().add(new IpWildcard(rfLine.getPrefix()));
+        }
       }
-   }
-
+    } else {
+      w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
+    }
+  }
 }

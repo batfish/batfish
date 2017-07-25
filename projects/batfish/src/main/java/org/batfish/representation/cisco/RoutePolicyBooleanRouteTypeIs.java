@@ -9,30 +9,27 @@ import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
 
 public class RoutePolicyBooleanRouteTypeIs extends RoutePolicyBoolean {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private RouteTypeExpr _type;
+  private RouteTypeExpr _type;
 
-   @JsonCreator
-   public RoutePolicyBooleanRouteTypeIs() {
-   }
+  @JsonCreator
+  public RoutePolicyBooleanRouteTypeIs() {}
 
-   public RoutePolicyBooleanRouteTypeIs(RouteTypeExpr type) {
-      _type = type;
-   }
+  public RoutePolicyBooleanRouteTypeIs(RouteTypeExpr type) {
+    _type = type;
+  }
 
-   public RouteTypeExpr getType() {
-      return _type;
-   }
+  public RouteTypeExpr getType() {
+    return _type;
+  }
 
-   public void setType(RouteTypeExpr type) {
-      _type = type;
-   }
+  public void setType(RouteTypeExpr type) {
+    _type = type;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new MatchRouteType(_type);
-   }
+  @Override
+  public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new MatchRouteType(_type);
+  }
 }

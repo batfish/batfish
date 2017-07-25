@@ -14,94 +14,88 @@ import org.batfish.common.util.CommonUtil;
 @JsonSchemaDescription("A line in a CommunityList")
 public class CommunityListLine implements Serializable {
 
-   private static final String ACTION_VAR = "action";
+  private static final String ACTION_VAR = "action";
 
-   private static final String REGEX_VAR = "regex";
+  private static final String REGEX_VAR = "regex";
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final LineAction _action;
+  private final LineAction _action;
 
-   private final String _regex;
+  private final String _regex;
 
-   @JsonCreator
-   public CommunityListLine(
-         @JsonProperty(ACTION_VAR) LineAction action,
-         @JsonProperty(REGEX_VAR) String regex) {
-      _action = action;
-      _regex = regex;
-   }
+  @JsonCreator
+  public CommunityListLine(
+      @JsonProperty(ACTION_VAR) LineAction action, @JsonProperty(REGEX_VAR) String regex) {
+    _action = action;
+    _regex = regex;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      CommunityListLine other = (CommunityListLine) obj;
-      if (_action != other._action) {
-         return false;
-      }
-      if (!_regex.equals(other._regex)) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
+    }
+    CommunityListLine other = (CommunityListLine) obj;
+    if (_action != other._action) {
+      return false;
+    }
+    if (!_regex.equals(other._regex)) {
+      return false;
+    }
+    return true;
+  }
 
-   @JsonProperty(ACTION_VAR)
-   @JsonPropertyDescription("The action the underlying access-list will take when this line matches a route.")
-   public LineAction getAction() {
-      return _action;
-   }
+  @JsonProperty(ACTION_VAR)
+  @JsonPropertyDescription(
+      "The action the underlying access-list will take when this line matches a route.")
+  public LineAction getAction() {
+    return _action;
+  }
 
-   public Set<Long> getExactMatchingCommunities(Set<Long> allCommunities) {
-      Pattern p = Pattern.compile(_regex);
-      Set<Long> matchingCommunitites = new LinkedHashSet<>();
-      for (long candidateCommunity : allCommunities) {
-         String candidateCommunityStr = CommonUtil
-               .longToCommunity(candidateCommunity);
-         Matcher matcher = p.matcher(candidateCommunityStr);
-         if (matcher.matches()) {
-            matchingCommunitites.add(candidateCommunity);
-         }
+  public Set<Long> getExactMatchingCommunities(Set<Long> allCommunities) {
+    Pattern p = Pattern.compile(_regex);
+    Set<Long> matchingCommunitites = new LinkedHashSet<>();
+    for (long candidateCommunity : allCommunities) {
+      String candidateCommunityStr = CommonUtil.longToCommunity(candidateCommunity);
+      Matcher matcher = p.matcher(candidateCommunityStr);
+      if (matcher.matches()) {
+        matchingCommunitites.add(candidateCommunity);
       }
-      return matchingCommunitites;
-   }
+    }
+    return matchingCommunitites;
+  }
 
-   public Set<Long> getMatchingCommunities(
-         Set<Long> allCommunities,
-         boolean invertMatch) {
-      Pattern p = Pattern.compile(_regex);
-      Set<Long> matchingCommunitites = new LinkedHashSet<>();
-      for (long candidateCommunity : allCommunities) {
-         String candidateCommunityStr = CommonUtil
-               .longToCommunity(candidateCommunity);
-         Matcher matcher = p.matcher(candidateCommunityStr);
-         if (matcher.find() ^ invertMatch) {
-            matchingCommunitites.add(candidateCommunity);
-         }
+  public Set<Long> getMatchingCommunities(Set<Long> allCommunities, boolean invertMatch) {
+    Pattern p = Pattern.compile(_regex);
+    Set<Long> matchingCommunitites = new LinkedHashSet<>();
+    for (long candidateCommunity : allCommunities) {
+      String candidateCommunityStr = CommonUtil.longToCommunity(candidateCommunity);
+      Matcher matcher = p.matcher(candidateCommunityStr);
+      if (matcher.find() ^ invertMatch) {
+        matchingCommunitites.add(candidateCommunity);
       }
-      return matchingCommunitites;
-   }
+    }
+    return matchingCommunitites;
+  }
 
-   @JsonProperty(REGEX_VAR)
-   @JsonPropertyDescription("The regex against which a route's communities will be compared")
-   public String getRegex() {
-      return _regex;
-   }
+  @JsonProperty(REGEX_VAR)
+  @JsonPropertyDescription("The regex against which a route's communities will be compared")
+  public String getRegex() {
+    return _regex;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + _action.ordinal();
-      result = prime * result + _regex.hashCode();
-      return result;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + _action.ordinal();
+    result = prime * result + _regex.hashCode();
+    return result;
+  }
 
-   public Long toLiteralCommunity() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method");
-      // TODO Auto-generated method stub
-   }
-
+  public Long toLiteralCommunity() {
+    throw new UnsupportedOperationException("no implementation for generated method");
+    // TODO Auto-generated method stub
+  }
 }

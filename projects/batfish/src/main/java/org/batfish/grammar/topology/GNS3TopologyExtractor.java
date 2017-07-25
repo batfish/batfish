@@ -8,42 +8,41 @@ import org.batfish.grammar.topology.GNS3TopologyParser.Router_lineContext;
 import org.batfish.grammar.topology.GNS3TopologyParser.TopologyContext;
 
 public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
-      implements TopologyExtractor {
+    implements TopologyExtractor {
 
-   private String _currentRouter;
-   private EdgeSet _edges;
-   private Topology _topology;
+  private String _currentRouter;
+  private EdgeSet _edges;
+  private Topology _topology;
 
-   public GNS3TopologyExtractor() {
-      _edges = new EdgeSet();
-   }
+  public GNS3TopologyExtractor() {
+    _edges = new EdgeSet();
+  }
 
-   private String convertInterfaceName(String shortName) {
-      return shortName.replace("f", "FastEthernet");
-   }
+  private String convertInterfaceName(String shortName) {
+    return shortName.replace("f", "FastEthernet");
+  }
 
-   @Override
-   public void enterRouter_line(Router_lineContext ctx) {
-      _currentRouter = ctx.name.getText();
-   }
+  @Override
+  public void enterRouter_line(Router_lineContext ctx) {
+    _currentRouter = ctx.name.getText();
+  }
 
-   @Override
-   public void exitEdge_line(Edge_lineContext ctx) {
-      String int1 = convertInterfaceName(ctx.int1.getText());
-      String node2 = ctx.host2.getText();
-      String int2 = convertInterfaceName(ctx.int2.getText());
-      Edge edge = new Edge(_currentRouter, int1, node2, int2);
-      _edges.add(edge);
-   }
+  @Override
+  public void exitEdge_line(Edge_lineContext ctx) {
+    String int1 = convertInterfaceName(ctx.int1.getText());
+    String node2 = ctx.host2.getText();
+    String int2 = convertInterfaceName(ctx.int2.getText());
+    Edge edge = new Edge(_currentRouter, int1, node2, int2);
+    _edges.add(edge);
+  }
 
-   @Override
-   public void exitTopology(TopologyContext ctx) {
-      _topology = new Topology(_edges);
-   }
+  @Override
+  public void exitTopology(TopologyContext ctx) {
+    _topology = new Topology(_edges);
+  }
 
-   @Override
-   public Topology getTopology() {
-      return _topology;
-   }
-
+  @Override
+  public Topology getTopology() {
+    return _topology;
+  }
 }

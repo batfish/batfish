@@ -9,28 +9,26 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private IntExpr _localPreference;
+  private IntExpr _localPreference;
 
-   public RouteMapSetLocalPreferenceLine(IntExpr localPreference) {
-      _localPreference = localPreference;
-   }
+  public RouteMapSetLocalPreferenceLine(IntExpr localPreference) {
+    _localPreference = localPreference;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      statements.add(new SetLocalPreference(_localPreference));
-   }
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    statements.add(new SetLocalPreference(_localPreference));
+  }
 
-   public IntExpr getLocalPreference() {
-      return _localPreference;
-   }
+  public IntExpr getLocalPreference() {
+    return _localPreference;
+  }
 
-   @Override
-   public RouteMapSetType getType() {
-      return RouteMapSetType.LOCAL_PREFERENCE;
-   }
-
+  @Override
+  public RouteMapSetType getType() {
+    return RouteMapSetType.LOCAL_PREFERENCE;
+  }
 }

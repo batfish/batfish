@@ -12,103 +12,95 @@ import org.batfish.datamodel.questions.Question;
 
 public class ParseTreesQuestionPlugin extends QuestionPlugin {
 
-   public static class ParseTreesAnswerElement implements AnswerElement {
+  public static class ParseTreesAnswerElement implements AnswerElement {
 
-      private SortedMap<String, ParseTreeSentences> _parseTrees;
+    private SortedMap<String, ParseTreeSentences> _parseTrees;
 
-      @JsonCreator
-      public ParseTreesAnswerElement() {
-         _parseTrees = new TreeMap<>();
+    @JsonCreator
+    public ParseTreesAnswerElement() {
+      _parseTrees = new TreeMap<>();
+    }
+
+    public SortedMap<String, ParseTreeSentences> getParseTrees() {
+      return _parseTrees;
+    }
+
+    @Override
+    public String prettyPrint() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Parse trees of vendor configurations\n");
+      for (String name : _parseTrees.keySet()) {
+        sb.append("\n  " + name + " [Parse tree]\n");
+        for (String sentence : _parseTrees.get(name).getSentences()) {
+          sb.append("    " + sentence + "\n");
+        }
       }
+      return sb.toString();
+    }
 
-      public SortedMap<String, ParseTreeSentences> getParseTrees() {
-         return _parseTrees;
-      }
+    public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
+      _parseTrees = parseTrees;
+    }
+  }
 
-      @Override
-      public String prettyPrint() {
-         StringBuilder sb = new StringBuilder();
-         sb.append("Parse trees of vendor configurations\n");
-         for (String name : _parseTrees.keySet()) {
-            sb.append("\n  " + name + " [Parse tree]\n");
-            for (String sentence : _parseTrees.get(name).getSentences()) {
-               sb.append("    " + sentence + "\n");
-            }
-         }
-         return sb.toString();
-      }
+  public static class ParseTreesAnswerer extends Answerer {
 
-      public void setParseTrees(
-            SortedMap<String, ParseTreeSentences> parseTrees) {
-         _parseTrees = parseTrees;
-      }
+    public ParseTreesAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
+    }
 
-   }
+    @Override
+    public ParseTreesAnswerElement answer() {
+      // ParseTreesQuestion question = (ParseTreesQuestion) _question;
+      _batfish.checkConfigurations();
+      ParseTreesAnswerElement answerElement = new ParseTreesAnswerElement();
+      ParseVendorConfigurationAnswerElement parseAnswer =
+          _batfish.loadParseVendorConfigurationAnswerElement();
+      answerElement._parseTrees = parseAnswer.getParseTrees();
+      return answerElement;
+    }
+  }
 
-   public static class ParseTreesAnswerer extends Answerer {
+  // <question_page_comment>
 
-      public ParseTreesAnswerer(Question question, IBatfish batfish) {
-         super(question, batfish);
-      }
+  /**
+   * Outputs parse trees from test-rig initialization.
+   *
+   * @type InitInfo onefile
+   * @example bf_answer("parsetrees") Get parse trees
+   */
+  public static class ParseTreesQuestion extends Question {
 
-      @Override
-      public ParseTreesAnswerElement answer() {
-         // ParseTreesQuestion question = (ParseTreesQuestion) _question;
-         _batfish.checkConfigurations();
-         ParseTreesAnswerElement answerElement = new ParseTreesAnswerElement();
-         ParseVendorConfigurationAnswerElement parseAnswer = _batfish
-               .loadParseVendorConfigurationAnswerElement();
-         answerElement._parseTrees = parseAnswer.getParseTrees();
-         return answerElement;
-      }
-   }
+    public ParseTreesQuestion() {}
 
-   // <question_page_comment>
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
-   /**
-    * Outputs parse trees from test-rig initialization.
-    *
-    * @type InitInfo onefile
-    *
-    * @example bf_answer("parsetrees") Get parse trees
-    */
-   public static class ParseTreesQuestion extends Question {
+    @Override
+    public String getName() {
+      return "parsetrees";
+    }
 
-      public ParseTreesQuestion() {
-      }
+    @Override
+    public boolean getTraffic() {
+      return false;
+    }
 
-      @Override
-      public boolean getDataPlane() {
-         return false;
-      }
+    @Override
+    public String prettyPrint() {
+      return getName();
+    }
+  }
 
-      @Override
-      public String getName() {
-         return "parsetrees";
-      }
+  @Override
+  protected ParseTreesAnswerer createAnswerer(Question question, IBatfish batfish) {
+    return new ParseTreesAnswerer(question, batfish);
+  }
 
-      @Override
-      public boolean getTraffic() {
-         return false;
-      }
-
-      @Override
-      public String prettyPrint() {
-         return getName();
-      }
-
-   }
-
-   @Override
-   protected ParseTreesAnswerer createAnswerer(
-         Question question,
-         IBatfish batfish) {
-      return new ParseTreesAnswerer(question, batfish);
-   }
-
-   @Override
-   protected ParseTreesQuestion createQuestion() {
-      return new ParseTreesQuestion();
-   }
-
+  @Override
+  protected ParseTreesQuestion createQuestion() {
+    return new ParseTreesQuestion();
+  }
 }

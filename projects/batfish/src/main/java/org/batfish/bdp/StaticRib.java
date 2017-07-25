@@ -4,21 +4,16 @@ import org.batfish.datamodel.StaticRoute;
 
 public class StaticRib extends AbstractRib<StaticRoute> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public StaticRib(VirtualRouter owner) {
-      super(owner);
-   }
+  public StaticRib(VirtualRouter owner) {
+    super(owner);
+  }
 
-   @Override
-   public int comparePreference(StaticRoute lhs, StaticRoute rhs) {
-      /**
-       * TODO: see if this needs to be changed
-       */
-      return 0;
-   }
-
+  @Override
+  public int comparePreference(StaticRoute lhs, StaticRoute rhs) {
+    /** TODO: see if this needs to be changed */
+    return 0;
+  }
 }
