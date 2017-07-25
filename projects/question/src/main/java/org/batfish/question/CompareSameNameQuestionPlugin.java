@@ -19,6 +19,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
+// import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
@@ -27,6 +28,8 @@ import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+// import org.batfish.datamodel.Vrf;
+// import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -109,6 +112,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
       private Set<String> _namedStructTypes;
 
+      private final Set<String> _excludedByDefaultTypes = new TreeSet<>();
+
       private List<String> _nodes;
 
       private boolean _singletons;
@@ -117,13 +122,23 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
       public CompareSameNameAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
+         initExcludedByDefaultTypes();
+      }
+
+      // These named structure types seem to be less useful and have many entries
+      // so slow down the computation considerably.  Therefore they are excluded
+      // from the analysis by default.
+      private void initExcludedByDefaultTypes() {
+         _excludedByDefaultTypes.add(Interface.class.getSimpleName());
+         _excludedByDefaultTypes.add(Vrf.class.getSimpleName());
       }
 
       private <T> void add(
             Class<T> structureClass,
             Function<Configuration, Map<String, T>> structureMapRetriever) {
-         if (_namedStructTypes.isEmpty() || _namedStructTypes
-               .contains(structureClass.getSimpleName().toLowerCase())) {
+         if ((_namedStructTypes.isEmpty() &&
+               !(_excludedByDefaultTypes.contains(structureClass.getSimpleName())))
+               || _namedStructTypes.contains(structureClass.getSimpleName().toLowerCase())) {
             _answerElement.add(
                   structureClass.getSimpleName(),
                   processStructures(structureClass, _nodes, _configurations,
@@ -222,10 +237,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     *
     * @param namedStructTypes
     *           Set of structure types to analyze drawn from ( AsPathAccessList,
-    *           CommunityList, IkeGateway, IkePolicies, IkeProposal,
-    *           IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn,
-    *           RouteFilterList, RoutingPolicy) Default value is '[]' (which
-    *           denotes all structure types).
+    *           CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface,
+    *           Ip6AccessList, IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn,
+    *           Route6FilterList, RouteFilterList, RoutingPolicy, Vrf, Zone)
+    *           Default value is '[]' (which denotes all structure types except
+    *           Interface and Vrf).
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value
     *           is '.*' (all nodes).
