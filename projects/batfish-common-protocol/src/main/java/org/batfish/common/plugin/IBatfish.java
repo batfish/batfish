@@ -38,126 +38,121 @@ import org.batfish.grammar.GrammarSettings;
 
 public interface IBatfish extends IPluginConsumer {
 
-   AnswerElement answerAclReachability(
-         String aclNameRegexStr,
-         NamedStructureEquivalenceSets<?> aclEqSets);
+  AnswerElement answerAclReachability(
+      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets);
 
-   void checkConfigurations();
+  void checkConfigurations();
 
-   void checkDataPlane();
+  void checkDataPlane();
 
-   void checkEnvironmentExists();
+  void checkEnvironmentExists();
 
-   InterfaceSet computeFlowSinks(
-         Map<String, Configuration> configurations,
-         boolean differentialContext, Topology topology);
+  InterfaceSet computeFlowSinks(
+      Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
-   Map<Ip, Set<String>> computeIpOwners(
-         Map<String, Configuration> configurations, boolean excludeInactive);
+  Map<Ip, Set<String>> computeIpOwners(
+      Map<String, Configuration> configurations, boolean excludeInactive);
 
-   Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners);
+  Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners);
 
-   Topology computeTopology(Map<String, Configuration> configurations);
+  Topology computeTopology(Map<String, Configuration> configurations);
 
-   AnswerElement createEnvironment(
-         String environmentName,
-         SortedSet<String> nodeBlacklist,
-         SortedSet<NodeInterfacePair> interfaceBlacklist,
-         SortedSet<Edge> edgeBlacklist, boolean dp);
+  AnswerElement createEnvironment(
+      String environmentName,
+      SortedSet<String> nodeBlacklist,
+      SortedSet<NodeInterfacePair> interfaceBlacklist,
+      SortedSet<Edge> edgeBlacklist,
+      boolean dp);
 
-   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
+  Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
-   String getDifferentialFlowTag();
+  String getDifferentialFlowTag();
 
-   String getFlowTag();
+  String getFlowTag();
 
-   GrammarSettings getGrammarSettings();
+  GrammarSettings getGrammarSettings();
 
-   FlowHistory getHistory();
+  FlowHistory getHistory();
 
-   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
+  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
-   Directory getTestrigFileTree();
+  Directory getTestrigFileTree();
 
-   void initBgpAdvertisements(Map<String, Configuration> configurations);
+  void initBgpAdvertisements(Map<String, Configuration> configurations);
 
-   void initBgpOriginationSpaceExplicit(
-         Map<String, Configuration> configurations);
+  void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations);
 
-   InitInfoAnswerElement initInfo(boolean summary, boolean verboseError, boolean environmentRoutes);
+  InitInfoAnswerElement initInfo(boolean summary, boolean verboseError, boolean environmentRoutes);
 
-   void initRemoteBgpNeighbors(
-         Map<String, Configuration> configurations,
-         Map<Ip, Set<String>> ipOwners);
+  void initRemoteBgpNeighbors(
+      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners);
 
-   void initRemoteIpsecVpns(Map<String, Configuration> configurations);
+  void initRemoteIpsecVpns(Map<String, Configuration> configurations);
 
-   void initRemoteOspfNeighbors(
-         Map<String, Configuration> configurations,
-         Map<Ip, Set<String>> ipOwners, Topology topology);
+  void initRemoteOspfNeighbors(
+      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
 
-   SortedMap<String, Configuration> loadConfigurations();
+  SortedMap<String, Configuration> loadConfigurations();
 
-   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
+  ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
 
-   DataPlane loadDataPlane();
+  DataPlane loadDataPlane();
 
-   SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
+  SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables();
 
-   SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables();
+  SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables();
 
-   ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement();
+  ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement();
 
-   ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement();
+  ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement();
 
-   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
+  ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-   AnswerElement multipath(HeaderSpace headerSpace);
+  AnswerElement multipath(HeaderSpace headerSpace);
 
-   AtomicInteger newBatch(String description, int jobs);
+  AtomicInteger newBatch(String description, int jobs);
 
-   AssertionAst parseAssertion(String text);
+  AssertionAst parseAssertion(String text);
 
-   AnswerElement pathDiff(HeaderSpace headerSpace);
+  AnswerElement pathDiff(HeaderSpace headerSpace);
 
-   void popEnvironment();
+  void popEnvironment();
 
-   void printElapsedTime();
+  void printElapsedTime();
 
-   AdvertisementSet processExternalBgpAnnouncements(
-         Map<String, Configuration> configurations);
+  AdvertisementSet processExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
-   void processFlows(Set<Flow> flows);
+  void processFlows(Set<Flow> flows);
 
-   void pushBaseEnvironment();
+  void pushBaseEnvironment();
 
-   void pushDeltaEnvironment();
+  void pushDeltaEnvironment();
 
-   String readExternalBgpAnnouncementsFile();
+  String readExternalBgpAnnouncementsFile();
 
-   AnswerElement reducedReachability(HeaderSpace headerSpace);
+  AnswerElement reducedReachability(HeaderSpace headerSpace);
 
-   void registerAnswerer(
-         String questionName, String questionClassName,
-         BiFunction<Question, IBatfish, Answerer> answererCreator);
+  void registerAnswerer(
+      String questionName,
+      String questionClassName,
+      BiFunction<Question, IBatfish, Answerer> answererCreator);
 
-   void registerBgpTablePlugin(
-         BgpTableFormat format,
-         BgpTablePlugin bgpTablePlugin);
+  void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin);
 
-   void registerExternalBgpAdvertisementPlugin(
-         ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
+  void registerExternalBgpAdvertisementPlugin(
+      ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-   void resetTimer();
+  void resetTimer();
 
-   void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
+  void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
 
-   AnswerElement standard(
-         HeaderSpace headerSpace,
-         Set<ForwardingAction> actions, String ingressNodeRegexStr,
-         String notIngressNodeRegexStr, String finalNodeRegexStr,
-         String notFinalNodeRegexStr);
+  AnswerElement standard(
+      HeaderSpace headerSpace,
+      Set<ForwardingAction> actions,
+      String ingressNodeRegexStr,
+      String notIngressNodeRegexStr,
+      String finalNodeRegexStr,
+      String notFinalNodeRegexStr);
 
-   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
-
+  void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }

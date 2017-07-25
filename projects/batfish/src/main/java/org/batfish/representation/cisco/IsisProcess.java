@@ -9,39 +9,36 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public class IsisProcess implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private IsisLevel _level;
+  private IsisLevel _level;
 
-   private IsoAddress _netAddress;
+  private IsoAddress _netAddress;
 
-   private Map<RoutingProtocol, IsisRedistributionPolicy> _redistributionPolicies;
+  private Map<RoutingProtocol, IsisRedistributionPolicy> _redistributionPolicies;
 
-   public IsisProcess() {
-      _redistributionPolicies = new TreeMap<>();
-   }
+  public IsisProcess() {
+    _redistributionPolicies = new TreeMap<>();
+  }
 
-   public IsisLevel getLevel() {
-      return _level;
-   }
+  public IsisLevel getLevel() {
+    return _level;
+  }
 
-   public IsoAddress getNetAddress() {
-      return _netAddress;
-   }
+  public IsoAddress getNetAddress() {
+    return _netAddress;
+  }
 
-   public Map<RoutingProtocol, IsisRedistributionPolicy> getRedistributionPolicies() {
-      return _redistributionPolicies;
-   }
+  public Map<RoutingProtocol, IsisRedistributionPolicy> getRedistributionPolicies() {
+    return _redistributionPolicies;
+  }
 
-   public void setLevel(IsisLevel level) {
-      _level = level;
-   }
+  public void setLevel(IsisLevel level) {
+    _level = level;
+  }
 
-   public void setNetAddress(IsoAddress netAddress) {
-      _netAddress = netAddress;
-   }
-
+  public void setNetAddress(IsoAddress netAddress) {
+    _netAddress = netAddress;
+  }
 }

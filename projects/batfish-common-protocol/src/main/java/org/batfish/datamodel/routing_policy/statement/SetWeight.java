@@ -8,68 +8,62 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 
 public class SetWeight extends Statement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private IntExpr _weight;
+  private IntExpr _weight;
 
-   @JsonCreator
-   private SetWeight() {
-   }
+  @JsonCreator
+  private SetWeight() {}
 
-   public SetWeight(IntExpr weight) {
-      _weight = weight;
-   }
+  public SetWeight(IntExpr weight) {
+    _weight = weight;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
-      SetWeight other = (SetWeight) obj;
-      if (_weight == null) {
-         if (other._weight != null) {
-            return false;
-         }
-      }
-      else if (!_weight.equals(other._weight)) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    SetWeight other = (SetWeight) obj;
+    if (_weight == null) {
+      if (other._weight != null) {
+        return false;
+      }
+    } else if (!_weight.equals(other._weight)) {
+      return false;
+    }
+    return true;
+  }
 
-   @Override
-   public Result execute(Environment environment) {
-      Result result = new Result();
-      int weight = _weight.evaluate(environment);
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
-            .getOutputRoute();
-      bgpRouteBuilder.setWeight(weight);
-      return result;
-   }
+  @Override
+  public Result execute(Environment environment) {
+    Result result = new Result();
+    int weight = _weight.evaluate(environment);
+    BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    bgpRouteBuilder.setWeight(weight);
+    return result;
+  }
 
-   public IntExpr getWeight() {
-      return _weight;
-   }
+  public IntExpr getWeight() {
+    return _weight;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((_weight == null) ? 0 : _weight.hashCode());
-      return result;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_weight == null) ? 0 : _weight.hashCode());
+    return result;
+  }
 
-   public void setWeight(IntExpr weight) {
-      _weight = weight;
-   }
-
+  public void setWeight(IntExpr weight) {
+    _weight = weight;
+  }
 }

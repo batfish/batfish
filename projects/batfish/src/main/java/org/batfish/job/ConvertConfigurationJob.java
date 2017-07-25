@@ -11,69 +11,63 @@ import org.batfish.main.Batfish;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
-public class ConvertConfigurationJob
-      extends BatfishJob<ConvertConfigurationResult> {
+public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
-   private Object _configObject;
+  private Object _configObject;
 
-   private String _name;
+  private String _name;
 
-   private Warnings _warnings;
+  private Warnings _warnings;
 
-   public ConvertConfigurationJob(
-         Settings settings, Object configObject,
-         String name, Warnings warnings) {
-      super(settings);
-      _configObject = configObject;
-      _name = name;
-      _warnings = warnings;
-   }
+  public ConvertConfigurationJob(
+      Settings settings, Object configObject, String name, Warnings warnings) {
+    super(settings);
+    _configObject = configObject;
+    _name = name;
+    _warnings = warnings;
+  }
 
-   @Override
-   public ConvertConfigurationResult call() throws Exception {
-      long startTime = System.currentTimeMillis();
-      long elapsedTime;
-      _logger.info("Processing: \"" + _name + "\"");
-      Map<String, Configuration> configurations = new HashMap<>();
-      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      try {
-         if (VendorConfiguration.class.isInstance(_configObject)) {
-            VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
-            vendorConfiguration.setWarnings(_warnings);
-            vendorConfiguration.setAnswerElement(answerElement);
-            Configuration configuration = vendorConfiguration
-                  .toVendorIndependentConfiguration();
-            if (configuration.getDefaultCrossZoneAction() == null) {
-               throw new BatfishException(
-                     "Implementation error: missing default cross-zone action for host: '"
-                           + configuration.getHostname() + "'");
-            }
-            if (configuration.getDefaultInboundAction() == null) {
-               throw new BatfishException(
-                     "Implementation error: missing default inbound action for host: '"
-                           + configuration.getHostname() + "'");
-            }
-            configurations.put(_name, configuration);
-         }
-         // so far we have only two options. its AWS VPCs or router configs
-         else {
-            configurations = ((AwsVpcConfiguration) _configObject)
-                  .toConfigurations(_warnings);
-         }
-         _logger.info(" ...OK\n");
+  @Override
+  public ConvertConfigurationResult call() throws Exception {
+    long startTime = System.currentTimeMillis();
+    long elapsedTime;
+    _logger.info("Processing: \"" + _name + "\"");
+    Map<String, Configuration> configurations = new HashMap<>();
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    try {
+      // We have only two options: AWS VPCs or router configs
+      if (VendorConfiguration.class.isInstance(_configObject)) {
+        VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
+        vendorConfiguration.setWarnings(_warnings);
+        vendorConfiguration.setAnswerElement(answerElement);
+        Configuration configuration = vendorConfiguration.toVendorIndependentConfiguration();
+        if (configuration.getDefaultCrossZoneAction() == null) {
+          throw new BatfishException(
+              "Implementation error: missing default cross-zone action for host: '"
+                  + configuration.getHostname()
+                  + "'");
+        }
+        if (configuration.getDefaultInboundAction() == null) {
+          throw new BatfishException(
+              "Implementation error: missing default inbound action for host: '"
+                  + configuration.getHostname()
+                  + "'");
+        }
+        configurations.put(_name, configuration);
+      } else {
+        configurations = ((AwsVpcConfiguration) _configObject).toConfigurations(_warnings);
       }
-      catch (Exception e) {
-         String error = "Conversion error for node with hostname '" + _name
-               + "'";
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ConvertConfigurationResult(elapsedTime,
-               _logger.getHistory(), _name, new BatfishException(error, e));
-      }
-      finally {
-         Batfish.logWarnings(_logger, _warnings);
-      }
+      _logger.info(" ...OK\n");
+    } catch (Exception e) {
+      String error = "Conversion error for node with hostname '" + _name + "'";
       elapsedTime = System.currentTimeMillis() - startTime;
-      return new ConvertConfigurationResult(elapsedTime, _logger.getHistory(),
-            _warnings, _name, configurations, answerElement);
-   }
+      return new ConvertConfigurationResult(
+          elapsedTime, _logger.getHistory(), _name, new BatfishException(error, e));
+    } finally {
+      Batfish.logWarnings(_logger, _warnings);
+    }
+    elapsedTime = System.currentTimeMillis() - startTime;
+    return new ConvertConfigurationResult(
+        elapsedTime, _logger.getHistory(), _warnings, _name, configurations, answerElement);
+  }
 }

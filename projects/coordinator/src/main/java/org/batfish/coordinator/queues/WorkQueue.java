@@ -5,18 +5,18 @@ import org.batfish.coordinator.QueuedWork;
 
 public interface WorkQueue extends Iterable<QueuedWork> {
 
-   public enum Type {
-      azure,
-      memory
-   }
+  public enum Type {
+    azure,
+    memory
+  }
 
-   boolean delete(QueuedWork qWork);
+  boolean delete(QueuedWork qWork);
 
-   QueuedWork deque();
+  QueuedWork deque();
 
-   boolean enque(QueuedWork qWork) throws Exception;
+  boolean enque(QueuedWork qWork) throws Exception;
 
-   long getLength();
+  long getLength();
 
-   QueuedWork getWork(UUID workItemId);
+  QueuedWork getWork(UUID workItemId);
 }

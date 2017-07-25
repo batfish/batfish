@@ -7,6 +7,4 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SkipForEqualityCheck {
-
-}
+public @interface SkipForEqualityCheck {}

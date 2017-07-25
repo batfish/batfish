@@ -5,14 +5,13 @@ import org.batfish.datamodel.Protocol;
 
 public interface ITracerouteQuestion extends IQuestion {
 
-   static final String NAME = "traceroute";
+  static final String NAME = "traceroute";
 
-   void setDstIp(Ip dstIp);
+  void setDstIp(Ip dstIp);
 
-   void setDstProtocol(Protocol protocol);
+  void setDstProtocol(Protocol protocol);
 
-   void setIngressNode(String ingressNode);
+  void setIngressNode(String ingressNode);
 
-   void setIngressVrf(String ingressVrf);
-
+  void setIngressVrf(String ingressVrf);
 }

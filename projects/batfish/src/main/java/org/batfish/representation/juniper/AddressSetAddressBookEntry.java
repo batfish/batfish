@@ -7,30 +7,27 @@ import org.batfish.datamodel.Prefix;
 
 public final class AddressSetAddressBookEntry extends AddressBookEntry {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Set<AddressSetEntry> _entries;
+  private final Set<AddressSetEntry> _entries;
 
-   public AddressSetAddressBookEntry(String name) {
-      super(name);
-      _entries = new HashSet<>();
-   }
+  public AddressSetAddressBookEntry(String name) {
+    super(name);
+    _entries = new HashSet<>();
+  }
 
-   public Set<AddressSetEntry> getEntries() {
-      return _entries;
-   }
+  public Set<AddressSetEntry> getEntries() {
+    return _entries;
+  }
 
-   @Override
-   public Set<Prefix> getPrefixes(Warnings w) {
-      Set<Prefix> prefixes = new HashSet<>();
-      for (AddressSetEntry entry : _entries) {
-         Set<Prefix> subPrefixes = entry.getPrefixes(w);
-         prefixes.addAll(subPrefixes);
-      }
-      return prefixes;
-   }
-
+  @Override
+  public Set<Prefix> getPrefixes(Warnings w) {
+    Set<Prefix> prefixes = new HashSet<>();
+    for (AddressSetEntry entry : _entries) {
+      Set<Prefix> subPrefixes = entry.getPrefixes(w);
+      prefixes.addAll(subPrefixes);
+    }
+    return prefixes;
+  }
 }

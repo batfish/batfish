@@ -7,23 +7,22 @@ import java.util.TreeMap;
 
 public class RunAnalysisAnswerElement implements AnswerElement {
 
-   private static final String ANSWERS_VAR = "answers";
+  private static final String ANSWERS_VAR = "answers";
 
-   private SortedMap<String, Answer> _answers;
+  private SortedMap<String, Answer> _answers;
 
-   @JsonCreator
-   public RunAnalysisAnswerElement() {
-      _answers = new TreeMap<>();
-   }
+  @JsonCreator
+  public RunAnalysisAnswerElement() {
+    _answers = new TreeMap<>();
+  }
 
-   @JsonProperty(ANSWERS_VAR)
-   public SortedMap<String, Answer> getAnswers() {
-      return _answers;
-   }
+  @JsonProperty(ANSWERS_VAR)
+  public SortedMap<String, Answer> getAnswers() {
+    return _answers;
+  }
 
-   @JsonProperty(ANSWERS_VAR)
-   public void setAnswers(SortedMap<String, Answer> answers) {
-      _answers = answers;
-   }
-
+  @JsonProperty(ANSWERS_VAR)
+  public void setAnswers(SortedMap<String, Answer> answers) {
+    _answers = answers;
+  }
 }

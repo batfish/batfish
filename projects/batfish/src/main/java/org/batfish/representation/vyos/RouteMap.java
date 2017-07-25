@@ -6,20 +6,17 @@ import org.batfish.common.util.ComparableStructure;
 
 public class RouteMap extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Map<Integer, RouteMapRule> _rules;
+  private final Map<Integer, RouteMapRule> _rules;
 
-   public RouteMap(String name) {
-      super(name);
-      _rules = new TreeMap<>();
-   }
+  public RouteMap(String name) {
+    super(name);
+    _rules = new TreeMap<>();
+  }
 
-   public Map<Integer, RouteMapRule> getRules() {
-      return _rules;
-   }
-
+  public Map<Integer, RouteMapRule> getRules() {
+    return _rules;
+  }
 }

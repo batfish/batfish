@@ -6,46 +6,46 @@ import org.batfish.common.util.ComparableStructure;
 
 public class ExtendedIpv6AccessList extends ComparableStructure<String> {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final int _definitionLine;
+  private final int _definitionLine;
 
-   private List<ExtendedIpv6AccessListLine> _lines;
+  private List<ExtendedIpv6AccessListLine> _lines;
 
-   private StandardIpv6AccessList _parent;
+  private StandardIpv6AccessList _parent;
 
-   public ExtendedIpv6AccessList(String id, int definitionLine) {
-      super(id);
-      _definitionLine = definitionLine;
-      _lines = new ArrayList<>();
-   }
+  public ExtendedIpv6AccessList(String id, int definitionLine) {
+    super(id);
+    _definitionLine = definitionLine;
+    _lines = new ArrayList<>();
+  }
 
-   public void addLine(ExtendedIpv6AccessListLine all) {
-      _lines.add(all);
-   }
+  public void addLine(ExtendedIpv6AccessListLine all) {
+    _lines.add(all);
+  }
 
-   public int getDefinitionLine() {
-      return _definitionLine;
-   }
+  public int getDefinitionLine() {
+    return _definitionLine;
+  }
 
-   public List<ExtendedIpv6AccessListLine> getLines() {
-      return _lines;
-   }
+  public List<ExtendedIpv6AccessListLine> getLines() {
+    return _lines;
+  }
 
-   public StandardIpv6AccessList getParent() {
-      return _parent;
-   }
+  public StandardIpv6AccessList getParent() {
+    return _parent;
+  }
 
-   public void setParent(StandardIpv6AccessList parent) {
-      _parent = parent;
-   }
+  public void setParent(StandardIpv6AccessList parent) {
+    _parent = parent;
+  }
 
-   @Override
-   public String toString() {
-      String output = super.toString() + "\n" + "Identifier: " + _key;
-      for (ExtendedIpv6AccessListLine line : _lines) {
-         output += "\n" + line;
-      }
-      return output;
-   }
+  @Override
+  public String toString() {
+    String output = super.toString() + "\n" + "Identifier: " + _key;
+    for (ExtendedIpv6AccessListLine line : _lines) {
+      output += "\n" + line;
+    }
+    return output;
+  }
 }

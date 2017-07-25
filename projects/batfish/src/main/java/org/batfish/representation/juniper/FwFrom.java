@@ -7,13 +7,9 @@ import org.batfish.datamodel.IpAccessListLine;
 
 public abstract class FwFrom implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public abstract void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c);
-
+  public abstract void applyTo(
+      IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c);
 }

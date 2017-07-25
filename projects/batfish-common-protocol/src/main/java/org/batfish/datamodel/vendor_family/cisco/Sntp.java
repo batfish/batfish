@@ -6,23 +6,20 @@ import java.util.TreeMap;
 
 public class Sntp implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private SortedMap<String, SntpServer> _servers;
+  private SortedMap<String, SntpServer> _servers;
 
-   public Sntp() {
-      _servers = new TreeMap<>();
-   }
+  public Sntp() {
+    _servers = new TreeMap<>();
+  }
 
-   public SortedMap<String, SntpServer> getServers() {
-      return _servers;
-   }
+  public SortedMap<String, SntpServer> getServers() {
+    return _servers;
+  }
 
-   public void setServers(SortedMap<String, SntpServer> servers) {
-      _servers = servers;
-   }
-
+  public void setServers(SortedMap<String, SntpServer> servers) {
+    _servers = servers;
+  }
 }

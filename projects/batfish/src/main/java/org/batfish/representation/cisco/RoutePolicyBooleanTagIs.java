@@ -9,29 +9,24 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 
 public class RoutePolicyBooleanTagIs extends RoutePolicyBoolean {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private IntComparator _cmp;
+  private IntComparator _cmp;
 
-   private final IntExpr _expr;
+  private final IntExpr _expr;
 
-   public RoutePolicyBooleanTagIs(IntComparator cmp, IntExpr expr) {
-      _cmp = cmp;
-      _expr = expr;
-   }
+  public RoutePolicyBooleanTagIs(IntComparator cmp, IntExpr expr) {
+    _cmp = cmp;
+    _expr = expr;
+  }
 
-   public IntExpr getValue() {
-      return _expr;
-   }
+  public IntExpr getValue() {
+    return _expr;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new MatchTag(_cmp, _expr);
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new MatchTag(_cmp, _expr);
+  }
 }

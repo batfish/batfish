@@ -5,34 +5,31 @@ import org.batfish.datamodel.Prefix6;
 
 public class DynamicIpv6BgpPeerGroup extends LeafBgpPeerGroup {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Prefix6 _prefix6;
+  private Prefix6 _prefix6;
 
-   public DynamicIpv6BgpPeerGroup(Prefix6 prefix6) {
-      _prefix6 = prefix6;
-   }
+  public DynamicIpv6BgpPeerGroup(Prefix6 prefix6) {
+    _prefix6 = prefix6;
+  }
 
-   @Override
-   public String getName() {
-      return _prefix6.toString();
-   }
+  @Override
+  public String getName() {
+    return _prefix6.toString();
+  }
 
-   @Override
-   public Prefix getNeighborPrefix() {
-      return null;
-   }
+  @Override
+  public Prefix getNeighborPrefix() {
+    return null;
+  }
 
-   @Override
-   public Prefix6 getNeighborPrefix6() {
-      return _prefix6;
-   }
+  @Override
+  public Prefix6 getNeighborPrefix6() {
+    return _prefix6;
+  }
 
-   public Prefix getPrefix() {
-      return null;
-   }
-
+  public Prefix getPrefix() {
+    return null;
+  }
 }

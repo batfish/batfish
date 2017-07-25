@@ -8,29 +8,26 @@ import org.batfish.datamodel.RouteFilterList;
 
 public abstract class RouteFilterLine implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Set<PsThen> _thens;
+  private final Set<PsThen> _thens;
 
-   public RouteFilterLine() {
-      _thens = new HashSet<>();
-   }
+  public RouteFilterLine() {
+    _thens = new HashSet<>();
+  }
 
-   public abstract void applyTo(Route6FilterList rfl);
+  public abstract void applyTo(Route6FilterList rfl);
 
-   public abstract void applyTo(RouteFilterList rfl);
+  public abstract void applyTo(RouteFilterList rfl);
 
-   @Override
-   public abstract boolean equals(Object o);
+  @Override
+  public abstract boolean equals(Object o);
 
-   public Set<PsThen> getThens() {
-      return _thens;
-   }
+  public Set<PsThen> getThens() {
+    return _thens;
+  }
 
-   @Override
-   public abstract int hashCode();
-
+  @Override
+  public abstract int hashCode();
 }

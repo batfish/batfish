@@ -8,41 +8,37 @@ import org.batfish.datamodel.routing_policy.Result;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class BooleanExpr implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private String _comment;
+  private String _comment;
 
-   @Override
-   public abstract boolean equals(Object obj);
+  @Override
+  public abstract boolean equals(Object obj);
 
-   public abstract Result evaluate(Environment environment);
+  public abstract Result evaluate(Environment environment);
 
-   public String getComment() {
-      return _comment;
-   }
+  public String getComment() {
+    return _comment;
+  }
 
-   @Override
-   public abstract int hashCode();
+  @Override
+  public abstract int hashCode();
 
-   public void setComment(String comment) {
-      _comment = comment;
-   }
+  public void setComment(String comment) {
+    _comment = comment;
+  }
 
-   public BooleanExpr simplify() {
-      return this;
-   }
+  public BooleanExpr simplify() {
+    return this;
+  }
 
-   @Override
-   public String toString() {
-      if (_comment != null) {
-         return getClass().getSimpleName() + "<" + _comment + ">";
-      }
-      else {
-         return super.toString();
-      }
-   }
-
+  @Override
+  public String toString() {
+    if (_comment != null) {
+      return getClass().getSimpleName() + "<" + _comment + ">";
+    } else {
+      return super.toString();
+    }
+  }
 }

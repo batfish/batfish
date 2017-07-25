@@ -8,14 +8,12 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public abstract class PsThen implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public abstract void applyTo(
-         List<Statement> statements,
-         JuniperConfiguration juniperVendorConfiguration, Configuration c,
-         Warnings warnings);
-
+  public abstract void applyTo(
+      List<Statement> statements,
+      JuniperConfiguration juniperVendorConfiguration,
+      Configuration c,
+      Warnings warnings);
 }

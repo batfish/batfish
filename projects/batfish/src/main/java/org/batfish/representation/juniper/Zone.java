@@ -8,69 +8,65 @@ import org.batfish.common.util.ComparableStructure;
 
 public final class Zone extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final AddressBook _addressBook;
+  private final AddressBook _addressBook;
 
-   private FirewallFilter _fromHostFilter;
+  private FirewallFilter _fromHostFilter;
 
-   private final FirewallFilter _inboundFilter;
+  private final FirewallFilter _inboundFilter;
 
-   private final Map<Interface, FirewallFilter> _inboundInterfaceFilters;
+  private final Map<Interface, FirewallFilter> _inboundInterfaceFilters;
 
-   private final Set<Interface> _interfaces;
+  private final Set<Interface> _interfaces;
 
-   private FirewallFilter _toHostFilter;
+  private FirewallFilter _toHostFilter;
 
-   private final Map<String, FirewallFilter> _toZonePolicies;
+  private final Map<String, FirewallFilter> _toZonePolicies;
 
-   public Zone(String name, Map<String, AddressBook> globalAddressBooks) {
-      super(name);
-      _addressBook = new AddressBook(name, globalAddressBooks);
-      _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name,
-            Family.INET, -1);
-      _inboundInterfaceFilters = new TreeMap<>();
-      _interfaces = new TreeSet<>();
-      _toZonePolicies = new TreeMap<>();
-   }
+  public Zone(String name, Map<String, AddressBook> globalAddressBooks) {
+    super(name);
+    _addressBook = new AddressBook(name, globalAddressBooks);
+    _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET, -1);
+    _inboundInterfaceFilters = new TreeMap<>();
+    _interfaces = new TreeSet<>();
+    _toZonePolicies = new TreeMap<>();
+  }
 
-   public AddressBook getAddressBook() {
-      return _addressBook;
-   }
+  public AddressBook getAddressBook() {
+    return _addressBook;
+  }
 
-   public FirewallFilter getFromHostFilter() {
-      return _fromHostFilter;
-   }
+  public FirewallFilter getFromHostFilter() {
+    return _fromHostFilter;
+  }
 
-   public FirewallFilter getInboundFilter() {
-      return _inboundFilter;
-   }
+  public FirewallFilter getInboundFilter() {
+    return _inboundFilter;
+  }
 
-   public Map<Interface, FirewallFilter> getInboundInterfaceFilters() {
-      return _inboundInterfaceFilters;
-   }
+  public Map<Interface, FirewallFilter> getInboundInterfaceFilters() {
+    return _inboundInterfaceFilters;
+  }
 
-   public Set<Interface> getInterfaces() {
-      return _interfaces;
-   }
+  public Set<Interface> getInterfaces() {
+    return _interfaces;
+  }
 
-   public FirewallFilter getToHostFilter() {
-      return _toHostFilter;
-   }
+  public FirewallFilter getToHostFilter() {
+    return _toHostFilter;
+  }
 
-   public Map<String, FirewallFilter> getToZonePolicies() {
-      return _toZonePolicies;
-   }
+  public Map<String, FirewallFilter> getToZonePolicies() {
+    return _toZonePolicies;
+  }
 
-   public void setFromHostFilter(FirewallFilter fromHostFilter) {
-      _fromHostFilter = fromHostFilter;
-   }
+  public void setFromHostFilter(FirewallFilter fromHostFilter) {
+    _fromHostFilter = fromHostFilter;
+  }
 
-   public void setToHostFilter(FirewallFilter toHostFilter) {
-      _toHostFilter = toHostFilter;
-   }
-
+  public void setToHostFilter(FirewallFilter toHostFilter) {
+    _toHostFilter = toHostFilter;
+  }
 }

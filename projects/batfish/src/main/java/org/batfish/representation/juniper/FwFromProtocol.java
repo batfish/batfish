@@ -7,26 +7,21 @@ import org.batfish.datamodel.IpProtocol;
 
 public final class FwFromProtocol extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final IpProtocol _protocol;
+  private final IpProtocol _protocol;
 
-   public FwFromProtocol(IpProtocol protocol) {
-      _protocol = protocol;
-   }
+  public FwFromProtocol(IpProtocol protocol) {
+    _protocol = protocol;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      line.getIpProtocols().add(_protocol);
-   }
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    line.getIpProtocols().add(_protocol);
+  }
 
-   public IpProtocol getProtocol() {
-      return _protocol;
-   }
-
+  public IpProtocol getProtocol() {
+    return _protocol;
+  }
 }

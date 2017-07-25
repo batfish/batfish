@@ -7,56 +7,53 @@ import org.batfish.common.util.ComparableStructure;
 
 public class DhcpRelayGroup extends ComparableStructure<String> {
 
-   public static final String MASTER_DHCP_RELAY_GROUP_NAME = "~MASTER_DHCP_RELAY_GROUP~";
+  public static final String MASTER_DHCP_RELAY_GROUP_NAME = "~MASTER_DHCP_RELAY_GROUP~";
 
-   /**
-    * 
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private String _activeServerGroup;
+  private String _activeServerGroup;
 
-   private int _activeServerGroupLine;
+  private int _activeServerGroupLine;
 
-   public int getActiveServerGroupLine() {
-      return _activeServerGroupLine;
-   }
+  private boolean _allInterfaces;
 
-   public void setActiveServerGroupLine(int activeServerGroupLine) {
-      _activeServerGroupLine = activeServerGroupLine;
-   }
+  private SortedSet<String> _interfaces;
 
-   private SortedSet<String> _interfaces;
+  public DhcpRelayGroup(String name) {
+    super(name);
+    _interfaces = new TreeSet<>();
+  }
 
-   private boolean _allInterfaces;
+  public String getActiveServerGroup() {
+    return _activeServerGroup;
+  }
 
-   public DhcpRelayGroup(String name) {
-      super(name);
-      _interfaces = new TreeSet<>();
-   }
+  public int getActiveServerGroupLine() {
+    return _activeServerGroupLine;
+  }
 
-   public String getActiveServerGroup() {
-      return _activeServerGroup;
-   }
+  public boolean getAllInterfaces() {
+    return _allInterfaces;
+  }
 
-   public void setActiveServerGroup(String activeServerGroup) {
-      _activeServerGroup = activeServerGroup;
-   }
+  public SortedSet<String> getInterfaces() {
+    return _interfaces;
+  }
 
-   public SortedSet<String> getInterfaces() {
-      return _interfaces;
-   }
+  public void setActiveServerGroup(String activeServerGroup) {
+    _activeServerGroup = activeServerGroup;
+  }
 
-   public void setInterfaces(SortedSet<String> interfaces) {
-      _interfaces = interfaces;
-   }
+  public void setActiveServerGroupLine(int activeServerGroupLine) {
+    _activeServerGroupLine = activeServerGroupLine;
+  }
 
-   public void setAllInterfaces(boolean allInterfaces) {
-      _allInterfaces = allInterfaces;
-   }
+  public void setAllInterfaces(boolean allInterfaces) {
+    _allInterfaces = allInterfaces;
+  }
 
-   public boolean getAllInterfaces() {
-      return _allInterfaces;
-   }
-
+  public void setInterfaces(SortedSet<String> interfaces) {
+    _interfaces = interfaces;
+  }
 }

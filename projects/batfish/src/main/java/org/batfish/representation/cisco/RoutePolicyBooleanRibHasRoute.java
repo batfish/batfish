@@ -10,30 +10,26 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public class RoutePolicyBooleanRibHasRoute extends RoutePolicyBoolean {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private RoutePolicyPrefixSet _prefixSet;
+  private RoutePolicyPrefixSet _prefixSet;
 
-   public RoutePolicyBooleanRibHasRoute(RoutePolicyPrefixSet prefixSet) {
-      _prefixSet = prefixSet;
-   }
+  public RoutePolicyBooleanRibHasRoute(RoutePolicyPrefixSet prefixSet) {
+    _prefixSet = prefixSet;
+  }
 
-   public RoutePolicyPrefixSet getPrefixSet() {
-      return _prefixSet;
-   }
+  public RoutePolicyPrefixSet getPrefixSet() {
+    return _prefixSet;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
-      if (prefixSetExpr != null) {
-         return new HasRoute(prefixSetExpr);
-      }
-      else {
-         Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
-         return new HasRoute6(prefix6SetExpr);
-      }
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
+    if (prefixSetExpr != null) {
+      return new HasRoute(prefixSetExpr);
+    } else {
+      Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
+      return new HasRoute6(prefix6SetExpr);
+    }
+  }
 }

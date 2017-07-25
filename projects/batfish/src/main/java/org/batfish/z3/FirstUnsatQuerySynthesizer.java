@@ -4,28 +4,24 @@ import com.microsoft.z3.Context;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class FirstUnsatQuerySynthesizer<Key, Result>
-      extends BaseQuerySynthesizer {
+public abstract class FirstUnsatQuerySynthesizer<KeyT, ResultT> extends BaseQuerySynthesizer {
 
-   protected final Key _key;
+  protected final KeyT _key;
 
-   protected final List<Result> _resultsByQueryIndex;
+  protected final List<ResultT> _resultsByQueryIndex;
 
-   public FirstUnsatQuerySynthesizer(Key key) {
-      _key = key;
-      _resultsByQueryIndex = new ArrayList<>();
-   }
+  public FirstUnsatQuerySynthesizer(KeyT key) {
+    _key = key;
+    _resultsByQueryIndex = new ArrayList<>();
+  }
 
-   public Key getKey() {
-      return _key;
-   }
+  public KeyT getKey() {
+    return _key;
+  }
 
-   public List<Result> getResultsByQueryIndex() {
-      return _resultsByQueryIndex;
-   }
+  public List<ResultT> getResultsByQueryIndex() {
+    return _resultsByQueryIndex;
+  }
 
-   public abstract NodProgram synthesizeBaseProgram(
-         Synthesizer synthesizer,
-         Context ctx);
-
+  public abstract NodProgram synthesizeBaseProgram(Synthesizer synthesizer, Context ctx);
 }

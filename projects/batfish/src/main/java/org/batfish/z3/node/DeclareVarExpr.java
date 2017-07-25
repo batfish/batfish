@@ -5,19 +5,18 @@ import java.util.List;
 
 public class DeclareVarExpr extends Statement implements ComplexExpr {
 
-   private List<Expr> _subExpressions;
+  private List<Expr> _subExpressions;
 
-   public DeclareVarExpr(String name, int size) {
-      _subExpressions = new ArrayList<>();
-      _subExpressions.add(new IdExpr("declare-var"));
-      _subExpressions.add(new IdExpr(name));
-      _subExpressions.add(new BitVecExpr(size));
-      _printer = new CollapsedComplexExprPrinter(this);
-   }
+  public DeclareVarExpr(String name, int size) {
+    _subExpressions = new ArrayList<>();
+    _subExpressions.add(new IdExpr("declare-var"));
+    _subExpressions.add(new IdExpr(name));
+    _subExpressions.add(new BitVecExpr(size));
+    _printer = new CollapsedComplexExprPrinter(this);
+  }
 
-   @Override
-   public List<Expr> getSubExpressions() {
-      return _subExpressions;
-   }
-
+  @Override
+  public List<Expr> getSubExpressions() {
+    return _subExpressions;
+  }
 }

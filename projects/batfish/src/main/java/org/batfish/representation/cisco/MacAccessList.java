@@ -6,24 +6,23 @@ import org.batfish.common.util.ComparableStructure;
 
 public class MacAccessList extends ComparableStructure<String> {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final int _definitionLine;
+  private final int _definitionLine;
 
-   private List<MacAccessListLine> _lines;
+  private List<MacAccessListLine> _lines;
 
-   public MacAccessList(String name, int definitionLine) {
-      super(name);
-      _definitionLine = definitionLine;
-      _lines = new ArrayList<>();
-   }
+  public MacAccessList(String name, int definitionLine) {
+    super(name);
+    _definitionLine = definitionLine;
+    _lines = new ArrayList<>();
+  }
 
-   public int getDefinitionLine() {
-      return _definitionLine;
-   }
+  public int getDefinitionLine() {
+    return _definitionLine;
+  }
 
-   public List<MacAccessListLine> getLines() {
-      return _lines;
-   }
-
+  public List<MacAccessListLine> getLines() {
+    return _lines;
+  }
 }

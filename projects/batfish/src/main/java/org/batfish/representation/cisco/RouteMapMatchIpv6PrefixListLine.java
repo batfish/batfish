@@ -12,44 +12,39 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
 
 public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final Set<String> _listNames;
+  private final Set<String> _listNames;
 
-   private final int _statementLine;
+  private final int _statementLine;
 
-   public RouteMapMatchIpv6PrefixListLine(
-         Set<String> names,
-         int statementLine) {
-      _listNames = names;
-      _statementLine = statementLine;
-   }
+  public RouteMapMatchIpv6PrefixListLine(Set<String> names, int statementLine) {
+    _listNames = names;
+    _statementLine = statementLine;
+  }
 
-   public Set<String> getListNames() {
-      return _listNames;
-   }
+  public Set<String> getListNames() {
+    return _listNames;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         Configuration c, CiscoConfiguration cc,
-         Warnings w) {
-      Disjunction d = new Disjunction();
-      List<BooleanExpr> disjuncts = d.getDisjuncts();
-      for (String listName : _listNames) {
-         Prefix6List list = cc.getPrefix6Lists().get(listName);
-         if (list != null) {
-            list.getReferers().put(this, "route-map match prefix-list");
-            disjuncts.add(new MatchPrefix6Set(
-                  new DestinationNetwork6(),
-                  new NamedPrefix6Set(listName)));
-         }
-         else {
-            cc.undefined(CiscoStructureType.PREFIX6_LIST, listName,
-                  CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST,
-                  _statementLine);
-         }
+  @Override
+  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+    Disjunction d = new Disjunction();
+    List<BooleanExpr> disjuncts = d.getDisjuncts();
+    for (String listName : _listNames) {
+      Prefix6List list = cc.getPrefix6Lists().get(listName);
+      if (list != null) {
+        list.getReferers().put(this, "route-map match prefix-list");
+        disjuncts.add(
+            new MatchPrefix6Set(new DestinationNetwork6(), new NamedPrefix6Set(listName)));
+      } else {
+        cc.undefined(
+            CiscoStructureType.PREFIX6_LIST,
+            listName,
+            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST,
+            _statementLine);
       }
-      return d.simplify();
-   }
-
+    }
+    return d.simplify();
+  }
 }

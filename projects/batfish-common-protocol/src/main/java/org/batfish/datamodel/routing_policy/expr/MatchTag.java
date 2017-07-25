@@ -6,89 +6,82 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public class MatchTag extends BooleanExpr {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private IntComparator _cmp;
+  private IntComparator _cmp;
 
-   private IntExpr _tag;
+  private IntExpr _tag;
 
-   @JsonCreator
-   private MatchTag() {
-   }
+  @JsonCreator
+  private MatchTag() {}
 
-   public MatchTag(IntComparator cmp, IntExpr tag) {
-      _cmp = cmp;
-      _tag = tag;
-   }
+  public MatchTag(IntComparator cmp, IntExpr tag) {
+    _cmp = cmp;
+    _tag = tag;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
-      MatchTag other = (MatchTag) obj;
-      if (_cmp != other._cmp) {
-         return false;
-      }
-      if (_tag == null) {
-         if (other._tag != null) {
-            return false;
-         }
-      }
-      else if (!_tag.equals(other._tag)) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
-
-   @Override
-   public Result evaluate(Environment environment) {
-      int lhs;
-      if (environment.getReadFromIntermediateBgpAttributes()) {
-         lhs = environment.getIntermediateBgpAttributes().getTag();
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    MatchTag other = (MatchTag) obj;
+    if (_cmp != other._cmp) {
+      return false;
+    }
+    if (_tag == null) {
+      if (other._tag != null) {
+        return false;
       }
-      else if (environment.getUseOutputAttributes()) {
-         lhs = environment.getOutputRoute().getTag();
-      }
-      else {
-         lhs = environment.getOriginalRoute().getTag();
-      }
-      int rhs = _tag.evaluate(environment);
-      return _cmp.apply(lhs, rhs);
-   }
+    } else if (!_tag.equals(other._tag)) {
+      return false;
+    }
+    return true;
+  }
 
-   public IntComparator getCmp() {
-      return _cmp;
-   }
+  @Override
+  public Result evaluate(Environment environment) {
+    int lhs;
+    if (environment.getReadFromIntermediateBgpAttributes()) {
+      lhs = environment.getIntermediateBgpAttributes().getTag();
+    } else if (environment.getUseOutputAttributes()) {
+      lhs = environment.getOutputRoute().getTag();
+    } else {
+      lhs = environment.getOriginalRoute().getTag();
+    }
+    int rhs = _tag.evaluate(environment);
+    return _cmp.apply(lhs, rhs);
+  }
 
-   public IntExpr getTag() {
-      return _tag;
-   }
+  public IntComparator getCmp() {
+    return _cmp;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((_cmp == null) ? 0 : _cmp.ordinal());
-      result = prime * result + ((_tag == null) ? 0 : _tag.hashCode());
-      return result;
-   }
+  public IntExpr getTag() {
+    return _tag;
+  }
 
-   public void setCmp(IntComparator cmp) {
-      _cmp = cmp;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_cmp == null) ? 0 : _cmp.ordinal());
+    result = prime * result + ((_tag == null) ? 0 : _tag.hashCode());
+    return result;
+  }
 
-   public void setTag(IntExpr tag) {
-      _tag = tag;
-   }
+  public void setCmp(IntComparator cmp) {
+    _cmp = cmp;
+  }
 
+  public void setTag(IntExpr tag) {
+    _tag = tag;
+  }
 }

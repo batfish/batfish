@@ -2,24 +2,23 @@ package org.batfish.representation.cisco;
 
 public class NamedBgpPeerGroup extends BgpPeerGroup {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final int _definitionLine;
+  private final int _definitionLine;
 
-   private String _name;
+  private String _name;
 
-   public NamedBgpPeerGroup(String name, int definitionLine) {
-      _name = name;
-      _definitionLine = definitionLine;
-   }
+  public NamedBgpPeerGroup(String name, int definitionLine) {
+    _name = name;
+    _definitionLine = definitionLine;
+  }
 
-   public int getDefinitionLine() {
-      return _definitionLine;
-   }
+  public int getDefinitionLine() {
+    return _definitionLine;
+  }
 
-   @Override
-   public String getName() {
-      return _name;
-   }
-
+  @Override
+  public String getName() {
+    return _name;
+  }
 }

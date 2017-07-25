@@ -7,30 +7,25 @@ import org.batfish.datamodel.SubRange;
 
 public final class FwFromDestinationPort extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final SubRange _portRange;
+  private final SubRange _portRange;
 
-   public FwFromDestinationPort(int port) {
-      _portRange = new SubRange(port, port);
-   }
+  public FwFromDestinationPort(int port) {
+    _portRange = new SubRange(port, port);
+  }
 
-   public FwFromDestinationPort(SubRange subrange) {
-      _portRange = subrange;
-   }
+  public FwFromDestinationPort(SubRange subrange) {
+    _portRange = subrange;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      line.getDstPorts().add(_portRange);
-   }
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    line.getDstPorts().add(_portRange);
+  }
 
-   public SubRange getPortRange() {
-      return _portRange;
-   }
-
+  public SubRange getPortRange() {
+    return _portRange;
+  }
 }

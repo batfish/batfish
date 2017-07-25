@@ -6,54 +6,54 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine extends HeaderSpace {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+  private LineAction _action;
 
-   private String _name;
+  private String _name;
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      IpAccessListLine other = (IpAccessListLine) obj;
-      if (!super.equals(obj)) {
-         return false;
-      }
-      if (_action != other._action) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
+    }
+    IpAccessListLine other = (IpAccessListLine) obj;
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (_action != other._action) {
+      return false;
+    }
+    return true;
+  }
 
-   @JsonPropertyDescription("The action the underlying access-list will take when this line matches an IPV4 packet.")
-   public LineAction getAction() {
-      return _action;
-   }
+  @JsonPropertyDescription(
+      "The action the underlying access-list will take when this line matches an IPV4 packet.")
+  public LineAction getAction() {
+    return _action;
+  }
 
-   @JsonSchemaDescription("The name of this line in the list")
-   public String getName() {
-      return _name;
-   }
+  @JsonSchemaDescription("The name of this line in the list")
+  public String getName() {
+    return _name;
+  }
 
-   @Override
-   public int hashCode() {
-      // TODO: implement better hashcode
-      return 0;
-   }
+  @Override
+  public int hashCode() {
+    // TODO: implement better hashcode
+    return 0;
+  }
 
-   public void setAction(LineAction action) {
-      _action = action;
-   }
+  public void setAction(LineAction action) {
+    _action = action;
+  }
 
-   public void setName(String name) {
-      _name = name;
-   }
+  public void setName(String name) {
+    _name = name;
+  }
 
-   @Override
-   public String toString() {
-      return "[Action:" + _action + ", Base: " + super.toString() + "]";
-   }
-
+  @Override
+  public String toString() {
+    return "[Action:" + _action + ", Base: " + super.toString() + "]";
+  }
 }

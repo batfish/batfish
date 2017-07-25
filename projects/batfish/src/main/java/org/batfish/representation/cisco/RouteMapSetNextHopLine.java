@@ -10,29 +10,27 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetNextHopLine extends RouteMapSetLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private List<Ip> _nextHops;
+  private List<Ip> _nextHops;
 
-   public RouteMapSetNextHopLine(List<Ip> nextHops) {
-      _nextHops = nextHops;
-   }
+  public RouteMapSetNextHopLine(List<Ip> nextHops) {
+    _nextHops = nextHops;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      // TODO: something with destination-vrf
-      statements.add(new SetNextHop(new IpNextHop(_nextHops), false));
-   }
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    // TODO: something with destination-vrf
+    statements.add(new SetNextHop(new IpNextHop(_nextHops), false));
+  }
 
-   public List<Ip> getNextHops() {
-      return _nextHops;
-   }
+  public List<Ip> getNextHops() {
+    return _nextHops;
+  }
 
-   @Override
-   public RouteMapSetType getType() {
-      return RouteMapSetType.NEXT_HOP;
-   }
-
+  @Override
+  public RouteMapSetType getType() {
+    return RouteMapSetType.NEXT_HOP;
+  }
 }
