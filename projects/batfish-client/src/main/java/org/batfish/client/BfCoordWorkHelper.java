@@ -483,8 +483,8 @@ public class BfCoordWorkHelper {
             return null;
          }
 
-         String testrigs = response.readEntity(String.class) + "\n";
-         return testrigs;
+         String containerInfo = response.readEntity(String.class) + "\n";
+         return containerInfo;
       }
       catch (Exception e) {
          _logger.errorf("Exception in getContainer from %s for %s\n",

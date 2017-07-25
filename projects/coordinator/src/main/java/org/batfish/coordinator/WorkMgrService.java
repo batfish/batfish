@@ -589,8 +589,8 @@ public class WorkMgrService {
 
          checkContainerAccessibility(apiKey, containerName);
 
-         SortedSet<String> testrigs = Main.getWorkMgr().getContainer(containerDir);
-         return Response.ok(testrigs.toString(), MediaType.TEXT_PLAIN).build();
+         SortedSet<String> containerInfo = Main.getWorkMgr().getContainer(containerDir);
+         return Response.ok(containerInfo.toString(), MediaType.TEXT_PLAIN).build();
       }
       catch (AccessControlException e) {
          return Response.status(Response.Status.UNAUTHORIZED)

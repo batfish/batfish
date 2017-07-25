@@ -89,7 +89,6 @@ public class WorkMgrTest {
       assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
    }
 
-   // Tests for getContainer method
    @Test
    public void getNonExistContainer() {
       String containerName = "myContainer";
