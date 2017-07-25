@@ -102,6 +102,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Map<String, Configuration> _configurations;
 
+    private final Set<String> _excludedByDefaultTypes = new TreeSet<>();
+
     private boolean _missing;
 
     private Set<String> _namedStructTypes;
@@ -112,11 +114,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     public CompareSameNameAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
+      initExcludedByDefaultTypes();
     }
 
     private <T> void add(
         Class<T> structureClass, Function<Configuration, Map<String, T>> structureMapRetriever) {
-      if (_namedStructTypes.isEmpty()
+      if ((_namedStructTypes.isEmpty()
+              && !(_excludedByDefaultTypes.contains(structureClass.getSimpleName())))
           || _namedStructTypes.contains(structureClass.getSimpleName().toLowerCase())) {
         _answerElement.add(
             structureClass.getSimpleName(),
@@ -162,6 +166,14 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       add(Zone.class, c -> c.getZones());
 
       return _answerElement;
+    }
+
+    // These named structure types seem to be less useful and have many entries
+    // so slow down the computation considerably.  Therefore they are excluded
+    // from the analysis by default.
+    private void initExcludedByDefaultTypes() {
+      _excludedByDefaultTypes.add(Interface.class.getSimpleName());
+      _excludedByDefaultTypes.add(Vrf.class.getSimpleName());
     }
 
     private <T> NamedStructureEquivalenceSets<T> processStructures(
@@ -213,9 +225,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    *
    * @type CompareSameName multifile
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     CommunityList, IkeGateway, IkePolicies, IkeProposal, IpAccessList, IpsecPolicy,
-   *     IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]' (which
-   *     denotes all structure types).
+   *     CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface, Ip6AccessList,
+   *     IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, RouteFilterList,
+   *     RoutingPolicy, Vrf, Zone) Default value is '[]' (which denotes all structure types except
+   *     Interface and Vrf).
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @param singletons Defaults to false. Specifies whether or not to include named structures for
