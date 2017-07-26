@@ -951,10 +951,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _synthesizeJsonTopology;
   }
 
-  public boolean getSynthesizeTopology() {
-    return _synthesizeTopology;
-  }
-
   public String getTaskId() {
     return _taskId;
   }
@@ -1070,7 +1066,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
     setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
-    setDefaultProperty(BfConsts.ARG_SYNTHESIZE_TOPOLOGY, false);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
     setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
@@ -1405,7 +1400,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _sslTruststoreFile = getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
     _sslTruststorePassword = getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
     _synthesizeJsonTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
-    _synthesizeTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_TOPOLOGY);
     _taskPlugin = getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     _testrig = getStringOptionValue(BfConsts.ARG_TESTRIG);
     _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);

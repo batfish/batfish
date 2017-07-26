@@ -143,8 +143,6 @@ import org.batfish.grammar.assertion.AssertionExtractor;
 import org.batfish.grammar.assertion.AssertionParser.AssertionContext;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
-import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
-import org.batfish.grammar.topology.BatfishTopologyExtractor;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
 import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.TopologyExtractor;
@@ -3784,11 +3782,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
     }
 
-    if (_settings.getSynthesizeTopology()) {
-      writeSynthesizedTopology();
-      return answer;
-    }
-
     if (_settings.getSynthesizeJsonTopology()) {
       writeJsonTopology();
       return answer;
@@ -4431,23 +4424,5 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
-  }
-
-  private void writeSynthesizedTopology() {
-    Map<String, Configuration> configs = loadConfigurations();
-    EdgeSet edges = synthesizeTopology(configs).getEdges();
-    _logger.output(BatfishTopologyCombinedParser.HEADER + "\n");
-    for (Edge edge : edges) {
-      _logger.output(
-          edge.getNode1()
-              + ":"
-              + edge.getInt1()
-              + ","
-              + edge.getNode2()
-              + ":"
-              + edge.getInt2()
-              + "\n");
-    }
-    printElapsedTime();
   }
 }
