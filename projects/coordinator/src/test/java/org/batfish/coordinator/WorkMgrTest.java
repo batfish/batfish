@@ -138,7 +138,7 @@ public class WorkMgrTest {
   public void getNonEmptyContainer() throws Exception {
     String containerName = "myContainer";
     initContainerEnvironment(containerName);
-    Path containerPath = _folder.newFolder(containerName).toPath();
+    Path containerPath = _folder.getRoot().toPath().resolve(containerName);
     Path testrigPath = containerPath.resolve("testrig1");
     assertThat(testrigPath.toFile().mkdir(), is(true));
     Path testrigPath2 = containerPath.resolve("testrig2");
