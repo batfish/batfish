@@ -622,8 +622,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private boolean _synthesizeJsonTopology;
 
-  private boolean _synthesizeTopology;
-
   private String _taskId;
 
   private String _taskPlugin;
