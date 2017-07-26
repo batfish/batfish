@@ -54,6 +54,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -709,6 +710,18 @@ public class CommonUtil {
                e);
       }
       return text;
+   }
+
+   public static String readResource(String resourcePath) {
+      try (InputStream is = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream(resourcePath)) {
+         String output = IOUtils.toString(is);
+         return output;
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Could not open resource: '" + resourcePath + "'", e);
+      }
    }
 
    public static String sha256Digest(String saltedSecret) {
