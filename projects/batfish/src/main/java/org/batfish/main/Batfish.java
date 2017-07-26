@@ -2978,33 +2978,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
-//  private Topology parseTopology(Path topologyFilePath) {
-//    _logger.info("*** PARSING TOPOLOGY ***\n");
-//    resetTimer();
-//    String topologyFileText = CommonUtil.readFile(topologyFilePath);
-//    BatfishCombinedParser<?, ?> parser = null;
-//    TopologyExtractor extractor = null;
-//    _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath().toString() + "\" ...");
-//    if (topologyFileText.startsWith("autostart")) {
-//      parser = new GNS3TopologyCombinedParser(topologyFileText, _settings);
-//      extractor = new GNS3TopologyExtractor();
-//    } else if (topologyFileText.startsWith(BatfishTopologyCombinedParser.HEADER)) {
-//      parser = new BatfishTopologyCombinedParser(topologyFileText, _settings);
-//      extractor = new BatfishTopologyExtractor();
-//    } else if (topologyFileText.equals("")) {
-//      throw new BatfishException("ERROR: empty topology\n");
-//    } else {
-//      _logger.fatal("...ERROR\n");
-//      throw new BatfishException("Topology format error");
-//    }
-//    ParserRuleContext tree = parse(parser);
-//    ParseTreeWalker walker = new ParseTreeWalker();
-//    walker.walk(extractor, tree);
-//    Topology topology = extractor.getTopology();
-//    printElapsedTime();
-//    return topology;
-//  }
-
   public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     resetTimer();
