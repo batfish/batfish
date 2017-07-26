@@ -7,23 +7,20 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
 public class RoutePolicyCommunitySetName extends RoutePolicyCommunitySet {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private String _name;
+  private String _name;
 
-   public RoutePolicyCommunitySetName(String name) {
-      this._name = name;
-   }
+  public RoutePolicyCommunitySetName(String name) {
+    this._name = name;
+  }
 
-   public String getName() {
-      return this._name;
-   }
+  public String getName() {
+    return this._name;
+  }
 
-   @Override
-   public CommunitySetExpr toCommunitySetExpr(
-         CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      return new NamedCommunitySet(_name);
-   }
-
+  @Override
+  public CommunitySetExpr toCommunitySetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new NamedCommunitySet(_name);
+  }
 }

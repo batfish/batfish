@@ -7,24 +7,21 @@ import org.batfish.datamodel.Ip;
 
 public class BgpProcess extends ComparableStructure<Integer> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Map<Ip, BgpNeighbor> _neighbors;
+  private final Map<Ip, BgpNeighbor> _neighbors;
 
-   public BgpProcess(int localAs) {
-      super(localAs);
-      _neighbors = new TreeMap<>();
-   }
+  public BgpProcess(int localAs) {
+    super(localAs);
+    _neighbors = new TreeMap<>();
+  }
 
-   public int getLocalAs() {
-      return _key;
-   }
+  public int getLocalAs() {
+    return _key;
+  }
 
-   public Map<Ip, BgpNeighbor> getNeighbors() {
-      return _neighbors;
-   }
-
+  public Map<Ip, BgpNeighbor> getNeighbors() {
+    return _neighbors;
+  }
 }

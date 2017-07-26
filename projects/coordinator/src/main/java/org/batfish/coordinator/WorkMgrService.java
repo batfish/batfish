@@ -41,8 +41,8 @@ public class WorkMgrService {
   /**
    * Check if an API key is valid
    *
-   * @param apiKey
-   * @return
+   * @param apiKey The API key to check
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_CHECK_API_KEY)
@@ -107,12 +107,14 @@ public class WorkMgrService {
   /**
    * Configures an analysis for the container
    *
-   * @param apiKey
-   * @param containerName
-   * @param newAnalysisStr
-   * @param addQuestionsStream
-   * @param delQuestions
-   * @return
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to configure
+   * @param newAnalysisStr The string representation of a new analysis to configure
+   * @param analysisName The name of the analysis to configure
+   * @param addQuestionsStream A stream providing the questions for the analysis
+   * @param delQuestions A list of questions to delete from the analysis
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS)
@@ -175,11 +177,13 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletes an analysis for the container
+   * Delete an analysis from the container
    *
-   * @param apiKey
-   * @param containerName
-   * @return
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the analysis resides
+   * @param analysisName The name of the analysis to delete
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_ANALYSIS)
@@ -225,11 +229,12 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletes the specified container
+   * Delete the specified container
    *
-   * @param apiKey
-   * @param containerName
-   * @return
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to delete
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_CONTAINER)
@@ -270,11 +275,12 @@ public class WorkMgrService {
   /**
    * Deletes the specified environment under the specified container and testrig
    *
-   * @param apiKey
-   * @param containerName
-   * @param envName
-   * @param testrigName
-   * @return
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the environment and testrig reside
+   * @param envName The name of the environment to delete
+   * @param testrigName The name of the testrig in which the environment resides
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_ENVIRONMENT)
@@ -317,13 +323,14 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletes the specified question under the specified container, testrig
+   * Delete the specified question under the specified container, testrig
    *
-   * @param apiKey
-   * @param containerName
-   * @param questionName
-   * @param testrigName
-   * @return
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the question resides
+   * @param questionName The name of the question to delete
+   * @param testrigName The name of the testrig for which the question was asked
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_QUESTION)
@@ -366,12 +373,13 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletes the specified testrig under the specified container
+   * Deletesthe specified testrig under the specified container
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @return
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the testrig resides
+   * @param testrigName The name of the testrig to delete
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_DEL_TESTRIG)
@@ -412,13 +420,18 @@ public class WorkMgrService {
   }
 
   /**
-   * Get answers for an analysis (previously run)
+   * Get answers for a previously run analysis
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param analysisName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the analysis resides
+   * @param testrigName The name of the testrig on which the analysis was run
+   * @param baseEnv The name of the base environment on which the analysis was run
+   * @param deltaTestrig The name of the delta testrig on which the analysis was run
+   * @param deltaEnv The name of the delta environment on which the analysis was run
+   * @param analysisName The name of the analysis
+   * @param prettyAnswer Whether or not to pretty&#8208;print the result
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS)
@@ -490,13 +503,18 @@ public class WorkMgrService {
   }
 
   /**
-   * Get answer for a question that was previously asked
+   * Get answer to a previously asked question
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param questionName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the question was asked
+   * @param testrigName The name of the testrig on which the question was asked
+   * @param baseEnv The name of the base environment on which the question was asked
+   * @param deltaTestrig The name of the delta testrig on which the question was asked
+   * @param deltaEnv The name of the delta environment on which the question was asked
+   * @param questionName The name of the question
+   * @param prettyAnswer Whether or not to pretty&#8208;print the result
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_ANSWER)
@@ -567,10 +585,10 @@ public class WorkMgrService {
   /**
    * Get information of the container
    *
-   * @param apiKey
-   * @param clientVersion
-   * @param containerName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the question was asked
+   * @return A string representation of the container
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
@@ -638,11 +656,12 @@ public class WorkMgrService {
   /**
    * Fetches the specified object from the specified container, testrig
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param objectName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The container in which the object resides
+   * @param testrigName The testrig in which the object resides
+   * @param objectName The name of the object
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_OBJECT)
@@ -716,11 +735,12 @@ public class WorkMgrService {
   }
 
   /**
-   * Obtains the counts of completed and incomplete work iterms
+   * Obtain the counts of completed and incomplete work items
    *
-   * @param apiKey
-   * @param workId
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param workId The work ID to check
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_WORKSTATUS)
@@ -773,11 +793,14 @@ public class WorkMgrService {
   }
 
   /**
-   * Initializes a new container
+   * Initialize a new container
    *
-   * @param apiKey
-   * @param containerPrefix
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to initialize (overrides containerPrefix)
+   * @param containerPrefix The prefix used to generate the container name (ignored if containerName
+   *     is not empty)
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_INIT_CONTAINER)
@@ -821,11 +844,12 @@ public class WorkMgrService {
   }
 
   /**
-   * Lists the analyses under the specified container
+   * List the analyses under the specified container
    *
-   * @param apiKey
-   * @param containerName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container whose analyses are to be listed
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_ANALYSES)
@@ -882,8 +906,9 @@ public class WorkMgrService {
   /**
    * List the containers that the specified API key can access
    *
-   * @param apiKey
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_CONTAINERS)
@@ -927,10 +952,11 @@ public class WorkMgrService {
   /**
    * Lists the environments under the specified container, testrig
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The container in which the testrig and environments reside
+   * @param testrigName The name of the testrig whose environments are to be listed
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_ENVIRONMENTS)
@@ -974,11 +1000,67 @@ public class WorkMgrService {
   }
 
   /**
-   * Lists the testrigs under the specified container
+   * List the questions under the specified container, testrig
    *
-   * @param apiKey
-   * @param containerName
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the testrig and questions reside
+   * @param testrigName The name of the testrig, the questions on which are to be listed
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_QUESTIONS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listTestrigQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+    try {
+      _logger.info("WMS:listTestrigQuestions " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(testrigName, "Testrig name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      JSONObject retObject = new JSONObject();
+
+      for (String questionName : Main.getWorkMgr().listQuestions(containerName, testrigName)) {
+        String questionText =
+            Main.getWorkMgr().getTestrigQuestion(containerName, testrigName, questionName);
+
+        retObject.put(questionName, new JSONObject(questionText));
+      }
+
+      return new JSONArray(
+          Arrays.asList(
+              CoordConsts.SVC_KEY_SUCCESS,
+              (new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject))));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:listTestrigQuestions exception: " + e.getMessage() + "\n");
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listTestrigQuestions exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
+  /**
+   * List the testrigs under the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container whose testrigs are to be listed
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_TESTRIGS)
@@ -1031,69 +1113,15 @@ public class WorkMgrService {
   }
 
   /**
-   * Lists the questions under the specified container, testrig
+   * Upload a custom object under the specified container, testrig.
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @return
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_LIST_QUESTIONS)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray listTestrigQuestions(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
-    try {
-      _logger.info("WMS:listTestrigQuestions " + apiKey + " " + containerName + "\n");
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-      checkContainerAccessibility(apiKey, containerName);
-
-      JSONObject retObject = new JSONObject();
-
-      for (String questionName : Main.getWorkMgr().listQuestions(containerName, testrigName)) {
-        String questionText =
-            Main.getWorkMgr().getTestrigQuestion(containerName, testrigName, questionName);
-
-        retObject.put(questionName, new JSONObject(questionText));
-      }
-
-      return new JSONArray(
-          Arrays.asList(
-              CoordConsts.SVC_KEY_SUCCESS,
-              (new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject))));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
-      _logger.error("WMS:listTestrigQuestions exception: " + e.getMessage() + "\n");
-      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
-    } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:listTestrigQuestions exception: " + stackTrace);
-      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
-    }
-  }
-
-  /**
-   * Uploads a custom object under container, testrig.
-   *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param qName
-   * @param fileStream
-   * @param paramFileStream
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the testrig resides
+   * @param testrigName The name of the testrig under which to upload the object
+   * @param objectName The name of the object to upload
+   * @param fileStream The stream from which the object is read
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_PUT_OBJECT)
@@ -1149,11 +1177,12 @@ public class WorkMgrService {
   }
 
   /**
-   * Queues new work
+   * Queue a new work item
    *
-   * @param apiKey
-   * @param workItemStr
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param workItemStr The work item to queue
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_QUEUE_WORK)
@@ -1172,7 +1201,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      WorkItem workItem = WorkItem.FromJsonString(workItemStr);
+      WorkItem workItem = WorkItem.fromJsonString(workItemStr);
 
       checkContainerAccessibility(apiKey, workItem.getContainerName());
 
@@ -1222,12 +1251,15 @@ public class WorkMgrService {
   /**
    * Uploads a new environment under the container, testrig
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param envName
-   * @param fileStream
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container under which the testrig resides
+   * @param testrigName The name of the testrig under which to upload the new environment
+   * @param baseEnvName The base environment name from which the new environment initially inherits
+   * @param envName The name of the new environment to create
+   * @param fileStream The stream from which the contents of the new environment are read. These
+   *     contents overwrite those inherited from any base environment.
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_UPLOAD_ENV)
@@ -1282,16 +1314,17 @@ public class WorkMgrService {
   }
 
   /**
-   * Uploads a new questions under container, testrig. Expects a file containing the question and a
-   * file containing the parameters.
+   * Upload a new question under the specified container, testrig. A file containing the question
+   * and a file containing the parameters must be provided.
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param qName
-   * @param fileStream
-   * @param paramFileStream
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container under which the testrig resides
+   * @param testrigName The name of the testrig about which to ask the question
+   * @param qName The name of the question
+   * @param fileStream The stream from which the question is read
+   * @param paramFileStream The stream from which the parameters are read
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_UPLOAD_QUESTION)
@@ -1351,11 +1384,12 @@ public class WorkMgrService {
   /**
    * Uploads a new testrig under the specified container
    *
-   * @param apiKey
-   * @param containerName
-   * @param testrigName
-   * @param fileStream
-   * @return
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container under which to upload the new testrig
+   * @param testrigName The name of the new testrig to create
+   * @param fileStream The stream from which the new testrig is read
+   * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_UPLOAD_TESTRIG)

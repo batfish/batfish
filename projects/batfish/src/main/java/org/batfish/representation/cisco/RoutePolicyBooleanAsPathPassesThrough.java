@@ -9,27 +9,20 @@ import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 
 public class RoutePolicyBooleanAsPathPassesThrough extends RoutePolicyBoolean {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private boolean _exact;
+  private boolean _exact;
 
-   private List<SubRangeExpr> _range;
+  private List<SubRangeExpr> _range;
 
-   public RoutePolicyBooleanAsPathPassesThrough(
-         List<SubRangeExpr> range,
-         boolean exact) {
-      _range = range;
-      _exact = exact;
-   }
+  public RoutePolicyBooleanAsPathPassesThrough(List<SubRangeExpr> range, boolean exact) {
+    _range = range;
+    _exact = exact;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new PassesThroughAsPath(_range, _exact);
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new PassesThroughAsPath(_range, _exact);
+  }
 }

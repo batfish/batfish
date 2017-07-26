@@ -10,78 +10,76 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyIfStatement extends RoutePolicyStatement {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private RoutePolicyElseBlock _elseBlock;
+  private RoutePolicyElseBlock _elseBlock;
 
-   private List<RoutePolicyElseIfBlock> _elseIfBlocks;
+  private List<RoutePolicyElseIfBlock> _elseIfBlocks;
 
-   private RoutePolicyBoolean _guard;
+  private RoutePolicyBoolean _guard;
 
-   private List<RoutePolicyStatement> _stmtList;
+  private List<RoutePolicyStatement> _stmtList;
 
-   public RoutePolicyIfStatement(
-         RoutePolicyBoolean guard,
-         List<RoutePolicyStatement> stmtList,
-         List<RoutePolicyElseIfBlock> elseIfBlocks,
-         RoutePolicyElseBlock elseBlock) {
-      _guard = guard;
-      _stmtList = stmtList;
-      _elseIfBlocks = elseIfBlocks;
-      _elseBlock = elseBlock;
-   }
+  public RoutePolicyIfStatement(
+      RoutePolicyBoolean guard,
+      List<RoutePolicyStatement> stmtList,
+      List<RoutePolicyElseIfBlock> elseIfBlocks,
+      RoutePolicyElseBlock elseBlock) {
+    _guard = guard;
+    _stmtList = stmtList;
+    _elseIfBlocks = elseIfBlocks;
+    _elseBlock = elseBlock;
+  }
 
-   public void addStatement(RoutePolicyStatement stmt) {
-      _stmtList.add(stmt);
-   }
+  public void addStatement(RoutePolicyStatement stmt) {
+    _stmtList.add(stmt);
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      If mainIf = new If();
-      mainIf.setGuard(_guard.toBooleanExpr(cc, c, w));
-      If currentIf = mainIf;
-      List<Statement> mainIfStatements = new ArrayList<>();
-      mainIf.setTrueStatements(mainIfStatements);
-      for (RoutePolicyStatement stmt : _stmtList) {
-         stmt.applyTo(mainIfStatements, cc, c, w);
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    If mainIf = new If();
+    mainIf.setGuard(_guard.toBooleanExpr(cc, c, w));
+    If currentIf = mainIf;
+    List<Statement> mainIfStatements = new ArrayList<>();
+    mainIf.setTrueStatements(mainIfStatements);
+    for (RoutePolicyStatement stmt : _stmtList) {
+      stmt.applyTo(mainIfStatements, cc, c, w);
+    }
+    for (RoutePolicyElseIfBlock elseIfBlock : _elseIfBlocks) {
+      If elseIf = new If();
+      elseIf.setGuard(elseIfBlock.getGuard().toBooleanExpr(cc, c, w));
+      List<Statement> elseIfStatements = new ArrayList<>();
+      elseIf.setTrueStatements(elseIfStatements);
+      for (RoutePolicyStatement stmt : elseIfBlock.getStatements()) {
+        stmt.applyTo(elseIfStatements, cc, c, w);
       }
-      for (RoutePolicyElseIfBlock elseIfBlock : _elseIfBlocks) {
-         If elseIf = new If();
-         elseIf.setGuard(elseIfBlock.getGuard().toBooleanExpr(cc, c, w));
-         List<Statement> elseIfStatements = new ArrayList<>();
-         elseIf.setTrueStatements(elseIfStatements);
-         for (RoutePolicyStatement stmt : elseIfBlock.getStatements()) {
-            stmt.applyTo(elseIfStatements, cc, c, w);
-         }
-         currentIf.setFalseStatements(Collections.singletonList(elseIf));
-         currentIf = elseIf;
+      currentIf.setFalseStatements(Collections.singletonList(elseIf));
+      currentIf = elseIf;
+    }
+    List<Statement> elseStatements = new ArrayList<>();
+    currentIf.setFalseStatements(elseStatements);
+    if (_elseBlock != null) {
+      for (RoutePolicyStatement stmt : _elseBlock.getStatements()) {
+        stmt.applyTo(elseStatements, cc, c, w);
       }
-      List<Statement> elseStatements = new ArrayList<>();
-      currentIf.setFalseStatements(elseStatements);
-      if (_elseBlock != null) {
-         for (RoutePolicyStatement stmt : _elseBlock.getStatements()) {
-            stmt.applyTo(elseStatements, cc, c, w);
-         }
-      }
-      statements.add(mainIf);
-   }
+    }
+    statements.add(mainIf);
+  }
 
-   public RoutePolicyElseBlock getElseBlock() {
-      return _elseBlock;
-   }
+  public RoutePolicyElseBlock getElseBlock() {
+    return _elseBlock;
+  }
 
-   public List<RoutePolicyElseIfBlock> getElseIfBlocks() {
-      return _elseIfBlocks;
-   }
+  public List<RoutePolicyElseIfBlock> getElseIfBlocks() {
+    return _elseIfBlocks;
+  }
 
-   public RoutePolicyBoolean getGuard() {
-      return _guard;
-   }
+  public RoutePolicyBoolean getGuard() {
+    return _guard;
+  }
 
-   public List<RoutePolicyStatement> getStatements() {
-      return _stmtList;
-   }
-
+  public List<RoutePolicyStatement> getStatements() {
+    return _stmtList;
+  }
 }

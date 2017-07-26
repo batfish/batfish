@@ -5,8 +5,7 @@ import org.batfish.vendor.VendorConfiguration;
 
 public interface ControlPlaneExtractor extends BatfishExtractor {
 
-   Set<String> getUnimplementedFeatures();
+  Set<String> getUnimplementedFeatures();
 
-   VendorConfiguration getVendorConfiguration();
-
+  VendorConfiguration getVendorConfiguration();
 }

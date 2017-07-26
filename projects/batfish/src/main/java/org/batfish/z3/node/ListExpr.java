@@ -7,28 +7,27 @@ import java.util.Set;
 
 public abstract class ListExpr extends Expr implements ComplexExpr {
 
-   protected final List<Expr> _subExpressions;
+  protected final List<Expr> _subExpressions;
 
-   public ListExpr() {
-      _subExpressions = new ArrayList<>();
-   }
+  public ListExpr() {
+    _subExpressions = new ArrayList<>();
+  }
 
-   public void addSubExpression(Expr expr) {
-      _subExpressions.add(expr);
-   }
+  public void addSubExpression(Expr expr) {
+    _subExpressions.add(expr);
+  }
 
-   @Override
-   public List<Expr> getSubExpressions() {
-      return _subExpressions;
-   }
+  @Override
+  public List<Expr> getSubExpressions() {
+    return _subExpressions;
+  }
 
-   @Override
-   public Set<String> getVariables() {
-      Set<String> variables = new HashSet<>();
-      for (Expr subExpression : _subExpressions) {
-         variables.addAll(subExpression.getVariables());
-      }
-      return variables;
-   }
-
+  @Override
+  public Set<String> getVariables() {
+    Set<String> variables = new HashSet<>();
+    for (Expr subExpression : _subExpressions) {
+      variables.addAll(subExpression.getVariables());
+    }
+    return variables;
+  }
 }

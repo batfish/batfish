@@ -2,18 +2,17 @@ package org.batfish.grammar;
 
 public interface GrammarSettings {
 
-   int getMaxParserContextLines();
+  int getMaxParserContextLines();
 
-   int getMaxParserContextTokens();
+  int getMaxParserContextTokens();
 
-   boolean getThrowOnLexerError();
+  boolean getThrowOnLexerError();
 
-   boolean getThrowOnParserError();
+  boolean getThrowOnParserError();
 
-   boolean printParseTree();
+  boolean printParseTree();
 
-   void setThrowOnLexerError(boolean b);
+  void setThrowOnLexerError(boolean b);
 
-   void setThrowOnParserError(boolean b);
-
+  void setThrowOnParserError(boolean b);
 }

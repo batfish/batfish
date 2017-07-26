@@ -10,29 +10,25 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
 public class RouteMapMatchProtocolLine extends RouteMapMatchLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private List<String> _protocols;
+  private List<String> _protocols;
 
-   public RouteMapMatchProtocolLine(List<String> protocol) {
-      _protocols = protocol;
-   }
+  public RouteMapMatchProtocolLine(List<String> protocol) {
+    _protocols = protocol;
+  }
 
-   public List<String> getProtocols() {
-      return _protocols;
-   }
+  public List<String> getProtocols() {
+    return _protocols;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         Configuration c, CiscoConfiguration cc,
-         Warnings w) {
-      Disjunction d = new Disjunction();
-      List<BooleanExpr> disjuncts = d.getDisjuncts();
-      for (String protocol : _protocols) {
-         disjuncts.add(
-               new MatchProtocol(RoutingProtocol.fromProtocolName(protocol)));
-      }
-      return d.simplify();
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+    Disjunction d = new Disjunction();
+    List<BooleanExpr> disjuncts = d.getDisjuncts();
+    for (String protocol : _protocols) {
+      disjuncts.add(new MatchProtocol(RoutingProtocol.fromProtocolName(protocol)));
+    }
+    return d.simplify();
+  }
 }

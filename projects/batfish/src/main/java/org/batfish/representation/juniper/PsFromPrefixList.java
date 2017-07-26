@@ -9,28 +9,21 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 
 public final class PsFromPrefixList extends PsFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final String _name;
+  private final String _name;
 
-   public PsFromPrefixList(String name) {
-      _name = name;
-   }
+  public PsFromPrefixList(String name) {
+    _name = name;
+  }
 
-   public String getName() {
-      return _name;
-   }
+  public String getName() {
+    return _name;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         JuniperConfiguration jc, Configuration c,
-         Warnings warnings) {
-      return new MatchPrefixSet(
-            new DestinationNetwork(),
-            new NamedPrefixSet(_name));
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    return new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(_name));
+  }
 }

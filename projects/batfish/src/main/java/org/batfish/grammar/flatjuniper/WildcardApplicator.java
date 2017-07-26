@@ -12,88 +12,83 @@ import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 
 public class WildcardApplicator extends FlatJuniperParserBaseListener {
 
-   private Flat_juniper_configurationContext _configurationContext;
+  private Flat_juniper_configurationContext _configurationContext;
 
-   private HierarchyPath _currentPath;
+  private HierarchyPath _currentPath;
 
-   private boolean _enablePathRecording;
+  private boolean _enablePathRecording;
 
-   private Hierarchy _hierarchy;
+  private Hierarchy _hierarchy;
 
-   private List<ParseTree> _newConfigurationLines;
+  private List<ParseTree> _newConfigurationLines;
 
-   private boolean _reenablePathRecording;
+  private boolean _reenablePathRecording;
 
-   public WildcardApplicator(Hierarchy hierarchy) {
-      _hierarchy = hierarchy;
-   }
+  public WildcardApplicator(Hierarchy hierarchy) {
+    _hierarchy = hierarchy;
+  }
 
-   @Override
-   public void enterFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<>();
-      _newConfigurationLines.addAll(ctx.children);
-   }
+  @Override
+  public void enterFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    _configurationContext = ctx;
+    _newConfigurationLines = new ArrayList<>();
+    _newConfigurationLines.addAll(ctx.children);
+  }
 
-   @Override
-   public void enterInterface_id(Interface_idContext ctx) {
-      if (_enablePathRecording
-            && (ctx.unit != null || ctx.suffix != null || ctx.node != null)) {
-         _enablePathRecording = false;
-         _reenablePathRecording = true;
-         String text = ctx.getText();
-         _currentPath.addNode(text);
-      }
-   }
-
-   @Override
-   public void enterSet_line_tail(Set_line_tailContext ctx) {
-      _enablePathRecording = true;
-      _currentPath = new HierarchyPath();
-   }
-
-   @Override
-   public void exitFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext.children = _newConfigurationLines;
-   }
-
-   @Override
-   public void exitInterface_id(Interface_idContext ctx) {
-      if (_reenablePathRecording) {
-         _enablePathRecording = true;
-         _reenablePathRecording = false;
-      }
-   }
-
-   @Override
-   public void exitSet_line(Set_lineContext ctx) {
-      if (_currentPath.containsWildcard()) {
-         List<ParseTree> lines = _hierarchy.getMasterTree()
-               .applyWildcardPath(_currentPath, _configurationContext);
-         int insertionIndex = _newConfigurationLines.indexOf(ctx);
-         _newConfigurationLines.addAll(insertionIndex, lines);
-      }
-      _currentPath = null;
-   }
-
-   @Override
-   public void exitSet_line_tail(Set_line_tailContext ctx) {
+  @Override
+  public void enterInterface_id(Interface_idContext ctx) {
+    if (_enablePathRecording && (ctx.unit != null || ctx.suffix != null || ctx.node != null)) {
       _enablePathRecording = false;
-   }
+      _reenablePathRecording = true;
+      String text = ctx.getText();
+      _currentPath.addNode(text);
+    }
+  }
 
-   @Override
-   public void visitTerminal(TerminalNode node) {
-      if (_enablePathRecording) {
-         String text = node.getText();
-         if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
-            _currentPath.addWildcardNode(text);
-         }
-         else {
-            _currentPath.addNode(text);
-         }
+  @Override
+  public void enterSet_line_tail(Set_line_tailContext ctx) {
+    _enablePathRecording = true;
+    _currentPath = new HierarchyPath();
+  }
+
+  @Override
+  public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    _configurationContext.children = _newConfigurationLines;
+  }
+
+  @Override
+  public void exitInterface_id(Interface_idContext ctx) {
+    if (_reenablePathRecording) {
+      _enablePathRecording = true;
+      _reenablePathRecording = false;
+    }
+  }
+
+  @Override
+  public void exitSet_line(Set_lineContext ctx) {
+    if (_currentPath.containsWildcard()) {
+      List<ParseTree> lines =
+          _hierarchy.getMasterTree().applyWildcardPath(_currentPath, _configurationContext);
+      int insertionIndex = _newConfigurationLines.indexOf(ctx);
+      _newConfigurationLines.addAll(insertionIndex, lines);
+    }
+    _currentPath = null;
+  }
+
+  @Override
+  public void exitSet_line_tail(Set_line_tailContext ctx) {
+    _enablePathRecording = false;
+  }
+
+  @Override
+  public void visitTerminal(TerminalNode node) {
+    if (_enablePathRecording) {
+      String text = node.getText();
+      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
+        _currentPath.addWildcardNode(text);
+      } else {
+        _currentPath.addNode(text);
       }
-   }
-
+    }
+  }
 }

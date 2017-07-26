@@ -9,33 +9,26 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public class RoutePolicyInlinePrefix6Set extends RoutePolicyPrefixSet {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Prefix6Space _prefix6Space;
+  private Prefix6Space _prefix6Space;
 
-   public RoutePolicyInlinePrefix6Set(Prefix6Space prefix6Space) {
-      _prefix6Space = prefix6Space;
-   }
+  public RoutePolicyInlinePrefix6Set(Prefix6Space prefix6Space) {
+    _prefix6Space = prefix6Space;
+  }
 
-   public Prefix6Space getPrefix6Space() {
-      return _prefix6Space;
-   }
+  public Prefix6Space getPrefix6Space() {
+    return _prefix6Space;
+  }
 
-   @Override
-   public Prefix6SetExpr toPrefix6SetExpr(
-         CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      return new ExplicitPrefix6Set(_prefix6Space);
-   }
+  @Override
+  public Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new ExplicitPrefix6Set(_prefix6Space);
+  }
 
-   @Override
-   public PrefixSetExpr toPrefixSetExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return null;
-   }
-
+  @Override
+  public PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return null;
+  }
 }

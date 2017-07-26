@@ -14,64 +14,58 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Set<String> _communityLists;
+  private final Set<String> _communityLists;
 
-   private final int _statementLine;
+  private final int _statementLine;
 
-   public RouteMapSetCommunityListLine(
-         Set<String> communityLists,
-         int statementLine) {
-      _communityLists = communityLists;
-      _statementLine = statementLine;
-   }
+  public RouteMapSetCommunityListLine(Set<String> communityLists, int statementLine) {
+    _communityLists = communityLists;
+    _statementLine = statementLine;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      List<Long> communities = new ArrayList<>();
-      for (String communityListName : _communityLists) {
-         CommunityList communityList = c.getCommunityLists()
-               .get(communityListName);
-         if (communityList != null) {
-            StandardCommunityList scl = cc.getStandardCommunityLists()
-                  .get(communityListName);
-            if (scl != null) {
-               for (StandardCommunityListLine line : scl.getLines()) {
-                  if (line.getAction() == LineAction.ACCEPT) {
-                     communities.addAll(line.getCommunities());
-                  }
-                  else {
-                     w.redFlag(
-                           "Expected only permit lines in standard community-list referred to by route-map set community community-list line: \""
-                                 + communityListName + "\"");
-
-                  }
-               }
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    List<Long> communities = new ArrayList<>();
+    for (String communityListName : _communityLists) {
+      CommunityList communityList = c.getCommunityLists().get(communityListName);
+      if (communityList != null) {
+        StandardCommunityList scl = cc.getStandardCommunityLists().get(communityListName);
+        if (scl != null) {
+          for (StandardCommunityListLine line : scl.getLines()) {
+            if (line.getAction() == LineAction.ACCEPT) {
+              communities.addAll(line.getCommunities());
+            } else {
+              w.redFlag(
+                  "Expected only permit lines in standard community-list referred to by route-map "
+                      + "set community community-list line: \""
+                      + communityListName
+                      + "\"");
             }
-            else {
-               w.redFlag(
-                     "Expected standard community list in route-map set community community-list line but got expanded instead: \""
-                           + communityListName + "\"");
-            }
-         }
-         else {
-            cc.undefined(CiscoStructureType.COMMUNITY_LIST, communityListName,
-                  CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY, _statementLine);
-         }
+          }
+        } else {
+          w.redFlag(
+              "Expected standard community list in route-map set community community-list line "
+                  + "but got expanded instead: \""
+                  + communityListName
+                  + "\"");
+        }
+      } else {
+        cc.undefined(
+            CiscoStructureType.COMMUNITY_LIST,
+            communityListName,
+            CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY,
+            _statementLine);
       }
-      statements.add(new SetCommunity(
-            new InlineCommunitySet(new TreeSet<>(communities))));
-   }
+    }
+    statements.add(new SetCommunity(new InlineCommunitySet(new TreeSet<>(communities))));
+  }
 
-   @Override
-   public RouteMapSetType getType() {
-      return RouteMapSetType.COMMUNITY_LIST;
-   }
-
+  @Override
+  public RouteMapSetType getType() {
+    return RouteMapSetType.COMMUNITY_LIST;
+  }
 }

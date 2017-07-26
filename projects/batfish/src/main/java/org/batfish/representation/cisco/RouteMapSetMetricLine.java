@@ -9,28 +9,26 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetMetricLine extends RouteMapSetLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private IntExpr _metric;
+  private IntExpr _metric;
 
-   public RouteMapSetMetricLine(IntExpr metric) {
-      _metric = metric;
-   }
+  public RouteMapSetMetricLine(IntExpr metric) {
+    _metric = metric;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      statements.add(new SetMetric(_metric));
-   }
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    statements.add(new SetMetric(_metric));
+  }
 
-   public IntExpr getMetric() {
-      return _metric;
-   }
+  public IntExpr getMetric() {
+    return _metric;
+  }
 
-   @Override
-   public RouteMapSetType getType() {
-      return RouteMapSetType.METRIC;
-   }
-
+  @Override
+  public RouteMapSetType getType() {
+    return RouteMapSetType.METRIC;
+  }
 }

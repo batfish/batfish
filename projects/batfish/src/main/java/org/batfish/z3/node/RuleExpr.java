@@ -10,62 +10,58 @@ import org.batfish.z3.NodProgram;
 
 public class RuleExpr extends Statement implements ComplexExpr {
 
-   private BooleanExpr _subExpression;
-   private List<Expr> _subExpressions;
+  private BooleanExpr _subExpression;
+  private List<Expr> _subExpressions;
 
-   public RuleExpr() {
-      _subExpression = new IfExpr();
-      init();
-   }
+  public RuleExpr() {
+    _subExpression = new IfExpr();
+    init();
+  }
 
-   public RuleExpr(BooleanExpr subExpression) {
-      _subExpression = subExpression;
-      init();
-   }
+  public RuleExpr(BooleanExpr subExpression) {
+    _subExpression = subExpression;
+    init();
+  }
 
-   public RuleExpr(BooleanExpr antecedent, BooleanExpr consequent) {
-      _subExpression = new IfExpr(antecedent, consequent);
-      init();
-   }
+  public RuleExpr(BooleanExpr antecedent, BooleanExpr consequent) {
+    _subExpression = new IfExpr(antecedent, consequent);
+    init();
+  }
 
-   @Override
-   public Set<String> getRelations() {
-      return _subExpression.getRelations();
-   }
+  @Override
+  public Set<String> getRelations() {
+    return _subExpression.getRelations();
+  }
 
-   @Override
-   public List<Expr> getSubExpressions() {
-      return _subExpressions;
-   }
+  @Override
+  public List<Expr> getSubExpressions() {
+    return _subExpressions;
+  }
 
-   private void init() {
-      _subExpressions = new ArrayList<>();
-      _subExpressions.add(new IdExpr("rule"));
-      _subExpressions.add(_subExpression);
-      _printer = new CollapsedComplexExprPrinter(this);
-   }
+  private void init() {
+    _subExpressions = new ArrayList<>();
+    _subExpressions.add(new IdExpr("rule"));
+    _subExpressions.add(_subExpression);
+    _printer = new CollapsedComplexExprPrinter(this);
+  }
 
-   @Override
-   public Statement simplify() {
-      BooleanExpr newSubExpression = _subExpression.simplify();
-      if (newSubExpression != _subExpression) {
-         if (newSubExpression == TrueExpr.INSTANCE) {
-            return new Comment("(vacuous rule)");
-         }
-         else if (newSubExpression == FalseExpr.INSTANCE) {
-            throw new BatfishException("Unsatisfiable!");
-         }
-         else {
-            return new RuleExpr(newSubExpression);
-         }
+  @Override
+  public Statement simplify() {
+    BooleanExpr newSubExpression = _subExpression.simplify();
+    if (newSubExpression != _subExpression) {
+      if (newSubExpression == TrueExpr.INSTANCE) {
+        return new Comment("(vacuous rule)");
+      } else if (newSubExpression == FalseExpr.INSTANCE) {
+        throw new BatfishException("Unsatisfiable!");
+      } else {
+        return new RuleExpr(newSubExpression);
       }
-      else {
-         return this;
-      }
-   }
+    } else {
+      return this;
+    }
+  }
 
-   public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
-      return _subExpression.toBoolExpr(nodProgram);
-   }
-
+  public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
+    return _subExpression.toBoolExpr(nodProgram);
+  }
 }

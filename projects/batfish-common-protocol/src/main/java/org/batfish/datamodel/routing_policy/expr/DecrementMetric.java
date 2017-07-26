@@ -5,60 +5,56 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class DecrementMetric extends IntExpr {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private int _subtrahend;
+  private int _subtrahend;
 
-   @JsonCreator
-   private DecrementMetric() {
-   }
+  @JsonCreator
+  private DecrementMetric() {}
 
-   public DecrementMetric(int subtrahend) {
-      _subtrahend = subtrahend;
-   }
+  public DecrementMetric(int subtrahend) {
+    _subtrahend = subtrahend;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
-      DecrementMetric other = (DecrementMetric) obj;
-      if (_subtrahend != other._subtrahend) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    DecrementMetric other = (DecrementMetric) obj;
+    if (_subtrahend != other._subtrahend) {
+      return false;
+    }
+    return true;
+  }
 
-   @Override
-   public int evaluate(Environment environment) {
-      int oldMetric = environment.getOriginalRoute().getMetric();
-      int newVal = oldMetric - _subtrahend;
-      return newVal;
-   }
+  @Override
+  public int evaluate(Environment environment) {
+    int oldMetric = environment.getOriginalRoute().getMetric();
+    int newVal = oldMetric - _subtrahend;
+    return newVal;
+  }
 
-   public int getSubtrahend() {
-      return _subtrahend;
-   }
+  public int getSubtrahend() {
+    return _subtrahend;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + _subtrahend;
-      return result;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + _subtrahend;
+    return result;
+  }
 
-   public void setSubtrahend(int subtrahend) {
-      _subtrahend = subtrahend;
-   }
-
+  public void setSubtrahend(int subtrahend) {
+    _subtrahend = subtrahend;
+  }
 }

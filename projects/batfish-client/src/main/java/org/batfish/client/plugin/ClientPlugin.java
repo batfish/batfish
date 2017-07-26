@@ -7,28 +7,27 @@ import org.batfish.common.plugin.Plugin;
 
 public abstract class ClientPlugin extends Plugin {
 
-   protected Client _client;
+  protected Client _client;
 
-   protected BatfishLogger _logger;
+  protected BatfishLogger _logger;
 
-   protected Settings _settings;
+  protected Settings _settings;
 
-   protected abstract void clientPluginInitialize();
+  protected abstract void clientPluginInitialize();
 
-   @Override
-   protected final void pluginInitialize() {
-      switch (_pluginConsumer.getType()) {
+  @Override
+  protected final void pluginInitialize() {
+    switch (_pluginConsumer.getType()) {
       case BATFISH:
-         break;
+        break;
       case CLIENT:
-         _client = (Client) _pluginConsumer;
-         _settings = _client.getSettings();
-         _logger = _client.getLogger();
-         clientPluginInitialize();
-         break;
+        _client = (Client) _pluginConsumer;
+        _settings = _client.getSettings();
+        _logger = _client.getLogger();
+        clientPluginInitialize();
+        break;
       default:
-         break;
-      }
-   }
-
+        break;
+    }
+  }
 }

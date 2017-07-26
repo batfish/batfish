@@ -6,27 +6,24 @@ import org.batfish.common.util.JsonDiff;
 
 public class JsonDiffAnswerElement implements AnswerElement {
 
-   private static final String JSON_DIFF_VAR = "jsonDiff";
+  private static final String JSON_DIFF_VAR = "jsonDiff";
 
-   private final JsonDiff _jsonDiff;
+  private final JsonDiff _jsonDiff;
 
-   @JsonCreator
-   public JsonDiffAnswerElement(
-         @JsonProperty(JSON_DIFF_VAR) JsonDiff jsonDiff) {
-      _jsonDiff = jsonDiff;
-   }
+  @JsonCreator
+  public JsonDiffAnswerElement(@JsonProperty(JSON_DIFF_VAR) JsonDiff jsonDiff) {
+    _jsonDiff = jsonDiff;
+  }
 
-   @JsonProperty(JSON_DIFF_VAR)
-   public JsonDiff getJsonDiff() {
-      return _jsonDiff;
-   }
+  @JsonProperty(JSON_DIFF_VAR)
+  public JsonDiff getJsonDiff() {
+    return _jsonDiff;
+  }
 
-   @Override
-   public String prettyPrint() {
-      final StringBuilder sb = new StringBuilder(
-            "Difference between base and delta\n");
-      sb.append(_jsonDiff.prettyPrint("  "));
-      return sb.toString();
-
-   }
+  @Override
+  public String prettyPrint() {
+    final StringBuilder sb = new StringBuilder("Difference between base and delta\n");
+    sb.append(_jsonDiff.prettyPrint("  "));
+    return sb.toString();
+  }
 }

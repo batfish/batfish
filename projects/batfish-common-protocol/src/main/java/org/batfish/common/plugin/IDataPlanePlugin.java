@@ -1,5 +1,3 @@
 package org.batfish.common.plugin;
 
-public interface IDataPlanePlugin extends IBatfishPlugin {
-
-}
+public interface IDataPlanePlugin extends IBatfishPlugin {}

@@ -9,27 +9,25 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public final class PsThenLocalPreference extends PsThen {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final int _localPreference;
+  private final int _localPreference;
 
-   public PsThenLocalPreference(int localPreference) {
-      _localPreference = localPreference;
-   }
+  public PsThenLocalPreference(int localPreference) {
+    _localPreference = localPreference;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements,
-         JuniperConfiguration juniperVendorConfiguration, Configuration c,
-         Warnings warnings) {
-      statements.add(new SetLocalPreference(new LiteralInt(_localPreference)));
-   }
+  @Override
+  public void applyTo(
+      List<Statement> statements,
+      JuniperConfiguration juniperVendorConfiguration,
+      Configuration c,
+      Warnings warnings) {
+    statements.add(new SetLocalPreference(new LiteralInt(_localPreference)));
+  }
 
-   public int getLocalPreference() {
-      return _localPreference;
-   }
-
+  public int getLocalPreference() {
+    return _localPreference;
+  }
 }

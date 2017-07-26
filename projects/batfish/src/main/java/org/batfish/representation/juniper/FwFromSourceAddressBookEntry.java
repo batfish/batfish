@@ -9,32 +9,24 @@ import org.batfish.datamodel.Prefix;
 
 public final class FwFromSourceAddressBookEntry extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final String _addressBookEntryName;
+  private final String _addressBookEntryName;
 
-   private final AddressBook _localAddressBook;
+  private final AddressBook _localAddressBook;
 
-   public FwFromSourceAddressBookEntry(
-         AddressBook localAddressBook,
-         String addressBookEntryName) {
-      _localAddressBook = localAddressBook;
-      _addressBookEntryName = addressBookEntryName;
-   }
+  public FwFromSourceAddressBookEntry(AddressBook localAddressBook, String addressBookEntryName) {
+    _localAddressBook = localAddressBook;
+    _addressBookEntryName = addressBookEntryName;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      Set<Prefix> prefixes = _localAddressBook
-            .getPrefixes(_addressBookEntryName, w);
-      for (Prefix prefix : prefixes) {
-         IpWildcard wildcard = new IpWildcard(prefix);
-         line.getSrcIps().add(wildcard);
-      }
-   }
-
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    Set<Prefix> prefixes = _localAddressBook.getPrefixes(_addressBookEntryName, w);
+    for (Prefix prefix : prefixes) {
+      IpWildcard wildcard = new IpWildcard(prefix);
+      line.getSrcIps().add(wildcard);
+    }
+  }
 }

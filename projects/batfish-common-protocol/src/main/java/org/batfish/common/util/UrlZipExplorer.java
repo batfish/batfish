@@ -15,66 +15,63 @@ import java.util.zip.ZipInputStream;
 
 public class UrlZipExplorer {
 
-   private Set<String> _entries;
-   private ZipInputStream _stream;
-   private URL _url;
+  private Set<String> _entries;
+  private ZipInputStream _stream;
+  private URL _url;
 
-   public UrlZipExplorer(URL url) throws IOException {
-      _url = url;
-      _entries = new LinkedHashSet<>();
-      initListing();
-   }
+  public UrlZipExplorer(URL url) throws IOException {
+    _url = url;
+    _entries = new LinkedHashSet<>();
+    initListing();
+  }
 
-   public void extractFiles(StringFilter filter, File destinationDir)
-         throws IOException {
-      _stream = new ZipInputStream(_url.openStream());
-      ZipEntry ze = null;
-      while ((ze = _stream.getNextEntry()) != null) {
-         String entryName = ze.getName();
-         if (filter.accept(entryName)) {
-            Path dstPath = Paths.get(
-                  destinationDir.getAbsolutePath(),
-                  entryName);
-            File parentDir = dstPath.toFile().getParentFile();
-            parentDir.mkdirs();
-            Files.copy(_stream, dstPath);
-         }
+  public void extractFiles(StringFilter filter, File destinationDir) throws IOException {
+    _stream = new ZipInputStream(_url.openStream());
+    ZipEntry ze = null;
+    while ((ze = _stream.getNextEntry()) != null) {
+      String entryName = ze.getName();
+      if (filter.accept(entryName)) {
+        Path dstPath = Paths.get(destinationDir.getAbsolutePath(), entryName);
+        File parentDir = dstPath.toFile().getParentFile();
+        parentDir.mkdirs();
+        Files.copy(_stream, dstPath);
       }
-   }
+    }
+  }
 
-   public InputStream getInputStream() {
-      return _stream;
-   }
+  public InputStream getInputStream() {
+    return _stream;
+  }
 
-   private void initListing() throws IOException {
-      _stream = new ZipInputStream(_url.openStream());
-      ZipEntry ze = null;
-      while ((ze = _stream.getNextEntry()) != null) {
-         String entryName = ze.getName();
-         _entries.add(entryName);
+  private void initListing() throws IOException {
+    _stream = new ZipInputStream(_url.openStream());
+    ZipEntry ze = null;
+    while ((ze = _stream.getNextEntry()) != null) {
+      String entryName = ze.getName();
+      _entries.add(entryName);
+    }
+    _stream.close();
+  }
+
+  public Set<String> listFiles(StringFilter filter) {
+    Set<String> matches = new LinkedHashSet<>();
+    for (String entry : _entries) {
+      if (filter.accept(entry)) {
+        matches.add(entry);
       }
-      _stream.close();
-   }
+    }
+    return matches;
+  }
 
-   public Set<String> listFiles(StringFilter filter) {
-      Set<String> matches = new LinkedHashSet<>();
-      for (String entry : _entries) {
-         if (filter.accept(entry)) {
-            matches.add(entry);
-         }
+  public void openFile(String name) throws IOException {
+    _stream = new ZipInputStream(_url.openStream());
+    ZipEntry ze = null;
+    while ((ze = _stream.getNextEntry()) != null) {
+      String entryName = ze.getName();
+      if (entryName.equals(name)) {
+        return;
       }
-      return matches;
-   }
-
-   public void openFile(String name) throws IOException {
-      _stream = new ZipInputStream(_url.openStream());
-      ZipEntry ze = null;
-      while ((ze = _stream.getNextEntry()) != null) {
-         String entryName = ze.getName();
-         if (entryName.equals(name)) {
-            return;
-         }
-      }
-      throw new FileNotFoundException(name);
-   }
+    }
+    throw new FileNotFoundException(name);
+  }
 }

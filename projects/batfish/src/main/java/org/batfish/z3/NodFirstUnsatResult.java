@@ -6,56 +6,54 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
-public class NodFirstUnsatResult<Key, Result>
-      extends BatfishJobResult<Map<Key, Result>, NodFirstUnsatAnswerElement> {
+public class NodFirstUnsatResult<KeyT, ResultT>
+    extends BatfishJobResult<Map<KeyT, ResultT>, NodFirstUnsatAnswerElement> {
 
-   private final Integer _firstUnsatQueryIndex;
+  private final Integer _firstUnsatQueryIndex;
 
-   private final Key _key;
+  private final KeyT _key;
 
-   private final Result _result;
+  private final ResultT _result;
 
-   public NodFirstUnsatResult(
-         Key key, Integer firstUnsatQueryIndex,
-         Result result, BatfishLoggerHistory history, long elapsedTime) {
-      super(elapsedTime, history);
-      _firstUnsatQueryIndex = firstUnsatQueryIndex;
-      _key = key;
-      _result = result;
-   }
+  public NodFirstUnsatResult(
+      KeyT key,
+      Integer firstUnsatQueryIndex,
+      ResultT result,
+      BatfishLoggerHistory history,
+      long elapsedTime) {
+    super(elapsedTime, history);
+    _firstUnsatQueryIndex = firstUnsatQueryIndex;
+    _key = key;
+    _result = result;
+  }
 
-   public NodFirstUnsatResult(
-         long elapsedTime, BatfishLoggerHistory history,
-         Throwable failureCause) {
-      super(elapsedTime, history, failureCause);
-      _key = null;
-      _result = null;
-      _firstUnsatQueryIndex = null;
-   }
+  public NodFirstUnsatResult(
+      long elapsedTime, BatfishLoggerHistory history, Throwable failureCause) {
+    super(elapsedTime, history, failureCause);
+    _key = null;
+    _result = null;
+    _firstUnsatQueryIndex = null;
+  }
 
-   @Override
-   public void appendHistory(BatfishLogger logger) {
-      logger.append(_history);
-   }
+  @Override
+  public void appendHistory(BatfishLogger logger) {
+    logger.append(_history);
+  }
 
-   @Override
-   public void applyTo(
-         Map<Key, Result> output, BatfishLogger logger,
-         NodFirstUnsatAnswerElement answerElement) {
-      output.put(_key, _result);
-   }
+  @Override
+  public void applyTo(
+      Map<KeyT, ResultT> output, BatfishLogger logger, NodFirstUnsatAnswerElement answerElement) {
+    output.put(_key, _result);
+  }
 
-   @Override
-   public String toString() {
-      if (_key == null) {
-         return "<FAILED>";
-      }
-      else if (_firstUnsatQueryIndex != null) {
-         return "<FIRST_UNSAT: " + _firstUnsatQueryIndex + ":" + _result + ">";
-      }
-      else {
-         return "<ALL_SAT>";
-      }
-   }
-
+  @Override
+  public String toString() {
+    if (_key == null) {
+      return "<FAILED>";
+    } else if (_firstUnsatQueryIndex != null) {
+      return "<FIRST_UNSAT: " + _firstUnsatQueryIndex + ":" + _result + ">";
+    } else {
+      return "<ALL_SAT>";
+    }
+  }
 }

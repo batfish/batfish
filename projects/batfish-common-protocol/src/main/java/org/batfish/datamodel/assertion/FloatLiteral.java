@@ -2,15 +2,14 @@ package org.batfish.datamodel.assertion;
 
 public class FloatLiteral implements FloatExpr {
 
-   private float _f;
+  private float _f;
 
-   public FloatLiteral(float f) {
-      _f = f;
-   }
+  public FloatLiteral(float f) {
+    _f = f;
+  }
 
-   @Override
-   public Float evaluate(Environment env) {
-      return _f;
-   }
-
+  @Override
+  public Float evaluate(Environment env) {
+    return _f;
+  }
 }

@@ -7,72 +7,71 @@ import org.batfish.datamodel.LineAction;
 
 public class RouteMapClause implements Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+  private LineAction _action;
 
-   private RouteMapContinue _continueLine;
+  private RouteMapContinue _continueLine;
 
-   private boolean _ignore;
+  private boolean _ignore;
 
-   private String _mapName;
+  private String _mapName;
 
-   private List<RouteMapMatchLine> _matchList;
+  private List<RouteMapMatchLine> _matchList;
 
-   private int _seqNum;
+  private int _seqNum;
 
-   private List<RouteMapSetLine> _setList;
+  private List<RouteMapSetLine> _setList;
 
-   public RouteMapClause(LineAction action, String name, int num) {
-      _action = action;
-      _mapName = name;
-      _seqNum = num;
-      _matchList = new ArrayList<>();
-      _setList = new ArrayList<>();
-   }
+  public RouteMapClause(LineAction action, String name, int num) {
+    _action = action;
+    _mapName = name;
+    _seqNum = num;
+    _matchList = new ArrayList<>();
+    _setList = new ArrayList<>();
+  }
 
-   public void addMatchLine(RouteMapMatchLine line) {
-      _matchList.add(line);
-   }
+  public void addMatchLine(RouteMapMatchLine line) {
+    _matchList.add(line);
+  }
 
-   public void addSetLine(RouteMapSetLine line) {
-      _setList.add(line);
-   }
+  public void addSetLine(RouteMapSetLine line) {
+    _setList.add(line);
+  }
 
-   public LineAction getAction() {
-      return _action;
-   }
+  public LineAction getAction() {
+    return _action;
+  }
 
-   public RouteMapContinue getContinueLine() {
-      return _continueLine;
-   }
+  public RouteMapContinue getContinueLine() {
+    return _continueLine;
+  }
 
-   public boolean getIgnore() {
-      return _ignore;
-   }
+  public boolean getIgnore() {
+    return _ignore;
+  }
 
-   public String getMapName() {
-      return _mapName;
-   }
+  public String getMapName() {
+    return _mapName;
+  }
 
-   public List<RouteMapMatchLine> getMatchList() {
-      return _matchList;
-   }
+  public List<RouteMapMatchLine> getMatchList() {
+    return _matchList;
+  }
 
-   public int getSeqNum() {
-      return _seqNum;
-   }
+  public int getSeqNum() {
+    return _seqNum;
+  }
 
-   public List<RouteMapSetLine> getSetList() {
-      return _setList;
-   }
+  public List<RouteMapSetLine> getSetList() {
+    return _setList;
+  }
 
-   public void setContinueLine(RouteMapContinue continueLine) {
-      _continueLine = continueLine;
-   }
+  public void setContinueLine(RouteMapContinue continueLine) {
+    _continueLine = continueLine;
+  }
 
-   public void setIgnore(boolean b) {
-      _ignore = b;
-   }
-
+  public void setIgnore(boolean b) {
+    _ignore = b;
+  }
 }

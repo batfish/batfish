@@ -15,113 +15,112 @@ import java.util.regex.Pattern;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
-@JsonSchemaDescription("Represents a named access-list whose matching criteria is restricted to regexes on community attributes sent with a bgp advertisement")
+@JsonSchemaDescription(
+    "Represents a named access-list whose matching criteria is restricted to regexes on community "
+        + "attributes sent with a bgp advertisement")
 public class CommunityList extends ComparableStructure<String> {
 
-   private static final String LINES_VAR = "lines";
+  private static final String LINES_VAR = "lines";
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private transient Set<Long> _deniedCache;
+  private transient Set<Long> _deniedCache;
 
-   private boolean _invertMatch;
+  private boolean _invertMatch;
 
-   /**
-    * The list of lines that are checked in order against the community
-    * attribute(s) of a bgp advertisement
-    */
-   private final List<CommunityListLine> _lines;
+  /**
+   * The list of lines that are checked in order against the community attribute(s) of a bgp
+   * advertisement
+   */
+  private final List<CommunityListLine> _lines;
 
-   private transient Set<Long> _permittedCache;
+  private transient Set<Long> _permittedCache;
 
-   /**
-    * Constructs a CommunityList with the given name for {@link #_name}, and
-    * lines for {@link #_lines}
-    *
-    * @param name
-    * @param lines
-    */
-   @JsonCreator
-   public CommunityList(
-         @JsonProperty(NAME_VAR) String name,
-         @JsonProperty(LINES_VAR) List<CommunityListLine> lines) {
-      super(name);
-      _lines = lines;
-   }
+  /**
+   * Constructs a CommunityList with the given name for {@link #_name}, and lines for {@link
+   * #_lines}
+   *
+   * @param name The name of the structure
+   * @param lines The lines in the list
+   */
+  @JsonCreator
+  public CommunityList(
+      @JsonProperty(NAME_VAR) String name, @JsonProperty(LINES_VAR) List<CommunityListLine> lines) {
+    super(name);
+    _lines = lines;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    CommunityList other = (CommunityList) obj;
+    return other._lines.equals(_lines);
+  }
+
+  @JsonPropertyDescription(
+      "Specifies whether or not lines should match the complement of their criteria (does not "
+          + "change whether a line permits or denies).")
+  public boolean getInvertMatch() {
+    return _invertMatch;
+  }
+
+  @JsonProperty(LINES_VAR)
+  @JsonPropertyDescription(
+      "The list of lines that are checked in order against the community attribute(s) of a bgp "
+          + "advertisement")
+  public List<CommunityListLine> getLines() {
+    return _lines;
+  }
+
+  private boolean newPermits(long community) {
+    boolean accept = false;
+    boolean match = false;
+    Boolean matchingLineAccepts = null;
+    for (CommunityListLine line : _lines) {
+      Pattern p = Pattern.compile(line.getRegex());
+      String communityStr = CommonUtil.longToCommunity(community);
+      Matcher matcher = p.matcher(communityStr);
+      if (matcher.find()) {
+        match = true;
+        matchingLineAccepts = line.getAction() == LineAction.ACCEPT;
+        break;
       }
-      CommunityList other = (CommunityList) obj;
-      return other._lines.equals(_lines);
-   }
-
-   @JsonPropertyDescription("Specifies whether or not lines should match the complement of their criteria (does not change whether a line permits or denies).")
-   public boolean getInvertMatch() {
-      return _invertMatch;
-   }
-
-   @JsonProperty(LINES_VAR)
-   @JsonPropertyDescription("The list of lines that are checked in order against the community attribute(s) of a bgp advertisement")
-   public List<CommunityListLine> getLines() {
-      return _lines;
-   }
-
-   private boolean newPermits(long community) {
-      boolean accept = false;
-      boolean match = false;
-      Boolean matchingLineAccepts = null;
-      for (CommunityListLine line : _lines) {
-         Pattern p = Pattern.compile(line.getRegex());
-         String communityStr = CommonUtil.longToCommunity(community);
-         Matcher matcher = p.matcher(communityStr);
-         if (matcher.find()) {
-            match = true;
-            matchingLineAccepts = line.getAction() == LineAction.ACCEPT;
-            break;
-         }
+    }
+    if (match) {
+      if (_invertMatch) {
+        accept = false;
+      } else {
+        accept = matchingLineAccepts;
       }
-      if (match) {
-         if (_invertMatch) {
-            accept = false;
-         }
-         else {
-            accept = matchingLineAccepts;
-         }
-      }
-      if (accept) {
-         _permittedCache.add(community);
-      }
-      else {
-         _deniedCache.add(community);
-      }
-      return accept;
-   }
+    }
+    if (accept) {
+      _permittedCache.add(community);
+    } else {
+      _deniedCache.add(community);
+    }
+    return accept;
+  }
 
-   public boolean permits(long community) {
-      // if (_permittedCache.contains(community)) {
-      // return true;
-      // }
-      // else if (_deniedCache.contains(community)) {
-      // return false;
-      // }
-      return newPermits(community);
-   }
+  public boolean permits(long community) {
+    // if (_permittedCache.contains(community)) {
+    // return true;
+    // }
+    // else if (_deniedCache.contains(community)) {
+    // return false;
+    // }
+    return newPermits(community);
+  }
 
-   private void readObject(ObjectInputStream in)
-         throws IOException, ClassNotFoundException {
-      in.defaultReadObject();
-      _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-      _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-   }
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+  }
 
-   public void setInvertMatch(boolean invertMatch) {
-      _invertMatch = invertMatch;
-   }
-
+  public void setInvertMatch(boolean invertMatch) {
+    _invertMatch = invertMatch;
+  }
 }

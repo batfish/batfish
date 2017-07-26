@@ -8,23 +8,20 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetLocalPref extends RoutePolicySetStatement {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private IntExpr _pref;
+  private IntExpr _pref;
 
-   public RoutePolicySetLocalPref(IntExpr intExpr) {
-      _pref = intExpr;
-   }
+  public RoutePolicySetLocalPref(IntExpr intExpr) {
+    _pref = intExpr;
+  }
 
-   public IntExpr getLocalPref() {
-      return _pref;
-   }
+  public IntExpr getLocalPref() {
+    return _pref;
+  }
 
-   @Override
-   public Statement toSetStatement(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new SetLocalPreference(_pref);
-   }
-
+  @Override
+  public Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new SetLocalPreference(_pref);
+  }
 }

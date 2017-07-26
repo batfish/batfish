@@ -8,22 +8,17 @@ import org.batfish.datamodel.TcpFlags;
 
 public final class FwFromTcpFlags extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private List<TcpFlags> _tcpFlags;
+  private List<TcpFlags> _tcpFlags;
 
-   public FwFromTcpFlags(List<TcpFlags> tcpFlags) {
-      _tcpFlags = tcpFlags;
-   }
+  public FwFromTcpFlags(List<TcpFlags> tcpFlags) {
+    _tcpFlags = tcpFlags;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      line.getTcpFlags().addAll(_tcpFlags);
-   }
-
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    line.getTcpFlags().addAll(_tcpFlags);
+  }
 }

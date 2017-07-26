@@ -53,336 +53,314 @@ import org.xml.sax.SAXException;
 
 public class VpnConnection implements AwsVpcEntity, Serializable {
 
-   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
+  private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private static DiffieHellmanGroup toDiffieHellmanGroup(
-         String perfectForwardSecrecy) {
-      switch (perfectForwardSecrecy) {
+  private static DiffieHellmanGroup toDiffieHellmanGroup(String perfectForwardSecrecy) {
+    switch (perfectForwardSecrecy) {
       case "group2":
-         return DiffieHellmanGroup.GROUP2;
+        return DiffieHellmanGroup.GROUP2;
       default:
-         throw new BatfishException(
-               "No conversion to Diffie-Hellman group for string: \""
-                     + perfectForwardSecrecy + "\"");
-      }
-   }
+        throw new BatfishException(
+            "No conversion to Diffie-Hellman group for string: \"" + perfectForwardSecrecy + "\"");
+    }
+  }
 
-   private static EncryptionAlgorithm toEncryptionAlgorithm(
-         String encryptionProtocol) {
-      switch (encryptionProtocol) {
+  private static EncryptionAlgorithm toEncryptionAlgorithm(String encryptionProtocol) {
+    switch (encryptionProtocol) {
       case "aes-128-cbc":
-         return EncryptionAlgorithm.AES_128_CBC;
+        return EncryptionAlgorithm.AES_128_CBC;
       default:
-         throw new BatfishException(
-               "No conversion to encryption algorithm for string: \""
-                     + encryptionProtocol + "\"");
-      }
-   }
+        throw new BatfishException(
+            "No conversion to encryption algorithm for string: \"" + encryptionProtocol + "\"");
+    }
+  }
 
-   private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
-         String ikeAuthProtocol) {
-      switch (ikeAuthProtocol) {
-
+  private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(String ikeAuthProtocol) {
+    switch (ikeAuthProtocol) {
       case "sha1":
-         return IkeAuthenticationAlgorithm.SHA1;
+        return IkeAuthenticationAlgorithm.SHA1;
 
       default:
-         throw new BatfishException(
-               "No conversion to ike authentication algorithm for string: \""
-                     + ikeAuthProtocol + "\"");
-      }
-   }
+        throw new BatfishException(
+            "No conversion to ike authentication algorithm for string: \""
+                + ikeAuthProtocol
+                + "\"");
+    }
+  }
 
-   private static IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
-         String ipsecAuthProtocol) {
-      switch (ipsecAuthProtocol) {
+  private static IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
+      String ipsecAuthProtocol) {
+    switch (ipsecAuthProtocol) {
       case "hmac-sha1-96":
-         return IpsecAuthenticationAlgorithm.HMAC_SHA1_96;
+        return IpsecAuthenticationAlgorithm.HMAC_SHA1_96;
       default:
-         throw new BatfishException(
-               "No conversion to ipsec authentication algorithm for string: \""
-                     + ipsecAuthProtocol + "\"");
-      }
-   }
+        throw new BatfishException(
+            "No conversion to ipsec authentication algorithm for string: \""
+                + ipsecAuthProtocol
+                + "\"");
+    }
+  }
 
-   private static IpsecProtocol toIpsecProtocol(String ipsecProtocol) {
-      switch (ipsecProtocol) {
+  private static IpsecProtocol toIpsecProtocol(String ipsecProtocol) {
+    switch (ipsecProtocol) {
       case "esp":
-         return IpsecProtocol.ESP;
+        return IpsecProtocol.ESP;
       default:
-         throw new BatfishException(
-               "No conversion to ipsec protocol for string: \"" + ipsecProtocol
-                     + "\"");
+        throw new BatfishException(
+            "No conversion to ipsec protocol for string: \"" + ipsecProtocol + "\"");
+    }
+  }
+
+  private final String _customerGatewayId;
+
+  private final List<IpsecTunnel> _ipsecTunnels;
+
+  private final List<Prefix> _routes;
+
+  private final boolean _staticRoutesOnly;
+
+  private final List<VgwTelemetry> _vgwTelemetrys;
+
+  private final String _vpnConnectionId;
+
+  private final String _vpnGatewayId;
+
+  public VpnConnection(JSONObject jObj, BatfishLogger logger) throws JSONException {
+    _vgwTelemetrys = new LinkedList<>();
+    _routes = new LinkedList<>();
+    _ipsecTunnels = new LinkedList<>();
+    _vpnConnectionId = jObj.getString(JSON_KEY_VPN_CONNECTION_ID);
+    _customerGatewayId = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_ID);
+    _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
+
+    logger.debugf("parsing vpnconnection id: %s\n", _vpnConnectionId);
+
+    String cgwConfiguration = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION);
+    Document document;
+    try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      InputSource is = new InputSource(new StringReader(cgwConfiguration));
+      document = builder.parse(is);
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      throw new BatfishException(
+          "Could not parse XML for CustomerGatewayConfiguration for vpn connection "
+              + _vpnConnectionId
+              + " "
+              + e);
+    }
+
+    Element vpnConnection = (Element) document.getElementsByTagName(XML_KEY_VPN_CONNECTION).item(0);
+
+    NodeList nodeList = document.getElementsByTagName(XML_KEY_IPSEC_TUNNEL);
+
+    for (int index = 0; index < nodeList.getLength(); index++) {
+      Element ipsecTunnel = (Element) nodeList.item(index);
+      _ipsecTunnels.add(new IpsecTunnel(ipsecTunnel, vpnConnection));
+    }
+
+    if (jObj.has(JSON_KEY_ROUTES)) {
+      JSONArray routes = jObj.getJSONArray(JSON_KEY_ROUTES);
+      for (int index = 0; index < routes.length(); index++) {
+        JSONObject childObject = routes.getJSONObject(index);
+        _routes.add(new Prefix(childObject.getString(JSON_KEY_DESTINATION_CIDR_BLOCK)));
       }
-   }
+    }
 
-   private final String _customerGatewayId;
+    JSONArray vgwTelemetry = jObj.getJSONArray(JSON_KEY_VGW_TELEMETRY);
+    for (int index = 0; index < vgwTelemetry.length(); index++) {
+      JSONObject childObject = vgwTelemetry.getJSONObject(index);
+      _vgwTelemetrys.add(new VgwTelemetry(childObject, logger));
+    }
 
-   private final List<IpsecTunnel> _ipsecTunnels;
+    if (jObj.has(JSON_KEY_OPTIONS)) {
+      JSONObject options = jObj.getJSONObject(JSON_KEY_OPTIONS);
+      _staticRoutesOnly = Utils.tryGetBoolean(options, JSON_KEY_STATIC_ROUTES_ONLY, false);
+    } else {
+      _staticRoutesOnly = false;
+    }
+  }
 
-   private final List<Prefix> _routes;
-
-   private final boolean _staticRoutesOnly;
-
-   private final List<VgwTelemetry> _vgwTelemetrys;
-
-   private final String _vpnConnectionId;
-
-   private final String _vpnGatewayId;
-
-   public VpnConnection(JSONObject jObj, BatfishLogger logger)
-         throws JSONException {
-      _vgwTelemetrys = new LinkedList<>();
-      _routes = new LinkedList<>();
-      _ipsecTunnels = new LinkedList<>();
-      _vpnConnectionId = jObj.getString(JSON_KEY_VPN_CONNECTION_ID);
-      _customerGatewayId = jObj.getString(JSON_KEY_CUSTOMER_GATEWAY_ID);
-      _vpnGatewayId = jObj.getString(JSON_KEY_VPN_GATEWAY_ID);
-
-      logger.debugf("parsing vpnconnection id: %s\n", _vpnConnectionId);
-
-      String cgwConfiguration = jObj
-            .getString(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION);
-      Document document;
-      try {
-         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-         DocumentBuilder builder = factory.newDocumentBuilder();
-         InputSource is = new InputSource(new StringReader(cgwConfiguration));
-         document = builder.parse(is);
+  public void applyToVpnGateway(AwsVpcConfiguration awsVpcConfiguration) {
+    Configuration vpnGatewayCfgNode =
+        awsVpcConfiguration.getConfigurationNodes().get(_vpnGatewayId);
+    for (int i = 0; i < _ipsecTunnels.size(); i++) {
+      int idNum = i + 1;
+      String vpnId = _vpnConnectionId + "-" + idNum;
+      IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
+      if (ipsecTunnel.getCgwBgpAsn() != -1 && (_staticRoutesOnly || _routes.size() != 0)) {
+        throw new BatfishException(
+            "Unexpected combination of BGP and static routes for VPN connection: \""
+                + _vpnConnectionId
+                + "\"");
       }
-      catch (ParserConfigurationException | SAXException | IOException e) {
-         throw new BatfishException(
-               "Could not parse XML for CustomerGatewayConfiguration for vpn connection "
-                     + _vpnConnectionId + " " + e);
+      // create representation structures and add to configuration node
+      IpsecVpn ipsecVpn = new IpsecVpn(vpnId, vpnGatewayCfgNode);
+      vpnGatewayCfgNode.getIpsecVpns().put(vpnId, ipsecVpn);
+      IpsecPolicy ipsecPolicy = new IpsecPolicy(vpnId);
+      vpnGatewayCfgNode.getIpsecPolicies().put(vpnId, ipsecPolicy);
+      ipsecVpn.setIpsecPolicy(ipsecPolicy);
+      IpsecProposal ipsecProposal = new IpsecProposal(vpnId, -1);
+      vpnGatewayCfgNode.getIpsecProposals().put(vpnId, ipsecProposal);
+      ipsecPolicy.getProposals().put(vpnId, ipsecProposal);
+      IkeGateway ikeGateway = new IkeGateway(vpnId);
+      vpnGatewayCfgNode.getIkeGateways().put(vpnId, ikeGateway);
+      ipsecVpn.setIkeGateway(ikeGateway);
+      IkePolicy ikePolicy = new IkePolicy(vpnId);
+      vpnGatewayCfgNode.getIkePolicies().put(vpnId, ikePolicy);
+      ikeGateway.setIkePolicy(ikePolicy);
+      IkeProposal ikeProposal = new IkeProposal(vpnId, -1);
+      vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
+      ikePolicy.getProposals().put(vpnId, ikeProposal);
+      String externalInterfaceName = "external" + idNum;
+      Interface externalInterface = new Interface(externalInterfaceName, vpnGatewayCfgNode);
+      vpnGatewayCfgNode
+          .getDefaultVrf()
+          .getInterfaces()
+          .put(externalInterfaceName, externalInterface);
+      String vpnInterfaceName = "vpn" + idNum;
+      Interface vpnInterface = new Interface(vpnInterfaceName, vpnGatewayCfgNode);
+      vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName, vpnInterface);
+
+      // Set fields within representation structures
+
+      // bind and vpn interfaces
+      Prefix externalInterfacePrefix = new Prefix(ipsecTunnel.getVgwOutsideAddress(), 32);
+      externalInterface.setPrefix(externalInterfacePrefix);
+      externalInterface.getAllPrefixes().add(externalInterfacePrefix);
+      Prefix vpnInterfacePrefix =
+          new Prefix(ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
+      vpnInterface.setPrefix(vpnInterfacePrefix);
+      vpnInterface.getAllPrefixes().add(vpnInterfacePrefix);
+
+      // ipsec
+      ipsecVpn.setBindInterface(vpnInterface);
+      ipsecPolicy.setPfsKeyGroup(toDiffieHellmanGroup(ipsecTunnel.getIpsecPerfectForwardSecrecy()));
+      ipsecProposal.setAuthenticationAlgorithm(
+          toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
+      ipsecProposal.setEncryptionAlgorithm(
+          toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
+      ipsecProposal.setProtocol(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
+      ipsecProposal.setLifetimeSeconds(ipsecTunnel.getIpsecLifetime());
+
+      // ike
+      ikeGateway.setExternalInterface(externalInterface);
+      ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
+      if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
+        ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
+        ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+      }
+      ikeProposal.setAuthenticationAlgorithm(
+          toIkeAuthenticationAlgorithm(ipsecTunnel.getIkeAuthProtocol()));
+      ikeProposal.setDiffieHellmanGroup(
+          toDiffieHellmanGroup(ipsecTunnel.getIkePerfectForwardSecrecy()));
+      ikeProposal.setEncryptionAlgorithm(
+          toEncryptionAlgorithm(ipsecTunnel.getIkeEncryptionProtocol()));
+      ikeProposal.setLifetimeSeconds(ipsecTunnel.getIkeLifetime());
+
+      // bgp (if configured)
+      if (ipsecTunnel.getVgwBgpAsn() != -1) {
+        BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
+        if (proc == null) {
+          proc = new BgpProcess();
+          vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
+        }
+        BgpNeighbor cgBgpNeighbor =
+            new BgpNeighbor(ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode);
+        cgBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
+        proc.getNeighbors().put(cgBgpNeighbor.getPrefix(), cgBgpNeighbor);
+        cgBgpNeighbor.setRemoteAs(ipsecTunnel.getCgwBgpAsn());
+        cgBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());
+        cgBgpNeighbor.setLocalIp(ipsecTunnel.getVgwInsideAddress());
+        cgBgpNeighbor.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
+        cgBgpNeighbor.setSendCommunity(false);
+        VpnGateway vpnGateway = awsVpcConfiguration.getVpnGateways().get(_vpnGatewayId);
+        List<String> attachmentVpcIds = vpnGateway.getAttachmentVpcIds();
+        if (attachmentVpcIds.size() != 1) {
+          throw new BatfishException(
+              "Not sure what routes to advertise since VPN Gateway: \""
+                  + _vpnGatewayId
+                  + "\" for VPN connection: \""
+                  + _vpnConnectionId
+                  + "\" is linked to multiple VPCs");
+        }
+        String vpcId = attachmentVpcIds.get(0);
+        Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
+        Prefix outgoingPrefix = vpc.getCidrBlock();
+        int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
+        String originationPolicyName = vpnId + "_origination";
+        RoutingPolicy originationRoutingPolicy =
+            new RoutingPolicy(originationPolicyName, vpnGatewayCfgNode);
+        vpnGatewayCfgNode.getRoutingPolicies().put(originationPolicyName, originationRoutingPolicy);
+        cgBgpNeighbor.setExportPolicy(originationPolicyName);
+        If originationIf = new If();
+        List<Statement> statements = originationRoutingPolicy.getStatements();
+        statements.add(originationIf);
+        statements.add(Statements.ExitReject.toStaticStatement());
+        originationIf.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
+        RouteFilterList originationRouteFilter = new RouteFilterList(originationPolicyName);
+        vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName, originationRouteFilter);
+        RouteFilterLine matchOutgoingPrefix =
+            new RouteFilterLine(
+                LineAction.ACCEPT,
+                outgoingPrefix,
+                new SubRange(outgoingPrefixLength, outgoingPrefixLength));
+        originationRouteFilter.addLine(matchOutgoingPrefix);
+        Conjunction conj = new Conjunction();
+        originationIf.setGuard(conj);
+        conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
+        conj.getConjuncts()
+            .add(
+                new MatchPrefixSet(
+                    new DestinationNetwork(), new NamedPrefixSet(originationPolicyName)));
       }
 
-      Element vpnConnection = (Element) document
-            .getElementsByTagName(XML_KEY_VPN_CONNECTION).item(0);
-
-      NodeList nodeList = document.getElementsByTagName(XML_KEY_IPSEC_TUNNEL);
-
-      for (int index = 0; index < nodeList.getLength(); index++) {
-         Element ipsecTunnel = (Element) nodeList.item(index);
-         _ipsecTunnels.add(new IpsecTunnel(ipsecTunnel, vpnConnection));
+      // static routes (if configured)
+      for (Prefix staticRoutePrefix : _routes) {
+        StaticRoute staticRoute =
+            new StaticRoute(
+                staticRoutePrefix,
+                ipsecTunnel.getCgwInsideAddress(),
+                null,
+                Route.DEFAULT_STATIC_ROUTE_ADMIN,
+                Route.DEFAULT_STATIC_ROUTE_COST);
+        vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);
       }
+    }
+  }
 
-      if (jObj.has(JSON_KEY_ROUTES)) {
-         JSONArray routes = jObj.getJSONArray(JSON_KEY_ROUTES);
-         for (int index = 0; index < routes.length(); index++) {
-            JSONObject childObject = routes.getJSONObject(index);
-            _routes.add(new Prefix(
-                  childObject.getString(JSON_KEY_DESTINATION_CIDR_BLOCK)));
-         }
-      }
+  public String getCustomerGatewayId() {
+    return _customerGatewayId;
+  }
 
-      JSONArray vgwTelemetry = jObj.getJSONArray(JSON_KEY_VGW_TELEMETRY);
-      for (int index = 0; index < vgwTelemetry.length(); index++) {
-         JSONObject childObject = vgwTelemetry.getJSONObject(index);
-         _vgwTelemetrys.add(new VgwTelemetry(childObject, logger));
-      }
+  @Override
+  public String getId() {
+    return _vpnConnectionId;
+  }
 
-      if (jObj.has(JSON_KEY_OPTIONS)) {
-         JSONObject options = jObj.getJSONObject(JSON_KEY_OPTIONS);
-         _staticRoutesOnly = Utils.tryGetBoolean(options,
-               JSON_KEY_STATIC_ROUTES_ONLY, false);
-      }
-      else {
-         _staticRoutesOnly = false;
-      }
-   }
+  public List<IpsecTunnel> getIpsecTunnels() {
+    return _ipsecTunnels;
+  }
 
-   public void applyToVpnGateway(AwsVpcConfiguration awsVpcConfiguration) {
-      Configuration vpnGatewayCfgNode = awsVpcConfiguration
-            .getConfigurationNodes().get(_vpnGatewayId);
-      for (int i = 0; i < _ipsecTunnels.size(); i++) {
-         int idNum = i + 1;
-         String vpnId = _vpnConnectionId + "-" + idNum;
-         IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
-         if (ipsecTunnel.getCgwBgpAsn() != -1
-               && (_staticRoutesOnly || _routes.size() != 0)) {
-            throw new BatfishException(
-                  "Unexpected combination of BGP and static routes for VPN connection: \""
-                        + _vpnConnectionId + "\"");
-         }
-         // create representation structures and add to configuration node
-         IpsecVpn ipsecVpn = new IpsecVpn(vpnId, vpnGatewayCfgNode);
-         vpnGatewayCfgNode.getIpsecVpns().put(vpnId, ipsecVpn);
-         IpsecPolicy ipsecPolicy = new IpsecPolicy(vpnId);
-         vpnGatewayCfgNode.getIpsecPolicies().put(vpnId, ipsecPolicy);
-         ipsecVpn.setIpsecPolicy(ipsecPolicy);
-         IpsecProposal ipsecProposal = new IpsecProposal(vpnId, -1);
-         vpnGatewayCfgNode.getIpsecProposals().put(vpnId, ipsecProposal);
-         ipsecPolicy.getProposals().put(vpnId, ipsecProposal);
-         IkeGateway ikeGateway = new IkeGateway(vpnId);
-         vpnGatewayCfgNode.getIkeGateways().put(vpnId, ikeGateway);
-         ipsecVpn.setIkeGateway(ikeGateway);
-         IkePolicy ikePolicy = new IkePolicy(vpnId);
-         vpnGatewayCfgNode.getIkePolicies().put(vpnId, ikePolicy);
-         ikeGateway.setIkePolicy(ikePolicy);
-         IkeProposal ikeProposal = new IkeProposal(vpnId, -1);
-         vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
-         ikePolicy.getProposals().put(vpnId, ikeProposal);
-         String externalInterfaceName = "external" + idNum;
-         Interface externalInterface = new Interface(
-               externalInterfaceName,
-               vpnGatewayCfgNode);
-         vpnGatewayCfgNode.getDefaultVrf().getInterfaces()
-               .put(externalInterfaceName, externalInterface);
-         String vpnInterfaceName = "vpn" + idNum;
-         Interface vpnInterface = new Interface(
-               vpnInterfaceName,
-               vpnGatewayCfgNode);
-         vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(
-               vpnInterfaceName,
-               vpnInterface);
+  public List<Prefix> getRoutes() {
+    return _routes;
+  }
 
-         // Set fields within representation structures
+  public boolean getStaticRoutesOnly() {
+    return _staticRoutesOnly;
+  }
 
-         // bind and vpn interfaces
-         Prefix externalInterfacePrefix = new Prefix(
-               ipsecTunnel.getVgwOutsideAddress(), 32);
-         externalInterface.setPrefix(externalInterfacePrefix);
-         externalInterface.getAllPrefixes().add(externalInterfacePrefix);
-         Prefix vpnInterfacePrefix = new Prefix(
-               ipsecTunnel.getVgwInsideAddress(),
-               ipsecTunnel.getVgwInsidePrefixLength());
-         vpnInterface.setPrefix(vpnInterfacePrefix);
-         vpnInterface.getAllPrefixes().add(vpnInterfacePrefix);
+  public List<VgwTelemetry> getVgwTelemetrys() {
+    return _vgwTelemetrys;
+  }
 
-         // ipsec
-         ipsecVpn.setBindInterface(vpnInterface);
-         ipsecPolicy.setPfsKeyGroup(toDiffieHellmanGroup(
-               ipsecTunnel.getIpsecPerfectForwardSecrecy()));
-         ipsecProposal
-               .setAuthenticationAlgorithm(toIpsecAuthenticationAlgorithm(
-                     ipsecTunnel.getIpsecAuthProtocol()));
-         ipsecProposal.setEncryptionAlgorithm(
-               toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
-         ipsecProposal
-               .setProtocol(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
-         ipsecProposal.setLifetimeSeconds(ipsecTunnel.getIpsecLifetime());
+  public String getVpnConnectionId() {
+    return _vpnConnectionId;
+  }
 
-         // ike
-         ikeGateway.setExternalInterface(externalInterface);
-         ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
-         if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
-            ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
-            ikeProposal.setAuthenticationMethod(
-                  IkeAuthenticationMethod.PRE_SHARED_KEYS);
-         }
-         ikeProposal.setAuthenticationAlgorithm(
-               toIkeAuthenticationAlgorithm(ipsecTunnel.getIkeAuthProtocol()));
-         ikeProposal.setDiffieHellmanGroup(
-               toDiffieHellmanGroup(ipsecTunnel.getIkePerfectForwardSecrecy()));
-         ikeProposal.setEncryptionAlgorithm(
-               toEncryptionAlgorithm(ipsecTunnel.getIkeEncryptionProtocol()));
-         ikeProposal.setLifetimeSeconds(ipsecTunnel.getIkeLifetime());
-
-         // bgp (if configured)
-         if (ipsecTunnel.getVgwBgpAsn() != -1) {
-            BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
-            if (proc == null) {
-               proc = new BgpProcess();
-               vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
-            }
-            BgpNeighbor cgBgpNeighbor = new BgpNeighbor(
-                  ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode);
-            cgBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
-            proc.getNeighbors().put(cgBgpNeighbor.getPrefix(), cgBgpNeighbor);
-            cgBgpNeighbor.setRemoteAs(ipsecTunnel.getCgwBgpAsn());
-            cgBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());
-            cgBgpNeighbor.setLocalIp(ipsecTunnel.getVgwInsideAddress());
-            cgBgpNeighbor.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
-            cgBgpNeighbor.setSendCommunity(false);
-            VpnGateway vpnGateway = awsVpcConfiguration.getVpnGateways()
-                  .get(_vpnGatewayId);
-            List<String> attachmentVpcIds = vpnGateway.getAttachmentVpcIds();
-            if (attachmentVpcIds.size() != 1) {
-               throw new BatfishException(
-                     "Not sure what routes to advertise since VPN Gateway: \""
-                           + _vpnGatewayId + "\" for VPN connection: \""
-                           + _vpnConnectionId
-                           + "\" is linked to multiple VPCs");
-            }
-            String vpcId = attachmentVpcIds.get(0);
-            Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-            Prefix outgoingPrefix = vpc.getCidrBlock();
-            int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
-            String originationPolicyName = vpnId + "_origination";
-            RoutingPolicy originationRoutingPolicy = new RoutingPolicy(
-                  originationPolicyName, vpnGatewayCfgNode);
-            vpnGatewayCfgNode.getRoutingPolicies().put(
-                  originationPolicyName,
-                  originationRoutingPolicy);
-            cgBgpNeighbor.setExportPolicy(originationPolicyName);
-            If originationIf = new If();
-            List<Statement> statements = originationRoutingPolicy
-                  .getStatements();
-            statements.add(originationIf);
-            statements.add(Statements.ExitReject.toStaticStatement());
-            originationIf.getTrueStatements()
-                  .add(Statements.ExitAccept.toStaticStatement());
-            RouteFilterList originationRouteFilter = new RouteFilterList(
-                  originationPolicyName);
-            vpnGatewayCfgNode.getRouteFilterLists().put(
-                  originationPolicyName,
-                  originationRouteFilter);
-            RouteFilterLine matchOutgoingPrefix = new RouteFilterLine(
-                  LineAction.ACCEPT, outgoingPrefix,
-                  new SubRange(outgoingPrefixLength, outgoingPrefixLength));
-            originationRouteFilter.addLine(matchOutgoingPrefix);
-            Conjunction conj = new Conjunction();
-            originationIf.setGuard(conj);
-            conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
-            conj.getConjuncts().add(new MatchPrefixSet(
-                  new DestinationNetwork(),
-                  new NamedPrefixSet(originationPolicyName)));
-         }
-
-         // static routes (if configured)
-         for (Prefix staticRoutePrefix : _routes) {
-            StaticRoute staticRoute = new StaticRoute(staticRoutePrefix,
-                  ipsecTunnel.getCgwInsideAddress(), null,
-                  Route.DEFAULT_STATIC_ROUTE_ADMIN,
-                  Route.DEFAULT_STATIC_ROUTE_COST);
-            vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes()
-                  .add(staticRoute);
-         }
-      }
-   }
-
-   public String getCustomerGatewayId() {
-      return _customerGatewayId;
-   }
-
-   @Override
-   public String getId() {
-      return _vpnConnectionId;
-   }
-
-   public List<IpsecTunnel> getIpsecTunnels() {
-      return _ipsecTunnels;
-   }
-
-   public List<Prefix> getRoutes() {
-      return _routes;
-   }
-
-   public boolean getStaticRoutesOnly() {
-      return _staticRoutesOnly;
-   }
-
-   public List<VgwTelemetry> getVgwTelemetrys() {
-      return _vgwTelemetrys;
-   }
-
-   public String getVpnConnectionId() {
-      return _vpnConnectionId;
-   }
-
-   public String getVpnGatewayId() {
-      return _vpnGatewayId;
-   }
+  public String getVpnGatewayId() {
+    return _vpnGatewayId;
+  }
 }

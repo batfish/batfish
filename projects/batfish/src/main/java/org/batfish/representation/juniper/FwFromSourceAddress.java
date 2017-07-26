@@ -8,27 +8,22 @@ import org.batfish.datamodel.Prefix;
 
 public final class FwFromSourceAddress extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Prefix _prefix;
+  private final Prefix _prefix;
 
-   public FwFromSourceAddress(Prefix prefix) {
-      _prefix = prefix;
-   }
+  public FwFromSourceAddress(Prefix prefix) {
+    _prefix = prefix;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      IpWildcard wildcard = new IpWildcard(_prefix);
-      line.getSrcIps().add(wildcard);
-   }
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    IpWildcard wildcard = new IpWildcard(_prefix);
+    line.getSrcIps().add(wildcard);
+  }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
-
+  public Prefix getPrefix() {
+    return _prefix;
+  }
 }

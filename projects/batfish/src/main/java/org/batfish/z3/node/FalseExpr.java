@@ -6,19 +6,17 @@ import org.batfish.z3.NodProgram;
 
 public class FalseExpr extends BooleanExpr {
 
-   public static final FalseExpr INSTANCE = new FalseExpr();
+  public static final FalseExpr INSTANCE = new FalseExpr();
 
-   private FalseExpr() {
-   }
+  private FalseExpr() {}
 
-   @Override
-   public void print(StringBuilder sb, int indent) {
-      sb.append("false");
-   }
+  @Override
+  public void print(StringBuilder sb, int indent) {
+    sb.append("false");
+  }
 
-   @Override
-   public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
-      return nodProgram.getContext().mkFalse();
-   }
-
+  @Override
+  public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
+    return nodProgram.getContext().mkFalse();
+  }
 }

@@ -11,52 +11,48 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 
-public abstract class DataPlanePlugin extends BatfishPlugin
-      implements IDataPlanePlugin {
+public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlanePlugin {
 
-   private static DataPlanePlugin DATA_PLANE_PLUGIN;
+  private static DataPlanePlugin DATA_PLANE_PLUGIN;
 
-   private static Class<? extends DataPlanePlugin> DATA_PLANE_PLUGIN_CLASS;
+  private static Class<? extends DataPlanePlugin> DATA_PLANE_PLUGIN_CLASS;
 
-   public static synchronized DataPlanePlugin getDataPlanePlugin() {
-      return DATA_PLANE_PLUGIN;
-   }
+  public static synchronized DataPlanePlugin getDataPlanePlugin() {
+    return DATA_PLANE_PLUGIN;
+  }
 
-   public static synchronized Class<? extends DataPlanePlugin> getDataPlanePluginClass() {
-      return DATA_PLANE_PLUGIN_CLASS;
-   }
+  public static synchronized Class<? extends DataPlanePlugin> getDataPlanePluginClass() {
+    return DATA_PLANE_PLUGIN_CLASS;
+  }
 
-   public static synchronized void setDataPlanePlugin(
-         DataPlanePlugin dataPlanePlugin) {
-      DATA_PLANE_PLUGIN = dataPlanePlugin;
-   }
+  public static synchronized void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
+    DATA_PLANE_PLUGIN = dataPlanePlugin;
+  }
 
-   public static synchronized void setDataPlanePluginClass(
-         Class<? extends DataPlanePlugin> dataPlanePlugin) {
-      DATA_PLANE_PLUGIN_CLASS = dataPlanePlugin;
-   }
+  public static synchronized void setDataPlanePluginClass(
+      Class<? extends DataPlanePlugin> dataPlanePlugin) {
+    DATA_PLANE_PLUGIN_CLASS = dataPlanePlugin;
+  }
 
-   @Override
-   protected final void batfishPluginInitialize() {
-      _batfish.setDataPlanePlugin(this);
-      dataPlanePluginInitialize();
-   }
+  @Override
+  protected final void batfishPluginInitialize() {
+    _batfish.setDataPlanePlugin(this);
+    dataPlanePluginInitialize();
+  }
 
-   public abstract Answer computeDataPlane(boolean differentialContext);
+  public abstract Answer computeDataPlane(boolean differentialContext);
 
-   protected void dataPlanePluginInitialize() {
-   }
+  protected void dataPlanePluginInitialize() {}
 
-   public abstract AdvertisementSet getAdvertisements();
+  public abstract AdvertisementSet getAdvertisements();
 
-   public abstract List<Flow> getHistoryFlows();
+  public abstract List<Flow> getHistoryFlows();
 
-   public abstract List<FlowTrace> getHistoryFlowTraces();
+  public abstract List<FlowTrace> getHistoryFlowTraces();
 
-   public abstract IbgpTopology getIbgpNeighbors();
+  public abstract IbgpTopology getIbgpNeighbors();
 
-   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
+  public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
-   public abstract void processFlows(Set<Flow> flows);
-
+  public abstract void processFlows(Set<Flow> flows);
 }

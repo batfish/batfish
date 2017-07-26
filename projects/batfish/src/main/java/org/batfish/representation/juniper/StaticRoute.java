@@ -8,76 +8,73 @@ import org.batfish.datamodel.Prefix;
 
 public class StaticRoute implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private boolean _drop;
+  private boolean _drop;
 
-   private int _metric;
+  private int _metric;
 
-   private String _nextHopInterface;
+  private String _nextHopInterface;
 
-   private Ip _nextHopIp;
+  private Ip _nextHopIp;
 
-   private List<String> _policies;
+  private List<String> _policies;
 
-   private Prefix _prefix;
+  private Prefix _prefix;
 
-   private Integer _tag;
+  private Integer _tag;
 
-   public StaticRoute(Prefix prefix) {
-      _prefix = prefix;
-      _policies = new ArrayList<>();
-   }
+  public StaticRoute(Prefix prefix) {
+    _prefix = prefix;
+    _policies = new ArrayList<>();
+  }
 
-   public boolean getDrop() {
-      return _drop;
-   }
+  public boolean getDrop() {
+    return _drop;
+  }
 
-   public int getMetric() {
-      return _metric;
-   }
+  public int getMetric() {
+    return _metric;
+  }
 
-   public String getNextHopInterface() {
-      return _nextHopInterface;
-   }
+  public String getNextHopInterface() {
+    return _nextHopInterface;
+  }
 
-   public Ip getNextHopIp() {
-      return _nextHopIp;
-   }
+  public Ip getNextHopIp() {
+    return _nextHopIp;
+  }
 
-   public List<String> getPolicies() {
-      return _policies;
-   }
+  public List<String> getPolicies() {
+    return _policies;
+  }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
+  public Prefix getPrefix() {
+    return _prefix;
+  }
 
-   public Integer getTag() {
-      return _tag;
-   }
+  public Integer getTag() {
+    return _tag;
+  }
 
-   public void setDrop(boolean drop) {
-      _drop = true;
-   }
+  public void setDrop(boolean drop) {
+    _drop = true;
+  }
 
-   public void setMetric(int metric) {
-      _metric = metric;
-   }
+  public void setMetric(int metric) {
+    _metric = metric;
+  }
 
-   public void setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
-   }
+  public void setNextHopInterface(String nextHopInterface) {
+    _nextHopInterface = nextHopInterface;
+  }
 
-   public void setNextHopIp(Ip nextHopIp) {
-      _nextHopIp = nextHopIp;
-   }
+  public void setNextHopIp(Ip nextHopIp) {
+    _nextHopIp = nextHopIp;
+  }
 
-   public void setTag(int tag) {
-      _tag = tag;
-   }
-
+  public void setTag(int tag) {
+    _tag = tag;
+  }
 }

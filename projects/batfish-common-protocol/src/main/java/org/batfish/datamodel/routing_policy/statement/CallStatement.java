@@ -8,84 +8,76 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class CallStatement extends Statement {
 
-   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
+  private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private String _calledPolicyName;
+  private String _calledPolicyName;
 
-   @JsonCreator
-   private CallStatement() {
-   }
+  @JsonCreator
+  private CallStatement() {}
 
-   public CallStatement(String includedPolicyName) {
-      _calledPolicyName = includedPolicyName;
-   }
+  public CallStatement(String includedPolicyName) {
+    _calledPolicyName = includedPolicyName;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
-      CallStatement other = (CallStatement) obj;
-      if (_calledPolicyName == null) {
-         if (other._calledPolicyName != null) {
-            return false;
-         }
-      }
-      else if (!_calledPolicyName.equals(other._calledPolicyName)) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
-
-   @Override
-   public Result execute(Environment environment) {
-      RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
-            .get(_calledPolicyName);
-      Result result;
-      if (policy == null) {
-         result = new Result();
-         environment.setError(true);
-         result.setBooleanValue(false);
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    CallStatement other = (CallStatement) obj;
+    if (_calledPolicyName == null) {
+      if (other._calledPolicyName != null) {
+        return false;
       }
-      else {
-         boolean oldCallStatementContext = environment
-               .getCallStatementContext();
-         environment.setCallStatementContext(true);
-         result = policy.call(environment);
-         result.setReturn(false);
-         environment.setCallStatementContext(oldCallStatementContext);
-      }
-      return result;
-   }
+    } else if (!_calledPolicyName.equals(other._calledPolicyName)) {
+      return false;
+    }
+    return true;
+  }
 
-   @JsonProperty(CALLED_POLICY_NAME_VAR)
-   public String getCalledPolicyName() {
-      return _calledPolicyName;
-   }
+  @Override
+  public Result execute(Environment environment) {
+    RoutingPolicy policy =
+        environment.getConfiguration().getRoutingPolicies().get(_calledPolicyName);
+    Result result;
+    if (policy == null) {
+      result = new Result();
+      environment.setError(true);
+      result.setBooleanValue(false);
+    } else {
+      boolean oldCallStatementContext = environment.getCallStatementContext();
+      environment.setCallStatementContext(true);
+      result = policy.call(environment);
+      result.setReturn(false);
+      environment.setCallStatementContext(oldCallStatementContext);
+    }
+    return result;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result
-            + ((_calledPolicyName == null) ? 0 : _calledPolicyName.hashCode());
-      return result;
-   }
+  @JsonProperty(CALLED_POLICY_NAME_VAR)
+  public String getCalledPolicyName() {
+    return _calledPolicyName;
+  }
 
-   @JsonProperty(CALLED_POLICY_NAME_VAR)
-   public void setCalledPolicyName(String calledPolicyName) {
-      _calledPolicyName = calledPolicyName;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_calledPolicyName == null) ? 0 : _calledPolicyName.hashCode());
+    return result;
+  }
 
+  @JsonProperty(CALLED_POLICY_NAME_VAR)
+  public void setCalledPolicyName(String calledPolicyName) {
+    _calledPolicyName = calledPolicyName;
+  }
 }

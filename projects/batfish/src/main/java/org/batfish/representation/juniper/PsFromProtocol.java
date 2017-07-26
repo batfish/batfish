@@ -8,26 +8,21 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
 public final class PsFromProtocol extends PsFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final RoutingProtocol _protocol;
+  private final RoutingProtocol _protocol;
 
-   public PsFromProtocol(RoutingProtocol protocol) {
-      _protocol = protocol;
-   }
+  public PsFromProtocol(RoutingProtocol protocol) {
+    _protocol = protocol;
+  }
 
-   public RoutingProtocol getProtocol() {
-      return _protocol;
-   }
+  public RoutingProtocol getProtocol() {
+    return _protocol;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         JuniperConfiguration jc, Configuration c,
-         Warnings warnings) {
-      return new MatchProtocol(_protocol);
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    return new MatchProtocol(_protocol);
+  }
 }

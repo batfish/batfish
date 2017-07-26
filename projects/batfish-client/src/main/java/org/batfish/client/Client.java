@@ -434,7 +434,8 @@ public class Client extends AbstractClient implements IClient {
           System.err.println(
               "org.batfish.client: Command file not specified while running in batch mode.");
           System.err.printf(
-              "Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want interactive mode\n",
+              "Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want "
+                  + "interactive mode\n",
               Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
           System.exit(1);
         }
@@ -1321,6 +1322,23 @@ public class Client extends AbstractClient implements IClient {
     return parameters;
   }
 
+  /**
+   * Get information of the container(first element in {@code parameters}) return true if
+   * successfully get container information, false otherwise
+   */
+  private boolean getContainer(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
+      return false;
+    }
+    String containerName = parameters.get(0);
+    String containerInfo = _workHelper.getContainer(containerName);
+    if (containerInfo != null) {
+      _logger.output(containerInfo);
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public BatfishLogger getLogger() {
     return _logger;
@@ -1622,6 +1640,23 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean isValidArgument(
+      List<String> options,
+      List<String> parameters,
+      int maxNumOptions,
+      int minNumParas,
+      int maxNumParas,
+      Command command) {
+    if (options.size() > maxNumOptions
+        || (parameters.size() < minNumParas)
+        || (parameters.size() > maxNumParas)) {
+      _logger.errorf("Invalid arguments: %s %s\n", options.toString(), parameters.toString());
+      printUsage(command);
+      return false;
+    }
+    return true;
+  }
+
   private boolean listAnalyses(
       FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_ANALYSES)) {
@@ -1832,7 +1867,8 @@ public class Client extends AbstractClient implements IClient {
       return parameters;
     } catch (JSONException | IOException e) {
       throw new BatfishException(
-          "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all values valid JSON?)",
+          "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
+              + "values valid JSON?)",
           e);
     }
   }
@@ -1955,6 +1991,8 @@ public class Client extends AbstractClient implements IClient {
           return generateDeltaDataplane(outWriter, options, parameters);
         case GET:
           return get(words, outWriter, options, parameters, false);
+        case GET_CONTAINER:
+          return getContainer(options, parameters);
         case GET_DELTA:
           return get(words, outWriter, options, parameters, true);
         case GET_ANALYSIS_ANSWERS:
@@ -1969,8 +2007,6 @@ public class Client extends AbstractClient implements IClient {
           return getAnswer(outWriter, options, parameters, true, false);
         case GET_ANSWER_DIFFERENTIAL:
           return getAnswer(outWriter, options, parameters, false, true);
-        case GET_CONTAINER:
-          return getContainer(options, parameters);
         case GET_QUESTION:
           return getQuestion(options, parameters);
         case HELP:
@@ -2659,39 +2695,5 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean validCommandUsage(String[] words) {
     return true;
-  }
-
-  private boolean isValidArgument(
-      List<String> options,
-      List<String> parameters,
-      int maxNumOptions,
-      int minNumParas,
-      int maxNumParas,
-      Command command) {
-    if (options.size() > maxNumOptions
-        || (parameters.size() < minNumParas)
-        || (parameters.size() > maxNumParas)) {
-      _logger.errorf("Invalid arguments: %s %s\n", options.toString(), parameters.toString());
-      printUsage(command);
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Get information of the container(first element in {@code parameters}) return true if
-   * successfully get container information, false otherwise
-   */
-  private boolean getContainer(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
-      return false;
-    }
-    String containerName = parameters.get(0);
-    String containerInfo = _workHelper.getContainer(containerName);
-    if (containerInfo != null) {
-      _logger.output(containerInfo);
-      return true;
-    }
-    return false;
   }
 }

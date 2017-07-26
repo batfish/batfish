@@ -4,19 +4,16 @@ import java.io.Serializable;
 
 public final class CommunityListLine implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private String _regex;
+  private String _regex;
 
-   public CommunityListLine(String regex) {
-      _regex = regex;
-   }
+  public CommunityListLine(String regex) {
+    _regex = regex;
+  }
 
-   public String getRegex() {
-      return _regex;
-   }
-
+  public String getRegex() {
+    return _regex;
+  }
 }

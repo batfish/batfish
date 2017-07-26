@@ -8,17 +8,14 @@ import org.batfish.datamodel.routing_policy.Environment;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class Prefix6Expr implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   @Override
-   public abstract boolean equals(Object obj);
+  @Override
+  public abstract boolean equals(Object obj);
 
-   public abstract Prefix6 evaluate(Environment env);
+  public abstract Prefix6 evaluate(Environment env);
 
-   @Override
-   public abstract int hashCode();
-
+  @Override
+  public abstract int hashCode();
 }

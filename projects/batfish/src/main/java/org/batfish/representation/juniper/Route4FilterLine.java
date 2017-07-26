@@ -7,27 +7,23 @@ import org.batfish.datamodel.Route6FilterList;
 
 public abstract class Route4FilterLine extends RouteFilterLine {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   protected final Prefix _prefix;
+  protected final Prefix _prefix;
 
-   private final Set<PsThen> _thens;
+  private final Set<PsThen> _thens;
 
-   public Route4FilterLine(Prefix prefix) {
-      _prefix = prefix;
-      _thens = new HashSet<>();
-   }
+  public Route4FilterLine(Prefix prefix) {
+    _prefix = prefix;
+    _thens = new HashSet<>();
+  }
 
-   @Override
-   public final void applyTo(Route6FilterList rfl) {
-   }
+  @Override
+  public final void applyTo(Route6FilterList rfl) {}
 
-   @Override
-   public Set<PsThen> getThens() {
-      return _thens;
-   }
-
+  @Override
+  public Set<PsThen> getThens() {
+    return _thens;
+  }
 }

@@ -8,22 +8,17 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetIsisMetric extends RoutePolicySetStatement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private IntExpr _metric;
+  private IntExpr _metric;
 
-   public RoutePolicySetIsisMetric(IntExpr metric) {
-      _metric = metric;
-   }
+  public RoutePolicySetIsisMetric(IntExpr metric) {
+    _metric = metric;
+  }
 
-   @Override
-   protected Statement toSetStatement(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new SetMetric(_metric);
-   }
-
+  @Override
+  protected Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new SetMetric(_metric);
+  }
 }

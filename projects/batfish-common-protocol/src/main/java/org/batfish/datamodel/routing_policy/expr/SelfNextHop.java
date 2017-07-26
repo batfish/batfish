@@ -7,43 +7,37 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class SelfNextHop extends NextHopExpr {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    return true;
+  }
 
-   @Override
-   public Ip getNextHopIp(Environment environment) {
-      // TODO: make work for dynamic sessions
-      Prefix prefix = new Prefix(
-            environment.getPeerAddress(),
-            Prefix.MAX_PREFIX_LENGTH);
-      BgpNeighbor neighbor = environment.getVrf().getBgpProcess().getNeighbors()
-            .get(prefix);
-      Ip localIp = neighbor.getLocalIp();
-      return localIp;
-   }
+  @Override
+  public Ip getNextHopIp(Environment environment) {
+    // TODO: make work for dynamic sessions
+    Prefix prefix = new Prefix(environment.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH);
+    BgpNeighbor neighbor = environment.getVrf().getBgpProcess().getNeighbors().get(prefix);
+    Ip localIp = neighbor.getLocalIp();
+    return localIp;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + 0x12345678;
-      return result;
-   }
-
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + 0x12345678;
+    return result;
+  }
 }

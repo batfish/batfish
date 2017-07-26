@@ -7,22 +7,17 @@ import org.batfish.datamodel.SubRange;
 
 public class FwFromIcmpType extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private SubRange _icmpTypeRange;
+  private SubRange _icmpTypeRange;
 
-   public FwFromIcmpType(SubRange icmpTypeRange) {
-      _icmpTypeRange = icmpTypeRange;
-   }
+  public FwFromIcmpType(SubRange icmpTypeRange) {
+    _icmpTypeRange = icmpTypeRange;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      line.getIcmpTypes().add(_icmpTypeRange);
-   }
-
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    line.getIcmpTypes().add(_icmpTypeRange);
+  }
 }

@@ -5,6 +5,5 @@ import org.batfish.datamodel.Topology;
 
 public interface TopologyExtractor extends ParseTreeListener {
 
-   Topology getTopology();
-
+  Topology getTopology();
 }

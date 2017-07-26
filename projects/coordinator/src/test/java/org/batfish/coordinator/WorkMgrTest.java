@@ -22,11 +22,45 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link WorkMgr}. */
 public class WorkMgrTest {
 
-  private WorkMgr _manager;
-
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
+  private WorkMgr _manager;
+
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void initContainerWithContainerName() throws IOException {
+    String containerName = "myContainer";
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
+    String initResult = _manager.initContainer(containerName, null);
+    assertThat(initResult, equalTo(containerName));
+  }
+
+  @Test
+  public void initContainerWithcontainerPrefix() throws IOException {
+    String containerPrefix = "myContainerPrefix";
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
+    String initResult = _manager.initContainer(null, containerPrefix);
+    assertThat(initResult, startsWith(containerPrefix));
+  }
+
+  @Test
+  public void initContainerWithNullInput() throws IOException {
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
+    String initResult = _manager.initContainer(null, null);
+    assertThat(initResult, startsWith("null_"));
+  }
+
+  @Test
+  public void initExistingContainer() throws IOException {
+    String containerName = "myContainer";
+    _folder.newFolder(containerName);
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
+    String expectedMessage = String.format("Container '%s' already exists!", containerName);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(equalTo(expectedMessage));
+    _manager.initContainer(containerName, null);
+  }
 
   @Before
   public void initManager() throws Exception {
@@ -86,16 +120,6 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void getNonExistContainer() {
-    String containerName = "myContainer";
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Error listing directory '" + containerDir.toString() + "'"));
-    _manager.getContainer(containerDir);
-  }
-
-  @Test
   public void getEmptyContainer() throws IOException {
     String containerName = "myContainer";
     _folder.newFolder(containerName);
@@ -120,36 +144,13 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void initExistingContainer() throws IOException {
+  public void getNonExistContainer() {
     String containerName = "myContainer";
-    _folder.newFolder(containerName);
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String expectedMessage = String.format("Container '%s' already exists!", containerName);
+    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo(expectedMessage));
-    _manager.initContainer(containerName, null);
+    _thrown.expectMessage(equalTo("Error listing directory '" + containerDir.toString() + "'"));
+    _manager.getContainer(containerDir);
   }
 
-  @Test
-  public void initContainerWithContainerName() throws IOException {
-    String containerName = "myContainer";
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String initResult = _manager.initContainer(containerName, null);
-    assertThat(initResult, equalTo(containerName));
-  }
-
-  @Test
-  public void initContainerWithcontainerPrefix() throws IOException {
-    String containerPrefix = "myContainerPrefix";
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String initResult = _manager.initContainer(null, containerPrefix);
-    assertThat(initResult, startsWith(containerPrefix));
-  }
-
-  @Test
-  public void initContainerWithNullInput() throws IOException {
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String initResult = _manager.initContainer(null, null);
-    assertThat(initResult, startsWith("null_"));
-  }
 }
