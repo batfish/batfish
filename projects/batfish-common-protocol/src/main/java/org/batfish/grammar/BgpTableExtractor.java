@@ -4,6 +4,5 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 
 public interface BgpTableExtractor extends BatfishExtractor {
 
-   BgpAdvertisementsByVrf getBgpAdvertisementsByVrf();
-
+  BgpAdvertisementsByVrf getBgpAdvertisementsByVrf();
 }

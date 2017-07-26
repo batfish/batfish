@@ -6,28 +6,27 @@ import org.batfish.common.util.ComparableStructure;
 
 public class ExpandedCommunityList extends ComparableStructure<String> {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final int _definitionLine;
+  private final int _definitionLine;
 
-   private List<ExpandedCommunityListLine> _lines;
+  private List<ExpandedCommunityListLine> _lines;
 
-   public ExpandedCommunityList(String name, int definitionLine) {
-      super(name);
-      _definitionLine = definitionLine;
-      _lines = new ArrayList<>();
-   }
+  public ExpandedCommunityList(String name, int definitionLine) {
+    super(name);
+    _definitionLine = definitionLine;
+    _lines = new ArrayList<>();
+  }
 
-   public void addLine(ExpandedCommunityListLine line) {
-      _lines.add(line);
-   }
+  public void addLine(ExpandedCommunityListLine line) {
+    _lines.add(line);
+  }
 
-   public int getDefinitionLine() {
-      return _definitionLine;
-   }
+  public int getDefinitionLine() {
+    return _definitionLine;
+  }
 
-   public List<ExpandedCommunityListLine> getLines() {
-      return _lines;
-   }
-
+  public List<ExpandedCommunityListLine> getLines() {
+    return _lines;
+  }
 }

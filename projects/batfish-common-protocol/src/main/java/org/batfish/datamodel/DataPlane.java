@@ -9,14 +9,13 @@ import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 
 public interface DataPlane extends Serializable {
 
-   FibMap getFibs();
+  FibMap getFibs();
 
-   InterfaceSet getFlowSinks();
+  InterfaceSet getFlowSinks();
 
-   PolicyRouteFibNodeMap getPolicyRouteFibNodeMap();
+  PolicyRouteFibNodeMap getPolicyRouteFibNodeMap();
 
-   SortedMap<String, SortedMap<String, IRib<AbstractRoute>>> getRibs();
+  SortedMap<String, SortedMap<String, IRib<AbstractRoute>>> getRibs();
 
-   EdgeSet getTopologyEdges();
-
+  EdgeSet getTopologyEdges();
 }

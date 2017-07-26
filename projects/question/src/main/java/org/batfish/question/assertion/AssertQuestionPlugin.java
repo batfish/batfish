@@ -28,171 +28,165 @@ import org.batfish.question.QuestionPlugin;
 
 public class AssertQuestionPlugin extends QuestionPlugin {
 
-   public static class AssertAnswerElement implements AnswerElement {
+  public static class AssertAnswerElement implements AnswerElement {
 
-      private Boolean _fail;
+    private Boolean _fail;
 
-      private SortedMap<Integer, Assertion> _failing;
+    private SortedMap<Integer, Assertion> _failing;
 
-      private SortedMap<Integer, Assertion> _passing;
+    private SortedMap<Integer, Assertion> _passing;
 
-      public AssertAnswerElement() {
-         _failing = new TreeMap<>();
-         _passing = new TreeMap<>();
+    public AssertAnswerElement() {
+      _failing = new TreeMap<>();
+      _passing = new TreeMap<>();
+    }
+
+    public Boolean getFail() {
+      return _fail;
+    }
+
+    public SortedMap<Integer, Assertion> getFailing() {
+      return _failing;
+    }
+
+    public SortedMap<Integer, Assertion> getPassing() {
+      return _passing;
+    }
+
+    public void setFail(Boolean fail) {
+      _fail = fail;
+    }
+
+    public void setFailing(SortedMap<Integer, Assertion> failing) {
+      _failing = failing;
+    }
+
+    public void setPassing(SortedMap<Integer, Assertion> passing) {
+      _passing = passing;
+    }
+  }
+
+  public static class AssertAnswerer extends Answerer {
+
+    public AssertAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
+    }
+
+    @Override
+    public AnswerElement answer() {
+      ConfigurationBuilder b = new ConfigurationBuilder();
+      b.jsonProvider(new JacksonJsonNodeJsonProvider());
+      b.options(Option.ALWAYS_RETURN_LIST);
+      Configuration c = b.build();
+
+      AssertQuestion question = (AssertQuestion) _question;
+      List<Assertion> assertions = question.getAssertions();
+
+      _batfish.checkConfigurations();
+
+      NodesQuestion nodesQuestion = new NodesQuestion();
+      nodesQuestion.setSummary(false);
+      NodesAnswerer nodesAnswerer = new NodesAnswerer(nodesQuestion, _batfish);
+      AnswerElement nodesAnswer = nodesAnswerer.answer();
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String nodesAnswerStr = null;
+      try {
+        nodesAnswerStr = mapper.writeValueAsString(nodesAnswer);
+      } catch (IOException e) {
+        throw new BatfishException("Could not get JSON string from nodes answer", e);
       }
-
-      public Boolean getFail() {
-         return _fail;
+      Object jsonObject = JsonPath.parse(nodesAnswerStr, c).json();
+      Map<Integer, Assertion> failing = new ConcurrentHashMap<>();
+      Map<Integer, Assertion> passing = new ConcurrentHashMap<>();
+      List<Integer> indices = new ArrayList<>();
+      for (int i = 0; i < assertions.size(); i++) {
+        indices.add(i);
       }
+      final boolean[] fail = new boolean[1];
+      ConcurrentMap<String, ArrayNode> pathCache = new ConcurrentHashMap<>();
+      indices
+          .parallelStream()
+          .forEach(
+              i -> {
+                Assertion assertion = assertions.get(i);
+                String assertionText = assertion.getAssertion();
+                AssertionAst ast = _batfish.parseAssertion(assertionText);
+                if (ast.execute(_batfish, jsonObject, pathCache, c)) {
+                  passing.put(i, assertion);
+                } else {
+                  failing.put(i, assertion);
+                  synchronized (fail) {
+                    fail[0] = true;
+                  }
+                }
+              });
+      AssertAnswerElement answerElement = new AssertAnswerElement();
+      answerElement.setFail(fail[0]);
+      answerElement.getFailing().putAll(failing);
+      answerElement.getPassing().putAll(passing);
+      return answerElement;
+    }
+  }
 
-      public SortedMap<Integer, Assertion> getFailing() {
-         return _failing;
-      }
+  // <question_page_comment>
 
-      public SortedMap<Integer, Assertion> getPassing() {
-         return _passing;
-      }
+  /**
+   * Checks assertions.
+   *
+   * @type Assert misc
+   * @param assertions List of assertions
+   */
+  public static class AssertQuestion extends Question {
 
-      public void setFail(Boolean fail) {
-         _fail = fail;
-      }
+    private static final String ASSERTIONS_VAR = "assertions";
 
-      public void setFailing(SortedMap<Integer, Assertion> failing) {
-         _failing = failing;
-      }
+    private List<Assertion> _assertions;
 
-      public void setPassing(SortedMap<Integer, Assertion> passing) {
-         _passing = passing;
-      }
+    public AssertQuestion() {
+      _assertions = new ArrayList<>();
+    }
 
-   }
+    @JsonProperty(ASSERTIONS_VAR)
+    public List<Assertion> getAssertions() {
+      return _assertions;
+    }
 
-   public static class AssertAnswerer extends Answerer {
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
-      public AssertAnswerer(Question question, IBatfish batfish) {
-         super(question, batfish);
-      }
+    @Override
+    public String getName() {
+      return "assert";
+    }
 
-      @Override
-      public AnswerElement answer() {
-         ConfigurationBuilder b = new ConfigurationBuilder();
-         b.jsonProvider(new JacksonJsonNodeJsonProvider());
-         b.options(Option.ALWAYS_RETURN_LIST);
-         Configuration c = b.build();
+    @Override
+    public boolean getTraffic() {
+      return false;
+    }
 
-         AssertQuestion question = (AssertQuestion) _question;
-         List<Assertion> assertions = question.getAssertions();
+    @Override
+    public String prettyPrint() {
+      String retString =
+          String.format(
+              "assert %s%s=\"%s\"", prettyPrintBase(), ASSERTIONS_VAR, _assertions.toString());
+      return retString;
+    }
 
-         _batfish.checkConfigurations();
+    @JsonProperty(ASSERTIONS_VAR)
+    public void setAssertions(List<Assertion> assertions) {
+      _assertions = assertions;
+    }
+  }
 
-         NodesQuestion nodesQuestion = new NodesQuestion();
-         nodesQuestion.setSummary(false);
-         NodesAnswerer nodesAnswerer = new NodesAnswerer(
-               nodesQuestion,
-               _batfish);
-         AnswerElement nodesAnswer = nodesAnswerer.answer();
-         BatfishObjectMapper mapper = new BatfishObjectMapper();
-         String nodesAnswerStr = null;
-         try {
-            nodesAnswerStr = mapper.writeValueAsString(nodesAnswer);
-         }
-         catch (IOException e) {
-            throw new BatfishException(
-                  "Could not get JSON string from nodes answer", e);
-         }
-         Object jsonObject = JsonPath.parse(nodesAnswerStr, c).json();
-         Map<Integer, Assertion> failing = new ConcurrentHashMap<>();
-         Map<Integer, Assertion> passing = new ConcurrentHashMap<>();
-         List<Integer> indices = new ArrayList<>();
-         for (int i = 0; i < assertions.size(); i++) {
-            indices.add(i);
-         }
-         final boolean[] fail = new boolean[1];
-         ConcurrentMap<String, ArrayNode> pathCache = new ConcurrentHashMap<>();
-         indices.parallelStream().forEach(i -> {
-            Assertion assertion = assertions.get(i);
-            String assertionText = assertion.getAssertion();
-            AssertionAst ast = _batfish.parseAssertion(assertionText);
-            if (ast.execute(_batfish, jsonObject, pathCache, c)) {
-               passing.put(i, assertion);
-            }
-            else {
-               failing.put(i, assertion);
-               synchronized (fail) {
-                  fail[0] = true;
-               }
-            }
-         });
-         AssertAnswerElement answerElement = new AssertAnswerElement();
-         answerElement.setFail(fail[0]);
-         answerElement.getFailing().putAll(failing);
-         answerElement.getPassing().putAll(passing);
-         return answerElement;
-      }
-   }
+  @Override
+  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+    return new AssertAnswerer(question, batfish);
+  }
 
-   // <question_page_comment>
-
-   /**
-    * Checks assertions.
-    *
-    * @type Assert misc
-    *
-    * @param assertions
-    *           List of assertions
-    */
-   public static class AssertQuestion extends Question {
-
-      private static final String ASSERTIONS_VAR = "assertions";
-
-      private List<Assertion> _assertions;
-
-      public AssertQuestion() {
-         _assertions = new ArrayList<>();
-      }
-
-      @JsonProperty(ASSERTIONS_VAR)
-      public List<Assertion> getAssertions() {
-         return _assertions;
-      }
-
-      @Override
-      public boolean getDataPlane() {
-         return false;
-      }
-
-      @Override
-      public String getName() {
-         return "assert";
-      }
-
-      @Override
-      public boolean getTraffic() {
-         return false;
-      }
-
-      @Override
-      public String prettyPrint() {
-         String retString = String.format("assert %s%s=\"%s\"",
-               prettyPrintBase(), ASSERTIONS_VAR, _assertions.toString());
-         return retString;
-      }
-
-      @JsonProperty(ASSERTIONS_VAR)
-      public void setAssertions(List<Assertion> assertions) {
-         _assertions = assertions;
-      }
-
-   }
-
-   @Override
-   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-      return new AssertAnswerer(question, batfish);
-   }
-
-   @Override
-   protected Question createQuestion() {
-      return new AssertQuestion();
-   }
-
+  @Override
+  protected Question createQuestion() {
+    return new AssertQuestion();
+  }
 }

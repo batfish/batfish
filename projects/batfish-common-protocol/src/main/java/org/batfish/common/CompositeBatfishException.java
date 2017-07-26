@@ -6,65 +6,56 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.datamodel.answers.AnswerElement;
 
-public class CompositeBatfishException extends RuntimeException
-      implements AnswerElement {
+public class CompositeBatfishException extends RuntimeException implements AnswerElement {
 
-   public static class CompositeBatfishExceptionAnswerElement
-         implements AnswerElement {
+  public static class CompositeBatfishExceptionAnswerElement implements AnswerElement {
 
-      private BatfishStackTrace _cause;
+    private BatfishStackTrace _cause;
 
-      private List<BatfishStackTrace> _contributingCauses;
+    private List<BatfishStackTrace> _contributingCauses;
 
-      @JsonCreator
-      public CompositeBatfishExceptionAnswerElement() {
-      }
+    @JsonCreator
+    public CompositeBatfishExceptionAnswerElement() {}
 
-      public CompositeBatfishExceptionAnswerElement(
-            BatfishException cause,
-            List<BatfishException> contributingCauses) {
-         _cause = cause.getBatfishStackTrace();
-         _contributingCauses = contributingCauses.stream().map(
-               contributingCause -> contributingCause.getBatfishStackTrace())
-               .collect(Collectors.toList());
-      }
+    public CompositeBatfishExceptionAnswerElement(
+        BatfishException cause, List<BatfishException> contributingCauses) {
+      _cause = cause.getBatfishStackTrace();
+      _contributingCauses =
+          contributingCauses
+              .stream()
+              .map(contributingCause -> contributingCause.getBatfishStackTrace())
+              .collect(Collectors.toList());
+    }
 
-      public BatfishStackTrace getCause() {
-         return _cause;
-      }
+    public BatfishStackTrace getCause() {
+      return _cause;
+    }
 
-      public List<BatfishStackTrace> getContributingCauses() {
-         return _contributingCauses;
-      }
+    public List<BatfishStackTrace> getContributingCauses() {
+      return _contributingCauses;
+    }
 
-      public void setCause(BatfishStackTrace cause) {
-         _cause = cause;
-      }
+    public void setCause(BatfishStackTrace cause) {
+      _cause = cause;
+    }
 
-      public void setContributingCauses(
-            List<BatfishStackTrace> contributingCauses) {
-         _contributingCauses = contributingCauses;
-      }
-   }
+    public void setContributingCauses(List<BatfishStackTrace> contributingCauses) {
+      _contributingCauses = contributingCauses;
+    }
+  }
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private CompositeBatfishExceptionAnswerElement _answerElement;
+  private CompositeBatfishExceptionAnswerElement _answerElement;
 
-   public CompositeBatfishException(
-         BatfishException cause,
-         List<BatfishException> contributingCauses) {
-      super(cause);
-      _answerElement = new CompositeBatfishExceptionAnswerElement(
-            cause,
-            contributingCauses);
-   }
+  public CompositeBatfishException(
+      BatfishException cause, List<BatfishException> contributingCauses) {
+    super(cause);
+    _answerElement = new CompositeBatfishExceptionAnswerElement(cause, contributingCauses);
+  }
 
-   public CompositeBatfishExceptionAnswerElement getAnswerElement() {
-      return _answerElement;
-   }
-
+  public CompositeBatfishExceptionAnswerElement getAnswerElement() {
+    return _answerElement;
+  }
 }

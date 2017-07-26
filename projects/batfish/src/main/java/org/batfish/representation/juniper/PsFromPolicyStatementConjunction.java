@@ -9,37 +9,30 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 
 public final class PsFromPolicyStatementConjunction extends PsFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Set<String> _conjuncts;
+  private final Set<String> _conjuncts;
 
-   public PsFromPolicyStatementConjunction(Set<String> conjuncts) {
-      _conjuncts = conjuncts;
-   }
+  public PsFromPolicyStatementConjunction(Set<String> conjuncts) {
+    _conjuncts = conjuncts;
+  }
 
-   public Set<String> getConjuncts() {
-      return _conjuncts;
-   }
+  public Set<String> getConjuncts() {
+    return _conjuncts;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         JuniperConfiguration jc, Configuration c,
-         Warnings warnings) {
-      Conjunction conj = new Conjunction();
-      for (String conjunct : _conjuncts) {
-         PolicyStatement conjunctPs = jc.getPolicyStatements().get(conjunct);
-         if (conjunctPs != null) {
-            conj.getConjuncts().add(new CallExpr(conjunct));
-         }
-         else {
-            warnings.redFlag("Reference to undefined policy conjunct: \""
-                  + conjunct + "\"");
-         }
+  @Override
+  public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    Conjunction conj = new Conjunction();
+    for (String conjunct : _conjuncts) {
+      PolicyStatement conjunctPs = jc.getPolicyStatements().get(conjunct);
+      if (conjunctPs != null) {
+        conj.getConjuncts().add(new CallExpr(conjunct));
+      } else {
+        warnings.redFlag("Reference to undefined policy conjunct: \"" + conjunct + "\"");
       }
-      return conj;
-   }
-
+    }
+    return conj;
+  }
 }

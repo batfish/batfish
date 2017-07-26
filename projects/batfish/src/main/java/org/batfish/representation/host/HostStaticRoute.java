@@ -8,72 +8,69 @@ import org.batfish.datamodel.StaticRoute;
 
 public class HostStaticRoute implements Serializable {
 
-   public static final int DEFAULT_ADMINISTRATIVE_COST = 1;
+  public static final int DEFAULT_ADMINISTRATIVE_COST = 1;
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private int _administrativeCost;
+  private int _administrativeCost;
 
-   private String _nextHopInterface;
+  private String _nextHopInterface;
 
-   private Ip _nextHopIp;
+  private Ip _nextHopIp;
 
-   private Prefix _prefix;
+  private Prefix _prefix;
 
-   private Integer _tag;
+  private Integer _tag;
 
-   public HostStaticRoute() {
-      _administrativeCost = DEFAULT_ADMINISTRATIVE_COST;
-   }
+  public HostStaticRoute() {
+    _administrativeCost = DEFAULT_ADMINISTRATIVE_COST;
+  }
 
-   public int getAdministrativeCost() {
-      return _administrativeCost;
-   }
+  public int getAdministrativeCost() {
+    return _administrativeCost;
+  }
 
-   public String getNextHopInterface() {
-      return _nextHopInterface;
-   }
+  public String getNextHopInterface() {
+    return _nextHopInterface;
+  }
 
-   public Ip getNextHopIp() {
-      return _nextHopIp;
-   }
+  public Ip getNextHopIp() {
+    return _nextHopIp;
+  }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
+  public Prefix getPrefix() {
+    return _prefix;
+  }
 
-   public Integer getTag() {
-      return _tag;
-   }
+  public Integer getTag() {
+    return _tag;
+  }
 
-   public void setAdministrativeCost(int administrativeCost) {
-      _administrativeCost = administrativeCost;
-   }
+  public void setAdministrativeCost(int administrativeCost) {
+    _administrativeCost = administrativeCost;
+  }
 
-   public void setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
-   }
+  public void setNextHopInterface(String nextHopInterface) {
+    _nextHopInterface = nextHopInterface;
+  }
 
-   public void setNextHopIp(Ip nextHopIp) {
-      _nextHopIp = nextHopIp;
-   }
+  public void setNextHopIp(Ip nextHopIp) {
+    _nextHopIp = nextHopIp;
+  }
 
-   public void setPrefix(Prefix prefix) {
-      _prefix = prefix;
-   }
+  public void setPrefix(Prefix prefix) {
+    _prefix = prefix;
+  }
 
-   public void setTag(Integer tag) {
-      _tag = tag;
-   }
+  public void setTag(Integer tag) {
+    _tag = tag;
+  }
 
-   public StaticRoute toStaticRoute() {
-      int tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
-      StaticRoute sr = new StaticRoute(_prefix, _nextHopIp, _nextHopInterface,
-            _administrativeCost, tag);
-      return sr;
-   }
-
+  public StaticRoute toStaticRoute() {
+    int tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
+    StaticRoute sr =
+        new StaticRoute(_prefix, _nextHopIp, _nextHopInterface, _administrativeCost, tag);
+    return sr;
+  }
 }

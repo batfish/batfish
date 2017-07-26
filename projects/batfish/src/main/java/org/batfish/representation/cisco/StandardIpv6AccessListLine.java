@@ -13,46 +13,59 @@ import org.batfish.datamodel.TcpFlags;
 
 public class StandardIpv6AccessListLine implements Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final LineAction _action;
+  private final LineAction _action;
 
-   private final Set<Integer> _dscps;
+  private final Set<Integer> _dscps;
 
-   private final Set<Integer> _ecns;
+  private final Set<Integer> _ecns;
 
-   private final Ip6Wildcard _ipWildcard;
+  private final Ip6Wildcard _ipWildcard;
 
-   private final String _name;
+  private final String _name;
 
-   public StandardIpv6AccessListLine(
-         String name, LineAction action,
-         Ip6Wildcard ipWildcard, Set<Integer> dscps, Set<Integer> ecns) {
-      _name = name;
-      _action = action;
-      _ipWildcard = ipWildcard;
-      _dscps = dscps;
-      _ecns = ecns;
-   }
+  public StandardIpv6AccessListLine(
+      String name,
+      LineAction action,
+      Ip6Wildcard ipWildcard,
+      Set<Integer> dscps,
+      Set<Integer> ecns) {
+    _name = name;
+    _action = action;
+    _ipWildcard = ipWildcard;
+    _dscps = dscps;
+    _ecns = ecns;
+  }
 
-   public LineAction getAction() {
-      return _action;
-   }
+  public LineAction getAction() {
+    return _action;
+  }
 
-   public Ip6Wildcard getIpWildcard() {
-      return _ipWildcard;
-   }
+  public Ip6Wildcard getIpWildcard() {
+    return _ipWildcard;
+  }
 
-   public String getName() {
-      return _name;
-   }
+  public String getName() {
+    return _name;
+  }
 
-   public ExtendedIpv6AccessListLine toExtendedIpv6AccessListLine() {
-      return new ExtendedIpv6AccessListLine(_name, _action, IpProtocol.IP,
-            _ipWildcard, null, Ip6Wildcard.ANY, null,
-            Collections.<SubRange>emptyList(),
-            Collections.<SubRange>emptyList(), _dscps, _ecns, null, null,
-            EnumSet.noneOf(State.class), Collections.<TcpFlags>emptyList());
-   }
-
+  public ExtendedIpv6AccessListLine toExtendedIpv6AccessListLine() {
+    return new ExtendedIpv6AccessListLine(
+        _name,
+        _action,
+        IpProtocol.IP,
+        _ipWildcard,
+        null,
+        Ip6Wildcard.ANY,
+        null,
+        Collections.<SubRange>emptyList(),
+        Collections.<SubRange>emptyList(),
+        _dscps,
+        _ecns,
+        null,
+        null,
+        EnumSet.noneOf(State.class),
+        Collections.<TcpFlags>emptyList());
+  }
 }

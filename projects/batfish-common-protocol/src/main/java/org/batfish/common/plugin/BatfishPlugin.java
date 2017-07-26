@@ -4,25 +4,24 @@ import org.batfish.common.BatfishLogger;
 
 public abstract class BatfishPlugin extends Plugin {
 
-   protected IBatfish _batfish;
+  protected IBatfish _batfish;
 
-   protected BatfishLogger _logger;
+  protected BatfishLogger _logger;
 
-   protected abstract void batfishPluginInitialize();
+  protected abstract void batfishPluginInitialize();
 
-   @Override
-   protected final void pluginInitialize() {
-      switch (_pluginConsumer.getType()) {
+  @Override
+  protected final void pluginInitialize() {
+    switch (_pluginConsumer.getType()) {
       case BATFISH:
-         _batfish = (IBatfish) _pluginConsumer;
-         _logger = _batfish.getLogger();
-         batfishPluginInitialize();
-         break;
+        _batfish = (IBatfish) _pluginConsumer;
+        _logger = _batfish.getLogger();
+        batfishPluginInitialize();
+        break;
       case CLIENT:
-         break;
+        break;
       default:
-         break;
-      }
-   }
-
+        break;
+    }
+  }
 }

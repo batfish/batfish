@@ -5,28 +5,25 @@ import java.util.List;
 
 public class RoutePolicyElseIfBlock implements Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private RoutePolicyBoolean _guard;
-   private List<RoutePolicyStatement> _stmtList;
+  private RoutePolicyBoolean _guard;
+  private List<RoutePolicyStatement> _stmtList;
 
-   public RoutePolicyElseIfBlock(
-         RoutePolicyBoolean guard,
-         List<RoutePolicyStatement> stmtList) {
-      _guard = guard;
-      _stmtList = stmtList;
-   }
+  public RoutePolicyElseIfBlock(RoutePolicyBoolean guard, List<RoutePolicyStatement> stmtList) {
+    _guard = guard;
+    _stmtList = stmtList;
+  }
 
-   public void addStatement(RoutePolicyStatement stmt) {
-      _stmtList.add(stmt);
-   }
+  public void addStatement(RoutePolicyStatement stmt) {
+    _stmtList.add(stmt);
+  }
 
-   public RoutePolicyBoolean getGuard() {
-      return _guard;
-   }
+  public RoutePolicyBoolean getGuard() {
+    return _guard;
+  }
 
-   public List<RoutePolicyStatement> getStatements() {
-      return _stmtList;
-   }
-
+  public List<RoutePolicyStatement> getStatements() {
+    return _stmtList;
+  }
 }

@@ -6,17 +6,16 @@ import org.batfish.common.util.ComparableStructure;
 
 public class RoutePolicy extends ComparableStructure<String> {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private List<RoutePolicyStatement> _stmtList;
+  private List<RoutePolicyStatement> _stmtList;
 
-   public RoutePolicy(String name) {
-      super(name);
-      _stmtList = new ArrayList<>();
-   }
+  public RoutePolicy(String name) {
+    super(name);
+    _stmtList = new ArrayList<>();
+  }
 
-   public List<RoutePolicyStatement> getStatements() {
-      return _stmtList;
-   }
-
+  public List<RoutePolicyStatement> getStatements() {
+    return _stmtList;
+  }
 }

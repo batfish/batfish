@@ -6,43 +6,40 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 
-public class CiscoCombinedParser
-      extends BatfishCombinedParser<CiscoParser, CiscoLexer> {
+public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, CiscoLexer> {
 
-   @SuppressWarnings("fallthrough")
-   public CiscoCombinedParser(
-         String input, Settings settings,
-         ConfigurationFormat format) {
-      super(CiscoParser.class, CiscoLexer.class, input, settings);
-      boolean multilineBgpNeighbors;
-      boolean foundry = false;
+  @SuppressWarnings("fallthrough")
+  public CiscoCombinedParser(String input, Settings settings, ConfigurationFormat format) {
+    super(CiscoParser.class, CiscoLexer.class, input, settings);
+    boolean multilineBgpNeighbors;
+    boolean foundry = false;
 
-      // do not rearrange cases
-      switch (format) {
+    // do not rearrange cases
+    switch (format) {
       case FOUNDRY:
-         foundry = true;
+        foundry = true;
+        // fall through
       case ARISTA:
       case CISCO_IOS:
       case FORCE10:
-         multilineBgpNeighbors = false;
-         break;
+        multilineBgpNeighbors = false;
+        break;
 
       case CISCO_IOS_XR:
       case CISCO_NX:
-         multilineBgpNeighbors = true;
-         break;
+        multilineBgpNeighbors = true;
+        break;
 
-      // $CASES-OMITTED$
+        // $CASES-OMITTED$
       default:
-         throw new BatfishException("Should not be possible");
-      }
-      _lexer.setFoundry(foundry);
-      _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
-   }
+        throw new BatfishException("Should not be possible");
+    }
+    _lexer.setFoundry(foundry);
+    _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
+  }
 
-   @Override
-   public Cisco_configurationContext parse() {
-      return _parser.cisco_configuration();
-   }
-
+  @Override
+  public Cisco_configurationContext parse() {
+    return _parser.cisco_configuration();
+  }
 }

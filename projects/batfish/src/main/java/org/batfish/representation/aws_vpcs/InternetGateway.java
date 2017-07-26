@@ -15,71 +15,64 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class InternetGateway implements AwsVpcEntity, Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private List<String> _attachmentVpcIds = new LinkedList<>();
+  private List<String> _attachmentVpcIds = new LinkedList<>();
 
-   private String _internetGatewayId;
+  private String _internetGatewayId;
 
-   public InternetGateway(JSONObject jObj, BatfishLogger logger)
-         throws JSONException {
-      _internetGatewayId = jObj.getString(JSON_KEY_INTERNET_GATEWAY_ID);
+  public InternetGateway(JSONObject jObj, BatfishLogger logger) throws JSONException {
+    _internetGatewayId = jObj.getString(JSON_KEY_INTERNET_GATEWAY_ID);
 
-      JSONArray attachments = jObj.getJSONArray(JSON_KEY_ATTACHMENTS);
-      for (int index = 0; index < attachments.length(); index++) {
-         JSONObject childObject = attachments.getJSONObject(index);
-         _attachmentVpcIds.add(childObject.getString(JSON_KEY_VPC_ID));
-      }
+    JSONArray attachments = jObj.getJSONArray(JSON_KEY_ATTACHMENTS);
+    for (int index = 0; index < attachments.length(); index++) {
+      JSONObject childObject = attachments.getJSONObject(index);
+      _attachmentVpcIds.add(childObject.getString(JSON_KEY_VPC_ID));
+    }
+  }
 
-   }
+  @Override
+  public String getId() {
+    return _internetGatewayId;
+  }
 
-   @Override
-   public String getId() {
-      return _internetGatewayId;
-   }
+  public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
+    Configuration cfgNode = new Configuration(_internetGatewayId);
 
-   public Configuration toConfigurationNode(
-         AwsVpcConfiguration awsVpcConfiguration) {
-      Configuration cfgNode = new Configuration(_internetGatewayId);
+    for (String vpcId : _attachmentVpcIds) {
 
-      for (String vpcId : _attachmentVpcIds) {
+      String igwIfaceName = vpcId;
+      Interface igwIface = new Interface(igwIfaceName, cfgNode);
+      Prefix igwIfacePrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
+      igwIface.setPrefix(igwIfacePrefix);
+      cfgNode.getInterfaces().put(igwIfaceName, igwIface);
+      cfgNode.getDefaultVrf().getInterfaces().put(igwIfaceName, igwIface);
 
-         String igwIfaceName = vpcId;
-         Interface igwIface = new Interface(igwIfaceName, cfgNode);
-         Prefix igwIfacePrefix = awsVpcConfiguration
-               .getNextGeneratedLinkSubnet();
-         igwIface.setPrefix(igwIfacePrefix);
-         cfgNode.getInterfaces().put(igwIfaceName, igwIface);
-         cfgNode.getDefaultVrf().getInterfaces().put(igwIfaceName, igwIface);
+      // add the interface to the vpc router
+      Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);
+      String vpcIfaceName = _internetGatewayId;
+      Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
+      Ip vpcIfaceIp = igwIfacePrefix.getEndAddress();
+      Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp, igwIfacePrefix.getPrefixLength());
+      vpcIface.setPrefix(vpcIfacePrefix);
+      vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
+      vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName, vpcIface);
 
-         // add the interface to the vpc router
-         Configuration vpcConfigNode = awsVpcConfiguration
-               .getConfigurationNodes().get(vpcId);
-         String vpcIfaceName = _internetGatewayId;
-         Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
-         Ip vpcIfaceIp = igwIfacePrefix.getEndAddress();
-         Prefix vpcIfacePrefix = new Prefix(
-               vpcIfaceIp,
-               igwIfacePrefix.getPrefixLength());
-         vpcIface.setPrefix(vpcIfacePrefix);
-         vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
-         vpcConfigNode.getDefaultVrf().getInterfaces().put(
-               vpcIfaceName,
-               vpcIface);
+      // associate this gateway with the vpc
+      awsVpcConfiguration.getVpcs().get(vpcId).setInternetGatewayId(_internetGatewayId);
 
-         // associate this gateway with the vpc
-         awsVpcConfiguration.getVpcs().get(vpcId)
-               .setInternetGatewayId(_internetGatewayId);
+      // add a route on the gateway to the vpc
+      Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
+      StaticRoute igwVpcRoute =
+          new StaticRoute(
+              vpc.getCidrBlock(),
+              vpcIfaceIp,
+              null,
+              Route.DEFAULT_STATIC_ROUTE_ADMIN,
+              Route.DEFAULT_STATIC_ROUTE_COST);
+      cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
+    }
 
-         // add a route on the gateway to the vpc
-         Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-         StaticRoute igwVpcRoute = new StaticRoute(vpc.getCidrBlock(),
-               vpcIfaceIp, null, Route.DEFAULT_STATIC_ROUTE_ADMIN,
-               Route.DEFAULT_STATIC_ROUTE_COST);
-         cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
-
-      }
-
-      return cfgNode;
-   }
+    return cfgNode;
+  }
 }

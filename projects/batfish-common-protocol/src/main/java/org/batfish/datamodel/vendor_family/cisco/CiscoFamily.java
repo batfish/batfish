@@ -7,167 +7,164 @@ import org.batfish.datamodel.SwitchportMode;
 
 public class CiscoFamily implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Aaa _aaa;
+  private Aaa _aaa;
 
-   private SortedMap<String, String> _banners;
+  private SortedMap<String, String> _banners;
 
-   private SwitchportMode _defaultSwitchportMode;
+  private SwitchportMode _defaultSwitchportMode;
 
-   private SortedMap<String, Boolean> _features;
+  private String _enableSecret;
 
-   private String _hostname;
+  private SortedMap<String, Boolean> _features;
 
-   private SortedMap<String, Line> _lines;
+  private String _hostname;
 
-   private Logging _logging;
+  private SortedMap<String, Line> _lines;
 
-   private Ntp _ntp;
+  private Logging _logging;
 
-   private Boolean _proxyArp;
+  private Ntp _ntp;
 
-   private SortedMap<String, Service> _services;
+  private Boolean _proxyArp;
 
-   private Sntp _sntp;
+  private SortedMap<String, Service> _services;
 
-   private Boolean _sourceRoute;
+  private Sntp _sntp;
 
-   private SshSettings _ssh;
+  private Boolean _sourceRoute;
 
-   private SortedMap<String, User> _users;
+  private SshSettings _ssh;
 
-   private String _enableSecret;
+  private SortedMap<String, User> _users;
 
-   public CiscoFamily() {
-      _banners = new TreeMap<>();
-      _features = new TreeMap<>();
-      _lines = new TreeMap<>();
-      _services = new TreeMap<>();
-      _users = new TreeMap<>();
-   }
+  public CiscoFamily() {
+    _banners = new TreeMap<>();
+    _features = new TreeMap<>();
+    _lines = new TreeMap<>();
+    _services = new TreeMap<>();
+    _users = new TreeMap<>();
+  }
 
-   public void setUsers(SortedMap<String, User> users) {
-      _users = users;
-   }
+  public Aaa getAaa() {
+    return _aaa;
+  }
 
-   public Aaa getAaa() {
-      return _aaa;
-   }
+  public SortedMap<String, String> getBanners() {
+    return _banners;
+  }
 
-   public SortedMap<String, String> getBanners() {
-      return _banners;
-   }
+  public SwitchportMode getDefaultSwitchportMode() {
+    return _defaultSwitchportMode;
+  }
 
-   public SwitchportMode getDefaultSwitchportMode() {
-      return _defaultSwitchportMode;
-   }
+  public String getEnableSecret() {
+    return _enableSecret;
+  }
 
-   public SortedMap<String, Boolean> getFeatures() {
-      return _features;
-   }
+  public SortedMap<String, Boolean> getFeatures() {
+    return _features;
+  }
 
-   public String getHostname() {
-      return _hostname;
-   }
+  public String getHostname() {
+    return _hostname;
+  }
 
-   public SortedMap<String, Line> getLines() {
-      return _lines;
-   }
+  public SortedMap<String, Line> getLines() {
+    return _lines;
+  }
 
-   public Logging getLogging() {
-      return _logging;
-   }
+  public Logging getLogging() {
+    return _logging;
+  }
 
-   public Ntp getNtp() {
-      return _ntp;
-   }
+  public Ntp getNtp() {
+    return _ntp;
+  }
 
-   public Boolean getProxyArp() {
-      return _proxyArp;
-   }
+  public Boolean getProxyArp() {
+    return _proxyArp;
+  }
 
-   public SortedMap<String, Service> getServices() {
-      return _services;
-   }
+  public SortedMap<String, Service> getServices() {
+    return _services;
+  }
 
-   public Sntp getSntp() {
-      return _sntp;
-   }
+  public Sntp getSntp() {
+    return _sntp;
+  }
 
-   public Boolean getSourceRoute() {
-      return _sourceRoute;
-   }
+  public Boolean getSourceRoute() {
+    return _sourceRoute;
+  }
 
-   public SshSettings getSsh() {
-      return _ssh;
-   }
+  public SshSettings getSsh() {
+    return _ssh;
+  }
 
-   public void setAaa(Aaa aaa) {
-      _aaa = aaa;
-   }
+  public SortedMap<String, User> getUsers() {
+    return _users;
+  }
 
-   public void setBanners(SortedMap<String, String> banners) {
-      _banners = banners;
-   }
+  public void setAaa(Aaa aaa) {
+    _aaa = aaa;
+  }
 
-   public void setDefaultSwitchportMode(SwitchportMode defaultSwitchportMode) {
-      _defaultSwitchportMode = defaultSwitchportMode;
-   }
+  public void setBanners(SortedMap<String, String> banners) {
+    _banners = banners;
+  }
 
-   public void setFeatures(SortedMap<String, Boolean> features) {
-      _features = features;
-   }
+  public void setDefaultSwitchportMode(SwitchportMode defaultSwitchportMode) {
+    _defaultSwitchportMode = defaultSwitchportMode;
+  }
 
-   public void setHostname(String hostname) {
-      _hostname = hostname;
-   }
+  public void setEnableSecret(String enableSecret) {
+    _enableSecret = enableSecret;
+  }
 
-   public void setLines(SortedMap<String, Line> lines) {
-      _lines = lines;
-   }
+  public void setFeatures(SortedMap<String, Boolean> features) {
+    _features = features;
+  }
 
-   public void setLogging(Logging logging) {
-      _logging = logging;
-   }
+  public void setHostname(String hostname) {
+    _hostname = hostname;
+  }
 
-   public void setNtp(Ntp ntp) {
-      _ntp = ntp;
-   }
+  public void setLines(SortedMap<String, Line> lines) {
+    _lines = lines;
+  }
 
-   public void setProxyArp(Boolean proxyArp) {
-      _proxyArp = proxyArp;
-   }
+  public void setLogging(Logging logging) {
+    _logging = logging;
+  }
 
-   public void setServices(SortedMap<String, Service> services) {
-      _services = services;
-   }
+  public void setNtp(Ntp ntp) {
+    _ntp = ntp;
+  }
 
-   public void setSntp(Sntp sntp) {
-      _sntp = sntp;
-   }
+  public void setProxyArp(Boolean proxyArp) {
+    _proxyArp = proxyArp;
+  }
 
-   public void setSourceRoute(Boolean sourceRoute) {
-      _sourceRoute = sourceRoute;
-   }
+  public void setServices(SortedMap<String, Service> services) {
+    _services = services;
+  }
 
-   public void setSsh(SshSettings ssh) {
-      _ssh = ssh;
-   }
+  public void setSntp(Sntp sntp) {
+    _sntp = sntp;
+  }
 
-   public SortedMap<String, User> getUsers() {
-      return _users;
-   }
+  public void setSourceRoute(Boolean sourceRoute) {
+    _sourceRoute = sourceRoute;
+  }
 
-   public void setEnableSecret(String enableSecret) {
-      _enableSecret = enableSecret;
-   }
+  public void setSsh(SshSettings ssh) {
+    _ssh = ssh;
+  }
 
-   public String getEnableSecret() {
-      return _enableSecret;
-   }
-
+  public void setUsers(SortedMap<String, User> users) {
+    _users = users;
+  }
 }

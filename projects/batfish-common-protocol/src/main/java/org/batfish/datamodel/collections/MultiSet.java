@@ -4,14 +4,13 @@ import java.util.Set;
 
 public interface MultiSet<E> {
 
-   void add(E e);
+  void add(E e);
 
-   void add(Set<E> set);
+  void add(Set<E> set);
 
-   int count(E e);
+  int count(E e);
 
-   Set<E> elements();
+  Set<E> elements();
 
-   MultiSet<Integer> quantityHistogram();
-
+  MultiSet<Integer> quantityHistogram();
 }

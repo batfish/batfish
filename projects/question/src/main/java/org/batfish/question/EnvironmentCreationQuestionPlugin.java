@@ -16,125 +16,123 @@ import org.batfish.datamodel.questions.Question;
 
 public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
 
-   public static class EnvironmentCreationAnswerer extends Answerer {
+  public static class EnvironmentCreationAnswerer extends Answerer {
 
-      public EnvironmentCreationAnswerer(Question question, IBatfish batfish) {
-         super(question, batfish);
-      }
+    public EnvironmentCreationAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
+    }
 
-      @Override
-      public AnswerElement answer() {
-         EnvironmentCreationQuestion question = (EnvironmentCreationQuestion) _question;
-         // TODO: add flag to question determining whether or not to compute
-         // data
-         // plane
-         boolean dp = false;
-         return _batfish.createEnvironment(question.getEnvironmentName(),
-               question.getNodeBlacklist(), question.getInterfaceBlacklist(),
-               question.getEdgeBlacklist(), dp);
-      }
+    @Override
+    public AnswerElement answer() {
+      EnvironmentCreationQuestion question = (EnvironmentCreationQuestion) _question;
+      // TODO: add flag to question determining whether or not to compute
+      // data
+      // plane
+      boolean dp = false;
+      return _batfish.createEnvironment(
+          question.getEnvironmentName(),
+          question.getNodeBlacklist(),
+          question.getInterfaceBlacklist(),
+          question.getEdgeBlacklist(),
+          dp);
+    }
+  }
 
-   }
+  /** Since this is not really a question; we do not document it as such. */
+  public static class EnvironmentCreationQuestion extends Question
+      implements IEnvironmentCreationQuestion {
 
-   /**
-    * Since this is not really a question; we do not document it as such.
-    */
-   public static class EnvironmentCreationQuestion extends Question
-         implements IEnvironmentCreationQuestion {
+    private static final String EDGE_BLACKLIST_VAR = "edgeBlacklist";
 
-      private static final String EDGE_BLACKLIST_VAR = "edgeBlacklist";
+    private static final String ENVIRONMENT_NAME_VAR = ENVIRONMENT_NAME_KEY;
 
-      private static final String ENVIRONMENT_NAME_VAR = ENVIRONMENT_NAME_KEY;
+    private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
 
-      private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
+    private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
 
-      private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
+    private SortedSet<Edge> _edgeBlacklist;
 
-      private SortedSet<Edge> _edgeBlacklist;
+    private String _environmentName;
 
-      private String _environmentName;
+    private SortedSet<NodeInterfacePair> _interfaceBlacklist;
 
-      private SortedSet<NodeInterfacePair> _interfaceBlacklist;
+    private SortedSet<String> _nodeBlacklist;
 
-      private SortedSet<String> _nodeBlacklist;
+    @JsonCreator
+    public EnvironmentCreationQuestion() {
+      _nodeBlacklist = new NodeSet();
+      _interfaceBlacklist = new TreeSet<>();
+    }
 
-      @JsonCreator
-      public EnvironmentCreationQuestion() {
-         _nodeBlacklist = new NodeSet();
-         _interfaceBlacklist = new TreeSet<>();
-      }
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
-      @Override
-      public boolean getDataPlane() {
-         return false;
-      }
+    @Override
+    @JsonIgnore
+    public boolean getDifferential() {
+      return false;
+    }
 
-      @Override
-      @JsonIgnore
-      public boolean getDifferential() {
-         return false;
-      }
+    @JsonProperty(EDGE_BLACKLIST_VAR)
+    public SortedSet<Edge> getEdgeBlacklist() {
+      return _edgeBlacklist;
+    }
 
-      @JsonProperty(EDGE_BLACKLIST_VAR)
-      public SortedSet<Edge> getEdgeBlacklist() {
-         return _edgeBlacklist;
-      }
+    @JsonProperty(ENVIRONMENT_NAME_VAR)
+    public String getEnvironmentName() {
+      return _environmentName;
+    }
 
-      @JsonProperty(ENVIRONMENT_NAME_VAR)
-      public String getEnvironmentName() {
-         return _environmentName;
-      }
+    @JsonProperty(INTERFACE_BLACKLIST_VAR)
+    public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+      return _interfaceBlacklist;
+    }
 
-      @JsonProperty(INTERFACE_BLACKLIST_VAR)
-      public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-         return _interfaceBlacklist;
-      }
+    @Override
+    public String getName() {
+      return NAME;
+    }
 
-      @Override
-      public String getName() {
-         return NAME;
-      }
+    @JsonProperty(NODE_BLACKLIST_VAR)
+    public SortedSet<String> getNodeBlacklist() {
+      return _nodeBlacklist;
+    }
 
-      @JsonProperty(NODE_BLACKLIST_VAR)
-      public SortedSet<String> getNodeBlacklist() {
-         return _nodeBlacklist;
-      }
+    @Override
+    public boolean getTraffic() {
+      return false;
+    }
 
-      @Override
-      public boolean getTraffic() {
-         return false;
-      }
+    @JsonProperty(EDGE_BLACKLIST_VAR)
+    public void setEdgeBlacklist(SortedSet<Edge> edgeBlacklist) {
+      _edgeBlacklist = edgeBlacklist;
+    }
 
-      @JsonProperty(EDGE_BLACKLIST_VAR)
-      public void setEdgeBlacklist(SortedSet<Edge> edgeBlacklist) {
-         _edgeBlacklist = edgeBlacklist;
-      }
+    @JsonProperty(ENVIRONMENT_NAME_VAR)
+    public void setEnvironmentName(String environmentName) {
+      _environmentName = environmentName;
+    }
 
-      @JsonProperty(ENVIRONMENT_NAME_VAR)
-      public void setEnvironmentName(String environmentName) {
-         _environmentName = environmentName;
-      }
+    @JsonProperty(INTERFACE_BLACKLIST_VAR)
+    public void setInterfaceBlacklist(SortedSet<NodeInterfacePair> blacklist) {
+      _interfaceBlacklist = blacklist;
+    }
 
-      @JsonProperty(INTERFACE_BLACKLIST_VAR)
-      public void setInterfaceBlacklist(
-            SortedSet<NodeInterfacePair> blacklist) {
-         _interfaceBlacklist = blacklist;
-      }
+    @JsonProperty(NODE_BLACKLIST_VAR)
+    public void setNodeBlacklist(NodeSet blacklist) {
+      _nodeBlacklist = blacklist;
+    }
+  }
 
-      @JsonProperty(NODE_BLACKLIST_VAR)
-      public void setNodeBlacklist(NodeSet blacklist) {
-         _nodeBlacklist = blacklist;
-      }
-   }
+  @Override
+  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+    return new EnvironmentCreationAnswerer(question, batfish);
+  }
 
-   @Override
-   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-      return new EnvironmentCreationAnswerer(question, batfish);
-   }
-
-   @Override
-   protected Question createQuestion() {
-      return new EnvironmentCreationQuestion();
-   }
-
+  @Override
+  protected Question createQuestion() {
+    return new EnvironmentCreationQuestion();
+  }
 }

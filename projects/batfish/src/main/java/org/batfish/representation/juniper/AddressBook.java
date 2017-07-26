@@ -10,44 +10,43 @@ import org.batfish.datamodel.Prefix;
 
 public final class AddressBook extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Map<String, AddressBookEntry> _entries;
+  private final Map<String, AddressBookEntry> _entries;
 
-   private final Map<String, AddressBook> _globalBooks;
+  private final Map<String, AddressBook> _globalBooks;
 
-   public AddressBook(String name, Map<String, AddressBook> globalBooks) {
-      super(name);
-      _entries = new TreeMap<>();
-      _globalBooks = globalBooks;
-   }
+  public AddressBook(String name, Map<String, AddressBook> globalBooks) {
+    super(name);
+    _entries = new TreeMap<>();
+    _globalBooks = globalBooks;
+  }
 
-   public Map<String, AddressBookEntry> getEntries() {
-      return _entries;
-   }
+  public Map<String, AddressBookEntry> getEntries() {
+    return _entries;
+  }
 
-   public Set<Prefix> getPrefixes(String entryName, Warnings w) {
-      AddressBookEntry entry = _entries.get(entryName);
-      if (entry == null) {
-         for (AddressBook globalBook : _globalBooks.values()) {
-            entry = globalBook._entries.get(entryName);
-            if (entry != null) {
-               break;
-            }
-         }
+  public Set<Prefix> getPrefixes(String entryName, Warnings w) {
+    AddressBookEntry entry = _entries.get(entryName);
+    if (entry == null) {
+      for (AddressBook globalBook : _globalBooks.values()) {
+        entry = globalBook._entries.get(entryName);
+        if (entry != null) {
+          break;
+        }
       }
-      if (entry == null) {
-         w.redFlag(
-               "Could not find entry: \"" + entryName + "\" in address book: \""
-                     + _key + "\" or any global address book");
-         return Collections.emptySet();
-      }
-      else {
-         return entry.getPrefixes(w);
-      }
-   }
-
+    }
+    if (entry == null) {
+      w.redFlag(
+          "Could not find entry: \""
+              + entryName
+              + "\" in address book: \""
+              + _key
+              + "\" or any global address book");
+      return Collections.emptySet();
+    } else {
+      return entry.getPrefixes(w);
+    }
+  }
 }

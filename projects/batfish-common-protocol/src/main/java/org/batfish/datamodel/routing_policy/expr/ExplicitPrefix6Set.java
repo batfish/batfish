@@ -7,66 +7,59 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class ExplicitPrefix6Set extends Prefix6SetExpr {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Prefix6Space _prefix6Space;
+  private Prefix6Space _prefix6Space;
 
-   @JsonCreator
-   private ExplicitPrefix6Set() {
-   }
+  @JsonCreator
+  private ExplicitPrefix6Set() {}
 
-   public ExplicitPrefix6Set(Prefix6Space prefix6Space) {
-      _prefix6Space = prefix6Space;
-   }
+  public ExplicitPrefix6Set(Prefix6Space prefix6Space) {
+    _prefix6Space = prefix6Space;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
-      ExplicitPrefix6Set other = (ExplicitPrefix6Set) obj;
-      if (_prefix6Space == null) {
-         if (other._prefix6Space != null) {
-            return false;
-         }
-      }
-      else if (!_prefix6Space.equals(other._prefix6Space)) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    ExplicitPrefix6Set other = (ExplicitPrefix6Set) obj;
+    if (_prefix6Space == null) {
+      if (other._prefix6Space != null) {
+        return false;
+      }
+    } else if (!_prefix6Space.equals(other._prefix6Space)) {
+      return false;
+    }
+    return true;
+  }
 
-   public Prefix6Space getPrefix6Space() {
-      return _prefix6Space;
-   }
+  public Prefix6Space getPrefix6Space() {
+    return _prefix6Space;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result
-            + ((_prefix6Space == null) ? 0 : _prefix6Space.hashCode());
-      return result;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_prefix6Space == null) ? 0 : _prefix6Space.hashCode());
+    return result;
+  }
 
-   @Override
-   public boolean matches(Prefix6 prefix6, Environment environment) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method");
-      // TODO Auto-generated method stub
-   }
+  @Override
+  public boolean matches(Prefix6 prefix6, Environment environment) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+    // TODO Auto-generated method stub
+  }
 
-   public void setPrefix6Space(Prefix6Space prefix6Space) {
-      _prefix6Space = prefix6Space;
-   }
-
+  public void setPrefix6Space(Prefix6Space prefix6Space) {
+    _prefix6Space = prefix6Space;
+  }
 }

@@ -7,26 +7,21 @@ import org.batfish.datamodel.routing_policy.expr.MatchSourceInterface;
 
 public final class PsFromInterface extends PsFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final String _name;
+  private final String _name;
 
-   public PsFromInterface(String name) {
-      _name = name;
-   }
+  public PsFromInterface(String name) {
+    _name = name;
+  }
 
-   public String getName() {
-      return _name;
-   }
+  public String getName() {
+    return _name;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         JuniperConfiguration jc, Configuration c,
-         Warnings warnings) {
-      return new MatchSourceInterface(_name);
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    return new MatchSourceInterface(_name);
+  }
 }

@@ -8,84 +8,75 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public class MatchCommunitySet extends BooleanExpr {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private CommunitySetExpr _expr;
+  private CommunitySetExpr _expr;
 
-   @JsonCreator
-   private MatchCommunitySet() {
-   }
+  @JsonCreator
+  private MatchCommunitySet() {}
 
-   public MatchCommunitySet(CommunitySetExpr expr) {
-      _expr = expr;
-   }
+  public MatchCommunitySet(CommunitySetExpr expr) {
+    _expr = expr;
+  }
 
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj) {
-         return true;
-      }
-      if (obj == null) {
-         return false;
-      }
-      if (getClass() != obj.getClass()) {
-         return false;
-      }
-      MatchCommunitySet other = (MatchCommunitySet) obj;
-      if (_expr == null) {
-         if (other._expr != null) {
-            return false;
-         }
-      }
-      else if (!_expr.equals(other._expr)) {
-         return false;
-      }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
-   }
-
-   @Override
-   public Result evaluate(Environment environment) {
-      Result result = new Result();
-      boolean match = false;
-      SortedSet<Long> inputCommunities = null;
-      if (environment.getUseOutputAttributes()
-            && environment.getOutputRoute() instanceof BgpRoute.Builder) {
-         BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
-               .getOutputRoute();
-         inputCommunities = bgpRouteBuilder.getCommunities();
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    MatchCommunitySet other = (MatchCommunitySet) obj;
+    if (_expr == null) {
+      if (other._expr != null) {
+        return false;
       }
-      else if (environment.getReadFromIntermediateBgpAttributes()) {
-         inputCommunities = environment.getIntermediateBgpAttributes()
-               .getCommunities();
-      }
-      else if (environment.getOriginalRoute() instanceof BgpRoute) {
-         BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
-         inputCommunities = bgpRoute.getCommunities();
-      }
-      if (inputCommunities != null) {
-         match = _expr.matchSingleCommunity(environment, inputCommunities);
-      }
-      result.setBooleanValue(match);
-      return result;
-   }
+    } else if (!_expr.equals(other._expr)) {
+      return false;
+    }
+    return true;
+  }
 
-   public CommunitySetExpr getExpr() {
-      return _expr;
-   }
+  @Override
+  public Result evaluate(Environment environment) {
+    Result result = new Result();
+    boolean match = false;
+    SortedSet<Long> inputCommunities = null;
+    if (environment.getUseOutputAttributes()
+        && environment.getOutputRoute() instanceof BgpRoute.Builder) {
+      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+      inputCommunities = bgpRouteBuilder.getCommunities();
+    } else if (environment.getReadFromIntermediateBgpAttributes()) {
+      inputCommunities = environment.getIntermediateBgpAttributes().getCommunities();
+    } else if (environment.getOriginalRoute() instanceof BgpRoute) {
+      BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+      inputCommunities = bgpRoute.getCommunities();
+    }
+    if (inputCommunities != null) {
+      match = _expr.matchSingleCommunity(environment, inputCommunities);
+    }
+    result.setBooleanValue(match);
+    return result;
+  }
 
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-      return result;
-   }
+  public CommunitySetExpr getExpr() {
+    return _expr;
+  }
 
-   public void setExpr(CommunitySetExpr expr) {
-      _expr = expr;
-   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
+    return result;
+  }
 
+  public void setExpr(CommunitySetExpr expr) {
+    _expr = expr;
+  }
 }

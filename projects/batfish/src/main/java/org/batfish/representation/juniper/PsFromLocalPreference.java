@@ -9,28 +9,21 @@ import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 
 public final class PsFromLocalPreference extends PsFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final int _localPreference;
+  private final int _localPreference;
 
-   public PsFromLocalPreference(int localPreference) {
-      _localPreference = localPreference;
-   }
+  public PsFromLocalPreference(int localPreference) {
+    _localPreference = localPreference;
+  }
 
-   public int getLocalPreference() {
-      return _localPreference;
-   }
+  public int getLocalPreference() {
+    return _localPreference;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         JuniperConfiguration jc, Configuration c,
-         Warnings warnings) {
-      return new MatchLocalPreference(
-            IntComparator.EQ,
-            new LiteralInt(_localPreference));
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    return new MatchLocalPreference(IntComparator.EQ, new LiteralInt(_localPreference));
+  }
 }

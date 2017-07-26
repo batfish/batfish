@@ -8,40 +8,41 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class Address implements AwsVpcEntity, Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final String _instanceId;
+  private final String _instanceId;
 
-   private final Ip _privateIp;
+  private final Ip _privateIp;
 
-   private final Ip _publicIp;
+  private final Ip _publicIp;
 
-   public Address(JSONObject jObj, BatfishLogger logger) throws JSONException {
-      _publicIp = new Ip(jObj.getString(JSON_KEY_PUBLIC_IP));
+  public Address(JSONObject jObj, BatfishLogger logger) throws JSONException {
+    _publicIp = new Ip(jObj.getString(JSON_KEY_PUBLIC_IP));
 
-      _instanceId = jObj.has(JSON_KEY_INSTANCE_ID)
-            ? jObj.getString(JSON_KEY_INSTANCE_ID) : null;
+    _instanceId = jObj.has(JSON_KEY_INSTANCE_ID) ? jObj.getString(JSON_KEY_INSTANCE_ID) : null;
 
-      _privateIp = jObj.has(JSON_KEY_PRIVATE_IP_ADDRESS)
-            ? new Ip(jObj.getString(JSON_KEY_PRIVATE_IP_ADDRESS)) : null;
+    _privateIp =
+        jObj.has(JSON_KEY_PRIVATE_IP_ADDRESS)
+            ? new Ip(jObj.getString(JSON_KEY_PRIVATE_IP_ADDRESS))
+            : null;
 
-      // TODO: not sure what other information we need to pull
-   }
+    // TODO: not sure what other information we need to pull
+  }
 
-   @Override
-   public String getId() {
-      return _publicIp.toString();
-   }
+  @Override
+  public String getId() {
+    return _publicIp.toString();
+  }
 
-   public String getInstanceId() {
-      return _instanceId;
-   }
+  public String getInstanceId() {
+    return _instanceId;
+  }
 
-   public Ip getPrivateIp() {
-      return _privateIp;
-   }
+  public Ip getPrivateIp() {
+    return _privateIp;
+  }
 
-   public Ip getPublicIp() {
-      return _publicIp;
-   }
+  public Ip getPublicIp() {
+    return _publicIp;
+  }
 }

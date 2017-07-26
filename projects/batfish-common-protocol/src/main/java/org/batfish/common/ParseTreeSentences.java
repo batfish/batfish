@@ -7,38 +7,35 @@ import java.util.List;
 
 public class ParseTreeSentences implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   protected List<String> _sentences;
+  protected List<String> _sentences;
 
-   public ParseTreeSentences() {
-      _sentences = new ArrayList<>();
-   }
+  public ParseTreeSentences() {
+    _sentences = new ArrayList<>();
+  }
 
-   public void appendToLastSentence(String appendStr) {
-      if (_sentences.size() == 0) {
-         _sentences.add(appendStr);
-      }
-      else {
-         String finalStr = _sentences.get(_sentences.size() - 1) + appendStr;
-         _sentences.remove(_sentences.size() - 1);
-         _sentences.add(finalStr);
-      }
-   }
+  public void appendToLastSentence(String appendStr) {
+    if (_sentences.size() == 0) {
+      _sentences.add(appendStr);
+    } else {
+      String finalStr = _sentences.get(_sentences.size() - 1) + appendStr;
+      _sentences.remove(_sentences.size() - 1);
+      _sentences.add(finalStr);
+    }
+  }
 
-   public List<String> getSentences() {
-      return _sentences;
-   }
+  public List<String> getSentences() {
+    return _sentences;
+  }
 
-   @JsonIgnore
-   public boolean isEmpty() {
-      return _sentences.isEmpty();
-   }
+  @JsonIgnore
+  public boolean isEmpty() {
+    return _sentences.isEmpty();
+  }
 
-   public void setSentences(List<String> sentences) {
-      _sentences = sentences;
-   }
+  public void setSentences(List<String> sentences) {
+    _sentences = sentences;
+  }
 }

@@ -5,28 +5,26 @@ import org.batfish.datamodel.Ip;
 
 public class PolicyRouteNextHopInterfaceEntry {
 
-   private final List<String> _nextHopInterfaces;
-   private final Ip _nextHopIp;
-   private final String _node;
+  private final List<String> _nextHopInterfaces;
+  private final Ip _nextHopIp;
+  private final String _node;
 
-   public PolicyRouteNextHopInterfaceEntry(
-         String node, Ip nextHopIp,
-         List<String> nextHopInterfaces) {
-      _node = node;
-      _nextHopIp = nextHopIp;
-      _nextHopInterfaces = nextHopInterfaces;
-   }
+  public PolicyRouteNextHopInterfaceEntry(
+      String node, Ip nextHopIp, List<String> nextHopInterfaces) {
+    _node = node;
+    _nextHopIp = nextHopIp;
+    _nextHopInterfaces = nextHopInterfaces;
+  }
 
-   public List<String> getNextHopInterfaces() {
-      return _nextHopInterfaces;
-   }
+  public List<String> getNextHopInterfaces() {
+    return _nextHopInterfaces;
+  }
 
-   public Ip getNextHopIp() {
-      return _nextHopIp;
-   }
+  public Ip getNextHopIp() {
+    return _nextHopIp;
+  }
 
-   public String getNode() {
-      return _node;
-   }
-
+  public String getNode() {
+    return _node;
+  }
 }

@@ -5,60 +5,59 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public class OspfRedistributionPolicy extends RedistributionPolicy {
 
-   public static final String BGP_AS = "BGP_AS";
+  public static final String BGP_AS = "BGP_AS";
 
-   public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
+  public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
-   public static final int DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
+  public static final int DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
 
-   public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
+  public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
 
-   public static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
+  public static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private Integer _metric;
+  private Integer _metric;
 
-   private OspfMetricType _metricType;
+  private OspfMetricType _metricType;
 
-   private boolean _subnets;
+  private boolean _subnets;
 
-   private Long _tag;
+  private Long _tag;
 
-   public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
-      super(sourceProtocol, RoutingProtocol.OSPF);
-   }
+  public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
+    super(sourceProtocol, RoutingProtocol.OSPF);
+  }
 
-   public Integer getMetric() {
-      return _metric;
-   }
+  public Integer getMetric() {
+    return _metric;
+  }
 
-   public OspfMetricType getMetricType() {
-      return _metricType;
-   }
+  public OspfMetricType getMetricType() {
+    return _metricType;
+  }
 
-   public boolean getSubnets() {
-      return _subnets;
-   }
+  public boolean getSubnets() {
+    return _subnets;
+  }
 
-   public Long getTag() {
-      return _tag;
-   }
+  public Long getTag() {
+    return _tag;
+  }
 
-   public void setMetric(int metric) {
-      _metric = metric;
-   }
+  public void setMetric(int metric) {
+    _metric = metric;
+  }
 
-   public void setOspfMetricType(OspfMetricType type) {
-      _metricType = type;
-   }
+  public void setOspfMetricType(OspfMetricType type) {
+    _metricType = type;
+  }
 
-   public void setSubnets(boolean b) {
-      _subnets = b;
-   }
+  public void setSubnets(boolean b) {
+    _subnets = b;
+  }
 
-   public void setTag(long tag) {
-      _tag = tag;
-   }
-
+  public void setTag(long tag) {
+    _tag = tag;
+  }
 }

@@ -7,32 +7,29 @@ import org.batfish.datamodel.SubRange;
 
 public class Prefix6ListLine implements Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+  private LineAction _action;
 
-   private SubRange _lengthRange;
+  private SubRange _lengthRange;
 
-   private Prefix6 _prefix;
+  private Prefix6 _prefix;
 
-   public Prefix6ListLine(
-         LineAction action, Prefix6 prefix,
-         SubRange lengthRange) {
-      _action = action;
-      _prefix = prefix;
-      _lengthRange = lengthRange;
-   }
+  public Prefix6ListLine(LineAction action, Prefix6 prefix, SubRange lengthRange) {
+    _action = action;
+    _prefix = prefix;
+    _lengthRange = lengthRange;
+  }
 
-   public LineAction getAction() {
-      return _action;
-   }
+  public LineAction getAction() {
+    return _action;
+  }
 
-   public SubRange getLengthRange() {
-      return _lengthRange;
-   }
+  public SubRange getLengthRange() {
+    return _lengthRange;
+  }
 
-   public Prefix6 getPrefix() {
-      return _prefix;
-   }
-
+  public Prefix6 getPrefix() {
+    return _prefix;
+  }
 }

@@ -9,38 +9,32 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetCommunity extends RoutePolicySetStatement {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private boolean _additive;
+  private boolean _additive;
 
-   private RoutePolicyCommunitySet _commSet;
+  private RoutePolicyCommunitySet _commSet;
 
-   public RoutePolicySetCommunity(
-         RoutePolicyCommunitySet commSet,
-         boolean additive) {
-      _commSet = commSet;
-      _additive = additive;
-   }
+  public RoutePolicySetCommunity(RoutePolicyCommunitySet commSet, boolean additive) {
+    _commSet = commSet;
+    _additive = additive;
+  }
 
-   public boolean getAdditive() {
-      return _additive;
-   }
+  public boolean getAdditive() {
+    return _additive;
+  }
 
-   public RoutePolicyCommunitySet getCommunitySet() {
-      return _commSet;
-   }
+  public RoutePolicyCommunitySet getCommunitySet() {
+    return _commSet;
+  }
 
-   @Override
-   public Statement toSetStatement(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      CommunitySetExpr expr = _commSet.toCommunitySetExpr(cc, c, w);
-      if (_additive) {
-         return new AddCommunity(expr);
-      }
-      else {
-         return new SetCommunity(expr);
-      }
-   }
-
+  @Override
+  public Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w) {
+    CommunitySetExpr expr = _commSet.toCommunitySetExpr(cc, c, w);
+    if (_additive) {
+      return new AddCommunity(expr);
+    } else {
+      return new SetCommunity(expr);
+    }
+  }
 }

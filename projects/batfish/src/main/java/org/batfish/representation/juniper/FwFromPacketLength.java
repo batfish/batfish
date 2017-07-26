@@ -8,30 +8,24 @@ import org.batfish.datamodel.SubRange;
 
 public class FwFromPacketLength extends FwFrom {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private boolean _except;
+  private boolean _except;
 
-   private final List<SubRange> _range;
+  private final List<SubRange> _range;
 
-   public FwFromPacketLength(List<SubRange> range, boolean except) {
-      _range = range;
-      _except = except;
-   }
+  public FwFromPacketLength(List<SubRange> range, boolean except) {
+    _range = range;
+    _except = except;
+  }
 
-   @Override
-   public void applyTo(
-         IpAccessListLine line, JuniperConfiguration jc,
-         Warnings w, Configuration c) {
-      if (_except) {
-         line.getNotPacketLengths().addAll(_range);
-      }
-      else {
-         line.getPacketLengths().addAll(_range);
-      }
-   }
-
+  @Override
+  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+    if (_except) {
+      line.getNotPacketLengths().addAll(_range);
+    } else {
+      line.getPacketLengths().addAll(_range);
+    }
+  }
 }

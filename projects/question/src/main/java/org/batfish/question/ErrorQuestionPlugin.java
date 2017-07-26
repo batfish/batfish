@@ -8,52 +8,46 @@ import org.batfish.datamodel.questions.Question;
 
 public class ErrorQuestionPlugin extends QuestionPlugin {
 
-   public static class ErrorAnswerer extends Answerer {
+  public static class ErrorAnswerer extends Answerer {
 
-      public ErrorAnswerer(Question question, IBatfish batfish) {
-         super(question, batfish);
-      }
+    public ErrorAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
+    }
 
-      @Override
-      public AnswerElement answer() {
-         throw new BatfishException(
-               "error question debugging outer exception",
-               new BatfishException(
-                     "error question debugging inner exception"));
-      }
+    @Override
+    public AnswerElement answer() {
+      throw new BatfishException(
+          "error question debugging outer exception",
+          new BatfishException("error question debugging inner exception"));
+    }
+  }
 
-   }
+  /** Since this is not really a question; we do not document it as such. */
+  public static class ErrorQuestion extends Question {
 
-   /**
-    * Since this is not really a question; we do not document it as such.
-    */
-   public static class ErrorQuestion extends Question {
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
-      @Override
-      public boolean getDataPlane() {
-         return false;
-      }
+    @Override
+    public String getName() {
+      return "error";
+    }
 
-      @Override
-      public String getName() {
-         return "error";
-      }
+    @Override
+    public boolean getTraffic() {
+      return false;
+    }
+  }
 
-      @Override
-      public boolean getTraffic() {
-         return false;
-      }
+  @Override
+  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+    return new ErrorAnswerer(question, batfish);
+  }
 
-   }
-
-   @Override
-   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-      return new ErrorAnswerer(question, batfish);
-   }
-
-   @Override
-   protected Question createQuestion() {
-      return new ErrorQuestion();
-   }
-
+  @Override
+  protected Question createQuestion() {
+    return new ErrorQuestion();
+  }
 }
