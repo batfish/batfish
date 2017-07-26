@@ -20,11 +20,13 @@ import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -386,11 +388,11 @@ public class BfCoordWorkHelper {
   }
 
   /**
-   * Return true if successfully get the information of the container,
-   * false if container {@code containerName} does not exist or the api
+   * Returns a {@link Container Container} that contains information of '{@code containerName}',
+   * returns null if container '{@code containerName}' does not exist or the api
    * key that is using has no access to the container
    */
-  public String getContainer(String containerName) {
+  public Container getContainer(String containerName) {
     try {
       Client client = getClientBuilder().build();
       WebTarget webTarget = getTarget(
@@ -408,7 +410,7 @@ public class BfCoordWorkHelper {
           containerName);
 
       Response response = webTarget
-          .request(MediaType.TEXT_PLAIN)
+          .request(MediaType.APPLICATION_JSON)
           .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo()
@@ -420,8 +422,10 @@ public class BfCoordWorkHelper {
         return null;
       }
 
-      String containerInfo = response.readEntity(String.class) + "\n";
-      return containerInfo;
+      String containerStr = response.readEntity(String.class);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Container container = mapper.readValue(containerStr, Container.class);
+      return container;
     }
     catch (Exception e) {
       _logger.errorf("Exception in getContainer from %s for %s\n",

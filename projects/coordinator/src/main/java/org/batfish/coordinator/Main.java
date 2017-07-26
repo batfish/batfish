@@ -53,7 +53,15 @@ public class Main {
     return _workManager;
   }
 
-  private static void initAuthorizer() throws Exception {
+  public static void setLogger(BatfishLogger logger) {
+    _logger = logger;
+  }
+
+  public static void setWorkMgr(WorkMgr workManager) {
+    _workManager = workManager;
+  }
+
+  static void initAuthorizer() throws Exception {
     switch (_settings.getAuthorizationType()) {
       case none:
         _authorizer = new NoneAuthorizer();

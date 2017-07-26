@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Container;
 import org.batfish.coordinator.config.Settings;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,9 +25,9 @@ public class WorkMgrTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private WorkMgr _manager;
-
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private WorkMgr _manager;
 
   @Test
   public void initContainerWithContainerName() throws IOException {
@@ -119,34 +120,37 @@ public class WorkMgrTest {
     assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
   }
 
-  @Test
-  public void getEmptyContainer() throws IOException {
-    String containerName = "myContainer";
+  private void initContainerEnvironment(String containerName) throws Exception {
     _folder.newFolder(containerName);
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
-    SortedSet<String> containerInfo = _manager.getContainer(containerDir);
-    assertThat(containerInfo.toString(), equalTo("[]"));
   }
 
   @Test
-  public void getNonEmptyContainer() throws IOException {
+  public void getEmptyContainer() throws Exception {
     String containerName = "myContainer";
+    initContainerEnvironment(containerName);
+    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
+    Container container = _manager.getContainer(containerDir);
+    assertThat(container.listTestrigs(), equalTo("[]"));
+  }
+
+  @Test
+  public void getNonEmptyContainer() throws Exception {
+    String containerName = "myContainer";
+    initContainerEnvironment(containerName);
     Path containerPath = _folder.newFolder(containerName).toPath();
     Path testrigPath = containerPath.resolve("testrig1");
     assertThat(testrigPath.toFile().mkdir(), is(true));
     Path testrigPath2 = containerPath.resolve("testrig2");
     assertThat(testrigPath2.toFile().mkdir(), is(true));
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
-    SortedSet<String> containerInfo = _manager.getContainer(containerDir);
-    assertThat(containerInfo.toString(), equalTo("[testrig1, testrig2]"));
+    Container container = _manager.getContainer(containerDir);
+    assertThat(container.listTestrigs(), equalTo("[testrig1, testrig2]"));
   }
 
   @Test
   public void getNonExistContainer() {
     String containerName = "myContainer";
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Error listing directory '" + containerDir.toString() + "'"));

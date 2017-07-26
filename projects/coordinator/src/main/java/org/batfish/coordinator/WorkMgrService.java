@@ -16,10 +16,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
@@ -588,11 +590,14 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the question was asked
-   * @return A string representation of the container
+   * @return A {@link Response Response} with an entity consists either a json representation
+   *        of the container {@code containerName} or an error message if:
+    *        the container {@code containerName} does not exist or the {@code apiKey} has no
+    *        acess to the container {@code containerName}
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response getContainer(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
@@ -618,14 +623,23 @@ public class WorkMgrService {
 
       checkContainerAccessibility(apiKey, containerName);
 
-      SortedSet<String> containerInfo = Main.getWorkMgr().getContainer(containerDir);
-      return Response.ok(containerInfo.toString(), MediaType.TEXT_PLAIN).build();
+      Container container = Main.getWorkMgr().getContainer(containerDir);
+      container.setName(containerName);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String containerString = mapper.writeValueAsString(container);
+
+      return Response.ok(containerString, MediaType.APPLICATION_JSON).build();
     } catch (AccessControlException e) {
-      return Response.status(Response.Status.UNAUTHORIZED)
+      return Response.status(Status.FORBIDDEN)
           .entity(e.getMessage())
           .type(MediaType.TEXT_PLAIN)
           .build();
-    } catch (Exception e) {
+    } catch (BatfishException e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    }catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:getContainer exception: " + stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

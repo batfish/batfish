@@ -29,6 +29,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.Container;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -532,17 +533,18 @@ public class WorkMgr {
   }
 
   /**
-   * Return a {@link SortedSet SortedSet} contains all subdirectories under the path {@code
-   * containerDir}
+   * Return a {@link Container container} contains all testrigs directoreis inside it
    */
-  public SortedSet<String> getContainer(Path containerDir) {
+  public Container getContainer(Path containerDir) {
+    Container container = new Container();
     SortedSet<String> testrigs =
         new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir)
+            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
                 .stream()
                 .map(dir -> dir.getFileName().toString())
                 .collect(Collectors.toSet()));
-    return testrigs;
+    container.setTestrigs(testrigs);
+    return container;
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {

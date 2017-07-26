@@ -51,6 +51,7 @@ import org.batfish.client.config.Settings.RunMode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
@@ -1323,17 +1324,18 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
-   * Get information of the container(first element in {@code parameters}) return true if
-   * successfully get container information, false otherwise
+   * Get information of the container(first element in {@code parameters}).
+   * <p> </p>
+   * Returns true if successfully get container information, false otherwise
    */
   private boolean getContainer(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
       return false;
     }
     String containerName = parameters.get(0);
-    String containerInfo = _workHelper.getContainer(containerName);
-    if (containerInfo != null) {
-      _logger.output(containerInfo);
+    Container container = _workHelper.getContainer(containerName);
+    if (container != null) {
+      _logger.output(container.listTestrigs() + "\n");
       return true;
     }
     return false;
