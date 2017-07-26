@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +35,6 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -77,7 +78,40 @@ public class BatfishTest {
   public void testNoFileUnderPath() throws IOException {
     Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
     List<Path> result = Batfish.listAllFiles(emptyFolder);
-    Assert.assertThat(result, empty());
+    assertThat(result, empty());
+  }
+
+  @Test
+  public void testParseTopologyBadJson() throws IOException {
+    //missing node2interface
+    String topologyBadJson =
+          "[" +
+                "{ " +
+                "\"node1\" : \"as1border1\"," +
+                "\"node1interface\" : \"GigabitEthernet0/0\"," +
+                "\"node2\" : \"as1core1\"," +
+                "}," +
+                "]";
+
+    Path topologyFilePath = CommonUtil
+          .createTempFileWithContent("testParseTopologyJson", topologyBadJson);
+    Batfish batfish = initBatfish();
+    String errorMessage = "Topology format error";
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(errorMessage);
+    batfish.parseTopology(topologyFilePath);
+  }
+
+  @Test
+  public void testParseTopologyEmpty() throws IOException {
+    String topologyEmpty = "";
+    Path topologyFilePath = CommonUtil
+          .createTempFileWithContent("testParseTopologyJson", topologyEmpty);
+    Batfish batfish = initBatfish();
+    String errorMessage = "ERROR: empty topology\n";
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(errorMessage);
+    batfish.parseTopology(topologyFilePath);
   }
 
   @Test
@@ -101,7 +135,7 @@ public class BatfishTest {
     Path topologyFilePath = CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
     Batfish batfish = initBatfish();
     Topology topology = batfish.parseTopology(topologyFilePath);
-    Assert.assertEquals(topology.getEdges().size(), 2);
+    assertEquals(topology.getEdges().size(), 2);
   }
 
   public void testReadMissingIptableFile() throws IOException {
@@ -120,8 +154,8 @@ public class BatfishTest {
         "Iptables file iptables/host1.iptables for host host1 "
             + "is not contained within the testrig";
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    Assert.assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.FAILED));
-    Assert.assertThat(
+    assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.FAILED));
+    assertThat(
         answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
     // When host file failed, verify that error message contains both failure messages
     answerElement.getErrors().clear();
@@ -131,9 +165,9 @@ public class BatfishTest {
             "host1",
             new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    Assert.assertThat(
+    assertThat(
         answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
-    Assert.assertThat(
+    assertThat(
         answerElement.getErrors().get("host1").prettyPrint(),
         containsString("Failed to parse host file: host1"));
     // When the haltonparseerror flag is set to true
@@ -158,11 +192,11 @@ public class BatfishTest {
     expected.add(nestedFolder.resolve("eDirectory").resolve("c-test.cfg"));
     for (Path path : expected) {
       path.getParent().toFile().mkdir();
-      Assert.assertThat(path.toFile().createNewFile(), is(true));
+      assertThat(path.toFile().createNewFile(), is(true));
     }
     List<Path> actual = Batfish.listAllFiles(nestedFolder);
     Collections.sort(expected);
-    Assert.assertThat(expected, equalTo(actual));
+    assertThat(expected, equalTo(actual));
   }
 
   @Test
@@ -170,9 +204,9 @@ public class BatfishTest {
     Path startWithDot = _folder.newFolder("startWithDot").toPath();
     File file = startWithDot.resolve(".cfg").toFile();
     file.getParentFile().mkdir();
-    Assert.assertThat(file.createNewFile(), is(true));
+    assertThat(file.createNewFile(), is(true));
     List<Path> result = Batfish.listAllFiles(startWithDot);
-    Assert.assertThat(result, is(empty()));
+    assertThat(result, is(empty()));
   }
 
   @Test
@@ -184,11 +218,11 @@ public class BatfishTest {
     expected.add(unNestedFolder.resolve("test3.cfg"));
     for (Path path : expected) {
       path.getParent().toFile().mkdir();
-      Assert.assertThat(path.toFile().createNewFile(), is(true));
+      assertThat(path.toFile().createNewFile(), is(true));
     }
     List<Path> actual = Batfish.listAllFiles(unNestedFolder);
     Collections.sort(expected);
-    Assert.assertThat(expected, equalTo(actual));
+    assertThat(expected, equalTo(actual));
   }
 
   @Test
@@ -203,14 +237,14 @@ public class BatfishTest {
     Path testRigPath = _folder.newFolder("testrig").toPath();
     File iptableFile = Paths.get(testRigPath.toString(), iptablePath.toString()).toFile();
     iptableFile.getParentFile().mkdir();
-    Assert.assertThat(iptableFile.createNewFile(), is(true));
+    assertThat(iptableFile.createNewFile(), is(true));
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
     Batfish batfish = initBatfish();
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    Assert.assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
-    Assert.assertThat(answerElement.getErrors().size(), is(0));
+    assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
+    assertThat(answerElement.getErrors().size(), is(0));
   }
 
   @Test
