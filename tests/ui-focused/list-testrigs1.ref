@@ -12,6 +12,7 @@ configs/
   as2dist2.cfg
   ...... 3 more entries
 example-network.png
+example-topology.json
 gns-network.net
 hosts/
   host1.json
