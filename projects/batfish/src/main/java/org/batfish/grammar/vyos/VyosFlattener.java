@@ -9,82 +9,79 @@ import org.batfish.grammar.vyos.VyosParser.WordContext;
 
 public class VyosFlattener extends VyosParserBaseListener {
 
-   private List<String> _currentBracketedWords;
+  private List<String> _currentBracketedWords;
 
-   private List<String> _currentStatement;
+  private List<String> _currentStatement;
 
-   private String _flattenedConfigurationText;
+  private String _flattenedConfigurationText;
 
-   private final String _header;
+  private final String _header;
 
-   private boolean _inBrackets;
+  private boolean _inBrackets;
 
-   private List<String> _setStatements;
+  private List<String> _setStatements;
 
-   private List<List<String>> _stack;
+  private List<List<String>> _stack;
 
-   public VyosFlattener(String header) {
-      _header = header;
-      _stack = new ArrayList<>();
-      _setStatements = new ArrayList<>();
-   }
+  public VyosFlattener(String header) {
+    _header = header;
+    _stack = new ArrayList<>();
+    _setStatements = new ArrayList<>();
+  }
 
-   @Override
-   public void enterStatement(StatementContext ctx) {
-      _currentStatement = new ArrayList<>();
-      _stack.add(_currentStatement);
-   }
+  @Override
+  public void enterStatement(StatementContext ctx) {
+    _currentStatement = new ArrayList<>();
+    _stack.add(_currentStatement);
+  }
 
-   @Override
-   public void exitStatement(StatementContext ctx) {
-      _stack.remove(_stack.size() - 1);
-   }
+  @Override
+  public void exitStatement(StatementContext ctx) {
+    _stack.remove(_stack.size() - 1);
+  }
 
-   @Override
-   public void exitTerminator(TerminatorContext ctx) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("set");
-      for (List<String> prefix : _stack) {
-         for (String word : prefix) {
-            sb.append(" " + word);
-         }
+  @Override
+  public void exitTerminator(TerminatorContext ctx) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("set");
+    for (List<String> prefix : _stack) {
+      for (String word : prefix) {
+        sb.append(" " + word);
       }
-      String setStatementBase = sb.toString();
-      if (_currentBracketedWords != null) {
-         for (String bracketedWord : _currentBracketedWords) {
-            String setStatement = setStatementBase + " " + bracketedWord;
-            _setStatements.add(setStatement);
-         }
-         _currentBracketedWords = null;
+    }
+    String setStatementBase = sb.toString();
+    if (_currentBracketedWords != null) {
+      for (String bracketedWord : _currentBracketedWords) {
+        String setStatement = setStatementBase + " " + bracketedWord;
+        _setStatements.add(setStatement);
       }
-      else {
-         _setStatements.add(setStatementBase);
-      }
-   }
+      _currentBracketedWords = null;
+    } else {
+      _setStatements.add(setStatementBase);
+    }
+  }
 
-   @Override
-   public void exitVyos_configuration(Vyos_configurationContext ctx) {
-      StringBuilder sb = new StringBuilder();
-      sb.append(_header);
-      for (String setStatement : _setStatements) {
-         sb.append(setStatement + "\n");
-      }
-      _flattenedConfigurationText = sb.toString();
-   }
+  @Override
+  public void exitVyos_configuration(Vyos_configurationContext ctx) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(_header);
+    for (String setStatement : _setStatements) {
+      sb.append(setStatement + "\n");
+    }
+    _flattenedConfigurationText = sb.toString();
+  }
 
-   @Override
-   public void exitWord(WordContext ctx) {
-      String word = ctx.getText();
-      if (_inBrackets) {
-         _currentBracketedWords.add(word);
-      }
-      else {
-         _currentStatement.add(word);
-      }
-   }
+  @Override
+  public void exitWord(WordContext ctx) {
+    String word = ctx.getText();
+    if (_inBrackets) {
+      _currentBracketedWords.add(word);
+    } else {
+      _currentStatement.add(word);
+    }
+  }
 
-   public String getFlattenedConfigurationText() {
-      return _flattenedConfigurationText;
-   }
-
+  public String getFlattenedConfigurationText() {
+    return _flattenedConfigurationText;
+  }
 }

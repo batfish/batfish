@@ -11,25 +11,21 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyPrependAsPath extends RoutePolicyStatement {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private AsExpr _expr;
+  private AsExpr _expr;
 
-   private IntExpr _number;
+  private IntExpr _number;
 
-   public RoutePolicyPrependAsPath(AsExpr expr, IntExpr number) {
-      _expr = expr;
-      _number = number;
-   }
+  public RoutePolicyPrependAsPath(AsExpr expr, IntExpr number) {
+    _expr = expr;
+    _number = number;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements, CiscoConfiguration cc,
-         Configuration c, Warnings w) {
-      statements.add(new PrependAsPath(new MultipliedAs(_expr, _number)));
-   }
-
+  @Override
+  public void applyTo(
+      List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
+    statements.add(new PrependAsPath(new MultipliedAs(_expr, _number)));
+  }
 }

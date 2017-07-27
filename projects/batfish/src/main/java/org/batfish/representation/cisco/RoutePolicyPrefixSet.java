@@ -8,14 +8,10 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public abstract class RoutePolicyPrefixSet implements Serializable {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   public abstract Prefix6SetExpr toPrefix6SetExpr(
-         CiscoConfiguration cc,
-         Configuration c, Warnings w);
+  public abstract Prefix6SetExpr toPrefix6SetExpr(
+      CiscoConfiguration cc, Configuration c, Warnings w);
 
-   public abstract PrefixSetExpr toPrefixSetExpr(
-         CiscoConfiguration cc,
-         Configuration c, Warnings w);
-
+  public abstract PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c, Warnings w);
 }

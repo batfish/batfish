@@ -6,10 +6,7 @@ import org.batfish.datamodel.IpAccessListLine;
 
 public interface Application {
 
-   void applyTo(
-         IpAccessListLine srcLine, List<IpAccessListLine> lines,
-         Warnings w);
+  void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines, Warnings w);
 
-   boolean getIpv6();
-
+  boolean getIpv6();
 }

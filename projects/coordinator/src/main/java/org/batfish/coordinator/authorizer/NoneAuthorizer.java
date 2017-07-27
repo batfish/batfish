@@ -4,20 +4,18 @@ package org.batfish.coordinator.authorizer;
 //useful for testing and private deployments
 public class NoneAuthorizer implements Authorizer {
 
-   @Override
-   public void authorizeContainer(String apiKey, String containerName) {
-      return;
-   }
+  @Override
+  public void authorizeContainer(String apiKey, String containerName) {
+    return;
+  }
 
-   @Override
-   public boolean isAccessibleContainer(
-         String apiKey, String containerName,
-         boolean logError) {
-      return true;
-   }
+  @Override
+  public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
+    return true;
+  }
 
-   @Override
-   public boolean isValidWorkApiKey(String apiKey) {
-      return true;
-   }
+  @Override
+  public boolean isValidWorkApiKey(String apiKey) {
+    return true;
+  }
 }

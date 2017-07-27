@@ -5,13 +5,10 @@ import org.batfish.common.util.ComparableStructure;
 
 public class SnmpHost extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public SnmpHost(@JsonProperty(NAME_VAR) String name) {
-      super(name);
-   }
-
+  public SnmpHost(@JsonProperty(NAME_VAR) String name) {
+    super(name);
+  }
 }

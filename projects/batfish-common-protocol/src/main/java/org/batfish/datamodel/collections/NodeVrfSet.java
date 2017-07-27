@@ -5,9 +5,6 @@ import org.batfish.common.Pair;
 
 public class NodeVrfSet extends TreeSet<Pair<String, String>> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
-
+  /** */
+  private static final long serialVersionUID = 1L;
 }

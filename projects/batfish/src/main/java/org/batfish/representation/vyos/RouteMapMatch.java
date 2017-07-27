@@ -7,6 +7,5 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 
 public interface RouteMapMatch extends Serializable {
 
-   BooleanExpr toBooleanExpr(VyosConfiguration vc, Configuration c, Warnings w);
-
+  BooleanExpr toBooleanExpr(VyosConfiguration vc, Configuration c, Warnings w);
 }

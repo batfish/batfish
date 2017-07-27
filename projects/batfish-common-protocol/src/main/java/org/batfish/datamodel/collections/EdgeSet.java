@@ -6,13 +6,11 @@ import org.batfish.datamodel.Edge;
 
 public class EdgeSet extends HashSet<Edge> {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   public EdgeSet() {
-   }
+  public EdgeSet() {}
 
-   public EdgeSet(Collection<Edge> edges) {
-      super(edges);
-   }
-
+  public EdgeSet(Collection<Edge> edges) {
+    super(edges);
+  }
 }

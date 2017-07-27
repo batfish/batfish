@@ -12,51 +12,46 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final Set<String> _listNames;
+  private final Set<String> _listNames;
 
-   private final int _statementLine;
+  private final int _statementLine;
 
-   public RouteMapMatchCommunityListLine(Set<String> names, int statementLine) {
-      _listNames = names;
-      _statementLine = statementLine;
-   }
+  public RouteMapMatchCommunityListLine(Set<String> names, int statementLine) {
+    _listNames = names;
+    _statementLine = statementLine;
+  }
 
-   public Set<String> getListNames() {
-      return _listNames;
-   }
+  public Set<String> getListNames() {
+    return _listNames;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         Configuration c, CiscoConfiguration cc,
-         Warnings w) {
-      Disjunction d = new Disjunction();
-      List<BooleanExpr> disjuncts = d.getDisjuncts();
-      for (String listName : _listNames) {
-         CommunityList list = c.getCommunityLists().get(listName);
-         if (list != null) {
-            String msg = "match community line";
-            StandardCommunityList standardCommunityList = cc
-                  .getStandardCommunityLists().get(listName);
-            if (standardCommunityList != null) {
-               standardCommunityList.getReferers().put(this, msg);
-            }
-            ExpandedCommunityList expandedCommunityList = cc
-                  .getExpandedCommunityLists().get(listName);
-            if (expandedCommunityList != null) {
-               expandedCommunityList.getReferers().put(this, msg);
-            }
-            disjuncts
-                  .add(new MatchCommunitySet(new NamedCommunitySet(listName)));
-         }
-         else {
-            cc.undefined(CiscoStructureType.COMMUNITY_LIST, listName,
-                  CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
-                  _statementLine);
-         }
+  @Override
+  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+    Disjunction d = new Disjunction();
+    List<BooleanExpr> disjuncts = d.getDisjuncts();
+    for (String listName : _listNames) {
+      CommunityList list = c.getCommunityLists().get(listName);
+      if (list != null) {
+        String msg = "match community line";
+        StandardCommunityList standardCommunityList = cc.getStandardCommunityLists().get(listName);
+        if (standardCommunityList != null) {
+          standardCommunityList.getReferers().put(this, msg);
+        }
+        ExpandedCommunityList expandedCommunityList = cc.getExpandedCommunityLists().get(listName);
+        if (expandedCommunityList != null) {
+          expandedCommunityList.getReferers().put(this, msg);
+        }
+        disjuncts.add(new MatchCommunitySet(new NamedCommunitySet(listName)));
+      } else {
+        cc.undefined(
+            CiscoStructureType.COMMUNITY_LIST,
+            listName,
+            CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
+            _statementLine);
       }
-      return d.simplify();
-   }
-
+    }
+    return d.simplify();
+  }
 }

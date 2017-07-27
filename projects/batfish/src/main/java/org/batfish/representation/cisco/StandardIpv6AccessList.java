@@ -6,40 +6,37 @@ import org.batfish.common.util.ComparableStructure;
 
 public class StandardIpv6AccessList extends ComparableStructure<String> {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final int _definitionLine;
+  private final int _definitionLine;
 
-   private List<StandardIpv6AccessListLine> _lines;
+  private List<StandardIpv6AccessListLine> _lines;
 
-   public StandardIpv6AccessList(String id, int definitionLine) {
-      super(id);
-      _definitionLine = definitionLine;
-      _lines = new ArrayList<>();
-   }
+  public StandardIpv6AccessList(String id, int definitionLine) {
+    super(id);
+    _definitionLine = definitionLine;
+    _lines = new ArrayList<>();
+  }
 
-   public void addLine(StandardIpv6AccessListLine all) {
-      _lines.add(all);
-   }
+  public void addLine(StandardIpv6AccessListLine all) {
+    _lines.add(all);
+  }
 
-   public int getDefinitionLine() {
-      return _definitionLine;
-   }
+  public int getDefinitionLine() {
+    return _definitionLine;
+  }
 
-   public List<StandardIpv6AccessListLine> getLines() {
-      return _lines;
-   }
+  public List<StandardIpv6AccessListLine> getLines() {
+    return _lines;
+  }
 
-   public ExtendedIpv6AccessList toExtendedIpv6AccessList() {
-      ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(
-            _key,
-            _definitionLine);
-      eal.setParent(this);
-      eal.getLines().clear();
-      for (StandardIpv6AccessListLine sall : _lines) {
-         eal.addLine(sall.toExtendedIpv6AccessListLine());
-      }
-      return eal;
-   }
-
+  public ExtendedIpv6AccessList toExtendedIpv6AccessList() {
+    ExtendedIpv6AccessList eal = new ExtendedIpv6AccessList(_key, _definitionLine);
+    eal.setParent(this);
+    eal.getLines().clear();
+    for (StandardIpv6AccessListLine sall : _lines) {
+      eal.addLine(sall.toExtendedIpv6AccessListLine());
+    }
+    return eal;
+  }
 }

@@ -7,16 +7,15 @@ import org.batfish.datamodel.Protocol;
 
 public interface IReachabilityQuestion extends IQuestion {
 
-   static final String NAME = "reachability";
+  static final String NAME = "reachability";
 
-   void setActions(SortedSet<ForwardingAction> actionSet);
+  void setActions(SortedSet<ForwardingAction> actionSet);
 
-   void setDstIps(SortedSet<IpWildcard> singleton);
+  void setDstIps(SortedSet<IpWildcard> singleton);
 
-   void setDstProtocols(SortedSet<Protocol> protocols);
+  void setDstProtocols(SortedSet<Protocol> protocols);
 
-   void setIngressNodeRegex(String ingressNodeRegex);
+  void setIngressNodeRegex(String ingressNodeRegex);
 
-   void setNotDstProtocols(SortedSet<Protocol> protocols);
-
+  void setNotDstProtocols(SortedSet<Protocol> protocols);
 }

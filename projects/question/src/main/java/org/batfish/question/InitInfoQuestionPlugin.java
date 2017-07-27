@@ -8,108 +8,107 @@ import org.batfish.datamodel.questions.Question;
 
 public class InitInfoQuestionPlugin extends QuestionPlugin {
 
-   public static class InitInfoAnswerer extends Answerer {
+  public static class InitInfoAnswerer extends Answerer {
 
-      public InitInfoAnswerer(Question question, IBatfish batfish) {
-         super(question, batfish);
-      }
+    public InitInfoAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
+    }
 
-      @Override
-      public InitInfoAnswerElement answer() {
-         InitInfoQuestion question = (InitInfoQuestion) _question;
-         return _batfish.initInfo(
-               question._summary,
-               question._verboseError,
-               question._environmentRoutes);
-      }
-   }
+    @Override
+    public InitInfoAnswerElement answer() {
+      InitInfoQuestion question = (InitInfoQuestion) _question;
+      return _batfish.initInfo(
+          question._summary, question._verboseError, question._environmentRoutes);
+    }
+  }
 
-   // <question_page_comment>
+  // <question_page_comment>
 
-   /**
-    * Outputs results of test-rig initialization.
-    *
-    * @type InitInfo onefile
-    *
-    * @example bf_answer("initinfo", summary=True") Get summary information
-    *          about test-rig initialization
-    */
-   public static class InitInfoQuestion extends Question {
+  /**
+   * Outputs results of test-rig initialization.
+   *
+   * @type InitInfo onefile
+   * @example bf_answer("initinfo", summary=True") Get summary information about test-rig
+   *     initialization
+   */
+  public static class InitInfoQuestion extends Question {
 
-      private static final String SUMMARY_VAR = "summary";
+    private static final String SUMMARY_VAR = "summary";
 
-      private static final String VERBOSE_ERROR_VAR = "verboseError";
+    private static final String VERBOSE_ERROR_VAR = "verboseError";
 
-      private boolean _environmentRoutes;
+    private boolean _environmentRoutes;
 
-      private boolean _summary;
+    private boolean _summary;
 
-      private boolean _verboseError;
+    private boolean _verboseError;
 
-      public InitInfoQuestion() {
-      }
+    public InitInfoQuestion() {}
 
-      @Override
-      public boolean getDataPlane() {
-         return false;
-      }
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
-      public boolean getEnvironmentRoutes() {
-         return _environmentRoutes;
-      }
+    public boolean getEnvironmentRoutes() {
+      return _environmentRoutes;
+    }
 
-      @Override
-      public String getName() {
-         return "initinfo";
-      }
+    @Override
+    public String getName() {
+      return "initinfo";
+    }
 
-      @JsonProperty(SUMMARY_VAR)
-      public boolean getSummary() {
-         return _summary;
-      }
+    @JsonProperty(SUMMARY_VAR)
+    public boolean getSummary() {
+      return _summary;
+    }
 
-      @JsonProperty(VERBOSE_ERROR_VAR)
-      public boolean getVerboseError() {
-         return _verboseError;
-      }
+    @Override
+    public boolean getTraffic() {
+      return false;
+    }
 
-      @Override
-      public boolean getTraffic() {
-         return false;
-      }
+    @JsonProperty(VERBOSE_ERROR_VAR)
+    public boolean getVerboseError() {
+      return _verboseError;
+    }
 
-      @Override
-      public String prettyPrint() {
-         return getName() + " " + SUMMARY_VAR + "=" + _summary
-               + " " + VERBOSE_ERROR_VAR + "=" + _verboseError;
-      }
+    @Override
+    public String prettyPrint() {
+      return getName()
+          + " "
+          + SUMMARY_VAR
+          + "="
+          + _summary
+          + " "
+          + VERBOSE_ERROR_VAR
+          + "="
+          + _verboseError;
+    }
 
-      public void setEnvironmentRoutes(boolean environmentRoutes) {
-         _environmentRoutes = environmentRoutes;
-      }
+    public void setEnvironmentRoutes(boolean environmentRoutes) {
+      _environmentRoutes = environmentRoutes;
+    }
 
-      @JsonProperty(SUMMARY_VAR)
-      public void setSummary(boolean summary) {
-         _summary = summary;
-      }
+    @JsonProperty(SUMMARY_VAR)
+    public void setSummary(boolean summary) {
+      _summary = summary;
+    }
 
-      @JsonProperty(VERBOSE_ERROR_VAR)
-      public void setVerboseError(boolean verboseError) {
-         _verboseError = verboseError;
-      }
+    @JsonProperty(VERBOSE_ERROR_VAR)
+    public void setVerboseError(boolean verboseError) {
+      _verboseError = verboseError;
+    }
+  }
 
-   }
+  @Override
+  protected InitInfoAnswerer createAnswerer(Question question, IBatfish batfish) {
+    return new InitInfoAnswerer(question, batfish);
+  }
 
-   @Override
-   protected InitInfoAnswerer createAnswerer(
-         Question question,
-         IBatfish batfish) {
-      return new InitInfoAnswerer(question, batfish);
-   }
-
-   @Override
-   protected InitInfoQuestion createQuestion() {
-      return new InitInfoQuestion();
-   }
-
+  @Override
+  protected InitInfoQuestion createQuestion() {
+    return new InitInfoQuestion();
+  }
 }

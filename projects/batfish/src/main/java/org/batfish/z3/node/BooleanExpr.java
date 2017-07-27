@@ -6,12 +6,10 @@ import org.batfish.z3.NodProgram;
 
 public abstract class BooleanExpr extends Expr {
 
-   @Override
-   public BooleanExpr simplify() {
-      return this;
-   }
+  @Override
+  public BooleanExpr simplify() {
+    return this;
+  }
 
-   public abstract BoolExpr toBoolExpr(NodProgram nodProgram)
-         throws Z3Exception;
-
+  public abstract BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception;
 }

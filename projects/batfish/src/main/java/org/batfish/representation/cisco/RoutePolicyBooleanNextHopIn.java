@@ -17,35 +17,26 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public class RoutePolicyBooleanNextHopIn extends RoutePolicyBoolean {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private RoutePolicyPrefixSet _prefixSet;
+  private RoutePolicyPrefixSet _prefixSet;
 
-   public RoutePolicyBooleanNextHopIn(RoutePolicyPrefixSet prefixSet) {
-      _prefixSet = prefixSet;
-   }
+  public RoutePolicyBooleanNextHopIn(RoutePolicyPrefixSet prefixSet) {
+    _prefixSet = prefixSet;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
-      if (prefixSetExpr != null) {
-         return new MatchPrefixSet(new IpPrefix(
-               new NextHopIp(),
-               new LiteralInt(Prefix.MAX_PREFIX_LENGTH)), prefixSetExpr);
-      }
-      else {
-         Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
-         return new MatchPrefix6Set(
-               new Ip6Prefix(
-                     new NextHopIp6(),
-                     new LiteralInt(Prefix6.MAX_PREFIX_LENGTH)),
-               prefix6SetExpr);
-      }
-   }
-
+  @Override
+  public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
+    PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
+    if (prefixSetExpr != null) {
+      return new MatchPrefixSet(
+          new IpPrefix(new NextHopIp(), new LiteralInt(Prefix.MAX_PREFIX_LENGTH)), prefixSetExpr);
+    } else {
+      Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
+      return new MatchPrefix6Set(
+          new Ip6Prefix(new NextHopIp6(), new LiteralInt(Prefix6.MAX_PREFIX_LENGTH)),
+          prefix6SetExpr);
+    }
+  }
 }

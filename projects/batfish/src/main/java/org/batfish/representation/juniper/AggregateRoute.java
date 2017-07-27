@@ -8,56 +8,53 @@ import org.batfish.datamodel.Prefix;
 
 public final class AggregateRoute implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private AsPath _asPath;
+  private AsPath _asPath;
 
-   private final Set<Long> _communities;
+  private final Set<Long> _communities;
 
-   private int _preference;
+  private int _preference;
 
-   private final Prefix _prefix;
+  private final Prefix _prefix;
 
-   private Integer _tag;
+  private Integer _tag;
 
-   public AggregateRoute(Prefix prefix) {
-      _communities = new HashSet<>();
-      _prefix = prefix;
-   }
+  public AggregateRoute(Prefix prefix) {
+    _communities = new HashSet<>();
+    _prefix = prefix;
+  }
 
-   public AsPath getAsPath() {
-      return _asPath;
-   }
+  public AsPath getAsPath() {
+    return _asPath;
+  }
 
-   public Set<Long> getCommunities() {
-      return _communities;
-   }
+  public Set<Long> getCommunities() {
+    return _communities;
+  }
 
-   public int getMetric() {
-      return _preference;
-   }
+  public int getMetric() {
+    return _preference;
+  }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
+  public Prefix getPrefix() {
+    return _prefix;
+  }
 
-   public Integer getTag() {
-      return _tag;
-   }
+  public Integer getTag() {
+    return _tag;
+  }
 
-   public void setAsPath(AsPath asPath) {
-      _asPath = asPath;
-   }
+  public void setAsPath(AsPath asPath) {
+    _asPath = asPath;
+  }
 
-   public void setPreference(int preference) {
-      _preference = preference;
-   }
+  public void setPreference(int preference) {
+    _preference = preference;
+  }
 
-   public void setTag(int tag) {
-      _tag = tag;
-   }
-
+  public void setTag(int tag) {
+    _tag = tag;
+  }
 }

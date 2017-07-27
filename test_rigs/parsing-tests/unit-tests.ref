@@ -6405,6 +6405,15 @@
             "        DHCP:'dhcp'  <== mode:DEFAULT_MODE",
             "        (ifdhcp_relay",
             "          RELAY:'relay'  <== mode:DEFAULT_MODE",
+            "          (ifdhcpr_address",
+            "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'2.3.4.5'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (if_ip_dhcp",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        DHCP:'dhcp'  <== mode:DEFAULT_MODE",
+            "        (ifdhcp_relay",
+            "          RELAY:'relay'  <== mode:DEFAULT_MODE",
             "          (ifdhcpr_null",
             "            CLIENT:'client'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -32111,7 +32120,7 @@
           ]
         }
       },
-      "version" : "0.29.1",
+      "version" : "0.29.3",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -33228,7 +33237,7 @@
           }
         }
       },
-      "version" : "0.29.1",
+      "version" : "0.29.3",
       "warnings" : {
         "address_family" : {
           "Red flags" : {

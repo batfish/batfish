@@ -4,10 +4,9 @@ import java.io.Serializable;
 
 public class AaaAccountingCommands implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public Object _placeholder_REMOVE_ME;
+  /** TODO: Remove when meaningful fields are added to this class */
+  public Object _placeholder;
 }

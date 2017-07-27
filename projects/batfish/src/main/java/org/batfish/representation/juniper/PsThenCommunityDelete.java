@@ -10,45 +10,37 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public final class PsThenCommunityDelete extends PsThen {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private JuniperConfiguration _configuration;
+  private JuniperConfiguration _configuration;
 
-   private final String _name;
+  private final String _name;
 
-   public PsThenCommunityDelete(
-         String name,
-         JuniperConfiguration configuration) {
-      _name = name;
-      _configuration = configuration;
-   }
+  public PsThenCommunityDelete(String name, JuniperConfiguration configuration) {
+    _name = name;
+    _configuration = configuration;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements,
-         JuniperConfiguration juniperVendorConfiguration, Configuration c,
-         Warnings warnings) {
-      CommunityList namedList = _configuration.getCommunityLists().get(_name);
-      if (namedList == null) {
-         warnings
-               .redFlag("Reference to undefined community: \"" + _name + "\"");
+  @Override
+  public void applyTo(
+      List<Statement> statements,
+      JuniperConfiguration juniperVendorConfiguration,
+      Configuration c,
+      Warnings warnings) {
+    CommunityList namedList = _configuration.getCommunityLists().get(_name);
+    if (namedList == null) {
+      warnings.redFlag("Reference to undefined community: \"" + _name + "\"");
+    } else {
+      org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(_name);
+      if (list == null) {
+        throw new VendorConversionException("missing community list: \"" + _name + "\"");
       }
-      else {
-         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
-               .get(_name);
-         if (list == null) {
-            throw new VendorConversionException(
-                  "missing community list: \"" + _name + "\"");
-         }
-         statements.add(new DeleteCommunity(new NamedCommunitySet(_name)));
-      }
-   }
+      statements.add(new DeleteCommunity(new NamedCommunitySet(_name)));
+    }
+  }
 
-   public String getName() {
-      return _name;
-   }
-
+  public String getName() {
+    return _name;
+  }
 }

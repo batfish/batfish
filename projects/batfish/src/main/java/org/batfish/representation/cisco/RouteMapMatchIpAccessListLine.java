@@ -15,79 +15,69 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 
 public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private final Set<String> _listNames;
+  private final Set<String> _listNames;
 
-   private boolean _routing;
+  private boolean _routing;
 
-   private final int _statementLine;
+  private final int _statementLine;
 
-   public RouteMapMatchIpAccessListLine(
-         Set<String> listNames,
-         int statementLine) {
-      _listNames = listNames;
-      _statementLine = statementLine;
-   }
+  public RouteMapMatchIpAccessListLine(Set<String> listNames, int statementLine) {
+    _listNames = listNames;
+    _statementLine = statementLine;
+  }
 
-   public Set<String> getListNames() {
-      return _listNames;
-   }
+  public Set<String> getListNames() {
+    return _listNames;
+  }
 
-   public boolean getRouting() {
-      return _routing;
-   }
+  public boolean getRouting() {
+    return _routing;
+  }
 
-   public void setRouting(boolean routing) {
-      _routing = routing;
-   }
+  public void setRouting(boolean routing) {
+    _routing = routing;
+  }
 
-   @Override
-   public BooleanExpr toBooleanExpr(
-         Configuration c, CiscoConfiguration cc,
-         Warnings w) {
-      Disjunction d = new Disjunction();
-      List<BooleanExpr> disjuncts = d.getDisjuncts();
-      for (String listName : _listNames) {
-         Object list;
-         IpAccessList ipAccessList = null;
-         RouteFilterList routeFilterList = null;
-         if (_routing) {
-            routeFilterList = c.getRouteFilterLists().get(listName);
-            list = routeFilterList;
-         }
-         else {
-            ipAccessList = c.getIpAccessLists().get(listName);
-            list = ipAccessList;
-         }
-         if (list == null) {
-            cc.undefined(CiscoStructureType.IP_ACCESS_LIST, listName,
-                  CiscoStructureUsage.ROUTE_MAP_MATCH_IP_ACCESS_LIST,
-                  _statementLine);
-         }
-         else {
-            String msg = "route-map match ip access-list line";
-            ExtendedAccessList extendedAccessList = cc.getExtendedAcls()
-                  .get(listName);
-            if (extendedAccessList != null) {
-               extendedAccessList.getReferers().put(this, msg);
-            }
-            StandardAccessList standardAccessList = cc.getStandardAcls()
-                  .get(listName);
-            if (standardAccessList != null) {
-               standardAccessList.getReferers().put(this, msg);
-            }
-            if (_routing) {
-               disjuncts.add(new MatchPrefixSet(
-                     new DestinationNetwork(),
-                     new NamedPrefixSet(listName)));
-            }
-            else {
-               disjuncts.add(new MatchIpAccessList(listName));
-            }
-         }
+  @Override
+  public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc, Warnings w) {
+    Disjunction d = new Disjunction();
+    List<BooleanExpr> disjuncts = d.getDisjuncts();
+    for (String listName : _listNames) {
+      Object list;
+      IpAccessList ipAccessList = null;
+      RouteFilterList routeFilterList = null;
+      if (_routing) {
+        routeFilterList = c.getRouteFilterLists().get(listName);
+        list = routeFilterList;
+      } else {
+        ipAccessList = c.getIpAccessLists().get(listName);
+        list = ipAccessList;
       }
-      return d.simplify();
-   }
-
+      if (list == null) {
+        cc.undefined(
+            CiscoStructureType.IP_ACCESS_LIST,
+            listName,
+            CiscoStructureUsage.ROUTE_MAP_MATCH_IP_ACCESS_LIST,
+            _statementLine);
+      } else {
+        String msg = "route-map match ip access-list line";
+        ExtendedAccessList extendedAccessList = cc.getExtendedAcls().get(listName);
+        if (extendedAccessList != null) {
+          extendedAccessList.getReferers().put(this, msg);
+        }
+        StandardAccessList standardAccessList = cc.getStandardAcls().get(listName);
+        if (standardAccessList != null) {
+          standardAccessList.getReferers().put(this, msg);
+        }
+        if (_routing) {
+          disjuncts.add(new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(listName)));
+        } else {
+          disjuncts.add(new MatchIpAccessList(listName));
+        }
+      }
+    }
+    return d.simplify();
+  }
 }

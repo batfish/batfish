@@ -8,23 +8,20 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetMed extends RoutePolicySetStatement {
 
-   private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-   private IntExpr _med;
+  private IntExpr _med;
 
-   public RoutePolicySetMed(IntExpr intExpr) {
-      _med = intExpr;
-   }
+  public RoutePolicySetMed(IntExpr intExpr) {
+    _med = intExpr;
+  }
 
-   public IntExpr getMed() {
-      return _med;
-   }
+  public IntExpr getMed() {
+    return _med;
+  }
 
-   @Override
-   protected Statement toSetStatement(
-         CiscoConfiguration cc, Configuration c,
-         Warnings w) {
-      return new SetMetric(_med);
-   }
-
+  @Override
+  protected Statement toSetStatement(CiscoConfiguration cc, Configuration c, Warnings w) {
+    return new SetMetric(_med);
+  }
 }

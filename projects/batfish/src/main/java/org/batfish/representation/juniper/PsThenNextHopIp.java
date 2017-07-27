@@ -11,29 +11,26 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public final class PsThenNextHopIp extends PsThen {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private final Ip _nextHopIp;
+  private final Ip _nextHopIp;
 
-   public PsThenNextHopIp(Ip nextHopIp) {
-      _nextHopIp = nextHopIp;
-   }
+  public PsThenNextHopIp(Ip nextHopIp) {
+    _nextHopIp = nextHopIp;
+  }
 
-   @Override
-   public void applyTo(
-         List<Statement> statements,
-         JuniperConfiguration juniperVendorConfiguration, Configuration c,
-         Warnings warnings) {
-      // todo: something with destination-vrf
-      statements.add(new SetNextHop(
-            new IpNextHop(Collections.singletonList(_nextHopIp)), false));
-   }
+  @Override
+  public void applyTo(
+      List<Statement> statements,
+      JuniperConfiguration juniperVendorConfiguration,
+      Configuration c,
+      Warnings warnings) {
+    // todo: something with destination-vrf
+    statements.add(new SetNextHop(new IpNextHop(Collections.singletonList(_nextHopIp)), false));
+  }
 
-   public Ip getNextHopIp() {
-      return _nextHopIp;
-   }
-
+  public Ip getNextHopIp() {
+    return _nextHopIp;
+  }
 }

@@ -7,19 +7,16 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class NetworkAclAssociation implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private String _subnetId = null;
+  private String _subnetId = null;
 
-   public NetworkAclAssociation(JSONObject jObj, BatfishLogger logger)
-         throws JSONException {
-      _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
-   }
+  public NetworkAclAssociation(JSONObject jObj, BatfishLogger logger) throws JSONException {
+    _subnetId = jObj.getString(AwsVpcEntity.JSON_KEY_SUBNET_ID);
+  }
 
-   public String getSubnetId() {
-      return _subnetId;
-   }
+  public String getSubnetId() {
+    return _subnetId;
+  }
 }

@@ -3,21 +3,20 @@ package org.batfish.datamodel.assertion;
 import org.batfish.common.BatfishException;
 
 public enum BooleanExprs implements BooleanExpr {
-   FALSE,
-   TRUE;
+  FALSE,
+  TRUE;
 
-   @Override
-   public Boolean evaluate(Environment env) {
-      switch (this) {
+  @Override
+  public Boolean evaluate(Environment env) {
+    switch (this) {
       case FALSE:
-         return false;
+        return false;
 
       case TRUE:
-         return true;
+        return true;
 
       default:
-         throw new BatfishException(
-               "Invalid " + BooleanExprs.class.getSimpleName());
-      }
-   }
+        throw new BatfishException("Invalid " + BooleanExprs.class.getSimpleName());
+    }
+  }
 }

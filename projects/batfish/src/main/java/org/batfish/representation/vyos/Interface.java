@@ -8,18 +8,16 @@ import org.batfish.datamodel.Prefix;
 
 public class Interface extends ComparableStructure<String> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   public static double getDefaultBandwidth(InterfaceType type) {
-      // TODO: update with correct values
-      switch (type) {
+  public static double getDefaultBandwidth(InterfaceType type) {
+    // TODO: update with correct values
+    switch (type) {
       case ETHERNET:
       case LOOPBACK:
       case VTI:
-         return 1E12d;
+        return 1E12d;
 
       case BONDING:
       case BRIDGE:
@@ -33,59 +31,58 @@ public class Interface extends ComparableStructure<String> {
       case WIRELESS:
       case WIRELESSMODEM:
       default:
-         throw new BatfishException("unsupported interface type");
-      }
-   }
+        throw new BatfishException("unsupported interface type");
+    }
+  }
 
-   private final Set<Prefix> _allPrefixes;
+  private final Set<Prefix> _allPrefixes;
 
-   private double _bandwidth;
+  private double _bandwidth;
 
-   private String _description;
+  private String _description;
 
-   private Prefix _prefix;
+  private Prefix _prefix;
 
-   private InterfaceType _type;
+  private InterfaceType _type;
 
-   public Interface(String name) {
-      super(name);
-      _allPrefixes = new TreeSet<>();
-   }
+  public Interface(String name) {
+    super(name);
+    _allPrefixes = new TreeSet<>();
+  }
 
-   public Set<Prefix> getAllPrefixes() {
-      return _allPrefixes;
-   }
+  public Set<Prefix> getAllPrefixes() {
+    return _allPrefixes;
+  }
 
-   public double getBandwidth() {
-      return _bandwidth;
-   }
+  public double getBandwidth() {
+    return _bandwidth;
+  }
 
-   public String getDescription() {
-      return _description;
-   }
+  public String getDescription() {
+    return _description;
+  }
 
-   public Prefix getPrefix() {
-      return _prefix;
-   }
+  public Prefix getPrefix() {
+    return _prefix;
+  }
 
-   public InterfaceType getType() {
-      return _type;
-   }
+  public InterfaceType getType() {
+    return _type;
+  }
 
-   public void setBandwidth(double bandwidth) {
-      _bandwidth = bandwidth;
-   }
+  public void setBandwidth(double bandwidth) {
+    _bandwidth = bandwidth;
+  }
 
-   public void setDescription(String description) {
-      _description = description;
-   }
+  public void setDescription(String description) {
+    _description = description;
+  }
 
-   public void setPrefix(Prefix prefix) {
-      _prefix = prefix;
-   }
+  public void setPrefix(Prefix prefix) {
+    _prefix = prefix;
+  }
 
-   public void setType(InterfaceType type) {
-      _type = type;
-   }
-
+  public void setType(InterfaceType type) {
+    _type = type;
+  }
 }

@@ -1,41 +1,38 @@
 package org.batfish.datamodel.vendor_family.juniper;
 
-import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.Ip;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Ip;
+
 public class TacplusServer extends ComparableStructure<String> {
 
-   private String _secret;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Ip _sourceAddress;
+  private String _secret;
 
-   public Ip getSourceAddress() {
-      return _sourceAddress;
-   }
+  private Ip _sourceAddress;
 
-   @JsonCreator
-   public TacplusServer(@JsonProperty(NAME_VAR) String name) {
-      super(name);
-   }
+  @JsonCreator
+  public TacplusServer(@JsonProperty(NAME_VAR) String name) {
+    super(name);
+  }
 
-   /**
-    * 
-    */
-   private static final long serialVersionUID = 1L;
+  public String getSecret() {
+    return _secret;
+  }
 
-   public void setSecret(String secret) {
-      _secret = secret;
-   }
+  public Ip getSourceAddress() {
+    return _sourceAddress;
+  }
 
-   public String getSecret() {
-      return _secret;
-   }
+  public void setSecret(String secret) {
+    _secret = secret;
+  }
 
-   public void setSourceAddress(Ip sourceAddress) {
-      _sourceAddress = sourceAddress;
-   }
-
+  public void setSourceAddress(Ip sourceAddress) {
+    _sourceAddress = sourceAddress;
+  }
 }

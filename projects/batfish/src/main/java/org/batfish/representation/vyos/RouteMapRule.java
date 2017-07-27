@@ -7,40 +7,37 @@ import org.batfish.datamodel.LineAction;
 
 public class RouteMapRule extends ComparableStructure<Integer> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+  private LineAction _action;
 
-   private String _description;
+  private String _description;
 
-   private final Set<RouteMapMatch> _matches;
+  private final Set<RouteMapMatch> _matches;
 
-   public RouteMapRule(int num) {
-      super(num);
-      _matches = new HashSet<>();
-   }
+  public RouteMapRule(int num) {
+    super(num);
+    _matches = new HashSet<>();
+  }
 
-   public LineAction getAction() {
-      return _action;
-   }
+  public LineAction getAction() {
+    return _action;
+  }
 
-   public String getDescription() {
-      return _description;
-   }
+  public String getDescription() {
+    return _description;
+  }
 
-   public Set<RouteMapMatch> getMatches() {
-      return _matches;
-   }
+  public Set<RouteMapMatch> getMatches() {
+    return _matches;
+  }
 
-   public void setAction(LineAction action) {
-      _action = action;
-   }
+  public void setAction(LineAction action) {
+    _action = action;
+  }
 
-   public void setDescription(String description) {
-      _description = description;
-   }
-
+  public void setDescription(String description) {
+    _description = description;
+  }
 }

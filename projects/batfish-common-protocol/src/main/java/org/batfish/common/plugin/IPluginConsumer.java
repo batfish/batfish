@@ -4,6 +4,5 @@ import org.batfish.common.BatfishLogger;
 
 public interface IPluginConsumer {
 
-   BatfishLogger getLogger();
-
+  BatfishLogger getLogger();
 }

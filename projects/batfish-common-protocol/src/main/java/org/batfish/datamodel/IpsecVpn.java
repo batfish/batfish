@@ -11,213 +11,204 @@ import org.batfish.common.util.ComparableStructure;
 
 public final class IpsecVpn extends ComparableStructure<String> {
 
-   private static final String BIND_INTERFACE_VAR = "bindInterface";
+  private static final String BIND_INTERFACE_VAR = "bindInterface";
 
-   private static final String IKE_GATEWAY_VAR = "ikeGateway";
+  private static final String IKE_GATEWAY_VAR = "ikeGateway";
 
-   private static final String IPSEC_POLICY_VAR = "ipsecPolicy";
+  private static final String IPSEC_POLICY_VAR = "ipsecPolicy";
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Interface _bindInterface;
+  private Interface _bindInterface;
 
-   private transient String _bindInterfaceName;
+  private transient String _bindInterfaceName;
 
-   private transient Set<IpsecVpn> _candidateRemoteIpsecVpns;
+  private transient Set<IpsecVpn> _candidateRemoteIpsecVpns;
 
-   private IkeGateway _ikeGateway;
+  private IkeGateway _ikeGateway;
 
-   private transient String _ikeGatewayName;
+  private transient String _ikeGatewayName;
 
-   private IpsecPolicy _ipsecPolicy;
+  private IpsecPolicy _ipsecPolicy;
 
-   private transient String _ipsecPolicyName;
+  private transient String _ipsecPolicyName;
 
-   private Configuration _owner;
+  private Configuration _owner;
 
-   private transient IpsecVpn _remoteIpsecVpn;
+  private transient IpsecVpn _remoteIpsecVpn;
 
-   @JsonCreator
-   public IpsecVpn(@JsonProperty(NAME_VAR) String name) {
-      super(name);
-   }
+  @JsonCreator
+  public IpsecVpn(@JsonProperty(NAME_VAR) String name) {
+    super(name);
+  }
 
-   public IpsecVpn(String name, Configuration owner) {
-      super(name);
-      _owner = owner;
-   }
+  public IpsecVpn(String name, Configuration owner) {
+    super(name);
+    _owner = owner;
+  }
 
-   public Boolean compatibleIkeProposals(IpsecVpn remoteIpsecVpn) {
-      IkeProposal activeIkeProposal = getActiveIkeProposal(remoteIpsecVpn);
-      return activeIkeProposal != null;
-   }
+  public Boolean compatibleIkeProposals(IpsecVpn remoteIpsecVpn) {
+    IkeProposal activeIkeProposal = getActiveIkeProposal(remoteIpsecVpn);
+    return activeIkeProposal != null;
+  }
 
-   public Boolean compatibleIpsecProposals(IpsecVpn remoteIpsecVpn) {
-      // handle dynamic pfs key group
-      if (_ipsecPolicy.getPfsKeyGroupDynamicIke()) {
-         IkeProposal activeProposal = getActiveIkeProposal(remoteIpsecVpn);
-         if (activeProposal == null) {
-            return false;
-         }
-         if (!remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroupDynamicIke()) {
-            // remote vpn uses static pfs key group.
-            if (!activeProposal.getDiffieHellmanGroup()
-                  .equals(remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup())) {
-               return false;
-            }
-         }
-         // else remote vpn also uses dynamic pfs key group. They must agree as
-         // long as a compatible proposal is selected, which has already
-         // happened.
+  public Boolean compatibleIpsecProposals(IpsecVpn remoteIpsecVpn) {
+    // handle dynamic pfs key group
+    if (_ipsecPolicy.getPfsKeyGroupDynamicIke()) {
+      IkeProposal activeProposal = getActiveIkeProposal(remoteIpsecVpn);
+      if (activeProposal == null) {
+        return false;
       }
-      else if (_ipsecPolicy.getPfsKeyGroup() != remoteIpsecVpn.getIpsecPolicy()
-            .getPfsKeyGroup()) {
-         return false;
+      if (!remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroupDynamicIke()) {
+        // remote vpn uses static pfs key group.
+        if (!activeProposal
+            .getDiffieHellmanGroup()
+            .equals(remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup())) {
+          return false;
+        }
       }
-      for (IpsecProposal lhs : _ipsecPolicy.getProposals().values()) {
-         for (IpsecProposal rhs : remoteIpsecVpn.getIpsecPolicy().getProposals()
-               .values()) {
-            if (lhs.compatibleWith(rhs)) {
-               return true;
-            }
-         }
-      }
+      // else remote vpn also uses dynamic pfs key group. They must agree as
+      // long as a compatible proposal is selected, which has already
+      // happened.
+    } else if (_ipsecPolicy.getPfsKeyGroup() != remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup()) {
       return false;
-   }
-
-   @JsonIgnore
-   private IkeProposal getActiveIkeProposal(IpsecVpn remoteIpsecVpn) {
-      for (IkeProposal lhs : _ikeGateway.getIkePolicy().getProposals()
-            .values()) {
-         for (IkeProposal rhs : remoteIpsecVpn.getIkeGateway().getIkePolicy()
-               .getProposals().values()) {
-            if (lhs.compatibleWith(rhs)) {
-               return lhs;
-            }
-         }
+    }
+    for (IpsecProposal lhs : _ipsecPolicy.getProposals().values()) {
+      for (IpsecProposal rhs : remoteIpsecVpn.getIpsecPolicy().getProposals().values()) {
+        if (lhs.compatibleWith(rhs)) {
+          return true;
+        }
       }
-      return null;
-   }
+    }
+    return false;
+  }
 
-   @JsonIgnore
-   public Interface getBindInterface() {
-      return _bindInterface;
-   }
-
-   @JsonProperty(BIND_INTERFACE_VAR)
-   @JsonPropertyDescription("Tunnel interface on which the VPN will be bound")
-   public String getBindInterfaceName() {
-      if (_bindInterface != null) {
-         return _bindInterface.getName();
+  @JsonIgnore
+  private IkeProposal getActiveIkeProposal(IpsecVpn remoteIpsecVpn) {
+    for (IkeProposal lhs : _ikeGateway.getIkePolicy().getProposals().values()) {
+      for (IkeProposal rhs :
+          remoteIpsecVpn.getIkeGateway().getIkePolicy().getProposals().values()) {
+        if (lhs.compatibleWith(rhs)) {
+          return lhs;
+        }
       }
-      else {
-         return _bindInterfaceName;
-      }
-   }
+    }
+    return null;
+  }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   public Set<IpsecVpn> getCandidateRemoteIpsecVpns() {
-      return _candidateRemoteIpsecVpns;
-   }
+  @JsonIgnore
+  public Interface getBindInterface() {
+    return _bindInterface;
+  }
 
-   @JsonIgnore
-   public IkeGateway getIkeGateway() {
-      return _ikeGateway;
-   }
+  @JsonProperty(BIND_INTERFACE_VAR)
+  @JsonPropertyDescription("Tunnel interface on which the VPN will be bound")
+  public String getBindInterfaceName() {
+    if (_bindInterface != null) {
+      return _bindInterface.getName();
+    } else {
+      return _bindInterfaceName;
+    }
+  }
 
-   @JsonProperty(IKE_GATEWAY_VAR)
-   @JsonPropertyDescription("Remote VPN gateway configuration")
-   public String getIkeGatewayName() {
-      if (_ikeGateway != null) {
-         return _ikeGateway.getName();
-      }
-      else {
-         return _ikeGatewayName;
-      }
-   }
+  @JsonIdentityReference(alwaysAsId = true)
+  public Set<IpsecVpn> getCandidateRemoteIpsecVpns() {
+    return _candidateRemoteIpsecVpns;
+  }
 
-   @JsonIgnore
-   public IpsecPolicy getIpsecPolicy() {
-      return _ipsecPolicy;
-   }
+  @JsonIgnore
+  public IkeGateway getIkeGateway() {
+    return _ikeGateway;
+  }
 
-   @JsonProperty(IPSEC_POLICY_VAR)
-   @JsonPropertyDescription("IPSEC policy for this VPN")
-   public String getIpsecPolicyName() {
-      if (_ipsecPolicy != null) {
-         return _ipsecPolicy.getName();
-      }
-      else {
-         return _ipsecPolicyName;
-      }
-   }
+  @JsonProperty(IKE_GATEWAY_VAR)
+  @JsonPropertyDescription("Remote VPN gateway configuration")
+  public String getIkeGatewayName() {
+    if (_ikeGateway != null) {
+      return _ikeGateway.getName();
+    } else {
+      return _ikeGatewayName;
+    }
+  }
 
-   @JsonIgnore
-   public Configuration getOwner() {
-      return _owner;
-   }
+  @JsonIgnore
+  public IpsecPolicy getIpsecPolicy() {
+    return _ipsecPolicy;
+  }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   public IpsecVpn getRemoteIpsecVpn() {
-      return _remoteIpsecVpn;
-   }
+  @JsonProperty(IPSEC_POLICY_VAR)
+  @JsonPropertyDescription("IPSEC policy for this VPN")
+  public String getIpsecPolicyName() {
+    if (_ipsecPolicy != null) {
+      return _ipsecPolicy.getName();
+    } else {
+      return _ipsecPolicyName;
+    }
+  }
 
-   public void initCandidateRemoteVpns() {
-      _candidateRemoteIpsecVpns = new TreeSet<>();
-   }
+  @JsonIgnore
+  public Configuration getOwner() {
+    return _owner;
+  }
 
-   public void resolveReferences(Configuration owner) {
-      _owner = owner;
-      if (_bindInterfaceName != null) {
-         _bindInterface = owner.getInterfaces().get(_bindInterfaceName);
-      }
-      if (_ikeGatewayName != null) {
-         _ikeGateway = owner.getIkeGateways().get(_ikeGatewayName);
-      }
-      if (_ipsecPolicyName != null) {
-         _ipsecPolicy = owner.getIpsecPolicies().get(_ipsecPolicyName);
-      }
-   }
+  @JsonIdentityReference(alwaysAsId = true)
+  public IpsecVpn getRemoteIpsecVpn() {
+    return _remoteIpsecVpn;
+  }
 
-   @JsonIgnore
-   public void setBindInterface(Interface bindInterface) {
-      _bindInterface = bindInterface;
-   }
+  public void initCandidateRemoteVpns() {
+    _candidateRemoteIpsecVpns = new TreeSet<>();
+  }
 
-   @JsonProperty(BIND_INTERFACE_VAR)
-   public void setBindInterfaceName(String bindInterfaceName) {
-      _bindInterfaceName = bindInterfaceName;
-   }
+  public void resolveReferences(Configuration owner) {
+    _owner = owner;
+    if (_bindInterfaceName != null) {
+      _bindInterface = owner.getInterfaces().get(_bindInterfaceName);
+    }
+    if (_ikeGatewayName != null) {
+      _ikeGateway = owner.getIkeGateways().get(_ikeGatewayName);
+    }
+    if (_ipsecPolicyName != null) {
+      _ipsecPolicy = owner.getIpsecPolicies().get(_ipsecPolicyName);
+    }
+  }
 
-   @JsonIgnore
-   public void setIkeGateway(IkeGateway ikeGateway) {
-      _ikeGateway = ikeGateway;
-   }
+  @JsonIgnore
+  public void setBindInterface(Interface bindInterface) {
+    _bindInterface = bindInterface;
+  }
 
-   @JsonProperty(IKE_GATEWAY_VAR)
-   public void setIkeGatewayName(String ikeGatewayName) {
-      _ikeGatewayName = ikeGatewayName;
-   }
+  @JsonProperty(BIND_INTERFACE_VAR)
+  public void setBindInterfaceName(String bindInterfaceName) {
+    _bindInterfaceName = bindInterfaceName;
+  }
 
-   @JsonIgnore
-   public void setIpsecPolicy(IpsecPolicy ipsecPolicy) {
-      _ipsecPolicy = ipsecPolicy;
-   }
+  @JsonIgnore
+  public void setIkeGateway(IkeGateway ikeGateway) {
+    _ikeGateway = ikeGateway;
+  }
 
-   @JsonProperty(IPSEC_POLICY_VAR)
-   public void setIpsecPolicyName(String ipsecPolicyName) {
-      _ipsecPolicyName = ipsecPolicyName;
-   }
+  @JsonProperty(IKE_GATEWAY_VAR)
+  public void setIkeGatewayName(String ikeGatewayName) {
+    _ikeGatewayName = ikeGatewayName;
+  }
 
-   public void setOwner(Configuration owner) {
-      _owner = owner;
-   }
+  @JsonIgnore
+  public void setIpsecPolicy(IpsecPolicy ipsecPolicy) {
+    _ipsecPolicy = ipsecPolicy;
+  }
 
-   public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {
-      _remoteIpsecVpn = remoteIpsecVpn;
-   }
+  @JsonProperty(IPSEC_POLICY_VAR)
+  public void setIpsecPolicyName(String ipsecPolicyName) {
+    _ipsecPolicyName = ipsecPolicyName;
+  }
 
+  public void setOwner(Configuration owner) {
+    _owner = owner;
+  }
+
+  public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {
+    _remoteIpsecVpn = remoteIpsecVpn;
+  }
 }

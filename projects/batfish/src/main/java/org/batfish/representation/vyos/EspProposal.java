@@ -5,33 +5,30 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 
 public class EspProposal extends ComparableStructure<Integer> {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private EncryptionAlgorithm _encryptionAlgorithm;
+  private EncryptionAlgorithm _encryptionAlgorithm;
 
-   private HashAlgorithm _hashAlgorithm;
+  private HashAlgorithm _hashAlgorithm;
 
-   public EspProposal(Integer name) {
-      super(name);
-   }
+  public EspProposal(Integer name) {
+    super(name);
+  }
 
-   public EncryptionAlgorithm getEncryptionAlgorithm() {
-      return _encryptionAlgorithm;
-   }
+  public EncryptionAlgorithm getEncryptionAlgorithm() {
+    return _encryptionAlgorithm;
+  }
 
-   public HashAlgorithm getHashAlgorithm() {
-      return _hashAlgorithm;
-   }
+  public HashAlgorithm getHashAlgorithm() {
+    return _hashAlgorithm;
+  }
 
-   public void setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
-      _encryptionAlgorithm = encryptionAlgorithm;
-   }
+  public void setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
+    _encryptionAlgorithm = encryptionAlgorithm;
+  }
 
-   public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
-      _hashAlgorithm = hashAlgorithm;
-   }
-
+  public void setHashAlgorithm(HashAlgorithm hashAlgorithm) {
+    _hashAlgorithm = hashAlgorithm;
+  }
 }

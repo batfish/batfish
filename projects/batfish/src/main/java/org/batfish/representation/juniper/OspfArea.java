@@ -5,19 +5,16 @@ import org.batfish.datamodel.Ip;
 
 public class OspfArea implements Serializable {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+  /** */
+  private static final long serialVersionUID = 1L;
 
-   private Ip _areaIp;
+  private Ip _areaIp;
 
-   public OspfArea(Ip areaIp) {
-      _areaIp = areaIp;
-   }
+  public OspfArea(Ip areaIp) {
+    _areaIp = areaIp;
+  }
 
-   public Ip getAreaIp() {
-      return _areaIp;
-   }
-
+  public Ip getAreaIp() {
+    return _areaIp;
+  }
 }
