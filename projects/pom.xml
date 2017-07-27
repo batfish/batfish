@@ -97,6 +97,7 @@
             <failOnViolation>true</failOnViolation>
             <includeResources>false</includeResources>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            <violationSeverity>warning</violationSeverity>
           </configuration>
         </plugin>
 
