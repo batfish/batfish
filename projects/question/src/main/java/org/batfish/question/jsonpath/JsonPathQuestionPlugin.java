@@ -188,7 +188,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answerDiff() {
+    public JsonPathDiffAnswerElement answerDiff() {
       _batfish.pushBaseEnvironment();
       _batfish.checkEnvironmentExists();
       _batfish.popEnvironment();
@@ -360,12 +360,12 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
   }
 
   @Override
-  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+  protected JsonPathAnswerer createAnswerer(Question question, IBatfish batfish) {
     return new JsonPathAnswerer(question, batfish);
   }
 
   @Override
-  protected Question createQuestion() {
+  protected JsonPathQuestion createQuestion() {
     return new JsonPathQuestion();
   }
 }

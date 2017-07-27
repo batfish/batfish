@@ -112,7 +112,8 @@ public class JsonPathTest {
   public void testPath1() {
     JsonPath jsonPath =
         JsonPath.compile(
-            "$.nodes[*][?(@.interfaces['Management1'].prefix)].vendorFamily.cisco.logging[?(@.sourceInterface!='Management1')]");
+            "$.nodes[*][?(@.interfaces['Management1'].prefix)].vendorFamily.cisco.logging"
+                + "[?(@.sourceInterface!='Management1')]");
     assertThat(jsonPath, not(equalTo(nullValue())));
   }
 
@@ -120,7 +121,8 @@ public class JsonPathTest {
   public void testPath2() {
     JsonPath jsonPath =
         JsonPath.compile(
-            "$.nodes[*][?(@.interfaces['Management1'].prefix)].vendorFamily.cisco.ntp.servers[*][?(@.vrf!='mgmt')]");
+            "$.nodes[*][?(@.interfaces['Management1'].prefix)].vendorFamily.cisco.ntp.servers[*]"
+                + "[?(@.vrf!='mgmt')]");
     assertThat(jsonPath, not(equalTo(nullValue())));
   }
 
