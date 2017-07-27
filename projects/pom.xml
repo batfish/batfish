@@ -183,7 +183,7 @@
               <file>${basedir}/lib/jsonpath/json-path-${jsonpath.version}.jar</file>
               <sources>${basedir}/lib/jsonpath/json-path-${jsonpath.version}-sources.jar</sources>
             </configuration>
-         </execution>
+          </execution>
           <!-- Batfish includes a custom version of jackson-jsonschema with some unaccepted bugfixes. -->
           <execution>
             <phase>initialize</phase>
