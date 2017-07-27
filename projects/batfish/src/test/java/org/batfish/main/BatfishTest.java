@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
@@ -21,11 +22,13 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -79,6 +82,62 @@ public class BatfishTest {
   }
 
   @Test
+  public void testParseTopologyBadJson() throws IOException {
+    //missing node2interface
+    String topologyBadJson =
+          "[" +
+                "{ " +
+                "\"node1\" : \"as1border1\"," +
+                "\"node1interface\" : \"GigabitEthernet0/0\"," +
+                "\"node2\" : \"as1core1\"," +
+                "}," +
+                "]";
+
+    Path topologyFilePath = CommonUtil
+          .createTempFileWithContent("testParseTopologyJson", topologyBadJson);
+    Batfish batfish = initBatfish();
+    String errorMessage = "Topology format error";
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(errorMessage);
+    batfish.parseTopology(topologyFilePath);
+  }
+
+  @Test
+  public void testParseTopologyEmpty() throws IOException {
+    String topologyEmpty = "";
+    Path topologyFilePath = CommonUtil
+          .createTempFileWithContent("testParseTopologyJson", topologyEmpty);
+    Batfish batfish = initBatfish();
+    String errorMessage = "ERROR: empty topology\n";
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(errorMessage);
+    batfish.parseTopology(topologyFilePath);
+  }
+
+  @Test
+  public void testParseTopologyJson() throws IOException {
+    String topologyJson = 
+    "[" + 
+     "{ " +
+       "\"node1\" : \"as1border1\"," +
+       "\"node1interface\" : \"GigabitEthernet0/0\"," +
+       "\"node2\" : \"as1core1\"," +
+       "\"node2interface\" : \"GigabitEthernet1/0\"" +
+     "}," +
+     "{" +
+      "\"node1\" : \"as1border1\"," +
+      "\"node1interface\" : \"GigabitEthernet1/0\"," +
+      "\"node2\" : \"as2border1\"," +
+      "\"node2interface\" : \"GigabitEthernet0/0\"" +
+     "}" +
+    "]";
+
+    Path topologyFilePath = CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Batfish batfish = initBatfish();
+    Topology topology = batfish.parseTopology(topologyFilePath);
+    assertEquals(topology.getEdges().size(), 2);
+  }
+
   public void testReadMissingIptableFile() throws IOException {
     HostConfiguration host1 = new HostConfiguration();
     host1.setHostname("host1");
