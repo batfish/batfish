@@ -78,7 +78,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -95,7 +95,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -cp \$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishCoordinatorPropertiesPath=$COORDINATOR_PROPERTIES -cp \$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'
 WorkingDirectory=$BATFISH_HOME
 PIDFile=$BATFISH_RUN_DIR/coordinator.pid
 Restart=always
@@ -111,7 +111,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/bin/bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'" $BATFISH_USER
 EOF
 
    cat > $COORDINATOR_INIT_P <<EOF
@@ -124,7 +124,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/bin/bash -c '/usr/bin/java -cp \$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -DbatfishCoordinatorPropertiesPath=$COORDINATOR_PROPERTIES -cp \$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'" $BATFISH_USER
 EOF
    echo $BATFISH_INIT >> $CONFFILES_FILE
    echo $COORDINATOR_INIT >> $CONFFILES_FILE
