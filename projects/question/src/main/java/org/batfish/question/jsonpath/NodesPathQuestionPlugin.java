@@ -10,7 +10,6 @@ import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,8 +64,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     @Override
     public NodesPathAnswerElement answer() {
 
+      Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
       ConfigurationBuilder b = new ConfigurationBuilder();
-      b.jsonProvider(new JacksonJsonNodeJsonProvider());
       final Configuration c = b.build();
 
       NodesPathQuestion question = (NodesPathQuestion) _question;
