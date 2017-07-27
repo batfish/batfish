@@ -54,3 +54,6 @@ test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dstIp="1.
 test tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests
 test tests/basic/nodes-unit-tests.ref get nodes summary=false
 
+# router + iptables
+test tests/basic/router-iptables-init.ref init-testrig test_rigs/router-iptables
+test tests/basic/router-iptables-nodes.ref get nodes summary=false

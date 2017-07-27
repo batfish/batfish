@@ -1236,17 +1236,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             namesByPath.size());
     namesByPath.forEach(
         (inputPath, name) -> {
-          logger.debug(
-              "Reading and gunzipping: "
-                  + outputClassName
-                  + " '"
-                  + name
-                  + "' from '"
-                  + inputPath
-                  + "'");
-          byte[] data = fromGzipFile(inputPath);
-          logger.debug(" ...OK\n");
-          dataByName.put(name, data);
+          if (!Files.isDirectory(inputPath)) {
+            logger.debug(
+                "Reading and gunzipping: "
+                    + outputClassName
+                    + " '"
+                    + name
+                    + "' from '"
+                    + inputPath.toString()
+                    + "'");
+            byte[] data = fromGzipFile(inputPath);
+            logger.debug(" ...OK\n");
+            dataByName.put(name, data);
+          }
           readCompleted.incrementAndGet();
         });
     Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
@@ -1705,8 +1707,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path serializedVendorConfigPath, ConvertConfigurationAnswerElement answerElement) {
     Map<String, GenericConfigObject> vendorConfigurations =
         deserializeVendorConfigurations(serializedVendorConfigPath);
+    Map<String, GenericConfigObject> hostVendorConfigurations =
+        deserializeVendorConfigurations(
+            serializedVendorConfigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, answerElement);
+    Map<String, Configuration> hostConfigurations =
+        convertConfigurations(hostVendorConfigurations, answerElement);
+
+    mergeConfigurations(configurations, hostConfigurations);
     postProcessConfigurations(configurations.values());
     return configurations;
   }
@@ -3169,6 +3178,97 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
+  // this is a hack to deal with router names that are named ethX
+  private boolean normalInterfaceCompare(String if1, String if2) {
+    if (if1 == null || if2 == null) {
+      return true;
+    }
+
+    if (if2.startsWith("eth")) {
+      if2 = "Ethernet" + if2.substring(3);
+    }
+
+    return if1.equals(if2);
+  }
+
+  private void mergeConfigurations(Map<String, Configuration> configurations,
+      Map<String, Configuration> hostConfigurations) {
+    for (Entry<String, Configuration> e : hostConfigurations.entrySet()) {
+      Configuration hc = e.getValue();
+      Configuration c = configurations.get(e.getKey());
+      if (c == null) {
+        // no merge required
+        configurations.put(e.getKey(), hc);
+      } else {
+        // merge the host configuration with the router configuration
+
+        // mangle::PREROUTING is input
+        // mangle::POSTROUTING is output
+
+        // create an ACL for each iface, apply unspecified to all, and specific to each iface
+        IpAccessList prerouting = hc.getIpAccessLists().remove("mangle::PREROUTING");
+        IpAccessList postrouting = hc.getIpAccessLists().remove("mangle::POSTROUTING");
+
+        if (!hc.getIpAccessLists().isEmpty()) {
+          throw new BatfishException("Merging iptables rules for " + hc.getName()
+              + ": only mangle tables are supported");
+        }
+
+        if (prerouting != null) {
+          for (Interface i: c.getInterfaces().values()) {
+
+            String dbgName = c.getHostname() + ":" + i.getName();
+
+            List<IpAccessListLine> newRules = prerouting.getLines().stream()
+                .filter(l -> normalInterfaceCompare(l.getInInterfaceName(), i.getName()))
+                .collect(Collectors.toList());
+
+            // TODO: ipv6
+
+            if (i.getIncomingFilter() != null) {
+              throw new BatfishException(dbgName + " already has a filter,"
+                  + " cannot combine with iptables rules!");
+            }
+
+            String aclName = "iptables_" + i.getName() + "_ingress";
+            IpAccessList acl = new IpAccessList(aclName, newRules);
+            if (c.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
+              throw new BatfishException(dbgName + " acl " + aclName + " already exists");
+            }
+
+            i.setIncomingFilter(acl);
+          }
+        }
+
+        if (postrouting != null) {
+          for (Interface i: c.getInterfaces().values()) {
+
+            String dbgName = c.getHostname() + ":" + i.getName();
+
+            List<IpAccessListLine> newRules = postrouting.getLines().stream()
+                .filter(l -> normalInterfaceCompare(l.getOutInterfaceName(), i.getName()))
+                .collect(Collectors.toList());
+
+            // TODO: ipv6
+
+            if (i.getOutgoingFilter() != null) {
+              throw new BatfishException(dbgName + " already has a filter,"
+                  + " cannot combine with iptables rules!");
+            }
+
+            String aclName = "iptables_" + i.getName() + "_egress";
+            IpAccessList acl = new IpAccessList(aclName, newRules);
+            if (c.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
+              throw new BatfishException(dbgName + " acl " + aclName +  " already exists");
+            }
+
+            i.setOutgoingFilter(acl);
+          }
+        }
+      }
+    }
+  }
+
   private void postProcessConfigurations(Collection<Configuration> configurations) {
     // ComputeOSPF interface costs where they are missing
     for (Configuration c : configurations) {
@@ -4003,12 +4103,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     // now, serialize
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     resetTimer();
-    CommonUtil.createDirectories(outputPath);
+    Path hostsOutputPath = outputPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
+    CommonUtil.createDirectories(hostsOutputPath);
 
     Map<Path, VendorConfiguration> output = new TreeMap<>();
     hostConfigurations.forEach(
         (name, vc) -> {
-          Path currentOutputPath = outputPath.resolve(name);
+          Path currentOutputPath = hostsOutputPath.resolve(name);
           output.put(currentOutputPath, vc);
         });
     serializeObjects(output);

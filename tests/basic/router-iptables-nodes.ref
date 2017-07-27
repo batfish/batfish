@@ -1,0 +1,107 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
+      "nodes" : {
+        "host1" : {
+          "name" : "host1",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.128.0.1/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "incomingFilter" : "iptables_Ethernet0_ingress",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 0,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.128.0.1/24",
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "ipAccessLists" : {
+            "iptables_Ethernet0_ingress" : {
+              "name" : "iptables_Ethernet0_ingress",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstPorts" : [
+                    "53-53"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "negate" : false
+                },
+                {
+                  "action" : "REJECT",
+                  "negate" : false
+                }
+              ]
+            }
+          },
+          "roles" : [
+            "host"
+          ],
+          "routingPolicies" : {
+            "~OSPF_EXPORT_POLICY:default~" : {
+              "name" : "~OSPF_EXPORT_POLICY:default~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "host1"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0"
+              ],
+              "ospfProcess" : {
+                "areas" : {
+                  "0" : {
+                    "name" : 0,
+                    "interfaces" : [
+                      "Ethernet0"
+                    ]
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "2.128.0.1"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
+    "summary" : false
+  },
+  "status" : "SUCCESS"
+}

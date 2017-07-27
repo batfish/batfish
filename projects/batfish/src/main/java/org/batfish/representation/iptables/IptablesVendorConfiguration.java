@@ -92,11 +92,12 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             List<SubRange> dstPortRanges = match.toPortRanges();
             aclLine.getDstPorts().addAll(dstPortRanges);
             break;
-            // case IN_INTERFACE:
-            // case OUT_INTERFACE:
-            // _warnings.unimplemented("Matching on incoming and outgoing
-            // interface not supported");
-            // break;
+          case IN_INTERFACE:
+            aclLine.setInInterfaceName(match.toInterfaceName());
+            break;
+          case OUT_INTERFACE:
+            aclLine.setOutInterfaceName(match.toInterfaceName());
+            break;
           case PROTOCOL:
             aclLine.getIpProtocols().add(match.toIpProtocol());
             break;
@@ -108,8 +109,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             List<SubRange> srcPortRanges = match.toPortRanges();
             aclLine.getSrcPorts().addAll(srcPortRanges);
             break;
-          case IN_INTERFACE:
-          case OUT_INTERFACE:
           default:
             throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
