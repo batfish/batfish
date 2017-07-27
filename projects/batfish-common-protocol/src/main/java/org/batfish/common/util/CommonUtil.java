@@ -2,9 +2,11 @@ package org.batfish.common.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -313,6 +315,19 @@ public class CommonUtil {
     }
   }
 
+  public static Path createTempFileWithContent(String prefix, String content) throws IOException {
+    Path tempFilePath = Files.createTempFile(prefix, null);
+
+    File tempFile = tempFilePath.toFile();
+    tempFile.deleteOnExit();
+
+    FileWriter writer = new FileWriter(tempFile);
+    writer.write(content);
+    writer.close();
+
+    return tempFilePath;
+  }
+
   public static void delete(Path path) {
     try {
       Files.delete(path);
@@ -598,18 +613,19 @@ public class CommonUtil {
     return text;
   }
 
-  public static synchronized String salt() {
-    if (SALT != null) {
-      return SALT;
-    }
+  public static String readResource(String resourcePath) {
     try (InputStream is =
-        Thread.currentThread()
-            .getContextClassLoader()
-            .getResourceAsStream(BfConsts.ABSPATH_DEFAULT_SALT)) {
-      SALT = IOUtils.toString(is);
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+      String output = IOUtils.toString(is);
+      return output;
     } catch (IOException e) {
-      throw new BatfishException(
-          "Could not open resource: '" + BfConsts.ABSPATH_DEFAULT_SALT + "'", e);
+      throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);
+    }
+  }
+
+  public static synchronized String salt() {
+    if (SALT == null) {
+      SALT = readResource(BfConsts.ABSPATH_DEFAULT_SALT);
     }
     return SALT;
   }

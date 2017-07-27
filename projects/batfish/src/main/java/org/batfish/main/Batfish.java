@@ -143,8 +143,6 @@ import org.batfish.grammar.assertion.AssertionExtractor;
 import org.batfish.grammar.assertion.AssertionParser.AssertionContext;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
-import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
-import org.batfish.grammar.topology.BatfishTopologyExtractor;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
 import org.batfish.grammar.topology.GNS3TopologyExtractor;
 import org.batfish.grammar.topology.TopologyExtractor;
@@ -2978,29 +2976,32 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
-  private Topology parseTopology(Path topologyFilePath) {
+  public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    BatfishCombinedParser<?, ?> parser = null;
-    TopologyExtractor extractor = null;
     _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath().toString() + "\" ...");
-    if (topologyFileText.startsWith("autostart")) {
+    Topology topology = null;
+    if (topologyFileText.equals("")) {
+      throw new BatfishException("ERROR: empty topology\n");
+    } else if (topologyFileText.startsWith("autostart")) {
+      BatfishCombinedParser<?, ?> parser = null;
+      TopologyExtractor extractor = null;
       parser = new GNS3TopologyCombinedParser(topologyFileText, _settings);
       extractor = new GNS3TopologyExtractor();
-    } else if (topologyFileText.startsWith(BatfishTopologyCombinedParser.HEADER)) {
-      parser = new BatfishTopologyCombinedParser(topologyFileText, _settings);
-      extractor = new BatfishTopologyExtractor();
-    } else if (topologyFileText.equals("")) {
-      throw new BatfishException("ERROR: empty topology\n");
+      ParserRuleContext tree = parse(parser);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(extractor, tree);
+      topology = extractor.getTopology();
     } else {
-      _logger.fatal("...ERROR\n");
-      throw new BatfishException("Topology format error");
+      try {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        topology = mapper.readValue(topologyFileText, Topology.class);
+      } catch (IOException e) {
+        _logger.fatal("...ERROR\n");
+        throw new BatfishException("Topology format error", e);
+      }
     }
-    ParserRuleContext tree = parse(parser);
-    ParseTreeWalker walker = new ParseTreeWalker();
-    walker.walk(extractor, tree);
-    Topology topology = extractor.getTopology();
     printElapsedTime();
     return topology;
   }
@@ -3779,11 +3780,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
     }
 
-    if (_settings.getSynthesizeTopology()) {
-      writeSynthesizedTopology();
-      return answer;
-    }
-
     if (_settings.getSynthesizeJsonTopology()) {
       writeJsonTopology();
       return answer;
@@ -4426,23 +4422,5 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
-  }
-
-  private void writeSynthesizedTopology() {
-    Map<String, Configuration> configs = loadConfigurations();
-    EdgeSet edges = synthesizeTopology(configs).getEdges();
-    _logger.output(BatfishTopologyCombinedParser.HEADER + "\n");
-    for (Edge edge : edges) {
-      _logger.output(
-          edge.getNode1()
-              + ":"
-              + edge.getInt1()
-              + ","
-              + edge.getNode2()
-              + ":"
-              + edge.getInt2()
-              + "\n");
-    }
-    printElapsedTime();
   }
 }
