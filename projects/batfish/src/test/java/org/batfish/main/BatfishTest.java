@@ -85,16 +85,16 @@ public class BatfishTest {
   public void testParseTopologyBadJson() throws IOException {
     //missing node2interface
     String topologyBadJson =
-          "[" +
-                "{ " +
-                "\"node1\" : \"as1border1\"," +
-                "\"node1interface\" : \"GigabitEthernet0/0\"," +
-                "\"node2\" : \"as1core1\"," +
-                "}," +
-                "]";
+        "["
+            + "{ "
+            + "\"node1\" : \"as1border1\","
+            + "\"node1interface\" : \"GigabitEthernet0/0\","
+            + "\"node2\" : \"as1core1\","
+            + "},"
+            + "]";
 
-    Path topologyFilePath = CommonUtil
-          .createTempFileWithContent("testParseTopologyJson", topologyBadJson);
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyBadJson);
     Batfish batfish = initBatfish();
     String errorMessage = "Topology format error";
     _thrown.expect(BatfishException.class);
@@ -105,8 +105,8 @@ public class BatfishTest {
   @Test
   public void testParseTopologyEmpty() throws IOException {
     String topologyEmpty = "";
-    Path topologyFilePath = CommonUtil
-          .createTempFileWithContent("testParseTopologyJson", topologyEmpty);
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyEmpty);
     Batfish batfish = initBatfish();
     String errorMessage = "ERROR: empty topology\n";
     _thrown.expect(BatfishException.class);
@@ -116,23 +116,24 @@ public class BatfishTest {
 
   @Test
   public void testParseTopologyJson() throws IOException {
-    String topologyJson = 
-    "[" + 
-     "{ " +
-       "\"node1\" : \"as1border1\"," +
-       "\"node1interface\" : \"GigabitEthernet0/0\"," +
-       "\"node2\" : \"as1core1\"," +
-       "\"node2interface\" : \"GigabitEthernet1/0\"" +
-     "}," +
-     "{" +
-      "\"node1\" : \"as1border1\"," +
-      "\"node1interface\" : \"GigabitEthernet1/0\"," +
-      "\"node2\" : \"as2border1\"," +
-      "\"node2interface\" : \"GigabitEthernet0/0\"" +
-     "}" +
-    "]";
+    String topologyJson =
+        "["
+            + "{ "
+            + "\"node1\" : \"as1border1\","
+            + "\"node1interface\" : \"GigabitEthernet0/0\","
+            + "\"node2\" : \"as1core1\","
+            + "\"node2interface\" : \"GigabitEthernet1/0\""
+            + "},"
+            + "{"
+            + "\"node1\" : \"as1border1\","
+            + "\"node1interface\" : \"GigabitEthernet1/0\","
+            + "\"node2\" : \"as2border1\","
+            + "\"node2interface\" : \"GigabitEthernet0/0\""
+            + "}"
+            + "]";
 
-    Path topologyFilePath = CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
     Batfish batfish = initBatfish();
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);

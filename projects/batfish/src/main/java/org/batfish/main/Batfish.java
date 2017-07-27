@@ -2984,8 +2984,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Topology topology = null;
     if (topologyFileText.equals("")) {
       throw new BatfishException("ERROR: empty topology\n");
-    }
-    else if (topologyFileText.startsWith("autostart")) {
+    } else if (topologyFileText.startsWith("autostart")) {
       BatfishCombinedParser<?, ?> parser = null;
       TopologyExtractor extractor = null;
       parser = new GNS3TopologyCombinedParser(topologyFileText, _settings);
@@ -2998,8 +2997,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       try {
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         topology = mapper.readValue(topologyFileText, Topology.class);
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         _logger.fatal("...ERROR\n");
         throw new BatfishException("Topology format error", e);
       }
