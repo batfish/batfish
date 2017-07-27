@@ -109,7 +109,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -cp \$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'
 WorkingDirectory=$BATFISH_HOME
 PIDFile=$BATFISH_RUN_DIR/coordinator.pid
 Restart=always
@@ -201,7 +201,7 @@ start() {
       echo "Missing pid file, but lock file present: $COORDINATOR_LOCK" >&2
       return 1
    fi
-   su -c "bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG & echo \\\$! > $COORDINATOR_PID_FILE'" batfish
+   su -c "bash -c '/usr/bin/java -cp \$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG & echo \\\$! > $COORDINATOR_PID_FILE'" batfish
    touch $COORDINATOR_LOCK
    echo "Success"
 }
