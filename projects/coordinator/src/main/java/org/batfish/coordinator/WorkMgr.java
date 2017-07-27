@@ -1,13 +1,13 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -17,13 +17,13 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -532,19 +532,21 @@ public class WorkMgr {
     return answer;
   }
 
-  /**
-   * Return a {@link Container container} contains all testrigs directoreis inside it
-   */
+  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  public Container getContainer(String containerName) {
+    return getContainer(getdirContainer(containerName));
+  }
+
+  /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
-    Container container = new Container();
     SortedSet<String> testrigs =
         new TreeSet<>(
             CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
                 .stream()
                 .map(dir -> dir.getFileName().toString())
                 .collect(Collectors.toSet()));
-    container.setTestrigs(testrigs);
-    return container;
+
+    return Container.makeContainer(containerDir.toFile().getName(), testrigs);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -687,7 +689,7 @@ public class WorkMgr {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(String containerName, String containerPrefix) {
+  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
     if (containerName == null || containerName.equals("")) {
       containerName = containerPrefix + "_" + UUID.randomUUID();
     }
@@ -753,6 +755,10 @@ public class WorkMgr {
                         Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
                 .collect(Collectors.toSet()));
     return authorizedContainers;
+  }
+
+  public List<Container> getContainers(@Nullable String apiKey) {
+    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
   }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {

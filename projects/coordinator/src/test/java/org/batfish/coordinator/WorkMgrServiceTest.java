@@ -30,11 +30,11 @@ public class WorkMgrServiceTest {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {});
-    _manager = new WorkMgr(settings, logger);
     _folder.newFolder(_containerName);
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Main.initAuthorizer();
     Main.setLogger(logger);
+    _manager = new WorkMgr(settings, logger);
     Main.setWorkMgr(_manager);
     _service = new WorkMgrService();
   }
