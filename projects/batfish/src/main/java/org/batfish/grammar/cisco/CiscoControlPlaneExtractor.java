@@ -2689,7 +2689,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip dhcpRelayAddress = toIp(ctx.address);
-      iface.setDhcpRelayAddress(dhcpRelayAddress);
+      iface.getDhcpRelayAddresses().add(dhcpRelayAddress);
     }
   }
 
@@ -2975,7 +2975,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip address = toIp(ctx.address);
-      iface.setDhcpRelayAddress(address);
+      iface.getDhcpRelayAddresses().add(address);
     }
   }
 

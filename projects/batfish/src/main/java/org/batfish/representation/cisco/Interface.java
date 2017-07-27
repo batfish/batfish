@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
@@ -76,7 +77,7 @@ public class Interface extends ComparableStructure<String> {
 
   private String _description;
 
-  private Ip _dhcpRelayAddress;
+  private SortedSet<Ip> _dhcpRelayAddresses;
 
   private String _incomingFilter;
 
@@ -145,6 +146,7 @@ public class Interface extends ComparableStructure<String> {
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
+    _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _nativeVlan = 1;
     _secondaryPrefixes = new LinkedHashSet<>();
@@ -214,8 +216,8 @@ public class Interface extends ComparableStructure<String> {
     return _description;
   }
 
-  public Ip getDhcpRelayAddress() {
-    return _dhcpRelayAddress;
+  public SortedSet<Ip> getDhcpRelayAddresses() {
+    return _dhcpRelayAddresses;
   }
 
   public String getIncomingFilter() {
@@ -362,8 +364,8 @@ public class Interface extends ComparableStructure<String> {
     _description = description;
   }
 
-  public void setDhcpRelayAddress(Ip dhcpRelayAddress) {
-    _dhcpRelayAddress = dhcpRelayAddress;
+  public void setDhcpRelayAddress(SortedSet<Ip> dhcpRelayAddress) {
+    _dhcpRelayAddresses = dhcpRelayAddress;
   }
 
   public void setIncomingFilter(String accessListName) {
