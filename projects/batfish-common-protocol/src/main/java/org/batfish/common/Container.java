@@ -55,8 +55,4 @@ public class Container {
     _analysis = analysis;
   }
 
-  public String listTestrigs() {
-    return _testrigs.toString();
-  }
-
 }

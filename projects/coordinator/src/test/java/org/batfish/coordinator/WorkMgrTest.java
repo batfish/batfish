@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -131,7 +132,7 @@ public class WorkMgrTest {
     initContainerEnvironment(containerName);
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     Container container = _manager.getContainer(containerDir);
-    assertThat(container.listTestrigs(), equalTo("[]"));
+    assertThat(container.getTestrigs(), equalTo(new TreeSet<String>()));
   }
 
   @Test
@@ -145,7 +146,10 @@ public class WorkMgrTest {
     assertThat(testrigPath2.toFile().mkdir(), is(true));
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     Container container = _manager.getContainer(containerDir);
-    assertThat(container.listTestrigs(), equalTo("[testrig1, testrig2]"));
+    SortedSet<String> expectedTestrigs = new TreeSet<>();
+    expectedTestrigs.add("testrig1");
+    expectedTestrigs.add("testrig2");
+    assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
   }
 
   @Test

@@ -5,6 +5,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
 import java.nio.file.Path;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
@@ -78,7 +80,10 @@ public class WorkMgrServiceTest {
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
     assertThat(container.getName(), equalTo(_containerName));
-    assertThat(container.listTestrigs(), equalTo("[testrig1, testrig2]"));
+    SortedSet<String> expectedTestrigs = new TreeSet<>();
+    expectedTestrigs.add("testrig1");
+    expectedTestrigs.add("testrig2");
+    assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
   }
 
 }

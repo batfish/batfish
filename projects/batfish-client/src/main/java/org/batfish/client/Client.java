@@ -1324,9 +1324,9 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
-   * Get information of the container(first element in {@code parameters}).
-   * <p> </p>
-   * Returns true if successfully get container information, false otherwise
+   * Get information of the container (first element in {@code parameters}).
+   *
+   * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
    */
   private boolean getContainer(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
@@ -1335,7 +1335,7 @@ public class Client extends AbstractClient implements IClient {
     String containerName = parameters.get(0);
     Container container = _workHelper.getContainer(containerName);
     if (container != null) {
-      _logger.output(container.listTestrigs() + "\n");
+      _logger.output(container.getTestrigs() + "\n");
       return true;
     }
     return false;
