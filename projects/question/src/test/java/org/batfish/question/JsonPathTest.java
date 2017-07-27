@@ -1,21 +1,21 @@
 package org.batfish.question;
 
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-
-import org.batfish.common.util.CommonUtil;
-import org.batfish.question.jsonpath.BatfishJsonPathDefaults;
-import org.junit.Test;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
-import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.question.jsonpath.BatfishJsonPathDefaults;
+import org.junit.Test;
+
 
 /** Test JsonPath functionality */
 public class JsonPathTest {
@@ -26,11 +26,11 @@ public class JsonPathTest {
 
   private String _oneNtpServerNodesAnswerStr;
 
-  private String _twoNtpServersNodesAnswerStr;
+  private Configuration _prefixConfiguration;
 
   private Object _twoNtpServersNodesAnswerJsonObject;
 
-  private Configuration _prefixConfiguration;
+  private String _twoNtpServersNodesAnswerStr;
 
   public JsonPathTest() {
     Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
