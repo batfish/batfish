@@ -25,6 +25,8 @@ public class CoordConsts {
   public static final boolean SVC_CFG_POOL_SSL_DISABLE = true;
   public static final String SVC_CFG_WORK_MGR = "/batfishworkmgr";
   public static final Integer SVC_CFG_WORK_PORT = 9997;
+  public static final String SVC_CFG_WORK_MGR2 = "/v2";
+  public static final Integer SVC_CFG_WORK_V2_PORT = 9996;
   public static final boolean SVC_CFG_WORK_SSL_DISABLE = true;
 
   public static final String SVC_FILENAME_HDR = "FileName";

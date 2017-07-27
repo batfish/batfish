@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="EntryPointsManager">
+    <writeAnnotations>
+      <writeAnnotation name="javax.ws.rs.core.Context" />
+    </writeAnnotations>
+  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
