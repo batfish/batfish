@@ -590,10 +590,9 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the question was asked
-   * @return A {@link Response Response} with an entity consists either a json representation
-   *        of the container {@code containerName} or an error message if:
-    *        the container {@code containerName} does not exist or the {@code apiKey} has no
-    *        acess to the container {@code containerName}
+   * @return A {@link Response Response} with an entity consists either a json representation of the
+   *     container {@code containerName} or an error message if: the container {@code containerName}
+   *     does not exist or the {@code apiKey} has no acess to the container {@code containerName}
    */
   @POST
   @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
@@ -639,7 +638,7 @@ public class WorkMgrService {
           .entity(e.getMessage())
           .type(MediaType.TEXT_PLAIN)
           .build();
-    }catch (Exception e) {
+    } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:getContainer exception: " + stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

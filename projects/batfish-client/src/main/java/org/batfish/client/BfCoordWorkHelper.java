@@ -426,8 +426,7 @@ public class BfCoordWorkHelper {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       Container container = mapper.readValue(containerStr, Container.class);
       return container;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       _logger.errorf("Exception in getContainer from %s for %s\n",
           _coordWorkMgr, containerName);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");

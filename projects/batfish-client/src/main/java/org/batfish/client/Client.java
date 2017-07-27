@@ -1401,7 +1401,7 @@ public class Client extends AbstractClient implements IClient {
       if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_CONTAINER)) {
         return false;
       }
-      String containerPrefix = parameters.isEmpty() ? parameters.get(0) : DEFAULT_CONTAINER_PREFIX;
+      String containerPrefix = parameters.isEmpty() ? DEFAULT_CONTAINER_PREFIX : parameters.get(0);
       _currContainerName = _workHelper.initContainer(null, containerPrefix);
     }
     if (_currContainerName == null) {

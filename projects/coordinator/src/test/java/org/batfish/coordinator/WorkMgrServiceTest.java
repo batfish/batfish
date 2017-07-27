@@ -1,8 +1,8 @@
 package org.batfish.coordinator;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.*;
 
 import java.nio.file.Path;
 import java.util.SortedSet;
@@ -18,8 +18,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class WorkMgrServiceTest {
 
-  @Rule
-  public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private WorkMgr _manager;
 
@@ -85,5 +84,4 @@ public class WorkMgrServiceTest {
     expectedTestrigs.add("testrig2");
     assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
   }
-
 }
