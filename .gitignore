@@ -3,7 +3,7 @@
 /unit-tests
 .DS_Store
 *.testout
-*.swp
+.*.swp
 
 # ignore maven pom version backups
 pom.xml.versionsBackup
