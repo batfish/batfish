@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -129,25 +130,22 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
                 String path = nodesPath.getPath();
 
                 ConfigurationBuilder prefixCb = new ConfigurationBuilder();
-                prefixCb.mappingProvider(c.mappingProvider());
-                prefixCb.jsonProvider(c.jsonProvider());
-                prefixCb.evaluationListener(c.getEvaluationListeners());
-                prefixCb.options(c.getOptions());
                 prefixCb.options(Option.ALWAYS_RETURN_LIST);
                 prefixCb.options(Option.AS_PATH_LIST);
                 Configuration prefixC = prefixCb.build();
 
                 ConfigurationBuilder suffixCb = new ConfigurationBuilder();
-                suffixCb.mappingProvider(c.mappingProvider());
-                suffixCb.jsonProvider(c.jsonProvider());
-                suffixCb.evaluationListener(c.getEvaluationListeners());
-                suffixCb.options(c.getOptions());
                 suffixCb.options(Option.ALWAYS_RETURN_LIST);
                 Configuration suffixC = suffixCb.build();
 
                 ArrayNode prefixes = null;
                 ArrayNode suffixes = null;
-                JsonPath jsonPath = JsonPath.compile(path);
+                JsonPath jsonPath;
+                try {
+                  jsonPath = JsonPath.compile(path);
+                } catch (InvalidPathException e) {
+                  throw new BatfishException("Invalid JsonPath: " + path, e);
+                }
 
                 try {
                   prefixes = jsonPath.read(jsonObject, prefixC);

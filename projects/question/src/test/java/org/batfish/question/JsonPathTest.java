@@ -16,7 +16,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.question.jsonpath.BatfishJsonPathDefaults;
 import org.junit.Test;
 
-
 /** Test JsonPath functionality */
 public class JsonPathTest {
 
@@ -107,6 +106,35 @@ public class JsonPathTest {
     }
     assertThat(prefixes, not(equalTo(nullValue())));
     assertThat(prefixes.size(), equalTo(1));
+  }
+
+  @Test
+  public void testPath1() {
+    JsonPath jsonPath =
+        JsonPath.compile(
+            "$.nodes[*][?(@.interfaces['Management1'].prefix)].vendorFamily.cisco.logging[?(@.sourceInterface!='Management1')]");
+    assertThat(jsonPath, not(equalTo(nullValue())));
+  }
+
+  @Test
+  public void testPath2() {
+    JsonPath jsonPath =
+        JsonPath.compile(
+            "$.nodes[*][?(@.interfaces['Management1'].prefix)].vendorFamily.cisco.ntp.servers[*][?(@.vrf!='mgmt')]");
+    assertThat(jsonPath, not(equalTo(nullValue())));
+  }
+
+  @Test
+  public void testPath3() {
+    JsonPath jsonPath = JsonPath.compile("$.nodes[*][?(!@.ntpServers)]");
+    assertThat(jsonPath, not(equalTo(nullValue())));
+  }
+
+  @Test
+  public void testPath4() {
+    JsonPath jsonPath =
+        JsonPath.compile("$.nodes[*][?([\"1.2.3.4\"] subsetof @.loggingServers)].loggingServers");
+    assertThat(jsonPath, not(equalTo(nullValue())));
   }
 
   @Test
