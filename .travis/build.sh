@@ -28,7 +28,10 @@ coordinator &
 batfish -servicemode -register -coordinatorhost localhost -loglevel output &
 
 echo -e "\n  ..... Running java demo tests"
-batfish_client -cmdfile demos/java/commands -coordinatorhost localhost > demos/java/commands.ref.testout || exit 1
+if ! batfish_client -cmdfile demos/java/commands -coordinatorhost localhost > demos/java/commands.ref.testout; then
+   echo "DEMO FAILED!" 1>&2
+   exit 1
+fi
 rm demos/java/commands.ref.testout
 
 echo -e "\n .... Failed tests: "

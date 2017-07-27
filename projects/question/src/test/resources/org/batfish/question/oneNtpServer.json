@@ -1,0 +1,10 @@
+{
+    "class": "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
+    "nodes": {
+        "unnamed1": {
+            "ntpServers": [
+                "1.2.3.4"
+            ]
+        }
+    }
+}
