@@ -2,9 +2,11 @@ package org.batfish.common.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -311,6 +313,19 @@ public class CommonUtil {
     } catch (IOException e) {
       throw new BatfishException("Failed to create temporary file", e);
     }
+  }
+
+  public static Path createTempFileWithContent(String prefix, String content) throws IOException {
+    Path tempFilePath = Files.createTempFile(prefix, null);
+
+    File tempFile = tempFilePath.toFile();
+    tempFile.deleteOnExit();
+
+    FileWriter writer = new FileWriter(tempFile);
+    writer.write(content);
+    writer.close();
+
+    return tempFilePath;
   }
 
   public static void delete(Path path) {
