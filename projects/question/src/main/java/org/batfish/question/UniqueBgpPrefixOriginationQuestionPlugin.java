@@ -79,7 +79,6 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
 
       UniqueBgpPrefixOriginationAnswerElement answerElement =
           new UniqueBgpPrefixOriginationAnswerElement();
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       _batfish.initBgpOriginationSpaceExplicit(configurations);
       for (Entry<String, Configuration> e : configurations.entrySet()) {

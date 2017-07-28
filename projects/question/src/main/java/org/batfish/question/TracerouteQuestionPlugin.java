@@ -92,7 +92,6 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
           if (configurations == null) {
             _batfish.pushBaseEnvironment();
-            _batfish.checkConfigurations();
             configurations = _batfish.loadConfigurations();
             _batfish.popEnvironment();
           }
