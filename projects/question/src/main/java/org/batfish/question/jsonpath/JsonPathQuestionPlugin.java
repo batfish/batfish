@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
-import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,14 +93,12 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @Override
     public JsonPathAnswerElement answer() {
 
+      Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
       ConfigurationBuilder b = new ConfigurationBuilder();
-      b.jsonProvider(new JacksonJsonNodeJsonProvider());
       final Configuration c = b.build();
 
       JsonPathQuestion question = (JsonPathQuestion) _question;
       List<JsonPathQuery> paths = question.getPaths();
-
-      _batfish.checkConfigurations();
 
       Question innerQuestion = question._innerQuestion;
       String innerQuestionName = innerQuestion.getName();
@@ -130,25 +128,22 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
                 String path = nodesPath.getPath();
 
                 ConfigurationBuilder prefixCb = new ConfigurationBuilder();
-                prefixCb.mappingProvider(c.mappingProvider());
-                prefixCb.jsonProvider(c.jsonProvider());
-                prefixCb.evaluationListener(c.getEvaluationListeners());
-                prefixCb.options(c.getOptions());
                 prefixCb.options(Option.ALWAYS_RETURN_LIST);
                 prefixCb.options(Option.AS_PATH_LIST);
                 Configuration prefixC = prefixCb.build();
 
                 ConfigurationBuilder suffixCb = new ConfigurationBuilder();
-                suffixCb.mappingProvider(c.mappingProvider());
-                suffixCb.jsonProvider(c.jsonProvider());
-                suffixCb.evaluationListener(c.getEvaluationListeners());
-                suffixCb.options(c.getOptions());
                 suffixCb.options(Option.ALWAYS_RETURN_LIST);
                 Configuration suffixC = suffixCb.build();
 
                 ArrayNode prefixes = null;
                 ArrayNode suffixes = null;
-                JsonPath jsonPath = JsonPath.compile(path);
+                JsonPath jsonPath;
+                try {
+                  jsonPath = JsonPath.compile(path);
+                } catch (InvalidPathException e) {
+                  throw new BatfishException("Invalid JsonPath: " + path, e);
+                }
 
                 try {
                   prefixes = jsonPath.read(jsonObject, prefixC);
@@ -191,7 +186,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answerDiff() {
+    public JsonPathDiffAnswerElement answerDiff() {
       _batfish.pushBaseEnvironment();
       _batfish.checkEnvironmentExists();
       _batfish.popEnvironment();
@@ -363,12 +358,12 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
   }
 
   @Override
-  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+  protected JsonPathAnswerer createAnswerer(Question question, IBatfish batfish) {
     return new JsonPathAnswerer(question, batfish);
   }
 
   @Override
-  protected Question createQuestion() {
+  protected JsonPathQuestion createQuestion() {
     return new JsonPathQuestion();
   }
 }

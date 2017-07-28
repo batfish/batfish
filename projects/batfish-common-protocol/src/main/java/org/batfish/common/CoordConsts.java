@@ -78,6 +78,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
+  public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";

@@ -613,18 +613,19 @@ public class CommonUtil {
     return text;
   }
 
-  public static synchronized String salt() {
-    if (SALT != null) {
-      return SALT;
-    }
+  public static String readResource(String resourcePath) {
     try (InputStream is =
-        Thread.currentThread()
-            .getContextClassLoader()
-            .getResourceAsStream(BfConsts.ABSPATH_DEFAULT_SALT)) {
-      SALT = IOUtils.toString(is);
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+      String output = IOUtils.toString(is);
+      return output;
     } catch (IOException e) {
-      throw new BatfishException(
-          "Could not open resource: '" + BfConsts.ABSPATH_DEFAULT_SALT + "'", e);
+      throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);
+    }
+  }
+
+  public static synchronized String salt() {
+    if (SALT == null) {
+      SALT = readResource(BfConsts.ABSPATH_DEFAULT_SALT);
     }
     return SALT;
   }

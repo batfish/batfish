@@ -2236,7 +2236,8 @@
               "autostate" : true,
               "bandwidth" : 1.0E9,
               "dhcpRelayAddresses" : [
-                "1.2.3.4"
+                "1.2.3.4",
+                "2.3.4.5"
               ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2655,6 +2656,7 @@
               "bandwidth" : 1.0E9,
               "description" : "description-goes-here",
               "dhcpRelayAddresses" : [
+                "172.16.0.1",
                 "172.17.0.1"
               ],
               "isisL1InterfaceMode" : "unset",
@@ -6281,6 +6283,7 @@
               "autostate" : false,
               "bandwidth" : 1.0E12,
               "dhcpRelayAddresses" : [
+                "10.22.33.111",
                 "10.22.33.112"
               ],
               "isisL1InterfaceMode" : "unset",

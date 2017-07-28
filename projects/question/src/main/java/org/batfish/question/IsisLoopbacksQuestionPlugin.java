@@ -146,7 +146,6 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       }
 
       IsisLoopbacksAnswerElement answerElement = new IsisLoopbacksAnswerElement();
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
