@@ -547,7 +547,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
           "Supplied regex for nodes is not a valid java regex: \"" + aclNameRegexStr + "\"", e);
     }
 
-    checkConfigurations();
     Map<String, Configuration> configurations = loadConfigurations();
 
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
@@ -722,27 +721,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   }
 
   @Override
-  public void checkConfigurations() {
-    checkConfigurations(_testrigSettings);
-  }
-
-  public void checkConfigurations(TestrigSettings testrigSettings) {
-    Path path = testrigSettings.getSerializeIndependentPath();
-    if (!Files.exists(path)) {
-      throw new CleanBatfishException(
-          "Missing compiled vendor-independent configurations for this test-rig\n");
-    } else {
-      try (Stream<Path> paths = CommonUtil.list(path)) {
-        if (!paths.iterator().hasNext()) {
-          throw new CleanBatfishException(
-              "Nothing to do: Set of vendor-independent configurations for this test-rig is "
-                  + "empty\n");
-        }
-      }
-    }
-  }
-
-  @Override
   public void checkDataPlane() {
     checkDataPlane(_testrigSettings);
   }
@@ -773,7 +751,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
   public void checkDifferentialDataPlaneQuestionDependencies() {
     checkDiffEnvironmentSpecified();
-    checkConfigurations();
     checkDataPlane(_baseTestrigSettings);
     checkDataPlane(_deltaTestrigSettings);
   }
@@ -1161,7 +1138,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   }
 
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    checkConfigurations();
     Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
     return Files.exists(dpPath);
   }
@@ -1373,7 +1349,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   }
 
   private boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
-    checkConfigurations();
     Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
     return Files.exists(answerPath);
   }
@@ -1389,7 +1364,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   }
 
   private boolean environmentRoutingTablesExist(EnvironmentSettings envSettings) {
-    checkConfigurations();
     Path answerPath = envSettings.getParseEnvironmentRoutingTablesAnswerPath();
     return Files.exists(answerPath);
   }
@@ -2120,7 +2094,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   @Override
   public InitInfoAnswerElement initInfo(
       boolean summary, boolean verboseError, boolean environmentRoutes) {
-    checkConfigurations();
     InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
     if (environmentRoutes) {
       ParseEnvironmentRoutingTablesAnswerElement parseAnswer =

@@ -73,7 +73,6 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
             "The question " + innerQuestion.getName() + " does not implement INodeRegexQuestion");
       }
 
-      _batfish.checkConfigurations();
       SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
       // collect the desired nodes in a list
       List<String> nodes =

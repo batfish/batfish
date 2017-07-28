@@ -180,7 +180,6 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
             e);
       }
 
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       _batfish.initRemoteIpsecVpns(configurations);
 

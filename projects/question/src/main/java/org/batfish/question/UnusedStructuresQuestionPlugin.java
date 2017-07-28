@@ -75,7 +75,6 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                 + "\"",
             e);
       }
-      _batfish.checkConfigurations();
       UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
       ConvertConfigurationAnswerElement ccae = _batfish.loadConvertConfigurationAnswerElement();
       ccae.getUnusedStructures()

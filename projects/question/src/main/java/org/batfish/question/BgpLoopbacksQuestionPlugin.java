@@ -116,7 +116,6 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
 
       BgpLoopbacksAnswerElement answerElement = new BgpLoopbacksAnswerElement();
 
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
 
       for (Entry<String, Configuration> e : configurations.entrySet()) {

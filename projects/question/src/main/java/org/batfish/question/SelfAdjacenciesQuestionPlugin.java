@@ -107,7 +107,6 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       }
 
       SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       configurations.forEach(
           (hostname, c) -> {
