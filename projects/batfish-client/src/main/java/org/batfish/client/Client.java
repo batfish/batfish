@@ -51,6 +51,7 @@ import org.batfish.client.config.Settings.RunMode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
@@ -1322,6 +1323,24 @@ public class Client extends AbstractClient implements IClient {
     return parameters;
   }
 
+  /**
+   * Get information of the container (first element in {@code parameters}).
+   *
+   * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
+   */
+  private boolean getContainer(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_CONTAINER)) {
+      return false;
+    }
+    String containerName = parameters.get(0);
+    Container container = _workHelper.getContainer(containerName);
+    if (container != null) {
+      _logger.output(container.getTestrigs() + "\n");
+      return true;
+    }
+    return false;
+  }
+
   @Override
   public BatfishLogger getLogger() {
     return _logger;
@@ -1382,7 +1401,7 @@ public class Client extends AbstractClient implements IClient {
       if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_CONTAINER)) {
         return false;
       }
-      String containerPrefix = parameters.isEmpty() ? parameters.get(0) : DEFAULT_CONTAINER_PREFIX;
+      String containerPrefix = parameters.isEmpty() ? DEFAULT_CONTAINER_PREFIX : parameters.get(0);
       _currContainerName = _workHelper.initContainer(null, containerPrefix);
     }
     if (_currContainerName == null) {
@@ -1974,6 +1993,8 @@ public class Client extends AbstractClient implements IClient {
           return generateDeltaDataplane(outWriter, options, parameters);
         case GET:
           return get(words, outWriter, options, parameters, false);
+        case GET_CONTAINER:
+          return getContainer(options, parameters);
         case GET_DELTA:
           return get(words, outWriter, options, parameters, true);
         case GET_ANALYSIS_ANSWERS:

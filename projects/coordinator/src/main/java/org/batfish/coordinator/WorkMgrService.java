@@ -16,10 +16,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
@@ -579,6 +581,70 @@ public class WorkMgrService {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:getAnswer exception: " + stackTrace);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
+  /**
+   * Get information of the container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the question was asked
+   * @return A {@link Response Response} with an entity consists either a json representation of the
+   *     container {@code containerName} or an error message if: the container {@code containerName}
+   *     does not exist or the {@code apiKey} has no acess to the container {@code containerName}
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_CONTAINER)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getContainer(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    try {
+      _logger.info("WMS:getContainer " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      java.nio.file.Path containerDir =
+          Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+      if (containerDir == null || !Files.exists(containerDir)) {
+        return Response.status(Response.Status.NOT_FOUND)
+            .entity("Container '" + containerName + "' not found")
+            .type(MediaType.TEXT_PLAIN)
+            .build();
+      }
+
+      checkContainerAccessibility(apiKey, containerName);
+
+      Container container = Main.getWorkMgr().getContainer(containerDir);
+      container.setName(containerName);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String containerString = mapper.writeValueAsString(container);
+
+      return Response.ok(containerString, MediaType.APPLICATION_JSON).build();
+    } catch (AccessControlException e) {
+      return Response.status(Status.FORBIDDEN)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    } catch (BatfishException e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getContainer exception: " + stackTrace);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity(e.getCause())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
     }
   }
 
