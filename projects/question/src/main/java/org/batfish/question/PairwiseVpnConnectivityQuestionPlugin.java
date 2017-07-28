@@ -85,7 +85,6 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
       PairwiseVpnConnectivityAnswerElement answerElement =
           new PairwiseVpnConnectivityAnswerElement();
 
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
 
       _batfish.initRemoteIpsecVpns(configurations);

@@ -98,7 +98,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     // UniqueIpAssignmentsQuestion question) {
     // _batfish = batfish;
     // _question = question;
-    // _batfish.checkConfigurations();
     //
     // if (question.getDifferential()) {
     // _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
@@ -138,8 +137,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer() {
 
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-
-      _batfish.checkConfigurations();
 
       Pattern nodeRegex;
       try {

@@ -52,7 +52,6 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
     @Override
     public ParseTreesAnswerElement answer() {
       // ParseTreesQuestion question = (ParseTreesQuestion) _question;
-      _batfish.checkConfigurations();
       ParseTreesAnswerElement answerElement = new ParseTreesAnswerElement();
       ParseVendorConfigurationAnswerElement parseAnswer =
           _batfish.loadParseVendorConfigurationAnswerElement();

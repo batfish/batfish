@@ -325,7 +325,6 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     public NodesAnswerElement answer() {
       NodesQuestion question = (NodesQuestion) _question;
 
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
 
       // initRemoteBgpNeighbors(_batfish, configurations);

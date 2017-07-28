@@ -132,7 +132,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     public CompareSameNameAnswerElement answer() {
 
       CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
-      _batfish.checkConfigurations();
       _configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
       _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(), _configurations.keySet());

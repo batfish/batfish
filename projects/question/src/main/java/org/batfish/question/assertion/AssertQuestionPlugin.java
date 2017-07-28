@@ -82,8 +82,6 @@ public class AssertQuestionPlugin extends QuestionPlugin {
       AssertQuestion question = (AssertQuestion) _question;
       List<Assertion> assertions = question.getAssertions();
 
-      _batfish.checkConfigurations();
-
       NodesQuestion nodesQuestion = new NodesQuestion();
       nodesQuestion.setSummary(false);
       NodesAnswerer nodesAnswerer = new NodesAnswerer(nodesQuestion, _batfish);
