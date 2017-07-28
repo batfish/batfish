@@ -518,7 +518,8 @@ set_comm_list_delete_rm_stanza
 :
    SET COMM_LIST
    (
-      name = variable
+      name = DEC
+      | name = VARIABLE
    ) DELETE NEWLINE
 ;
 
