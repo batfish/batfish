@@ -518,8 +518,7 @@ set_comm_list_delete_rm_stanza
 :
    SET COMM_LIST
    (
-      name = DEC
-      | name = VARIABLE
+      name = variable
    ) DELETE NEWLINE
 ;
 
@@ -527,8 +526,20 @@ set_community_additive_rm_stanza
 :
    SET COMMUNITY
    (
-      communities += community
-   )+ ADDITIVE NEWLINE
+      (
+         (
+            communities += community
+         )+
+         ADDITIVE
+      )
+      |
+      (
+         ADDITIVE
+         (
+            communities += community
+         )+
+      )
+   ) NEWLINE
 ;
 
 set_community_list_additive_rm_stanza
