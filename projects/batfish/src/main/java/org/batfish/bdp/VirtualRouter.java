@@ -644,10 +644,12 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
       // interface route
-      if (sr.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        _staticInterfaceRib.mergeRoute(sr);
-      } else {
-        _staticRib.mergeRoute(sr);
+      if (sr.getNextHopIp() != null) {
+        if (sr.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+          _staticInterfaceRib.mergeRoute(sr);
+        } else {
+          _staticRib.mergeRoute(sr);
+        }
       }
     }
   }
