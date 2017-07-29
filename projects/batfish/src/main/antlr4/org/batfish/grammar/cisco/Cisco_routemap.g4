@@ -523,20 +523,8 @@ set_community_additive_rm_stanza
 :
    SET COMMUNITY
    (
-      (
-         (
-            communities += community
-         )+
-         ADDITIVE
-      )
-      |
-      (
-         ADDITIVE
-         (
-            communities += community
-         )+
-      )
-   ) NEWLINE
+      communities += community
+   )+ ADDITIVE NEWLINE
 ;
 
 set_community_list_additive_rm_stanza
