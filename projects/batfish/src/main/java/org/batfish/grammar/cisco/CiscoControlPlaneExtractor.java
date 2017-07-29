@@ -148,6 +148,7 @@ import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Banner_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_advertise_inactive_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_confederation_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_apply_rp_stanzaContext;
@@ -611,6 +612,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_BGP_AUTO_SUMMARY = "bgp - auto-summary";
 
+  private static final String F_BGP_CONFEDERATION = "bgp confederation";
+
   private static final String F_BGP_INHERIT_PEER_OTHER =
       "bgp - inherit peer - inheritance not implemented for this peer type";
 
@@ -1059,7 +1062,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentNamedPeerGroup = afGroup;
   }
 
-  @Override
+   @Override
+   public void enterBgp_confederation_rb_stanza(Bgp_confederation_rb_stanzaContext ctx) {
+      todo(ctx, F_BGP_CONFEDERATION);
+   }
+
+   @Override
   public void enterCisco_configuration(Cisco_configurationContext ctx) {
     _configuration = new CiscoConfiguration(_unimplementedFeatures);
     _configuration.setVendor(_format);
@@ -4735,7 +4743,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitSet_comm_list_delete_rm_stanza(Set_comm_list_delete_rm_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int statementLine = ctx.name.getLine();
+    int statementLine = ctx.getStart().getLine();
     RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name, statementLine);
     _currentRouteMapClause.addSetLine(line);
   }

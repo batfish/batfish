@@ -1584,6 +1584,11 @@ CONFDCONFIG
    'confdConfig'
 ;
 
+CONFEDERATION
+:
+   'confederation'
+;
+
 CONFIG
 :
    'config'
