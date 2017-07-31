@@ -100,8 +100,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       JsonPathQuestion question = (JsonPathQuestion) _question;
       List<JsonPathQuery> paths = question.getPaths();
 
-      _batfish.checkConfigurations();
-
       Question innerQuestion = question._innerQuestion;
       String innerQuestionName = innerQuestion.getName();
       Answerer innerAnswerer =

@@ -215,7 +215,6 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
                 question.getNode1Regex(), question.getNode2Regex()),
             e);
       }
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
 
       PrefixTrie foreignPrefixTrie = new PrefixTrie();

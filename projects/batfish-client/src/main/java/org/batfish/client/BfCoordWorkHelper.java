@@ -20,11 +20,13 @@ import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -383,6 +385,47 @@ public class BfCoordWorkHelper {
             _settings.getSslTruststoreFile(),
             _settings.getSslTruststorePassword())
         .register(MultiPartFeature.class);
+  }
+
+  /**
+   * Returns a {@link Container Container} that contains information of '{@code containerName}',
+   * returns null if container '{@code containerName}' does not exist or the api key that is using
+   * has no access to the container
+   */
+  public Container getContainer(String containerName) {
+    try {
+      Client client = getClientBuilder().build();
+      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_CONTAINER);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+
+      Response response =
+          webTarget
+              .request(MediaType.APPLICATION_JSON)
+              .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        _logger.errorf("GetContainer: Did not get an OK response\n");
+        _logger.errorf(response.readEntity(String.class) + "\n");
+        return null;
+      }
+
+      String containerStr = response.readEntity(String.class);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Container container = mapper.readValue(containerStr, Container.class);
+      return container;
+    } catch (Exception e) {
+      _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgr, containerName);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
   }
 
   public Map<String, String> getInfo() {

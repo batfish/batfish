@@ -162,7 +162,6 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
 
       OspfLoopbacksAnswerElement answerElement = new OspfLoopbacksAnswerElement();
 
-      _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
 
       for (Entry<String, Configuration> e : configurations.entrySet()) {

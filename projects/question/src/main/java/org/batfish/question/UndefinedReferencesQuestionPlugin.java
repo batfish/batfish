@@ -82,7 +82,6 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                 + "\"",
             e);
       }
-      _batfish.checkConfigurations();
       UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
       ConvertConfigurationAnswerElement ccae = _batfish.loadConvertConfigurationAnswerElement();
       ccae.getUndefinedReferences()

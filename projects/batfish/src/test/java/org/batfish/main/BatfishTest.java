@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
@@ -29,6 +30,8 @@ import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -75,6 +78,40 @@ public class BatfishTest {
   }
 
   @Test
+  public void testAnswerBadQuestion() throws IOException {
+   // missing class field
+   String badQuestionStr = "{"
+         + "\"differential\": false,"
+         + "\"instance\": {"
+         + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) are"
+         +                    "referenced.\","
+         + "\"instanceName\": \"undefinedReferences\","
+         +     "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
+         +                            "serious consequences with some vendors.\","
+         +     "\"tags\": [\"default\"],"
+         +     "\"variables\": {\"nodeRegex\": {"
+         +        "\"description\": \"Only check nodes whose name matches this regex\","
+         +        "\"type\": \"javaRegex\","
+         +        "\"value\": \".*\""
+         +      "}}"
+         + "},"
+         + "\"nodeRegex\": \"${nodeRegex}\""
+         + "}";
+
+    Path questionPath =
+          CommonUtil.createTempFileWithContent("testAnswerBadQuestion", badQuestionStr);
+    Batfish batfish = initBatfish();
+    batfish.getSettings().setQuestionPath(questionPath);
+    Answer answer = batfish.answer();
+    assertThat(answer.getQuestion(), is(nullValue()));
+    assertEquals(answer.getStatus(), AnswerStatus.FAILURE);
+    assertEquals(answer.getAnswerElements().size(), 1);
+    assertThat(
+        answer.getAnswerElements().get(0).prettyPrint(),
+        containsString("Could not parse question"));
+  }
+
+  @Test
   public void testNoFileUnderPath() throws IOException {
     Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
     List<Path> result = Batfish.listAllFiles(emptyFolder);
@@ -85,16 +122,16 @@ public class BatfishTest {
   public void testParseTopologyBadJson() throws IOException {
     //missing node2interface
     String topologyBadJson =
-          "[" +
-                "{ " +
-                "\"node1\" : \"as1border1\"," +
-                "\"node1interface\" : \"GigabitEthernet0/0\"," +
-                "\"node2\" : \"as1core1\"," +
-                "}," +
-                "]";
+        "["
+            + "{ "
+            + "\"node1\" : \"as1border1\","
+            + "\"node1interface\" : \"GigabitEthernet0/0\","
+            + "\"node2\" : \"as1core1\","
+            + "},"
+            + "]";
 
-    Path topologyFilePath = CommonUtil
-          .createTempFileWithContent("testParseTopologyJson", topologyBadJson);
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyBadJson);
     Batfish batfish = initBatfish();
     String errorMessage = "Topology format error";
     _thrown.expect(BatfishException.class);
@@ -105,8 +142,8 @@ public class BatfishTest {
   @Test
   public void testParseTopologyEmpty() throws IOException {
     String topologyEmpty = "";
-    Path topologyFilePath = CommonUtil
-          .createTempFileWithContent("testParseTopologyJson", topologyEmpty);
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyEmpty);
     Batfish batfish = initBatfish();
     String errorMessage = "ERROR: empty topology\n";
     _thrown.expect(BatfishException.class);
@@ -116,23 +153,24 @@ public class BatfishTest {
 
   @Test
   public void testParseTopologyJson() throws IOException {
-    String topologyJson = 
-    "[" + 
-     "{ " +
-       "\"node1\" : \"as1border1\"," +
-       "\"node1interface\" : \"GigabitEthernet0/0\"," +
-       "\"node2\" : \"as1core1\"," +
-       "\"node2interface\" : \"GigabitEthernet1/0\"" +
-     "}," +
-     "{" +
-      "\"node1\" : \"as1border1\"," +
-      "\"node1interface\" : \"GigabitEthernet1/0\"," +
-      "\"node2\" : \"as2border1\"," +
-      "\"node2interface\" : \"GigabitEthernet0/0\"" +
-     "}" +
-    "]";
+    String topologyJson =
+        "["
+            + "{ "
+            + "\"node1\" : \"as1border1\","
+            + "\"node1interface\" : \"GigabitEthernet0/0\","
+            + "\"node2\" : \"as1core1\","
+            + "\"node2interface\" : \"GigabitEthernet1/0\""
+            + "},"
+            + "{"
+            + "\"node1\" : \"as1border1\","
+            + "\"node1interface\" : \"GigabitEthernet1/0\","
+            + "\"node2\" : \"as2border1\","
+            + "\"node2interface\" : \"GigabitEthernet0/0\""
+            + "}"
+            + "]";
 
-    Path topologyFilePath = CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
     Batfish batfish = initBatfish();
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);
