@@ -53,9 +53,9 @@ get ospfloopbacks
 echo ################
 echo # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
 
-echo # for example, we can see how host1 reaches a particular IP address 
+echo # for example, we can see how host-01-01 reaches a particular IP address 
 echo # the query will take time if the dataplane has not been computed before
-get #traceroute host1 1.0.2.2
+get #traceroute host-01-01 1.0.2.2
 echo # --> unlike a regular traceroute we show multipath and interface information
 
 echo # suppose host-01-01 (2.128.0.101) is running DNS and we want to ensure that the server is reachable 
@@ -68,10 +68,10 @@ echo # while the above could be done using testing/emulation, we alone can be co
 echo # for example, find *all* (starting node, packet header) combinations where the DNS server is unreachable
 get #checkreachability 2.128.0.101 dns
 echo # --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
-echo # --> but also shows that a bad ACL on host2 is blocking access (bad)
+echo # --> but also shows that a bad ACL on host-01-02 is blocking access (bad)
 
 echo # another example: host-01-02 (2.128.1.101) is running SSH. we can run similar queries to learn who cannot reach it
-echo # but we can also ensure that non-ssh traffic can *never* reach host2 
+echo # but we can also ensure that non-ssh traffic can *never* reach host-01-02 
 get #checkprotection 2.128.1.101 !ssh
 echo # --> all good! hard to guarantee with testing but easy for us
 
@@ -84,7 +84,7 @@ echo #############
 echo # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
 
 echo # initialize the delta environment and generate its dataplane
-init-delta-environment test_rigs/example-with-delta
+init-delta-environment test_rigs/example2-with-delta
 
 echo # any earlier query can be executed differentially, to see if how behavior differs
 get neighbors differential=true
@@ -105,8 +105,8 @@ echo # --> any lack of fault tolerance is easy to see
 
 echo "##############"
 echo "# heuristics to uncover bugs"
-get aclreachability nodeRegex=".*"
-get comparesamename nodeRegex=".*"
+get aclreachability nodeRegex="(leaf|spine|core|border).*"
+get comparesamename nodeRegex="(leaf|spine|core|border).*"
 
 
 echo ##############
