@@ -227,7 +227,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
    *     CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface, Ip6AccessList,
    *     IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, RouteFilterList,
-   *     RoutingPolicy, Vrf, Zone) Default value is '[]' (which denotes all structure types except
+   *     RoutingPolicy, Vrf, Zone ) Default value is '[]' (which denotes all structure types except
    *     Interface and Vrf).
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
