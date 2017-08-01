@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -120,7 +121,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     return Arrays.equals(headerBytes, JAVA_SERIALIZED_OBJECT_HEADER);
   }
 
-  private void loadPluginJar(Path path) {
+  private boolean loadPluginJar(Path path) {
     /*
      * Adapted from
      * http://stackoverflow.com/questions/11016092/how-to-load-classes-at-
@@ -147,60 +148,115 @@ public abstract class PluginConsumer implements IPluginConsumer {
           String className =
               name.substring(0, name.length() - CLASS_EXTENSION.length()).replace("/", ".");
           try {
-            cl.loadClass(className);
-            Class<?> pluginClass = Class.forName(className, true, cl);
-            if (!Plugin.class.isAssignableFrom(pluginClass)
-                || Modifier.isAbstract(pluginClass.getModifiers())) {
-              continue;
-            }
-            Constructor<?> pluginConstructor;
-            try {
-              pluginConstructor = pluginClass.getConstructor();
-            } catch (NoSuchMethodException | SecurityException e) {
-              throw new BatfishException(
-                  "Could not find default constructor in plugin: '" + className + "'", e);
-            }
-            Object pluginObj;
-            try {
-              pluginObj = pluginConstructor.newInstance();
-            } catch (InstantiationException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
-              throw new BatfishException(
-                  "Could not instantiate plugin '" + className + "' from constructor", e);
-            }
-            Plugin plugin = (Plugin) pluginObj;
-            plugin.initialize(this);
-
+            loadPluginClass(cl, className);
           } catch (ClassNotFoundException e) {
             jar.close();
             throw new BatfishException("Unexpected error loading classes from jar", e);
           }
         }
         jar.close();
+        return true;
       } catch (IOException e) {
         throw new BatfishException("Error loading plugin jar: '" + path + "'", e);
       }
     }
+
+    return false;
+  }
+
+  private void loadPluginFolder(Path pluginPath) throws IOException {
+    URL[] urls = {pluginPath.toUri().toURL()};
+    final URLClassLoader cl = URLClassLoader.newInstance(urls);
+    _currentClassLoader = cl;
+    Thread.currentThread().setContextClassLoader(cl);
+
+    final int baseLen = pluginPath.toString().length() + 1;
+
+    Files.walkFileTree(
+        pluginPath,
+        new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
+              throws IOException {
+            String name = path.toString();
+            if (name.endsWith(CLASS_EXTENSION)) {
+              String className = name.substring(baseLen, name.length() - CLASS_EXTENSION.length()).replace(File.separatorChar, '.');
+              try {
+                loadPluginClass(cl, className);
+              } catch (ClassNotFoundException e) {
+                throw new BatfishException("Unexpected error loading classes from folder " + path, e);
+              }
+            }
+            return FileVisitResult.CONTINUE;
+          }
+        });
+  }
+
+  private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
+    cl.loadClass(className);
+    Class<?> pluginClass = Class.forName(className, true, cl);
+    if (!Plugin.class.isAssignableFrom(pluginClass)
+        || Modifier.isAbstract(pluginClass.getModifiers())) {
+      return;
+    }
+    Constructor<?> pluginConstructor;
+    try {
+      pluginConstructor = pluginClass.getConstructor();
+    } catch (NoSuchMethodException | SecurityException e) {
+      throw new BatfishException(
+          "Could not find default constructor in plugin: '" + className + "'", e);
+    }
+    Object pluginObj;
+    try {
+      pluginObj = pluginConstructor.newInstance();
+    } catch (InstantiationException
+        | IllegalAccessException
+        | IllegalArgumentException
+        | InvocationTargetException e) {
+      throw new BatfishException(
+          "Could not instantiate plugin '" + className + "' from constructor", e);
+    }
+    Plugin plugin = (Plugin) pluginObj;
+    plugin.initialize(this);
+  }
+
+  private class JarVisitor extends SimpleFileVisitor<Path> {
+    boolean hasJars = false;
+    boolean hasClasses = false;
+
+    @Override
+    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
+        throws IOException {
+      if (loadPluginJar(path)) {
+        hasJars = true;
+      } else if (path.toString().endsWith(CLASS_EXTENSION)) {
+        hasClasses = true;
+      }
+      return FileVisitResult.CONTINUE;
+    }
   }
 
   protected final void loadPlugins() {
+    // this supports loading plugins either from a directory of jars, or
+    // from a folder of classfiles (useful for eclipse development)
     for (Path pluginDir : _pluginDirs) {
       if (Files.exists(pluginDir)) {
+        JarVisitor jarVisitor = new JarVisitor();
         try {
-          Files.walkFileTree(
-              pluginDir,
-              new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
-                    throws IOException {
-                  loadPluginJar(path);
-                  return FileVisitResult.CONTINUE;
-                }
-              });
+          // first load any jars
+          Files.walkFileTree(pluginDir, jarVisitor);
         } catch (IOException e) {
           throw new BatfishException("Error walking through plugin dir: '" + pluginDir + "'", e);
+        }
+
+        // if there are class files and no jars, then try to load as a folder
+        if (jarVisitor.hasClasses && !jarVisitor.hasJars) {
+          try {
+            loadPluginFolder(pluginDir);
+          } catch (IOException e) {
+            throw new BatfishException(
+                "Error loading plugin folder: '" + pluginDir.toString() + "'", e);
+          }
         }
       }
     }
