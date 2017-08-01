@@ -2,12 +2,12 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -17,19 +17,21 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -532,21 +534,15 @@ public class WorkMgr {
     return answer;
   }
 
-  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  //  /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
     return getContainer(getdirContainer(containerName));
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    String testrigUri = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).toString();
+    return Container.makeContainer(containerDir.toFile().getName(), testrigUri);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -689,10 +685,7 @@ public class WorkMgr {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
-    if (containerName == null || containerName.equals("")) {
-      containerName = containerPrefix + "_" + UUID.randomUUID();
-    }
+  public String initContainer(String containerName) {
     Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
     if (Files.exists(containerDir)) {
       throw new BatfishException("Container '" + containerName + "' already exists!");
@@ -757,9 +750,9 @@ public class WorkMgr {
     return authorizedContainers;
   }
 
-  public List<Container> getContainers(@Nullable String apiKey) {
-    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
-  }
+  //  public List<Container> getContainers(@Nullable String apiKey) {
+  //    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
+  //  }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);
@@ -1027,4 +1020,46 @@ public class WorkMgr {
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
   }
+
+  private Path getContainerPath(String containerName) {
+    return Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+  }
+
+  public boolean checkContainerExist(String containerName) {
+    Path containerDir = getContainerPath(containerName);
+    return containerDir != null && Files.exists(containerDir);
+  }
+
+  private Path getTestrigPath(String containerName, String testrigName) {
+    Path containerDir = getContainerPath(containerName);
+    return containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrigName);
+  }
+
+  public boolean checkTestrigExist(String containerName, String testrigName) {
+    Path testrigDir = getTestrigPath(containerName, testrigName);
+    return testrigDir != null && Files.exists(testrigDir);
+  }
+
+  public URI getConfigsUri(String containerName, UriInfo uriInfo, String testrigName) {
+    UriBuilder ub = uriInfo.getBaseUriBuilder();
+    ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
+        .path("container")
+        .path(containerName)
+        .path("testrig")
+        .path(testrigName)
+        .path("configs");
+    return ub.build();
+  }
+
+  public URI getHostsUri(String containerName, UriInfo uriInfo, String testrigName) {
+    UriBuilder ub = uriInfo.getBaseUriBuilder();
+    ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
+        .path("container")
+        .path(containerName)
+        .path("testrig")
+        .path(testrigName)
+        .path("hosts");
+    return ub.build();
+  }
+
 }
