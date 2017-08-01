@@ -1460,10 +1460,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _containerName = containerName;
   }
 
-  //  public void setContainersLocation(Path containersLocation) {
-  //    _containersLocation = containersLocation;
-  //  }
-
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
     _deltaEnvironmentName = diffEnvironmentName;
   }
