@@ -13,8 +13,12 @@ public class FileStorageImpl implements Storage {
 
   public FileStorageImpl(Path containersLocation) throws BatfishException {
     try {
-      _containersLocation = containersLocation;
-      _containersLocation.toFile().mkdir();
+      if (containersLocation != null) {
+        _containersLocation = containersLocation;
+        _containersLocation.toFile().mkdir();
+      } else {
+        throw new BatfishException("container location is null");
+      }
     } catch (InvalidPathException e) {
       throw new BatfishException("cannot resolve containers location '" + containersLocation + "'");
     }

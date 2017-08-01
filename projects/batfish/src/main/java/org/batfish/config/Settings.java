@@ -13,7 +13,6 @@ import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.GrammarSettings;
 
-
 public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final class EnvironmentSettings {
@@ -501,9 +500,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private Path _containersLocation;
 
-
   private String _containerName;
-
 
   private int _coordinatorWorkPort;
 
@@ -1124,8 +1121,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(ARG_CONTAINERS_LOCATION, "where to store containers", "containers_location");
 
-    addOption(ARG_CONTAINER_NAME, "name of current container in request from coordinator", "container_name");
-
+    addOption(
+        ARG_CONTAINER_NAME,
+        "name of current container in request from coordinator",
+        "container_name");
 
     addOption(ARG_COORDINATOR_POOL_PORT, "coordinator pool manager listening port", ARGNAME_PORT);
 
@@ -1461,9 +1460,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _containerName = containerName;
   }
 
-//  public void setContainersLocation(Path containersLocation) {
-//    _containersLocation = containersLocation;
-//  }
+  //  public void setContainersLocation(Path containersLocation) {
+  //    _containersLocation = containersLocation;
+  //  }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
     _deltaEnvironmentName = diffEnvironmentName;
