@@ -612,7 +612,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
 
       java.nio.file.Path containerDir =
-          Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+          Main.getStorage().getContainer(containerName);
       if (containerDir == null || !Files.exists(containerDir)) {
         return Response.status(Response.Status.NOT_FOUND)
             .entity("Container '" + containerName + "' not found")

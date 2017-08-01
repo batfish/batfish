@@ -43,6 +43,8 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.storage.FileStorageImpl;
+import org.batfish.storage.Storage;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -57,6 +59,8 @@ public class Driver {
   private static BatfishLogger _mainLogger = null;
 
   private static Settings _mainSettings = null;
+
+  private static Storage _storage = null;
 
   private static ConcurrentMap<String, Task> _taskLog;
 
@@ -146,12 +150,20 @@ public class Driver {
     }
   }
 
+  public static Storage getStorage() {
+    return _storage;
+  }
+
   public static synchronized Task getTaskFromLog(String taskId) {
     if (_taskLog.containsKey(taskId)) {
       return _taskLog.get(taskId);
     } else {
       return null;
     }
+  }
+
+  public static void initStorage(Settings settings) {
+    _storage = new FileStorageImpl(settings.getContainersLocation());
   }
 
   private static synchronized void logTask(String taskId, Task task) throws Exception {
@@ -185,6 +197,7 @@ public class Driver {
 
     try {
       _mainSettings = new Settings(args);
+      initStorage(_mainSettings);
       networkListenerLogger.setLevel(Level.WARNING);
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {
@@ -437,6 +450,8 @@ public class Driver {
       settings = new Settings(args);
       // inherit pluginDir passed to service on startup
       settings.setPluginDirs(_mainSettings.getPluginDirs());
+      // assigning the container Dir using container name from args
+      settings.setContainerDir(getStorage().getContainer(settings.getContainerName()));
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
