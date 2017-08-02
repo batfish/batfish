@@ -296,25 +296,15 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
   /**
-   * Uses a form of clustering to partition nodes into equivalence classes.
+   * Infer a regex that identifies a role from a node name.
    *
-   * <p>Clusters nodes based on how similar their configurations are, based on the
-   * results of CompareSameName.
+   * <p>Uses heuristics to identify a part of a node's name that represents its role.
    *
    * @type InferRoles multifile
    *
-   * @param namedStructTypes
-   *           Set of structure types to analyze drawn from ( AsPathAccessList,
-   *           CommunityList, IkeGateway, IkePolicies, IkeProposal,
-   *           IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn,
-   *           RouteFilterList, RoutingPolicy) Default value is '[]' (which
-   *           denotes all structure types).
    * @param nodeRegex
    *           Regular expression for names of nodes to include. Default value
    *           is '.*' (all nodes).
-   * @param numClusters
-   *           The number of clusters to produce.  Default value is 5.
-   *
    */
   public static final class InferRolesQuestion extends Question {
 
