@@ -34,7 +34,7 @@ public class WorkMgrTest {
   public void initContainerWithContainerName() throws IOException {
     String containerName = "myContainer";
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String initResult = _manager.initContainer(containerName);
+    String initResult = _manager.initContainer(containerName, null);
     assertThat(initResult, equalTo(containerName));
   }
 
@@ -42,7 +42,7 @@ public class WorkMgrTest {
   public void initContainerWithcontainerPrefix() throws IOException {
     String containerPrefix = "myContainerPrefix";
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String initResult = _manager.initContainer(containerPrefix);
+    String initResult = _manager.initContainer(null, containerPrefix);
     assertThat(initResult, startsWith(containerPrefix));
   }
 
@@ -54,7 +54,7 @@ public class WorkMgrTest {
     String expectedMessage = String.format("Container '%s' already exists!", containerName);
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo(expectedMessage));
-    _manager.initContainer(containerName);
+    _manager.initContainer(containerName, null);
   }
 
   @Before

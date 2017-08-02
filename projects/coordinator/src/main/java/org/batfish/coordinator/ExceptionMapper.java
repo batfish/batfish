@@ -12,9 +12,7 @@ public class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exceptio
     if (exception instanceof WebApplicationException) {
       // An exception that already maps directly to a standard HTTP Response, likely thrown
       // somewhere inside Jersey aka if the user typed a bad URI.
-      return Response.status(((WebApplicationException) exception).getResponse().getStatus())
-          .entity(Throwables.getStackTraceAsString(exception))
-          .build();
+      return ((WebApplicationException) exception).getResponse();
     }
 
     exception.printStackTrace();

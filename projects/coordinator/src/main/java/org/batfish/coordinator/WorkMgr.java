@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -685,7 +686,10 @@ public class WorkMgr {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(String containerName) {
+  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
+    if (containerName == null || containerName.equals("")) {
+      containerName = containerPrefix + "_" + UUID.randomUUID();
+    }
     Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
     if (Files.exists(containerDir)) {
       throw new BatfishException("Container '" + containerName + "' already exists!");

@@ -683,8 +683,7 @@ public class BfCoordWorkHelper {
       if (containerName != null) {
         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
       } else {
-        containerName = containerPrefix + "_" + UUID.randomUUID();
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_PREFIX, containerPrefix);
       }
 
       JSONObject jObj = postData(webTarget, multiPart);
@@ -714,6 +713,7 @@ public class BfCoordWorkHelper {
       webTarget = getTarget(client, "");
 
       Response response = webTarget.request().get();
+
       _logger.info(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {

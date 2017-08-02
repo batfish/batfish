@@ -811,6 +811,8 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container to initialize (overrides containerPrefix)
+   * @param containerPrefix The prefix used to generate the container name (ignored if containerName
+   *     is not empty)
    * @return TODO: document JSON response
    */
   @POST
@@ -819,18 +821,21 @@ public class WorkMgrService {
   public JSONArray initContainer(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_PREFIX) String containerPrefix) {
     try {
-      _logger.info("WMS:initContainer " + containerName + "\n");
+      _logger.info("WMS:initContainer " + containerPrefix + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(containerName, "Container prefix");
+      if (containerName == null || containerName.equals("")) {
+        checkStringParam(containerPrefix, "Container prefix");
+      }
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      String outputContainerName = Main.getWorkMgr().initContainer(containerName);
+      String outputContainerName = Main.getWorkMgr().initContainer(containerName, containerPrefix);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
 

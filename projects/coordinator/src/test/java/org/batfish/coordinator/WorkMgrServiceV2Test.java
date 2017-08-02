@@ -75,7 +75,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
-    Main.getWorkMgr().initContainer("someContainer");
+    Main.getWorkMgr().initContainer("someContainer", null);
     response = target().path("/v2/containers").request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
@@ -113,7 +113,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     String testrigsUri =
         target().path("/v2/container").path(containerName).path("/testrigs").getUri().toString();
     Container expected = Container.makeContainer(containerName, testrigsUri);
-    Main.getWorkMgr().initContainer(containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
     Response response = target().path("/v2/container").path(containerName).request().get();
     if (response.getStatus() == 500) {
       System.err.println("Content is: " + response.readEntity(String.class));
@@ -165,7 +165,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void getEmptyTestrigs() throws Exception {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
     Response response =
         target().path("/v2/container").path(containerName).path("/testrigs").request().get();
     if (response.getStatus() == 500) {
@@ -178,7 +178,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void redirectTestrigs() throws Exception {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
     Response response =
         target()
             .property(FOLLOW_REDIRECTS, false)
@@ -196,21 +196,20 @@ public class WorkMgrServiceV2Test extends JerseyTest {
         target().path("/v2/container").path(containerName).path("/testrig/nonExisting");
     Response response = target.request().get();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    String expectedMessage = "Container 'someContainer' does not exist";
-    assertThat(response.readEntity(String.class), containsString(expectedMessage));
+    // TODO change statements like this when modified exceptionMapper
+    assertThat(response.readEntity(String.class), equalTo(""));
 
-    Main.getWorkMgr().initContainer(containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
     response = target.request().get();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    expectedMessage = "Testrig 'nonExisting' does not exist";
-    assertThat(response.readEntity(String.class), containsString(expectedMessage));
+    assertThat(response.readEntity(String.class), equalTo(""));
   }
 
   @Test
   public void testModifyTestrigs() throws Exception {
     //upload testrig
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
     Path testrigsPath = _folder.newFolder("testrig").toPath();
     assertTrue(testrigsPath.resolve("configs").toFile().createNewFile());
     assertTrue(testrigsPath.resolve("configs.txt").toFile().createNewFile());
@@ -259,12 +258,11 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void deleteNonExistingTestrigs() {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
     Response response =
         target().path("/v2/container").path("someContainer/testrig/nonExisting").request().delete();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    String expectedMessage = "Testrig 'nonExisting' does not exist";
-    assertThat(response.readEntity(String.class), containsString(expectedMessage));
+    assertThat(response.readEntity(String.class), equalTo(""));
   }
 
 }

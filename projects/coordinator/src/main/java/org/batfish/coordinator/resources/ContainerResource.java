@@ -59,7 +59,7 @@ public class ContainerResource {
   @POST
   public Response initContainer() {
     _logger.info("WMS: initContainer '" + _name + "'\n");
-    String outputContainerName = Main.getWorkMgr().initContainer(_name);
+    String outputContainerName = Main.getWorkMgr().initContainer(_name, null);
     Main.getAuthorizer().authorizeContainer(_apiKey, outputContainerName);
     return Response.ok("Container '" + _name + "' created").build();
   }
