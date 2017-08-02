@@ -65,47 +65,37 @@ public class Route implements Serializable {
       Subnet subnet,
       Configuration subnetCfgNode) {
     StaticRoute staticRoute;
+    StaticRoute.Builder srBuilder = new StaticRoute.Builder();
+    //setting the common properties
+    srBuilder.setNetwork(_destinationCidrBlock);
+    srBuilder.setAdministrativeCost(DEFAULT_STATIC_ROUTE_ADMIN);
+    srBuilder.setTag(DEFAULT_STATIC_ROUTE_COST);
+
     if (_state.equals("blackhole")) {
-      staticRoute =
-          new StaticRoute(
-              _destinationCidrBlock,
-              null,
-              Interface.NULL_INTERFACE_NAME,
-              DEFAULT_STATIC_ROUTE_ADMIN,
-              DEFAULT_STATIC_ROUTE_COST);
+      srBuilder.setNextHopIp(null);
+      srBuilder.setNextHopInterface(Interface.NULL_INTERFACE_NAME);
+      staticRoute = srBuilder.build();
     } else {
       switch (_targetType) {
         case Gateway:
           if (_target.equals("local")) {
             // send to the vpc router
-            staticRoute =
-                new StaticRoute(
-                    _destinationCidrBlock,
-                    vpcAddress,
-                    null,
-                    DEFAULT_STATIC_ROUTE_ADMIN,
-                    DEFAULT_STATIC_ROUTE_COST);
+            srBuilder.setNextHopIp(vpcAddress);
+            srBuilder.setNextHopInterface(null);
+            staticRoute = srBuilder.build();
           } else {
             // send to the specified internet gateway
             // if it's not the igw or vgw set for this subnet (and VPC),
             // throw an
             // exception
             if (_target.equals(subnet.getInternetGatewayId())) {
-              staticRoute =
-                  new StaticRoute(
-                      _destinationCidrBlock,
-                      igwAddress,
-                      null,
-                      DEFAULT_STATIC_ROUTE_ADMIN,
-                      DEFAULT_STATIC_ROUTE_COST);
+              srBuilder.setNextHopIp(igwAddress);
+              srBuilder.setNextHopInterface(null);
+              staticRoute = srBuilder.build();
             } else if (_target.equals(subnet.getVpnGatewayId())) {
-              staticRoute =
-                  new StaticRoute(
-                      _destinationCidrBlock,
-                      vgwAddress,
-                      null,
-                      DEFAULT_STATIC_ROUTE_ADMIN,
-                      DEFAULT_STATIC_ROUTE_COST);
+              srBuilder.setNextHopIp(vgwAddress);
+              srBuilder.setNextHopInterface(null);
+              staticRoute = srBuilder.build();
             } else {
               throw new BatfishException(
                   "Internet gateway \""
@@ -127,13 +117,9 @@ public class Route implements Serializable {
               throw new BatfishException(
                   "Ip of network interface specified in static route not in containing subnet");
             }
-            staticRoute =
-                new StaticRoute(
-                    _destinationCidrBlock,
-                    lowestIp,
-                    null,
-                    DEFAULT_STATIC_ROUTE_ADMIN,
-                    DEFAULT_STATIC_ROUTE_COST);
+            srBuilder.setNextHopIp(lowestIp);
+            srBuilder.setNextHopInterface(null);
+            staticRoute = srBuilder.build();
           } else {
             String networkInterfaceVpcId =
                 awsVpcConfiguration.getSubnets().get(networkInterfaceSubnetId).getVpcId();
@@ -167,13 +153,9 @@ public class Route implements Serializable {
             instanceIface.setIncomingFilter(instance.getInAcl());
             instanceIface.setOutgoingFilter(instance.getOutAcl());
             Ip nextHopIp = instanceIfacePrefix.getAddress();
-            staticRoute =
-                new StaticRoute(
-                    _destinationCidrBlock,
-                    nextHopIp,
-                    null,
-                    DEFAULT_STATIC_ROUTE_ADMIN,
-                    DEFAULT_STATIC_ROUTE_COST);
+            srBuilder.setNextHopIp(nextHopIp);
+            srBuilder.setNextHopInterface(null);
+            staticRoute = srBuilder.build();
           }
           break;
 
@@ -235,13 +217,9 @@ public class Route implements Serializable {
                   .getAddress();
 
           // initialize static route on new link
-          staticRoute =
-              new StaticRoute(
-                  _destinationCidrBlock,
-                  remoteVpcIfaceAddress,
-                  null,
-                  DEFAULT_STATIC_ROUTE_ADMIN,
-                  DEFAULT_STATIC_ROUTE_COST);
+          srBuilder.setNextHopIp(remoteVpcIfaceAddress);
+          srBuilder.setNextHopInterface(null);
+          staticRoute = srBuilder.build();
           break;
 
         case Instance:

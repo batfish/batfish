@@ -63,13 +63,13 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
       // add a route on the gateway to the vpc
       Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-      StaticRoute igwVpcRoute =
-          new StaticRoute(
-              vpc.getCidrBlock(),
-              vpcIfaceIp,
-              null,
-              Route.DEFAULT_STATIC_ROUTE_ADMIN,
-              Route.DEFAULT_STATIC_ROUTE_COST);
+      StaticRoute.Builder srBuilder = new StaticRoute.Builder();
+      srBuilder.setNetwork(vpc.getCidrBlock());
+      srBuilder.setNextHopIp(vpcIfaceIp);
+      srBuilder.setNextHopInterface(null);
+      srBuilder.setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN);
+      srBuilder.setTag(Route.DEFAULT_STATIC_ROUTE_COST);
+      StaticRoute igwVpcRoute = srBuilder.build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
     }
 

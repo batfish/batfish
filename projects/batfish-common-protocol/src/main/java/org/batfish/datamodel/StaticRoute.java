@@ -7,19 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class StaticRoute extends AbstractRoute {
 
   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
-
   private static final long serialVersionUID = 1L;
-
   private final int _administrativeCost;
-
   private final String _nextHopInterface;
-
   private final Ip _nextHopIp;
-
   private final int _tag;
 
   @JsonCreator
-  public StaticRoute(
+  private StaticRoute(
       @JsonProperty(NETWORK_VAR) Prefix network,
       @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
       @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
@@ -109,5 +104,36 @@ public class StaticRoute extends AbstractRoute {
   @Override
   public int routeCompare(AbstractRoute rhs) {
     return 0;
+  }
+
+  public static class Builder extends AbstractRouteBuilder<StaticRoute> {
+
+    private int _administrativeCost;
+
+    private String _nextHopInterface;
+
+    @Override
+    public StaticRoute build() {
+      if (_nextHopIp == null) {
+        _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+      }
+      return new StaticRoute(_network, _nextHopIp, _nextHopInterface, _administrativeCost, _tag);
+    }
+
+    public int getAdministrativeCost() {
+      return _administrativeCost;
+    }
+
+    public void setAdministrativeCost(int administrativeCost) {
+      this._administrativeCost = administrativeCost;
+    }
+
+    public String getNextHopInterface() {
+      return _nextHopInterface;
+    }
+
+    public void setNextHopInterface(String nextHopInterface) {
+      this._nextHopInterface = nextHopInterface;
+    }
   }
 }

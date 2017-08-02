@@ -80,74 +80,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** */
   private static final long serialVersionUID = 1L;
-
-  private static String communityRegexToJavaRegex(String regex) {
-    String out = regex;
-    out = out.replace(":*", ":.*");
-    out = out.replaceFirst("^\\*", ".*");
-    return out;
-  }
-
   private final Set<Long> _allStandardCommunities;
-
   private final Map<String, BaseApplication> _applications;
-
-  private Configuration _c;
-
   private final Map<String, CommunityList> _communityLists;
-
-  private boolean _defaultAddressSelection;
-
-  private LineAction _defaultCrossZoneAction;
-
-  private LineAction _defaultInboundAction;
-
   private final RoutingInstance _defaultRoutingInstance;
-
-  private NavigableSet<String> _dnsServers;
-
   private final Map<String, FirewallFilter> _filters;
-
   private final Map<String, AddressBook> _globalAddressBooks;
-
   private final Set<String> _ignoredPrefixLists;
-
   private final Map<String, IkeGateway> _ikeGateways;
-
   private final Map<String, IkePolicy> _ikePolicies;
-
   private final Map<String, IkeProposal> _ikeProposals;
-
   private final Map<String, Interface> _interfaces;
-
   private final Map<Interface, Zone> _interfaceZones;
-
   private final Map<String, IpsecPolicy> _ipsecPolicies;
-
   private final Map<String, IpsecProposal> _ipsecProposals;
-
   private final Map<String, IpsecVpn> _ipsecVpns;
-
   private final JuniperFamily _jf;
-
-  private transient Interface _lo0;
-
-  private transient boolean _lo0Initialized;
-
   private final Map<String, NodeDevice> _nodeDevices;
-
-  private NavigableSet<String> _ntpServers;
-
   private final Map<String, PolicyStatement> _policyStatements;
-
   private final Map<String, PrefixList> _prefixLists;
-
   private final SortedSet<String> _roles;
-
   private final Map<String, RouteFilter> _routeFilters;
-
   private final Map<String, RoutingInstance> _routingInstances;
-
+  private final Map<String, Zone> _zones;
+  private Configuration _c;
+  private boolean _defaultAddressSelection;
+  private LineAction _defaultCrossZoneAction;
+  private LineAction _defaultInboundAction;
+  private NavigableSet<String> _dnsServers;
+  private transient Interface _lo0;
+  private transient boolean _lo0Initialized;
+  private NavigableSet<String> _ntpServers;
   private NavigableSet<String> _syslogHosts;
 
   private NavigableSet<String> _tacplusServers;
@@ -157,8 +120,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private transient Map<String, Integer> _unreferencedBgpGroups;
 
   private ConfigurationFormat _vendor;
-
-  private final Map<String, Zone> _zones;
 
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
     _allStandardCommunities = new HashSet<>();
@@ -191,6 +152,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _tacplusServers = new TreeSet<>();
     _unimplementedFeatures = unimplementedFeatures;
     _zones = new TreeMap<>();
+  }
+
+  private static String communityRegexToJavaRegex(String regex) {
+    String out = regex;
+    out = out.replace(":*", ":.*");
+    out = out.replaceFirst("^\\*", ".*");
+    return out;
   }
 
   private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
@@ -545,6 +513,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _defaultCrossZoneAction;
   }
 
+  public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
+    _defaultCrossZoneAction = defaultCrossZoneAction;
+  }
+
   public final RoutingInstance getDefaultRoutingInstance() {
     return _defaultRoutingInstance;
   }
@@ -568,6 +540,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public final String getHostname() {
     return _defaultRoutingInstance.getHostname();
+  }
+
+  @Override
+  public final void setHostname(String hostname) {
+    _defaultRoutingInstance.setHostname(hostname);
   }
 
   public Set<String> getIgnoredPrefixLists() {
@@ -627,6 +604,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _roles;
   }
 
+  @Override
+  public void setRoles(SortedSet<String> roles) {
+    _roles.addAll(roles);
+  }
+
   public final Map<String, RouteFilter> getRouteFilters() {
     return _routeFilters;
   }
@@ -637,6 +619,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public NavigableSet<String> getSyslogHosts() {
     return _syslogHosts;
+  }
+
+  public void setSyslogHosts(NavigableSet<String> syslogHosts) {
+    _syslogHosts = syslogHosts;
   }
 
   public NavigableSet<String> getTacplusServers() {
@@ -754,17 +740,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _defaultAddressSelection = defaultAddressSelection;
   }
 
-  public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
-    _defaultCrossZoneAction = defaultCrossZoneAction;
-  }
-
   public void setDefaultInboundAction(LineAction defaultInboundAction) {
     _defaultInboundAction = defaultInboundAction;
-  }
-
-  @Override
-  public final void setHostname(String hostname) {
-    _defaultRoutingInstance.setHostname(hostname);
   }
 
   private void setPolicyStatementReferent(String policyName, Object referer, String description) {
@@ -791,15 +768,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
-  }
-
-  public void setSyslogHosts(NavigableSet<String> syslogHosts) {
-    _syslogHosts = syslogHosts;
   }
 
   @Override
@@ -1489,9 +1457,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Integer oldTag = route.getTag();
     int tag;
     tag = oldTag != null ? oldTag : -1;
-    org.batfish.datamodel.StaticRoute newStaticRoute =
-        new org.batfish.datamodel.StaticRoute(
-            prefix, nextHopIp, nextHopInterface, administrativeCost, tag);
+    org.batfish.datamodel.StaticRoute.Builder srBuilder =
+        new org.batfish.datamodel.StaticRoute.Builder();
+    srBuilder.setNetwork(prefix);
+    srBuilder.setNextHopIp(nextHopIp);
+    srBuilder.setNextHopInterface(nextHopInterface);
+    srBuilder.setAdministrativeCost(administrativeCost);
+    srBuilder.setTag(tag);
+    org.batfish.datamodel.StaticRoute newStaticRoute = srBuilder.build();
     return newStaticRoute;
   }
 

@@ -97,165 +97,80 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
 
-  private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
-
   public static final String MANAGEMENT_VRF_NAME = "management";
-
-  private static final int MAX_ADMINISTRATIVE_COST = 32767;
-
-  private static final long serialVersionUID = 1L;
-
   public static final String VENDOR_NAME = "cisco";
-
+  private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
+  private static final int MAX_ADMINISTRATIVE_COST = 32767;
+  private static final long serialVersionUID = 1L;
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
-
-  private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
-    String mapName = map.getName();
-    String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
-    return clausePolicyName;
-  }
-
-  static String toJavaRegex(String ciscoRegex) {
-    String withoutQuotes;
-    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
-      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
-    } else {
-      withoutQuotes = ciscoRegex;
-    }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
-    return output;
-  }
-
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
-
   private final Map<String, AsPathSet> _asPathSets;
-
   private final Set<String> _bgpVrfAggregateAddressRouteMaps;
-
   private final CiscoFamily _cf;
-
   /**
    * These can be either ipv4 or ipv6, so we must check both protocols for access-lists when doing
    * undefined references check
    */
   private final Set<String> _classMapAccessGroups;
-
   private final Set<String> _controlPlaneAccessGroups;
-
   private final Set<String> _cryptoAcls;
-
-  private NavigableSet<String> _dnsServers;
-
-  private String _dnsSourceInterface;
-
-  private String _domainName;
-
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
-
   private final Map<String, ExtendedAccessList> _extendedAccessLists;
-
   private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
-
-  private boolean _failover;
-
-  private String _failoverCommunicationInterface;
-
-  private String _failoverCommunicationInterfaceAlias;
-
   private final Map<String, String> _failoverInterfaces;
-
   private final Map<String, Prefix> _failoverPrimaryPrefixes;
-
-  private boolean _failoverSecondary;
-
   private final Map<String, Prefix> _failoverStandbyPrefixes;
-
-  private String _failoverStatefulSignalingInterface;
-
-  private String _failoverStatefulSignalingInterfaceAlias;
-
-  private String _hostname;
-
   private final Set<String> _igmpAcls;
-
   private final Map<String, Interface> _interfaces;
-
   private final Set<String> _ipNatDestinationAccessLists;
-
   private final Set<String> _ipPimNeighborFilters;
-
   private final Set<String> _lineAccessClassLists;
-
   private final Set<String> _lineIpv6AccessClassLists;
-
   private final Map<String, MacAccessList> _macAccessLists;
-
   private final Set<String> _managementAccessGroups;
-
   private final Set<String> _msdpPeerSaLists;
-
   private final Map<String, NatPool> _natPools;
-
   private final Set<String> _ntpAccessGroups;
-
-  private String _ntpSourceInterface;
-
   private final Set<String> _pimAcls;
-
   private final Set<String> _pimRouteMaps;
-
   private final Map<String, Prefix6List> _prefix6Lists;
-
   private final Map<String, PrefixList> _prefixLists;
-
   private final Set<String> _referencedRouteMaps;
-
   private final SortedSet<String> _roles;
-
   private final Map<String, RouteMap> _routeMaps;
-
   private final Map<String, RoutePolicy> _routePolicies;
-
   private final Set<String> _snmpAccessLists;
-
-  private SnmpServer _snmpServer;
-
-  private String _snmpSourceInterface;
-
-  private boolean _spanningTreePortfastDefault;
-
   private final Set<String> _sshAcls;
-
   private final Set<String> _sshIpv6Acls;
-
   private final Map<String, StandardAccessList> _standardAccessLists;
-
   private final Map<String, StandardCommunityList> _standardCommunityLists;
-
   private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
-
-  private NavigableSet<String> _tacacsServers;
-
-  private String _tacacsSourceInterface;
-
   private final SortedMap<String, Integer> _undefinedPeerGroups;
-
-  private transient Set<String> _unimplementedFeatures;
-
-  private transient Map<String, Integer> _unusedPeerGroups;
-
-  private transient Map<String, Integer> _unusedPeerSessions;
-
-  private ConfigurationFormat _vendor;
-
   private final Set<String> _verifyAccessLists;
-
   private final Map<String, Vrf> _vrfs;
-
   private final Set<String> _wccpAcls;
+  private NavigableSet<String> _dnsServers;
+  private String _dnsSourceInterface;
+  private String _domainName;
+  private boolean _failover;
+  private String _failoverCommunicationInterface;
+  private String _failoverCommunicationInterfaceAlias;
+  private boolean _failoverSecondary;
+  private String _failoverStatefulSignalingInterface;
+  private String _failoverStatefulSignalingInterfaceAlias;
+  private String _hostname;
+  private String _ntpSourceInterface;
+  private SnmpServer _snmpServer;
+  private String _snmpSourceInterface;
+  private boolean _spanningTreePortfastDefault;
+  private NavigableSet<String> _tacacsServers;
+  private String _tacacsSourceInterface;
+  private transient Set<String> _unimplementedFeatures;
+  private transient Map<String, Integer> _unusedPeerGroups;
+  private transient Map<String, Integer> _unusedPeerSessions;
+  private ConfigurationFormat _vendor;
 
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
@@ -304,6 +219,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _wccpAcls = new TreeSet<>();
+  }
+
+  private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
+    String mapName = map.getName();
+    String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
+    return clausePolicyName;
+  }
+
+  static String toJavaRegex(String ciscoRegex) {
+    String withoutQuotes;
+    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+    } else {
+      withoutQuotes = ciscoRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
   }
 
   private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -453,6 +386,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
+  public void setDnsSourceInterface(String dnsSourceInterface) {
+    _dnsSourceInterface = dnsSourceInterface;
+  }
+
   public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
     return _expandedCommunityLists;
   }
@@ -469,12 +406,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failover;
   }
 
+  public void setFailover(boolean failover) {
+    _failover = failover;
+  }
+
   public String getFailoverCommunicationInterface() {
     return _failoverCommunicationInterface;
   }
 
+  public void setFailoverCommunicationInterface(String failoverCommunicationInterface) {
+    _failoverCommunicationInterface = failoverCommunicationInterface;
+  }
+
   public String getFailoverCommunicationInterfaceAlias() {
     return _failoverCommunicationInterfaceAlias;
+  }
+
+  public void setFailoverCommunicationInterfaceAlias(String failoverCommunicationInterfaceAlias) {
+    _failoverCommunicationInterfaceAlias = failoverCommunicationInterfaceAlias;
   }
 
   public Map<String, String> getFailoverInterfaces() {
@@ -489,6 +438,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverSecondary;
   }
 
+  public void setFailoverSecondary(boolean failoverSecondary) {
+    _failoverSecondary = failoverSecondary;
+  }
+
   public Map<String, Prefix> getFailoverStandbyPrefixes() {
     return _failoverStandbyPrefixes;
   }
@@ -497,13 +450,27 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverStatefulSignalingInterface;
   }
 
+  public void setFailoverStatefulSignalingInterface(String failoverStatefulSignalingInterface) {
+    _failoverStatefulSignalingInterface = failoverStatefulSignalingInterface;
+  }
+
   public String getFailoverStatefulSignalingInterfaceAlias() {
     return _failoverStatefulSignalingInterfaceAlias;
+  }
+
+  public void setFailoverStatefulSignalingInterfaceAlias(
+      String failoverStatefulSignalingInterfaceAlias) {
+    _failoverStatefulSignalingInterfaceAlias = failoverStatefulSignalingInterfaceAlias;
   }
 
   @Override
   public final String getHostname() {
     return _hostname;
+  }
+
+  @Override
+  public final void setHostname(String hostname) {
+    _hostname = hostname;
   }
 
   public Set<String> getIgmpAcls() {
@@ -554,6 +521,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _ntpSourceInterface;
   }
 
+  public void setNtpSourceInterface(String ntpSourceInterface) {
+    _ntpSourceInterface = ntpSourceInterface;
+  }
+
   public Set<String> getPimAcls() {
     return _pimAcls;
   }
@@ -577,6 +548,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public SortedSet<String> getRoles() {
     return _roles;
+  }
+
+  @Override
+  public void setRoles(SortedSet<String> roles) {
+    _roles.addAll(roles);
   }
 
   public final Map<String, RouteMap> getRouteMaps() {
@@ -667,12 +643,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _snmpServer;
   }
 
+  public void setSnmpServer(SnmpServer snmpServer) {
+    _snmpServer = snmpServer;
+  }
+
   public String getSnmpSourceInterface() {
     return _snmpSourceInterface;
   }
 
+  public void setSnmpSourceInterface(String snmpSourceInterface) {
+    _snmpSourceInterface = snmpSourceInterface;
+  }
+
   public boolean getSpanningTreePortfastDefault() {
     return _spanningTreePortfastDefault;
+  }
+
+  public void setSpanningTreePortfastDefault(boolean spanningTreePortfastDefault) {
+    _spanningTreePortfastDefault = spanningTreePortfastDefault;
   }
 
   public Set<String> getSshAcls() {
@@ -701,6 +689,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
+  }
+
+  public void setTacacsSourceInterface(String tacacsSourceInterface) {
+    _tacacsSourceInterface = tacacsSourceInterface;
   }
 
   public SortedMap<String, Integer> getUndefinedPeerGroups() {
@@ -763,6 +755,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public ConfigurationFormat getVendor() {
     return _vendor;
+  }
+
+  @Override
+  public void setVendor(ConfigurationFormat format) {
+    _vendor = format;
   }
 
   public Set<String> getVerifyAccessLists() {
@@ -950,72 +947,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  public void setDnsSourceInterface(String dnsSourceInterface) {
-    _dnsSourceInterface = dnsSourceInterface;
-  }
-
   public void setDomainName(String domainName) {
     _domainName = domainName;
-  }
-
-  public void setFailover(boolean failover) {
-    _failover = failover;
-  }
-
-  public void setFailoverCommunicationInterface(String failoverCommunicationInterface) {
-    _failoverCommunicationInterface = failoverCommunicationInterface;
-  }
-
-  public void setFailoverCommunicationInterfaceAlias(String failoverCommunicationInterfaceAlias) {
-    _failoverCommunicationInterfaceAlias = failoverCommunicationInterfaceAlias;
-  }
-
-  public void setFailoverSecondary(boolean failoverSecondary) {
-    _failoverSecondary = failoverSecondary;
-  }
-
-  public void setFailoverStatefulSignalingInterface(String failoverStatefulSignalingInterface) {
-    _failoverStatefulSignalingInterface = failoverStatefulSignalingInterface;
-  }
-
-  public void setFailoverStatefulSignalingInterfaceAlias(
-      String failoverStatefulSignalingInterfaceAlias) {
-    _failoverStatefulSignalingInterfaceAlias = failoverStatefulSignalingInterfaceAlias;
-  }
-
-  @Override
-  public final void setHostname(String hostname) {
-    _hostname = hostname;
-  }
-
-  public void setNtpSourceInterface(String ntpSourceInterface) {
-    _ntpSourceInterface = ntpSourceInterface;
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
-  }
-
-  public void setSnmpServer(SnmpServer snmpServer) {
-    _snmpServer = snmpServer;
-  }
-
-  public void setSnmpSourceInterface(String snmpSourceInterface) {
-    _snmpSourceInterface = snmpSourceInterface;
-  }
-
-  public void setSpanningTreePortfastDefault(boolean spanningTreePortfastDefault) {
-    _spanningTreePortfastDefault = spanningTreePortfastDefault;
-  }
-
-  public void setTacacsSourceInterface(String tacacsSourceInterface) {
-    _tacacsSourceInterface = tacacsSourceInterface;
-  }
-
-  @Override
-  public void setVendor(ConfigurationFormat format) {
-    _vendor = format;
   }
 
   private AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
@@ -2885,8 +2818,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Integer oldTag = staticRoute.getTag();
     int tag;
     tag = oldTag != null ? oldTag : -1;
-    return new org.batfish.datamodel.StaticRoute(
-        prefix, nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
+    org.batfish.datamodel.StaticRoute.Builder srBuilder =
+        new org.batfish.datamodel.StaticRoute.Builder();
+    srBuilder.setNetwork(prefix);
+    srBuilder.setNextHopIp(nextHopIp);
+    srBuilder.setNextHopInterface(nextHopInterface);
+    srBuilder.setAdministrativeCost(staticRoute.getDistance());
+    srBuilder.setTag(tag);
+    return srBuilder.build();
   }
 
   @Override

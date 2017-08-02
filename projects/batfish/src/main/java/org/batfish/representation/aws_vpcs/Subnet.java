@@ -181,13 +181,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
     vpcIface.getAllPrefixes().add(vpcIfacePrefix);
     vpcIface.setPrefix(vpcIfacePrefix);
     // add a static route on the vpc router for this subnet
-    StaticRoute vpcToSubnetRoute =
-        new StaticRoute(
-            _cidrBlock,
-            subnetIfacePrefix.getAddress(),
-            null,
-            Route.DEFAULT_STATIC_ROUTE_ADMIN,
-            Route.DEFAULT_STATIC_ROUTE_COST);
+    StaticRoute.Builder srBuilder = new StaticRoute.Builder();
+    srBuilder.setNetwork(_cidrBlock);
+    srBuilder.setNextHopIp(subnetIfacePrefix.getAddress());
+    srBuilder.setNextHopInterface(null);
+    srBuilder.setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN);
+    srBuilder.setTag(Route.DEFAULT_STATIC_ROUTE_COST);
+    StaticRoute vpcToSubnetRoute = srBuilder.build();
     vpcConfigNode.getDefaultVrf().getStaticRoutes().add(vpcToSubnetRoute);
 
     // attach to igw if it exists

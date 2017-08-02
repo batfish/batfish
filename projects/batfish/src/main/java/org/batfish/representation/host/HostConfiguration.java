@@ -226,26 +226,26 @@ public class HostConfiguration extends VendorConfiguration {
     for (HostInterface iface : _hostInterfaces.values()) {
       Ip gateway = iface.getGateway();
       if (gateway != null) {
-        StaticRoute sr =
-            new StaticRoute(
-                Prefix.ZERO,
-                gateway,
-                iface.getName(),
-                HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST,
-                AbstractRoute.NO_TAG);
+        StaticRoute.Builder srBuilder = new StaticRoute.Builder();
+        srBuilder.setNetwork(Prefix.ZERO);
+        srBuilder.setNextHopIp(gateway);
+        srBuilder.setNextHopInterface(iface.getName());
+        srBuilder.setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
+        srBuilder.setTag(AbstractRoute.NO_TAG);
+        StaticRoute sr = srBuilder.build();
         staticRoutes.add(sr);
         break;
       }
     }
     if (_staticRoutes.isEmpty() && staticRoutes.isEmpty() && !_c.getInterfaces().isEmpty()) {
       String ifaceName = _c.getInterfaces().values().iterator().next().getName();
-      StaticRoute sr =
-          new StaticRoute(
-              Prefix.ZERO,
-              null,
-              ifaceName,
-              HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST,
-              AbstractRoute.NO_TAG);
+      StaticRoute.Builder srBuilder = new StaticRoute.Builder();
+      srBuilder.setNetwork(Prefix.ZERO);
+      srBuilder.setNextHopIp(null);
+      srBuilder.setNextHopInterface(ifaceName);
+      srBuilder.setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
+      srBuilder.setTag(AbstractRoute.NO_TAG);
+      StaticRoute sr = srBuilder.build();
       _c.getDefaultVrf().getStaticRoutes().add(sr);
     }
     return _c;
