@@ -15,6 +15,8 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.storage.FileStorageImpl;
+import org.batfish.storage.Storage;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -27,6 +29,7 @@ public class Main {
   private static PoolMgr _poolManager;
   private static Settings _settings;
   private static WorkMgr _workManager;
+  private static Storage _storage;
 
   static Logger httpServerLogger =
       Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
@@ -51,6 +54,10 @@ public class Main {
 
   public static WorkMgr getWorkMgr() {
     return _workManager;
+  }
+
+  public static Storage getStorage() {
+    return _storage;
   }
 
   public static void setLogger(BatfishLogger logger) {
@@ -160,6 +167,10 @@ public class Main {
     _workManager.startWorkManager();
   }
 
+  public static void initStorage() {
+    _storage = new FileStorageImpl(_settings.getContainersLocation());
+  }
+
   public static void main(String[] args) {
     mainInit(args);
     _logger =
@@ -177,6 +188,7 @@ public class Main {
     _settings = null;
     try {
       _settings = new Settings(args);
+      initStorage();
       networkListenerLogger.setLevel(Level.WARNING);
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {

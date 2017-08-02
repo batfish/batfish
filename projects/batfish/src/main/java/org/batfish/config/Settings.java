@@ -372,6 +372,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_ANONYMIZE = "anonymize";
 
+  private static final String ARG_CONTAINERS_LOCATION = "containerslocation";
+
+  private static final String ARG_CONTAINER_NAME = "containername";
+
   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
   private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
@@ -493,6 +497,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private int _coordinatorPoolPort;
 
   private boolean _coordinatorRegister;
+
+  private Path _containersLocation;
+
+  private String _containerName;
 
   private int _coordinatorWorkPort;
 
@@ -705,6 +713,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public Path getContainerDir() {
     return _containerDir;
+  }
+
+  public String getContainerName() {
+    return _containerName;
+  }
+
+  public Path getContainersLocation() {
+    return _containersLocation;
   }
 
   public String getCoordinatorHost() {
@@ -1008,7 +1024,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_ANONYMIZE, false);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
+    setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers");
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
+    setDefaultProperty(ARG_CONTAINER_NAME, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
@@ -1100,6 +1118,13 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_COORDINATOR_HOST,
         "hostname of coordinator for registration with -" + ARG_SERVICE_MODE,
         ARGNAME_HOSTNAME);
+
+    addOption(ARG_CONTAINERS_LOCATION, "where to store containers", "containers_location");
+
+    addOption(
+        ARG_CONTAINER_NAME,
+        "name of current container in request from coordinator",
+        "container_name");
 
     addOption(ARG_COORDINATOR_POOL_PORT, "coordinator pool manager listening port", ARGNAME_PORT);
 
@@ -1338,7 +1363,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
     _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
     _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
-    _containerDir = getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
+    _containerName = getStringOptionValue(ARG_CONTAINER_NAME);
+    _containersLocation = getPathOptionValue(ARG_CONTAINERS_LOCATION);
     _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
     _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
@@ -1424,6 +1450,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
     _activeTestrigSettings = activeTestrigSettings;
+  }
+
+  public void setContainerDir(Path containerDir) {
+    _containerDir = containerDir;
+  }
+
+  public void setContainerName(String containerName) {
+    _containerName = containerName;
   }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {

@@ -1,7 +1,6 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +22,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -126,11 +124,10 @@ public class WorkMgr {
     try {
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
-      Path containerDir =
-          Main.getSettings().getContainersLocation().resolve(work.getWorkItem().getContainerName());
+      Path containerDir = Main.getStorage().getContainer(work.getWorkItem().getContainerName());
       String testrigName = work.getWorkItem().getTestrigName();
       Path testrigBaseDir = containerDir.resolve(testrigName).toAbsolutePath();
-      task.put(BfConsts.ARG_CONTAINER_DIR, containerDir.toAbsolutePath().toString());
+      task.put(BfConsts.ARG_CONTAINER_NAME, work.getWorkItem().getContainerName());
       task.put(BfConsts.ARG_TESTRIG, testrigName);
       task.put(
           BfConsts.ARG_LOG_FILE,
@@ -532,9 +529,7 @@ public class WorkMgr {
     return answer;
   }
 
-  /**
-   * Return a {@link Container container} contains all testrigs directoreis inside it
-   */
+  /** Return a {@link Container container} contains all testrigs directoreis inside it */
   public Container getContainer(Path containerDir) {
     Container container = new Container();
     SortedSet<String> testrigs =
@@ -691,14 +686,8 @@ public class WorkMgr {
     if (containerName == null || containerName.equals("")) {
       containerName = containerPrefix + "_" + UUID.randomUUID();
     }
-    Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
-    if (Files.exists(containerDir)) {
-      throw new BatfishException("Container '" + containerName + "' already exists!");
-    }
-    if (!containerDir.toFile().mkdirs()) {
-      throw new BatfishException("failed to create directory '" + containerDir.toString() + "'");
-    }
-    return containerName;
+    String outputContainerName = Main.getStorage().createContainer(containerName);
+    return outputContainerName;
   }
 
   private boolean isEnvFile(Path path) {
@@ -745,9 +734,8 @@ public class WorkMgr {
     }
     SortedSet<String> authorizedContainers =
         new TreeSet<>(
-            CommonUtil.getSubdirectories(containersDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
+            Main.getStorage()
+                .getAllContainers()
                 .filter(
                     container ->
                         Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
@@ -971,7 +959,7 @@ public class WorkMgr {
   }
 
   public void uploadTestrig(String containerName, String testrigName, InputStream fileStream) {
-    Path containerDir = getdirContainer(containerName);
+    Path containerDir = Main.getStorage().getContainer(containerName);
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
     if (Files.exists(testrigDir)) {
       throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");

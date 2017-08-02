@@ -36,6 +36,7 @@ public class BfConsts {
   public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
   public static final String ARG_BLOCK_NAMES = "blocknames";
   public static final String ARG_CONTAINER_DIR = "containerdir";
+  public static final String ARG_CONTAINER_NAME = "containername";
   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
   public static final String ARG_DIFF_ACTIVE = "diffactive";
