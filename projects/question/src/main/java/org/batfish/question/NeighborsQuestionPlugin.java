@@ -378,7 +378,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public AnswerElement answer() {
+    public NeighborsAnswerElement answer() {
       NeighborsQuestion question = (NeighborsQuestion) _question;
       Pattern node1Regex;
       Pattern node2Regex;
@@ -452,8 +452,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           case ROLE:
             SortedSet<RoleEdge> redges = new TreeSet<>();
             for (VerboseOspfEdge vedge : vedges) {
-              SortedSet<String> roles1 = _nodeRolesMap.get(vedge.getNode1());
-              SortedSet<String> roles2 = _nodeRolesMap.get(vedge.getNode2());
+              SortedSet<String> roles1 =
+                  _nodeRolesMap.getOrDefault(vedge.getNode1(), new TreeSet<>());
+              SortedSet<String> roles2 =
+                  _nodeRolesMap.getOrDefault(vedge.getNode2(), new TreeSet<>());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   redges.add(new RoleEdge(r1, r2));
@@ -596,8 +598,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           case ROLE:
             SortedSet<RoleEdge> rMatchingEdges = new TreeSet<>();
             for (Edge edge : matchingEdges) {
-              SortedSet<String> roles1 = _nodeRolesMap.get(edge.getNode1());
-              SortedSet<String> roles2 = _nodeRolesMap.get(edge.getNode2());
+              SortedSet<String> roles1 =
+                  _nodeRolesMap.getOrDefault(edge.getNode1(), new TreeSet<>());
+              SortedSet<String> roles2 =
+                  _nodeRolesMap.getOrDefault(edge.getNode2(), new TreeSet<>());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   rMatchingEdges.add(new RoleEdge(r1, r2));
@@ -642,8 +646,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private SortedSet<RoleEdge> verboseToRoleEdges(SortedSet<VerboseBgpEdge> vedges) {
       SortedSet<RoleEdge> redges = new TreeSet<>();
       for (VerboseBgpEdge vedge : vedges) {
-        SortedSet<String> roles1 = _nodeRolesMap.get(vedge.getNode1());
-        SortedSet<String> roles2 = _nodeRolesMap.get(vedge.getNode2());
+        SortedSet<String> roles1 = _nodeRolesMap.getOrDefault(vedge.getNode1(), new TreeSet<>());
+        SortedSet<String> roles2 = _nodeRolesMap.getOrDefault(vedge.getNode2(), new TreeSet<>());
         for (String r1 : roles1) {
           for (String r2 : roles2) {
             redges.add(new RoleEdge(r1, r2));
