@@ -37,6 +37,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_QUEUE_TYPE = "qtype";
   private static final String ARG_SERVICE_POOL_PORT = "poolport";
   private static final String ARG_SERVICE_WORK_PORT = "workport";
+  private static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
   private static final String ARG_SSL_POOL_DISABLE = "sslpooldisable";
 
   private static final String ARG_SSL_POOL_KEYSTORE_FILE = "sslpoolkeystorefile";
@@ -81,6 +82,7 @@ public class Settings extends BaseSettings {
   private String _queuIncompleteWork;
   private int _servicePoolPort;
   private int _serviceWorkPort;
+  private int _serviceWorkV2Port;
   private boolean _sslPoolDisable;
   private Path _sslPoolKeystoreFile;
   private String _sslPoolKeystorePassword;
@@ -191,6 +193,10 @@ public class Settings extends BaseSettings {
     return _serviceWorkPort;
   }
 
+  public int getServiceWorkV2Port() {
+    return _serviceWorkV2Port;
+  }
+
   public boolean getSslPoolDisable() {
     return _sslPoolDisable;
   }
@@ -281,6 +287,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_WORK_BIND_HOST, "0.0.0.0");
     setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
+    setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
     setDefaultProperty(ARG_SSL_POOL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(ARG_SSL_POOL_KEYSTORE_FILE, null);
     setDefaultProperty(ARG_SSL_POOL_KEYSTORE_PASSWORD, null);
@@ -393,6 +400,7 @@ public class Settings extends BaseSettings {
     _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
     _workBindHost = getStringOptionValue(ARG_WORK_BIND_HOST);
     _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
+    _serviceWorkV2Port = getIntegerOptionValue(ARG_SERVICE_WORK_V2_PORT);
     _sslPoolDisable = getBooleanOptionValue(ARG_SSL_POOL_DISABLE);
     _sslPoolKeystoreFile = getPathOptionValue(ARG_SSL_POOL_KEYSTORE_FILE);
     _sslPoolKeystorePassword = getStringOptionValue(ARG_SSL_POOL_KEYSTORE_PASSWORD);

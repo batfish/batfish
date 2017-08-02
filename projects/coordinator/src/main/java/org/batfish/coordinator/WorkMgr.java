@@ -1,8 +1,8 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,13 +23,15 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -532,19 +534,15 @@ public class WorkMgr {
     return answer;
   }
 
-  /**
-   * Return a {@link Container container} contains all testrigs directoreis inside it
-   */
+  //  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  public Container getContainer(String containerName) {
+    return getContainer(getdirContainer(containerName));
+  }
+
+  /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
-    Container container = new Container();
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-    container.setTestrigs(testrigs);
-    return container;
+    String testrigUri = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).toString();
+    return Container.makeContainer(containerDir.toFile().getName(), testrigUri);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -687,10 +685,7 @@ public class WorkMgr {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(String containerName, String containerPrefix) {
-    if (containerName == null || containerName.equals("")) {
-      containerName = containerPrefix + "_" + UUID.randomUUID();
-    }
+  public String initContainer(String containerName) {
     Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
     if (Files.exists(containerDir)) {
       throw new BatfishException("Container '" + containerName + "' already exists!");
@@ -754,6 +749,10 @@ public class WorkMgr {
                 .collect(Collectors.toSet()));
     return authorizedContainers;
   }
+
+  //  public List<Container> getContainers(@Nullable String apiKey) {
+  //    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
+  //  }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);
@@ -1021,4 +1020,82 @@ public class WorkMgr {
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
   }
+
+  private Path getContainerPath(String containerName) {
+    return Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+  }
+
+  public boolean checkContainerExist(String containerName) {
+    Path containerDir = getContainerPath(containerName);
+    return containerDir != null && Files.exists(containerDir);
+  }
+
+  private Path getTestrigPath(String containerName, String testrigName) {
+    Path containerDir = getContainerPath(containerName);
+    return containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrigName);
+  }
+
+  public boolean checkTestrigExist(String containerName, String testrigName) {
+    Path testrigDir = getTestrigPath(containerName, testrigName);
+    return testrigDir != null && Files.exists(testrigDir);
+  }
+
+  public URI getConfigsUri(String containerName, UriInfo uriInfo, String testrigName) {
+    UriBuilder ub = uriInfo.getBaseUriBuilder();
+    ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
+        .path("container")
+        .path(containerName)
+        .path("testrig")
+        .path(testrigName)
+        .path("configs");
+    return ub.build();
+  }
+
+  public URI getHostsUri(String containerName, UriInfo uriInfo, String testrigName) {
+    UriBuilder ub = uriInfo.getBaseUriBuilder();
+    ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
+        .path("container")
+        .path(containerName)
+        .path("testrig")
+        .path(testrigName)
+        .path("hosts");
+    return ub.build();
+  }
+
+  //  public Testrig getTestrig(String containerName, String testrigName){
+  //    SortedSet<Path> entries = CommonUtil.getEntries(getTestrigPath(containerName, testrigName)
+  //    .resolve("testrig"));
+  //    Map<String, String> configurations = new HashMap<>();
+  //    Map<String, String> hostConfigs = new HashMap<>();
+  //    try {
+  //      for (Path entry : entries) {
+  //        if (Files.isDirectory(entry)) {
+  //          if (entry.getFileName().toString().equals(BfConsts.RELPATH_CONFIGURATIONS_DIR)){
+  //            for (Path configPath : CommonUtil.getEntries(entry)) {
+  //              if (Files.isRegularFile(configPath)) {
+  //                configurations.put(entry.getFileName().toString(),
+  //                    new String(Files.readAllBytes(configPath)));
+  //              }
+  //            }
+  //          } else if (entry.getFileName().toString().equals(BfConsts.RELPATH_HOST_CONFIGS_DIR)) {
+  //            for (Path hostConfigPath : CommonUtil.getEntries(entry)) {
+  //              if (Files.isRegularFile(hostConfigPath)) {
+  //                hostConfigs.put(entry.getFileName().toString(),
+  //                    new String(Files.readAllBytes(hostConfigPath)));
+  //              }
+  //            }
+  //          }
+  //        }
+  //      }
+  //    } catch (IOException e) {
+  //      _logger.info("Failed at getTestrig: " + e.getMessage());
+  //      throw new BatfishException("Failed at getTestrig", e);
+  //    }
+  //
+  //    Map<String, Map<String, String>> configs = new HashMap<>();
+  //    configs.put(BfConsts.RELPATH_CONFIGURATIONS_DIR, configurations);
+  //    configs.put(BfConsts.RELPATH_HOST_CONFIGS_DIR, hostConfigs);
+  //    return Testrig.makeTestrig(testrigName, configs);
+  //  }
+
 }
