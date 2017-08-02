@@ -7,10 +7,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class StaticRoute extends AbstractRoute {
 
   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+
   private static final long serialVersionUID = 1L;
+
   private final int _administrativeCost;
+
   private final String _nextHopInterface;
+
   private final Ip _nextHopIp;
+
   private final int _tag;
 
   @JsonCreator

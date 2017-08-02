@@ -46,46 +46,86 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
-  final Configuration _c;
-  final Vrf _vrf;
-  private final Map<String, Node> _nodes;
+
   transient BgpMultipathRib _baseEbgpRib;
+
   transient BgpMultipathRib _baseIbgpRib;
+
   transient BgpBestPathRib _bgpBestPathRib;
+
   transient BgpMultipathRib _bgpMultipathRib;
+
+  final Configuration _c;
+
   transient ConnectedRib _connectedRib;
+
   transient BgpBestPathRib _ebgpBestPathRib;
+
   transient BgpMultipathRib _ebgpMultipathRib;
+
   transient BgpMultipathRib _ebgpStagingRib;
+
   Fib _fib;
+
   transient Rib _generatedRib;
+
   transient BgpBestPathRib _ibgpBestPathRib;
+
   transient BgpMultipathRib _ibgpMultipathRib;
+
   transient BgpMultipathRib _ibgpStagingRib;
+
   transient Rib _independentRib;
+
   Rib _mainRib;
+
+  private final Map<String, Node> _nodes;
+
   transient OspfExternalType1Rib _ospfExternalType1Rib;
+
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
+
   transient OspfExternalType2Rib _ospfExternalType2Rib;
+
   transient OspfExternalType2Rib _ospfExternalType2StagingRib;
+
   transient OspfInterAreaRib _ospfInterAreaRib;
+
   transient OspfInterAreaRib _ospfInterAreaStagingRib;
+
   transient OspfIntraAreaRib _ospfIntraAreaRib;
+
   transient OspfIntraAreaRib _ospfIntraAreaStagingRib;
+
   transient OspfRib _ospfRib;
+
   transient BgpBestPathRib _prevBgpBestPathRib;
+
   transient BgpMultipathRib _prevBgpRib;
+
   transient BgpBestPathRib _prevEbgpBestPathRib;
+
   transient BgpMultipathRib _prevEbgpRib;
+
   transient BgpBestPathRib _prevIbgpBestPathRib;
+
   transient BgpMultipathRib _prevIbgpRib;
+
   transient Rib _prevMainRib;
+
   transient OspfExternalType1Rib _prevOspfExternalType1Rib;
+
   transient OspfExternalType2Rib _prevOspfExternalType2Rib;
+
   AdvertisementSet _receivedBgpAdvertisements;
+
   AdvertisementSet _sentBgpAdvertisements;
+
   transient StaticRib _staticInterfaceRib;
+
   transient StaticRib _staticRib;
+
+  final Vrf _vrf;
 
   public VirtualRouter(String name, Configuration c, Map<String, Node> nodes) {
     super(name);
