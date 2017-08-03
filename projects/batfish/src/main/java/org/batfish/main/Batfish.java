@@ -488,8 +488,20 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
   }
 
-  private Answer answer() {
-    Question question = parseQuestion();
+  public Answer answer() {
+    Question question = null;
+
+    //return right away if we cannot parse the question successfully
+    try {
+      question = parseQuestion();
+    } catch (Exception e) {
+      Answer answer = new Answer();
+      BatfishException exception = new BatfishException("Could not parse question", e);
+      answer.setStatus(AnswerStatus.FAILURE);
+      answer.addAnswerElement(exception.getBatfishStackTrace());
+      return answer;
+    }
+
     if (_settings.getDifferential()) {
       question.setDifferential(true);
     }
