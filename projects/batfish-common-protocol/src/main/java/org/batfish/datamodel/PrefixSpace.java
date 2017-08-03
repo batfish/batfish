@@ -207,8 +207,9 @@ public class PrefixSpace implements Serializable {
   }
 
   public boolean containsPrefix(Prefix prefix) {
-    if (_cache.containsKey(prefix)) {
-      return _cache.get(prefix);
+    @Nullable Boolean result = _cache.get(prefix);
+    if (result != null) {
+      return result;
     } else {
       boolean contained = containsPrefixRange(PrefixRange.fromPrefix(prefix));
       _cache.put(prefix, contained);
