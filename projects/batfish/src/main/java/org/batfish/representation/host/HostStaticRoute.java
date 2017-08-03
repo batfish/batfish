@@ -70,12 +70,14 @@ public class HostStaticRoute implements Serializable {
   public StaticRoute toStaticRoute() {
     int tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
     StaticRoute.Builder srBuilder = new StaticRoute.Builder();
-    srBuilder.setNetwork(_prefix);
-    srBuilder.setNextHopIp(_nextHopIp);
-    srBuilder.setNextHopInterface(_nextHopInterface);
-    srBuilder.setAdministrativeCost(_administrativeCost);
-    srBuilder.setTag(tag);
-    StaticRoute sr = srBuilder.build();
+    StaticRoute sr =
+        srBuilder
+            .setNetwork(_prefix)
+            .setNextHopIp(_nextHopIp)
+            .setNextHopInterface(_nextHopInterface)
+            .setAdministrativeCost(_administrativeCost)
+            .setTag(tag)
+            .build();
     return sr;
   }
 }

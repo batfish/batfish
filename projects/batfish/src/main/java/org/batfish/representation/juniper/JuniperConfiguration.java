@@ -1491,12 +1491,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     tag = oldTag != null ? oldTag : -1;
     org.batfish.datamodel.StaticRoute.Builder srBuilder =
         new org.batfish.datamodel.StaticRoute.Builder();
-    srBuilder.setNetwork(prefix);
-    srBuilder.setNextHopIp(nextHopIp);
-    srBuilder.setNextHopInterface(nextHopInterface);
-    srBuilder.setAdministrativeCost(administrativeCost);
-    srBuilder.setTag(tag);
-    org.batfish.datamodel.StaticRoute newStaticRoute = srBuilder.build();
+    org.batfish.datamodel.StaticRoute newStaticRoute =
+        srBuilder
+            .setNetwork(prefix)
+            .setNextHopIp(nextHopIp)
+            .setNextHopInterface(nextHopInterface)
+            .setAdministrativeCost(administrativeCost)
+            .setTag(tag)
+            .build();
     return newStaticRoute;
   }
 

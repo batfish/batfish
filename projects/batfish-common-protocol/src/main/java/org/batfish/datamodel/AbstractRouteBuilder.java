@@ -1,16 +1,19 @@
 package org.batfish.datamodel;
 
-public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
+import org.batfish.common.BatfishException;
 
-  protected int _admin;
+public abstract class AbstractRouteBuilder<
+    S extends AbstractRouteBuilder<S, T>, T extends AbstractRoute> {
 
-  protected int _metric;
+  private int _admin;
 
-  protected Prefix _network;
+  private int _metric;
 
-  protected Ip _nextHopIp;
+  private Prefix _network;
 
-  protected int _tag;
+  private Ip _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+
+  private int _tag = Route.UNSET_ROUTE_TAG;
 
   public abstract T build();
 
@@ -18,39 +21,50 @@ public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
     return _admin;
   }
 
+  public final S setAdmin(int admin) {
+    _admin = admin;
+    return getThis();
+  }
+
+  // To handle the class casting exception while returning S in chaining methods
+  public abstract S getThis();
+
   public final Integer getMetric() {
     return _metric;
+  }
+
+  public final S setMetric(int metric) {
+    _metric = metric;
+    return getThis();
   }
 
   public final Prefix getNetwork() {
     return _network;
   }
 
+  public final S setNetwork(Prefix network) {
+    if (network == null) {
+      throw new BatfishException("Cannot construct AbstractRoute with null network");
+    }
+    _network = network;
+    return getThis();
+  }
+
   public final Ip getNextHopIp() {
     return _nextHopIp;
+  }
+
+  public final S setNextHopIp(Ip nextHopIp) {
+    _nextHopIp = nextHopIp == null ? Route.UNSET_ROUTE_NEXT_HOP_IP : nextHopIp;
+    return getThis();
   }
 
   public int getTag() {
     return _tag;
   }
 
-  public final void setAdmin(int admin) {
-    _admin = admin;
-  }
-
-  public final void setMetric(int metric) {
-    _metric = metric;
-  }
-
-  public final void setNetwork(Prefix network) {
-    _network = network;
-  }
-
-  public final void setNextHopIp(Ip nextHopIp) {
-    _nextHopIp = nextHopIp;
-  }
-
-  public final void setTag(int tag) {
+  public final S setTag(int tag) {
     _tag = tag;
+    return getThis();
   }
 }

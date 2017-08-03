@@ -68,12 +68,13 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
       // add a route on the gateway to the vpc
       Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
       StaticRoute.Builder srBuilder = new StaticRoute.Builder();
-      srBuilder.setNetwork(vpc.getCidrBlock());
-      srBuilder.setNextHopIp(vpcIfaceIp);
-      srBuilder.setNextHopInterface(null);
-      srBuilder.setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN);
-      srBuilder.setTag(Route.DEFAULT_STATIC_ROUTE_COST);
-      StaticRoute vgwVpcRoute = srBuilder.build();
+      StaticRoute vgwVpcRoute =
+          srBuilder
+              .setNetwork(vpc.getCidrBlock())
+              .setNextHopIp(vpcIfaceIp)
+              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+              .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+              .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(vgwVpcRoute);
     }
 

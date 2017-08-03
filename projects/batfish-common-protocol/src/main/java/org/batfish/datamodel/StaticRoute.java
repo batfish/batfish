@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.BatfishException;
 
 public class StaticRoute extends AbstractRoute {
 
@@ -31,6 +32,15 @@ public class StaticRoute extends AbstractRoute {
     _nextHopInterface = nextHopInterface;
     _tag = tag;
   }
+
+  private StaticRoute(Builder builder) {
+    super(builder.getNetwork());
+    _administrativeCost = builder.getAdministrativeCost();
+    _nextHopIp = builder.getNextHopIp();
+    _nextHopInterface = builder.getNextHopInterface();
+    _tag = builder.getTag();
+  }
+
 
   @Override
   public boolean equals(Object o) {
@@ -111,34 +121,42 @@ public class StaticRoute extends AbstractRoute {
     return 0;
   }
 
-  public static class Builder extends AbstractRouteBuilder<StaticRoute> {
 
-    private int _administrativeCost;
+  public static class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
-    private String _nextHopInterface;
+    private int _administrativeCost = Route.UNSET_ROUTE_ADMIN;
+
+    private String _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;
 
     @Override
     public StaticRoute build() {
-      if (_nextHopIp == null) {
-        _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-      }
-      return new StaticRoute(_network, _nextHopIp, _nextHopInterface, _administrativeCost, _tag);
+      return new StaticRoute(this);
+    }
+
+    @Override
+    public Builder getThis() {
+      return this;
     }
 
     public int getAdministrativeCost() {
       return _administrativeCost;
     }
 
-    public void setAdministrativeCost(int administrativeCost) {
-      this._administrativeCost = administrativeCost;
+    public Builder setAdministrativeCost(int administrativeCost) {
+      _administrativeCost = administrativeCost;
+      return this;
     }
 
     public String getNextHopInterface() {
       return _nextHopInterface;
     }
 
-    public void setNextHopInterface(String nextHopInterface) {
-      this._nextHopInterface = nextHopInterface;
+    public Builder setNextHopInterface(String nextHopInterface) {
+      if (nextHopInterface == null) {
+        throw new BatfishException("nextHopInterface cannot be null in StaticRoute");
+      }
+      _nextHopInterface = nextHopInterface;
+      return this;
     }
   }
 }

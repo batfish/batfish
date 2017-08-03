@@ -2887,12 +2887,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     tag = oldTag != null ? oldTag : -1;
     org.batfish.datamodel.StaticRoute.Builder srBuilder =
         new org.batfish.datamodel.StaticRoute.Builder();
-    srBuilder.setNetwork(prefix);
-    srBuilder.setNextHopIp(nextHopIp);
-    srBuilder.setNextHopInterface(nextHopInterface);
-    srBuilder.setAdministrativeCost(staticRoute.getDistance());
-    srBuilder.setTag(tag);
-    return srBuilder.build();
+    return srBuilder
+        .setNetwork(prefix)
+        .setNextHopIp(nextHopIp)
+        .setNextHopInterface(nextHopInterface)
+        .setAdministrativeCost(staticRoute.getDistance())
+        .setTag(tag)
+        .build();
   }
 
   @Override

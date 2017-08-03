@@ -67,12 +67,12 @@ public class Route implements Serializable {
     StaticRoute staticRoute;
     StaticRoute.Builder srBuilder = new StaticRoute.Builder();
     //setting the common properties
-    srBuilder.setNetwork(_destinationCidrBlock);
-    srBuilder.setAdministrativeCost(DEFAULT_STATIC_ROUTE_ADMIN);
-    srBuilder.setTag(DEFAULT_STATIC_ROUTE_COST);
+    srBuilder
+        .setNetwork(_destinationCidrBlock)
+        .setAdministrativeCost(DEFAULT_STATIC_ROUTE_ADMIN)
+        .setTag(DEFAULT_STATIC_ROUTE_COST);
 
     if (_state.equals("blackhole")) {
-      srBuilder.setNextHopIp(null);
       srBuilder.setNextHopInterface(Interface.NULL_INTERFACE_NAME);
       staticRoute = srBuilder.build();
     } else {
@@ -80,22 +80,16 @@ public class Route implements Serializable {
         case Gateway:
           if (_target.equals("local")) {
             // send to the vpc router
-            srBuilder.setNextHopIp(vpcAddress);
-            srBuilder.setNextHopInterface(null);
-            staticRoute = srBuilder.build();
+            staticRoute = srBuilder.setNextHopIp(vpcAddress).build();
           } else {
             // send to the specified internet gateway
             // if it's not the igw or vgw set for this subnet (and VPC),
             // throw an
             // exception
             if (_target.equals(subnet.getInternetGatewayId())) {
-              srBuilder.setNextHopIp(igwAddress);
-              srBuilder.setNextHopInterface(null);
-              staticRoute = srBuilder.build();
+              staticRoute = srBuilder.setNextHopIp(igwAddress).build();
             } else if (_target.equals(subnet.getVpnGatewayId())) {
-              srBuilder.setNextHopIp(vgwAddress);
-              srBuilder.setNextHopInterface(null);
-              staticRoute = srBuilder.build();
+              staticRoute = srBuilder.setNextHopIp(vgwAddress).build();
             } else {
               throw new BatfishException(
                   "Internet gateway \""
@@ -117,9 +111,7 @@ public class Route implements Serializable {
               throw new BatfishException(
                   "Ip of network interface specified in static route not in containing subnet");
             }
-            srBuilder.setNextHopIp(lowestIp);
-            srBuilder.setNextHopInterface(null);
-            staticRoute = srBuilder.build();
+            staticRoute = srBuilder.setNextHopIp(lowestIp).build();
           } else {
             String networkInterfaceVpcId =
                 awsVpcConfiguration.getSubnets().get(networkInterfaceSubnetId).getVpcId();
@@ -153,9 +145,7 @@ public class Route implements Serializable {
             instanceIface.setIncomingFilter(instance.getInAcl());
             instanceIface.setOutgoingFilter(instance.getOutAcl());
             Ip nextHopIp = instanceIfacePrefix.getAddress();
-            srBuilder.setNextHopIp(nextHopIp);
-            srBuilder.setNextHopInterface(null);
-            staticRoute = srBuilder.build();
+            staticRoute = srBuilder.setNextHopIp(nextHopIp).build();
           }
           break;
 
@@ -217,9 +207,7 @@ public class Route implements Serializable {
                   .getAddress();
 
           // initialize static route on new link
-          srBuilder.setNextHopIp(remoteVpcIfaceAddress);
-          srBuilder.setNextHopInterface(null);
-          staticRoute = srBuilder.build();
+          staticRoute = srBuilder.setNextHopIp(remoteVpcIfaceAddress).build();
           break;
 
         case Instance:

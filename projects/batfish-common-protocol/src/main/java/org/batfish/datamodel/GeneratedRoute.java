@@ -12,7 +12,7 @@ import java.util.SortedSet;
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute {
 
-  public static class Builder extends AbstractRouteBuilder<GeneratedRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
     private List<SortedSet<Integer>> _asPath;
 
@@ -26,21 +26,25 @@ public final class GeneratedRoute extends AbstractRoute {
 
     public Builder() {
       _asPath = new ArrayList<>();
-      _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+    }
+
+    @Override
+    public Builder getThis() {
+      return this;
     }
 
     @Override
     public GeneratedRoute build() {
       GeneratedRoute gr =
           new GeneratedRoute(
-              _network,
-              _admin,
-              _nextHopIp,
+              this.getNetwork(),
+              this.getAdmin(),
+              this.getNextHopIp(),
               new AsPath(_asPath),
               _attributePolicy,
               _discard,
               _generationPolicy,
-              _metric,
+              this.getMetric(),
               _nextHopInterface);
       return gr;
     }

@@ -13,7 +13,7 @@ import org.batfish.common.util.CommonUtil;
 
 public class BgpRoute extends AbstractRoute {
 
-  public static class Builder extends AbstractRouteBuilder<BgpRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder,BgpRoute> {
 
     private List<SortedSet<Integer>> _asPath;
 
@@ -50,13 +50,13 @@ public class BgpRoute extends AbstractRoute {
         throw new BatfishException("Missing originType");
       }
       return new BgpRoute(
-          _network,
-          _nextHopIp,
-          _admin,
+          this.getNetwork(),
+          this.getNextHopIp(),
+          this.getAdmin(),
           new AsPath(_asPath),
           _communities,
           _localPreference,
-          _metric,
+          this.getMetric(),
           _originatorIp,
           _clusterList,
           _receivedFromRouteReflectorClient,
@@ -64,6 +64,11 @@ public class BgpRoute extends AbstractRoute {
           _protocol,
           _srcProtocol,
           _weight);
+    }
+
+    @Override
+    public Builder getThis() {
+      return this;
     }
 
     public List<SortedSet<Integer>> getAsPath() {

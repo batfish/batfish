@@ -2,12 +2,17 @@ package org.batfish.datamodel;
 
 public class IsisRoute extends AbstractRoute {
 
-  public static class Builder extends AbstractRouteBuilder<IsisRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, IsisRoute> {
 
     @Override
     public IsisRoute build() {
       throw new UnsupportedOperationException("no implementation for generated method");
       // TODO Auto-generated method stub
+    }
+
+    @Override
+    public Builder getThis() {
+      return this;
     }
 
     public void setLevel(IsisLevel level) {
