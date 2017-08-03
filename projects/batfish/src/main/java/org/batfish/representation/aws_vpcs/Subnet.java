@@ -181,9 +181,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     vpcIface.getAllPrefixes().add(vpcIfacePrefix);
     vpcIface.setPrefix(vpcIfacePrefix);
     // add a static route on the vpc router for this subnet
-    StaticRoute.Builder srBuilder = new StaticRoute.Builder();
     StaticRoute vpcToSubnetRoute =
-        srBuilder
+        StaticRoute.builder()
             .setNetwork(_cidrBlock)
             .setNextHopIp(subnetIfacePrefix.getAddress())
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)

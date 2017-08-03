@@ -17,6 +17,11 @@ public class StaticRouteTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
   StaticRoute.Builder _srBuilder;
 
+  @Before
+  public void setUp() {
+    _srBuilder = StaticRoute.builder();
+  }
+
   @Test
   public void checkAllAttrs() {
     _srBuilder
@@ -41,19 +46,16 @@ public class StaticRouteTest {
   }
 
   @Test
-  public void checkNullable() {
-    String errorMessage = "nextHopInterface cannot be null in StaticRoute";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(errorMessage);
+  public void checkNullNextHopInterface() {
     _srBuilder.setNetwork(Prefix.ZERO);
     _srBuilder.setNextHopInterface(null);
+    StaticRoute sr = _srBuilder.build();
+    assertThat(sr.getNextHopInterface(), is(Route.UNSET_NEXT_HOP_INTERFACE));
   }
 
   @Test
   public void checkDefaults() {
-    StaticRoute.Builder srBuilderTest = new StaticRoute.Builder();
-    srBuilderTest.setNetwork(Prefix.ZERO);
-    StaticRoute sr = srBuilderTest.build();
+    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).build();
     assertThat(sr.getNextHopInterface(), is(Route.UNSET_NEXT_HOP_INTERFACE));
     assertThat(sr.getNextHopIp(), is(Route.UNSET_ROUTE_NEXT_HOP_IP));
     assertThat(sr.getAdministrativeCost(), is(Route.UNSET_ROUTE_ADMIN));
@@ -81,13 +83,7 @@ public class StaticRouteTest {
       assertThat(parsedObj.getTag(), is(0));
 
     } catch (IOException e) {
-      throw new BatfishException(
-          "Cannot parse the json to StaticRoute object", e);
+      throw new BatfishException("Cannot parse the json to StaticRoute object", e);
     }
-  }
-
-  @Before
-  public void setUp() {
-    _srBuilder = new StaticRoute.Builder();
   }
 }

@@ -69,9 +69,8 @@ public class HostStaticRoute implements Serializable {
 
   public StaticRoute toStaticRoute() {
     int tag = _tag == null ? AbstractRoute.NO_TAG : _tag;
-    StaticRoute.Builder srBuilder = new StaticRoute.Builder();
     StaticRoute sr =
-        srBuilder
+        StaticRoute.builder()
             .setNetwork(_prefix)
             .setNextHopIp(_nextHopIp)
             .setNextHopInterface(_nextHopInterface)

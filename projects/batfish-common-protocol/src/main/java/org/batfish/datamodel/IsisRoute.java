@@ -11,7 +11,7 @@ public class IsisRoute extends AbstractRoute {
     }
 
     @Override
-    public Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 

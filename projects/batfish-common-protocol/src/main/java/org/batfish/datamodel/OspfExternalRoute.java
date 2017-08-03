@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class OspfExternalRoute extends OspfRoute {
 
-  public static class Builder extends AbstractRouteBuilder<Builder,OspfExternalRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute> {
 
     private String _advertiser;
 
@@ -21,19 +21,19 @@ public abstract class OspfExternalRoute extends OspfRoute {
       if (protocol == RoutingProtocol.OSPF_E1) {
         route =
             new OspfExternalType1Route(
-                this.getNetwork(),
-                this.getNextHopIp(),
-                this.getAdmin(),
-                this.getMetric(),
+                getNetwork(),
+                getNextHopIp(),
+                getAdmin(),
+                getMetric(),
                 _costToAdvertiser,
                 _advertiser);
       } else {
         route =
             new OspfExternalType2Route(
-                this.getNetwork(),
-                this.getNextHopIp(),
-                this.getAdmin(),
-                this.getMetric(),
+                getNetwork(),
+                getNextHopIp(),
+                getAdmin(),
+                getMetric(),
                 _costToAdvertiser,
                 _advertiser);
       }
@@ -41,7 +41,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     }
 
     @Override
-    public Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 

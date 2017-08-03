@@ -2885,9 +2885,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Integer oldTag = staticRoute.getTag();
     int tag;
     tag = oldTag != null ? oldTag : -1;
-    org.batfish.datamodel.StaticRoute.Builder srBuilder =
-        new org.batfish.datamodel.StaticRoute.Builder();
-    return srBuilder
+    return org.batfish.datamodel.StaticRoute.builder()
         .setNetwork(prefix)
         .setNextHopIp(nextHopIp)
         .setNextHopInterface(nextHopInterface)

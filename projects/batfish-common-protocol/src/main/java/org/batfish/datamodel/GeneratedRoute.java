@@ -29,7 +29,7 @@ public final class GeneratedRoute extends AbstractRoute {
     }
 
     @Override
-    public Builder getThis() {
+    protected Builder getThis() {
       return this;
     }
 
@@ -37,14 +37,14 @@ public final class GeneratedRoute extends AbstractRoute {
     public GeneratedRoute build() {
       GeneratedRoute gr =
           new GeneratedRoute(
-              this.getNetwork(),
-              this.getAdmin(),
-              this.getNextHopIp(),
+              getNetwork(),
+              getAdmin(),
+              getNextHopIp(),
               new AsPath(_asPath),
               _attributePolicy,
               _discard,
               _generationPolicy,
-              this.getMetric(),
+              getMetric(),
               _nextHopInterface);
       return gr;
     }

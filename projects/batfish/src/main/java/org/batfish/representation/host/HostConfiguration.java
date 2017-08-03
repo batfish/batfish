@@ -226,9 +226,8 @@ public class HostConfiguration extends VendorConfiguration {
     for (HostInterface iface : _hostInterfaces.values()) {
       Ip gateway = iface.getGateway();
       if (gateway != null) {
-        StaticRoute.Builder srBuilder = new StaticRoute.Builder();
         staticRoutes.add(
-            srBuilder
+            StaticRoute.builder()
                 .setNetwork(Prefix.ZERO)
                 .setNextHopIp(gateway)
                 .setNextHopInterface(iface.getName())
@@ -240,13 +239,15 @@ public class HostConfiguration extends VendorConfiguration {
     }
     if (_staticRoutes.isEmpty() && staticRoutes.isEmpty() && !_c.getInterfaces().isEmpty()) {
       String ifaceName = _c.getInterfaces().values().iterator().next().getName();
-      StaticRoute.Builder srBuilder = new StaticRoute.Builder();
-      _c.getDefaultVrf().getStaticRoutes().add(srBuilder
-              .setNetwork(Prefix.ZERO)
-              .setNextHopInterface(ifaceName)
-              .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
-              .setTag(AbstractRoute.NO_TAG)
-              .build());
+      _c.getDefaultVrf()
+          .getStaticRoutes()
+          .add(
+              StaticRoute.builder()
+                  .setNetwork(Prefix.ZERO)
+                  .setNextHopInterface(ifaceName)
+                  .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
+                  .setTag(AbstractRoute.NO_TAG)
+                  .build());
     }
     return _c;
   }

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import org.batfish.common.BatfishException;
 
 public abstract class AbstractRouteBuilder<
@@ -27,7 +29,7 @@ public abstract class AbstractRouteBuilder<
   }
 
   // To handle the class casting exception while returning S in chaining methods
-  public abstract S getThis();
+  protected abstract S getThis();
 
   public final Integer getMetric() {
     return _metric;
@@ -55,7 +57,7 @@ public abstract class AbstractRouteBuilder<
   }
 
   public final S setNextHopIp(Ip nextHopIp) {
-    _nextHopIp = nextHopIp == null ? Route.UNSET_ROUTE_NEXT_HOP_IP : nextHopIp;
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     return getThis();
   }
 
@@ -64,7 +66,7 @@ public abstract class AbstractRouteBuilder<
   }
 
   public final S setTag(int tag) {
-    _tag = tag;
+    _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
     return getThis();
   }
 }

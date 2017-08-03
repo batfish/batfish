@@ -3,7 +3,9 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.BatfishException;
+import com.google.common.base.MoreObjects;
+
+import javax.annotation.Nullable;
 
 public class StaticRoute extends AbstractRoute {
 
@@ -23,23 +25,16 @@ public class StaticRoute extends AbstractRoute {
   private StaticRoute(
       @JsonProperty(NETWORK_VAR) Prefix network,
       @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
+      @Nullable @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
       @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
       @JsonProperty(TAG_VAR) int tag) {
     super(network);
     _administrativeCost = administrativeCost;
+    _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = nextHopIp;
-    _nextHopInterface = nextHopInterface;
     _tag = tag;
   }
 
-  private StaticRoute(Builder builder) {
-    super(builder.getNetwork());
-    _administrativeCost = builder.getAdministrativeCost();
-    _nextHopIp = builder.getNextHopIp();
-    _nextHopInterface = builder.getNextHopInterface();
-    _tag = builder.getTag();
-  }
 
 
   @Override
@@ -121,8 +116,13 @@ public class StaticRoute extends AbstractRoute {
     return 0;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
 
   public static class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
+
+    private Builder() {}
 
     private int _administrativeCost = Route.UNSET_ROUTE_ADMIN;
 
@@ -130,16 +130,13 @@ public class StaticRoute extends AbstractRoute {
 
     @Override
     public StaticRoute build() {
-      return new StaticRoute(this);
+      return new StaticRoute(
+          getNetwork(), getNextHopIp(), _nextHopInterface, _administrativeCost, getTag());
     }
 
     @Override
-    public Builder getThis() {
+    protected Builder getThis() {
       return this;
-    }
-
-    public int getAdministrativeCost() {
-      return _administrativeCost;
     }
 
     public Builder setAdministrativeCost(int administrativeCost) {
@@ -147,14 +144,7 @@ public class StaticRoute extends AbstractRoute {
       return this;
     }
 
-    public String getNextHopInterface() {
-      return _nextHopInterface;
-    }
-
     public Builder setNextHopInterface(String nextHopInterface) {
-      if (nextHopInterface == null) {
-        throw new BatfishException("nextHopInterface cannot be null in StaticRoute");
-      }
       _nextHopInterface = nextHopInterface;
       return this;
     }

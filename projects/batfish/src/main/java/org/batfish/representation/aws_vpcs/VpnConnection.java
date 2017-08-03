@@ -319,9 +319,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
       // static routes (if configured)
       for (Prefix staticRoutePrefix : _routes) {
-        StaticRoute.Builder srBuilder = new StaticRoute.Builder();
         StaticRoute staticRoute =
-            srBuilder
+            StaticRoute.builder()
                 .setNetwork(staticRoutePrefix)
                 .setNextHopIp(ipsecTunnel.getCgwInsideAddress())
                 .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
