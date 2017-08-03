@@ -6,13 +6,12 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nullable;
 
 public class PrefixSpace implements Serializable {
 
@@ -168,17 +167,14 @@ public class PrefixSpace implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static BitSet getAddressBits(Ip address) {
-    int addressAsInt = (int) (address.asLong());
-    ByteBuffer b = ByteBuffer.allocate(4);
-    b.order(ByteOrder.LITTLE_ENDIAN);
-    b.putInt(addressAsInt);
-    BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
-    BitSet bits = new BitSet(Prefix.MAX_PREFIX_LENGTH);
-    for (int i = Prefix.MAX_PREFIX_LENGTH - 1, j = 0; i >= 0; i--, j++) {
-      bits.set(j, bitsWithHighestMostSignificant.get(i));
-    }
-    return bits;
+  /**
+   * Converts an IPv4 address into a {@link BitSet} useful for prefix matching. The highest bit of
+   * the address is the lowest bit of the bitset: the address 128.0.0.0 when converted to a {@link
+   * BitSet} has only the lowest bit set.
+   */
+  // visible for testing
+  static BitSet getAddressBits(Ip address) {
+    return BitSet.valueOf(new long[] {Integer.reverse((int) address.asLong()) & 0xffffffffL});
   }
 
   private transient ConcurrentMap<Prefix, Boolean> _cache;
