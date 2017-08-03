@@ -2,13 +2,13 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.util.CommonUtil;
 
 public class AsPath implements Serializable, Comparable<AsPath> {
@@ -53,9 +53,9 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   private List<SortedSet<Integer>> copyAsSets(List<SortedSet<Integer>> asSets) {
-    List<SortedSet<Integer>> newAsSets = new ArrayList<>();
+    List<SortedSet<Integer>> newAsSets = new ArrayList<>(asSets.size());
     for (SortedSet<Integer> asSet : asSets) {
-      SortedSet<Integer> newAsSet = new TreeSet<>(asSet);
+      SortedSet<Integer> newAsSet = ImmutableSortedSet.copyOf(asSet);
       newAsSets.add(newAsSet);
     }
     return newAsSets;
