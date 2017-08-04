@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
@@ -134,7 +135,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
       tag = Integer.toString(tagInt);
     }
     String nhint = getNextHopInterface();
-    if (nhint != null && !nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
+    if (nhint != null  && !nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
       // static interface
       if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
         nhnode = "N/A";
@@ -171,6 +172,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   }
 
   @JsonIgnore
+  @Nonnull
   public abstract String getNextHopInterface();
 
   @JsonIgnore
@@ -255,7 +257,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
       }
     }
     String nextHopInterface = getNextHopInterface();
-    if (nextHopInterface != null) {
+    if (!nextHopInterface.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
       rb.setNextHopInterface(nextHopInterface);
     }
     rb.setAdministrativeCost(getAdministrativeCost());

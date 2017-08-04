@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 
@@ -314,9 +315,11 @@ public class BgpRoute extends AbstractRoute {
     return _med;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @Override
   public String getNextHopInterface() {
-    return null;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
   @JsonIgnore(false)

@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import javax.annotation.Nonnull;
 
 public class ConnectedRoute extends AbstractRoute {
 
@@ -15,7 +17,7 @@ public class ConnectedRoute extends AbstractRoute {
       @JsonProperty(NETWORK_VAR) Prefix network,
       @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface) {
     super(network);
-    _nextHopInterface = nextHopInterface;
+    _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface,Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   @Override
@@ -35,6 +37,8 @@ public class ConnectedRoute extends AbstractRoute {
     return 0;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_INTERFACE_VAR)
   @Override

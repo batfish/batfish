@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class StaticRoute extends AbstractRoute {
@@ -68,6 +69,7 @@ public class StaticRoute extends AbstractRoute {
     return 0;
   }
 
+  @Nonnull
   @Override
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_INTERFACE_VAR)

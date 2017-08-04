@@ -58,7 +58,7 @@
                     "node2interface" : "Ethernet1"
                   },
                   "routes" : [
-                    "StaticRoute<0.0.0.0/0,nhip:172.16.0.0,nhint:null>_fnhip:172.16.0.0"
+                    "StaticRoute<0.0.0.0/0,nhip:172.16.0.0,nhint:dynamic>_fnhip:172.16.0.0"
                   ]
                 },
                 {
@@ -69,7 +69,7 @@
                     "node2interface" : "null_interface"
                   },
                   "routes" : [
-                    "BgpRoute<1.0.0.0/8,nhip:10.0.0.0,nhint:null>_fnhip:10.0.0.0"
+                    "BgpRoute<1.0.0.0/8,nhip:10.0.0.0,nhint:dynamic>_fnhip:10.0.0.0"
                   ],
                   "transformedFlow" : {
                     "@id" : 2,

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
@@ -637,16 +636,16 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
 
+
+
   public void initStaticRib() {
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
       String nextHopInt = sr.getNextHopInterface();
-
-      // Skip known interfaces that are down.
-      @Nullable Interface iface = _vrf.getInterfaces().get(nextHopInt);
-      if (iface != null && !iface.getActive()) {
+      if (!nextHopInt.equals(Route.UNSET_NEXT_HOP_INTERFACE)
+          && !Interface.NULL_INTERFACE_NAME.equals(nextHopInt)
+          && !_vrf.getInterfaces().get(nextHopInt).getActive()) {
         continue;
       }
-
       // interface route
       if (sr.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
         _staticInterfaceRib.mergeRoute(sr);
@@ -655,7 +654,6 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
     }
   }
-
 
   public int propagateBgpRoutes(Map<String, Node> nodes, Map<Ip, Set<String>> ipOwners) {
     int numRoutes = 0;

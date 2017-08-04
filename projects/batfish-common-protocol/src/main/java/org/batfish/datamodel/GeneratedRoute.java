@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute {
@@ -116,7 +118,7 @@ public final class GeneratedRoute extends AbstractRoute {
     _discard = discard;
     _generationPolicy = generationPolicy;
     _metric = metric;
-    _nextHopInterface = nextHopInterface;
+    _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = nextHopIp;
   }
 
@@ -165,6 +167,8 @@ public final class GeneratedRoute extends AbstractRoute {
     return _metric;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @Override
   public String getNextHopInterface() {
     return _nextHopInterface;

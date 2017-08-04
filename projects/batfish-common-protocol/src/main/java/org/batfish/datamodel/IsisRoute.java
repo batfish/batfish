@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import javax.annotation.Nonnull;
+
 public class IsisRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, IsisRoute> {
@@ -47,6 +49,7 @@ public class IsisRoute extends AbstractRoute {
     // TODO Auto-generated method stub
   }
 
+  @Nonnull
   @Override
   public String getNextHopInterface() {
     throw new UnsupportedOperationException("no implementation for generated method");

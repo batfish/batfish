@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 
 public abstract class OspfExternalRoute extends OspfRoute {
 
@@ -134,9 +135,11 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return _costToAdvertiser;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @Override
   public String getNextHopInterface() {
-    return null;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
   @JsonIgnore
