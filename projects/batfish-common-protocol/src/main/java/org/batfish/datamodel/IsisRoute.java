@@ -1,13 +1,20 @@
 package org.batfish.datamodel;
 
+import javax.annotation.Nonnull;
+
 public class IsisRoute extends AbstractRoute {
 
-  public static class Builder extends AbstractRouteBuilder<IsisRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, IsisRoute> {
 
     @Override
     public IsisRoute build() {
       throw new UnsupportedOperationException("no implementation for generated method");
       // TODO Auto-generated method stub
+    }
+
+    @Override
+    protected Builder getThis() {
+      return this;
     }
 
     public void setLevel(IsisLevel level) {
@@ -42,12 +49,14 @@ public class IsisRoute extends AbstractRoute {
     // TODO Auto-generated method stub
   }
 
+  @Nonnull
   @Override
   public String getNextHopInterface() {
     throw new UnsupportedOperationException("no implementation for generated method");
     // TODO Auto-generated method stub
   }
 
+  @Nonnull
   @Override
   public Ip getNextHopIp() {
     throw new UnsupportedOperationException("no implementation for generated method");

@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 
 public class OspfInterAreaRoute extends OspfRoute {
 
@@ -53,9 +54,11 @@ public class OspfInterAreaRoute extends OspfRoute {
     return _area;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @Override
   public String getNextHopInterface() {
-    return null;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
   @Override
