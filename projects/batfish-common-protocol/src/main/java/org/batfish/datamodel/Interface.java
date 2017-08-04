@@ -223,8 +223,7 @@ public final class Interface extends ComparableStructure<String> {
         // $CASES-OMITTED$
       default:
         throw new BatfishException(
-            "Cannot compute interface type for unsupported configuration format: "
-                + format.toString());
+            "Cannot compute interface type for unsupported configuration format: " + format);
     }
   }
 

@@ -305,17 +305,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     for (AbstractRoute route : getRoutes()) {
       Prefix prefix = route.getNetwork();
       int prefixCount = prefixCountSet.count(prefix);
-      Map<Ip, List<AbstractRoute>> byIp = map.get(prefixCount);
-      if (byIp == null) {
-        byIp = new TreeMap<>();
-        map.put(prefixCount, byIp);
-      }
+      Map<Ip, List<AbstractRoute>> byIp = map.computeIfAbsent(prefixCount, k -> new TreeMap<>());
       Ip nextHopIp = route.getNextHopIp();
-      List<AbstractRoute> routesByPopularity = byIp.get(nextHopIp);
-      if (routesByPopularity == null) {
-        routesByPopularity = new ArrayList<>();
-        byIp.put(nextHopIp, routesByPopularity);
-      }
+      List<AbstractRoute> routesByPopularity =
+          byIp.computeIfAbsent(nextHopIp, k -> new ArrayList<>());
       routesByPopularity.add(route);
     }
     return map;
@@ -337,11 +330,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     for (AbstractRoute route : getRoutes()) {
       Prefix prefix = route.getNetwork();
       Ip nextHopIp = route.getNextHopIp();
-      Set<Ip> nextHopIps = map.get(prefix);
-      if (nextHopIps == null) {
-        nextHopIps = new TreeSet<>();
-        map.put(prefix, nextHopIps);
-      }
+      Set<Ip> nextHopIps = map.computeIfAbsent(prefix, k -> new TreeSet<>());
       nextHopIps.add(nextHopIp);
     }
     return map;

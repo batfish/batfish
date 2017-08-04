@@ -101,8 +101,7 @@ public class UnzipUtility {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Could not unzip: '" + zipFile.toString() + "' into: '" + destDirectory.toString() + "'",
-          e);
+          "Could not unzip: '" + zipFile + "' into: '" + destDirectory + "'", e);
     }
   }
 }

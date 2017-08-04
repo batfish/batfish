@@ -42,7 +42,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                   sb.append("  " + type + ":\n");
                   members.forEach(
                       (member, lines) -> {
-                        sb.append("    " + member + " lines " + lines.toString() + "\n");
+                        sb.append("    " + member + " lines " + lines + "\n");
                       });
                 });
           });

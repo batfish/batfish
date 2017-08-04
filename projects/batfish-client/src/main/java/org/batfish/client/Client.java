@@ -508,7 +508,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean answer(
       String questionTemplateName, String paramsLine, boolean isDelta, FileWriter outWriter) {
-    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
+    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
     String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
     if (questionContentUnmodified == null) {
       throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
@@ -616,7 +616,7 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException("Question file not found: " + questionFile);
     }
 
-    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
+    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
 
     // upload the question
     boolean resultUpload =
@@ -1150,7 +1150,7 @@ public class Client extends AbstractClient implements IClient {
     if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX)
         && qTypeStr.equals(IEnvironmentCreationQuestion.NAME)) {
 
-      String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID().toString();
+      String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
 
       String prefixString = (paramsLine.trim().length() > 0) ? ", " : "";
       paramsLine +=
@@ -1425,9 +1425,7 @@ public class Client extends AbstractClient implements IClient {
 
     String deltaEnvLocation = parameters.get(0);
     String deltaEnvName =
-        (parameters.size() > 1)
-            ? parameters.get(1)
-            : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID().toString();
+        (parameters.size() > 1) ? parameters.get(1) : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
     String baseEnvName = (parameters.size() > 2) ? parameters.get(2) : "";
 
     if (!uploadEnv(deltaEnvLocation, deltaEnvName, baseEnvName)) {
@@ -1552,9 +1550,7 @@ public class Client extends AbstractClient implements IClient {
     }
     String testrigLocation = parameters.get(0);
     String testrigName =
-        (parameters.size() > 1)
-            ? parameters.get(1)
-            : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID().toString();
+        (parameters.size() > 1) ? parameters.get(1) : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID();
 
     // initialize the container if it hasn't been init'd before
     if (!isSetContainer(false)) {
@@ -1771,8 +1767,7 @@ public class Client extends AbstractClient implements IClient {
         bfq.put(name.toLowerCase(), questionText);
         return name;
       } else {
-        throw new BatfishException(
-            "Question in file: '" + file.toString() + "' has no instance name");
+        throw new BatfishException("Question in file: '" + file + "' has no instance name");
       }
     } catch (JSONException | IOException e) {
       throw new BatfishException("Failed to process question", e);

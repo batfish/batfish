@@ -36,32 +36,16 @@ public class Topology implements Serializable {
       NodeInterfacePair int1 = edge.getInterface1();
       NodeInterfacePair int2 = edge.getInterface2();
 
-      EdgeSet node1Edges = _nodeEdges.get(node1);
-      if (node1Edges == null) {
-        node1Edges = new EdgeSet();
-        _nodeEdges.put(node1, node1Edges);
-      }
+      EdgeSet node1Edges = _nodeEdges.computeIfAbsent(node1, k -> new EdgeSet());
       node1Edges.add(edge);
 
-      EdgeSet node2Edges = _nodeEdges.get(node2);
-      if (node2Edges == null) {
-        node2Edges = new EdgeSet();
-        _nodeEdges.put(node2, node2Edges);
-      }
+      EdgeSet node2Edges = _nodeEdges.computeIfAbsent(node2, k -> new EdgeSet());
       node2Edges.add(edge);
 
-      EdgeSet interface1Edges = _interfaceEdges.get(int1);
-      if (interface1Edges == null) {
-        interface1Edges = new EdgeSet();
-        _interfaceEdges.put(int1, interface1Edges);
-      }
+      EdgeSet interface1Edges = _interfaceEdges.computeIfAbsent(int1, k -> new EdgeSet());
       interface1Edges.add(edge);
 
-      EdgeSet interface2Edges = _interfaceEdges.get(int2);
-      if (interface2Edges == null) {
-        interface2Edges = new EdgeSet();
-        _interfaceEdges.put(int2, interface2Edges);
-      }
+      EdgeSet interface2Edges = _interfaceEdges.computeIfAbsent(int2, k -> new EdgeSet());
       interface2Edges.add(edge);
     }
   }

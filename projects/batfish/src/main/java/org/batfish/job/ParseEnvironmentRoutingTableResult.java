@@ -72,7 +72,7 @@ public class ParseEnvironmentRoutingTableResult
     } else if (_routingTable != null) {
       terseLogLevelPrefix = _name + ": ";
     } else {
-      terseLogLevelPrefix = _file.toString() + ": ";
+      terseLogLevelPrefix = _file + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }

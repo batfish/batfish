@@ -31,11 +31,8 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
     }
 
     public void addIntersection(String node1, String node2, PrefixSpace intersection) {
-      SortedMap<String, PrefixSpace> intersections = _intersections.get(node1);
-      if (intersections == null) {
-        intersections = new TreeMap<>();
-        _intersections.put(node1, intersections);
-      }
+      SortedMap<String, PrefixSpace> intersections =
+          _intersections.computeIfAbsent(node1, k -> new TreeMap<>());
       intersections.put(node2, intersection);
     }
 

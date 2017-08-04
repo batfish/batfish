@@ -273,7 +273,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       neighbor.setGroup(ig.getGroupName());
 
       // import policies
-      String peerImportPolicyName = "~PEER_IMPORT_POLICY:" + ig.getRemoteAddress().toString() + "~";
+      String peerImportPolicyName = "~PEER_IMPORT_POLICY:" + ig.getRemoteAddress() + "~";
       neighbor.setImportPolicy(peerImportPolicyName);
       RoutingPolicy peerImportPolicy = new RoutingPolicy(peerImportPolicyName, _c);
       _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
@@ -295,7 +295,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   setPolicyStatementReferent(
                       importPolicyName,
                       ig.getImportPolicies(),
-                      "BGP import policy for neighbor: " + ig.getRemoteAddress().toString());
+                      "BGP import policy for neighbor: " + ig.getRemoteAddress());
                   CallExpr callPolicy = new CallExpr(importPolicyName);
                   importPolicyCalls.add(callPolicy);
                 }
@@ -312,7 +312,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .add(Statements.ExitReject.toStaticStatement());
 
       // export policies
-      String peerExportPolicyName = "~PEER_EXPORT_POLICY:" + ig.getRemoteAddress().toString() + "~";
+      String peerExportPolicyName = "~PEER_EXPORT_POLICY:" + ig.getRemoteAddress() + "~";
       neighbor.setExportPolicy(peerExportPolicyName);
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
@@ -340,7 +340,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   setPolicyStatementReferent(
                       exportPolicyName,
                       ig.getExportPolicies(),
-                      "BGP export policy for neighbor: " + ig.getRemoteAddress().toString());
+                      "BGP export policy for neighbor: " + ig.getRemoteAddress());
                   CallExpr callPolicy = new CallExpr(exportPolicyName);
                   exportPolicyCalls.add(callPolicy);
                 }
@@ -359,7 +359,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // inherit local-as
       neighbor.setLocalAs(ig.getLocalAs());
       if (neighbor.getLocalAs() == null) {
-        _w.redFlag("Missing local-as for neighbor: " + ig.getRemoteAddress().toString());
+        _w.redFlag("Missing local-as for neighbor: " + ig.getRemoteAddress());
         continue;
       }
 
@@ -865,7 +865,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     String generationPolicyName = null;
     if (!route.getPolicies().isEmpty()) {
-      generationPolicyName = "~GENERATED_ROUTE_POLICY:" + prefix.toString() + "~";
+      generationPolicyName = "~GENERATED_ROUTE_POLICY:" + prefix + "~";
       RoutingPolicy generationPolicy = new RoutingPolicy(generationPolicyName, _c);
       _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
       If generationPolicyConditional = new If();
@@ -893,7 +893,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   setPolicyStatementReferent(
                       policyName,
                       route.getPolicies(),
-                      "Generated route policy for prefix: " + route.getPrefix().toString());
+                      "Generated route policy for prefix: " + route.getPrefix());
                   CallExpr callPolicy = new CallExpr(policyName);
                   matchSomeGenerationPolicy.getDisjuncts().add(callPolicy);
                 }

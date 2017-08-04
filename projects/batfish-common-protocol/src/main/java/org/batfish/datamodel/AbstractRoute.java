@@ -230,7 +230,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   public String toString() {
     return this.getClass().getSimpleName()
         + "<"
-        + _network.toString()
+        + _network
         + ",nhip:"
         + getNextHopIp()
         + ",nhint:"

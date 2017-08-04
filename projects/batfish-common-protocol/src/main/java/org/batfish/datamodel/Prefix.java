@@ -139,6 +139,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   @Override
   @JsonValue
   public String toString() {
-    return _address.toString() + "/" + _prefixLength;
+    return _address + "/" + _prefixLength;
   }
 }

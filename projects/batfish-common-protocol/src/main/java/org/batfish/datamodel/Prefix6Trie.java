@@ -7,6 +7,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 
 public class Prefix6Trie implements Serializable {
 
@@ -95,6 +96,7 @@ public class Prefix6Trie implements Serializable {
       }
     }
 
+    @Nullable
     private Prefix6 getLongestPrefixMatch(Ip6 address6, BitSet bits) {
       if (_prefix6.contains(address6)) {
         return _prefix6;

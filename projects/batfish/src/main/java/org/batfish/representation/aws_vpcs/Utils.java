@@ -1,5 +1,6 @@
 package org.batfish.representation.aws_vpcs;
 
+import javax.annotation.Nullable;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -21,6 +22,7 @@ public class Utils {
     return defaultValue;
   }
 
+  @Nullable
   public static String tryGetString(JSONObject jsonObject, String key) throws JSONException {
     if (jsonObject.has(key)) {
       return jsonObject.getString(key);

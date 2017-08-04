@@ -148,14 +148,11 @@ public class Instance implements AwsVpcEntity, Serializable {
       for (Ip ip : privateIpAddresses) {
         if (!ifaceSubnet.contains(ip)) {
           throw new BatfishException(
-              "Instance subnet: "
-                  + ifaceSubnet.toString()
-                  + " does not contain private ip: "
-                  + ip.toString());
+              "Instance subnet: " + ifaceSubnet + " does not contain private ip: " + ip);
         }
         if (ip.equals(ifaceSubnet.getEndAddress())) {
           throw new BatfishException(
-              "Expected end address: " + ip.toString() + " to be used by generated subnet node");
+              "Expected end address: " + ip + " to be used by generated subnet node");
         }
         Prefix prefix = new Prefix(ip, ifaceSubnet.getPrefixLength());
         iface.getAllPrefixes().add(prefix);

@@ -14,6 +14,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Version;
@@ -133,8 +134,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 }
                 finalNextHopIp = newFinalNextHopIp;
               }
-              routesForThisNextHopInterface.add(
-                  routeCandidate.toString() + "_fnhip:" + finalNextHopIp);
+              routesForThisNextHopInterface.add(routeCandidate + "_fnhip:" + finalNextHopIp);
             }
           }
           NodeInterfacePair nextHopInterface =
@@ -709,7 +709,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 + " has same hash as iteration: "
                 + iterationWithThisHashCode
                 + "\n"
-                + iterationHashCodes.toString();
+                + iterationHashCodes;
         if (!DEBUG_REPEAT_ITERATIONS) {
           throw new BatfishException(msg);
         } else if (!DEBUG_ALL_ITERATIONS) {
@@ -882,12 +882,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       if (matchLine != null) {
         lineDesc = filter.getLines().get(matchLine).getName();
         if (lineDesc == null) {
-          lineDesc = "line:" + matchLine.toString();
+          lineDesc = "line:" + matchLine;
         }
       } else {
         lineDesc = "no-match";
       }
-      String notes = disposition.toString() + "{" + outFilterName + "}{" + lineDesc + "}";
+      String notes = disposition + "{" + outFilterName + "}{" + lineDesc + "}";
       if (out) {
         FlowTraceHop lastHop = newHops.get(newHops.size() - 1);
         newHops.remove(newHops.size() - 1);
@@ -968,16 +968,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         String vrfName = e2.getKey();
         VirtualRouter vrf = e2.getValue();
         for (AbstractRoute route : vrf._mainRib.getRoutes()) {
-          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByHostname.get(hostname);
-          if (routesByVrf == null) {
-            routesByVrf = new TreeMap<>();
-            routesByHostname.put(hostname, routesByVrf);
-          }
-          SortedSet<AbstractRoute> routes = routesByVrf.get(vrfName);
-          if (routes == null) {
-            routes = new TreeSet<>();
-            routesByVrf.put(vrfName, routes);
-          }
+          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf =
+              routesByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
+          SortedSet<AbstractRoute> routes =
+              routesByVrf.computeIfAbsent(vrfName, k -> new TreeSet<>());
           routes.add(route);
         }
       }
@@ -985,6 +979,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     return routesByHostname;
   }
 
+  @Nullable
   private Flow hopFlow(Flow originalFlow, Flow transformedFlow) {
     if (originalFlow == transformedFlow) {
       return null;

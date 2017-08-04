@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
@@ -464,7 +465,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                     .toString());
     if (!Files.exists(analysisQuestionsDir)) {
       throw new BatfishException(
-          "Analysis questions dir does not exist: '" + analysisQuestionsDir.toString() + "'");
+          "Analysis questions dir does not exist: '" + analysisQuestionsDir + "'");
     }
     RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
     try (Stream<Path> questions = CommonUtil.list(analysisQuestionsDir)) {
@@ -727,8 +728,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       throw new BatfishException("Test rig directory not set");
     }
     if (!Files.exists(baseDir)) {
-      throw new CleanBatfishException(
-          "Test rig does not exist: \"" + baseDir.getFileName().toString() + "\"");
+      throw new CleanBatfishException("Test rig does not exist: \"" + baseDir.getFileName() + "\"");
     }
   }
 
@@ -786,7 +786,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Path questionsDir = _testrigSettings.getBasePath().resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
       throw new CleanBatfishException(
-          "questions dir does not exist: \"" + questionsDir.getFileName().toString() + "\"");
+          "questions dir does not exist: \"" + questionsDir.getFileName() + "\"");
     }
   }
 
@@ -1159,9 +1159,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     resetTimer();
     if (!Files.exists(serializedConfigPath)) {
       throw new BatfishException(
-          "Missing vendor-independent configs directory: '"
-              + serializedConfigPath.toString()
-              + "'");
+          "Missing vendor-independent configs directory: '" + serializedConfigPath + "'");
     }
     Map<Path, String> namesByPath = new TreeMap<>();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(serializedConfigPath)) {
@@ -1171,10 +1169,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Error reading vendor-independent configs directory: '"
-              + serializedConfigPath.toString()
-              + "'",
-          e);
+          "Error reading vendor-independent configs directory: '" + serializedConfigPath + "'", e);
     }
     SortedMap<String, Configuration> configurations =
         deserializeObjects(namesByPath, Configuration.class);
@@ -1239,7 +1234,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   + " '"
                   + name
                   + "' from '"
-                  + inputPath.toString()
+                  + inputPath
                   + "'");
           byte[] data = fromGzipFile(inputPath);
           logger.debug(" ...OK\n");
@@ -1471,8 +1466,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       int numInterfaces = interfaceSet.size();
       if (numInterfaces < 2) {
         throw new BatfishException(
-            "The following interface set contains less than two interfaces: "
-                + interfaceSet.toString());
+            "The following interface set contains less than two interfaces: " + interfaceSet);
       }
       int numHostBits = 0;
       for (int shiftedValue = numInterfaces - 1;
@@ -2794,7 +2788,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         try {
           config.addConfigElement(jsonObj, _logger);
         } catch (JSONException e) {
-          throw new BatfishException("Problems parsing JSON in " + file.toString(), e);
+          throw new BatfishException("Problems parsing JSON in " + file, e);
         }
       }
     }
@@ -2932,7 +2926,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
   private SortedMap<String, SortedSet<String>> parseNodeRoles(
       Path nodeRolesPath, Set<String> nodes) {
-    _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath().toString() + "\"");
+    _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath() + "\"");
     String roleFileText = CommonUtil.readFile(nodeRolesPath);
     NodeRoleSpecifier specifier;
     try {
@@ -2965,7 +2959,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath().toString() + "\" ...");
+    _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath() + "\" ...");
     Topology topology = null;
     if (topologyFileText.equals("")) {
       throw new BatfishException("ERROR: empty topology\n");
@@ -3347,8 +3341,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         }
 
       } catch (JSONException | IOException e) {
-        throw new BatfishException(
-            "Problems parsing JSON in " + externalBgpAnnouncementsPath.toString(), e);
+        throw new BatfishException("Problems parsing JSON in " + externalBgpAnnouncementsPath, e);
       }
     }
     return advertSet;
@@ -3442,7 +3435,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     AtomicInteger completed =
         newBatch("Reading network configuration files", configFilePaths.size());
     for (Path file : configFilePaths) {
-      _logger.debug("Reading: \"" + file.toString() + "\"\n");
+      _logger.debug("Reading: \"" + file + "\"\n");
       String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
       String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
       configurationData.put(file, fileText);
@@ -3452,6 +3445,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     return configurationData;
   }
 
+  @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
     Path externalBgpAnnouncementsPath =
@@ -3479,7 +3473,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
     AtomicInteger completed = newBatch("Reading files: " + description, filePaths.size());
     for (Path file : filePaths) {
-      _logger.debug("Reading: \"" + file.toString() + "\"\n");
+      _logger.debug("Reading: \"" + file + "\"\n");
       String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
       String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
       fileData.put(file, fileText);
@@ -3718,7 +3712,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                       : ""));
     } catch (IOException e1) {
       throw new BatfishException(
-          "Could not create directory stream for '" + questionsDir.toString() + "'", e1);
+          "Could not create directory stream for '" + questionsDir + "'", e1);
     }
     ObjectMapper mapper = new BatfishObjectMapper();
     for (Entry<Path, String> entry : answers.entrySet()) {
@@ -3729,7 +3723,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
           answerElement.getJsonAnswers().add(mapper.readTree(answerText));
         } catch (IOException e) {
           throw new BatfishException(
-              "Error mapping JSON content of '" + answerPath.toString() + "' to object", e);
+              "Error mapping JSON content of '" + answerPath + "' to object", e);
         }
       }
     }
@@ -3882,7 +3876,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     resetTimer();
     outputPath.toFile().mkdirs();
     Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
-    _logger.debug("Serializing AWS VPCs to " + currentOutputPath.toString() + "\"...");
+    _logger.debug("Serializing AWS VPCs to " + currentOutputPath + "\"...");
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     printElapsedTime();
@@ -4090,11 +4084,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         newBatch("Packing and writing '" + className + "' instances to disk", size);
     dataByPath.forEach(
         (outputPath, data) -> {
-          logger.debug("Writing: \"" + outputPath.toString() + "\"...");
+          logger.debug("Writing: \"" + outputPath + "\"...");
           try {
             Files.write(outputPath, data);
           } catch (IOException e) {
-            throw new BatfishException("Failed to write: '" + outputPath.toString() + "'");
+            throw new BatfishException("Failed to write: '" + outputPath + "'");
           }
           logger.debug("OK\n");
           writeCompleted.incrementAndGet();
@@ -4327,7 +4321,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (!Files.exists(questionDir)) {
         throw new BatfishException(
             "Could not write JSON answer to question dir '"
-                + questionDir.toString()
+                + questionDir
                 + "' because it does not exist");
       }
       boolean diff = _settings.getDiffQuestion();
@@ -4361,7 +4355,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (!Files.exists(questionDir)) {
         throw new BatfishException(
             "Could not write JSON answer to question dir '"
-                + questionDir.toString()
+                + questionDir
                 + "' because it does not exist");
       }
       boolean diff = _settings.getDiffQuestion();
