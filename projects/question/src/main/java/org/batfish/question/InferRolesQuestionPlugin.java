@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.Random;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,11 +33,15 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     private static final String ROLE_SPECIFIER_VAR = "roleSpecifier";
 
+    private static final String ALL_NODES_VAR = "allNodes";
+
     private static final String ALL_NODES_COUNT_VAR = "allNodesCount";
 
     private static final String MATCHING_NODES_COUNT_VAR = "matchingNodesCount";
 
     private NodeRoleSpecifier _roleSpecifier;
+
+    private List<String> _allNodes;
 
     private int _allNodesCount;
 
@@ -51,16 +57,29 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String prettyPrint() {
+
       StringBuilder sb;
       sb = new StringBuilder(
           "Results for infer roles\n");
-      if (_roleSpecifier != null) {
-        for (String regex : _roleSpecifier.getRoleRegexes()) {
-          sb.append("Role regex:  " + regex + "\n");
-          sb.append("Matches " + _matchingNodesCount + " out of "
-              + _allNodesCount + " nodes\n");
-        }
+
+      if (_roleSpecifier == null) {
+        return sb.toString();
       }
+
+      for (String regex : _roleSpecifier.getRoleRegexes()) {
+        sb.append("Role regex inferred:  " + regex + "\n");
+        sb.append("Matches " + _matchingNodesCount + " out of "
+            + _allNodesCount + " nodes\n");
+      }
+
+      SortedMap<String, SortedSet<String>> roleNodesMap =
+          _roleSpecifier.createRoleNodesMap(new TreeSet<String>(_allNodes));
+
+      sb.append("Roles inferred:\n");
+      for (Map.Entry<String, SortedSet<String>> entry : roleNodesMap.entrySet()) {
+        sb.append("  " + entry + "\n");
+      }
+
       return sb.toString();
     }
 
@@ -69,10 +88,16 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       _roleSpecifier = roleSpecifier;
     }
 
+    @JsonProperty(ALL_NODES_VAR)
+    public void setAllNodes(List<String> allNodes) {
+      _allNodes = allNodes;
+    }
+
     @JsonProperty(ALL_NODES_COUNT_VAR)
     public void setAllNodesCount(int allNodesCount) {
       _allNodesCount = allNodesCount;
     }
+
 
     @JsonProperty(MATCHING_NODES_COUNT_VAR)
     public void setMatchingNodesCount(int matchingNodesCount) {
@@ -136,6 +161,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
       int allNodesCount = nodes.size();
 
+      answerElement.setAllNodes(nodes);
       answerElement.setAllNodesCount(allNodesCount);
 
       if (allNodesCount == 0) {
@@ -222,8 +248,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     // If for every node name matching the identified regex,
     // a particular alphanumeric token starts with one or more alphabetic characters,
-    // followed by at least one digit, the string of initial alphabetic characters
-    // is considered a candidate for the role name.
+    // the string of initial alphabetic characters is considered a candidate for the role name.
     // This method returns all such candidates, each represented as a regex
     // with a single group indicating the role name.
     private List<String> possibleRoleGroups() {
@@ -233,7 +258,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
           continue;
         }
         List<String> regexCopy = new ArrayList<>(_regex);
-        regexCopy.set(i, "(\\p{Alpha}+)\\p{Digit}\\p{Alnum}*");
+        regexCopy.set(i, "(\\p{Alpha}+)\\p{Alnum}*");
         Pattern newp = Pattern.compile(String.join("", regexCopy));
         boolean matchesAll = true;
         for (String node : _matchingNodes) {
