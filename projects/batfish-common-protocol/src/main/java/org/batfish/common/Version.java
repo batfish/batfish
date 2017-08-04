@@ -1,8 +1,8 @@
 package org.batfish.common;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.MoreObjects;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
@@ -74,7 +74,7 @@ public final class Version {
   // Visible for testing.
   static boolean isCompatibleVersion(
       String myName, String myVersion, String otherName, @Nullable String otherVersion) {
-    otherVersion = MoreObjects.firstNonNull(otherVersion, UNKNOWN_VERSION);
+    otherVersion = firstNonNull(otherVersion, UNKNOWN_VERSION);
 
     if (otherVersion.equals(UNKNOWN_VERSION) || myVersion.equals(UNKNOWN_VERSION)) {
       // Either version is unknown, assume compatible.

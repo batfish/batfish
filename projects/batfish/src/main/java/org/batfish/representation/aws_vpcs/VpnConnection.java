@@ -320,12 +320,13 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       // static routes (if configured)
       for (Prefix staticRoutePrefix : _routes) {
         StaticRoute staticRoute =
-            new StaticRoute(
-                staticRoutePrefix,
-                ipsecTunnel.getCgwInsideAddress(),
-                null,
-                Route.DEFAULT_STATIC_ROUTE_ADMIN,
-                Route.DEFAULT_STATIC_ROUTE_COST);
+            StaticRoute.builder()
+                .setNetwork(staticRoutePrefix)
+                .setNextHopIp(ipsecTunnel.getCgwInsideAddress())
+                .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+                .build();
+
         vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);
       }
     }

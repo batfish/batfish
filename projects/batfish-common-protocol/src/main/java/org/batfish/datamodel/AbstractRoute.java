@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
@@ -87,13 +88,13 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     }
     Ip lhsNextHopIp = getNextHopIp();
     Ip rhsNextHopIp = rhs.getNextHopIp();
-    if (lhsNextHopIp == null) {
-      if (rhsNextHopIp != null) {
+    if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(lhsNextHopIp)) {
+      if (!Route.UNSET_ROUTE_NEXT_HOP_IP.equals(rhsNextHopIp)) {
         ret = -1;
       } else {
         ret = 0;
       }
-    } else if (rhsNextHopIp == null) {
+    } else if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(rhsNextHopIp)) {
       ret = 1;
     } else {
       ret = lhsNextHopIp.compareTo(rhsNextHopIp);
@@ -103,8 +104,8 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     }
     String nextHopInterface = getNextHopInterface();
     String rhsNextHopInterface = rhs.getNextHopInterface();
-    if (nextHopInterface == null) {
-      if (rhsNextHopInterface != null) {
+    if (Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
+      if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(rhsNextHopInterface)) {
         ret = -1;
       } else {
         ret = 0;
@@ -134,14 +135,13 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
       tag = Integer.toString(tagInt);
     }
     String nhint = getNextHopInterface();
-    if (nhint != null && !nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
+    if (!nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
       // static interface
       if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
         nhnode = "N/A";
-        nhip = "N/A";
       }
     }
-    nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
+    nhip = !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? nextHopIp.toString() : "N/A";
     String net = getNetwork().toString();
     String admin = Integer.toString(getAdministrativeCost());
     String cost = Integer.toString(getMetric());
@@ -171,8 +171,10 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   }
 
   @JsonIgnore
+  @Nonnull
   public abstract String getNextHopInterface();
 
+  @Nonnull
   @JsonIgnore
   public abstract Ip getNextHopIp();
 
@@ -255,7 +257,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
       }
     }
     String nextHopInterface = getNextHopInterface();
-    if (nextHopInterface != null) {
+    if (!nextHopInterface.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
       rb.setNextHopInterface(nextHopInterface);
     }
     rb.setAdministrativeCost(getAdministrativeCost());
