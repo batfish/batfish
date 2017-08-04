@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -48,7 +49,10 @@ public class BatfishObjectMapper extends ObjectMapper {
       enable(SerializationFeature.INDENT_OUTPUT);
     }
     enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-    setSerializationInclusion(Include.NON_EMPTY);
+    // See https://groups.google.com/forum/#!topic/jackson-user/WfZzlt5C2Ww
+    //  This fixes issues in which non-empty maps with keys with empty values would get omitted
+    //  entirely. See also https://github.com/batfish/batfish/issues/256
+    setDefaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS));
   }
 
   public BatfishObjectMapper(ClassLoader cl) {

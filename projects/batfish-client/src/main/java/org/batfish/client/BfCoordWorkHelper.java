@@ -389,32 +389,27 @@ public class BfCoordWorkHelper {
 
   /**
    * Returns a {@link Container Container} that contains information of '{@code containerName}',
-   * returns null if container '{@code containerName}' does not exist or the api
-   * key that is using has no access to the container
+   * returns null if container '{@code containerName}' does not exist or the api key that is using
+   * has no access to the container
    */
   public Container getContainer(String containerName) {
     try {
       Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(
-          client,
-          CoordConsts.SVC_RSC_GET_CONTAINER);
+      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY,
-          _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION,
-          Version.getVersion());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME,
-          containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
 
-      Response response = webTarget
-          .request(MediaType.APPLICATION_JSON)
-          .post(Entity.entity(multiPart, multiPart.getMediaType()));
+      Response response =
+          webTarget
+              .request(MediaType.APPLICATION_JSON)
+              .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-      _logger.debug(response.getStatus() + " " + response.getStatusInfo()
-          + " " + response + "\n");
+      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         _logger.errorf("GetContainer: Did not get an OK response\n");
@@ -427,8 +422,7 @@ public class BfCoordWorkHelper {
       Container container = mapper.readValue(containerStr, Container.class);
       return container;
     } catch (Exception e) {
-      _logger.errorf("Exception in getContainer from %s for %s\n",
-          _coordWorkMgr, containerName);
+      _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgr, containerName);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return null;
     }

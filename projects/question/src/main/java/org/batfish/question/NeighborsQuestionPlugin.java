@@ -7,7 +7,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +24,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RoleEdge;
@@ -368,12 +371,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     Topology _topology;
 
+    private SortedMap<String, SortedSet<String>> _nodeRolesMap;
+
     public NeighborsAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
-    public AnswerElement answer() {
+    public NeighborsAnswerElement answer() {
       NeighborsQuestion question = (NeighborsQuestion) _question;
       Pattern node1Regex;
       Pattern node2Regex;
@@ -392,6 +397,18 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
+
+      if (question.getStyle() == EdgeStyle.ROLE) {
+        NodeRoleSpecifier roleSpecifier = question.getRoleSpecifier();
+        if (roleSpecifier != null) {
+          _nodeRolesMap = roleSpecifier.createNodeRolesMap(configurations.keySet());
+        } else {
+          _nodeRolesMap = new TreeMap<>();
+          for (Map.Entry<String, Configuration> entry : configurations.entrySet()) {
+            _nodeRolesMap.put(entry.getKey(), entry.getValue().getRoles());
+          }
+        }
+      }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
         SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
@@ -435,8 +452,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           case ROLE:
             SortedSet<RoleEdge> redges = new TreeSet<>();
             for (VerboseOspfEdge vedge : vedges) {
-              SortedSet<String> roles1 = vedge.getNode1().getRoles();
-              SortedSet<String> roles2 = vedge.getNode2().getRoles();
+              SortedSet<String> roles1 =
+                  _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
+              SortedSet<String> roles2 =
+                  _nodeRolesMap.getOrDefault(vedge.getNode2().getName(), new TreeSet<>());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   redges.add(new RoleEdge(r1, r2));
@@ -579,8 +598,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           case ROLE:
             SortedSet<RoleEdge> rMatchingEdges = new TreeSet<>();
             for (Edge edge : matchingEdges) {
-              SortedSet<String> roles1 = configurations.get(edge.getNode1()).getRoles();
-              SortedSet<String> roles2 = configurations.get(edge.getNode2()).getRoles();
+              SortedSet<String> roles1 =
+                  _nodeRolesMap.getOrDefault(edge.getNode1(), new TreeSet<>());
+              SortedSet<String> roles2 =
+                  _nodeRolesMap.getOrDefault(edge.getNode2(), new TreeSet<>());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   rMatchingEdges.add(new RoleEdge(r1, r2));
@@ -625,8 +646,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private SortedSet<RoleEdge> verboseToRoleEdges(SortedSet<VerboseBgpEdge> vedges) {
       SortedSet<RoleEdge> redges = new TreeSet<>();
       for (VerboseBgpEdge vedge : vedges) {
-        SortedSet<String> roles1 = vedge.getNode1().getRoles();
-        SortedSet<String> roles2 = vedge.getNode2().getRoles();
+        SortedSet<String> roles1 =
+            _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
+        SortedSet<String> roles2 =
+            _nodeRolesMap.getOrDefault(vedge.getNode2().getName(), new TreeSet<>());
         for (String r1 : roles1) {
           for (String r2 : roles2) {
             redges.add(new RoleEdge(r1, r2));
@@ -655,6 +678,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
    *     the default and returns only the names of nodes/interfaces in the edge; "verbose" provides
    *     full configuration information about those nodes/interfaces; "role" abstracts edges to the
    *     role level.
+   * @param roleSpecifier NodeRoleSpecifier that assigns roles to nodes.  This is an optional
+   *     variable that is only used if the style is set to "role".  If no roleSpecifier is provided
+   *     then by default the roles originally assigned to nodes when the configurations were loaded
+   *     are used.
    * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"] node1Regex="as1.*",
    *     node2Regex="as2.*") Shows all eBGP and iBGP neighbor relationships between nodes that start
    *     with as1 and those that start with as2.
@@ -669,6 +696,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String STYLE_VAR = "style";
 
+    private static final String ROLE_SPECIFIER_VAR = "roleSpecifier";
+
     private SortedSet<NeighborType> _neighborTypes;
 
     private String _node1Regex;
@@ -676,6 +705,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private String _node2Regex;
 
     private EdgeStyle _style;
+
+    private NodeRoleSpecifier _roleSpecifier;
 
     public NeighborsQuestion() {
       _node1Regex = ".*";
@@ -712,6 +743,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(STYLE_VAR)
     public EdgeStyle getStyle() {
       return _style;
+    }
+
+    @JsonProperty(ROLE_SPECIFIER_VAR)
+    public NodeRoleSpecifier getRoleSpecifier() {
+      return _roleSpecifier;
     }
 
     @Override
@@ -763,7 +799,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     public void setStyle(EdgeStyle style) {
       _style = style;
     }
+
+    @JsonProperty(ROLE_SPECIFIER_VAR)
+    public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
+      _roleSpecifier = roleSpecifier;
+    }
   }
+
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {

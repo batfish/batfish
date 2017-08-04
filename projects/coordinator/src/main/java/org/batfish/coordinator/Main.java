@@ -2,9 +2,13 @@ package org.batfish.coordinator;
 
 // Include the following imports to use queue APIs.
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
+import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
@@ -16,17 +20,20 @@ import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Main {
 
-  private static Authorizer _authorizer;
-  private static BatfishLogger _logger;
-  private static PoolMgr _poolManager;
-  private static Settings _settings;
-  private static WorkMgr _workManager;
+  // These are all @Nullable because they are static and may not be initialized if Main() has not
+  // been called.
+  private static @Nullable Authorizer _authorizer;
+  private static @Nullable BatfishLogger _logger;
+  private static @Nullable PoolMgr _poolManager;
+  private static @Nullable Settings _settings;
+  private static @Nullable WorkMgr _workManager;
 
   static Logger httpServerLogger =
       Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
@@ -34,22 +41,27 @@ public class Main {
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
   public static Authorizer getAuthorizer() {
+    checkState(_authorizer != null, "Error: Authorizer has not been configured");
     return _authorizer;
   }
 
   public static BatfishLogger getLogger() {
+    checkState(_logger != null, "Error: Logger has not been configured");
     return _logger;
   }
 
   public static PoolMgr getPoolMgr() {
+    checkState(_poolManager != null, "Error: Pool Manager has not been configured");
     return _poolManager;
   }
 
   public static Settings getSettings() {
+    checkState(_settings != null, "Error: Coordinator settings have not been configured");
     return _settings;
   }
 
   public static WorkMgr getWorkMgr() {
+    checkState(_workManager != null, "Error: Work Manager has not been configured");
     return _workManager;
   }
 
@@ -121,27 +133,25 @@ public class Main {
     _poolManager.startPoolManager();
   }
 
-  private static void initWorkManager() {
+  private static void startWorkManagerService(
+      Class<?> serviceClass, Class<? extends Feature> jsonFeature, int port) {
     ResourceConfig rcWork =
-        new ResourceConfig(WorkMgrService.class)
-            .register(new JettisonFeature())
+        new ResourceConfig(serviceClass)
+            .register(ExceptionMapper.class)
+            .register(jsonFeature)
             .register(MultiPartFeature.class)
             .register(CrossDomainFilter.class);
 
     if (_settings.getSslWorkDisable()) {
       URI workMgrUri =
-          UriBuilder.fromUri("http://" + _settings.getWorkBindHost())
-              .port(_settings.getServiceWorkPort())
-              .build();
+          UriBuilder.fromUri("http://" + _settings.getWorkBindHost()).port(port).build();
 
-      _logger.info("Starting work manager at " + workMgrUri + "\n");
+      _logger.info("Starting work manager " + serviceClass + " at " + workMgrUri + "\n");
 
       GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
     } else {
       URI workMgrUri =
-          UriBuilder.fromUri("https://" + _settings.getWorkBindHost())
-              .port(_settings.getServiceWorkPort())
-              .build();
+          UriBuilder.fromUri("https://" + _settings.getWorkBindHost()).port(port).build();
 
       _logger.info("Starting work manager at " + workMgrUri + "\n");
       CommonUtil.startSslServer(
@@ -155,6 +165,15 @@ public class Main {
           ConfigurationLocator.class,
           Main.class);
     }
+  }
+
+  private static void initWorkManager() {
+    // Initialize and start the work manager service using the legacy API and Jettison.
+    startWorkManagerService(
+        WorkMgrService.class, JettisonFeature.class, _settings.getServiceWorkPort());
+    // Initialize and start the work manager service using the v2 RESTful API and Jackson.
+    startWorkManagerService(
+        WorkMgrServiceV2.class, JacksonFeature.class, _settings.getServiceWorkV2Port());
 
     _workManager = new WorkMgr(_settings, _logger);
     _workManager.startWorkManager();

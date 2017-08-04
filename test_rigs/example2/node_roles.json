@@ -1,6 +1,3 @@
-{"roleMap": { "border": ["border-01", "border-02"],
-			  "core": ["core-01", "core-02"],
-			  "leaf": ["leaf-01"],
-			"spine": ["spine-01", "spine-02"] },
- "roleRegexes": ["([a-z]+)\\-\\d+", "([a-z]+).*"]
+{"roleMap": { "host": ["dc1-host-01-01", "dc1-host-01-02"] },
+ "roleRegexes": ["[a-z\\d]+\\-([a-z]+)\\-\\d+"]
 }

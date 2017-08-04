@@ -69,6 +69,7 @@ public class WorkMgrTest {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {});
+    Main.setLogger(logger);
     _manager = new WorkMgr(settings, logger);
   }
 
