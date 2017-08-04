@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -5231,6 +5232,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  @Nullable
   private String getAddressGroup(Access_list_ip_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
@@ -5239,6 +5241,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  @Nullable
   private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();

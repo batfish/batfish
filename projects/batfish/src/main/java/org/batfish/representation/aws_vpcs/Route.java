@@ -3,6 +3,7 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
@@ -57,6 +58,7 @@ public class Route implements Serializable {
     }
   }
 
+  @Nullable
   public StaticRoute toStaticRoute(
       AwsVpcConfiguration awsVpcConfiguration,
       Ip vpcAddress,

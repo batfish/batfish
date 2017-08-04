@@ -646,6 +646,7 @@ public class WorkMgr {
     return retStringBuilder.toString();
   }
 
+  @Nullable
   public Path getTestrigObject(String containerName, String testrigName, String objectName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);
     Path file = testrigDir.resolve(objectName);

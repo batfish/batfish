@@ -83,6 +83,7 @@ public class PoolMgr {
     return copy;
   }
 
+  @Nullable
   public synchronized String getWorkerForAssignment() {
 
     for (Entry<String, WorkerStatus> workerEntry : _workerPool.entrySet()) {

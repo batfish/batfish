@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
@@ -366,6 +367,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _additionalPathsSend;
   }
 
+  @Nullable
   @JsonProperty(ADDRESS_VAR)
   @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
   public Ip getAddress() {

@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
@@ -3444,6 +3445,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     return configurationData;
   }
 
+  @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
     Path externalBgpAnnouncementsPath =

@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -23,6 +24,7 @@ public class DestinationNetwork6 extends Prefix6Expr {
     return true;
   }
 
+  @Nullable
   @Override
   public Prefix6 evaluate(Environment env) {
     if (env.getOriginalRoute6() != null) {

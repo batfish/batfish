@@ -44,6 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -443,6 +444,7 @@ public class CommonUtil {
     return retString;
   }
 
+  @Nullable
   public static Integer getInterfaceVlanNumber(String ifaceName) {
     String prefix = "vlan";
     String ifaceNameLower = ifaceName.toLowerCase();
