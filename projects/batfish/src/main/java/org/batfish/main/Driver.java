@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -135,15 +136,19 @@ public class Driver {
     return _mainLogger;
   }
 
+  @Nullable
   private static synchronized Task getTask(Settings settings) {
     String taskId = settings.getTaskId();
     if (taskId == null) {
       return null;
-    } else return _taskLog.getOrDefault(taskId, null);
+    } else {
+      return _taskLog.get(taskId);
+    }
   }
 
+  @Nullable
   public static synchronized Task getTaskFromLog(String taskId) {
-    return _taskLog.getOrDefault(taskId, null);
+    return _taskLog.get(taskId);
   }
 
   private static synchronized void logTask(String taskId, Task task) throws Exception {
