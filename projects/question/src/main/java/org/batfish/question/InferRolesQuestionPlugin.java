@@ -348,7 +348,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "InferRoles";
+      return "inferroles";
     }
 
     @JsonProperty(NODE_REGEX_VAR)
