@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
@@ -29,6 +30,8 @@ import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -72,6 +75,40 @@ public class BatfishTest {
             CACHED_ENVIRONMENT_BGP_TABLES,
             CACHED_ENVIRONMENT_ROUTING_TABLES);
     return batfish;
+  }
+
+  @Test
+  public void testAnswerBadQuestion() throws IOException {
+   // missing class field
+   String badQuestionStr = "{"
+         + "\"differential\": false,"
+         + "\"instance\": {"
+         + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) are"
+         +                    "referenced.\","
+         + "\"instanceName\": \"undefinedReferences\","
+         +     "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
+         +                            "serious consequences with some vendors.\","
+         +     "\"tags\": [\"default\"],"
+         +     "\"variables\": {\"nodeRegex\": {"
+         +        "\"description\": \"Only check nodes whose name matches this regex\","
+         +        "\"type\": \"javaRegex\","
+         +        "\"value\": \".*\""
+         +      "}}"
+         + "},"
+         + "\"nodeRegex\": \"${nodeRegex}\""
+         + "}";
+
+    Path questionPath =
+          CommonUtil.createTempFileWithContent("testAnswerBadQuestion", badQuestionStr);
+    Batfish batfish = initBatfish();
+    batfish.getSettings().setQuestionPath(questionPath);
+    Answer answer = batfish.answer();
+    assertThat(answer.getQuestion(), is(nullValue()));
+    assertEquals(answer.getStatus(), AnswerStatus.FAILURE);
+    assertEquals(answer.getAnswerElements().size(), 1);
+    assertThat(
+        answer.getAnswerElements().get(0).prettyPrint(),
+        containsString("Could not parse question"));
   }
 
   @Test

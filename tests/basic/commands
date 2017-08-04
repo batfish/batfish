@@ -35,6 +35,10 @@ test tests/basic/undefinedReferences.ref get undefinedReferences
 test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
 test tests/basic/unusedStructures.ref get unusedStructures
 
+# example2 testrig
+test tests/basic/init-example2.ref init-testrig test_rigs/example2
+test tests/basic/inferRoles.ref get inferRoles
+
 # disable-as-reuse
 test tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
