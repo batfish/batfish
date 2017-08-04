@@ -16,8 +16,10 @@ public class StaticRoute extends AbstractRoute {
 
   private final int _administrativeCost;
 
+  @Nonnull
   private final String _nextHopInterface;
 
+  @Nonnull
   private final Ip _nextHopIp;
 
   private final int _tag;
@@ -41,16 +43,8 @@ public class StaticRoute extends AbstractRoute {
     StaticRoute rhs = (StaticRoute) o;
     boolean res = _network.equals(rhs._network);
     res = res && _administrativeCost == rhs._administrativeCost;
-    if (_nextHopIp != null) {
-      res = res && _nextHopIp.equals(rhs._nextHopIp);
-    } else {
-      res = res && rhs._nextHopIp == null;
-    }
-    if (_nextHopInterface != null) {
-      return res && _nextHopInterface.equals(rhs._nextHopInterface);
-    } else {
-      res = res && rhs._nextHopInterface == null;
-    }
+    res = res && _nextHopIp.equals(rhs._nextHopIp);
+    res = res && _nextHopInterface.equals(rhs._nextHopInterface);
     return res && _tag == rhs._tag;
   }
 
@@ -105,8 +99,8 @@ public class StaticRoute extends AbstractRoute {
     int result = 1;
     result = prime * result + _network.hashCode();
     result = prime * result + _administrativeCost;
-    result = prime * result + ((_nextHopInterface == null) ? 0 : _nextHopInterface.hashCode());
-    result = prime * result + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
+    result = prime * result + _nextHopInterface.hashCode();
+    result = prime * result + _nextHopIp.hashCode();
     result = prime * result + _tag;
     return result;
   }
