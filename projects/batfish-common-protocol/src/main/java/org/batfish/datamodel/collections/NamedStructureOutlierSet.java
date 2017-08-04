@@ -13,7 +13,7 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
 
   private static final String STRUCT_TYPE_VAR = "structType";
 
-  private static final String NAMED_STRUCTURE_VAR = "namedStructTypes";
+  private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
 
   private static final String CONFORMERS_VAR = "conformers";
 
@@ -44,7 +44,7 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
   public NamedStructureOutlierSet(
       @JsonProperty(STRUCT_TYPE_VAR) String structType,
       @JsonProperty(NAME_VAR) String name,
-      @JsonProperty(NAMED_STRUCTURE_VAR) T namedStructure,
+      @JsonProperty(NAMED_STRUCT_TYPES_VAR) T namedStructure,
       @JsonProperty(CONFORMERS_VAR) SortedSet<String> conformers,
       @JsonProperty(OUTLIERS_VAR) SortedSet<String> outliers) {
     _structType = structType;
