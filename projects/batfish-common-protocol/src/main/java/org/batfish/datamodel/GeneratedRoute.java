@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +120,7 @@ public final class GeneratedRoute extends AbstractRoute {
     _generationPolicy = generationPolicy;
     _metric = metric;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
-    _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
+    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   @Override

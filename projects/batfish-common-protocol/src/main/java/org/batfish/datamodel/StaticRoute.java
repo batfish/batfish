@@ -5,8 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -33,7 +31,7 @@ public class StaticRoute extends AbstractRoute {
       @JsonProperty(TAG_VAR) int tag) {
     super(network);
     _administrativeCost = administrativeCost;
-    _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
+    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _tag = tag;
   }

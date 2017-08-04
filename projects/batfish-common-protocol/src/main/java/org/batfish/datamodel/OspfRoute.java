@@ -1,9 +1,10 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 public abstract class OspfRoute extends AbstractRoute {
 
@@ -25,7 +26,7 @@ public abstract class OspfRoute extends AbstractRoute {
     super(network);
     _admin = admin;
     _metric = metric;
-    _nextHopIp = MoreObjects.firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
   @JsonIgnore(false)

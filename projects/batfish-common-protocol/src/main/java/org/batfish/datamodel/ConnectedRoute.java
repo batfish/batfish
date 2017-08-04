@@ -1,9 +1,10 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 
 public class ConnectedRoute extends AbstractRoute {
@@ -17,7 +18,7 @@ public class ConnectedRoute extends AbstractRoute {
       @JsonProperty(NETWORK_VAR) Prefix network,
       @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface) {
     super(network);
-    _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
+    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   @Override
