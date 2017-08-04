@@ -324,6 +324,7 @@ public class BgpRoute extends AbstractRoute {
     return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_IP_VAR)
   @Override

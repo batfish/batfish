@@ -174,6 +174,7 @@ public final class GeneratedRoute extends AbstractRoute {
     return _nextHopInterface;
   }
 
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_IP_VAR)
   @Override

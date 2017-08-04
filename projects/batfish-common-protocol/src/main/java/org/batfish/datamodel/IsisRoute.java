@@ -56,6 +56,7 @@ public class IsisRoute extends AbstractRoute {
     // TODO Auto-generated method stub
   }
 
+  @Nonnull
   @Override
   public Ip getNextHopIp() {
     throw new UnsupportedOperationException("no implementation for generated method");

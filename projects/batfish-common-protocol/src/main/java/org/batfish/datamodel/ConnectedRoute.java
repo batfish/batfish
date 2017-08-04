@@ -46,6 +46,7 @@ public class ConnectedRoute extends AbstractRoute {
     return _nextHopInterface;
   }
 
+  @Nonnull
   @Override
   public Ip getNextHopIp() {
     return Route.UNSET_ROUTE_NEXT_HOP_IP;

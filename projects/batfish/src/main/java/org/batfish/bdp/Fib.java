@@ -63,7 +63,7 @@ public class Fib implements Serializable {
       }
     } else {
       String nextHopInterface = route.getNextHopInterface();
-      if (nextHopInterface != null) {
+      if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
 
         Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
             nextHopInterfaces.get(nextHopInterface);
