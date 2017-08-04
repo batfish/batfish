@@ -1340,7 +1340,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
           pushPeer(_currentIpPeerGroup);
         } else {
-          String message = "Ignoring reference to undeclared peer group: '" + ip.toString() + "'";
+          String message = "Ignoring reference to undeclared peer group: '" + ip + "'";
           _w.redFlag(message);
           pushPeer(_dummyPeerGroup);
         }
@@ -1356,7 +1356,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           pg6 = proc.getIpv6PeerGroups().get(ip6);
           pushPeer(pg6);
         } else {
-          String message = "Ignoring reference to undeclared peer group: '" + ip6.toString() + "'";
+          String message = "Ignoring reference to undeclared peer group: '" + ip6 + "'";
           _w.redFlag(message);
           pushPeer(_dummyPeerGroup);
         }
@@ -3654,7 +3654,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip ip = toIp(ctx.ip);
       IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
       if (pg == null) {
-        String message = "ignoring attempt to activate undefined ip peer group: " + ip.toString();
+        String message = "ignoring attempt to activate undefined ip peer group: " + ip;
         _w.redFlag(message);
       } else {
         pg.setActive(false);
@@ -3663,8 +3663,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
       if (pg == null) {
-        String message =
-            "ignoring attempt to activate undefined ipv6 peer group: " + ip6.toString();
+        String message = "ignoring attempt to activate undefined ipv6 peer group: " + ip6;
         _w.redFlag(message);
       } else {
         pg.setActive(false);
@@ -3696,8 +3695,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
       // TODO: see if it is always ok to set active on 'no shutdown'
       if (pg == null) {
-        String message =
-            "ignoring attempt to shut down to undefined ip peer group: " + ip.toString();
+        String message = "ignoring attempt to shut down to undefined ip peer group: " + ip;
         _w.redFlag(message);
       } else {
         pg.setActive(true);
@@ -3708,8 +3706,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
       // TODO: see if it is always ok to set active on 'no shutdown'
       if (pg == null) {
-        String message =
-            "ignoring attempt to shut down undefined ipv6 peer group: " + ip6.toString();
+        String message = "ignoring attempt to shut down undefined ipv6 peer group: " + ip6;
         _w.redFlag(message);
       } else {
         pg.setActive(true);

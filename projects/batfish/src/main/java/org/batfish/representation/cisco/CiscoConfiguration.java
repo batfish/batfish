@@ -1102,8 +1102,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create generation policy for aggregate network
-      String generationPolicyName =
-          "~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix.toString() + "~";
+      String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix + "~";
       RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
       If currentGeneratedRouteConditional = new If();
       currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
@@ -1143,9 +1142,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // need to apply attribute changes if this specific route is
           // matched
           weInterior = new CallExpr(attributeMapName);
-          attributeMap
-              .getReferers()
-              .put(aggNet, "attribute-map of aggregate route: " + prefix.toString());
+          attributeMap.getReferers().put(aggNet, "attribute-map of aggregate route: " + prefix);
           gr.setAttributePolicy(attributeMapName);
         } else {
           undefined(
@@ -1174,8 +1171,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create generation policy for aggregate network
-      String generationPolicyName =
-          "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6.toString() + "~";
+      String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6 + "~";
       RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
       If currentGeneratedRouteConditional = new If();
       currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
@@ -1202,7 +1198,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (attributeMap != null) {
           attributeMap
               .getReferers()
-              .put(aggNet, "attribute-map of aggregate ipv6 route: " + prefix6.toString());
+              .put(aggNet, "attribute-map of aggregate ipv6 route: " + prefix6);
           gr.setAttributePolicy(attributeMapName);
         } else {
           undefined(

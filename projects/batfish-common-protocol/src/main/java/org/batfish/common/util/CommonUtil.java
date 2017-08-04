@@ -204,8 +204,7 @@ public class CommonUtil {
       FileUtils.copyDirectory(srcPath.toFile(), dstPath.toFile());
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to copy directory: '" + srcPath.toString() + "' to: '" + dstPath.toString() + "'",
-          e);
+          "Failed to copy directory: '" + srcPath + "' to: '" + dstPath + "'", e);
     }
   }
 
@@ -213,8 +212,7 @@ public class CommonUtil {
     try {
       FileUtils.copyFile(srcPath.toFile(), dstPath.toFile());
     } catch (IOException e) {
-      throw new BatfishException(
-          "Failed to copy file: '" + srcPath.toString() + "' to: '" + dstPath.toString() + "'", e);
+      throw new BatfishException("Failed to copy file: '" + srcPath + "' to: '" + dstPath + "'", e);
     }
   }
 
@@ -223,7 +221,7 @@ public class CommonUtil {
       Files.createDirectories(path);
     } catch (IOException e) {
       throw new BatfishException(
-          "Could not create directories leading up to and including '" + path.toString() + "'", e);
+          "Could not create directories leading up to and including '" + path + "'", e);
     }
   }
 
@@ -332,7 +330,7 @@ public class CommonUtil {
     try {
       Files.delete(path);
     } catch (NoSuchFileException e) {
-      throw new BatfishException("Cannot delete non-existent file: '" + path.toString() + "'", e);
+      throw new BatfishException("Cannot delete non-existent file: '" + path + "'", e);
     } catch (IOException e) {
       throw new BatfishException("Failed to delete file: " + path, e);
     }
@@ -382,7 +380,7 @@ public class CommonUtil {
     try {
       return Paths.get(path.toFile().getCanonicalPath());
     } catch (IOException e) {
-      throw new BatfishException("Could not get canonical path from: '" + path.toString() + "'");
+      throw new BatfishException("Could not get canonical path from: '" + path + "'");
     }
   }
 
@@ -419,7 +417,7 @@ public class CommonUtil {
         entries.add(entry);
       }
     } catch (IOException | DirectoryIteratorException e) {
-      throw new BatfishException("Error listing directory '" + directory.toString() + "'", e);
+      throw new BatfishException("Error listing directory '" + directory + "'", e);
     }
     return entries;
   }
@@ -462,7 +460,7 @@ public class CommonUtil {
     try {
       return Files.getLastModifiedTime(path);
     } catch (IOException e) {
-      throw new BatfishException("Failed to get last modified time for '" + path.toString() + "'");
+      throw new BatfishException("Failed to get last modified time for '" + path + "'");
     }
   }
 
@@ -496,7 +494,7 @@ public class CommonUtil {
         }
       }
     } catch (IOException | DirectoryIteratorException e) {
-      throw new BatfishException("Error listing directory '" + directory.toString() + "'", e);
+      throw new BatfishException("Error listing directory '" + directory + "'", e);
     }
     return subdirectories;
   }
@@ -539,14 +537,14 @@ public class CommonUtil {
     try {
       return Files.list(configsPath);
     } catch (IOException e) {
-      throw new BatfishException("Could not list files in '" + configsPath.toString() + "'", e);
+      throw new BatfishException("Could not list files in '" + configsPath + "'", e);
     }
   }
 
   public static String longToCommunity(Long l) {
     Long upper = l >> 16;
     Long lower = l & 0xFFFF;
-    return upper.toString() + ":" + lower;
+    return upper + ":" + lower;
   }
 
   public static String md5Digest(String saltedSecret) {
@@ -599,7 +597,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to read and output lines of file: '" + downloadedFile.toString() + "'");
+          "Failed to read and output lines of file: '" + downloadedFile + "'");
     }
   }
 
@@ -608,7 +606,7 @@ public class CommonUtil {
     try {
       text = new String(Files.readAllBytes(file), "UTF-8");
     } catch (IOException e) {
-      throw new BatfishException("Failed to read file: " + file.toString(), e);
+      throw new BatfishException("Failed to read file: " + file, e);
     }
     return text;
   }
@@ -739,7 +737,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile.toString() + "'");
+          "Failed to write input stream to output file: '" + outputFile + "'");
     }
   }
 

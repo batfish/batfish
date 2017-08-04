@@ -1775,7 +1775,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         }
       }
       if (_currentOspfInterface == null) {
-        throw new BatfishException("Could not find interface with ip address: " + ip.toString());
+        throw new BatfishException("Could not find interface with ip address: " + ip);
       }
     } else {
       _currentOspfInterface = initInterface(ctx.id);
@@ -1788,7 +1788,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
       if (interfaceActiveArea != null && !currentArea.equals(interfaceActiveArea)) {
         throw new BatfishException(
-            "Interface: \"" + unitFullName.toString() + "\" assigned to multiple active areas");
+            "Interface: \"" + unitFullName + "\" assigned to multiple active areas");
       }
       _currentOspfInterface.setOspfActiveArea(currentArea);
     }

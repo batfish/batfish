@@ -53,7 +53,7 @@ public class Route implements Serializable {
       _targetType = TargetType.Instance;
       _target = jObj.getString(AwsVpcEntity.JSON_KEY_INSTANCE_ID);
     } else {
-      throw new JSONException("Target not found in route " + jObj.toString());
+      throw new JSONException("Target not found in route " + jObj);
     }
   }
 
@@ -214,14 +214,14 @@ public class Route implements Serializable {
               .getWarnings()
               .redFlag(
                   "Skipping creating route to "
-                      + _destinationCidrBlock.toString()
+                      + _destinationCidrBlock
                       + " for instance: \""
                       + _target
                       + "\"");
           return null;
 
         default:
-          throw new BatfishException("Unsupported target type: " + _targetType.toString());
+          throw new BatfishException("Unsupported target type: " + _targetType);
       }
     }
     return srBuilder.build();

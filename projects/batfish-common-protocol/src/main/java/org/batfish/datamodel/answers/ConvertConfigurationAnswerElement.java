@@ -99,7 +99,7 @@ public class ConvertConfigurationAnswerElement implements AnswerElement, Seriali
                       sb.append("    " + name + ":\n");
                       byUsage.forEach(
                           (usage, lines) -> {
-                            sb.append("      " + usage + ": lines " + lines.toString() + "\n");
+                            sb.append("      " + usage + ": lines " + lines + "\n");
                           });
                     });
               });
@@ -111,8 +111,7 @@ public class ConvertConfigurationAnswerElement implements AnswerElement, Seriali
               (structureType, byName) -> {
                 byName.forEach(
                     (name, lines) -> {
-                      sb.append(
-                          "    " + structureType + ": " + name + ":" + lines.toString() + "\n");
+                      sb.append("    " + structureType + ": " + name + ":" + lines + "\n");
                     });
               });
         });

@@ -72,6 +72,6 @@ public final class GraphvizResult
 
   @Override
   public String toString() {
-    return "<Computed graph for prefix: " + _prefix.toString() + ">";
+    return "<Computed graph for prefix: " + _prefix + ">";
   }
 }

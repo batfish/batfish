@@ -497,7 +497,7 @@ public enum RoutingProtocol {
         "Missing default administrative cost for protocol: '"
             + _protocolName
             + "' for vendor '"
-            + vendor.toString()
+            + vendor
             + "'");
   }
 
@@ -535,8 +535,7 @@ public enum RoutingProtocol {
           case VYOS:
           default:
             throw new BatfishException(
-                "Unsupported vendor for OSPF inter-area summary administrative cost: "
-                    + vendor.toString());
+                "Unsupported vendor for OSPF inter-area summary administrative cost: " + vendor);
         }
 
       case AGGREGATE:

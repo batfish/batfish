@@ -61,7 +61,7 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
   public Ip6Wildcard(Ip6 address, Ip6 wildcardMask) {
     super(address, wildcardMask);
     if (!wildcardMask.valid()) {
-      throw new BatfishException("Invalid wildcard: " + wildcardMask.toString());
+      throw new BatfishException("Invalid wildcard: " + wildcardMask);
     }
   }
 
@@ -128,7 +128,7 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
     } else if (isPrefix()) {
       return toPrefix().toString();
     } else {
-      return _first.toString() + ";" + _second.toString();
+      return _first + ";" + _second;
     }
   }
 }

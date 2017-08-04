@@ -64,7 +64,7 @@ public class PrettyPrinter {
       try {
         sb.append(mapper.writeValueAsString(value));
       } catch (JsonProcessingException e) {
-        sb.append("Exception while pretty printing " + value.toString() + "\n" + e.getMessage());
+        sb.append("Exception while pretty printing " + value + "\n" + e.getMessage());
       }
     }
     return sb.toString();

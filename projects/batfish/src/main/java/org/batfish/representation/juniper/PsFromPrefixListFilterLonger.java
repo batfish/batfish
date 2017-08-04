@@ -46,7 +46,7 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
                 "'prefix-list-filter "
                     + _prefixList
                     + " longer' cannot match more specific prefix than "
-                    + prefix.toString());
+                    + prefix);
             continue;
           }
           RouteFilterLine orLongerLine = new RouteFilterLine(action, prefix, longerLineRange);

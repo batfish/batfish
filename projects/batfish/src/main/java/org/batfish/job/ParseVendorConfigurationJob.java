@@ -264,11 +264,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case MSS:
       case VXWORKS:
         String unsupportedError =
-            "Unsupported configuration format: '"
-                + format.toString()
-                + "' for file: '"
-                + currentPath
-                + "'\n";
+            "Unsupported configuration format: '" + format + "' for file: '" + currentPath + "'\n";
         if (!_settings.ignoreUnsupported()) {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(

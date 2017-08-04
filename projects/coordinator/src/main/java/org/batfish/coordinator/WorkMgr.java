@@ -134,12 +134,10 @@ public class WorkMgr {
       task.put(BfConsts.ARG_TESTRIG, testrigName);
       task.put(
           BfConsts.ARG_LOG_FILE,
-          testrigBaseDir.resolve(work.getId().toString() + BfConsts.SUFFIX_LOG_FILE).toString());
+          testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_LOG_FILE).toString());
       task.put(
           BfConsts.ARG_ANSWER_JSON_PATH,
-          testrigBaseDir
-              .resolve(work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE)
-              .toString());
+          testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
       // Client client = ClientBuilder.newClient();
       Client client =
@@ -317,7 +315,7 @@ public class WorkMgr {
             "Analysis '" + aName + "' does not exist for container '" + containerName + "'");
       }
       if (!aDir.toFile().mkdirs()) {
-        throw new BatfishException("Failed to create analysis directory '" + aDir.toString() + "'");
+        throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
       }
     }
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -338,8 +336,7 @@ public class WorkMgr {
               "Question '" + qName + "' already exists for analysis '" + aName + "'");
         }
         if (!qDir.toFile().mkdirs()) {
-          throw new BatfishException(
-              "Failed to create question directory '" + qDir.toString() + "'");
+          throw new BatfishException("Failed to create question directory '" + qDir + "'");
         }
         Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
         String qOutput;
@@ -621,7 +618,7 @@ public class WorkMgr {
     StringBuilder retStringBuilder = new StringBuilder();
     SortedSet<Path> entries = CommonUtil.getEntries(submittedTestrigDir);
     for (Path entry : entries) {
-      retStringBuilder.append(entry.getFileName().toString());
+      retStringBuilder.append(entry.getFileName());
       if (Files.isDirectory(entry)) {
         String[] subdirEntryNames =
             CommonUtil.getEntries(entry)
@@ -662,7 +659,7 @@ public class WorkMgr {
     if (Files.isRegularFile(file)) {
       return file;
     } else if (Files.isDirectory(file)) {
-      Path zipfile = Paths.get(file.toString() + ".zip");
+      Path zipfile = Paths.get(file + ".zip");
       if (Files.exists(zipfile)) {
         CommonUtil.deleteIfExists(zipfile);
       }
@@ -698,7 +695,7 @@ public class WorkMgr {
       throw new BatfishException("Container '" + containerName + "' already exists!");
     }
     if (!containerDir.toFile().mkdirs()) {
-      throw new BatfishException("failed to create directory '" + containerDir.toString() + "'");
+      throw new BatfishException("failed to create directory '" + containerDir + "'");
     }
     return containerName;
   }
@@ -818,11 +815,11 @@ public class WorkMgr {
     Path parentFolder = file.getParent();
     if (!Files.exists(parentFolder)) {
       if (!parentFolder.toFile().mkdirs()) {
-        throw new BatfishException("Failed to create directory: '" + parentFolder.toString() + "'");
+        throw new BatfishException("Failed to create directory: '" + parentFolder + "'");
       }
     } else {
       if (!Files.isDirectory(parentFolder)) {
-        throw new BatfishException(parentFolder.toString() + " already exists but is not a folder");
+        throw new BatfishException(parentFolder + " already exists but is not a folder");
       }
     }
     CommonUtil.writeStreamToFile(fileStream, file);
@@ -834,8 +831,7 @@ public class WorkMgr {
             .getContainersLocation()
             .resolve(Paths.get(workItem.getContainerName(), workItem.getTestrigName()));
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
-      throw new BatfishException(
-          "Non-existent testrig: '" + testrigDir.getFileName().toString() + "'");
+      throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
     }
     boolean success;
     try {
@@ -904,7 +900,7 @@ public class WorkMgr {
           "Environment: '" + newEnvName + "' already exists for testrig: '" + testrigName + "'");
     }
     if (!dstDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + dstDir.toString() + "'");
+      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
     }
     Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
@@ -970,7 +966,7 @@ public class WorkMgr {
           "Question: '" + qName + "' already exists for testrig '" + testrigName + "'");
     }
     if (!qDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + qDir.toString() + "'");
+      throw new BatfishException("Failed to create directory: '" + qDir + "'");
     }
     Path file = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
     CommonUtil.writeStreamToFile(fileStream, file);
@@ -983,7 +979,7 @@ public class WorkMgr {
       throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
     }
     if (!testrigDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + testrigDir.toString() + "'");
+      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
     }
     Path zipFile = CommonUtil.createTempFile("testrig", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);

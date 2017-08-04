@@ -766,7 +766,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
     private boolean node2RegexMatchesIp(Ip ip, Map<Ip, Set<String>> ipOwners, Pattern node2Regex) {
       Set<String> owners = ipOwners.get(ip);
       if (owners == null) {
-        throw new BatfishException("Expected at least one owner of ip: " + ip.toString());
+        throw new BatfishException("Expected at least one owner of ip: " + ip);
       }
       for (String owner : owners) {
         if (node2Regex.matcher(owner).matches()) {
