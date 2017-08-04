@@ -33,7 +33,7 @@ public class Environment {
 
   private AbstractRoute6 _originalRoute6;
 
-  private final AbstractRouteBuilder<?> _outputRoute;
+  private final AbstractRouteBuilder<?, ?> _outputRoute;
 
   private final Ip _peerAddress;
 
@@ -50,7 +50,7 @@ public class Environment {
       String vrf,
       AbstractRoute originalRoute,
       AbstractRoute6 originalRoute6,
-      AbstractRouteBuilder<?> outputRoute,
+      AbstractRouteBuilder<?, ?> outputRoute,
       Ip peerAddress) {
     _configuration = configuration;
     _vrf = configuration.getVrfs().get(vrf);
@@ -108,7 +108,7 @@ public class Environment {
     return _originalRoute6;
   }
 
-  public AbstractRouteBuilder<?> getOutputRoute() {
+  public AbstractRouteBuilder<?, ?> getOutputRoute() {
     return _outputRoute;
   }
 

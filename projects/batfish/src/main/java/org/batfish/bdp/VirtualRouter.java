@@ -635,10 +635,13 @@ public class VirtualRouter extends ComparableStructure<String> {
     _staticInterfaceRib = new StaticRib(this);
   }
 
+
+
+
   public void initStaticRib() {
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
       String nextHopInt = sr.getNextHopInterface();
-      if (nextHopInt != null
+      if (!nextHopInt.equals(Route.UNSET_NEXT_HOP_INTERFACE)
           && !Interface.NULL_INTERFACE_NAME.equals(nextHopInt)
           && !_vrf.getInterfaces().get(nextHopInt).getActive()) {
         continue;

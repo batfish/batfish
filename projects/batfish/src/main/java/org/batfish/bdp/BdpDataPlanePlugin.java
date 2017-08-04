@@ -821,10 +821,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                       rb.setNextHop(nextHop);
                     }
                   }
-                  String nextHopInterface = route.getNextHopInterface();
-                  if (nextHopInterface != null) {
-                    rb.setNextHopInterface(nextHopInterface);
-                  }
+                  rb.setNextHopInterface(route.getNextHopInterface());
                   rb.setAdministrativeCost(route.getAdministrativeCost());
                   rb.setCost(route.getMetric());
                   rb.setProtocol(route.getProtocol());

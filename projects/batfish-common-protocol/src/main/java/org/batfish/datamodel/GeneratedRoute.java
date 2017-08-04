@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,11 +10,12 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 
 @JsonSchemaDescription("A generated/aggregate IPV4 route.")
 public final class GeneratedRoute extends AbstractRoute {
 
-  public static class Builder extends AbstractRouteBuilder<GeneratedRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
     private List<SortedSet<Integer>> _asPath;
 
@@ -26,21 +29,25 @@ public final class GeneratedRoute extends AbstractRoute {
 
     public Builder() {
       _asPath = new ArrayList<>();
-      _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+    }
+
+    @Override
+    protected Builder getThis() {
+      return this;
     }
 
     @Override
     public GeneratedRoute build() {
       GeneratedRoute gr =
           new GeneratedRoute(
-              _network,
-              _admin,
-              _nextHopIp,
+              getNetwork(),
+              getAdmin(),
+              getNextHopIp(),
               new AsPath(_asPath),
               _attributePolicy,
               _discard,
               _generationPolicy,
-              _metric,
+              getMetric(),
               _nextHopInterface);
       return gr;
     }
@@ -112,8 +119,8 @@ public final class GeneratedRoute extends AbstractRoute {
     _discard = discard;
     _generationPolicy = generationPolicy;
     _metric = metric;
-    _nextHopInterface = nextHopInterface;
-    _nextHopIp = nextHopIp;
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   @Override
@@ -161,11 +168,13 @@ public final class GeneratedRoute extends AbstractRoute {
     return _metric;
   }
 
+  @Nonnull
   @Override
   public String getNextHopInterface() {
     return _nextHopInterface;
   }
 
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_IP_VAR)
   @Override
