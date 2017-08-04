@@ -46,12 +46,12 @@ public class Environment {
   private boolean _writeToIntermediateBgpAttributes;
 
   public Environment(
-          Configuration configuration,
-          String vrf,
-          AbstractRoute originalRoute,
-          AbstractRoute6 originalRoute6,
-          AbstractRouteBuilder<?, ?> outputRoute,
-          Ip peerAddress) {
+      Configuration configuration,
+      String vrf,
+      AbstractRoute originalRoute,
+      AbstractRoute6 originalRoute6,
+      AbstractRouteBuilder<?, ?> outputRoute,
+      Ip peerAddress) {
     _configuration = configuration;
     _vrf = configuration.getVrfs().get(vrf);
     _originalRoute = originalRoute;

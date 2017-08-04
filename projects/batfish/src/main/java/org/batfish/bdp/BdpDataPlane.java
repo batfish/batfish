@@ -186,7 +186,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                               }
                               break;
                             } else if (!srNextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
-                                && srNextHopInterface.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
+                                && !srNextHopInterface.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
                               // just nextHopInterface; neighbor must not send dstIp back
                               // out receiving interface
                               // TODO: implement above condition

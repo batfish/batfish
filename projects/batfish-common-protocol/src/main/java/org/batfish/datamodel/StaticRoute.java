@@ -36,8 +36,6 @@ public class StaticRoute extends AbstractRoute {
     _tag = tag;
   }
 
-
-
   @Override
   public boolean equals(Object o) {
     StaticRoute rhs = (StaticRoute) o;
@@ -96,6 +94,10 @@ public class StaticRoute extends AbstractRoute {
     return _tag;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -118,17 +120,12 @@ public class StaticRoute extends AbstractRoute {
     return 0;
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
-
   public static class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
-    private Builder() {}
-
     private int _administrativeCost = Route.UNSET_ROUTE_ADMIN;
-
     private String _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;
+
+    private Builder() {}
 
     @Override
     public StaticRoute build() {
