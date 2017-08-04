@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 
 /**
@@ -172,8 +173,8 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _med = med;
     _originatorIp = originatorIp;
     _asPath = asPath;
-    _communities = communities;
-    _clusterList = clusterList;
+    _communities = communities == null ? new TreeSet<>() : communities;
+    _clusterList = clusterList == null ? new TreeSet<>() : clusterList;
     _weight = weight;
   }
 

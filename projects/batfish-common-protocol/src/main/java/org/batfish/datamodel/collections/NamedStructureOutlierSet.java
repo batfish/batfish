@@ -13,6 +13,12 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
 
   private static final String STRUCT_TYPE_VAR = "structType";
 
+  private static final String NAMED_STRUCTURE_VAR = "namedStructTypes";
+
+  private static final String CONFORMERS_VAR = "conformers";
+
+  private static final String OUTLIERS_VAR = "outliers";
+
   /** A lower bound on the probability at which a hypothesis should be considered to be true */
   private static final double THRESHOLD_PROBABILITY = 0.9;
 
@@ -36,11 +42,11 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
 
   @JsonCreator
   public NamedStructureOutlierSet(
-      String structType,
-      String name,
-      T namedStructure,
-      SortedSet<String> conformers,
-      SortedSet<String> outliers) {
+      @JsonProperty(STRUCT_TYPE_VAR) String structType,
+      @JsonProperty(NAME_VAR) String name,
+      @JsonProperty(NAMED_STRUCTURE_VAR) T namedStructure,
+      @JsonProperty(CONFORMERS_VAR) SortedSet<String> conformers,
+      @JsonProperty(OUTLIERS_VAR) SortedSet<String> outliers) {
     _structType = structType;
     _name = name;
     _namedStructure = namedStructure;
