@@ -159,16 +159,9 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
         String hostname,
         String vrf,
         BgpNeighborSummary bgpNeighbor) {
-      SortedMap<String, SortedSet<Prefix>> neighborsByVrf = neighborsByHostname.get(hostname);
-      if (neighborsByVrf == null) {
-        neighborsByVrf = new TreeMap<>();
-        neighborsByHostname.put(hostname, neighborsByVrf);
-      }
-      SortedSet<Prefix> neighbors = neighborsByVrf.get(vrf);
-      if (neighbors == null) {
-        neighbors = new TreeSet<>();
-        neighborsByVrf.put(vrf, neighbors);
-      }
+      SortedMap<String, SortedSet<Prefix>> neighborsByVrf =
+          neighborsByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
+      SortedSet<Prefix> neighbors = neighborsByVrf.computeIfAbsent(vrf, k -> new TreeSet<>());
       Prefix prefix = bgpNeighbor.getPrefix();
       neighbors.add(prefix);
     }
@@ -180,16 +173,9 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
         String vrf,
         BgpNeighborSummary bgpNeighbor) {
       SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> neighborsByVrf =
-          neighborsByHostname.get(hostname);
-      if (neighborsByVrf == null) {
-        neighborsByVrf = new TreeMap<>();
-        neighborsByHostname.put(hostname, neighborsByVrf);
-      }
-      SortedMap<Prefix, BgpNeighborSummary> neighborsByPrefix = neighborsByVrf.get(vrf);
-      if (neighborsByPrefix == null) {
-        neighborsByPrefix = new TreeMap<>();
-        neighborsByVrf.put(vrf, neighborsByPrefix);
-      }
+          neighborsByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
+      SortedMap<Prefix, BgpNeighborSummary> neighborsByPrefix =
+          neighborsByVrf.computeIfAbsent(vrf, k -> new TreeMap<>());
       Prefix prefix = bgpNeighbor.getPrefix();
       neighborsByPrefix.put(prefix, bgpNeighbor);
     }
@@ -551,11 +537,8 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                   loopbackIps.add(address);
                 }
                 allInterfaceIps.add(address);
-                Set<String> currentIpOwners = ipOwners.get(address);
-                if (currentIpOwners == null) {
-                  currentIpOwners = new HashSet<>();
-                  ipOwners.put(address, currentIpOwners);
-                }
+                Set<String> currentIpOwners =
+                    ipOwners.computeIfAbsent(address, k -> new HashSet<>());
                 currentIpOwners.add(c.getHostname());
               }
             }

@@ -139,19 +139,11 @@ public class Driver {
     String taskId = settings.getTaskId();
     if (taskId == null) {
       return null;
-    } else if (!_taskLog.containsKey(taskId)) {
-      return null;
-    } else {
-      return _taskLog.get(taskId);
-    }
+    } else return _taskLog.getOrDefault(taskId, null);
   }
 
   public static synchronized Task getTaskFromLog(String taskId) {
-    if (_taskLog.containsKey(taskId)) {
-      return _taskLog.get(taskId);
-    } else {
-      return null;
-    }
+    return _taskLog.getOrDefault(taskId, null);
   }
 
   private static synchronized void logTask(String taskId, Task task) throws Exception {

@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -12,7 +11,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.batfish.common.BatfishException;
 
 public class NodeRoleSpecifier {
@@ -51,12 +49,7 @@ public class NodeRoleSpecifier {
         if (matcher.matches()) {
           try {
             String role = matcher.group(1);
-            SortedSet<String> currNodes =
-                roleNodesMap.get(role);
-            if (currNodes == null) {
-              currNodes = new TreeSet<>();
-              roleNodesMap.put(role, currNodes);
-            }
+            SortedSet<String> currNodes = roleNodesMap.computeIfAbsent(role, k -> new TreeSet<>());
             currNodes.add(node);
           } catch (IndexOutOfBoundsException e) {
             throw new BatfishException(
@@ -68,7 +61,6 @@ public class NodeRoleSpecifier {
     }
   }
 
-
   // return a map from each role name to the set of nodes that play that role
   public SortedMap<String, SortedSet<String>> createRoleNodesMap(Set<String> allNodes) {
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
@@ -78,7 +70,6 @@ public class NodeRoleSpecifier {
 
     return roleNodesMap;
   }
-
 
   // return a map from each node name to the set of roles that it plays
   public SortedMap<String, SortedSet<String>> createNodeRolesMap(Set<String> allNodes) {
@@ -91,11 +82,7 @@ public class NodeRoleSpecifier {
     roleNodesMap.forEach(
         (role, nodes) -> {
           for (String node : nodes) {
-            SortedSet<String> nodeRoles = nodeRolesMap.get(node);
-            if (nodeRoles == null) {
-              nodeRoles = new TreeSet<>();
-              nodeRolesMap.put(node, nodeRoles);
-            }
+            SortedSet<String> nodeRoles = nodeRolesMap.computeIfAbsent(node, k -> new TreeSet<>());
             nodeRoles.add(role);
           }
         });

@@ -86,11 +86,8 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
     public void addIpsecVpn(
         SortedMap<String, SortedSet<String>> ipsecVpnMap, Configuration c, IpsecVpn ipsecVpn) {
       String hostname = c.getHostname();
-      SortedSet<String> ipsecVpnsByHostname = ipsecVpnMap.get(hostname);
-      if (ipsecVpnsByHostname == null) {
-        ipsecVpnsByHostname = new TreeSet<>();
-        ipsecVpnMap.put(hostname, ipsecVpnsByHostname);
-      }
+      SortedSet<String> ipsecVpnsByHostname =
+          ipsecVpnMap.computeIfAbsent(hostname, k -> new TreeSet<>());
       String ipsecVpnName = ipsecVpn.getName();
       ipsecVpnsByHostname.add(ipsecVpnName);
     }
@@ -101,11 +98,8 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
         IpsecVpn ipsecVpn,
         IpsecVpn remoteIpsecVpn) {
       String hostname = c.getHostname();
-      SortedSet<IpsecVpnPair> ipsecVpnPairsByHostname = ipsecVpnPairMap.get(hostname);
-      if (ipsecVpnPairsByHostname == null) {
-        ipsecVpnPairsByHostname = new TreeSet<>();
-        ipsecVpnPairMap.put(hostname, ipsecVpnPairsByHostname);
-      }
+      SortedSet<IpsecVpnPair> ipsecVpnPairsByHostname =
+          ipsecVpnPairMap.computeIfAbsent(hostname, k -> new TreeSet<>());
       String ipsecVpnName = ipsecVpn.getName();
       String remoteHostname = ipsecVpn.getRemoteIpsecVpn().getOwner().getHostname();
       String remoteIpsecVpnName = remoteIpsecVpn.getName();

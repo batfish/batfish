@@ -967,16 +967,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         String vrfName = e2.getKey();
         VirtualRouter vrf = e2.getValue();
         for (AbstractRoute route : vrf._mainRib.getRoutes()) {
-          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByHostname.get(hostname);
-          if (routesByVrf == null) {
-            routesByVrf = new TreeMap<>();
-            routesByHostname.put(hostname, routesByVrf);
-          }
-          SortedSet<AbstractRoute> routes = routesByVrf.get(vrfName);
-          if (routes == null) {
-            routes = new TreeSet<>();
-            routesByVrf.put(vrfName, routes);
-          }
+          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf =
+              routesByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
+          SortedSet<AbstractRoute> routes =
+              routesByVrf.computeIfAbsent(vrfName, k -> new TreeSet<>());
           routes.add(route);
         }
       }

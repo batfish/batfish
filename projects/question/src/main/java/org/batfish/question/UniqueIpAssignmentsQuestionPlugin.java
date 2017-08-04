@@ -40,11 +40,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
         Ip ip,
         String hostname,
         String interfaceName) {
-      SortedSet<NodeInterfacePair> interfaces = map.get(ip);
-      if (interfaces == null) {
-        interfaces = new TreeSet<>();
-        map.put(ip, interfaces);
-      }
+      SortedSet<NodeInterfacePair> interfaces = map.computeIfAbsent(ip, k -> new TreeSet<>());
       interfaces.add(new NodeInterfacePair(hostname, interfaceName));
     }
 

@@ -1764,11 +1764,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, c);
     String vrfName = iface.getVrf();
-    Vrf vrf = _vrfs.get(vrfName);
-    if (vrf == null) {
-      vrf = new Vrf(vrfName);
-      _vrfs.put(vrfName, vrf);
-    }
+    Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
     newIface.setAutoState(iface.getAutoState());
@@ -2378,11 +2374,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (maskedInterfaceAddress.equals(networkAddress)) {
           // we have a longest prefix match
           long areaNum = network.getArea();
-          OspfArea newArea = areas.get(areaNum);
-          if (newArea == null) {
-            newArea = new OspfArea(areaNum);
-            areas.put(areaNum, newArea);
-          }
+          OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
           newArea.getInterfaces().add(i);
           i.setOspfArea(newArea);
           i.setOspfEnabled(true);

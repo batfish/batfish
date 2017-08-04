@@ -67,16 +67,9 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
         String hostname,
         String vrf,
         OspfNeighborSummary ospfNeighbor) {
-      SortedMap<String, SortedSet<IpPair>> neighborsByVrf = neighborsByHostname.get(hostname);
-      if (neighborsByVrf == null) {
-        neighborsByVrf = new TreeMap<>();
-        neighborsByHostname.put(hostname, neighborsByVrf);
-      }
-      SortedSet<IpPair> neighbors = neighborsByVrf.get(vrf);
-      if (neighbors == null) {
-        neighbors = new TreeSet<>();
-        neighborsByVrf.put(vrf, neighbors);
-      }
+      SortedMap<String, SortedSet<IpPair>> neighborsByVrf =
+          neighborsByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
+      SortedSet<IpPair> neighbors = neighborsByVrf.computeIfAbsent(vrf, k -> new TreeSet<>());
       IpPair ipPair = new IpPair(ospfNeighbor.getLocalIp(), ospfNeighbor.getRemoteIp());
       neighbors.add(ipPair);
     }
@@ -88,16 +81,9 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
         String vrf,
         OspfNeighborSummary ospfNeighbor) {
       SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>> neighborsByVrf =
-          neighborsByHostname.get(hostname);
-      if (neighborsByVrf == null) {
-        neighborsByVrf = new TreeMap<>();
-        neighborsByHostname.put(hostname, neighborsByVrf);
-      }
-      SortedMap<IpPair, OspfNeighborSummary> neighborsByIp = neighborsByVrf.get(vrf);
-      if (neighborsByIp == null) {
-        neighborsByIp = new TreeMap<>();
-        neighborsByVrf.put(vrf, neighborsByIp);
-      }
+          neighborsByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
+      SortedMap<IpPair, OspfNeighborSummary> neighborsByIp =
+          neighborsByVrf.computeIfAbsent(vrf, k -> new TreeMap<>());
       IpPair ipPair = new IpPair(ospfNeighbor.getLocalIp(), ospfNeighbor.getRemoteIp());
       neighborsByIp.put(ipPair, ospfNeighbor);
     }
@@ -236,11 +222,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
                   loopbackIps.add(address);
                 }
                 allInterfaceIps.add(address);
-                Set<String> currentIpOwners = ipOwners.get(address);
-                if (currentIpOwners == null) {
-                  currentIpOwners = new HashSet<>();
-                  ipOwners.put(address, currentIpOwners);
-                }
+                Set<String> currentIpOwners =
+                    ipOwners.computeIfAbsent(address, k -> new HashSet<>());
                 currentIpOwners.add(c.getHostname());
               }
             }

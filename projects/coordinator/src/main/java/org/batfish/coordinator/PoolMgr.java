@@ -95,11 +95,7 @@ public class PoolMgr {
   }
 
   public WorkerStatus getWorkerStatus(String worker) {
-    if (_workerPool.containsKey(worker)) {
-      return _workerPool.get(worker);
-    } else {
-      return null;
-    }
+    return _workerPool.getOrDefault(worker, null);
   }
 
   public void markAssignmentResult(String worker, boolean assignmentSuccessful) {

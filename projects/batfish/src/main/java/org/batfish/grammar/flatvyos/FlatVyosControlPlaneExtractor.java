@@ -215,21 +215,13 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void enterBt_neighbor(Bt_neighborContext ctx) {
     Ip neighborIp = new Ip(ctx.IP_ADDRESS().getText());
-    _currentBgpNeighbor = _bgpProcess.getNeighbors().get(neighborIp);
-    if (_currentBgpNeighbor == null) {
-      _currentBgpNeighbor = new BgpNeighbor(neighborIp);
-      _bgpProcess.getNeighbors().put(neighborIp, _currentBgpNeighbor);
-    }
+    _currentBgpNeighbor = _bgpProcess.getNeighbors().computeIfAbsent(neighborIp, BgpNeighbor::new);
   }
 
   @Override
   public void enterEspt_proposal(Espt_proposalContext ctx) {
     int num = toInteger(ctx.num);
-    _currentEspProposal = _currentEspGroup.getProposals().get(num);
-    if (_currentEspProposal == null) {
-      _currentEspProposal = new EspProposal(num);
-      _currentEspGroup.getProposals().put(num, _currentEspProposal);
-    }
+    _currentEspProposal = _currentEspGroup.getProposals().computeIfAbsent(num, EspProposal::new);
   }
 
   @Override
@@ -241,81 +233,50 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public void enterIket_proposal(Iket_proposalContext ctx) {
     int num = toInteger(ctx.num);
-    _currentIkeProposal = _currentIkeGroup.getProposals().get(num);
-    if (_currentIkeProposal == null) {
-      _currentIkeProposal = new IkeProposal(num);
-      _currentIkeGroup.getProposals().put(num, _currentIkeProposal);
-    }
+    _currentIkeProposal = _currentIkeGroup.getProposals().computeIfAbsent(num, IkeProposal::new);
   }
 
   @Override
   public void enterIvt_esp_group(Ivt_esp_groupContext ctx) {
     String name = ctx.name.getText();
-    _currentEspGroup = _configuration.getEspGroups().get(name);
-    if (_currentEspGroup == null) {
-      _currentEspGroup = new EspGroup(name);
-      _configuration.getEspGroups().put(name, _currentEspGroup);
-    }
+    _currentEspGroup = _configuration.getEspGroups().computeIfAbsent(name, EspGroup::new);
   }
 
   @Override
   public void enterIvt_ike_group(Ivt_ike_groupContext ctx) {
     String name = ctx.name.getText();
-    _currentIkeGroup = _configuration.getIkeGroups().get(name);
-    if (_currentIkeGroup == null) {
-      _currentIkeGroup = new IkeGroup(name);
-      _configuration.getIkeGroups().put(name, _currentIkeGroup);
-    }
+    _currentIkeGroup = _configuration.getIkeGroups().computeIfAbsent(name, IkeGroup::new);
   }
 
   @Override
   public void enterIvt_site_to_site(Ivt_site_to_siteContext ctx) {
     Ip peerAddress = new Ip(ctx.peer.getText());
-    _currentIpsecPeer = _configuration.getIpsecPeers().get(peerAddress);
-    if (_currentIpsecPeer == null) {
-      _currentIpsecPeer = new IpsecPeer(peerAddress);
-      _configuration.getIpsecPeers().put(peerAddress, _currentIpsecPeer);
-    }
+    _currentIpsecPeer = _configuration.getIpsecPeers().computeIfAbsent(peerAddress, IpsecPeer::new);
   }
 
   @Override
   public void enterPlt_rule(Plt_ruleContext ctx) {
     int num = toInteger(ctx.num);
-    _currentPrefixListRule = _currentPrefixList.getRules().get(num);
-    if (_currentPrefixListRule == null) {
-      _currentPrefixListRule = new PrefixListRule(num);
-      _currentPrefixList.getRules().put(num, _currentPrefixListRule);
-    }
+    _currentPrefixListRule =
+        _currentPrefixList.getRules().computeIfAbsent(num, PrefixListRule::new);
   }
 
   @Override
   public void enterPt_prefix_list(Pt_prefix_listContext ctx) {
     String name = ctx.name.getText();
-    _currentPrefixList = _configuration.getPrefixLists().get(name);
-    if (_currentPrefixList == null) {
-      _currentPrefixList = new PrefixList(name);
-      _configuration.getPrefixLists().put(name, _currentPrefixList);
-    }
+    _currentPrefixList = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
   }
 
   @Override
   public void enterPt_route_map(Pt_route_mapContext ctx) {
     String name = ctx.name.getText();
-    _currentRouteMap = _configuration.getRouteMaps().get(name);
-    if (_currentRouteMap == null) {
-      _currentRouteMap = new RouteMap(name);
-      _configuration.getRouteMaps().put(name, _currentRouteMap);
-    }
+    _currentRouteMap = _configuration.getRouteMaps().computeIfAbsent(name, RouteMap::new);
   }
 
   @Override
   public void enterRmt_rule(Rmt_ruleContext ctx) {
     int num = toInteger(ctx.num);
-    _currentRouteMapRule = _currentRouteMap.getRules().get(num);
-    if (_currentRouteMapRule == null) {
-      _currentRouteMapRule = new RouteMapRule(num);
-      _currentRouteMap.getRules().put(num, _currentRouteMapRule);
-    }
+    _currentRouteMapRule = _currentRouteMap.getRules().computeIfAbsent(num, RouteMapRule::new);
   }
 
   @Override
