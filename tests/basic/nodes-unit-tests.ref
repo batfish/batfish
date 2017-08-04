@@ -4668,6 +4668,7 @@
                   "aaa" : [
                     "server-state-change"
                   ],
+                  "bgp" : [ ],
                   "bridge" : [
                     "newroot",
                     "topologychange"
@@ -4686,6 +4687,7 @@
                   "cpu" : [
                     "threshold"
                   ],
+                  "entity" : [ ],
                   "envmon" : [
                     "fan",
                     "shutdown",
@@ -4701,6 +4703,8 @@
                     "insertion",
                     "removal"
                   ],
+                  "fru-ctrl" : [ ],
+                  "ipsla" : [ ],
                   "link" : [
                     "cisco-xcvr-mon-status-chg"
                   ],
@@ -4710,6 +4714,7 @@
                     "pwrusageoff",
                     "pwrusageon"
                   ],
+                  "rf" : [ ],
                   "snmp" : [
                     "authentication",
                     "coldstart",
@@ -4722,13 +4727,18 @@
                     "loop-inconsistency",
                     "root-inconsistency"
                   ],
+                  "syslog" : [ ],
                   "sysmgr" : [
                     "cseFailSwCoreNotifyExtended"
                   ],
+                  "tty" : [ ],
                   "upgrade" : [
                     "UpgradeJobStatusNotify",
                     "UpgradeOpNotifyOnCompletion"
                   ],
+                  "vlan-membership" : [ ],
+                  "vlancreate" : [ ],
+                  "vlandelete" : [ ],
                   "vtp" : [
                     "notifs",
                     "vlancreate",
