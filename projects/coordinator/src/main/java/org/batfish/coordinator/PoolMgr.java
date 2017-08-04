@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
@@ -82,6 +83,7 @@ public class PoolMgr {
     return copy;
   }
 
+  @Nullable
   public synchronized String getWorkerForAssignment() {
 
     for (Entry<String, WorkerStatus> workerEntry : _workerPool.entrySet()) {
@@ -94,12 +96,9 @@ public class PoolMgr {
     return null;
   }
 
+  @Nullable
   public WorkerStatus getWorkerStatus(String worker) {
-    if (_workerPool.containsKey(worker)) {
-      return _workerPool.get(worker);
-    } else {
-      return null;
-    }
+    return _workerPool.get(worker);
   }
 
   public void markAssignmentResult(String worker, boolean assignmentSuccessful) {

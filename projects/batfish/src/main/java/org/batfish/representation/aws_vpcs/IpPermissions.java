@@ -3,6 +3,7 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.IpAccessListLine;
@@ -19,6 +20,7 @@ public class IpPermissions implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  @Nullable
   public static IpProtocol toIpProtocol(String ipProtocolAsString) {
     switch (ipProtocolAsString) {
       case "tcp":

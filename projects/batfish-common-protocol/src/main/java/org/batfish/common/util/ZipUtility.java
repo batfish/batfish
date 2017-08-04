@@ -94,12 +94,7 @@ public class ZipUtility {
       zipFolder(srcFolder.toString(), destZipFile.toString());
     } catch (Exception e) {
       throw new BatfishException(
-          "Could not zip folder: '"
-              + srcFolder.toString()
-              + "' into: '"
-              + destZipFile.toString()
-              + "'",
-          e);
+          "Could not zip folder: '" + srcFolder + "' into: '" + destZipFile + "'", e);
     }
   }
 

@@ -88,6 +88,6 @@ public class DisjunctionChain extends BooleanExpr {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _subroutines.toString() + ">";
+    return getClass().getSimpleName() + "<" + _subroutines + ">";
   }
 }

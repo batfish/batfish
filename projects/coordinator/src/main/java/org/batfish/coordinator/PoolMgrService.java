@@ -57,7 +57,7 @@ public class PoolMgrService {
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray updatePool(@Context UriInfo ui) {
     try {
-      _logger.info("PMS:updatePool got " + ui.toString() + "\n");
+      _logger.info("PMS:updatePool got " + ui + "\n");
       MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
       String workerVersion = null;

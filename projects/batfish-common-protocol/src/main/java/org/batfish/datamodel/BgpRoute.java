@@ -391,11 +391,11 @@ public class BgpRoute extends AbstractRoute {
   @Override
   protected final String protocolRouteString() {
     return " asPath:"
-        + _asPath.toString()
+        + _asPath
         + " clusterList:"
-        + _clusterList.toString()
+        + _clusterList
         + " communities:"
-        + _communities.toString()
+        + _communities
         + " localPreference:"
         + _localPreference
         + " med:"

@@ -37,11 +37,7 @@ public class FlowHistory implements AnswerElement {
       envTraceSetMap = new TreeMap<>();
       _traces.put(canonicalFlow.toString(), envTraceSetMap);
     }
-    SortedSet<FlowTrace> traces = envTraceSetMap.get(environment);
-    if (traces == null) {
-      traces = new TreeSet<>();
-      envTraceSetMap.put(environment, traces);
-    }
+    SortedSet<FlowTrace> traces = envTraceSetMap.computeIfAbsent(environment, k -> new TreeSet<>());
     traces.add(trace);
   }
 

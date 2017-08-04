@@ -33,7 +33,7 @@ public class FlattenVendorConfigurationResult
     if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
       terseLogLevelPrefix = "";
     } else {
-      terseLogLevelPrefix = _outputFile.getFileName().toString() + ": ";
+      terseLogLevelPrefix = _outputFile.getFileName() + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }

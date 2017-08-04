@@ -26,7 +26,7 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
     private final String _vrf;
 
     public OspfNeighborSummary(OspfNeighbor ospfNeighbor) {
-      super(ospfNeighbor.getOwner().getName() + ":" + ospfNeighbor._key.toString());
+      super(ospfNeighbor.getOwner().getName() + ":" + ospfNeighbor._key);
       _localIp = ospfNeighbor._key.getFirst();
       _remoteIp = ospfNeighbor._key.getSecond();
       _vrf = ospfNeighbor._vrf;

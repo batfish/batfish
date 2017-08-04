@@ -13,12 +13,7 @@ public abstract class AbstractMultiSet<E> implements MultiSet<E> {
 
   @Override
   public final void add(E e) {
-    Integer oldCount = _map.get(e);
-    if (oldCount == null) {
-      _map.put(e, 1);
-    } else {
-      _map.put(e, oldCount + 1);
-    }
+    _map.merge(e, 1, (a, b) -> a + b);
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.batfish.grammar;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 public final class BgpTableFormatDetector {
 
@@ -18,6 +19,7 @@ public final class BgpTableFormatDetector {
     _fileText = fileText;
   }
 
+  @Nullable
   private BgpTableFormat checkEmpty() {
     String trimmedText = _fileText.trim();
     if (trimmedText.length() == 0) {
@@ -27,6 +29,7 @@ public final class BgpTableFormatDetector {
     return null;
   }
 
+  @Nullable
   private BgpTableFormat checkEos() {
     Matcher eosMatcher =
         Pattern.compile("(?m)BGP routing table information for VRF").matcher(_fileText);

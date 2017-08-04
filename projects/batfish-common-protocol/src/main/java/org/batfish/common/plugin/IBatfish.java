@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;
@@ -126,6 +127,7 @@ public interface IBatfish extends IPluginConsumer {
 
   void pushDeltaEnvironment();
 
+  @Nullable
   String readExternalBgpAnnouncementsFile();
 
   AnswerElement reducedReachability(HeaderSpace headerSpace);

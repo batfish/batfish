@@ -60,7 +60,7 @@ public class IptablesRule implements Serializable {
       return LineAction.REJECT;
     } else {
       throw new BatfishException(
-          "Unsupported IptablesActionType for mapping to LineAction: " + _actionType.toString());
+          "Unsupported IptablesActionType for mapping to LineAction: " + _actionType);
     }
   }
 

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public class PrefixTrie implements Serializable {
@@ -97,6 +98,7 @@ public class PrefixTrie implements Serializable {
       }
     }
 
+    @Nullable
     private Prefix getLongestPrefixMatch(Ip address, BitSet bits) {
       if (_prefix != null && _prefix.contains(address)) {
         return _prefix;
