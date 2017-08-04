@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -219,7 +221,7 @@ public class BgpRoute extends AbstractRoute {
     _communities = communities != null ? communities : new TreeSet<>();
     _localPreference = localPreference;
     _med = med;
-    _nextHopIp = nextHopIp;
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _originatorIp = originatorIp;
     _originType = originType;
     _protocol = protocol;

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -15,22 +14,17 @@ import org.junit.rules.ExpectedException;
 public class StaticRouteTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-  StaticRoute.Builder _srBuilder;
-
-  @Before
-  public void setUp() {
-    _srBuilder = StaticRoute.builder();
-  }
 
   @Test
   public void checkAllAttrs() {
-    _srBuilder
-        .setNextHopIp(new Ip("192.168.1.1"))
-        .setNetwork(Prefix.ZERO)
-        .setNextHopInterface("192.168.1.2")
-        .setAdministrativeCost(1)
-        .setTag(0);
-    StaticRoute sr = _srBuilder.build();
+    StaticRoute sr =
+        StaticRoute.builder()
+            .setNextHopIp(new Ip("192.168.1.1"))
+            .setNetwork(Prefix.ZERO)
+            .setNextHopInterface("192.168.1.2")
+            .setAdministrativeCost(1)
+            .setTag(0)
+            .build();
     assertThat(sr.getNextHopIp(), is(new Ip("192.168.1.1")));
     assertThat(sr.getNetwork(), is(Prefix.ZERO));
     assertThat(sr.getNextHopInterface(), is("192.168.1.2"));
@@ -40,16 +34,14 @@ public class StaticRouteTest {
 
   @Test
   public void checkNullNextHop() {
-    _srBuilder.setNetwork(Prefix.ZERO).setNextHopIp(null);
-    StaticRoute sr = _srBuilder.build();
+    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setNextHopIp(null).build();
     assertThat(sr.getNextHopIp(), is(Route.UNSET_ROUTE_NEXT_HOP_IP));
   }
 
   @Test
   public void checkNullNextHopInterface() {
-    _srBuilder.setNetwork(Prefix.ZERO);
-    _srBuilder.setNextHopInterface(null);
-    StaticRoute sr = _srBuilder.build();
+    StaticRoute sr =
+        StaticRoute.builder().setNetwork(Prefix.ZERO).setNextHopInterface(null).build();
     assertThat(sr.getNextHopInterface(), is(Route.UNSET_NEXT_HOP_INTERFACE));
   }
 
@@ -66,13 +58,14 @@ public class StaticRouteTest {
   public void checkSerialization() {
     BatfishObjectMapper mapper =
         new BatfishObjectMapper(Thread.currentThread().getContextClassLoader());
-    _srBuilder
-        .setNextHopIp(new Ip("192.168.1.1"))
-        .setNetwork(Prefix.ZERO)
-        .setNextHopInterface("192.168.1.2")
-        .setAdministrativeCost(1)
-        .setTag(0);
-    StaticRoute sr = _srBuilder.build();
+    StaticRoute sr =
+        StaticRoute.builder()
+            .setNextHopIp(new Ip("192.168.1.1"))
+            .setNetwork(Prefix.ZERO)
+            .setNextHopInterface("192.168.1.2")
+            .setAdministrativeCost(1)
+            .setTag(0)
+            .build();
     try {
       String json = mapper.writeValueAsString(sr);
       StaticRoute parsedObj = mapper.readValue(json, StaticRoute.class);
@@ -81,7 +74,6 @@ public class StaticRouteTest {
       assertThat(parsedObj.getNextHopInterface(), is("192.168.1.2"));
       assertThat(parsedObj.getAdministrativeCost(), is(1));
       assertThat(parsedObj.getTag(), is(0));
-
     } catch (IOException e) {
       throw new BatfishException("Cannot parse the json to StaticRoute object", e);
     }

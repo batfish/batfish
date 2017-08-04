@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,7 +25,7 @@ public class StaticRoute extends AbstractRoute {
   private final int _tag;
 
   @JsonCreator
-  private StaticRoute(
+  public StaticRoute(
       @JsonProperty(NETWORK_VAR) Prefix network,
       @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
       @Nullable @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
@@ -32,7 +34,7 @@ public class StaticRoute extends AbstractRoute {
     super(network);
     _administrativeCost = administrativeCost;
     _nextHopInterface = MoreObjects.firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
-    _nextHopIp = nextHopIp;
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _tag = tag;
   }
 

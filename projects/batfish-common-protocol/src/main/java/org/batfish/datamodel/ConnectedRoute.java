@@ -37,7 +37,6 @@ public class ConnectedRoute extends AbstractRoute {
     return 0;
   }
 
-  // TODO(http://github.com/batfish/batfish/issues/207)
   @Nonnull
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_INTERFACE_VAR)
