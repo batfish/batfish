@@ -101,7 +101,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
       byte[] data = IOUtils.toByteArray(gis);
       return data;
     } catch (IOException e) {
-      throw new BatfishException("Failed to gunzip file: " + inputFile.toString(), e);
+      throw new BatfishException("Failed to gunzip file: " + inputFile, e);
     }
   }
 
@@ -180,7 +180,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
         }
         jar.close();
       } catch (IOException e) {
-        throw new BatfishException("Error loading plugin jar: '" + path.toString() + "'", e);
+        throw new BatfishException("Error loading plugin jar: '" + path + "'", e);
       }
     }
   }
@@ -200,8 +200,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
                 }
               });
         } catch (IOException e) {
-          throw new BatfishException(
-              "Error walking through plugin dir: '" + pluginDir.toString() + "'", e);
+          throw new BatfishException("Error walking through plugin dir: '" + pluginDir + "'", e);
         }
       }
     }
@@ -213,7 +212,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
       Files.write(outputFile, data);
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to serialize object to gzip output file: " + outputFile.toString(), e);
+          "Failed to serialize object to gzip output file: " + outputFile, e);
     }
   }
 

@@ -3,6 +3,7 @@ package org.batfish.grammar.iptables;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -189,6 +190,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     return rule;
   }
 
+  @Nullable
   private ChainPolicy getBuiltInTarget(Built_in_targetContext ctx) {
     if (ctx.ACCEPT() != null) {
       return ChainPolicy.ACCEPT;
@@ -202,6 +204,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     return null;
   }
 
+  @Nullable
   private Object getEndpoint(EndpointContext endpoint) {
     if (endpoint.IP_ADDRESS() != null) {
       return new Ip(endpoint.IP_ADDRESS().getText());

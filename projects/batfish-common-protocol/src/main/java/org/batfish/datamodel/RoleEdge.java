@@ -29,6 +29,6 @@ public class RoleEdge extends Pair<String, String> {
 
   @Override
   public String toString() {
-    return "<" + _first.toString() + " --> " + _second.toString() + ">";
+    return "<" + _first + " --> " + _second + ">";
   }
 }

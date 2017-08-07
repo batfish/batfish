@@ -1102,8 +1102,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create generation policy for aggregate network
-      String generationPolicyName =
-          "~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix.toString() + "~";
+      String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix + "~";
       RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
       If currentGeneratedRouteConditional = new If();
       currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
@@ -1143,9 +1142,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // need to apply attribute changes if this specific route is
           // matched
           weInterior = new CallExpr(attributeMapName);
-          attributeMap
-              .getReferers()
-              .put(aggNet, "attribute-map of aggregate route: " + prefix.toString());
+          attributeMap.getReferers().put(aggNet, "attribute-map of aggregate route: " + prefix);
           gr.setAttributePolicy(attributeMapName);
         } else {
           undefined(
@@ -1174,8 +1171,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create generation policy for aggregate network
-      String generationPolicyName =
-          "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6.toString() + "~";
+      String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6 + "~";
       RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
       If currentGeneratedRouteConditional = new If();
       currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
@@ -1202,7 +1198,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (attributeMap != null) {
           attributeMap
               .getReferers()
-              .put(aggNet, "attribute-map of aggregate ipv6 route: " + prefix6.toString());
+              .put(aggNet, "attribute-map of aggregate ipv6 route: " + prefix6);
           gr.setAttributePolicy(attributeMapName);
         } else {
           undefined(
@@ -1768,11 +1764,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, c);
     String vrfName = iface.getVrf();
-    Vrf vrf = _vrfs.get(vrfName);
-    if (vrf == null) {
-      vrf = new Vrf(vrfName);
-      _vrfs.put(vrfName, vrf);
-    }
+    Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
     newIface.setAutoState(iface.getAutoState());
@@ -2382,11 +2374,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (maskedInterfaceAddress.equals(networkAddress)) {
           // we have a longest prefix match
           long areaNum = network.getArea();
-          OspfArea newArea = areas.get(areaNum);
-          if (newArea == null) {
-            newArea = new OspfArea(areaNum);
-            areas.put(areaNum, newArea);
-          }
+          OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
           newArea.getInterfaces().add(i);
           i.setOspfArea(newArea);
           i.setOspfEnabled(true);
@@ -2885,8 +2873,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Integer oldTag = staticRoute.getTag();
     int tag;
     tag = oldTag != null ? oldTag : -1;
-    return new org.batfish.datamodel.StaticRoute(
-        prefix, nextHopIp, nextHopInterface, staticRoute.getDistance(), tag);
+    return org.batfish.datamodel.StaticRoute.builder()
+        .setNetwork(prefix)
+        .setNextHopIp(nextHopIp)
+        .setNextHopInterface(nextHopInterface)
+        .setAdministrativeCost(staticRoute.getDistance())
+        .setTag(tag)
+        .build();
   }
 
   @Override

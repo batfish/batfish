@@ -151,5 +151,5 @@ public class WorkMgrTest {
     _thrown.expectMessage(equalTo("Container '" + containerName + "' does not exist"));
     _manager.getContainer(containerName);
   }
-
+  
 }

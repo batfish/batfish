@@ -1,16 +1,21 @@
 package org.batfish.datamodel;
 
-public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
+import static com.google.common.base.MoreObjects.firstNonNull;
 
-  protected int _admin;
+import org.batfish.common.BatfishException;
 
-  protected int _metric;
+public abstract class AbstractRouteBuilder<
+    S extends AbstractRouteBuilder<S, T>, T extends AbstractRoute> {
 
-  protected Prefix _network;
+  private int _admin;
 
-  protected Ip _nextHopIp;
+  private int _metric;
 
-  protected int _tag;
+  private Prefix _network;
+
+  private Ip _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+
+  private int _tag = Route.UNSET_ROUTE_TAG;
 
   public abstract T build();
 
@@ -18,39 +23,50 @@ public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
     return _admin;
   }
 
+  public final S setAdmin(int admin) {
+    _admin = admin;
+    return getThis();
+  }
+
+  // To handle the class casting exception while returning S in chaining methods
+  protected abstract S getThis();
+
   public final Integer getMetric() {
     return _metric;
+  }
+
+  public final S setMetric(int metric) {
+    _metric = metric;
+    return getThis();
   }
 
   public final Prefix getNetwork() {
     return _network;
   }
 
+  public final S setNetwork(Prefix network) {
+    if (network == null) {
+      throw new BatfishException("Cannot construct AbstractRoute with null network");
+    }
+    _network = network;
+    return getThis();
+  }
+
   public final Ip getNextHopIp() {
     return _nextHopIp;
+  }
+
+  public final S setNextHopIp(Ip nextHopIp) {
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    return getThis();
   }
 
   public int getTag() {
     return _tag;
   }
 
-  public final void setAdmin(int admin) {
-    _admin = admin;
-  }
-
-  public final void setMetric(int metric) {
-    _metric = metric;
-  }
-
-  public final void setNetwork(Prefix network) {
-    _network = network;
-  }
-
-  public final void setNextHopIp(Ip nextHopIp) {
-    _nextHopIp = nextHopIp;
-  }
-
-  public final void setTag(int tag) {
-    _tag = tag;
+  public final S setTag(int tag) {
+    _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
+    return getThis();
   }
 }

@@ -66,9 +66,9 @@ public class ParseVendorConfigurationResult
     if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
       terseLogLevelPrefix = "";
     } else if (_vc != null) {
-      terseLogLevelPrefix = _vc.getHostname().toString() + ": ";
+      terseLogLevelPrefix = _vc.getHostname() + ": ";
     } else {
-      terseLogLevelPrefix = _file.toString() + ": ";
+      terseLogLevelPrefix = _file + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }
@@ -127,7 +127,7 @@ public class ParseVendorConfigurationResult
     if (_vc == null) {
       return "<EMPTY OR UNSUPPORTED FORMAT>";
     } else if (_vc.getHostname() == null) {
-      return "<File: \"" + _file.toString() + "\" has indeterminate hostname>";
+      return "<File: \"" + _file + "\" has indeterminate hostname>";
     } else {
       return "<" + _vc.getHostname() + ">";
     }

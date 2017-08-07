@@ -2,6 +2,7 @@ package org.batfish.grammar;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 public final class RoutingTableFormatDetector {
 
@@ -18,6 +19,7 @@ public final class RoutingTableFormatDetector {
     _fileText = fileText;
   }
 
+  @Nullable
   private RoutingTableFormat checkEmpty() {
     String trimmedText = _fileText.trim();
     if (trimmedText.length() == 0) {
@@ -27,6 +29,7 @@ public final class RoutingTableFormatDetector {
     return null;
   }
 
+  @Nullable
   private RoutingTableFormat checkEos() {
     Matcher eosMatcher =
         Pattern.compile("(?m)Codes: C - connected, S - static, K - kernel,").matcher(_fileText);
@@ -36,6 +39,7 @@ public final class RoutingTableFormatDetector {
     return null;
   }
 
+  @Nullable
   private RoutingTableFormat checkNxos() {
     Matcher nxosMatcher = Pattern.compile("(?m)IP Route Table for VRF \"").matcher(_fileText);
     if (nxosMatcher.find()) {

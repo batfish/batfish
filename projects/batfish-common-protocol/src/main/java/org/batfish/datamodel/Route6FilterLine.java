@@ -84,9 +84,9 @@ public class Route6FilterLine implements Serializable {
 
   public String toCompactString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(_action.toString() + " ");
-    sb.append(_prefix.toString() + " ");
-    sb.append(_lengthRange.toString() + " ");
+    sb.append(_action + " ");
+    sb.append(_prefix + " ");
+    sb.append(_lengthRange + " ");
     return sb.toString();
   }
 

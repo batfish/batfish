@@ -47,7 +47,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                         sb.append("    " + name + ":\n");
                         byUsage.forEach(
                             (usage, lines) -> {
-                              sb.append("      " + usage + ": lines " + lines.toString() + "\n");
+                              sb.append("      " + usage + ": lines " + lines + "\n");
                             });
                       });
                 });

@@ -74,6 +74,6 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
 
   @Override
   public String toString() {
-    return "<" + _first.toString() + ":" + _second.toString() + ">";
+    return "<" + _first + ":" + _second + ">";
   }
 }

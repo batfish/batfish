@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -55,6 +56,7 @@ public class BfCoordWorkHelper {
     multiPart.bodyPart(new FormDataBodyPart(key, value, MediaType.TEXT_PLAIN_TYPE));
   }
 
+  @Nullable
   public String checkApiKey() {
     try {
       Client client = getClientBuilder().build();
@@ -279,6 +281,7 @@ public class BfCoordWorkHelper {
   // }
   // }
 
+  @Nullable
   public String getAnalysisAnswers(
       String containerName,
       String baseTestrig,
@@ -327,6 +330,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String getAnswer(
       String containerName,
       String baseTestrig,
@@ -392,6 +396,7 @@ public class BfCoordWorkHelper {
    * returns null if container '{@code containerName}' does not exist or the api key that is using
    * has no access to the container
    */
+  @Nullable
   public Container getContainer(String containerName) {
     try {
       Client client = getClientBuilder().build();
@@ -428,6 +433,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public Map<String, String> getInfo() {
     try {
 
@@ -471,6 +477,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String getObject(String containerName, String testrigName, String objectName) {
     try {
 
@@ -634,6 +641,7 @@ public class BfCoordWorkHelper {
     return wItem;
   }
 
+  @Nullable
   public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
     try {
       Client client = getClientBuilder().build();
@@ -671,6 +679,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String initContainer(String containerName, String containerPrefix) {
     try {
       Client client = getClientBuilder().build();
@@ -749,6 +758,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public JSONObject listAnalyses(String containerName) {
     try {
       Client client = getClientBuilder().build();
@@ -778,6 +788,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listContainers() {
     try {
       Client client = getClientBuilder().build();
@@ -887,6 +898,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public Map<String, String> listTestrigs(String containerName) {
     try {
       Client client = getClientBuilder().build();
@@ -929,6 +941,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public JSONObject postData(WebTarget webTarget, MultiPart multiPart) throws Exception {
     try {
 

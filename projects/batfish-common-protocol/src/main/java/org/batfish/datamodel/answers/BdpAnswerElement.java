@@ -77,14 +77,10 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     sb.append("   OSPF-internal iterations: " + _dependentRoutesIterations + "\n");
     sb.append("   Dependent-routes iterations: " + _dependentRoutesIterations + "\n");
     sb.append(
-        "   BGP best-path RIB routes by iteration: "
-            + _bgpBestPathRibRoutesByIteration.toString()
-            + "\n");
+        "   BGP best-path RIB routes by iteration: " + _bgpBestPathRibRoutesByIteration + "\n");
     sb.append(
-        "   BGP multipath RIB routes by iteration: "
-            + _bgpMultipathRibRoutesByIteration.toString()
-            + "\n");
-    sb.append("   Main RIB routes by iteration: " + _mainRibRoutesByIteration.toString() + "\n");
+        "   BGP multipath RIB routes by iteration: " + _bgpMultipathRibRoutesByIteration + "\n");
+    sb.append("   Main RIB routes by iteration: " + _mainRibRoutesByIteration + "\n");
     return sb.toString();
   }
 

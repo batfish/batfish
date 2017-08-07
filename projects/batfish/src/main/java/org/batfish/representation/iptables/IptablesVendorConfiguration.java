@@ -111,7 +111,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
           case IN_INTERFACE:
           case OUT_INTERFACE:
           default:
-            throw new BatfishException("Unknown match type: " + match.getMatchType().toString());
+            throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
 

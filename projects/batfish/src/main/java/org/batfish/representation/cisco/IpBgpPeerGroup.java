@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -28,6 +29,7 @@ public class IpBgpPeerGroup extends LeafBgpPeerGroup {
     return new Prefix(_ip, 32);
   }
 
+  @Nullable
   @Override
   public Prefix6 getNeighborPrefix6() {
     return null;

@@ -37,11 +37,11 @@ public class FileAuthorizer implements Authorizer {
               .resolve(Main.getSettings().getFileAuthorizerPermsFile());
       if (!Files.exists(_usersFile)) {
         throw new FileNotFoundException(
-            "Users file not found: '" + _usersFile.toAbsolutePath().toString() + "'");
+            "Users file not found: '" + _usersFile.toAbsolutePath() + "'");
       }
       if (!Files.exists(_permsFile)) {
         throw new FileNotFoundException(
-            "Perms file not found: '" + _permsFile.toAbsolutePath().toString() + "'");
+            "Perms file not found: '" + _permsFile.toAbsolutePath() + "'");
       }
     } catch (Exception e) {
       throw new BatfishException(

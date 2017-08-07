@@ -226,27 +226,28 @@ public class HostConfiguration extends VendorConfiguration {
     for (HostInterface iface : _hostInterfaces.values()) {
       Ip gateway = iface.getGateway();
       if (gateway != null) {
-        StaticRoute sr =
-            new StaticRoute(
-                Prefix.ZERO,
-                gateway,
-                iface.getName(),
-                HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST,
-                AbstractRoute.NO_TAG);
-        staticRoutes.add(sr);
+        staticRoutes.add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(gateway)
+                .setNextHopInterface(iface.getName())
+                .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
+                .setTag(AbstractRoute.NO_TAG)
+                .build());
         break;
       }
     }
     if (_staticRoutes.isEmpty() && staticRoutes.isEmpty() && !_c.getInterfaces().isEmpty()) {
       String ifaceName = _c.getInterfaces().values().iterator().next().getName();
-      StaticRoute sr =
-          new StaticRoute(
-              Prefix.ZERO,
-              null,
-              ifaceName,
-              HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST,
-              AbstractRoute.NO_TAG);
-      _c.getDefaultVrf().getStaticRoutes().add(sr);
+      _c.getDefaultVrf()
+          .getStaticRoutes()
+          .add(
+              StaticRoute.builder()
+                  .setNetwork(Prefix.ZERO)
+                  .setNextHopInterface(ifaceName)
+                  .setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST)
+                  .setTag(AbstractRoute.NO_TAG)
+                  .build());
     }
     return _c;
   }

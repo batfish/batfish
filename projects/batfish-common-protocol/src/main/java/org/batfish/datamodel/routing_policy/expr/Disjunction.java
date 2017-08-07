@@ -104,6 +104,6 @@ public class Disjunction extends BooleanExpr {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _disjuncts.toString() + ">";
+    return getClass().getSimpleName() + "<" + _disjuncts + ">";
   }
 }

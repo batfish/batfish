@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
@@ -12,6 +13,7 @@ public interface AnswerElement {
 
   String SUMMARY_VAR = "summary";
 
+  @Nullable
   @JsonProperty(SUMMARY_VAR)
   default String getSummary() {
     return null;

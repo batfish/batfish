@@ -63,20 +63,13 @@ public class Fib implements Serializable {
       }
     } else {
       String nextHopInterface = route.getNextHopInterface();
-      if (nextHopInterface != null) {
+      if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {
 
         Map<Ip, Set<AbstractRoute>> nextHopInterfaceRoutesByFinalNextHopIp =
-            nextHopInterfaces.get(nextHopInterface);
-        if (nextHopInterfaceRoutesByFinalNextHopIp == null) {
-          nextHopInterfaceRoutesByFinalNextHopIp = new HashMap<>();
-          nextHopInterfaces.put(nextHopInterface, nextHopInterfaceRoutesByFinalNextHopIp);
-        }
+            nextHopInterfaces.computeIfAbsent(nextHopInterface, k -> new HashMap<>());
         Set<AbstractRoute> nextHopInterfaceRoutes =
-            nextHopInterfaceRoutesByFinalNextHopIp.get(mostRecentNextHopIp);
-        if (nextHopInterfaceRoutes == null) {
-          nextHopInterfaceRoutes = new TreeSet<>();
-          nextHopInterfaceRoutesByFinalNextHopIp.put(mostRecentNextHopIp, nextHopInterfaceRoutes);
-        }
+            nextHopInterfaceRoutesByFinalNextHopIp.computeIfAbsent(
+                mostRecentNextHopIp, k -> new TreeSet<>());
         nextHopInterfaceRoutes.add(route);
       } else {
         throw new BatfishException("Encountered route with neither nextHopIp nor nextHopInterface");
@@ -93,12 +86,7 @@ public class Fib implements Serializable {
       currentNextHopInterfaces.forEach(
           (nextHopInterface, nextHopInterfaceRoutesByFinalNextHopIp) -> {
             Map<Ip, Set<AbstractRoute>> outputNextHopInterfaceRoutesByFinalNextHopIp =
-                outputNextHopInterfaces.get(nextHopInterface);
-            if (outputNextHopInterfaceRoutesByFinalNextHopIp == null) {
-              outputNextHopInterfaceRoutesByFinalNextHopIp = new TreeMap<>();
-              outputNextHopInterfaces.put(
-                  nextHopInterface, outputNextHopInterfaceRoutesByFinalNextHopIp);
-            }
+                outputNextHopInterfaces.computeIfAbsent(nextHopInterface, k -> new TreeMap<>());
             outputNextHopInterfaceRoutesByFinalNextHopIp.putAll(
                 nextHopInterfaceRoutesByFinalNextHopIp);
           });

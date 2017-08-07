@@ -41,11 +41,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
 
     public void add(
         SortedMap<String, SortedSet<String>> map, String hostname, String interfaceName) {
-      SortedSet<String> interfacesByHostname = map.get(hostname);
-      if (interfacesByHostname == null) {
-        interfacesByHostname = new TreeSet<>();
-        map.put(hostname, interfacesByHostname);
-      }
+      SortedSet<String> interfacesByHostname = map.computeIfAbsent(hostname, k -> new TreeSet<>());
       interfacesByHostname.add(interfaceName);
     }
 

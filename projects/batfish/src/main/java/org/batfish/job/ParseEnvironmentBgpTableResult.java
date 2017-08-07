@@ -72,7 +72,7 @@ public class ParseEnvironmentBgpTableResult
     } else if (_bgpTable != null) {
       terseLogLevelPrefix = _name + ": ";
     } else {
-      terseLogLevelPrefix = _file.toString() + ": ";
+      terseLogLevelPrefix = _file + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }

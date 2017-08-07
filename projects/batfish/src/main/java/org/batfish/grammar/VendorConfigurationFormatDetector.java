@@ -2,6 +2,7 @@ package org.batfish.grammar;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.ConfigurationFormat;
 
 public final class VendorConfigurationFormatDetector {
@@ -33,6 +34,7 @@ public final class VendorConfigurationFormatDetector {
     }
   }
 
+  @Nullable
   private ConfigurationFormat checkAlcatelAos() {
     Matcher alcatelAosMatcher = Pattern.compile("(?m)^system name").matcher(_fileText);
     if (alcatelAosMatcher.find()) {
@@ -41,6 +43,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkArista() {
     Matcher aristaMatcher = Pattern.compile("(?m)^.*boot system flash.*\\.swi").matcher(_fileText);
     if (aristaMatcher.find()) {
@@ -49,6 +52,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkBlade() {
     Matcher bladeNetworkMatcher = Pattern.compile("(?m)^switch-type").matcher(_fileText);
     if (bladeNetworkMatcher.find()) {
@@ -57,6 +61,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkCisco() {
     Matcher ciscoLike =
         Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)").matcher(_fileText);
@@ -80,6 +85,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkCiscoXr() {
     if (_fileText.contains("IOS XR")) {
       return ConfigurationFormat.CISCO_IOS_XR;
@@ -87,6 +93,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkEmpty() {
     String trimmedText = _fileText.trim();
     if (trimmedText.length() == 0) {
@@ -96,6 +103,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkF5() {
     Matcher configurationHostname = Pattern.compile("(?m)^tmsh .*$").matcher(_fileText);
     if (configurationHostname.find()) {
@@ -104,6 +112,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkFlatVyos() {
     if (_fileText.contains("set system config-management commit-revisions")) {
       return ConfigurationFormat.FLAT_VYOS;
@@ -111,6 +120,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkIpTables() {
     if (_fileText.contains("INPUT")
         && _fileText.contains("OUTPUT")
@@ -120,6 +130,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkJuniper() {
     if (_notJuniper) {
       return null;
@@ -154,6 +165,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkMrv() {
     if (_fileText.contains("System.SystemName")) {
       return ConfigurationFormat.MRV;
@@ -161,6 +173,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkMrvCommands() {
     Matcher configurationHostname =
         Pattern.compile("(?m)^configuration hostname .*$").matcher(_fileText);
@@ -170,6 +183,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkMss() {
     Matcher mssMatcher = Pattern.compile("(?m)^set system name").matcher(_fileText);
     if (mssMatcher.find()) {
@@ -178,6 +192,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkRancid() {
     Matcher rancidCisco = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$").matcher(_fileText);
     Matcher rancidCiscoNx =
@@ -206,6 +221,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkVxWorks() {
     if (_firstChar == '!' && _fileText.contains("set prompt")) {
       return ConfigurationFormat.VXWORKS;
@@ -213,6 +229,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
   private ConfigurationFormat checkVyos() {
     if (_fileText.contains("system")
         && _fileText.contains("{")
