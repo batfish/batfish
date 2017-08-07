@@ -1,7 +1,5 @@
 package org.batfish.coordinator.resources;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedSet;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
@@ -9,7 +7,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -19,7 +16,6 @@ import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Testrig;
 import org.batfish.coordinator.Main;
 
 /**
@@ -85,13 +81,7 @@ public class ContainerResource {
   public Response getTestrigs() {
     validate();
     SortedSet<String> testrigNames = Main.getWorkMgr().listTestrigs(_name);
-    List<Testrig> testrigs = new ArrayList<>();
-    for (String name : testrigNames) {
-      String configsUri = Main.getWorkMgr().getConfigsUri(_name, _uriInfo, name).toString();
-      String hostsUri = Main.getWorkMgr().getHostsUri(_name, _uriInfo, name).toString();
-      testrigs.add(Testrig.makeTestrig(name, configsUri, hostsUri));
-    }
-    return Response.ok(testrigs).build();
+    return Response.ok(testrigNames).build();
   }
 
   /** Redirect to /testrigs if the user does not supply a testrig ID. */
@@ -104,13 +94,6 @@ public class ContainerResource {
     return Response.status(Status.MOVED_PERMANENTLY)
         .location(ub.build())
         .build();
-  }
-
-  /** Relocate the request to TestrigResource. */
-  @Path("/testrig/{id}")
-  public org.batfish.coordinator.resources.TestrigResource getResource(@PathParam("id") String id) {
-    validate();
-    return new TestrigResource(this._uriInfo, this._name, id);
   }
 
   /** Validates the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
