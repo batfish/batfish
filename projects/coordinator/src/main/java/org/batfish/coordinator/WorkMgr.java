@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,15 +23,12 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
-import org.batfish.common.CoordConsts;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -1029,38 +1025,6 @@ public class WorkMgr {
   public boolean checkContainerExist(String containerName) {
     Path containerDir = getContainerPath(containerName);
     return containerDir != null && Files.exists(containerDir);
-  }
-
-  private Path getTestrigPath(String containerName, String testrigName) {
-    Path containerDir = getContainerPath(containerName);
-    return containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrigName);
-  }
-
-  public boolean checkTestrigExist(String containerName, String testrigName) {
-    Path testrigDir = getTestrigPath(containerName, testrigName);
-    return testrigDir != null && Files.exists(testrigDir);
-  }
-
-  public URI getConfigsUri(String containerName, UriInfo uriInfo, String testrigName) {
-    UriBuilder ub = uriInfo.getBaseUriBuilder();
-    ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path("container")
-        .path(containerName)
-        .path("testrig")
-        .path(testrigName)
-        .path("configs");
-    return ub.build();
-  }
-
-  public URI getHostsUri(String containerName, UriInfo uriInfo, String testrigName) {
-    UriBuilder ub = uriInfo.getBaseUriBuilder();
-    ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path("container")
-        .path(containerName)
-        .path("testrig")
-        .path(testrigName)
-        .path("hosts");
-    return ub.build();
   }
 
 }
