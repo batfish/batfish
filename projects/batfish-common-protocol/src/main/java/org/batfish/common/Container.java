@@ -5,26 +5,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.SortedSet;
 
 public final class Container {
   private static final String NAME_VAR = "name";
-  private static final String TESTRIGS_VAR = "testrigs";
+  private static final String TESTRIGS_URI_VAR = "testrigsUri";
   private static final String ANALYSIS_VAR = "analysis";
 
   private String _name;
-  private SortedSet<String> _testrigs;
+  private String _testrigsUri;
   private Path _analysis;
 
   @JsonCreator
-  public static Container of(
-      @JsonProperty(NAME_VAR) String name, @JsonProperty(TESTRIGS_VAR) SortedSet<String> testrigs) {
-    return new Container(name, testrigs);
+  public static Container makeContainer(
+      @JsonProperty(NAME_VAR) String name, @JsonProperty(TESTRIGS_URI_VAR) String testrigsUrl) {
+    return new Container(name, testrigsUrl);
   }
 
-  private Container(String name, SortedSet<String> testrigs) {
+  private Container(String name, String testrigsUri) {
     this._name = name;
-    this._testrigs = testrigs;
+    this._testrigsUri = testrigsUri;
   }
 
   @JsonProperty(NAME_VAR)
@@ -32,9 +31,9 @@ public final class Container {
     return _name;
   }
 
-  @JsonProperty(TESTRIGS_VAR)
-  public SortedSet<String> getTestrigs() {
-    return _testrigs;
+  @JsonProperty(TESTRIGS_URI_VAR)
+  public String getTestrigsUri() {
+    return _testrigsUri;
   }
 
   @JsonProperty(ANALYSIS_VAR)
@@ -47,9 +46,9 @@ public final class Container {
     _name = name;
   }
 
-  @JsonProperty(TESTRIGS_VAR)
-  public void setTestrigs(SortedSet<String> testrigs) {
-    _testrigs = testrigs;
+  @JsonProperty(TESTRIGS_URI_VAR)
+  public void setTestrigsUri(String testrigsUri) {
+    _testrigsUri = testrigsUri;
   }
 
   @JsonProperty(ANALYSIS_VAR)
@@ -61,7 +60,7 @@ public final class Container {
   public String toString() {
     return MoreObjects.toStringHelper(Container.class)
         .add(NAME_VAR, _name)
-        .add(TESTRIGS_VAR, _testrigs)
+        .add(TESTRIGS_URI_VAR, _testrigsUri)
         .toString();
   }
 
@@ -71,11 +70,11 @@ public final class Container {
       return false;
     }
     Container other = (Container) o;
-    return Objects.equals(_name, other._name) && Objects.equals(_testrigs, other._testrigs);
+    return Objects.equals(_name, other._name) && Objects.equals(_testrigsUri, other._testrigsUri);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _testrigs);
+    return Objects.hash(_name, _testrigsUri);
   }
 }

@@ -1,21 +1,27 @@
 package org.batfish.coordinator;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
-import java.util.TreeSet;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConsts;
+import org.batfish.common.Version;
 import org.batfish.coordinator.config.Settings;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -59,8 +65,8 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
-    Main.getWorkMgr().initContainer("some container", null);
-    response = target("/v2/containers").request().get();
+    Main.getWorkMgr().initContainer("someContainer", null);
+    response = target().path("/v2/containers").request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
   }
@@ -72,14 +78,105 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getLocation().getPath(), equalTo("/v2/containers"));
   }
 
-  @Test
-  public void getContainer() throws Exception {
-    String containerName = "some container";
-    Container expected = Container.of(containerName, new TreeSet<>());
-    Main.getWorkMgr().initContainer(containerName, null);
+  public void getInfo() throws Exception {
+    Response response = target().path("/v2/info").request().get();
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    JSONObject object = new JSONObject();
+    object.put("Service name", "Batfish coordinator");
+    object.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+    object.put("APIs", "Enter ../application.wadl (relative to your URL) to see supported methods");
+    assertThat(response.readEntity(String.class), equalTo(object.toString()));
+  }
 
-    Response response = target("/v2/container").path(containerName).request().get();
+  @Test
+  public void getStatus() throws Exception {
+    Response response = target().path("/v2/status").request().get();
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    JSONObject object = Main.getWorkMgr().getStatusJson();
+    object.put("service-version", Version.getVersion());
+    assertThat(response.readEntity(String.class), equalTo(object.toString()));
+  }
+
+  @Test
+  public void getSubresource() throws Exception {
+    String containerName = "someContainer";
+    String testrigsUri =
+        target().path("/v2/container").path(containerName).path("/testrigs").getUri().toString();
+    Container expected = Container.makeContainer(containerName, testrigsUri);
+    Main.getWorkMgr().initContainer(containerName, null);
+    Response response = target().path("/v2/container").path(containerName).request().get();
+    if (response.getStatus() == 500) {
+      System.err.println("Content is: " + response.readEntity(String.class));
+    }
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<Container>() {}), equalTo(expected));
   }
+
+  @Test
+  public void testModifyContainer() {
+    String containerName = "someContainer";
+    // init container
+    Response response =
+        target()
+            .path("/v2/container")
+            .path(containerName)
+            .request()
+            .post(Entity.entity(String.class, MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    String expectedMessage = "Container '" + containerName + "' created";
+    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+    // Post existing container
+    response =
+        target()
+            .path("/v2/container")
+            .path(containerName)
+            .request()
+            .post(Entity.entity(String.class, MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+    expectedMessage = "Container '" + containerName + "' already exists!";
+    assertThat(response.readEntity(String.class), containsString(expectedMessage));
+
+    // Delete existing container
+    response = target().path("/v2/container").path(containerName).request().delete();
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    expectedMessage = "Container '" + containerName + "' deleted";
+    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+  }
+
+  @Test
+  public void deleteNonExistingContainer() {
+    Response response =
+        target().path("/v2/container").path("nonExistingContainer").request().delete();
+    assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
+    String expectedMessage = "Container 'nonExistingContainer' does not exist";
+    assertThat(response.readEntity(String.class), containsString(expectedMessage));
+  }
+
+  @Test
+  public void getEmptyTestrigs() throws Exception {
+    String containerName = "someContainer";
+    Main.getWorkMgr().initContainer(containerName, null);
+    Response response =
+        target().path("/v2/container").path(containerName).path("/testrigs").request().get();
+    if (response.getStatus() == 500) {
+      System.err.println("Content is: " + response.readEntity(String.class));
+    }
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    assertThat(response.readEntity(String.class), equalTo("[]"));
+  }
+
+  @Test
+  public void redirectTestrigs() throws Exception {
+    String containerName = "someContainer";
+    Main.getWorkMgr().initContainer(containerName, null);
+    Response response =
+        target()
+            .property(FOLLOW_REDIRECTS, false)
+            .path("/v2/container/someContainer/testrig")
+            .request()
+            .get();
+    assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
+    assertThat(response.getLocation().getPath(), equalTo("/v2/container/someContainer/testrigs"));
+  }
+
 }
