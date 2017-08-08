@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -528,15 +529,21 @@ public class WorkMgr {
     return answer;
   }
 
-  //  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  /** Return a {@link Container container} contains all testrigs directories inside it. */
   public Container getContainer(String containerName) {
     return getContainer(getdirContainer(containerName));
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
-    String testrigUri = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).toString();
-    return Container.makeContainer(containerDir.toFile().getName(), testrigUri);
+    SortedSet<String> testrigs =
+        new TreeSet<>(
+            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
+                .stream()
+                .map(dir -> dir.getFileName().toString())
+                .collect(Collectors.toSet()));
+
+    return Container.of(containerDir.toFile().getName(), testrigs);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -748,9 +755,9 @@ public class WorkMgr {
     return authorizedContainers;
   }
 
-  //  public List<Container> getContainers(@Nullable String apiKey) {
-  //    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
-  //  }
+  public List<Container> getContainers(@Nullable String apiKey) {
+    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
+  }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -127,8 +128,7 @@ public class WorkMgrTest {
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     Container container = _manager.getContainer(containerDir);
     assertThat(container.getName(), equalTo(containerName));
-    String testrigsUri = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).toString();
-    assertThat(container.getTestrigsUri(), equalTo(testrigsUri));
+    assertThat(container.getTestrigs(), equalTo(new TreeSet<String>()));
   }
 
   @Test
@@ -138,10 +138,13 @@ public class WorkMgrTest {
     Path containerPath = _folder.getRoot().toPath().resolve(containerName);
     Path testrigPath = containerPath.resolve("testrig1");
     assertTrue(testrigPath.toFile().mkdir());
-    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
-    Container container = _manager.getContainer(containerDir);
-    String expectedTestrigsUri = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).toString();
-    assertThat(container.getTestrigsUri(), equalTo(expectedTestrigsUri));
+    testrigPath = containerPath.resolve("testrig2");
+    assertTrue(testrigPath.toFile().mkdir());
+    Container container = _manager.getContainer(containerName);
+    SortedSet<String> expectedTestrigs = new TreeSet<>();
+    expectedTestrigs.add("testrig1");
+    expectedTestrigs.add("testrig2");
+    assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
   }
 
   @Test

@@ -1,7 +1,9 @@
 package org.batfish.coordinator;
 
+import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
 import static org.hamcrest.Matchers.containsString;
@@ -11,6 +13,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
+import java.util.TreeSet;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
@@ -65,8 +68,8 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
-    Main.getWorkMgr().initContainer("someContainer", null);
-    response = target().path("/v2/containers").request().get();
+    Main.getWorkMgr().initContainer("some Container", null);
+    response = target("/v2/containers").request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
   }
@@ -100,9 +103,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void getSubresource() throws Exception {
     String containerName = "someContainer";
-    String testrigsUri =
-        target().path("/v2/container").path(containerName).path("/testrigs").getUri().toString();
-    Container expected = Container.makeContainer(containerName, testrigsUri);
+    Container expected = Container.of(containerName, new TreeSet<>());
     Main.getWorkMgr().initContainer(containerName, null);
     Response response = target().path("/v2/container").path(containerName).request().get();
     if (response.getStatus() == 500) {
@@ -122,10 +123,11 @@ public class WorkMgrServiceV2Test extends JerseyTest {
             .path(containerName)
             .request()
             .post(Entity.entity(String.class, MediaType.APPLICATION_JSON));
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    String expectedMessage = "Container '" + containerName + "' created";
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
-    // Post existing container
+    assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
+    assertThat(
+        response.getLocation(),
+        equalTo(target().path("/v2/container").path(containerName).getUri()));
+    // post existing container
     response =
         target()
             .path("/v2/container")
@@ -133,14 +135,11 @@ public class WorkMgrServiceV2Test extends JerseyTest {
             .request()
             .post(Entity.entity(String.class, MediaType.APPLICATION_JSON));
     assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
-    expectedMessage = "Container '" + containerName + "' already exists!";
+    String expectedMessage = "Container '" + containerName + "' already exists!";
     assertThat(response.readEntity(String.class), containsString(expectedMessage));
-
     // Delete existing container
     response = target().path("/v2/container").path(containerName).request().delete();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    expectedMessage = "Container '" + containerName + "' deleted";
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+    assertThat(response.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }
 
   @Test

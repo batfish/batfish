@@ -46,8 +46,7 @@ public class ContainerResource {
   public Response getContainer() {
     _logger.info("WMS: getContainer\n");
     validate();
-    String testrigsUri = _uriInfo.getAbsolutePathBuilder().path("testrigs").toString();
-    Container container = Container.makeContainer(_name, testrigsUri);
+    Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
   }
 
@@ -55,9 +54,10 @@ public class ContainerResource {
   @POST
   public Response initContainer() {
     _logger.info("WMS: initContainer '" + _name + "'\n");
+    // TODO do we need to worry about containerPrefix here?
     String outputContainerName = Main.getWorkMgr().initContainer(_name, null);
     Main.getAuthorizer().authorizeContainer(_apiKey, outputContainerName);
-    return Response.ok("Container '" + _name + "' created").build();
+    return Response.created(_uriInfo.getRequestUri()).build();
   }
 
   /** Delete a specified container with name: {@link #_name}. */
@@ -69,7 +69,7 @@ public class ContainerResource {
           "container '" + _name + "' is not accessible by the api key: " + _apiKey);
     }
     Main.getWorkMgr().delContainer(_name);
-    return Response.ok("Container '" + _name + "' deleted").build();
+    return Response.noContent().build();
   }
 
   /**
@@ -96,6 +96,16 @@ public class ContainerResource {
         .build();
   }
 
+  /*
+  /** Relocate the request to TestrigResource. * /
+  @Path("/testrig/{id}")
+  public org.batfish.coordinator.resources.TestrigResource getResource
+  (@PathParam("id") String id) {
+  validate();
+  return new TestrigResource(this._uriInfo, this._name, id);
+  }
+  */
+
   /** Validates the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
   private void validate() {
     if (!Main.getWorkMgr().checkContainerExist(_name)) {
@@ -107,4 +117,5 @@ public class ContainerResource {
           "container '" + _name + "' is not accessible by the api key: " + _apiKey);
     }
   }
+
 }

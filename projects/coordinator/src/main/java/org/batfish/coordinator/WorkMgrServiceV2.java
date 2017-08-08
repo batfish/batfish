@@ -33,7 +33,7 @@ import org.codehaus.jettison.json.JSONObject;
 @Produces(MediaType.APPLICATION_JSON)
 public class WorkMgrServiceV2 {
 
-  BatfishLogger _logger = Main.getLogger();
+  private BatfishLogger _logger = Main.getLogger();
 
   @DefaultValue(CoordConsts.DEFAULT_API_KEY)
   @HeaderParam(CoordConsts.SVC_KEY_API_KEY)
@@ -47,13 +47,7 @@ public class WorkMgrServiceV2 {
   @Path("/containers")
   public Response getContainers() {
     _logger.info("WMS:getContainers\n");
-    SortedSet<String> containerNames = Main.getWorkMgr().listContainers(_apiKey);
-    List<Container> containers = new ArrayList<>();
-    for (String name : containerNames) {
-      String testrigUrl =
-          _uriInfo.getRequestUri().resolve("container/" + name + "/testrigs").toString();
-      containers.add(Container.makeContainer(name, testrigUrl));
-    }
+    List<Container> containers = Main.getWorkMgr().getContainers(_apiKey);
     return Response.ok(containers).build();
   }
 

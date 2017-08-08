@@ -73,7 +73,7 @@ public class Main {
     _workManager = workManager;
   }
 
-  public static void initAuthorizer() throws Exception {
+  static void initAuthorizer() throws Exception {
     switch (_settings.getAuthorizationType()) {
       case none:
         _authorizer = new NoneAuthorizer();

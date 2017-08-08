@@ -7,9 +7,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
@@ -45,15 +46,7 @@ public class WorkMgrServiceTest {
     initContainerEnvironment();
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     String containerJson = response.getEntity().toString();
-    String testrigsUri =
-        Main.getSettings()
-            .getContainersLocation()
-            .resolve(_containerName)
-            .toAbsolutePath()
-            .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-            .toString();
-    String expected =
-        "{\n  \"name\" : \"myContainer\",\n  \"testrigsUri\" : \"" + testrigsUri + "\"\n}";
+    String expected = "{\n  \"name\" : \"myContainer\"\n}";
     assertThat(containerJson, equalTo(expected));
   }
 
@@ -82,13 +75,18 @@ public class WorkMgrServiceTest {
   public void getNonEmptyContainer() throws Exception {
     initContainerEnvironment();
     Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
-    Path testrigPath = containerPath.resolve("testrig");
+    Path testrigPath = containerPath.resolve("testrig1");
     assertTrue(testrigPath.toFile().mkdir());
+    Path testrigPath2 = containerPath.resolve("testrig2");
+    assertTrue(testrigPath2.toFile().mkdir());
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
-    String expectedTestrigsUri = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).toString();
     assertThat(container.getName(), equalTo(_containerName));
-    assertThat(container.getTestrigsUri(), equalTo(expectedTestrigsUri));
+    SortedSet<String> expectedTestrigs = new TreeSet<>();
+    expectedTestrigs.add("testrig1");
+    expectedTestrigs.add("testrig2");
+    assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
   }
+
 }
