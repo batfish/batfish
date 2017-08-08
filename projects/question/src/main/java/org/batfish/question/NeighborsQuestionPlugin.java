@@ -218,84 +218,84 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (_lanNeighbors != null) {
         sb.append("  LAN neighbors\n");
         for (Edge edge : _lanNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_verboseLanNeighbors != null) {
         sb.append("  LAN neighbors\n");
         for (VerboseEdge edge : _verboseLanNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_roleLanNeighbors != null) {
         sb.append("  LAN neighbors\n");
         for (RoleEdge edge : _roleLanNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_ebgpNeighbors != null) {
         sb.append("  eBGP Neighbors\n");
         for (IpEdge ipEdge : _ebgpNeighbors) {
-          sb.append("    " + ipEdge.toString() + "\n");
+          sb.append("    " + ipEdge + "\n");
         }
       }
 
       if (_verboseEbgpNeighbors != null) {
         sb.append("  eBGP neighbors\n");
         for (VerboseBgpEdge edge : _verboseEbgpNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_roleEbgpNeighbors != null) {
         sb.append("  eBGP neighbors\n");
         for (RoleEdge edge : _roleEbgpNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_ibgpNeighbors != null) {
         sb.append("  iBGP Neighbors\n");
         for (IpEdge ipEdge : _ibgpNeighbors) {
-          sb.append("    " + ipEdge.toString() + "\n");
+          sb.append("    " + ipEdge + "\n");
         }
       }
 
       if (_verboseIbgpNeighbors != null) {
         sb.append("  iBGP neighbors\n");
         for (VerboseBgpEdge edge : _verboseIbgpNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_roleIbgpNeighbors != null) {
         sb.append("  iBGP neighbors\n");
         for (RoleEdge edge : _roleIbgpNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_ospfNeighbors != null) {
         sb.append("  OSPF Neighbors\n");
         for (IpEdge ipEdge : _ospfNeighbors) {
-          sb.append("    " + ipEdge.toString() + "\n");
+          sb.append("    " + ipEdge + "\n");
         }
       }
 
       if (_verboseOspfNeighbors != null) {
         sb.append("  OSPF neighbors\n");
         for (VerboseOspfEdge edge : _verboseOspfNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
       if (_roleOspfNeighbors != null) {
         sb.append("  OSPF neighbors\n");
         for (RoleEdge edge : _roleOspfNeighbors) {
-          sb.append("    " + edge.toString() + "\n");
+          sb.append("    " + edge + "\n");
         }
       }
 
@@ -678,8 +678,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
    *     the default and returns only the names of nodes/interfaces in the edge; "verbose" provides
    *     full configuration information about those nodes/interfaces; "role" abstracts edges to the
    *     role level.
-   * @param roleSpecifier NodeRoleSpecifier that assigns roles to nodes.  This is an optional
-   *     variable that is only used if the style is set to "role".  If no roleSpecifier is provided
+   * @param roleSpecifier NodeRoleSpecifier that assigns roles to nodes. This is an optional
+   *     variable that is only used if the style is set to "role". If no roleSpecifier is provided
    *     then by default the roles originally assigned to nodes when the configurations were loaded
    *     are used.
    * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"] node1Regex="as1.*",
@@ -805,7 +805,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _roleSpecifier = roleSpecifier;
     }
   }
-
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {

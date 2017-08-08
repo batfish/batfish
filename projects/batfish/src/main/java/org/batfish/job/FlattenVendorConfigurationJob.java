@@ -44,8 +44,8 @@ public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfi
       if (format == ConfigurationFormat.VYOS) {
         header = VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER;
       }
-      _logger.debug("Flattening config: \"" + _inputFile.toString() + "\"...");
-      String flatConfigText = null;
+      _logger.debug("Flattening config: \"" + _inputFile + "\"...");
+      String flatConfigText;
       try {
         flatConfigText = Batfish.flatten(_fileText, _logger, _settings, format, header);
       } catch (ParserBatfishException e) {
@@ -72,9 +72,9 @@ public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfi
           _logger.getHistory(),
           _outputFile,
           new BatfishException(
-              "Unknown configuration format for: \"" + _inputFile.toString() + "\""));
+              "Unknown configuration format for: \"" + _inputFile + "\""));
     } else {
-      _logger.debug("Skipping: \"" + _inputFile.toString() + "\"\n");
+      _logger.debug("Skipping: \"" + _inputFile + "\"\n");
       String flatConfigText = _fileText;
       elapsedTime = System.currentTimeMillis() - startTime;
       return new FlattenVendorConfigurationResult(

@@ -3,10 +3,11 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 
 public abstract class OspfExternalRoute extends OspfRoute {
 
-  public static class Builder extends AbstractRouteBuilder<OspfExternalRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute> {
 
     private String _advertiser;
 
@@ -21,13 +22,28 @@ public abstract class OspfExternalRoute extends OspfRoute {
       if (protocol == RoutingProtocol.OSPF_E1) {
         route =
             new OspfExternalType1Route(
-                _network, _nextHopIp, _admin, _metric, _costToAdvertiser, _advertiser);
+                getNetwork(),
+                getNextHopIp(),
+                getAdmin(),
+                getMetric(),
+                _costToAdvertiser,
+                _advertiser);
       } else {
         route =
             new OspfExternalType2Route(
-                _network, _nextHopIp, _admin, _metric, _costToAdvertiser, _advertiser);
+                getNetwork(),
+                getNextHopIp(),
+                getAdmin(),
+                getMetric(),
+                _costToAdvertiser,
+                _advertiser);
       }
       return route;
+    }
+
+    @Override
+    protected Builder getThis() {
+      return this;
     }
 
     public String getAdvertiser() {
@@ -119,9 +135,11 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return _costToAdvertiser;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @Override
   public String getNextHopInterface() {
-    return null;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
   @JsonIgnore

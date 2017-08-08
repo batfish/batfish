@@ -726,7 +726,7 @@ public class HeaderSpace implements Serializable {
   @Override
   public String toString() {
     return "[Protocols:"
-        + _ipProtocols.toString()
+        + _ipProtocols
         + ", SrcIps:"
         + _srcIps
         + ", NotSrcIps:"
@@ -758,17 +758,17 @@ public class HeaderSpace implements Serializable {
         + ", SrcOrDstProtocols:"
         + _srcOrDstProtocols
         + ", Dscps: "
-        + _dscps.toString()
+        + _dscps
         + ", NotDscps: "
-        + _notDscps.toString()
+        + _notDscps
         + ", Ecns: "
-        + _ecns.toString()
+        + _ecns
         + ", NotEcns: "
-        + _notEcns.toString()
+        + _notEcns
         + ", FragmentOffsets: "
-        + _fragmentOffsets.toString()
+        + _fragmentOffsets
         + ", NotFragmentOffsets: "
-        + _notFragmentOffsets.toString()
+        + _notFragmentOffsets
         + ", IcmpType:"
         + _icmpTypes
         + ", NotIcmpType:"
@@ -778,13 +778,13 @@ public class HeaderSpace implements Serializable {
         + ", NotIcmpCode:"
         + _notIcmpCodes
         + ", PacketLengths:"
-        + _packetLengths.toString()
+        + _packetLengths
         + ", NotPacketLengths:"
         + _notPacketLengths
         + ", States:"
-        + _states.toString()
+        + _states
         + ", TcpFlags:"
-        + _tcpFlags.toString()
+        + _tcpFlags
         + "]";
   }
 

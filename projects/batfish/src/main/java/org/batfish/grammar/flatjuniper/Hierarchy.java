@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -125,6 +126,7 @@ public class Hierarchy {
         return _children;
       }
 
+      @Nullable
       public HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
         for (HierarchyChildNode child : _children.values()) {
           if (child.matches(node)) {

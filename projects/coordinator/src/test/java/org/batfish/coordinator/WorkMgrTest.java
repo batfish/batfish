@@ -158,8 +158,7 @@ public class WorkMgrTest {
     String containerName = "myContainer";
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Error listing directory '" + containerDir.toString() + "'"));
+    _thrown.expectMessage(equalTo("Error listing directory '" + containerDir + "'"));
     _manager.getContainer(containerDir);
   }
-
 }

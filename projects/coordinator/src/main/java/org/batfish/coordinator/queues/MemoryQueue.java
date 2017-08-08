@@ -2,6 +2,7 @@ package org.batfish.coordinator.queues;
 
 import java.util.LinkedList;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.batfish.coordinator.QueuedWork;
 
 // we don't synchronize on this queue
@@ -16,6 +17,7 @@ public class MemoryQueue extends LinkedList<QueuedWork> implements WorkQueue {
     return remove(qWork);
   }
 
+  @Nullable
   @Override
   public QueuedWork deque() {
     if (size() == 0) {
@@ -35,6 +37,7 @@ public class MemoryQueue extends LinkedList<QueuedWork> implements WorkQueue {
     return size();
   }
 
+  @Nullable
   @Override
   public QueuedWork getWork(UUID workItemId) {
     for (QueuedWork work : this) {

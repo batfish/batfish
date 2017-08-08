@@ -273,15 +273,15 @@ public class Route implements Comparable<Route>, Serializable {
       tag = "none";
     }
     return "Route<"
-        + _node.toString()
+        + _node
         + ", "
-        + _network.toString()
+        + _network
         + ", "
-        + nextHopIp.toString()
+        + nextHopIp
         + ", "
-        + nextHop.toString()
+        + nextHop
         + ", "
-        + _nextHopInterface.toString()
+        + _nextHopInterface
         + ", "
         + _administrativeCost
         + ", "
@@ -289,7 +289,7 @@ public class Route implements Comparable<Route>, Serializable {
         + ", "
         + tag
         + ", "
-        + _protocol.toString()
+        + _protocol
         + ">";
   }
 }

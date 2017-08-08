@@ -129,6 +129,6 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   @Override
   @JsonValue
   public String toString() {
-    return _address.toString() + "/" + _prefixLength;
+    return _address + "/" + _prefixLength;
   }
 }

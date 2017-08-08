@@ -128,7 +128,7 @@ public class VyosConfiguration extends VendorConfiguration {
             "Could not determine external interface for vpn \""
                 + newIpsecVpnName
                 + "\" from local-address: "
-                + localAddress.toString());
+                + localAddress);
       } else {
         newIkeGateway.setExternalInterface(externalInterface);
       }

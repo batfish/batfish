@@ -103,7 +103,7 @@ public class Prefix6Range extends Pair<Prefix6, SubRange> {
     if (prefixLength == low && prefixLength == high) {
       return _first.toString();
     } else {
-      return _first.toString() + ";" + low + "-" + high;
+      return _first + ";" + low + "-" + high;
     }
   }
 }

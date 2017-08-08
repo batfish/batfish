@@ -61,16 +61,10 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     }
 
     public void add(String hostname, Prefix prefix, String interfaceName, Ip address) {
-      SortedMap<Prefix, SortedSet<InterfaceIpPair>> prefixMap = _selfAdjacencies.get(hostname);
-      if (prefixMap == null) {
-        prefixMap = new TreeMap<>();
-        _selfAdjacencies.put(hostname, prefixMap);
-      }
-      SortedSet<InterfaceIpPair> interfaces = prefixMap.get(prefix);
-      if (interfaces == null) {
-        interfaces = new TreeSet<>();
-        prefixMap.put(prefix, interfaces);
-      }
+      SortedMap<Prefix, SortedSet<InterfaceIpPair>> prefixMap =
+          _selfAdjacencies.computeIfAbsent(hostname, k -> new TreeMap<>());
+      SortedSet<InterfaceIpPair> interfaces =
+          prefixMap.computeIfAbsent(prefix, k -> new TreeSet<>());
       interfaces.add(new InterfaceIpPair(interfaceName, address));
     }
 

@@ -40,16 +40,9 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   public void defineStructure(StructureType type, String name, int line) {
-    SortedMap<String, SortedSet<Integer>> byName = _structureDefinitions.get(type);
-    if (byName == null) {
-      byName = new TreeMap<>();
-      _structureDefinitions.put(type, byName);
-    }
-    SortedSet<Integer> lines = byName.get(name);
-    if (lines == null) {
-      lines = new TreeSet<>();
-      byName.put(name, lines);
-    }
+    SortedMap<String, SortedSet<Integer>> byName =
+        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
+    SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
     lines.add(line);
   }
 
@@ -75,21 +68,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
     SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(type);
-    if (byName == null) {
-      byName = new TreeMap<>();
-      _structureReferences.put(type, byName);
-    }
-    SortedMap<StructureUsage, SortedSet<Integer>> byUsage = byName.get(name);
-    if (byUsage == null) {
-      byUsage = new TreeMap<>();
-      byName.put(name, byUsage);
-    }
-    SortedSet<Integer> lines = byUsage.get(usage);
-    if (lines == null) {
-      lines = new TreeSet<>();
-      byUsage.put(usage, lines);
-    }
+        _structureReferences.computeIfAbsent(type, k -> new TreeMap<>());
+    SortedMap<StructureUsage, SortedSet<Integer>> byUsage =
+        byName.computeIfAbsent(name, k -> new TreeMap<>());
+    SortedSet<Integer> lines = byUsage.computeIfAbsent(usage, k -> new TreeSet<>());
     lines.add(line);
   }
 
@@ -120,28 +102,14 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
     String hostname = getHostname();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
-        _answerElement.getUndefinedReferences().get(hostname);
-    if (byType == null) {
-      byType = new TreeMap<>();
-      _answerElement.getUndefinedReferences().put(hostname, byType);
-    }
+        _answerElement.getUndefinedReferences().computeIfAbsent(hostname, k -> new TreeMap<>());
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName = byType.get(type);
-    if (byName == null) {
-      byName = new TreeMap<>();
-      byType.put(type, byName);
-    }
-    SortedMap<String, SortedSet<Integer>> byUsage = byName.get(name);
-    if (byUsage == null) {
-      byUsage = new TreeMap<>();
-      byName.put(name, byUsage);
-    }
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
+        byType.computeIfAbsent(type, k -> new TreeMap<>());
+    SortedMap<String, SortedSet<Integer>> byUsage =
+        byName.computeIfAbsent(name, k -> new TreeMap<>());
     String usageStr = usage.getDescription();
-    SortedSet<Integer> lines = byUsage.get(usageStr);
-    if (lines == null) {
-      lines = new TreeSet<>();
-      byUsage.put(usageStr, lines);
-    }
+    SortedSet<Integer> lines = byUsage.computeIfAbsent(usageStr, k -> new TreeSet<>());
     lines.add(line);
   }
 
@@ -149,21 +117,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     String hostname = getHostname();
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        _answerElement.getUnusedStructures().get(hostname);
-    if (byType == null) {
-      byType = new TreeMap<>();
-      _answerElement.getUnusedStructures().put(hostname, byType);
-    }
-    SortedMap<String, SortedSet<Integer>> byName = byType.get(type);
-    if (byName == null) {
-      byName = new TreeMap<>();
-      byType.put(type, byName);
-    }
-    SortedSet<Integer> lines = byName.get(name);
-    if (lines == null) {
-      lines = new TreeSet<>();
-      byName.put(name, lines);
-    }
+        _answerElement.getUnusedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
+    SortedMap<String, SortedSet<Integer>> byName =
+        byType.computeIfAbsent(type, k -> new TreeMap<>());
+    SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
     lines.add(line);
   }
 }

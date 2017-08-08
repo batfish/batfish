@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
@@ -22,6 +23,7 @@ public class RoutePolicyInlinePrefixSet extends RoutePolicyPrefixSet {
     return _prefixSpace;
   }
 
+  @Nullable
   @Override
   public Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
     return null;
