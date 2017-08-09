@@ -390,7 +390,7 @@ public class Driver {
                 answer.setStatus(AnswerStatus.FAILURE);
                 answer.addAnswerElement(e.getAnswerElement());
                 batfish.setTerminatedWithException(true);
-              } catch (Exception | StackOverflowError e) {
+              } catch (Throwable e) {
                 String stackTrace = ExceptionUtils.getFullStackTrace(e);
                 logger.error(stackTrace);
                 answer = new Answer();
