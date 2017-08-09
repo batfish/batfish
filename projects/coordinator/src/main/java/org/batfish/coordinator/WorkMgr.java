@@ -536,14 +536,24 @@ public class WorkMgr {
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
+    Set<String> testrigs =
+        new HashSet<>(
             CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
                 .stream()
                 .map(dir -> dir.getFileName().toString())
                 .collect(Collectors.toSet()));
+    Path aDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
+    Set<String> analysis = new HashSet<>();
+    if (Files.exists(aDir)) {
+      analysis =
+          new HashSet<>(
+              CommonUtil.getSubdirectories(aDir)
+                  .stream()
+                  .map(dir -> dir.getFileName().toString())
+                  .collect(Collectors.toSet()));
+    }
 
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    return Container.of(containerDir.toFile().getName(), testrigs, analysis);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -1025,13 +1035,14 @@ public class WorkMgr {
     CommonUtil.delete(zipFile);
   }
 
-  private Path getContainerPath(String containerName) {
-    return Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+  public boolean checkContainerExist(String containerName) {
+    Path containerDir = getdirContainer(containerName);
+    return containerDir != null && Files.exists(containerDir);
   }
 
-  public boolean checkContainerExist(String containerName) {
-    Path containerDir = getContainerPath(containerName);
-    return containerDir != null && Files.exists(containerDir);
+  public boolean checkTestrigExist(String containerName, String testrigName) {
+    Path testrigDir = getdirTestrig(containerName, testrigName);
+    return testrigDir != null && Files.exists(testrigDir);
   }
 
 }

@@ -12,8 +12,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.TreeSet;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
@@ -103,7 +103,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void getSubresource() throws Exception {
     String containerName = "someContainer";
-    Container expected = Container.of(containerName, new TreeSet<>());
+    Container expected = Container.of(containerName, new HashSet<>(), new HashSet<>());
     Main.getWorkMgr().initContainer(containerName, null);
     Response response = target().path("/v2/container").path(containerName).request().get();
     if (response.getStatus() == 500) {
@@ -137,7 +137,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
     String expectedMessage = "Container '" + containerName + "' already exists!";
     assertThat(response.readEntity(String.class), containsString(expectedMessage));
-    // Delete existing container
+    // delete existing container
     response = target().path("/v2/container").path(containerName).request().delete();
     assertThat(response.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }

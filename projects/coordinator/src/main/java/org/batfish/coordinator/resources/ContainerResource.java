@@ -29,7 +29,7 @@ import org.batfish.coordinator.Main;
 @Produces(MediaType.APPLICATION_JSON)
 public class ContainerResource {
 
-  BatfishLogger _logger = Main.getLogger();
+  private BatfishLogger _logger = Main.getLogger();
 
   private UriInfo _uriInfo;
   private String _name;
@@ -44,7 +44,7 @@ public class ContainerResource {
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
-    _logger.info("WMS: getContainer\n");
+    _logger.info("WMS: getContainer '" + _name + "'\n");
     validate();
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();

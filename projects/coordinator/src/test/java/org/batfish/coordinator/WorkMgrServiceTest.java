@@ -22,8 +22,6 @@ public class WorkMgrServiceTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private WorkMgr _manager;
-
   private WorkMgrService _service;
 
   private String _containerName = "myContainer";
@@ -36,8 +34,8 @@ public class WorkMgrServiceTest {
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Main.initAuthorizer();
     Main.setLogger(logger);
-    _manager = new WorkMgr(settings, logger);
-    Main.setWorkMgr(_manager);
+    WorkMgr manager = new WorkMgr(settings, logger);
+    Main.setWorkMgr(manager);
     _service = new WorkMgrService();
   }
 
