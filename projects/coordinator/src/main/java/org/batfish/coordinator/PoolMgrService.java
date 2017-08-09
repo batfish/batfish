@@ -122,12 +122,19 @@ public class PoolMgrService {
           Main.getPoolMgr().addToPool(worker);
         }
       }
+
+      return new JSONArray(
+          Arrays.asList(
+              CoordConsts.SVC_KEY_SUCCESS,
+              "done",
+              new JSONObject()
+                  .put(
+                      CoordConsts.SVC_KEY_CONTAINERS_LOCATION,
+                      Main.getSettings().getContainersLocation().toAbsolutePath())));
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("PMS:updatePool exception: " + stackTrace);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
-
-    return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, "done"));
   }
 }

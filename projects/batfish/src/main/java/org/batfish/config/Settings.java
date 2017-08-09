@@ -1024,7 +1024,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_ANONYMIZE, false);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
-    setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers");
+    setDefaultProperty(ARG_CONTAINERS_LOCATION, "containers_default");
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_CONTAINER_NAME, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
@@ -1118,8 +1118,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         ARG_COORDINATOR_HOST,
         "hostname of coordinator for registration with -" + ARG_SERVICE_MODE,
         ARGNAME_HOSTNAME);
-
-    addOption(ARG_CONTAINERS_LOCATION, "where to store containers", "containers_location");
 
     addOption(
         ARG_CONTAINER_NAME,
@@ -1364,7 +1362,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
     _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     _containerName = getStringOptionValue(ARG_CONTAINER_NAME);
-    _containersLocation = getPathOptionValue(ARG_CONTAINERS_LOCATION);
     _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
     _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
@@ -1458,6 +1455,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setContainerName(String containerName) {
     _containerName = containerName;
+  }
+
+  public void setContainersLocation(Path containersLocation) {
+    _containersLocation = containersLocation;
   }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {

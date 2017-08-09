@@ -40,6 +40,7 @@ public class CoordConsts {
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
+  public static final String SVC_KEY_CONTAINERS_LOCATION = "containerslocation";
   public static final String SVC_KEY_CONTAINER_PREFIX = "containerprefix";
   public static final String SVC_KEY_DEL_ANALYSIS_QUESTIONS = "delanalysisquestions";
   public static final String SVC_KEY_DEL_WORKER = "delworker";

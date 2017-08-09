@@ -3,9 +3,22 @@ package org.batfish.storage;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
+import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.pojo.Analysis;
+import org.batfish.datamodel.pojo.Testrig;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.routing_policy.Environment;
 
 public class FileStorageImpl implements Storage {
 
@@ -25,18 +38,89 @@ public class FileStorageImpl implements Storage {
   }
 
   /**
-   * Retrieve a container
+   * Retrieve a container Path
    *
    * @param containerName Container name
    * @return Path of the container
    */
+  //Needs to be removed eventually
   @Override
-  public Path getContainer(String containerName) {
+  public Path getContainerPath(String containerName) {
     Path containerDir = _containersLocation.resolve(containerName).toAbsolutePath();
     if (!Files.exists(containerDir)) {
       throw new BatfishException("Container '" + containerName + "' not found");
     }
     return containerDir;
+  }
+
+  @Override
+  public Testrig getTestrig(String containerName, String testrigName) {
+    return null;
+  }
+
+  @Override
+  public Analysis getAnalysis(String analysisName, String containerName) {
+    return null;
+  }
+
+  @Override
+  public Question getAnalysisQuestion(
+      String questionName, String contaninerName, String analysisName) {
+    return null;
+  }
+
+  @Override
+  public Question getTestrigQuestion(
+      String questionName, String contaninerName, String testrigName) {
+    return null;
+  }
+
+  @Override
+  public Answer getAnswer(
+      String containerName,
+      String baseTestrigName,
+      String baseEnvName,
+      String deltaTestrig,
+      String deltaEnv,
+      String questionName) {
+    return null;
+  }
+
+  @Override
+  public Environment getTestrigEnvironment(String containerName, String testrigName, String env)
+      throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public Topology getTestrigTopology(String containerName, String testrigName)
+      throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public boolean deleteQuestion(String questionName, String contaninerName, String analysisName) {
+    return false;
+  }
+
+  @Override
+  public boolean deleteAnalysis(String containerName, String analysisName) {
+    return false;
+  }
+
+  @Override
+  public boolean deleteContainer(String containerName) {
+    return false;
+  }
+
+  @Override
+  public boolean deleteTestrig(String containerName, String testrigName) throws BatfishException {
+    return false;
+  }
+
+  @Override
+  public boolean deleteEnvironment(String containerName, String testrigName, String env) {
+    return false;
   }
 
   /**
@@ -57,18 +141,72 @@ public class FileStorageImpl implements Storage {
     return containerName;
   }
 
-  /**
-   * Retrieve all containers as stream of container file names
-   *
-   * @return Steam of container file names
-   */
   @Override
-  public Stream<String> getAllContainers() {
-    Stream<String> containersStream =
-        CommonUtil.getSubdirectories(_containersLocation)
-            .stream()
-            .map(dir -> dir.getFileName().toString());
-    //not sure whether returning a stream is a good idea, limits the use of the method
-    return containersStream;
+  public String createTestrig(String containerName, Testrig testRig) throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public String createAnalysis(String containerName, String analysisName, boolean newAnalysis)
+      throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public String createQuestion(String contaninerName, String testrigName, Question question)
+      throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public String createAnalysisQuestion(String containerName, String analysisName, Question question)
+      throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public String createTestrigEnvironment(
+      String containerName,
+      String testrigName,
+      Environment baseEnv,
+      Environment deltaEnv,
+      String newEnvName)
+      throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public String createTestrigTopology(String containerName, String testrigName) {
+    return null;
+  }
+
+  @Override public Container getContainer(String containerName) throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public Set<Question> getAllAnalysisQuestions(String containerName, String analysisName) {
+    return null;
+  }
+
+  @Override
+  public Stream<String> getAllContainersStream() {
+    return null;
+  }
+
+  @Override
+  public Set<Container> getAllContainers() {
+    return null;
+  }
+
+  @Override
+  public Set<Testrig> getAllTestrigs(String containerName) throws BatfishException {
+    return null;
+  }
+
+  @Override
+  public Set<Environment> getAllEnvironments(String containerName, String testrigName)
+      throws BatfishException {
+    return null;
   }
 }

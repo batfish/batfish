@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -46,6 +47,7 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.storage.FileStorageImpl;
 import org.batfish.storage.Storage;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -197,7 +199,6 @@ public class Driver {
 
     try {
       _mainSettings = new Settings(args);
-      initStorage(_mainSettings);
       networkListenerLogger.setLevel(Level.WARNING);
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {
@@ -326,7 +327,10 @@ public class Driver {
             "BF: got error while checking work status: %s %s\n", array.get(0), array.get(1));
         return false;
       }
-
+      JSONObject containerLocationObj = new JSONObject(array.get(2).toString());
+      _mainSettings.setContainersLocation(
+          Paths.get(containerLocationObj.getString(CoordConsts.SVC_KEY_CONTAINERS_LOCATION)));
+      initStorage(_mainSettings);
       return true;
     } catch (ProcessingException e) {
       if (CommonUtil.causedBy(e, SSLHandshakeException.class)
@@ -450,8 +454,8 @@ public class Driver {
       settings = new Settings(args);
       // inherit pluginDir passed to service on startup
       settings.setPluginDirs(_mainSettings.getPluginDirs());
-      // assigning the container Dir using container name from args
-      settings.setContainerDir(getStorage().getContainer(settings.getContainerName()));
+      // leaving the conatainer dir for now as testrig settings depend on this
+      settings.setContainerDir(getStorage().getContainerPath(settings.getContainerName()));
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {

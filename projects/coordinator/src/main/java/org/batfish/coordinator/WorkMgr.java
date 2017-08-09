@@ -124,7 +124,7 @@ public class WorkMgr {
     try {
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
-      Path containerDir = Main.getStorage().getContainer(work.getWorkItem().getContainerName());
+      Path containerDir = Main.getStorage().getContainerPath(work.getWorkItem().getContainerName());
       String testrigName = work.getWorkItem().getTestrigName();
       Path testrigBaseDir = containerDir.resolve(testrigName).toAbsolutePath();
       task.put(BfConsts.ARG_CONTAINER_NAME, work.getWorkItem().getContainerName());
@@ -529,7 +529,7 @@ public class WorkMgr {
     return answer;
   }
 
-  /** Return a {@link Container container} contains all testrigs directoreis inside it */
+  /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
     Container container = new Container();
     SortedSet<String> testrigs =
@@ -735,7 +735,7 @@ public class WorkMgr {
     SortedSet<String> authorizedContainers =
         new TreeSet<>(
             Main.getStorage()
-                .getAllContainers()
+                .getAllContainersStream()
                 .filter(
                     container ->
                         Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
@@ -959,7 +959,7 @@ public class WorkMgr {
   }
 
   public void uploadTestrig(String containerName, String testrigName, InputStream fileStream) {
-    Path containerDir = Main.getStorage().getContainer(containerName);
+    Path containerDir = Main.getStorage().getContainerPath(containerName);
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
     if (Files.exists(testrigDir)) {
       throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
