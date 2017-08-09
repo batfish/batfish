@@ -180,11 +180,12 @@ public abstract class PluginConsumer implements IPluginConsumer {
               throws IOException {
             String name = path.toString();
             if (name.endsWith(CLASS_EXTENSION)) {
-              String className = name.substring(baseLen, name.length() - CLASS_EXTENSION.length()).replace(File.separatorChar, '.');
+              String className = name.substring(baseLen, name.length() - CLASS_EXTENSION.length())
+                                     .replace(File.separatorChar, '.');
               try {
                 loadPluginClass(cl, className);
               } catch (ClassNotFoundException e) {
-                throw new BatfishException("Unexpected error loading classes from folder " + path, e);
+                throw new BatfishException("Unexpected error loading from folder " + path, e);
               }
             }
             return FileVisitResult.CONTINUE;
@@ -221,16 +222,16 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   private class JarVisitor extends SimpleFileVisitor<Path> {
-    boolean hasJars = false;
-    boolean hasClasses = false;
+    boolean _hasJars = false;
+    boolean _hasClasses = false;
 
     @Override
     public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
         throws IOException {
       if (loadPluginJar(path)) {
-        hasJars = true;
+        _hasJars = true;
       } else if (path.toString().endsWith(CLASS_EXTENSION)) {
-        hasClasses = true;
+        _hasClasses = true;
       }
       return FileVisitResult.CONTINUE;
     }
@@ -250,7 +251,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
         }
 
         // if there are class files and no jars, then try to load as a folder
-        if (jarVisitor.hasClasses && !jarVisitor.hasJars) {
+        if (jarVisitor._hasClasses && !jarVisitor._hasJars) {
           try {
             loadPluginFolder(pluginDir);
           } catch (IOException e) {
