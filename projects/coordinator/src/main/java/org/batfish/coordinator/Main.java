@@ -19,6 +19,7 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.coordinator.resources.AuthenticationFilter;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -140,7 +141,8 @@ public class Main {
             .register(ExceptionMapper.class)
             .register(jsonFeature)
             .register(MultiPartFeature.class)
-            .register(CrossDomainFilter.class);
+            .register(CrossDomainFilter.class)
+            .register(AuthenticationFilter.class);
 
     if (_settings.getSslWorkDisable()) {
       URI workMgrUri =
