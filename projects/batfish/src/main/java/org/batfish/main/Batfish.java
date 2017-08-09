@@ -163,6 +163,7 @@ import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.role.InferRoles;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -214,6 +215,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     settings.setNodeRolesPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
+    settings.setInferredNodeRolesPath(
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
     settings.setTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
     if (envName != null) {
       envSettings.setName(envName);
@@ -1927,6 +1931,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
+  private NodeRoleSpecifier inferNodeRoles(Map<String, Configuration> configurations) {
+    InferRoles ir =
+        new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
+    return ir.call();
+  }
+
   private void initAnalysisQuestionPath(String analysisName, String questionName) {
     Path questionDir =
         _testrigSettings
@@ -3391,22 +3401,30 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
+  /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
+     if one exists; otherwise use the results of our node-role inference.
+   */
   private void processNodeRoles(Map<String, Configuration> configurations) {
     TestrigSettings settings = _settings.getActiveTestrigSettings();
     Path nodeRolesPath = settings.getNodeRolesPath();
-    if (Files.exists(nodeRolesPath)) {
-      SortedMap<String, SortedSet<String>> nodeRoles =
-          parseNodeRoles(nodeRolesPath, configurations.keySet());
-      for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
-        String hostname = nodeRolesEntry.getKey();
-        Configuration config = configurations.get(hostname);
-        if (config == null) {
-          throw new BatfishException(
-              "role set assigned to non-existent node: \"" + hostname + "\"");
-        }
-        SortedSet<String> roles = nodeRolesEntry.getValue();
-        config.setRoles(roles);
+    if (!Files.exists(nodeRolesPath)) {
+      nodeRolesPath = settings.getInferredNodeRolesPath();
+      if (!Files.exists(nodeRolesPath)) {
+        return;
       }
+    }
+
+    SortedMap<String, SortedSet<String>> nodeRoles =
+        parseNodeRoles(nodeRolesPath, configurations.keySet());
+    for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
+      String hostname = nodeRolesEntry.getKey();
+      Configuration config = configurations.get(hostname);
+      if (config == null) {
+        throw new BatfishException(
+            "role set assigned to non-existent node: \"" + hostname + "\"");
+      }
+      SortedSet<String> roles = nodeRolesEntry.getValue();
+      config.setRoles(roles);
     }
   }
 
@@ -4024,6 +4042,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
+    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
+    serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
+        "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
     return answer;
