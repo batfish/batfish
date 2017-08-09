@@ -478,6 +478,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             initAnalysisQuestionPath(analysisName, questionName);
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
+            _settings.setQuestionPath(null);
           });
     }
     answer.addAnswerElement(ae);
