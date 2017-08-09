@@ -1,3 +1,0 @@
-{"roleMap": { "host": ["dc1-host-01-01", "dc1-host-01-02"] },
- "roleRegexes": ["[a-z\\d]+\\-([a-z]+)\\-\\d+"]
-}
