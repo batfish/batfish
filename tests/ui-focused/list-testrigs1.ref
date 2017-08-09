@@ -21,4 +21,5 @@ iptables/
   host1.iptables
   host2.iptables
 node_roles.json
+node_roles_inferred.json
 
