@@ -67,4 +67,5 @@ public class Analysis {
   public int hashCode() {
     return Objects.hash(_name, _questions);
   }
+
 }

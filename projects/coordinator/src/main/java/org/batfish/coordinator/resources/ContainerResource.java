@@ -96,15 +96,13 @@ public class ContainerResource {
         .build();
   }
 
-  /*
-  /** Relocate the request to TestrigResource. * /
-  @Path("/testrig/{id}")
-  public org.batfish.coordinator.resources.TestrigResource getResource
-  (@PathParam("id") String id) {
-  validate();
-  return new TestrigResource(this._uriInfo, this._name, id);
-  }
-  */
+  //  /** Relocate the request to TestrigResource. */
+  //  @Path("/testrig/{id}")
+  //  public org.batfish.coordinator.resources.TestrigResource getResource(
+  //  @PathParam("id") String id) {
+  //    validate();
+  //    return new TestrigResource(this._uriInfo, this._name, id);
+  //  }
 
   /** Validates the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
   private void validate() {

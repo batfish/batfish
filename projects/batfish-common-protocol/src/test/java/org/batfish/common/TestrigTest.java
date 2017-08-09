@@ -3,10 +3,10 @@ package org.batfish.common;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.testing.EqualsTester;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -18,21 +18,32 @@ import org.junit.runners.JUnit4;
 public class TestrigTest {
   @Test
   public void testToString() {
-    Testrig t = Testrig.of("foo", new ArrayList<>());
-    assertThat(t.toString(), equalTo("Testrig{name=foo, configs=[]}"));
+    Testrig t = Testrig.of("foo", new HashSet<>(), new HashSet<>(), new HashSet<>());
+    assertThat(t.toString(),
+        equalTo("Testrig{name=foo, configs=[], environments=[], questions=[]}"));
   }
 
   @Test
   public void testEquals() {
-    Testrig t = Testrig.of("foo", new ArrayList<>());
-    Testrig tCopy = Testrig.of("foo", new ArrayList<>());
-    Testrig tWithConfigs =
-        Testrig.of("foo", Lists.newArrayList(Collections.singletonList("testrig")));
-    Testrig tOtherName = Testrig.of("bar", new ArrayList<>());
+    Testrig t = Testrig.of("foo", new HashSet<>(), new HashSet<>(), new HashSet<>());
+    Testrig tCopy = Testrig.of("foo", new HashSet<>(), new HashSet<>(), new HashSet<>());
+    Testrig tWithConfigs = Testrig.of("foo",
+        Sets.newHashSet(Collections.singleton("cinfigs")),
+        new HashSet<>(),
+        new HashSet<>());
+    Testrig tWithEnv = Testrig.of("foo",
+        new HashSet<>(),
+        Sets.newHashSet(Collections.singleton("environment")),
+        new HashSet<>());
+    Testrig tWithQuestions = Testrig.of("foo",
+        new HashSet<>(),
+        new HashSet<>(),
+        Sets.newHashSet(Collections.singleton("questions")));
+    Testrig tOtherName = Testrig.of("bar", new HashSet<>(), new HashSet<>(), new HashSet<>());
 
     new EqualsTester()
         .addEqualityGroup(t, tCopy)
-        .addEqualityGroup(tWithConfigs)
+        .addEqualityGroup(tWithConfigs).addEqualityGroup(tWithEnv).addEqualityGroup(tWithQuestions)
         .addEqualityGroup(tOtherName)
         .testEquals();
   }

@@ -83,4 +83,5 @@ public final class Container {
   public int hashCode() {
     return Objects.hash(_name, _testrigs, _analysis);
   }
+
 }
