@@ -11,20 +11,20 @@ The developers of Batfish include researchers from Intentionet, University of Ca
 
 Batfish supports many types of correctness checks, including
 
-1. #####Compliance and best-practices guidelines, e.g.:
+1. ##### Compliance and best-practices guidelines, e.g.:
   - Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
   - Ensure that all interface MTUs are per the network's standard
   - AAA, SNMP, and NTP configuration is correct
   - Devices can only be accessed using SSHv2 and password is not null
   - Logging is on
 
-2. #####Consistency of configuration across two or more devices, e.g.: 
+2. ##### Consistency of configuration across two or more devices, e.g.: 
   - BGP sessions are compatibly configured across neighbors
   - IPSec/VPN tunnels compatibly configured with the same key
   - All interface IP addresses are unique
   - Identically-named structures (e.g., ACLs, route maps) across devices have identical functionality
 
-3. #####Checks on data flow, e.g.:
+3. ##### Checks on data flow, e.g.:
   - Path (shape) between two devices is as expected (e.g., traverses a firewall, valley-free routing)
   - Number of paths between two devices is as expected (i.e., correct multi-path configuration)
   - Paths for two devices inside the data center never leaves the data center
@@ -32,11 +32,11 @@ Batfish supports many types of correctness checks, including
   - Certain sensitive services can be reached only from specific subnets or devices
   - All pairs of top-of-rack switches can reach each other
 
-4. #####Fault-tolerance, e.g.: 
+4. ##### Fault-tolerance, e.g.: 
   - End-to-end reachability is not impacted for *any* flow after *any* single-link or -device failure
   - Traffic correctly fails over after a failure
 
-5. #####"Differential" analysis of two sets of configuration, e.g.:
+5. ##### "Differential" analysis of two sets of configuration, e.g.:
   - End-to-end reachability is identical across new and old configurations
   - Planned ACL changes have no collateral damage, e.g., relative to the current configuration, only flows that are intended to be (un)blocked are (un)blocked; no other flow is impacted.
   - Two configurations, potentially from different vendors, are semantically equivalent
