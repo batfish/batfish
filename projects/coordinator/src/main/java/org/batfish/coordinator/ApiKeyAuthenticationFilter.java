@@ -2,8 +2,6 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.google.common.base.Strings;
-import java.security.AccessControlException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MediaType;
@@ -12,9 +10,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
 import org.batfish.common.CoordConsts;
 
-/**
- * This filter verify the access permissions for a user based on apiKey provided in request header.
- */
+/** This filter verifies the apiKey provided in request header is a valid work apikey. */
 @Provider
 public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
   @Override
@@ -23,25 +19,19 @@ public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
         firstNonNull(
             requestContext.getHeaderString(CoordConsts.SVC_KEY_API_KEY),
             CoordConsts.DEFAULT_API_KEY);
-    try {
-      if (Strings.isNullOrEmpty(apiKey)) {
-        throw new IllegalArgumentException("apikey is missing or empty");
-      }
-
-      checkApiKeyValidity(apiKey);
-
-    } catch (Exception e) {
+    if (apiKey.isEmpty()) {
       requestContext.abortWith(
-          Response.status(Status.BAD_REQUEST)
-              .entity(e.getMessage())
+          Response.status(Status.UNAUTHORIZED)
+              .entity("ApiKey is empty")
+              .type(MediaType.APPLICATION_JSON)
+              .build());
+    } else if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
+      requestContext.abortWith(
+          Response.status(Status.FORBIDDEN)
+              .entity(String.format("Authorizer: %s is NOT a valid key", apiKey))
               .type(MediaType.APPLICATION_JSON)
               .build());
     }
   }
 
-  private void checkApiKeyValidity(String apiKey) throws Exception {
-    if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
-      throw new AccessControlException("Invalid API key: " + apiKey);
-    }
-  }
 }

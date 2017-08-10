@@ -10,26 +10,29 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 
 /**
- * This filter verify the access permissions for a user based on version provided in request header.
+ * This filter verifies that the client's version is compatible with the version of Batfish service.
  */
-public class VersionAuthenticationFilter implements ContainerRequestFilter {
+public class VersionCompatibilityFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) {
     String clientVersion = requestContext.getHeaderString(CoordConsts.SVC_KEY_VERSION);
-    try {
-      if (Strings.isNullOrEmpty(clientVersion)) {
-        throw new IllegalArgumentException("version is missing or empty");
-      }
-
-      checkClientVersion(clientVersion);
-
-    } catch (Exception e) {
+    if (Strings.isNullOrEmpty(clientVersion)) {
       requestContext.abortWith(
-          Response.status(Status.BAD_REQUEST)
-              .entity(e.getMessage())
+          Response.status(Status.PRECONDITION_FAILED)
+              .entity("Version is missing or empty")
               .type(MediaType.APPLICATION_JSON)
               .build());
+    } else {
+      try {
+        checkClientVersion(clientVersion);
+      } catch (Exception e) {
+        requestContext.abortWith(
+            Response.status(Status.PRECONDITION_FAILED)
+                .entity(e.getMessage())
+                .type(MediaType.APPLICATION_JSON)
+                .build());
+      }
     }
   }
 
