@@ -140,6 +140,13 @@ bgp_advertise_inactive_rb_stanza
    BGP ADVERTISE_INACTIVE NEWLINE
 ;
 
+//confederations are not currently implemented
+//not putting this under null so we can warn the user
+bgp_confederation_rb_stanza
+:
+   BGP CONFEDERATION ~NEWLINE+ NEWLINE
+;
+
 bgp_listen_range_rb_stanza
 :
    BGP LISTEN RANGE
@@ -767,6 +774,7 @@ router_bgp_stanza_tail
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
    | bgp_advertise_inactive_rb_stanza
+   | bgp_confederation_rb_stanza
    | bgp_listen_range_rb_stanza
    | bgp_redistribute_internal_rb_stanza
    | bgp_tail

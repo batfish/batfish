@@ -1584,6 +1584,11 @@ CONFDCONFIG
    'confdConfig'
 ;
 
+CONFEDERATION
+:
+   'confederation'
+;
+
 CONFIG
 :
    'config'
@@ -10987,7 +10992,18 @@ M_RouteMap_NEWLINE
 
 M_RouteMap_VARIABLE
 :
-   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+   F_NonWhitespace+
+   {
+      if (enableACL_NUM) {
+         enableACL_NUM = false;
+         enableDEC = true;
+      }
+      if (enableCOMMUNITY_LIST_NUM) {
+         enableCOMMUNITY_LIST_NUM = false;
+         enableDEC = true;
+      }
+   }
+   -> type ( VARIABLE ) , popMode
 ;
 
 M_RouteMap_WS
