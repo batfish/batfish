@@ -137,11 +137,9 @@ public interface Storage {
   ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement(
       String containerName, String testrigName);
 
-  // Reads configurations from inside /testrig configType can be host or config, ref readConfigurationFiles
-  Set<Configuration> getConfiguration(
-        String containerName, String testrigName, String configType);
-
-
+  // Reads configurations from inside /testrig configType can be host or config,
+  // ref readConfigurationFiles
+  Set<Configuration> getConfiguration(String containerName, String testrigName, String configType);
 
   /** Get Collection/Stream of objects * */
   Set<Question> getAllAnalysisQuestions(String containerName, String analysisName)

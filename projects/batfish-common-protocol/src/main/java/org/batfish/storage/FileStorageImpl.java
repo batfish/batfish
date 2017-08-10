@@ -92,8 +92,8 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
-  @Override public Topology getTopology(String containerName, String testrigName)
-        throws BatfishException {
+  @Override
+  public Topology getTopology(String containerName, String testrigName) throws BatfishException {
     return null;
   }
 
@@ -103,28 +103,33 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
-  @Override public Map<String, Configuration> getIndepConfigurations(String containerName,
-        String testrigName, @Nullable String envName) {
+  @Override
+  public Map<String, Configuration> getIndepConfigurations(
+      String containerName, String testrigName, @Nullable String envName) {
     return null;
   }
 
-  @Override public Map<String, GenericConfigObject> getVendorConfigurations(String containerName,
-        String testrigName, @Nullable String envName) {
+  @Override
+  public Map<String, GenericConfigObject> getVendorConfigurations(
+      String containerName, String testrigName, @Nullable String envName) {
     return null;
   }
 
-  @Override public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement(
-        String containerName, String testrigName) {
+  @Override
+  public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement(
+      String containerName, String testrigName) {
     return null;
   }
 
-  @Override public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement(
-        String containerName, String testrigName) {
+  @Override
+  public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement(
+      String containerName, String testrigName) {
     return null;
   }
 
-  @Override public Set<Configuration> getConfiguration(String containerName, String testrigName,
-        String configType) {
+  @Override
+  public Set<Configuration> getConfiguration(
+      String containerName, String testrigName, String configType) {
     return null;
   }
 
@@ -205,7 +210,8 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
-  @Override public String createTopology(String containerName, String testrigName) {
+  @Override
+  public String createTopology(String containerName, String testrigName) {
     return null;
   }
 
@@ -214,19 +220,24 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
-  @Override public String createParseVendorConfigurationAnswerElement(String containerName,
-        String testrigName,
-        ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElementObj) {
+  @Override
+  public String createParseVendorConfigurationAnswerElement(
+      String containerName,
+      String testrigName,
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElementObj) {
     return null;
   }
 
-  @Override public String createConvertConfigurationAnswerElement(String containerName,
-        String testrigName,
-        ConvertConfigurationAnswerElement convertConfigurationAnswerElementObj) {
+  @Override
+  public String createConvertConfigurationAnswerElement(
+      String containerName,
+      String testrigName,
+      ConvertConfigurationAnswerElement convertConfigurationAnswerElementObj) {
     return null;
   }
 
-  @Override public Container getContainer(String containerName) throws BatfishException {
+  @Override
+  public Container getContainer(String containerName) throws BatfishException {
     return null;
   }
 
