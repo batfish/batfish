@@ -1,12 +1,12 @@
 package org.batfish.coordinator;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
-import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
@@ -22,12 +22,9 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
 
   @Path("/test")
   public static class TestService {
-    @HeaderParam(CoordConsts.SVC_KEY_VERSION)
-    String _clientVersion;
-
     @GET
     public Response get() {
-      return Response.ok("GET with version: " + _clientVersion).build();
+      return Response.ok().build();
     }
   }
 
@@ -40,44 +37,31 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
   @Test
   public void testMissingVersion() {
     Response response = target("/test").request().get();
-    assertThat(response.getStatus(), equalTo(PRECONDITION_FAILED.getStatusCode()));
-    String expectedMessage = "Version is missing or empty";
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    assertThat(
+        response.readEntity(String.class), containsString("should contain a client version"));
   }
 
   @Test
   public void testEmptyVersion() {
     Response response = target("/test").request().header(CoordConsts.SVC_KEY_VERSION, "").get();
-    assertThat(response.getStatus(), equalTo(PRECONDITION_FAILED.getStatusCode()));
-    String expectedMessage = "Version is missing or empty";
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    assertThat(
+        response.readEntity(String.class), containsString("should contain a client version"));
   }
 
   @Test
-  public void testNullVersion() {
-    Response response = target("/test").request().header(CoordConsts.SVC_KEY_VERSION, null).get();
-    assertThat(response.getStatus(), equalTo(PRECONDITION_FAILED.getStatusCode()));
-    String expectedMessage = "Version is missing or empty";
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
-  }
-
-  @Test
-  public void testBadVersion() throws Exception {
-    String version = "0.0.1";
+  public void testBadVersion() {
     Response response =
-        target("/test").request().header(CoordConsts.SVC_KEY_VERSION, version).get();
-    assertThat(response.getStatus(), equalTo(PRECONDITION_FAILED.getStatusCode()));
-    String expectedMessage = String.format("Illegal version '%s' for Client", version);
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+        target("/test").request().header(CoordConsts.SVC_KEY_VERSION, "1.0.1").get();
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    assertThat(response.readEntity(String.class), equalTo("Illegal version '1.0.1' for Client"));
   }
 
   @Test
-  public void testValidVersion() throws Exception {
-    String version = Version.getVersion();
+  public void testValidVersion() {
     Response response =
-        target("/test").request().header(CoordConsts.SVC_KEY_VERSION, version).get();
-    String expectedMessage = String.format("GET with version: %s", version);
+        target("/test").request().header(CoordConsts.SVC_KEY_VERSION, Version.getVersion()).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
   }
 }

@@ -1,13 +1,11 @@
 package org.batfish.coordinator;
 
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
@@ -19,23 +17,18 @@ import org.glassfish.jersey.test.TestProperties;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link ApiKeyAuthenticationFilterTest}. */
+/** Tests for {@link ApiKeyAuthenticationFilter}. */
 public class ApiKeyAuthenticationFilterTest extends JerseyTest {
 
   @Path("/test")
   public static class TestService {
-    @HeaderParam(CoordConsts.SVC_KEY_API_KEY)
-    String _apiKey;
-
     @GET
     public Response get() {
-      return Response.ok("GET with key: " + _apiKey).build();
+      return Response.ok().build();
     }
   }
 
-  public class TestAuthorizer implements Authorizer {
-
-    static final String VALID_APIKEY = "10000";
+  private static class TestAuthorizer implements Authorizer {
 
     @Override
     public void authorizeContainer(String apiKey, String containerName) {}
@@ -47,13 +40,12 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
 
     @Override
     public boolean isValidWorkApiKey(String apiKey) {
-      return apiKey.equals(VALID_APIKEY);
+      return apiKey.equals(CoordConsts.DEFAULT_API_KEY);
     }
   }
 
   @Before
-  public void initEnvironment() {
-    Main.mainInit(new String[] {});
+  public void initAuthorizer() {
     Main.setAuthorizer(new TestAuthorizer());
   }
 
@@ -67,43 +59,30 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
   public void testEmptyApiKey() {
     Response response = target("/test").request().header(CoordConsts.SVC_KEY_API_KEY, "").get();
     assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
-    String expectedMessage = "ApiKey is empty";
-    assertThat(response.readEntity(String.class), equalTo(expectedMessage));
+    assertThat(response.readEntity(String.class), equalTo("ApiKey is empty"));
   }
 
   @Test
-  public void testInvalidDefaultKeyWhenApiKeyIsNull() {
-    Response response = target("/test").request().header(CoordConsts.SVC_KEY_API_KEY, null).get();
-    assertThat(response.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
-    String expectMessage =
-        String.format("Authorizer: %s is NOT a valid key", CoordConsts.DEFAULT_API_KEY);
-    assertThat(response.readEntity(String.class), equalTo(expectMessage));
-  }
-
-  @Test
-  public void testInvalidDefaultKeyWhenApiKeyIsMissing() {
+  public void testDefaultKeyWhenApiKeyIsMissing() {
     Response response = target("/test").request().get();
-    assertThat(response.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
-    String expectMessage =
-        String.format("Authorizer: %s is NOT a valid key", CoordConsts.DEFAULT_API_KEY);
-    assertThat(response.readEntity(String.class), equalTo(expectMessage));
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
   }
 
   @Test
-  public void testInvalidApiKey() {
-    String apiKey = "10001";
-    Response response = target("/test").request().header(CoordConsts.SVC_KEY_API_KEY, apiKey).get();
-    assertThat(response.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
-    String expectMessage = String.format("Authorizer: %s is NOT a valid key", apiKey);
+  public void testUnauthorizedApiKey() {
+    Response response = target("/test").request().header(CoordConsts.SVC_KEY_API_KEY, "100").get();
+    assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
+    String expectMessage = "Authorizer: 100 is NOT a valid key";
     assertThat(response.readEntity(String.class), equalTo(expectMessage));
   }
 
   @Test
   public void testValidApiKey() {
-    String apiKey = TestAuthorizer.VALID_APIKEY;
-    Response response = target("/test").request().header(CoordConsts.SVC_KEY_API_KEY, apiKey).get();
+    Response response =
+        target("/test")
+            .request()
+            .header(CoordConsts.SVC_KEY_API_KEY, CoordConsts.DEFAULT_API_KEY)
+            .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    String expectMessage = String.format("GET with key: %s", apiKey);
-    assertThat(response.readEntity(String.class), equalTo(expectMessage));
   }
 }

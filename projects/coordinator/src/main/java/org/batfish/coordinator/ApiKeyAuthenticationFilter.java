@@ -27,7 +27,7 @@ public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
               .build());
     } else if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
       requestContext.abortWith(
-          Response.status(Status.FORBIDDEN)
+          Response.status(Status.UNAUTHORIZED)
               .entity(String.format("Authorizer: %s is NOT a valid key", apiKey))
               .type(MediaType.APPLICATION_JSON)
               .build());
