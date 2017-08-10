@@ -30,11 +30,7 @@ batfish -servicemode -register -coordinatorhost localhost -loglevel output &
 echo -e "\n  ..... Running java demo tests"
 if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then
    echo "DEMO FAILED!" 1>&2
-   DEMO_FAILED=1
 else
-   if [ -n "$DEMO_FAILED" ]; then
-      unset DEMO_FAILED
-   fi
    rm demos/example/commands.ref.testout
 fi
 
@@ -47,7 +43,7 @@ for i in $($GNU_FIND -name *.testout); do
 done
 
 #exit with exit code 1 if any test failed
-if [ -n "$($GNU_FIND -name '*.testout')" -o -n "$DEMO_FAILED" ]; then
+if [ -n "$($GNU_FIND -name '*.testout')" ]; then
    exit 1
 fi
 
