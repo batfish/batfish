@@ -47,6 +47,6 @@ public abstract class ComparableStructure<KeyT extends Comparable<KeyT>>
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _key.toString() + ">";
+    return getClass().getSimpleName() + "<" + _key + ">";
   }
 }

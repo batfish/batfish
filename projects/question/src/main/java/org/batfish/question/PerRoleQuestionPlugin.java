@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +9,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -83,11 +81,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       for (String node : nodes) {
         SortedSet<String> roles = configurations.get(node).getRoles();
         for (String role : roles) {
-          SortedSet<String> roleMembers = roleNodeMap.get(role);
-          if (roleMembers == null) {
-            roleMembers = new TreeSet<>();
-            roleNodeMap.put(role, roleMembers);
-          }
+          SortedSet<String> roleMembers = roleNodeMap.computeIfAbsent(role, k -> new TreeSet<>());
           roleMembers.add(node);
         }
       }

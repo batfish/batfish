@@ -148,11 +148,7 @@ public class EosRoutingTableExtractor extends EosRoutingTableParserBaseListener
   }
 
   private void initVrf(String vrfName) {
-    _currentVrfRoutes = _routesByVrf.get(vrfName);
-    if (_currentVrfRoutes == null) {
-      _currentVrfRoutes = new TreeSet<>();
-      _routesByVrf.put(vrfName, _currentVrfRoutes);
-    }
+    _currentVrfRoutes = _routesByVrf.computeIfAbsent(vrfName, k -> new TreeSet<>());
   }
 
   @Override

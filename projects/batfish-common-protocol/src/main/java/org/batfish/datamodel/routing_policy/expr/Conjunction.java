@@ -103,6 +103,6 @@ public class Conjunction extends BooleanExpr {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _conjuncts.toString() + ">";
+    return getClass().getSimpleName() + "<" + _conjuncts + ">";
   }
 }

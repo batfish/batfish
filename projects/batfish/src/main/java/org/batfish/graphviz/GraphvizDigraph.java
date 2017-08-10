@@ -33,10 +33,10 @@ public class GraphvizDigraph extends GraphvizInput {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph " + _name + " {\n");
     for (GraphvizNode node : _nodes) {
-      sb.append("\t" + node.toString() + "\n");
+      sb.append("\t" + node + "\n");
     }
     for (GraphvizEdge edge : _edges) {
-      sb.append("\t" + edge.toString() + "\n");
+      sb.append("\t" + edge + "\n");
     }
     sb.append("}\n");
     return sb.toString();

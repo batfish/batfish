@@ -108,11 +108,8 @@ public class AclLinesAnswerElement implements AnswerElement {
   }
 
   public void addEquivalenceClass(String aclName, String hostname, SortedSet<String> eqClassNodes) {
-    SortedMap<String, SortedSet<String>> byRep = _equivalenceClasses.get(aclName);
-    if (byRep == null) {
-      byRep = new TreeMap<>();
-      _equivalenceClasses.put(aclName, byRep);
-    }
+    SortedMap<String, SortedSet<String>> byRep =
+        _equivalenceClasses.computeIfAbsent(aclName, k -> new TreeMap<>());
     byRep.put(hostname, eqClassNodes);
   }
 
@@ -122,24 +119,15 @@ public class AclLinesAnswerElement implements AnswerElement {
       IpAccessList ipAccessList,
       AclReachabilityEntry entry) {
     String aclName = ipAccessList.getName();
-    SortedMap<String, IpAccessList> aclsByHostname = _acls.get(hostname);
-    if (aclsByHostname == null) {
-      aclsByHostname = new TreeMap<>();
-      _acls.put(hostname, aclsByHostname);
-    }
+    SortedMap<String, IpAccessList> aclsByHostname =
+        _acls.computeIfAbsent(hostname, k -> new TreeMap<>());
     if (!aclsByHostname.containsKey(aclName)) {
       aclsByHostname.put(aclName, ipAccessList);
     }
-    SortedMap<String, SortedSet<AclReachabilityEntry>> linesByHostname = lines.get(hostname);
-    if (linesByHostname == null) {
-      linesByHostname = new TreeMap<>();
-      lines.put(hostname, linesByHostname);
-    }
-    SortedSet<AclReachabilityEntry> linesByAcl = linesByHostname.get(aclName);
-    if (linesByAcl == null) {
-      linesByAcl = new TreeSet<>();
-      linesByHostname.put(aclName, linesByAcl);
-    }
+    SortedMap<String, SortedSet<AclReachabilityEntry>> linesByHostname =
+        lines.computeIfAbsent(hostname, k -> new TreeMap<>());
+    SortedSet<AclReachabilityEntry> linesByAcl =
+        linesByHostname.computeIfAbsent(aclName, k -> new TreeSet<>());
     linesByAcl.add(entry);
   }
 

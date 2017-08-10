@@ -96,7 +96,7 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
         return 2;
         // $CASES-OMITTED$
       default:
-        throw new BatfishException("Invalid BGP protocol: '" + protocol.toString() + "'");
+        throw new BatfishException("Invalid BGP protocol: '" + protocol + "'");
     }
   }
 }

@@ -45,7 +45,7 @@ public class ConvertConfigurationResult
     if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
       terseLogLevelPrefix = "";
     } else {
-      terseLogLevelPrefix = _name.toString() + ": ";
+      terseLogLevelPrefix = _name + ": ";
     }
     logger.append(_history, terseLogLevelPrefix);
   }

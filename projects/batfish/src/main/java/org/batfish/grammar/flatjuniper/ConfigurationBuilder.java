@@ -1478,22 +1478,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
-    _currentApplication = _configuration.getApplications().get(name);
-    if (_currentApplication == null) {
-      _currentApplication = new BaseApplication(name);
-      _configuration.getApplications().put(name, _currentApplication);
-    }
+    _currentApplication =
+        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
     _currentApplicationTerm = _currentApplication.getMainTerm();
   }
 
   @Override
   public void enterAa_term(Aa_termContext ctx) {
     String name = ctx.name.getText();
-    _currentApplicationTerm = _currentApplication.getTerms().get(name);
-    if (_currentApplicationTerm == null) {
-      _currentApplicationTerm = new Term(name);
-      _currentApplication.getTerms().put(name, _currentApplicationTerm);
-    }
+    _currentApplicationTerm = _currentApplication.getTerms().computeIfAbsent(name, Term::new);
   }
 
   @Override
@@ -1558,11 +1551,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterFf_term(Ff_termContext ctx) {
     String name = ctx.name.getText();
     Map<String, FwTerm> terms = _currentFilter.getTerms();
-    _currentFwTerm = terms.get(name);
-    if (_currentFwTerm == null) {
-      _currentFwTerm = new FwTerm(name);
-      terms.put(name, _currentFwTerm);
-    }
+    _currentFwTerm = terms.computeIfAbsent(name, FwTerm::new);
   }
 
   @Override
@@ -1661,11 +1650,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       } else {
         String nodeDeviceName = ctx.interface_id().node.getText();
         nodeDevicePrefix = nodeDeviceName + ":";
-        NodeDevice nodeDevice = _configuration.getNodeDevices().get(nodeDeviceName);
-        if (nodeDevice == null) {
-          nodeDevice = new NodeDevice(nodeDeviceName);
-          _configuration.getNodeDevices().put(nodeDeviceName, nodeDevice);
-        }
+        NodeDevice nodeDevice =
+            _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, NodeDevice::new);
         interfaces = nodeDevice.getInterfaces();
       }
       currentInterface = interfaces.get(ifaceName);
@@ -1751,11 +1737,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterO_area(O_areaContext ctx) {
     Ip areaIp = new Ip(ctx.area.getText());
     Map<Ip, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
-    _currentArea = areas.get(areaIp);
-    if (_currentArea == null) {
-      _currentArea = new OspfArea(areaIp);
-      areas.put(areaIp, _currentArea);
-    }
+    _currentArea = areas.computeIfAbsent(areaIp, OspfArea::new);
   }
 
   @Override
@@ -1775,7 +1757,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         }
       }
       if (_currentOspfInterface == null) {
-        throw new BatfishException("Could not find interface with ip address: " + ip.toString());
+        throw new BatfishException("Could not find interface with ip address: " + ip);
       }
     } else {
       _currentOspfInterface = initInterface(ctx.id);
@@ -1788,7 +1770,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
       if (interfaceActiveArea != null && !currentArea.equals(interfaceActiveArea)) {
         throw new BatfishException(
-            "Interface: \"" + unitFullName.toString() + "\" assigned to multiple active areas");
+            "Interface: \"" + unitFullName + "\" assigned to multiple active areas");
       }
       _currentOspfInterface.setOspfActiveArea(currentArea);
     }
@@ -1803,11 +1785,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterPo_community(Po_communityContext ctx) {
     String name = ctx.name.getText();
     Map<String, CommunityList> communityLists = _configuration.getCommunityLists();
-    _currentCommunityList = communityLists.get(name);
-    if (_currentCommunityList == null) {
-      _currentCommunityList = new CommunityList(name);
-      communityLists.put(name, _currentCommunityList);
-    }
+    _currentCommunityList = communityLists.computeIfAbsent(name, CommunityList::new);
   }
 
   @Override
@@ -1815,11 +1793,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
     Map<String, PolicyStatement> policyStatements = _configuration.getPolicyStatements();
-    _currentPolicyStatement = policyStatements.get(name);
-    if (_currentPolicyStatement == null) {
-      _currentPolicyStatement = new PolicyStatement(name, definitionLine);
-      policyStatements.put(name, _currentPolicyStatement);
-    }
+    _currentPolicyStatement =
+        policyStatements.computeIfAbsent(name, n -> new PolicyStatement(n, definitionLine));
     _currentPsTerm = _currentPolicyStatement.getDefaultTerm();
     _currentPsThens = _currentPsTerm.getThens();
   }
@@ -1829,22 +1804,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
     Map<String, PrefixList> prefixLists = _configuration.getPrefixLists();
-    _currentPrefixList = prefixLists.get(name);
-    if (_currentPrefixList == null) {
-      _currentPrefixList = new PrefixList(name, definitionLine);
-      prefixLists.put(name, _currentPrefixList);
-    }
+    _currentPrefixList = prefixLists.computeIfAbsent(name, n -> new PrefixList(n, definitionLine));
   }
 
   @Override
   public void enterPops_term(Pops_termContext ctx) {
     String name = ctx.name.getText();
     Map<String, PsTerm> terms = _currentPolicyStatement.getTerms();
-    _currentPsTerm = terms.get(name);
-    if (_currentPsTerm == null) {
-      _currentPsTerm = new PsTerm(name);
-      terms.put(name, _currentPsTerm);
-    }
+    _currentPsTerm = terms.computeIfAbsent(name, PsTerm::new);
     _currentPsThens = _currentPsTerm.getThens();
   }
 
@@ -1959,11 +1926,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterRi_named_routing_instance(Ri_named_routing_instanceContext ctx) {
     String name;
     name = ctx.name.getText();
-    _currentRoutingInstance = _configuration.getRoutingInstances().get(name);
-    if (_currentRoutingInstance == null) {
-      _currentRoutingInstance = new RoutingInstance(name);
-      _configuration.getRoutingInstances().put(name, _currentRoutingInstance);
-    }
+    _currentRoutingInstance =
+        _configuration.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
   }
 
   @Override
@@ -1971,11 +1935,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.prefix != null) {
       Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
       Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib.getAggregateRoutes();
-      _currentAggregateRoute = aggregateRoutes.get(prefix);
-      if (_currentAggregateRoute == null) {
-        _currentAggregateRoute = new AggregateRoute(prefix);
-        aggregateRoutes.put(prefix, _currentAggregateRoute);
-      }
+      _currentAggregateRoute = aggregateRoutes.computeIfAbsent(prefix, AggregateRoute::new);
     } else {
       _currentAggregateRoute = DUMMY_AGGREGATE_ROUTE;
     }
@@ -1986,11 +1946,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.IP_PREFIX() != null) {
       Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
-      _currentGeneratedRoute = generatedRoutes.get(prefix);
-      if (_currentGeneratedRoute == null) {
-        _currentGeneratedRoute = new GeneratedRoute(prefix);
-        generatedRoutes.put(prefix, _currentGeneratedRoute);
-      }
+      _currentGeneratedRoute = generatedRoutes.computeIfAbsent(prefix, GeneratedRoute::new);
     } else if (ctx.IPV6_PREFIX() != null) {
       // dummy generated route not added to configuration
       _currentGeneratedRoute = new GeneratedRoute(null);
@@ -2002,11 +1958,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterRo_rib(Ro_ribContext ctx) {
     String name = ctx.name.getText();
     Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
-    _currentRib = ribs.get(name);
-    if (_currentRib == null) {
-      _currentRib = new RoutingInformationBase(name);
-      ribs.put(name, _currentRib);
-    }
+    _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
   }
 
   @Override
@@ -2014,11 +1966,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.IP_PREFIX() != null) {
       Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
       Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
-      _currentStaticRoute = staticRoutes.get(prefix);
-      if (_currentStaticRoute == null) {
-        _currentStaticRoute = new StaticRoute(prefix);
-        staticRoutes.put(prefix, _currentStaticRoute);
-      }
+      _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRoute::new);
     } else if (ctx.IPV6_PREFIX() != null) {
       _currentStaticRoute = DUMMY_STATIC_ROUTE;
     }
@@ -2049,65 +1997,56 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSeik_gateway(Seik_gatewayContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentIkeGateway = _configuration.getIkeGateways().get(name);
-    if (_currentIkeGateway == null) {
-      _currentIkeGateway = new IkeGateway(name, definitionLine);
-      _configuration.getIkeGateways().put(name, _currentIkeGateway);
-    }
+    _currentIkeGateway =
+        _configuration
+            .getIkeGateways()
+            .computeIfAbsent(name, n -> new IkeGateway(n, definitionLine));
   }
 
   @Override
   public void enterSeik_policy(Seik_policyContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentIkePolicy = _configuration.getIkePolicies().get(name);
-    if (_currentIkePolicy == null) {
-      _currentIkePolicy = new IkePolicy(name, definitionLine);
-      _configuration.getIkePolicies().put(name, _currentIkePolicy);
-    }
+    _currentIkePolicy =
+        _configuration
+            .getIkePolicies()
+            .computeIfAbsent(name, n -> new IkePolicy(n, definitionLine));
   }
 
   @Override
   public void enterSeik_proposal(Seik_proposalContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentIkeProposal = _configuration.getIkeProposals().get(name);
-    if (_currentIkeProposal == null) {
-      _currentIkeProposal = new IkeProposal(name, definitionLine);
-      _configuration.getIkeProposals().put(name, _currentIkeProposal);
-    }
+    _currentIkeProposal =
+        _configuration
+            .getIkeProposals()
+            .computeIfAbsent(name, n -> new IkeProposal(n, definitionLine));
   }
 
   @Override
   public void enterSeip_policy(Seip_policyContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentIpsecPolicy = _configuration.getIpsecPolicies().get(name);
-    if (_currentIpsecPolicy == null) {
-      _currentIpsecPolicy = new IpsecPolicy(name, definitionLine);
-      _configuration.getIpsecPolicies().put(name, _currentIpsecPolicy);
-    }
+    _currentIpsecPolicy =
+        _configuration
+            .getIpsecPolicies()
+            .computeIfAbsent(name, n -> new IpsecPolicy(n, definitionLine));
   }
 
   @Override
   public void enterSeip_proposal(Seip_proposalContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentIpsecProposal = _configuration.getIpsecProposals().get(name);
-    if (_currentIpsecProposal == null) {
-      _currentIpsecProposal = new IpsecProposal(name, definitionLine);
-      _configuration.getIpsecProposals().put(name, _currentIpsecProposal);
-    }
+    _currentIpsecProposal =
+        _configuration
+            .getIpsecProposals()
+            .computeIfAbsent(name, n -> new IpsecProposal(n, definitionLine));
   }
 
   @Override
   public void enterSeip_vpn(Seip_vpnContext ctx) {
     String name = ctx.name.getText();
-    _currentIpsecVpn = _configuration.getIpsecVpns().get(name);
-    if (_currentIpsecVpn == null) {
-      _currentIpsecVpn = new IpsecVpn(name);
-      _configuration.getIpsecVpns().put(name, _currentIpsecVpn);
-    }
+    _currentIpsecVpn = _configuration.getIpsecVpns().computeIfAbsent(name, IpsecVpn::new);
   }
 
   @Override
@@ -2168,11 +2107,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSepf_policy(Sepf_policyContext ctx) {
     String termName = ctx.name.getText();
-    _currentFwTerm = _currentFilter.getTerms().get(termName);
-    if (_currentFwTerm == null) {
-      _currentFwTerm = new FwTerm(termName);
-      _currentFilter.getTerms().put(termName, _currentFwTerm);
-    }
+    _currentFwTerm = _currentFilter.getTerms().computeIfAbsent(termName, FwTerm::new);
   }
 
   @Override
@@ -2223,11 +2158,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSezsa_address_set(Sezsa_address_setContext ctx) {
     String name = ctx.name.getText();
-    AddressBookEntry entry = _currentAddressBook.getEntries().get(name);
-    if (entry == null) {
-      entry = new AddressSetAddressBookEntry(name);
-      _currentAddressBook.getEntries().put(name, entry);
-    }
+    AddressBookEntry entry =
+        _currentAddressBook.getEntries().computeIfAbsent(name, AddressSetAddressBookEntry::new);
     try {
       _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
     } catch (ClassCastException e) {
@@ -2242,11 +2174,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSnmp_community(Snmp_communityContext ctx) {
     String community = ctx.comm.getText();
-    SnmpCommunity snmpCommunity = _currentSnmpServer.getCommunities().get(community);
-    if (snmpCommunity == null) {
-      snmpCommunity = new SnmpCommunity(community);
-      _currentSnmpServer.getCommunities().put(community, snmpCommunity);
-    }
+    SnmpCommunity snmpCommunity =
+        _currentSnmpServer.getCommunities().computeIfAbsent(community, SnmpCommunity::new);
     _currentSnmpCommunity = snmpCommunity;
   }
 
@@ -3756,11 +3685,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSnmptg_targets(Snmptg_targetsContext ctx) {
     Ip ip = new Ip(ctx.target.getText());
     String name = ip.toString();
-    SnmpHost host = _currentSnmpServer.getHosts().get(name);
-    if (host == null) {
-      host = new SnmpHost(ip.toString());
-      _currentSnmpServer.getHosts().put(name, host);
-    }
+    SnmpHost host =
+        _currentSnmpServer.getHosts().computeIfAbsent(name, k -> new SnmpHost(ip.toString()));
   }
 
   @Override
@@ -3850,11 +3776,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Map<String, Interface> interfaces;
     if (id.node != null) {
       String nodeDeviceName = id.node.getText();
-      NodeDevice nodeDevice = _configuration.getNodeDevices().get(nodeDeviceName);
-      if (nodeDevice == null) {
-        nodeDevice = new NodeDevice(nodeDeviceName);
-        _configuration.getNodeDevices().put(nodeDeviceName, nodeDevice);
-      }
+      NodeDevice nodeDevice =
+          _configuration.getNodeDevices().computeIfAbsent(nodeDeviceName, NodeDevice::new);
       interfaces = nodeDevice.getInterfaces();
     } else {
       interfaces = _configuration.getInterfaces();

@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -86,6 +87,7 @@ public class WorkQueueMgr {
     return work;
   }
 
+  @Nullable
   private synchronized QueuedWork getWork(UUID workId, QueueType qType) {
     switch (qType) {
       case COMPLETED:
@@ -97,6 +99,7 @@ public class WorkQueueMgr {
     }
   }
 
+  @Nullable
   public synchronized QueuedWork getWorkForAssignment() {
 
     for (QueuedWork work : _queueIncompleteWork) {
@@ -109,6 +112,7 @@ public class WorkQueueMgr {
     return null;
   }
 
+  @Nullable
   public QueuedWork getWorkForChecking() {
     for (QueuedWork work : _queueIncompleteWork) {
       if (work.getStatus() == WorkStatusCode.ASSIGNED) {

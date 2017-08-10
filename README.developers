@@ -39,6 +39,15 @@ Compile the code so that the java files that are auto-generated (by Antlr) are g
 
 6. Add proper Json annotations to ensure that the new information is serialized and deserialized properly. Look at what is being done for other fields.
 
+
+Adding a new question
+---------------------
+
+See an existing question (e.g., UnusedStructuresQuestionPlugin) for the various classes that are needed, as well as the structure of each class and their relationships among one another.
+
+Small but important note:  the getName() method in your subclass of Question must return a String that is all lowercase.  Otherwise the Java client will not be able to find your question when it looks for it.  Currently the Java client (see Client.java in the batfish-client project) converts a question-name argument to the "get" command to all lowercase before looking up the question.
+
+
 =====================
 
 Adding parsing for a new vendor

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,12 +10,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 
 public class BgpRoute extends AbstractRoute {
 
-  public static class Builder extends AbstractRouteBuilder<BgpRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
 
     private List<SortedSet<Integer>> _asPath;
 
@@ -50,13 +53,13 @@ public class BgpRoute extends AbstractRoute {
         throw new BatfishException("Missing originType");
       }
       return new BgpRoute(
-          _network,
-          _nextHopIp,
-          _admin,
+          getNetwork(),
+          getNextHopIp(),
+          getAdmin(),
           new AsPath(_asPath),
           _communities,
           _localPreference,
-          _metric,
+          getMetric(),
           _originatorIp,
           _clusterList,
           _receivedFromRouteReflectorClient,
@@ -64,6 +67,11 @@ public class BgpRoute extends AbstractRoute {
           _protocol,
           _srcProtocol,
           _weight);
+    }
+
+    @Override
+    protected Builder getThis() {
+      return this;
     }
 
     public List<SortedSet<Integer>> getAsPath() {
@@ -213,7 +221,7 @@ public class BgpRoute extends AbstractRoute {
     _communities = communities != null ? communities : new TreeSet<>();
     _localPreference = localPreference;
     _med = med;
-    _nextHopIp = nextHopIp;
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _originatorIp = originatorIp;
     _originType = originType;
     _protocol = protocol;
@@ -309,11 +317,14 @@ public class BgpRoute extends AbstractRoute {
     return _med;
   }
 
+  // TODO(http://github.com/batfish/batfish/issues/207)
+  @Nonnull
   @Override
   public String getNextHopInterface() {
-    return null;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(NEXT_HOP_IP_VAR)
   @Override
@@ -380,11 +391,11 @@ public class BgpRoute extends AbstractRoute {
   @Override
   protected final String protocolRouteString() {
     return " asPath:"
-        + _asPath.toString()
+        + _asPath
         + " clusterList:"
-        + _clusterList.toString()
+        + _clusterList
         + " communities:"
-        + _communities.toString()
+        + _communities
         + " localPreference:"
         + _localPreference
         + " med:"

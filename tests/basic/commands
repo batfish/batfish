@@ -34,6 +34,13 @@ test tests/basic/multipath-host2.ref get reachability type="multipath", ingressN
 test tests/basic/undefinedReferences.ref get undefinedReferences
 test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
 test tests/basic/unusedStructures.ref get unusedStructures
+test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
+test tests/basic/outliers.ref get outliers
+
+# example2 testrig
+test tests/basic/init-example2.ref init-testrig test_rigs/example2
+test tests/basic/inferRoles.ref get inferRoles
+test tests/basic/roleNeighbors2.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 
 # disable-as-reuse
 test tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse

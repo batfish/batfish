@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.batfish.common.Answerer;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
@@ -40,7 +38,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for cluster nodes\n");
       for (Set<String> cluster : _clusters) {
-        sb.append(cluster.toString() + "\n");
+        sb.append(cluster + "\n");
       }
       return sb.toString();
     }

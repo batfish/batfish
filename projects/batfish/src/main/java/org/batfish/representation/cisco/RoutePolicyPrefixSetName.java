@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
@@ -24,6 +25,7 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
     return _name;
   }
 
+  @Nullable
   @Override
   public Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
     if (cc.getPrefixLists().containsKey(_name)) {
@@ -41,6 +43,7 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
     return new NamedPrefix6Set(_name);
   }
 
+  @Nullable
   @Override
   public PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
     if (cc.getPrefix6Lists().containsKey(_name)) {

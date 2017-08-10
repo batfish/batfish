@@ -45,8 +45,7 @@ public class IptablesChain implements Serializable {
     } else if (_policy == ChainPolicy.DROP) {
       return LineAction.REJECT;
     } else {
-      throw new BatfishException(
-          "Unsupported ChainPolicy for mapping to LineAction: " + _policy.toString());
+      throw new BatfishException("Unsupported ChainPolicy for mapping to LineAction: " + _policy);
     }
   }
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 
 public final class IpsecVpn extends ComparableStructure<String> {
@@ -84,6 +85,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return false;
   }
 
+  @Nullable
   @JsonIgnore
   private IkeProposal getActiveIkeProposal(IpsecVpn remoteIpsecVpn) {
     for (IkeProposal lhs : _ikeGateway.getIkePolicy().getProposals().values()) {
