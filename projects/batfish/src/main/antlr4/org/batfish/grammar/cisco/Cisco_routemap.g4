@@ -516,11 +516,7 @@ set_as_path_tag_rm_stanza
 
 set_comm_list_delete_rm_stanza
 :
-   SET COMM_LIST
-   (
-      name = DEC
-      | name = VARIABLE
-   ) DELETE NEWLINE
+   SET COMM_LIST name = variable DELETE NEWLINE
 ;
 
 set_community_additive_rm_stanza
