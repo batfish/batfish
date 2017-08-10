@@ -3,18 +3,18 @@ package org.batfish.storage;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.pojo.Analysis;
 import org.batfish.datamodel.pojo.Testrig;
 import org.batfish.datamodel.questions.Question;
@@ -92,9 +92,39 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
+  @Override public Topology getTopology(String containerName, String testrigName)
+        throws BatfishException {
+    return null;
+  }
+
   @Override
   public Topology getTestrigTopology(String containerName, String testrigName)
       throws BatfishException {
+    return null;
+  }
+
+  @Override public Map<String, Configuration> getIndepConfigurations(String containerName,
+        String testrigName, @Nullable String envName) {
+    return null;
+  }
+
+  @Override public Map<String, GenericConfigObject> getVendorConfigurations(String containerName,
+        String testrigName, @Nullable String envName) {
+    return null;
+  }
+
+  @Override public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement(
+        String containerName, String testrigName) {
+    return null;
+  }
+
+  @Override public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement(
+        String containerName, String testrigName) {
+    return null;
+  }
+
+  @Override public Set<Configuration> getConfiguration(String containerName, String testrigName,
+        String configType) {
     return null;
   }
 
@@ -175,8 +205,24 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
+  @Override public String createTopology(String containerName, String testrigName) {
+    return null;
+  }
+
   @Override
   public String createTestrigTopology(String containerName, String testrigName) {
+    return null;
+  }
+
+  @Override public String createParseVendorConfigurationAnswerElement(String containerName,
+        String testrigName,
+        ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElementObj) {
+    return null;
+  }
+
+  @Override public String createConvertConfigurationAnswerElement(String containerName,
+        String testrigName,
+        ConvertConfigurationAnswerElement convertConfigurationAnswerElementObj) {
     return null;
   }
 
