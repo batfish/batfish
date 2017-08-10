@@ -1,12 +1,12 @@
 package org.batfish.role;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalDouble;
 import java.util.Random;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -157,12 +157,13 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   }
 
 
-  // If for every node name matching the identified regex,
+  // If for enough node names matching the identified regex,
   // a particular alphanumeric token starts with one or more alphabetic characters,
   // the string of initial alphabetic characters is considered a candidate for the role name.
   // This method returns all such candidates, each represented as a regex
   // with a single group indicating the role name.
   private List<String> possibleRoleGroups() {
+    int numAll = _matchingNodes.size();
     List<String> candidateRegexes = new ArrayList<>();
     for (int i = 0; i < _tokens.size(); i++) {
       if (_tokens.get(i).getSecond() == InferRolesCharClass.DELIMITER) {
@@ -171,15 +172,14 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       List<String> regexCopy = new ArrayList<>(_regex);
       regexCopy.set(i, "(\\p{Alpha}+)\\p{Alnum}*");
       Pattern newp = Pattern.compile(String.join("", regexCopy));
-      boolean matchesAll = true;
+      int numMatches = 0;
       for (String node : _matchingNodes) {
         Matcher newm = newp.matcher(node);
-        if (!newm.matches()) {
-          matchesAll = false;
-          break;
+        if (newm.matches()) {
+          numMatches++;
         }
       }
-      if (matchesAll) {
+      if ((double) numMatches / numAll >= 0.5) {
         candidateRegexes.add(String.join("", regexCopy));
       }
     }
@@ -196,8 +196,9 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
     Topology topology = _batfish.computeTopology(_configurations);
 
-    // produce a role-level topology
-    SortedSet<RoleEdge> roleEdges = new TreeSet<>();
+    // produce a role-level topology and the list of nodes in each edge's source role
+    // that have an edge to some node in the edge's target role
+    SortedMap<RoleEdge, SortedSet<String>> roleEdges = new TreeMap<>();
     Pattern p = Pattern.compile(regex);
     for (Edge e : topology.getEdges()) {
       String n1 = e.getNode1();
@@ -208,7 +209,16 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
         try {
           String role1 = m1.group(1);
           String role2 = m2.group(1);
-          roleEdges.add(new RoleEdge(role1, role2));
+          // ignore self-edges
+          if (role1.equals(role2)) {
+            continue;
+          }
+          RoleEdge redge = new RoleEdge(role1, role2);
+          SortedSet<String> roleEdgeNodes = roleEdges.getOrDefault(
+              redge, new TreeSet<>()
+          );
+          roleEdgeNodes.add(n1);
+          roleEdges.put(redge, roleEdgeNodes);
         } catch (IndexOutOfBoundsException exn) {
           throw new BatfishException(
               "Inferred role regex does not contain a group: \"" + p.pattern() + "\"", exn);
@@ -216,23 +226,25 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       }
     }
 
-    // compute the average degree of each role in the role-level topology,
-    // and use its negation as the role score of this candidate regex
-    Map<String, Integer> roleDegrees = new HashMap<>();
-    for (RoleEdge edge : roleEdges) {
-      String role = edge.getRole1();
-      roleDegrees.merge(role, 1, (currCount, one) -> currCount + one);
+    int numEdges = roleEdges.size();
+    if (numEdges == 0) {
+      return 0.0;
     }
-    int numRoles = roleDegrees.size();
-    OptionalDouble averageDegree = roleDegrees.values()
-        .stream()
-        .mapToDouble((i) -> (double) i / numRoles)
-        .average();
-    if (averageDegree.isPresent()) {
-      return - averageDegree.getAsDouble();
-    } else {
-      return Double.NEGATIVE_INFINITY;
+
+    // compute the "support" of each edge in the role-level topology:
+    // the percentage of nodes playing the source role that have an edge
+    // to a node in the target role.
+    // the score of this regex is then the average support across all role edges
+    SortedMap<String, SortedSet<String>> roleNodesMap =
+        regexToRoleSpecifier(regex).createRoleNodesMap(_configurations.keySet());
+
+    double supportSum = 0.0;
+    for (Map.Entry<RoleEdge, SortedSet<String>> roleEdgeCount : roleEdges.entrySet()) {
+      RoleEdge redge = roleEdgeCount.getKey();
+      int count = roleEdgeCount.getValue().size();
+      supportSum += (double) count / roleNodesMap.get(redge.getRole1()).size();
     }
+    return supportSum / numEdges;
   }
 
   NodeRoleSpecifier regexToRoleSpecifier(String regex) {
