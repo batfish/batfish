@@ -3086,10 +3086,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
     popEnvironment();
 
-    Set<String> commonNodes = new TreeSet<>();
-    commonNodes.addAll(baseConfigurations.keySet());
-    commonNodes.retainAll(diffConfigurations.keySet());
-
     pushDeltaEnvironment();
     NodeSet blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
