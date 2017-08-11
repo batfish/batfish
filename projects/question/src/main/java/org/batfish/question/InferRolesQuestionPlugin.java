@@ -21,13 +21,13 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
   public static class InferRolesAnswerElement implements AnswerElement {
 
-    private static final String ROLE_SPECIFIER_VAR = "roleSpecifier";
+    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
-    private static final String ALL_NODES_VAR = "allNodes";
+    private static final String PROP_ALL_NODES = "allNodes";
 
-    private static final String ALL_NODES_COUNT_VAR = "allNodesCount";
+    private static final String PROP_ALL_NODES_COUNT = "allNodesCount";
 
-    private static final String MATCHING_NODES_COUNT_VAR = "matchingNodesCount";
+    private static final String PROP_MATCHING_NODES_COUNT = "matchingNodesCount";
 
     private NodeRoleSpecifier _roleSpecifier;
 
@@ -40,7 +40,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     public InferRolesAnswerElement() {
     }
 
-    @JsonProperty(ROLE_SPECIFIER_VAR)
+    @JsonProperty(PROP_ROLE_SPECIFIER)
     public NodeRoleSpecifier getRoleSpecifier() {
       return _roleSpecifier;
     }
@@ -73,23 +73,23 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(ROLE_SPECIFIER_VAR)
+    @JsonProperty(PROP_ROLE_SPECIFIER)
     public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
       _roleSpecifier = roleSpecifier;
     }
 
-    @JsonProperty(ALL_NODES_VAR)
+    @JsonProperty(PROP_ALL_NODES)
     public void setAllNodes(List<String> allNodes) {
       _allNodes = allNodes;
     }
 
-    @JsonProperty(ALL_NODES_COUNT_VAR)
+    @JsonProperty(PROP_ALL_NODES_COUNT)
     public void setAllNodesCount(int allNodesCount) {
       _allNodesCount = allNodesCount;
     }
 
 
-    @JsonProperty(MATCHING_NODES_COUNT_VAR)
+    @JsonProperty(PROP_MATCHING_NODES_COUNT)
     public void setMatchingNodesCount(int matchingNodesCount) {
       _matchingNodesCount = matchingNodesCount;
     }
@@ -175,7 +175,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
    */
   public static final class InferRolesQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -193,7 +193,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       return "inferroles";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -203,7 +203,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }

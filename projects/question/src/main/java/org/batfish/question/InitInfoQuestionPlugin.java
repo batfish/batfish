@@ -33,9 +33,9 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
    */
   public static class InitInfoQuestion extends Question {
 
-    private static final String SUMMARY_VAR = "summary";
+    private static final String PROP_SUMMARY = "summary";
 
-    private static final String VERBOSE_ERROR_VAR = "verboseError";
+    private static final String PROP_VERBOSE_ERROR = "verboseError";
 
     private boolean _environmentRoutes;
 
@@ -59,7 +59,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       return "initinfo";
     }
 
-    @JsonProperty(SUMMARY_VAR)
+    @JsonProperty(PROP_SUMMARY)
     public boolean getSummary() {
       return _summary;
     }
@@ -69,7 +69,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(VERBOSE_ERROR_VAR)
+    @JsonProperty(PROP_VERBOSE_ERROR)
     public boolean getVerboseError() {
       return _verboseError;
     }
@@ -78,11 +78,11 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       return getName()
           + " "
-          + SUMMARY_VAR
+          + PROP_SUMMARY
           + "="
           + _summary
           + " "
-          + VERBOSE_ERROR_VAR
+          + PROP_VERBOSE_ERROR
           + "="
           + _verboseError;
     }
@@ -91,12 +91,12 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       _environmentRoutes = environmentRoutes;
     }
 
-    @JsonProperty(SUMMARY_VAR)
+    @JsonProperty(PROP_SUMMARY)
     public void setSummary(boolean summary) {
       _summary = summary;
     }
 
-    @JsonProperty(VERBOSE_ERROR_VAR)
+    @JsonProperty(PROP_VERBOSE_ERROR)
     public void setVerboseError(boolean verboseError) {
       _verboseError = verboseError;
     }

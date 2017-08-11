@@ -14,15 +14,15 @@ import org.batfish.datamodel.answers.AnswerElement;
 
 public class ConfigDiffElement implements AnswerElement {
 
-  private static final String DIFF_INFO_VAR = "diffInfo";
+  private static final String PROP_DIFF_INFO = "diffInfo";
 
-  private static final String DIFF_VAR = "diff";
+  private static final String PROP_DIFF = "diff";
 
-  // private static final String IDENTICAL_VAR = "identical";
+  // private static final String PROP_IDENTICAL = "identical";
 
-  private static final String IN_AFTER_ONLY_VAR = "inAfterOnly";
+  private static final String PROP_IN_AFTER_ONLY = "inAfterOnly";
 
-  private static final String IN_BEFORE_ONLY_VAR = "inBeforeOnly";
+  private static final String PROP_IN_BEFORE_ONLY = "inBeforeOnly";
 
   private static final int MAX_IDENTICAL = 5;
 
@@ -82,28 +82,28 @@ public class ConfigDiffElement implements AnswerElement {
     return CommonUtil.intersection(_before, _after, TreeSet::new);
   }
 
-  @JsonProperty(DIFF_VAR)
+  @JsonProperty(PROP_DIFF)
   public SortedSet<String> getDiff() {
     return _diff;
   }
 
-  @JsonProperty(DIFF_INFO_VAR)
+  @JsonProperty(PROP_DIFF_INFO)
   public SortedMap<String, AnswerElement> getDiffInfo() {
     return _diffInfo;
   }
 
-  // @JsonProperty(IDENTICAL_VAR)
+  // @JsonProperty(PROP_IDENTICAL)
   @JsonIgnore
   public SortedSet<String> getIdentical() {
     return _identical;
   }
 
-  @JsonProperty(IN_AFTER_ONLY_VAR)
+  @JsonProperty(PROP_IN_AFTER_ONLY)
   public SortedSet<String> getInAfterOnly() {
     return _inAfterOnly;
   }
 
-  @JsonProperty(IN_BEFORE_ONLY_VAR)
+  @JsonProperty(PROP_IN_BEFORE_ONLY)
   public SortedSet<String> getInBeforeOnly() {
     return _inBeforeOnly;
   }
@@ -116,28 +116,28 @@ public class ConfigDiffElement implements AnswerElement {
         && _inAfterOnly.isEmpty();
   }
 
-  @JsonProperty(DIFF_VAR)
+  @JsonProperty(PROP_DIFF)
   public void setDiff(SortedSet<String> diff) {
     _diff = diff;
   }
 
-  @JsonProperty(DIFF_INFO_VAR)
+  @JsonProperty(PROP_DIFF_INFO)
   public void setDiffInfo(SortedMap<String, AnswerElement> diffInfo) {
     _diffInfo = diffInfo;
   }
 
-  // @JsonProperty(IDENTICAL_VAR)
+  // @JsonProperty(PROP_IDENTICAL)
   @JsonIgnore
   public void setIdentical(SortedSet<String> identical) {
     _identical = identical;
   }
 
-  @JsonProperty(IN_AFTER_ONLY_VAR)
+  @JsonProperty(PROP_IN_AFTER_ONLY)
   public void setInAfterOnly(SortedSet<String> inAfterOnly) {
     _inAfterOnly = inAfterOnly;
   }
 
-  @JsonProperty(IN_BEFORE_ONLY_VAR)
+  @JsonProperty(PROP_IN_BEFORE_ONLY)
   public void setInBeforeOnly(SortedSet<String> inBeforeOnly) {
     _inBeforeOnly = inBeforeOnly;
   }

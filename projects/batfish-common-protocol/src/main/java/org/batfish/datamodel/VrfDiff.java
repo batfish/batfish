@@ -6,19 +6,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class VrfDiff extends ConfigDiffElement {
 
-  private static final String AS_PATH_ACCESS_LISTS_DIFF_VAR = "asPathAccessListsDiff";
+  private static final String PROP_AS_PATH_ACCESS_LISTS_DIFF = "asPathAccessListsDiff";
 
-  private static final String COMMUNITY_LISTS_DIFF_VAR = "comunityListsDiff";
+  private static final String PROP_COMMUNITY_LISTS_DIFF = "comunityListsDiff";
 
-  private static final String INTERFACES_DIFF_VAR = "interfacesDiff";
+  private static final String PROP_INTERFACES_DIFF = "interfacesDiff";
 
-  private static final String IP_ACCESS_LISTS_DIFF_VAR = "ipAccessListsDiff";
+  private static final String PROP_IP_ACCESS_LISTS_DIFF = "ipAccessListsDiff";
 
-  private static final String ROUTE_FILTER_LISTS_DIFF_VAR = "routeFilterListsDiff";
+  private static final String PROP_ROUTE_FILTER_LISTS_DIFF = "routeFilterListsDiff";
 
-  private static final String ROUTING_POLICIES_DIFF_VAR = "routingPoliciesDiff";
+  private static final String PROP_ROUTING_POLICIES_DIFF = "routingPoliciesDiff";
 
-  private static final String VRFS_DIFF_VAR = "vrfsDiff";
+  private static final String PROP_VRFS_DIFF = "vrfsDiff";
 
   private AsPathAccessListsDiff _asPathAccessListsDiff;
 
@@ -46,37 +46,37 @@ public class VrfDiff extends ConfigDiffElement {
     }
   }
 
-  @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_AS_PATH_ACCESS_LISTS_DIFF)
   public AsPathAccessListsDiff getAsPathAccessListsDiff() {
     return _asPathAccessListsDiff;
   }
 
-  @JsonProperty(COMMUNITY_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_COMMUNITY_LISTS_DIFF)
   public CommunityListsDiff getCommunityListsDiff() {
     return _communityListsDiff;
   }
 
-  @JsonProperty(INTERFACES_DIFF_VAR)
+  @JsonProperty(PROP_INTERFACES_DIFF)
   public InterfacesDiff getInterfacesDiff() {
     return _interfacesDiff;
   }
 
-  @JsonProperty(IP_ACCESS_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_IP_ACCESS_LISTS_DIFF)
   public IpAccessListsDiff getIpAccessListsDiff() {
     return _ipAccessListsDiff;
   }
 
-  @JsonProperty(ROUTE_FILTER_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_ROUTE_FILTER_LISTS_DIFF)
   public RouteFilterListsDiff getRouteFilterListsDiff() {
     return _routeFilterListsDiff;
   }
 
-  @JsonProperty(ROUTING_POLICIES_DIFF_VAR)
+  @JsonProperty(PROP_ROUTING_POLICIES_DIFF)
   public RoutingPoliciesDiff getRoutingPoliciesDiff() {
     return _routingPoliciesDiff;
   }
 
-  @JsonProperty(VRFS_DIFF_VAR)
+  @JsonProperty(PROP_VRFS_DIFF)
   public VrfsDiff getVrfsDiff() {
     return _vrfsDiff;
   }
@@ -93,37 +93,37 @@ public class VrfDiff extends ConfigDiffElement {
         && _routingPoliciesDiff == null;
   }
 
-  @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_AS_PATH_ACCESS_LISTS_DIFF)
   public void setAsPathAccessListsDiff(AsPathAccessListsDiff asPathAccessListsDiff) {
     _asPathAccessListsDiff = asPathAccessListsDiff;
   }
 
-  @JsonProperty(COMMUNITY_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_COMMUNITY_LISTS_DIFF)
   public void setCommunityListsDiff(CommunityListsDiff communityListsDiff) {
     _communityListsDiff = communityListsDiff;
   }
 
-  @JsonProperty(INTERFACES_DIFF_VAR)
+  @JsonProperty(PROP_INTERFACES_DIFF)
   public void setInterfacesDiff(InterfacesDiff interfacesDiff) {
     _interfacesDiff = interfacesDiff;
   }
 
-  @JsonProperty(IP_ACCESS_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_IP_ACCESS_LISTS_DIFF)
   public void setIpAccessListsDiff(IpAccessListsDiff ipAccessListsDiff) {
     _ipAccessListsDiff = ipAccessListsDiff;
   }
 
-  @JsonProperty(ROUTE_FILTER_LISTS_DIFF_VAR)
+  @JsonProperty(PROP_ROUTE_FILTER_LISTS_DIFF)
   public void setRouteFilterListsDiff(RouteFilterListsDiff routeFilterListsDiff) {
     _routeFilterListsDiff = routeFilterListsDiff;
   }
 
-  @JsonProperty(ROUTING_POLICIES_DIFF_VAR)
+  @JsonProperty(PROP_ROUTING_POLICIES_DIFF)
   public void setRoutingPoliciesDiff(RoutingPoliciesDiff routingPoliciesDiff) {
     _routingPoliciesDiff = routingPoliciesDiff;
   }
 
-  @JsonProperty(VRFS_DIFF_VAR)
+  @JsonProperty(PROP_VRFS_DIFF)
   public void setVrfsDiff(VrfsDiff vrfsDiff) {
     _vrfsDiff = vrfsDiff;
   }

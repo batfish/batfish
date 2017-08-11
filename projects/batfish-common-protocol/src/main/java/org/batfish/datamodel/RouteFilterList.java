@@ -16,7 +16,7 @@ import org.batfish.common.util.ComparableStructure;
 @JsonSchemaDescription("An access-list used to filter IPV4 routes")
 public class RouteFilterList extends ComparableStructure<String> {
 
-  private static final String LINES_VAR = "lines";
+  private static final String PROP_LINES = "lines";
 
   private static final long serialVersionUID = 1L;
 
@@ -27,7 +27,7 @@ public class RouteFilterList extends ComparableStructure<String> {
   private transient Set<Prefix> _permittedCache;
 
   @JsonCreator
-  public RouteFilterList(@JsonProperty(NAME_VAR) String name) {
+  public RouteFilterList(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _lines = new ArrayList<>();
   }
@@ -45,7 +45,7 @@ public class RouteFilterList extends ComparableStructure<String> {
     return other._lines.equals(_lines);
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   @JsonPropertyDescription("The lines against which to check an IPV4 route")
   public List<RouteFilterLine> getLines() {
     return _lines;
@@ -92,7 +92,7 @@ public class RouteFilterList extends ComparableStructure<String> {
     _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   public void setLines(List<RouteFilterLine> lines) {
     _lines = lines;
   }

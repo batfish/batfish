@@ -136,7 +136,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
    */
   public static class AssertQuestion extends Question {
 
-    private static final String ASSERTIONS_VAR = "assertions";
+    private static final String PROP_ASSERTIONS = "assertions";
 
     private List<Assertion> _assertions;
 
@@ -144,7 +144,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
       _assertions = new ArrayList<>();
     }
 
-    @JsonProperty(ASSERTIONS_VAR)
+    @JsonProperty(PROP_ASSERTIONS)
     public List<Assertion> getAssertions() {
       return _assertions;
     }
@@ -168,11 +168,11 @@ public class AssertQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       String retString =
           String.format(
-              "assert %s%s=\"%s\"", prettyPrintBase(), ASSERTIONS_VAR, _assertions.toString());
+              "assert %s%s=\"%s\"", prettyPrintBase(), PROP_ASSERTIONS, _assertions.toString());
       return retString;
     }
 
-    @JsonProperty(ASSERTIONS_VAR)
+    @JsonProperty(PROP_ASSERTIONS)
     public void setAssertions(List<Assertion> assertions) {
       _assertions = assertions;
     }

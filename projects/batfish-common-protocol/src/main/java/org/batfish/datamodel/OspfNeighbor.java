@@ -10,14 +10,14 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
 
   public static final class OspfNeighborSummary extends ComparableStructure<String> {
 
-    private static final String LOCAL_IP_VAR = "localIp";
+    private static final String PROP_LOCAL_IP = "localIp";
 
-    private static final String REMOTE_IP_VAR = "remoteIp";
+    private static final String PROP_REMOTE_IP = "remoteIp";
 
     /** */
     private static final long serialVersionUID = 1L;
 
-    private static final String VRF_VAR = "vrf";
+    private static final String PROP_VRF = "vrf";
 
     private final Ip _localIp;
 
@@ -34,27 +34,27 @@ public class OspfNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
 
     @JsonCreator
     public OspfNeighborSummary(
-        @JsonProperty(NAME_VAR) String name,
-        @JsonProperty(LOCAL_IP_VAR) Ip localIp,
-        @JsonProperty(REMOTE_IP_VAR) Ip remoteIp,
-        @JsonProperty(VRF_VAR) String vrf) {
+        @JsonProperty(PROP_NAME) String name,
+        @JsonProperty(PROP_LOCAL_IP) Ip localIp,
+        @JsonProperty(PROP_REMOTE_IP) Ip remoteIp,
+        @JsonProperty(PROP_VRF) String vrf) {
       super(name);
       _localIp = localIp;
       _remoteIp = remoteIp;
       _vrf = vrf;
     }
 
-    @JsonProperty(LOCAL_IP_VAR)
+    @JsonProperty(PROP_LOCAL_IP)
     public Ip getLocalIp() {
       return _localIp;
     }
 
-    @JsonProperty(REMOTE_IP_VAR)
+    @JsonProperty(PROP_REMOTE_IP)
     public Ip getRemoteIp() {
       return _remoteIp;
     }
 
-    @JsonProperty(VRF_VAR)
+    @JsonProperty(PROP_VRF)
     public String getVrf() {
       return _vrf;
     }

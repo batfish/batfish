@@ -57,9 +57,9 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
    */
   public static class AclReachabilityQuestion extends Question {
 
-    private static final String ACL_NAME_REGEX_VAR = "aclNameRegex";
+    private static final String PROP_ACL_NAME_REGEX = "aclNameRegex";
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _aclNameRegex;
 
@@ -70,7 +70,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
       _aclNameRegex = ".*";
     }
 
-    @JsonProperty(ACL_NAME_REGEX_VAR)
+    @JsonProperty(PROP_ACL_NAME_REGEX)
     public String getAclNameRegex() {
       return _aclNameRegex;
     }
@@ -85,7 +85,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
       return "aclreachability";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -102,19 +102,19 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
               "%s %s%s=\"%s\" %s=\"%s\"",
               getName(),
               prettyPrintBase(),
-              ACL_NAME_REGEX_VAR,
+              PROP_ACL_NAME_REGEX,
               _aclNameRegex,
-              NODE_REGEX_VAR,
+              PROP_NODE_REGEX,
               _nodeRegex);
       return retString;
     }
 
-    @JsonProperty(ACL_NAME_REGEX_VAR)
+    @JsonProperty(PROP_ACL_NAME_REGEX)
     public void setAclNameRegex(String regex) {
       _aclNameRegex = regex;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }

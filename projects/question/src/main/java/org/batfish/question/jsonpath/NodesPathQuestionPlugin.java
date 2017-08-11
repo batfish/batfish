@@ -80,11 +80,11 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
    */
   public static class NodesPathQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String NODE_TYPES_VAR = "nodeTypes";
+    private static final String PROP_NODE_TYPES = "nodeTypes";
 
-    private static final String PATHS_VAR = "paths";
+    private static final String PROP_PATHS = "paths";
 
     private String _nodeRegex;
 
@@ -108,17 +108,17 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       return "nodespath";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(NODE_TYPES_VAR)
+    @JsonProperty(PROP_NODE_TYPES)
     public SortedSet<NodeType> getNodeTypes() {
       return _nodeTypes;
     }
 
-    @JsonProperty(PATHS_VAR)
+    @JsonProperty(PROP_PATHS)
     public List<JsonPathQuery> getPaths() {
       return _paths;
     }
@@ -131,21 +131,21 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       String retString =
-          String.format("%s %s%s=\"%s\"", getName(), prettyPrintBase(), PATHS_VAR, _paths);
+          String.format("%s %s%s=\"%s\"", getName(), prettyPrintBase(), PROP_PATHS, _paths);
       return retString;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }
 
-    @JsonProperty(NODE_TYPES_VAR)
+    @JsonProperty(PROP_NODE_TYPES)
     public void setNodeTypes(SortedSet<NodeType> nodeTypes) {
       _nodeTypes = nodeTypes;
     }
 
-    @JsonProperty(PATHS_VAR)
+    @JsonProperty(PROP_PATHS)
     public void setPaths(List<JsonPathQuery> paths) {
       _paths = paths;
     }

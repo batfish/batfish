@@ -24,42 +24,42 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
 
     public static class IpsecVpnPair extends Pair<Pair<String, String>, Pair<String, String>> {
 
-      private static final String HOSTNAME1_VAR = "hostname1";
+      private static final String PROP_HOSTNAME1 = "hostname1";
 
-      private static final String HOSTNAME2_VAR = "hostname2";
+      private static final String PROP_HOSTNAME2 = "hostname2";
 
-      private static final String IPSEC_VPN1_VAR = "ipsecVpn1";
+      private static final String PROP_IPSEC_VPN1 = "ipsecVpn1";
 
-      private static final String IPSEC_VPN2_VAR = "ipsecVpn2";
+      private static final String PROP_IPSEC_VPN2 = "ipsecVpn2";
 
       /** */
       private static final long serialVersionUID = 1L;
 
       @JsonCreator
       public IpsecVpnPair(
-          @JsonProperty(HOSTNAME1_VAR) String hostname1,
-          @JsonProperty(IPSEC_VPN1_VAR) String ipsecVpn1,
-          @JsonProperty(HOSTNAME2_VAR) String hostname2,
-          @JsonProperty(IPSEC_VPN2_VAR) String ipsecVpn2) {
+          @JsonProperty(PROP_HOSTNAME1) String hostname1,
+          @JsonProperty(PROP_IPSEC_VPN1) String ipsecVpn1,
+          @JsonProperty(PROP_HOSTNAME2) String hostname2,
+          @JsonProperty(PROP_IPSEC_VPN2) String ipsecVpn2) {
         super(new Pair<>(hostname1, ipsecVpn1), new Pair<>(hostname2, ipsecVpn2));
       }
 
-      @JsonProperty(HOSTNAME1_VAR)
+      @JsonProperty(PROP_HOSTNAME1)
       public String getHostname1() {
         return _first.getFirst();
       }
 
-      @JsonProperty(HOSTNAME2_VAR)
+      @JsonProperty(PROP_HOSTNAME2)
       public String getHostname2() {
         return _second.getFirst();
       }
 
-      @JsonProperty(IPSEC_VPN1_VAR)
+      @JsonProperty(PROP_IPSEC_VPN1)
       public String getIpsecVpn1() {
         return _first.getSecond();
       }
 
-      @JsonProperty(IPSEC_VPN2_VAR)
+      @JsonProperty(PROP_IPSEC_VPN2)
       public String getIpsecVpn2() {
         return _second.getSecond();
       }
@@ -237,9 +237,9 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
    */
   public static class IpsecVpnCheckQuestion extends Question {
 
-    private static final String NODE1_REGEX_VAR = "node1Regex";
+    private static final String PROP_NODE1_REGEX = "node1Regex";
 
-    private static final String NODE2_REGEX_VAR = "node2Regex";
+    private static final String PROP_NODE2_REGEX = "node2Regex";
 
     private String _node1Regex;
 
@@ -260,12 +260,12 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
       return "ipsecvpncheck";
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public String getNode1Regex() {
       return _node1Regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public String getNode2Regex() {
       return _node2Regex;
     }
@@ -275,12 +275,12 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public void setNode1Regex(String regex) {
       _node1Regex = regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public void setNode2Regex(String regex) {
       _node2Regex = regex;
     }

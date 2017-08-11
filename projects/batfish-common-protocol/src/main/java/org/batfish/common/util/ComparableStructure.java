@@ -10,12 +10,12 @@ public abstract class ComparableStructure<KeyT extends Comparable<KeyT>>
     extends ReferenceCountedStructure
     implements Comparable<ComparableStructure<KeyT>>, Serializable {
 
-  protected static final String NAME_VAR = "name";
+  protected static final String PROP_NAME = "name";
   private static final long serialVersionUID = 1L;
   protected KeyT _key;
 
   @JsonCreator
-  public ComparableStructure(@JsonProperty(NAME_VAR) KeyT name) {
+  public ComparableStructure(@JsonProperty(PROP_NAME) KeyT name) {
     _key = name;
   }
 
@@ -34,7 +34,7 @@ public abstract class ComparableStructure<KeyT extends Comparable<KeyT>>
     }
   }
 
-  @JsonProperty(NAME_VAR)
+  @JsonProperty(PROP_NAME)
   @JsonPropertyDescription("The name of this structure")
   public KeyT getName() {
     return _key;

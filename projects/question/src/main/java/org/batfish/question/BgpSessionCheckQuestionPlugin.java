@@ -30,53 +30,53 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
   public static class BgpSessionCheckAnswerElement implements AnswerElement {
 
-    private static final String ALL_BGP_NEIGHBORS_VAR = "allBgpNeighbors";
+    private static final String PROP_ALL_BGP_NEIGHBORS = "allBgpNeighbors";
 
-    private static final String BROKEN_VAR = "broken";
+    private static final String PROP_BROKEN = "broken";
 
-    private static final String EBGP_BROKEN_VAR = "ebgpBroken";
+    private static final String PROP_EBGP_BROKEN = "ebgpBroken";
 
-    private static final String EBGP_HALF_OPEN_VAR = "ebgpHalfOpen";
+    private static final String PROP_EBGP_HALF_OPEN = "ebgpHalfOpen";
 
-    private static final String EBGP_LOCAL_IP_ON_LOOPBACK_VAR = "ebgpLocalIpOnLoopback";
+    private static final String PROP_EBGP_LOCAL_IP_ON_LOOPBACK = "ebgpLocalIpOnLoopback";
 
-    private static final String EBGP_LOCAL_IP_UNKNOWN_VAR = "ebgpLocalIpUnknown";
+    private static final String PROP_EBGP_LOCAL_IP_UNKNOWN = "ebgpLocalIpUnknown";
 
-    private static final String EBGP_MISSING_LOCAL_IP_VAR = "ebgpMissingLocalIp";
+    private static final String PROP_EBGP_MISSING_LOCAL_IP = "ebgpMissingLocalIp";
 
-    private static final String EBGP_NON_UNIQUE_ENDPOINT_VAR = "ebgpNonUniqueEndpoint";
+    private static final String PROP_EBGP_NON_UNIQUE_ENDPOINT = "ebgpNonUniqueEndpoint";
 
-    private static final String EBGP_REMOTE_IP_ON_LOOPBACK_VAR = "ebgpRemoteIpOnLoopback";
+    private static final String PROP_EBGP_REMOTE_IP_ON_LOOPBACK = "ebgpRemoteIpOnLoopback";
 
-    private static final String EBGP_REMOTE_IP_UNKNOWN_VAR = "ebgpRemoteIpUnknown";
+    private static final String PROP_EBGP_REMOTE_IP_UNKNOWN = "ebgpRemoteIpUnknown";
 
-    private static final String HALF_OPEN_VAR = "halfOpen";
+    private static final String PROP_HALF_OPEN = "halfOpen";
 
-    private static final String IBGP_BROKEN_VAR = "ibgpBroken";
+    private static final String PROP_IBGP_BROKEN = "ibgpBroken";
 
-    private static final String IBGP_HALF_OPEN_VAR = "ibgpHalfOpen";
+    private static final String PROP_IBGP_HALF_OPEN = "ibgpHalfOpen";
 
-    private static final String IBGP_LOCAL_IP_ON_NON_LOOPBACK_VAR = "ibgpLocalIpOnNonLoopback";
+    private static final String PROP_IBGP_REMOTE_IP_ON_NON_LOOPBACK = "ibgpLocalIpOnNonLoopback";
 
-    private static final String IBGP_LOCAL_IP_UNKNOWN_VAR = "ibgpLocalIpUnknown";
+    private static final String PROP_IBGP_LOCAL_IP_UNKNOWN = "ibgpLocalIpUnknown";
 
-    private static final String IBGP_MISSING_LOCAL_IP_VAR = "ibgpMissingLocalIp";
+    private static final String PROP_IBGP_MISSING_LOCAL_IP = "ibgpMissingLocalIp";
 
-    private static final String IBGP_NON_UNIQUE_ENDPOINT_VAR = "ibgpNonUniqueEndpoint";
+    private static final String PROP_IBGP_NON_UNIQUE_ENDPOINT = "ibgpNonUniqueEndpoint";
 
-    private static final String IBGP_REMOTE_IP_ON_NON_LOOPBACK_VAR = "ibgpRemoteIpOnNonLoopback";
+    private static final String PROP_IBGP_LOCAL_IP_ON_NON_LOOPBACK = "ibgpRemoteIpOnNonLoopback";
 
-    private static final String IBGP_REMOTE_IP_UNKNOWN_VAR = "ibgpRemoteIpUnknown";
+    private static final String PROP_IBGP_REMOTE_IP_UNKNOWN = "ibgpRemoteIpUnknown";
 
-    private static final String IGNORED_FOREIGN_ENDPOINTS_VAR = "ignoredForeignEndpoints";
+    private static final String PROP_IGNORED_FOREIGN_ENDPOINTS = "ignoredForeignEndpoints";
 
-    private static final String LOCAL_IP_UNKNOWN_VAR = "localIpUnkown";
+    private static final String PROP_LOCAL_IP_UNKNOWN = "localIpUnkown";
 
-    private static final String MISSING_LOCAL_IP_VAR = "missingLocalIp";
+    private static final String PROP_MISSING_LOCAL_IP = "missingLocalIp";
 
-    private static final String NON_UNIQUE_ENDPOINT_VAR = "nonUniqueEndpoint";
+    private static final String PROP_NON_UNIQUE_ENDPOINT = "nonUniqueEndpoint";
 
-    private static final String REMOTE_IP_UNKNOWN_VAR = "remoteIpUnknown";
+    private static final String PROP_REMOTE_IP_UNKNOWN = "remoteIpUnknown";
 
     private SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>>
         _allBgpNeighbors;
@@ -180,123 +180,123 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       neighborsByPrefix.put(prefix, bgpNeighbor);
     }
 
-    @JsonProperty(ALL_BGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ALL_BGP_NEIGHBORS)
     public SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>>
         getAllBgpNeighbors() {
       return _allBgpNeighbors;
     }
 
-    @JsonProperty(BROKEN_VAR)
+    @JsonProperty(PROP_BROKEN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getBroken() {
       return _broken;
     }
 
-    @JsonProperty(EBGP_BROKEN_VAR)
+    @JsonProperty(PROP_EBGP_BROKEN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpBroken() {
       return _ebgpBroken;
     }
 
-    @JsonProperty(EBGP_HALF_OPEN_VAR)
+    @JsonProperty(PROP_EBGP_HALF_OPEN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpHalfOpen() {
       return _ebgpHalfOpen;
     }
 
-    @JsonProperty(EBGP_LOCAL_IP_ON_LOOPBACK_VAR)
+    @JsonProperty(PROP_EBGP_LOCAL_IP_ON_LOOPBACK)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpLocalIpOnLoopback() {
       return _ebgpLocalIpOnLoopback;
     }
 
-    @JsonProperty(EBGP_LOCAL_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_EBGP_LOCAL_IP_UNKNOWN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpLocalIpUnknown() {
       return _ebgpLocalIpUnknown;
     }
 
-    @JsonProperty(EBGP_MISSING_LOCAL_IP_VAR)
+    @JsonProperty(PROP_EBGP_MISSING_LOCAL_IP)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpMissingLocalIp() {
       return _ebgpMissingLocalIp;
     }
 
-    @JsonProperty(EBGP_NON_UNIQUE_ENDPOINT_VAR)
+    @JsonProperty(PROP_EBGP_NON_UNIQUE_ENDPOINT)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpNonUniqueEndpoint() {
       return _ebgpNonUniqueEndpoint;
     }
 
-    @JsonProperty(EBGP_REMOTE_IP_ON_LOOPBACK_VAR)
+    @JsonProperty(PROP_EBGP_REMOTE_IP_ON_LOOPBACK)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpRemoteIpOnLoopback() {
       return _ebgpRemoteIpOnLoopback;
     }
 
-    @JsonProperty(EBGP_REMOTE_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_EBGP_REMOTE_IP_UNKNOWN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getEbgpRemoteIpUnknown() {
       return _ebgpRemoteIpUnknown;
     }
 
-    @JsonProperty(HALF_OPEN_VAR)
+    @JsonProperty(PROP_HALF_OPEN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getHalfOpen() {
       return _halfOpen;
     }
 
-    @JsonProperty(IBGP_BROKEN_VAR)
+    @JsonProperty(PROP_IBGP_BROKEN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpBroken() {
       return _ibgpBroken;
     }
 
-    @JsonProperty(IBGP_HALF_OPEN_VAR)
+    @JsonProperty(PROP_IBGP_HALF_OPEN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpHalfOpen() {
       return _ibgpHalfOpen;
     }
 
-    @JsonProperty(IBGP_LOCAL_IP_ON_NON_LOOPBACK_VAR)
+    @JsonProperty(PROP_IBGP_LOCAL_IP_ON_NON_LOOPBACK)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpLocalIpOnNonLoopback() {
       return _ibgpLocalIpOnNonLoopback;
     }
 
-    @JsonProperty(IBGP_LOCAL_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_IBGP_LOCAL_IP_UNKNOWN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpLocalIpUnknown() {
       return _ibgpLocalIpUnknown;
     }
 
-    @JsonProperty(IBGP_MISSING_LOCAL_IP_VAR)
+    @JsonProperty(PROP_IBGP_MISSING_LOCAL_IP)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpMissingLocalIp() {
       return _ibgpMissingLocalIp;
     }
 
-    @JsonProperty(IBGP_NON_UNIQUE_ENDPOINT_VAR)
+    @JsonProperty(PROP_IBGP_NON_UNIQUE_ENDPOINT)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpNonUniqueEndpoint() {
       return _ibgpNonUniqueEndpoint;
     }
 
-    @JsonProperty(IBGP_REMOTE_IP_ON_NON_LOOPBACK_VAR)
+    @JsonProperty(PROP_IBGP_REMOTE_IP_ON_NON_LOOPBACK)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpRemoteIpOnNonLoopback() {
       return _ibgpRemoteIpOnNonLoopback;
     }
 
-    @JsonProperty(IBGP_REMOTE_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_IBGP_REMOTE_IP_UNKNOWN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIbgpRemoteIpUnknown() {
       return _ibgpRemoteIpUnknown;
     }
 
-    @JsonProperty(IGNORED_FOREIGN_ENDPOINTS_VAR)
+    @JsonProperty(PROP_IGNORED_FOREIGN_ENDPOINTS)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getIgnoredForeignEndpoints() {
       return _ignoredForeignEndpoints;
     }
 
-    @JsonProperty(LOCAL_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_LOCAL_IP_UNKNOWN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getLocalIpUnknown() {
       return _localIpUnknown;
     }
 
-    @JsonProperty(MISSING_LOCAL_IP_VAR)
+    @JsonProperty(PROP_MISSING_LOCAL_IP)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getMissingLocalIp() {
       return _missingLocalIp;
     }
 
-    @JsonProperty(NON_UNIQUE_ENDPOINT_VAR)
+    @JsonProperty(PROP_NON_UNIQUE_ENDPOINT)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getNonUniqueEndpoint() {
       return _nonUniqueEndpoint;
     }
 
-    @JsonProperty(REMOTE_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_REMOTE_IP_UNKNOWN)
     public SortedMap<String, SortedMap<String, SortedSet<Prefix>>> getRemoteIpUnknown() {
       return _remoteIpUnknown;
     }
@@ -304,16 +304,17 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
-      sb.append(prettyPrintCategory(_ebgpLocalIpOnLoopback, EBGP_LOCAL_IP_ON_LOOPBACK_VAR));
-      sb.append(prettyPrintCategory(_ebgpRemoteIpOnLoopback, EBGP_REMOTE_IP_ON_LOOPBACK_VAR));
-      sb.append(prettyPrintCategory(_halfOpen, HALF_OPEN_VAR));
-      sb.append(prettyPrintCategory(_ibgpLocalIpOnNonLoopback, IBGP_LOCAL_IP_ON_NON_LOOPBACK_VAR));
+      sb.append(prettyPrintCategory(_ebgpLocalIpOnLoopback, PROP_EBGP_LOCAL_IP_ON_LOOPBACK));
+      sb.append(prettyPrintCategory(_ebgpRemoteIpOnLoopback, PROP_EBGP_REMOTE_IP_ON_LOOPBACK));
+      sb.append(prettyPrintCategory(_halfOpen, PROP_HALF_OPEN));
       sb.append(
-          prettyPrintCategory(_ibgpRemoteIpOnNonLoopback, IBGP_REMOTE_IP_ON_NON_LOOPBACK_VAR));
-      sb.append(prettyPrintCategory(_localIpUnknown, LOCAL_IP_UNKNOWN_VAR));
-      sb.append(prettyPrintCategory(_missingLocalIp, MISSING_LOCAL_IP_VAR));
-      sb.append(prettyPrintCategory(_nonUniqueEndpoint, NON_UNIQUE_ENDPOINT_VAR));
-      sb.append(prettyPrintCategory(_remoteIpUnknown, REMOTE_IP_UNKNOWN_VAR));
+          prettyPrintCategory(_ibgpLocalIpOnNonLoopback, PROP_IBGP_REMOTE_IP_ON_NON_LOOPBACK));
+      sb.append(
+          prettyPrintCategory(_ibgpRemoteIpOnNonLoopback, PROP_IBGP_LOCAL_IP_ON_NON_LOOPBACK));
+      sb.append(prettyPrintCategory(_localIpUnknown, PROP_LOCAL_IP_UNKNOWN));
+      sb.append(prettyPrintCategory(_missingLocalIp, PROP_MISSING_LOCAL_IP));
+      sb.append(prettyPrintCategory(_nonUniqueEndpoint, PROP_NON_UNIQUE_ENDPOINT));
+      sb.append(prettyPrintCategory(_remoteIpUnknown, PROP_REMOTE_IP_UNKNOWN));
       return sb.toString();
     }
 
@@ -356,142 +357,142 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       return sb;
     }
 
-    @JsonProperty(ALL_BGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ALL_BGP_NEIGHBORS)
     public void setAllBgpNeighbors(
         SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>>
             allBgpNeighbors) {
       _allBgpNeighbors = allBgpNeighbors;
     }
 
-    @JsonProperty(BROKEN_VAR)
+    @JsonProperty(PROP_BROKEN)
     public void setBroken(SortedMap<String, SortedMap<String, SortedSet<Prefix>>> broken) {
       _broken = broken;
     }
 
-    @JsonProperty(EBGP_BROKEN_VAR)
+    @JsonProperty(PROP_EBGP_BROKEN)
     public void setEbgpBroken(SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpBroken) {
       _ebgpBroken = ebgpBroken;
     }
 
-    @JsonProperty(EBGP_HALF_OPEN_VAR)
+    @JsonProperty(PROP_EBGP_HALF_OPEN)
     public void setEbgpHalfOpen(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpHalfOpen) {
       _ebgpHalfOpen = ebgpHalfOpen;
     }
 
-    @JsonProperty(EBGP_LOCAL_IP_ON_LOOPBACK_VAR)
+    @JsonProperty(PROP_EBGP_LOCAL_IP_ON_LOOPBACK)
     public void setEbgpLocalIpOnLoopback(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpLocalIpOnLoopback) {
       _ebgpLocalIpOnLoopback = ebgpLocalIpOnLoopback;
     }
 
-    @JsonProperty(EBGP_LOCAL_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_EBGP_LOCAL_IP_UNKNOWN)
     public void setEbgpLocalIpUnknown(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpLocalIpUnknown) {
       _ebgpLocalIpUnknown = ebgpLocalIpUnknown;
     }
 
-    @JsonProperty(EBGP_MISSING_LOCAL_IP_VAR)
+    @JsonProperty(PROP_EBGP_MISSING_LOCAL_IP)
     public void setEbgpMissingLocalIp(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpMissingLocalIp) {
       _ebgpMissingLocalIp = ebgpMissingLocalIp;
     }
 
-    @JsonProperty(EBGP_NON_UNIQUE_ENDPOINT_VAR)
+    @JsonProperty(PROP_EBGP_NON_UNIQUE_ENDPOINT)
     public void setEbgpNonUniqueEndpoint(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpNonUniqueEndpoint) {
       _ebgpNonUniqueEndpoint = ebgpNonUniqueEndpoint;
     }
 
-    @JsonProperty(EBGP_REMOTE_IP_ON_LOOPBACK_VAR)
+    @JsonProperty(PROP_EBGP_REMOTE_IP_ON_LOOPBACK)
     public void setEbgpRemoteIpOnLoopback(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpRemoteIpOnLoopback) {
       _ebgpRemoteIpOnLoopback = ebgpRemoteIpOnLoopback;
     }
 
-    @JsonProperty(EBGP_REMOTE_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_EBGP_REMOTE_IP_UNKNOWN)
     public void setEbgpRemoteIpUnknown(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ebgpRemoteIpUnknown) {
       _ebgpRemoteIpUnknown = ebgpRemoteIpUnknown;
     }
 
-    @JsonProperty(HALF_OPEN_VAR)
+    @JsonProperty(PROP_HALF_OPEN)
     public void setHalfOpen(SortedMap<String, SortedMap<String, SortedSet<Prefix>>> halfOpen) {
       _halfOpen = halfOpen;
     }
 
-    @JsonProperty(IBGP_BROKEN_VAR)
+    @JsonProperty(PROP_IBGP_BROKEN)
     public void setIbgpBroken(SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpBroken) {
       _ibgpBroken = ibgpBroken;
     }
 
-    @JsonProperty(IBGP_HALF_OPEN_VAR)
+    @JsonProperty(PROP_IBGP_HALF_OPEN)
     public void setIbgpHalfOpen(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpHalfOpen) {
       _ibgpHalfOpen = ibgpHalfOpen;
     }
 
-    @JsonProperty(IBGP_LOCAL_IP_ON_NON_LOOPBACK_VAR)
+    @JsonProperty(PROP_IBGP_LOCAL_IP_ON_NON_LOOPBACK)
     public void setIbgpLocalIpOnNonLoopback(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpLocalIpOnNonLoopback) {
       _ibgpLocalIpOnNonLoopback = ibgpLocalIpOnNonLoopback;
     }
 
-    @JsonProperty(IBGP_LOCAL_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_IBGP_LOCAL_IP_UNKNOWN)
     public void setIbgpLocalIpUnknown(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpLocalIpUnknown) {
       _ibgpLocalIpUnknown = ibgpLocalIpUnknown;
     }
 
-    @JsonProperty(IBGP_MISSING_LOCAL_IP_VAR)
+    @JsonProperty(PROP_IBGP_MISSING_LOCAL_IP)
     public void setIbgpMissingLocalIp(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpMissingLocalIp) {
       _ibgpMissingLocalIp = ibgpMissingLocalIp;
     }
 
-    @JsonProperty(IBGP_NON_UNIQUE_ENDPOINT_VAR)
+    @JsonProperty(PROP_IBGP_NON_UNIQUE_ENDPOINT)
     public void setIbgpNonUniqueEndpoint(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpNonUniqueEndpoint) {
       _ibgpNonUniqueEndpoint = ibgpNonUniqueEndpoint;
     }
 
-    @JsonProperty(IBGP_REMOTE_IP_ON_NON_LOOPBACK_VAR)
+    @JsonProperty(PROP_IBGP_REMOTE_IP_ON_NON_LOOPBACK)
     public void setIbgpRemoteIpOnNonLoopback(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpRemoteIpOnNonLoopback) {
       _ibgpRemoteIpOnNonLoopback = ibgpRemoteIpOnNonLoopback;
     }
 
-    @JsonProperty(IBGP_REMOTE_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_IBGP_REMOTE_IP_UNKNOWN)
     public void setIbgpRemoteIpUnknown(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ibgpRemoteIpUnknown) {
       _ibgpRemoteIpUnknown = ibgpRemoteIpUnknown;
     }
 
-    @JsonProperty(IGNORED_FOREIGN_ENDPOINTS_VAR)
+    @JsonProperty(PROP_IGNORED_FOREIGN_ENDPOINTS)
     public void setIgnoredForeignEndpoints(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> ignoredForeignEndpoints) {
       _ignoredForeignEndpoints = ignoredForeignEndpoints;
     }
 
-    @JsonProperty(LOCAL_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_LOCAL_IP_UNKNOWN)
     public void setLocalIpUnknown(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> localIpUnknown) {
       _localIpUnknown = localIpUnknown;
     }
 
-    @JsonProperty(MISSING_LOCAL_IP_VAR)
+    @JsonProperty(PROP_MISSING_LOCAL_IP)
     public void setMissingLocalIp(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> missingLocalIp) {
       _missingLocalIp = missingLocalIp;
     }
 
-    @JsonProperty(NON_UNIQUE_ENDPOINT_VAR)
+    @JsonProperty(PROP_NON_UNIQUE_ENDPOINT)
     public void setNonUniqueEndpoint(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> nonUniqueEndpoint) {
       _nonUniqueEndpoint = nonUniqueEndpoint;
     }
 
-    @JsonProperty(REMOTE_IP_UNKNOWN_VAR)
+    @JsonProperty(PROP_REMOTE_IP_UNKNOWN)
     public void setRemoteIpUnknown(
         SortedMap<String, SortedMap<String, SortedSet<Prefix>>> remoteIpUnknown) {
       _remoteIpUnknown = remoteIpUnknown;
@@ -778,11 +779,11 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
    */
   public static class BgpSessionCheckQuestion extends Question {
 
-    private static final String FOREIGN_BGP_GROUPS_VAR = "foreignBgpGroups";
+    private static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
 
-    private static final String NODE1_REGEX_VAR = "node1Regex";
+    private static final String PROP_NODE1_REGEX = "node1Regex";
 
-    private static final String NODE2_REGEX_VAR = "node2Regex";
+    private static final String PROP_NODE2_REGEX = "node2Regex";
 
     private SortedSet<String> _foreignBgpGroups;
 
@@ -801,7 +802,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(FOREIGN_BGP_GROUPS_VAR)
+    @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
     public SortedSet<String> getForeignBgpGroups() {
       return _foreignBgpGroups;
     }
@@ -811,12 +812,12 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       return "bgpsessioncheck";
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public String getNode1Regex() {
       return _node1Regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public String getNode2Regex() {
       return _node2Regex;
     }
@@ -826,17 +827,17 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(FOREIGN_BGP_GROUPS_VAR)
+    @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
     public void setForeignBgpGroups(SortedSet<String> foreignBgpGroups) {
       _foreignBgpGroups = foreignBgpGroups;
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public void setNode1Regex(String regex) {
       _node1Regex = regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public void setNode2Regex(String regex) {
       _node2Regex = regex;
     }

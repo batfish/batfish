@@ -15,13 +15,13 @@ public class Task {
 
   public static class Batch {
 
-    private static final String COMPLETED_VAR = "completed";
+    private static final String PROP_COMPLETED = "completed";
 
-    private static final String DESCRIPTION_VAR = "description";
+    private static final String PROP_DESCRIPTION = "description";
 
-    private static final String SIZE_VAR = "size";
+    private static final String PROP_SIZE = "size";
 
-    private static final String START_DATE_VAR = "startDate";
+    private static final String PROP_START_DATE = "startDate";
 
     private AtomicInteger _completed;
 
@@ -36,42 +36,42 @@ public class Task {
       _completed = new AtomicInteger();
     }
 
-    @JsonProperty(COMPLETED_VAR)
+    @JsonProperty(PROP_COMPLETED)
     public AtomicInteger getCompleted() {
       return _completed;
     }
 
-    @JsonProperty(DESCRIPTION_VAR)
+    @JsonProperty(PROP_DESCRIPTION)
     public String getDescription() {
       return _description;
     }
 
-    @JsonProperty(SIZE_VAR)
+    @JsonProperty(PROP_SIZE)
     public int getSize() {
       return _size;
     }
 
-    @JsonProperty(START_DATE_VAR)
+    @JsonProperty(PROP_START_DATE)
     public Date getStartDate() {
       return _startDate;
     }
 
-    @JsonProperty(COMPLETED_VAR)
+    @JsonProperty(PROP_COMPLETED)
     private void setCompleted(AtomicInteger completed) {
       _completed = completed;
     }
 
-    @JsonProperty(DESCRIPTION_VAR)
+    @JsonProperty(PROP_DESCRIPTION)
     public void setDescription(String description) {
       _description = description;
     }
 
-    @JsonProperty(SIZE_VAR)
+    @JsonProperty(PROP_SIZE)
     public void setSize(int size) {
       _size = size;
     }
 
-    @JsonProperty(START_DATE_VAR)
+    @JsonProperty(PROP_START_DATE)
     public void setStartDate(Date startDate) {
       _startDate = startDate;
     }
@@ -87,13 +87,13 @@ public class Task {
     }
   }
 
-  private static final String ARGS_VAR = "args";
+  private static final String PROP_ARGS = "args";
 
-  private static final String OBTAINED_VAR = "obtained";
+  private static final String PROP_OBTAINED = "obtained";
 
-  private static final String STATUS_VAR = "status";
+  private static final String PROP_STATUS = "status";
 
-  private static final String TERMINATED_VAR = "terminated";
+  private static final String PROP_TERMINATED = "terminated";
 
   private String[] _args;
 
@@ -118,7 +118,7 @@ public class Task {
     _status = TaskStatus.Unscheduled;
   }
 
-  @JsonProperty(ARGS_VAR)
+  @JsonProperty(PROP_ARGS)
   public String[] getArgs() {
     return _args;
   }
@@ -127,17 +127,17 @@ public class Task {
     return _batches;
   }
 
-  @JsonProperty(OBTAINED_VAR)
+  @JsonProperty(PROP_OBTAINED)
   public Date getObtained() {
     return _obtained;
   }
 
-  @JsonProperty(STATUS_VAR)
+  @JsonProperty(PROP_STATUS)
   public TaskStatus getStatus() {
     return _status;
   }
 
-  @JsonProperty(TERMINATED_VAR)
+  @JsonProperty(PROP_TERMINATED)
   public Date getTerminated() {
     return _terminated;
   }
@@ -161,7 +161,7 @@ public class Task {
     _terminationRequested = true;
   }
 
-  @JsonProperty(ARGS_VAR)
+  @JsonProperty(PROP_ARGS)
   public void setArgs(String[] args) {
     _args = args;
   }
@@ -170,12 +170,12 @@ public class Task {
     _batches = batches;
   }
 
-  @JsonProperty(OBTAINED_VAR)
+  @JsonProperty(PROP_OBTAINED)
   private void setObtained(Date obtained) {
     _obtained = obtained;
   }
 
-  @JsonProperty(STATUS_VAR)
+  @JsonProperty(PROP_STATUS)
   public void setStatus(TaskStatus status) {
     _status = status;
   }
@@ -184,7 +184,7 @@ public class Task {
     _terminated = new Date();
   }
 
-  @JsonProperty(TERMINATED_VAR)
+  @JsonProperty(PROP_TERMINATED)
   public void setTerminated(Date terminated) {
     _terminated = terminated;
   }
