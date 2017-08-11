@@ -2396,7 +2396,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       throw new BatfishException(
           "Cannot continue: environment '"
               + getEnvironmentName()
-              + "' is invalid:"
+              + "' is invalid:\n"
               + veae.prettyPrint());
     }
     SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();

@@ -79,7 +79,7 @@ public class ValidateEnvironmentAnswerElement implements AnswerElement, Serializ
   @Override
   public String prettyPrint() {
     StringBuilder retString =
-        new StringBuilder("Results of enviroment processing and validation\n");
+        new StringBuilder("Results of enviroment processing and validation:\n");
     if (!_undefinedNodeRoleSpecifierNodes.isEmpty()) {
       retString.append(PROP_UNDEFINED_NODE_ROLE_SPECIFIER_NODES + ":\n");
       for (String hostname : _undefinedNodeRoleSpecifierNodes) {
