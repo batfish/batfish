@@ -2308,75 +2308,73 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         OspfProcess proc = vrf.getOspfProcess();
         if (proc != null) {
           proc.setOspfNeighbors(new TreeMap<>());
-          if (proc != null) {
-            String vrfName = e2.getKey();
-            for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
-              long areaNum = e3.getKey();
-              OspfArea area = e3.getValue();
-              for (Interface iface : area.getInterfaces()) {
-                String ifaceName = iface.getName();
-                EdgeSet ifaceEdges =
-                    topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
-                boolean hasNeighbor = false;
-                Ip localIp = iface.getPrefix().getAddress();
-                if (ifaceEdges != null) {
-                  for (Edge edge : ifaceEdges) {
-                    if (edge.getNode1().equals(hostname)) {
-                      String remoteHostname = edge.getNode2();
-                      String remoteIfaceName = edge.getInt2();
-                      Configuration remoteNode = configurations.get(remoteHostname);
-                      Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
-                      Vrf remoteVrf = remoteIface.getVrf();
-                      String remoteVrfName = remoteVrf.getName();
-                      OspfProcess remoteProc = remoteVrf.getOspfProcess();
-                      if (remoteProc.getOspfNeighbors() == null) {
-                        remoteProc.setOspfNeighbors(new TreeMap<>());
-                      }
-                      if (remoteProc != null) {
-                        OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
-                        if (remoteArea != null
-                            && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
-                          Ip remoteIp = remoteIface.getPrefix().getAddress();
-                          Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
-                          OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
-                          if (neighbor == null) {
-                            hasNeighbor = true;
+          String vrfName = e2.getKey();
+          for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
+            long areaNum = e3.getKey();
+            OspfArea area = e3.getValue();
+            for (Interface iface : area.getInterfaces()) {
+              String ifaceName = iface.getName();
+              EdgeSet ifaceEdges =
+                  topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
+              boolean hasNeighbor = false;
+              Ip localIp = iface.getPrefix().getAddress();
+              if (ifaceEdges != null) {
+                for (Edge edge : ifaceEdges) {
+                  if (edge.getNode1().equals(hostname)) {
+                    String remoteHostname = edge.getNode2();
+                    String remoteIfaceName = edge.getInt2();
+                    Configuration remoteNode = configurations.get(remoteHostname);
+                    Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                    Vrf remoteVrf = remoteIface.getVrf();
+                    String remoteVrfName = remoteVrf.getName();
+                    OspfProcess remoteProc = remoteVrf.getOspfProcess();
+                    if (remoteProc.getOspfNeighbors() == null) {
+                      remoteProc.setOspfNeighbors(new TreeMap<>());
+                    }
+                    if (remoteProc != null) {
+                      OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
+                      if (remoteArea != null
+                          && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
+                        Ip remoteIp = remoteIface.getPrefix().getAddress();
+                        Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
+                        OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
+                        if (neighbor == null) {
+                          hasNeighbor = true;
 
-                            // initialize local neighbor
-                            neighbor = new OspfNeighbor(localKey);
-                            neighbor.setArea(areaNum);
-                            neighbor.setVrf(vrfName);
-                            neighbor.setOwner(c);
-                            neighbor.setInterface(iface);
-                            proc.getOspfNeighbors().put(localKey, neighbor);
+                          // initialize local neighbor
+                          neighbor = new OspfNeighbor(localKey);
+                          neighbor.setArea(areaNum);
+                          neighbor.setVrf(vrfName);
+                          neighbor.setOwner(c);
+                          neighbor.setInterface(iface);
+                          proc.getOspfNeighbors().put(localKey, neighbor);
 
-                            // initialize remote neighbor
-                            Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
-                            OspfNeighbor remoteNeighbor = new OspfNeighbor(remoteKey);
-                            remoteNeighbor.setArea(areaNum);
-                            remoteNeighbor.setVrf(remoteVrfName);
-                            remoteNeighbor.setOwner(remoteNode);
-                            remoteNeighbor.setInterface(remoteIface);
-                            remoteProc.getOspfNeighbors().put(remoteKey, remoteNeighbor);
+                          // initialize remote neighbor
+                          Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
+                          OspfNeighbor remoteNeighbor = new OspfNeighbor(remoteKey);
+                          remoteNeighbor.setArea(areaNum);
+                          remoteNeighbor.setVrf(remoteVrfName);
+                          remoteNeighbor.setOwner(remoteNode);
+                          remoteNeighbor.setInterface(remoteIface);
+                          remoteProc.getOspfNeighbors().put(remoteKey, remoteNeighbor);
 
-                            // link neighbors
-                            neighbor.setRemoteOspfNeighbor(remoteNeighbor);
-                            remoteNeighbor.setRemoteOspfNeighbor(neighbor);
-                          }
+                          // link neighbors
+                          neighbor.setRemoteOspfNeighbor(remoteNeighbor);
+                          remoteNeighbor.setRemoteOspfNeighbor(neighbor);
                         }
                       }
                     }
                   }
                 }
-                if (!hasNeighbor) {
-                  Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
-                  OspfNeighbor neighbor = new OspfNeighbor(key);
-                  neighbor.setArea(areaNum);
-                  neighbor.setVrf(vrfName);
-                  neighbor.setOwner(c);
-                  neighbor.setInterface(iface);
-                  proc.getOspfNeighbors().put(key, neighbor);
-                }
+              }
+              if (!hasNeighbor) {
+                Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
+                OspfNeighbor neighbor = new OspfNeighbor(key);
+                neighbor.setArea(areaNum);
+                neighbor.setVrf(vrfName);
+                neighbor.setOwner(c);
+                neighbor.setInterface(iface);
+                proc.getOspfNeighbors().put(key, neighbor);
               }
             }
           }
