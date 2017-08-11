@@ -1,9 +1,9 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -56,8 +56,7 @@ public class PrependAsPath extends Statement {
       iAsPath = ir.getAsPath();
     }
     for (Integer as : toPrepend) {
-      SortedSet<Integer> asSet = new TreeSet<>();
-      asSet.add(as);
+      SortedSet<Integer> asSet = ImmutableSortedSet.of(as);
       asPath.add(0, asSet);
       if (iAsPath != null) {
         iAsPath.add(0, asSet);
