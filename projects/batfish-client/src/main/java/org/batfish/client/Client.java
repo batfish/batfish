@@ -2794,7 +2794,8 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
   }
 
-  private boolean uploadEnv(String fileOrDir, String testrigName, String newEnvName, String baseEnvName) {
+  private boolean uploadEnv(
+      String fileOrDir, String testrigName, String newEnvName, String baseEnvName) {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
