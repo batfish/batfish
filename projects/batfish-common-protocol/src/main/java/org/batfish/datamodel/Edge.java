@@ -8,13 +8,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
-  private static final String INT1_VAR = "node1interface";
+  private static final String PROP_INT1 = "node1interface";
 
-  private static final String INT2_VAR = "node2interface";
+  private static final String PROP_INT2 = "node2interface";
 
-  private static final String NODE1_VAR = "node1";
+  private static final String PROP_NODE1 = "node1";
 
-  private static final String NODE2_VAR = "node2";
+  private static final String PROP_NODE2 = "node2";
 
   private static final long serialVersionUID = 1L;
 
@@ -24,19 +24,19 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
   @JsonCreator
   public Edge(
-      @JsonProperty(NODE1_VAR) String node1,
-      @JsonProperty(INT1_VAR) String int1,
-      @JsonProperty(NODE2_VAR) String node2,
-      @JsonProperty(INT2_VAR) String int2) {
+      @JsonProperty(PROP_NODE1) String node1,
+      @JsonProperty(PROP_INT1) String int1,
+      @JsonProperty(PROP_NODE2) String node2,
+      @JsonProperty(PROP_INT2) String int2) {
     super(new NodeInterfacePair(node1, int1), new NodeInterfacePair(node2, int2));
   }
 
-  @JsonProperty(INT1_VAR)
+  @JsonProperty(PROP_INT1)
   public String getInt1() {
     return _first.getInterface();
   }
 
-  @JsonProperty(INT2_VAR)
+  @JsonProperty(PROP_INT2)
   public String getInt2() {
     return _second.getInterface();
   }
@@ -51,12 +51,12 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
     return _second;
   }
 
-  @JsonProperty(NODE1_VAR)
+  @JsonProperty(PROP_NODE1)
   public String getNode1() {
     return _first.getHostname();
   }
 
-  @JsonProperty(NODE2_VAR)
+  @JsonProperty(PROP_NODE2)
   public String getNode2() {
     return _second.getHostname();
   }

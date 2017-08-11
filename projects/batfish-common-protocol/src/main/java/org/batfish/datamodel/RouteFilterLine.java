@@ -9,11 +9,11 @@ import java.io.Serializable;
 @JsonSchemaDescription("A line in an RouteFilterList")
 public class RouteFilterLine implements Serializable {
 
-  private static final String ACTION_VAR = "action";
+  private static final String PROP_ACTION = "action";
 
-  private static final String LENGTH_RANGE_VAR = "lengthRange";
+  private static final String PROP_LENGTH_RANGE = "lengthRange";
 
-  private static final String PREFIX_VAR = "prefix";
+  private static final String PROP_PREFIX = "prefix";
 
   private static final long serialVersionUID = 1L;
 
@@ -25,9 +25,9 @@ public class RouteFilterLine implements Serializable {
 
   @JsonCreator
   public RouteFilterLine(
-      @JsonProperty(ACTION_VAR) LineAction action,
-      @JsonProperty(PREFIX_VAR) Prefix prefix,
-      @JsonProperty(LENGTH_RANGE_VAR) SubRange lengthRange) {
+      @JsonProperty(PROP_ACTION) LineAction action,
+      @JsonProperty(PROP_PREFIX) Prefix prefix,
+      @JsonProperty(PROP_LENGTH_RANGE) SubRange lengthRange) {
     _action = action;
     _prefix = prefix;
     _lengthRange = lengthRange;
@@ -51,20 +51,20 @@ public class RouteFilterLine implements Serializable {
     return true;
   }
 
-  @JsonProperty(ACTION_VAR)
+  @JsonProperty(PROP_ACTION)
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches an IPV4 route.")
   public LineAction getAction() {
     return _action;
   }
 
-  @JsonProperty(LENGTH_RANGE_VAR)
+  @JsonProperty(PROP_LENGTH_RANGE)
   @JsonPropertyDescription("The range of acceptable prefix-lengths for a route.")
   public SubRange getLengthRange() {
     return _lengthRange;
   }
 
-  @JsonProperty(PREFIX_VAR)
+  @JsonProperty(PROP_PREFIX)
   @JsonPropertyDescription(
       "The bits against which to compare a route's prefix. The length of this prefix is used to "
           + "determine how many leading bits must match.")

@@ -8,9 +8,9 @@ import java.util.Objects;
 import java.util.SortedSet;
 
 public final class Container {
-  private static final String NAME_VAR = "name";
-  private static final String TESTRIGS_VAR = "testrigs";
-  private static final String ANALYSIS_VAR = "analysis";
+  private static final String PROP_NAME = "name";
+  private static final String PROP_TESTRIGS = "testrigs";
+  private static final String PROP_ANALYSIS = "analysis";
 
   private String _name;
   private SortedSet<String> _testrigs;
@@ -18,7 +18,8 @@ public final class Container {
 
   @JsonCreator
   public static Container of(
-      @JsonProperty(NAME_VAR) String name, @JsonProperty(TESTRIGS_VAR) SortedSet<String> testrigs) {
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_TESTRIGS) SortedSet<String> testrigs) {
     return new Container(name, testrigs);
   }
 
@@ -27,32 +28,32 @@ public final class Container {
     this._testrigs = testrigs;
   }
 
-  @JsonProperty(NAME_VAR)
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
 
-  @JsonProperty(TESTRIGS_VAR)
+  @JsonProperty(PROP_TESTRIGS)
   public SortedSet<String> getTestrigs() {
     return _testrigs;
   }
 
-  @JsonProperty(ANALYSIS_VAR)
+  @JsonProperty(PROP_ANALYSIS)
   public Path getAnalysis() {
     return _analysis;
   }
 
-  @JsonProperty(NAME_VAR)
+  @JsonProperty(PROP_NAME)
   public void setName(String name) {
     _name = name;
   }
 
-  @JsonProperty(TESTRIGS_VAR)
+  @JsonProperty(PROP_TESTRIGS)
   public void setTestrigs(SortedSet<String> testrigs) {
     _testrigs = testrigs;
   }
 
-  @JsonProperty(ANALYSIS_VAR)
+  @JsonProperty(PROP_ANALYSIS)
   public void setAnalysis(Path analysis) {
     _analysis = analysis;
   }
@@ -60,8 +61,8 @@ public final class Container {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(Container.class)
-        .add(NAME_VAR, _name)
-        .add(TESTRIGS_VAR, _testrigs)
+        .add(PROP_NAME, _name)
+        .add(PROP_TESTRIGS, _testrigs)
         .toString();
   }
 

@@ -10,12 +10,12 @@ public class OspfExternalType2Route extends OspfExternalRoute {
 
   @JsonCreator
   public OspfExternalType2Route(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
-      @JsonProperty(METRIC_VAR) int metric,
-      @JsonProperty(COST_TO_ADVERTISER_VAR) int costToAdvertiser,
-      @JsonProperty(ADVERTISER_VAR) String advertiser) {
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_METRIC) int metric,
+      @JsonProperty(PROP_COST_TO_ADVERTISER) int costToAdvertiser,
+      @JsonProperty(PROP_ADVERTISER) String advertiser) {
     super(network, nextHopIp, admin, metric, advertiser, costToAdvertiser);
   }
 

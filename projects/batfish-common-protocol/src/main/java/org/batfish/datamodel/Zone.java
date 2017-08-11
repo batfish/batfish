@@ -12,18 +12,18 @@ import org.batfish.common.util.ComparableStructure;
 @JsonSchemaDescription("An IPV4 firewall zone")
 public final class Zone extends ComparableStructure<String> {
 
-  private static final String FROM_HOST_FILTER_VAR = "fromHostFilter";
+  private static final String PROP_FROM_HOST_FILTER = "fromHostFilter";
 
-  private static final String INBOUND_FILTER_VAR = "inboundFilter";
+  private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
-  private static final String INBOUND_INTERFACE_FILTERS_VAR = "inboundInterfaceFilters";
+  private static final String PROP_INBOUND_INTERFACE_FILTERS = "inboundInterfaceFilters";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String TO_HOST_FILTER_VAR = "toHostFilter";
+  private static final String PROP_TO_HOST_FILTER = "toHostFilter";
 
-  private static final String TO_ZONE_POLICIES_VAR = "toZonePolicies";
+  private static final String PROP_TO_ZONE_POLICIES = "toZonePolicies";
 
   private IpAccessList _fromHostFilter;
 
@@ -46,7 +46,7 @@ public final class Zone extends ComparableStructure<String> {
   private transient SortedMap<String, String> _toZonePoliciesNames;
 
   @JsonCreator
-  public Zone(@JsonProperty(NAME_VAR) String name) {
+  public Zone(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 
@@ -92,7 +92,7 @@ public final class Zone extends ComparableStructure<String> {
     return _fromHostFilter;
   }
 
-  @JsonProperty(FROM_HOST_FILTER_VAR)
+  @JsonProperty(PROP_FROM_HOST_FILTER)
   @JsonPropertyDescription(
       "Filter applied against packets originating from an interface in this zone on this node")
   public String getFromHostFilterName() {
@@ -108,7 +108,7 @@ public final class Zone extends ComparableStructure<String> {
     return _inboundFilter;
   }
 
-  @JsonProperty(INBOUND_FILTER_VAR)
+  @JsonProperty(PROP_INBOUND_FILTER)
   @JsonPropertyDescription(
       "Filter applied against packets whose final destination is an interface in this zone that "
           + "does not have its own inbound filter")
@@ -125,7 +125,7 @@ public final class Zone extends ComparableStructure<String> {
     return _inboundInterfaceFilters;
   }
 
-  @JsonProperty(INBOUND_INTERFACE_FILTERS_VAR)
+  @JsonProperty(PROP_INBOUND_INTERFACE_FILTERS)
   @JsonPropertyDescription(
       "Mapping of interfaces in this zone to their corresponding inbound filters: the filter "
           + "applied against packets whose final destination is the interface whose name is the "
@@ -148,7 +148,7 @@ public final class Zone extends ComparableStructure<String> {
     return _toHostFilter;
   }
 
-  @JsonProperty(TO_HOST_FILTER_VAR)
+  @JsonProperty(PROP_TO_HOST_FILTER)
   @JsonPropertyDescription(
       "Filter applied against packets whose final destination is an interface in this zone. If "
           + "this filter exists, it is applied IN ADDITION to the interface-specific or default "
@@ -166,7 +166,7 @@ public final class Zone extends ComparableStructure<String> {
     return _toZonePolicies;
   }
 
-  @JsonProperty(TO_ZONE_POLICIES_VAR)
+  @JsonProperty(PROP_TO_ZONE_POLICIES)
   @JsonPropertyDescription(
       "Maps names of destination zones to the corresponding filter applied against packets which "
           + "are received on this zone and routed to the named zone")
@@ -188,7 +188,7 @@ public final class Zone extends ComparableStructure<String> {
     _fromHostFilter = fromHostFilter;
   }
 
-  @JsonProperty(FROM_HOST_FILTER_VAR)
+  @JsonProperty(PROP_FROM_HOST_FILTER)
   public void setFromHostFilterName(String fromHostFilterName) {
     _fromHostFilterName = fromHostFilterName;
   }
@@ -198,7 +198,7 @@ public final class Zone extends ComparableStructure<String> {
     _inboundFilter = inboundFilter;
   }
 
-  @JsonProperty(INBOUND_FILTER_VAR)
+  @JsonProperty(PROP_INBOUND_FILTER)
   public void setInboundFilterName(String inboundFilterName) {
     _inboundFilterName = inboundFilterName;
   }
@@ -208,7 +208,7 @@ public final class Zone extends ComparableStructure<String> {
     _inboundInterfaceFilters = inboundInterfaceFilters;
   }
 
-  @JsonProperty(INBOUND_INTERFACE_FILTERS_VAR)
+  @JsonProperty(PROP_INBOUND_INTERFACE_FILTERS)
   public void setInboundInterfaceFiltersNames(
       SortedMap<String, String> inboundInterfaceFiltersNames) {
     _inboundInterfaceFiltersNames = inboundInterfaceFiltersNames;
@@ -219,7 +219,7 @@ public final class Zone extends ComparableStructure<String> {
     _toHostFilter = toHostFilter;
   }
 
-  @JsonProperty(TO_HOST_FILTER_VAR)
+  @JsonProperty(PROP_TO_HOST_FILTER)
   public void setToHostFilterName(String toHostFilterName) {
     _toHostFilterName = toHostFilterName;
   }
@@ -229,7 +229,7 @@ public final class Zone extends ComparableStructure<String> {
     _toZonePolicies = toZonePolicies;
   }
 
-  @JsonProperty(TO_ZONE_POLICIES_VAR)
+  @JsonProperty(PROP_TO_ZONE_POLICIES)
   public void setToZonePoliciesNames(SortedMap<String, String> toZonePoliciesNames) {
     _toZonePoliciesNames = toZonePoliciesNames;
   }

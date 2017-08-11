@@ -13,7 +13,7 @@ public class User extends ComparableStructure<String> {
 
   private String _role;
 
-  public User(@JsonProperty(NAME_VAR) String name) {
+  public User(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 

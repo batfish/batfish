@@ -5,33 +5,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
 
-@JsonPropertyOrder({Route.DIFF_SYMBOL_VAR})
+@JsonPropertyOrder({Route.PROP_DIFF_SYMBOL})
 public class Route implements Comparable<Route>, Serializable {
 
-  private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+  private static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
 
   public static final String AMBIGUOUS_NEXT_HOP = "(ambiguous)";
 
-  protected static final String DIFF_SYMBOL_VAR = "diffSymbol";
+  protected static final String PROP_DIFF_SYMBOL = "diffSymbol";
 
-  private static final String METRIC_VAR = "metric";
+  private static final String PROP_METRIC = "metric";
 
-  private static final String NETWORK_VAR = "network";
+  private static final String PROP_NETWORK = "network";
 
-  private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+  private static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
 
-  private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+  private static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
-  private static final String NEXT_HOP_VAR = "nextHop";
+  private static final String PROP_NEXT_HOP = "nextHop";
 
-  private static final String NODE_VAR = "node";
+  private static final String PROP_NODE = "node";
 
-  private static final String PROTOCOL_VAR = "protocol";
+  private static final String PROP_PROTOCOL = "protocol";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String TAG_VAR = "tag";
+  private static final String PROP_TAG = "tag";
 
   public static final String UNSET_NEXT_HOP = "(unknown)";
 
@@ -45,7 +45,7 @@ public class Route implements Comparable<Route>, Serializable {
 
   public static final int UNSET_ROUTE_TAG = -1;
 
-  private static final String VRF_VAR = "vrf";
+  private static final String PROP_VRF = "vrf";
 
   private final int _administrativeCost;
 
@@ -69,16 +69,16 @@ public class Route implements Comparable<Route>, Serializable {
 
   @JsonCreator
   public Route(
-      @JsonProperty(NODE_VAR) String node,
-      @JsonProperty(VRF_VAR) String vrf,
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(NEXT_HOP_VAR) String nextHop,
-      @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
-      @JsonProperty(METRIC_VAR) int metric,
-      @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol,
-      @JsonProperty(TAG_VAR) int tag) {
+      @JsonProperty(PROP_NODE) String node,
+      @JsonProperty(PROP_VRF) String vrf,
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP) String nextHop,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_METRIC) int metric,
+      @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
+      @JsonProperty(PROP_TAG) int tag) {
     _network = network;
     _nextHopIp = nextHopIp;
     _node = node;
@@ -158,47 +158,47 @@ public class Route implements Comparable<Route>, Serializable {
     return true;
   }
 
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   public int getAdministrativeCost() {
     return _administrativeCost;
   }
 
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   public int getMetric() {
     return _metric;
   }
 
-  @JsonProperty(NETWORK_VAR)
+  @JsonProperty(PROP_NETWORK)
   public Prefix getNetwork() {
     return _network;
   }
 
-  @JsonProperty(NEXT_HOP_VAR)
+  @JsonProperty(PROP_NEXT_HOP)
   public String getNextHop() {
     return _nextHop;
   }
 
-  @JsonProperty(NEXT_HOP_INTERFACE_VAR)
+  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   public String getNextHopInterface() {
     return _nextHopInterface;
   }
 
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   public Ip getNextHopIp() {
     return _nextHopIp;
   }
 
-  @JsonProperty(NODE_VAR)
+  @JsonProperty(PROP_NODE)
   public String getNode() {
     return _node;
   }
 
-  @JsonProperty(PROTOCOL_VAR)
+  @JsonProperty(PROP_PROTOCOL)
   public RoutingProtocol getProtocol() {
     return _protocol;
   }
 
-  @JsonProperty(TAG_VAR)
+  @JsonProperty(PROP_TAG)
   public int getTag() {
     return _tag;
   }

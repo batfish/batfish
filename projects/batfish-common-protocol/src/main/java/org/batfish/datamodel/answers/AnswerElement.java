@@ -11,10 +11,10 @@ import org.batfish.common.util.BatfishObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public interface AnswerElement {
 
-  String SUMMARY_VAR = "summary";
+  String PROP_SUMMARY = "summary";
 
   @Nullable
-  @JsonProperty(SUMMARY_VAR)
+  @JsonProperty(PROP_SUMMARY)
   default String getSummary() {
     return null;
   }
@@ -28,6 +28,6 @@ public interface AnswerElement {
     }
   }
 
-  @JsonProperty(SUMMARY_VAR)
+  @JsonProperty(PROP_SUMMARY)
   default void setSummary(String summary) {}
 }

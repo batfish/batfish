@@ -149,9 +149,9 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
    */
   public static class PairwiseVpnConnectivityQuestion extends Question {
 
-    private static final String NODE1_REGEX_VAR = "node1Regex";
+    private static final String PROP_NODE1_REGEX = "node1Regex";
 
-    private static final String NODE2_REGEX_VAR = "node2Regex";
+    private static final String PROP_NODE2_REGEX = "node2Regex";
 
     private String _node1Regex;
 
@@ -172,12 +172,12 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
       return "pairwisevpnconnectivity";
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public String getNode1Regex() {
       return _node1Regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public String getNode2Regex() {
       return _node2Regex;
     }
@@ -187,12 +187,12 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public void setNode1Regex(String regex) {
       _node1Regex = regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public void setNode2Regex(String regex) {
       _node2Regex = regex;
     }
