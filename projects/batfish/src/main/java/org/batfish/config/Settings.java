@@ -57,6 +57,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private Path _serializeEnvironmentRoutingTablesPath;
 
+    private Path _validateEnvironmentAnswerPath;
+
     public Path getDataPlaneAnswerPath() {
       return _dataPlaneAnswerPath;
     }
@@ -135,6 +137,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public Path getSerializeEnvironmentRoutingTablesPath() {
       return _serializeEnvironmentRoutingTablesPath;
+    }
+
+    public Path getValidateEnvironmentAnswerPath() {
+      return _validateEnvironmentAnswerPath;
     }
 
     public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
@@ -217,6 +223,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     public void setSerializeEnvironmentRoutingTablesPath(
         Path serializeEnvironmentRoutingTablesPath) {
       _serializeEnvironmentRoutingTablesPath = serializeEnvironmentRoutingTablesPath;
+    }
+
+    public void setValidateEnvironmentAnswerPath(Path validateEnvironmentAnswerPath) {
+      _validateEnvironmentAnswerPath = validateEnvironmentAnswerPath;
     }
   }
 
@@ -650,6 +660,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private boolean _unrecognizedAsRedFlag;
 
+  private boolean _validateEnvironment;
+
   private boolean _verboseParse;
 
   public Settings() {
@@ -997,6 +1009,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _unrecognizedAsRedFlag;
   }
 
+  public boolean getValidateEnvironment() {
+    return _validateEnvironment;
+  }
+
   public boolean getVerboseParse() {
     return _verboseParse;
   }
@@ -1090,6 +1106,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
+    setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
   }
 
   private void initOptions() {
@@ -1323,6 +1340,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "serialize vendor configs");
 
     addBooleanOption(BfConsts.COMMAND_REPORT, "generate report based on answered questions");
+
+    addBooleanOption(
+        BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
   }
 
   private void parseCommandLine(String[] args) {
@@ -1416,6 +1436,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
+    _validateEnvironment = getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
     _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
   }
 
@@ -1536,6 +1557,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setThrowOnParserError(boolean throwOnParserError) {
     _throwOnParserError = throwOnParserError;
+  }
+
+  public void setValidateEnvironment(boolean validateEnvironment) {
+    _validateEnvironment = validateEnvironment;
   }
 
   public void setVerboseParse(boolean verboseParse) {

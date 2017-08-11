@@ -119,6 +119,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -233,6 +234,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
           envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
       envSettings.setSerializeEnvironmentRoutingTablesPath(
           envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
+      envSettings.setValidateEnvironmentAnswerPath(
+          envPath.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
       Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
       envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
@@ -2388,6 +2391,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
+    ValidateEnvironmentAnswerElement veae = loadValidateEnvironmentAnswerElement();
+    if (!veae.getValid()) {
+      throw new BatfishException(
+          "Cannot continue: environment '"
+              + getEnvironmentName()
+              + "' is invalid:"
+              + veae.prettyPrint());
+    }
+    SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
+    return configurations;
+  }
+
+  private SortedMap<String, Configuration> loadConfigurationsWithoutValidation() {
     SortedMap<String, Configuration> configurations = _cachedConfigurations.get(_testrigSettings);
     if (configurations == null) {
       ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
@@ -2398,15 +2414,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       configurations = deserializeConfigurations(_testrigSettings.getSerializeIndependentPath());
       _cachedConfigurations.put(_testrigSettings, configurations);
     }
-    processNodeBlacklist(configurations);
-    processNodeRoles(configurations);
-    processInterfaceBlacklist(configurations);
-    processDeltaConfigurations(configurations);
-    disableUnusableVlanInterfaces(configurations);
-    disableUnusableVpnInterfaces(configurations);
     return configurations;
   }
-
+  
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement() {
     return loadConvertConfigurationAnswerElement(true);
@@ -2604,6 +2614,29 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Topology topology = deserializeObject(topologyPath, Topology.class);
     _logger.info("OK\n");
     return topology;
+  }
+
+  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
+    return loadValidateEnvironmentAnswerElement(true);
+  }
+
+  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement(
+      boolean firstAttempt) {
+    Path answerPath = _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath();
+    if (Files.exists(answerPath)) {
+      ValidateEnvironmentAnswerElement veae =
+          deserializeObject(answerPath, ValidateEnvironmentAnswerElement.class);
+      if (Version.isCompatibleVersion("Service", "Old processed environment", veae.getVersion())) {
+        return veae;
+      }
+    }
+    if (firstAttempt) {
+      repairEnvironment();
+      return loadValidateEnvironmentAnswerElement(false);
+    } else {
+      throw new BatfishException(
+          "Version error repairing environment for validate environment answer element");
+    }
   }
 
   @Override
@@ -3363,30 +3396,35 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     _dataPlanePlugin.processFlows(flows);
   }
 
-  private void processInterfaceBlacklist(Map<String, Configuration> configurations) {
+  private void processInterfaceBlacklist(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     if (blacklistInterfaces != null) {
       for (NodeInterfacePair p : blacklistInterfaces) {
         String hostname = p.getHostname();
         String ifaceName = p.getInterface();
         Configuration node = configurations.get(hostname);
-        Interface iface = node.getInterfaces().get(ifaceName);
-        if (iface == null) {
-          throw new BatfishException(
-              "Cannot disable non-existent interface '"
-                  + ifaceName
-                  + "' on node '"
-                  + hostname
-                  + "'\n");
+        if (node == null) {
+          veae.setValid(false);
+          veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
         } else {
-          iface.setActive(false);
-          iface.setBlacklisted(true);
+          Interface iface = node.getInterfaces().get(ifaceName);
+          if (iface == null) {
+            veae.setValid(false);
+            veae.getUndefinedInterfaceBlacklistInterfaces()
+                .computeIfAbsent(hostname, k -> new TreeSet<>())
+                .add(ifaceName);
+          } else {
+            iface.setActive(false);
+            iface.setBlacklisted(true);
+          }
         }
       }
     }
   }
 
-  private void processNodeBlacklist(Map<String, Configuration> configurations) {
+  private void processNodeBlacklist(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     NodeSet blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null) {
       for (String hostname : blacklistNodes) {
@@ -3396,15 +3434,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             iface.setActive(false);
             iface.setBlacklisted(true);
           }
+        } else {
+          veae.setValid(false);
+          veae.getUndefinedNodeBlacklistNodes().add(hostname);
         }
       }
     }
   }
 
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
-     if one exists; otherwise use the results of our node-role inference.
-   */
-  private void processNodeRoles(Map<String, Configuration> configurations) {
+    if one exists; otherwise use the results of our node-role inference.
+  */
+  private void processNodeRoles(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     TestrigSettings settings = _settings.getActiveTestrigSettings();
     Path nodeRolesPath = settings.getNodeRolesPath();
     if (!Files.exists(nodeRolesPath)) {
@@ -3413,15 +3455,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         return;
       }
     }
-
     SortedMap<String, SortedSet<String>> nodeRoles =
         parseNodeRoles(nodeRolesPath, configurations.keySet());
     for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
       String hostname = nodeRolesEntry.getKey();
       Configuration config = configurations.get(hostname);
       if (config == null) {
-        throw new BatfishException(
-            "role set assigned to non-existent node: \"" + hostname + "\"");
+        veae.setValid(false);
+        veae.getUndefinedNodeRoleSpecifierNodes().add(hostname);
       }
       SortedSet<String> roles = nodeRolesEntry.getValue();
       config.setRoles(roles);
@@ -3689,6 +3730,20 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     computeDataPlane(false);
   }
 
+  private void repairEnvironment() {
+    SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
+    ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
+    veae.setVersion(Version.getVersion());
+    processDeltaConfigurations(configurations);
+    processNodeBlacklist(configurations, veae);
+    processNodeRoles(configurations, veae);
+    processInterfaceBlacklist(configurations, veae);
+    disableUnusableVlanInterfaces(configurations);
+    disableUnusableVpnInterfaces(configurations);
+    serializeObject(
+        veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
+  }
+
   private void repairEnvironmentBgpTables() {
     EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
     Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
@@ -3869,6 +3924,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       action = true;
     }
 
+    if (_settings.getValidateEnvironment()) {
+      answer.append(validateEnvironment());
+      action = true;
+    }
+    
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
@@ -4327,6 +4387,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
     }
     return new Topology(edges);
+  }
+
+  private Answer validateEnvironment() {
+    Answer answer = new Answer();
+    ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
+    answer.addAnswerElement(ae);
+    return answer;
   }
 
   @Override
