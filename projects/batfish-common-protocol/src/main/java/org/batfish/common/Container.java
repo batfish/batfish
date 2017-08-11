@@ -3,9 +3,8 @@ package org.batfish.common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.nio.file.Path;
 import java.util.Objects;
-import java.util.SortedSet;
+import java.util.Set;
 
 public final class Container {
   private static final String NAME_VAR = "name";
@@ -13,18 +12,21 @@ public final class Container {
   private static final String ANALYSIS_VAR = "analysis";
 
   private String _name;
-  private SortedSet<String> _testrigs;
-  private Path _analysis;
+  private Set<String> _testrigs;
+  private Set<String> _analysis;
 
   @JsonCreator
   public static Container of(
-      @JsonProperty(NAME_VAR) String name, @JsonProperty(TESTRIGS_VAR) SortedSet<String> testrigs) {
-    return new Container(name, testrigs);
+      @JsonProperty(NAME_VAR) String name,
+      @JsonProperty(TESTRIGS_VAR) Set<String> testrigs,
+      @JsonProperty(ANALYSIS_VAR) Set<String> analysis) {
+    return new Container(name, testrigs, analysis);
   }
 
-  private Container(String name, SortedSet<String> testrigs) {
+  private Container(String name, Set<String> testrigs, Set<String> analysis) {
     this._name = name;
     this._testrigs = testrigs;
+    this._analysis = analysis;
   }
 
   @JsonProperty(NAME_VAR)
@@ -33,12 +35,12 @@ public final class Container {
   }
 
   @JsonProperty(TESTRIGS_VAR)
-  public SortedSet<String> getTestrigs() {
+  public Set<String> getTestrigs() {
     return _testrigs;
   }
 
   @JsonProperty(ANALYSIS_VAR)
-  public Path getAnalysis() {
+  public Set<String> getAnalysis() {
     return _analysis;
   }
 
@@ -48,12 +50,12 @@ public final class Container {
   }
 
   @JsonProperty(TESTRIGS_VAR)
-  public void setTestrigs(SortedSet<String> testrigs) {
+  public void setTestrigs(Set<String> testrigs) {
     _testrigs = testrigs;
   }
 
   @JsonProperty(ANALYSIS_VAR)
-  public void setAnalysis(Path analysis) {
+  public void setAnalysis(Set<String> analysis) {
     _analysis = analysis;
   }
 
@@ -62,6 +64,7 @@ public final class Container {
     return MoreObjects.toStringHelper(Container.class)
         .add(NAME_VAR, _name)
         .add(TESTRIGS_VAR, _testrigs)
+        .add(ANALYSIS_VAR, _analysis)
         .toString();
   }
 
@@ -71,11 +74,14 @@ public final class Container {
       return false;
     }
     Container other = (Container) o;
-    return Objects.equals(_name, other._name) && Objects.equals(_testrigs, other._testrigs);
+    return Objects.equals(_name, other._name)
+        && Objects.equals(_testrigs, other._testrigs)
+        && Objects.equals(_analysis, other._analysis);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name, _testrigs);
+    return Objects.hash(_name, _testrigs, _analysis);
   }
+
 }

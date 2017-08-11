@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.Sets;
 import com.google.common.testing.EqualsTester;
 import java.util.Collections;
-import java.util.TreeSet;
+import java.util.HashSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -18,22 +18,29 @@ import org.junit.runners.JUnit4;
 public class ContainerTest {
   @Test
   public void testToString() {
-    Container c = Container.of("foo", new TreeSet<>());
-    assertThat(c.toString(), equalTo("Container{name=foo, testrigs=[]}"));
+    Container c = Container.of("foo", new HashSet<>(), new HashSet<>());
+    assertThat(c.toString(), equalTo("Container{name=foo, testrigs=[], analysis=[]}"));
   }
 
   @Test
   public void testEquals() {
-    Container c = Container.of("foo", new TreeSet<>());
-    Container cCopy = Container.of("foo", new TreeSet<>());
-    Container cWithTestrig =
-        Container.of("foo", Sets.newTreeSet(Collections.singletonList("testrig")));
-    Container cOtherName = Container.of("bar", new TreeSet<>());
+    Container c = Container.of("foo", new HashSet<>(), new HashSet<>());
+    Container cCopy = Container.of("foo", new HashSet<>(), new HashSet<>());
+    Container cWithTestrig = Container.of(
+        "foo",
+        Sets.newHashSet(Collections.singleton("testrig")),
+        new HashSet<>());
+    Container cWithAnalysis = Container.of(
+        "foo",
+        new HashSet<>(),
+        new HashSet<>(Collections.singleton("analysis")));
+    Container cOtherName = Container.of("bar", new HashSet<>(), new HashSet<>());
 
     new EqualsTester()
         .addEqualityGroup(c, cCopy)
-        .addEqualityGroup(cWithTestrig)
+        .addEqualityGroup(cWithTestrig).addEqualityGroup(cWithAnalysis)
         .addEqualityGroup(cOtherName)
         .testEquals();
   }
+
 }
