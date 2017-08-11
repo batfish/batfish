@@ -10,7 +10,7 @@ public class SntpServer extends ComparableStructure<String> {
 
   public Integer _version;
 
-  public SntpServer(@JsonProperty(NAME_VAR) String hostname) {
+  public SntpServer(@JsonProperty(PROP_NAME) String hostname) {
     super(hostname);
   }
 

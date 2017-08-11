@@ -8,7 +8,7 @@ public class SnmpHost extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public SnmpHost(@JsonProperty(NAME_VAR) String name) {
+  public SnmpHost(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 }

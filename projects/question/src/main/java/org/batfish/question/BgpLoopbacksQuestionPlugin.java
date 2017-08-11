@@ -183,7 +183,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
    */
   public static class BgpLoopbacksQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -201,7 +201,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       return "bgploopbacks";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -214,11 +214,12 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       String retString =
-          String.format("%s %s%s=\"%s\"", getName(), prettyPrintBase(), NODE_REGEX_VAR, _nodeRegex);
+          String.format(
+              "%s %s%s=\"%s\"", getName(), prettyPrintBase(), PROP_NODE_REGEX, _nodeRegex);
       return retString;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }

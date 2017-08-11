@@ -147,7 +147,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
    */
   public static class UndefinedReferencesQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -165,7 +165,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       return "undefinedreferences";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -175,7 +175,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }

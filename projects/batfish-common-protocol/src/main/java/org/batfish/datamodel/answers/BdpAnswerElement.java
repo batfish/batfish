@@ -6,17 +6,17 @@ import java.util.TreeMap;
 
 public class BdpAnswerElement implements DataPlaneAnswerElement {
 
-  private static final String BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION_VAR =
+  private static final String PROP_BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION =
       "bgpBestPathRibRoutesByIteration";
 
-  private static final String BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION_VAR =
+  private static final String PROP_BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION =
       "bgpMultipathRibRoutesByIteration";
 
-  private static final String DEPENDENT_ROUTES_ITERATIONS_VAR = "dependentRoutesIterations";
+  private static final String PROP_DEPENDENT_ROUTES_ITERATIONS = "dependentRoutesIterations";
 
   private static final String MAIN_RIB_ROUTES_BY_ITERATION = "mainRibRoutesByIteration";
 
-  private static final String OSPF_INTERNAL_ITERATIONS_VAR = "ospfInternalIterations";
+  private static final String PROP_OSPF_INTERNAL_ITERATIONS = "ospfInternalIterations";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -39,17 +39,17 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     _mainRibRoutesByIteration = new TreeMap<>();
   }
 
-  @JsonProperty(BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION_VAR)
+  @JsonProperty(PROP_BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION)
   public SortedMap<Integer, Integer> getBgpBestPathRibRoutesByIteration() {
     return _bgpBestPathRibRoutesByIteration;
   }
 
-  @JsonProperty(BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION_VAR)
+  @JsonProperty(PROP_BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION)
   public SortedMap<Integer, Integer> getBgpMultipathRibRoutesByIteration() {
     return _bgpMultipathRibRoutesByIteration;
   }
 
-  @JsonProperty(DEPENDENT_ROUTES_ITERATIONS_VAR)
+  @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
   public int getDependentRoutesIterations() {
     return _dependentRoutesIterations;
   }
@@ -59,13 +59,13 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     return _mainRibRoutesByIteration;
   }
 
-  @JsonProperty(OSPF_INTERNAL_ITERATIONS_VAR)
+  @JsonProperty(PROP_OSPF_INTERNAL_ITERATIONS)
   public int getOspfInternalIterations() {
     return _ospfInternalIterations;
   }
 
   @Override
-  @JsonProperty(VERSION_VAR)
+  @JsonProperty(PROP_VERSION)
   public String getVersion() {
     return _version;
   }
@@ -84,19 +84,19 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     return sb.toString();
   }
 
-  @JsonProperty(BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION_VAR)
+  @JsonProperty(PROP_BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION)
   public void setBgpBestPathRibRoutesByIteration(
       SortedMap<Integer, Integer> bgpBestPathRibRoutesByIteration) {
     _bgpBestPathRibRoutesByIteration = bgpBestPathRibRoutesByIteration;
   }
 
-  @JsonProperty(BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION_VAR)
+  @JsonProperty(PROP_BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION)
   public void setBgpMultipathRibRoutesByIteration(
       SortedMap<Integer, Integer> bgpMultipathRibRoutesByIteration) {
     _bgpMultipathRibRoutesByIteration = bgpMultipathRibRoutesByIteration;
   }
 
-  @JsonProperty(DEPENDENT_ROUTES_ITERATIONS_VAR)
+  @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
   public void setDependentRoutesIterations(int dependentRoutesIterations) {
     _dependentRoutesIterations = dependentRoutesIterations;
   }
@@ -106,12 +106,12 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     _mainRibRoutesByIteration = mainRibRoutesByIteration;
   }
 
-  @JsonProperty(OSPF_INTERNAL_ITERATIONS_VAR)
+  @JsonProperty(PROP_OSPF_INTERNAL_ITERATIONS)
   public void setOspfInternalIterations(int ospfInternalIterations) {
     _ospfInternalIterations = ospfInternalIterations;
   }
 
-  @JsonProperty(VERSION_VAR)
+  @JsonProperty(PROP_VERSION)
   public void setVersion(String version) {
     _version = version;
   }

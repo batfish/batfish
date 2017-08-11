@@ -71,11 +71,11 @@ public abstract class OspfExternalRoute extends OspfRoute {
     }
   }
 
-  protected static final String ADVERTISER_VAR = "advertiser";
+  protected static final String PROP_ADVERTISER = "advertiser";
 
-  protected static final String COST_TO_ADVERTISER_VAR = "costToAdvertiser";
+  protected static final String PROP_COST_TO_ADVERTISER = "costToAdvertiser";
 
-  protected static final String OSPF_METRIC_TYPE_VAR = "ospfMetricType";
+  protected static final String PROP_OSPF_METRIC_TYPE = "ospfMetricType";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -86,12 +86,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   @JsonCreator
   public OspfExternalRoute(
-      @JsonProperty(NETWORK_VAR) Prefix prefix,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
+      @JsonProperty(PROP_NETWORK) Prefix prefix,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       int metric,
-      @JsonProperty(ADVERTISER_VAR) String advertiser,
-      @JsonProperty(COST_TO_ADVERTISER_VAR) int costToAdvertiser) {
+      @JsonProperty(PROP_ADVERTISER) String advertiser,
+      @JsonProperty(PROP_COST_TO_ADVERTISER) int costToAdvertiser) {
     super(prefix, nextHopIp, admin, metric);
     _advertiser = advertiser;
     _costToAdvertiser = costToAdvertiser;
@@ -125,12 +125,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return true;
   }
 
-  @JsonProperty(ADVERTISER_VAR)
+  @JsonProperty(PROP_ADVERTISER)
   public final String getAdvertiser() {
     return _advertiser;
   }
 
-  @JsonProperty(COST_TO_ADVERTISER_VAR)
+  @JsonProperty(PROP_COST_TO_ADVERTISER)
   public int getCostToAdvertiser() {
     return _costToAdvertiser;
   }

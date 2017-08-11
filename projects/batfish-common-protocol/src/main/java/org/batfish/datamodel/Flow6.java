@@ -8,47 +8,47 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class Flow6 implements Comparable<Flow6> {
 
-  private static final String DSCP_VAR = "dscp";
+  private static final String PROP_DSCP = "dscp";
 
-  private static final String DST_IP_VAR = "dstIp";
+  private static final String PROP_DST_IP = "dstIp";
 
-  private static final String DST_PORT_VAR = "dstPort";
+  private static final String PROP_DST_PORT = "dstPort";
 
-  private static final String ECN_VAR = "ecn";
+  private static final String PROP_ECN = "ecn";
 
-  private static final String FRAGMENT_OFFSET_VAR = "fragmentOffset";
+  private static final String PROP_FRAGMENT_OFFSET = "fragmentOffset";
 
-  private static final String ICMP_CODE_VAR = "icmpCode";
+  private static final String PROP_ICMP_CODE = "icmpCode";
 
-  private static final String ICMP_TYPE_VAR = "icmpVar";
+  private static final String PROP_ICMP_TYPE = "icmpVar";
 
-  private static final String INGRESS_NODE_VAR = "ingressNode";
+  private static final String PROP_INGRESS_NODE = "ingressNode";
 
-  private static final String IP_PROTOCOL_VAR = "ipProtocol";
+  private static final String PROP_IP_PROTOCOL = "ipProtocol";
 
-  private static final String SRC_IP_VAR = "srcIp";
+  private static final String PROP_SRC_IP = "srcIp";
 
-  private static final String SRC_PORT_VAR = "srcPort";
+  private static final String PROP_SRC_PORT = "srcPort";
 
-  private static final String STATE_VAR = "state";
+  private static final String PROP_STATE = "state";
 
-  private static final String TAG_VAR = "tag";
+  private static final String PROP_TAG = "tag";
 
-  private static final String TCP_FLAGS_ACK_VAR = "tcpFlagsAck";
+  private static final String PROP_TCP_FLAGS_ACK = "tcpFlagsAck";
 
-  private static final String TCP_FLAGS_CWR_VAR = "tcpFlagsCwr";
+  private static final String PROP_TCP_FLAGS_CWR = "tcpFlagsCwr";
 
-  private static final String TCP_FLAGS_ECE_VAR = "tcpFlagsEce";
+  private static final String PROP_TCP_FLAGS_ECE = "tcpFlagsEce";
 
-  private static final String TCP_FLAGS_FIN_VAR = "tcpFlagsFin";
+  private static final String PROP_TCP_FLAGS_FIN = "tcpFlagsFin";
 
-  private static final String TCP_FLAGS_PSH_VAR = "tcpFlagsPsh";
+  private static final String PROP_TCP_FLAGS_PSH = "tcpFlagsPsh";
 
-  private static final String TCP_FLAGS_RST_VAR = "tcpFlagsRst";
+  private static final String PROP_TCP_FLAGS_RST = "tcpFlagsRst";
 
-  private static final String TCP_FLAGS_SYN_VAR = "tcpFlagsSyn";
+  private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
 
-  private static final String TCP_FLAGS_URG_VAR = "tcpFlagsUrg";
+  private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
 
   private final int _dscp;
 
@@ -94,27 +94,27 @@ public final class Flow6 implements Comparable<Flow6> {
 
   @JsonCreator
   public Flow6(
-      @JsonProperty(INGRESS_NODE_VAR) String ingressNode,
-      @JsonProperty(SRC_IP_VAR) Ip6 srcIp,
-      @JsonProperty(DST_IP_VAR) Ip6 dstIp,
-      @JsonProperty(SRC_PORT_VAR) int srcPort,
-      @JsonProperty(DST_PORT_VAR) int dstPort,
-      @JsonProperty(IP_PROTOCOL_VAR) IpProtocol ipProtocol,
-      @JsonProperty(DSCP_VAR) int dscp,
-      @JsonProperty(ECN_VAR) int ecn,
-      @JsonProperty(FRAGMENT_OFFSET_VAR) int fragmentOffset,
-      @JsonProperty(ICMP_TYPE_VAR) int icmpType,
-      @JsonProperty(ICMP_CODE_VAR) int icmpCode,
-      @JsonProperty(STATE_VAR) State state,
-      @JsonProperty(TCP_FLAGS_CWR_VAR) int tcpFlagsCwr,
-      @JsonProperty(TCP_FLAGS_ECE_VAR) int tcpFlagsEce,
-      @JsonProperty(TCP_FLAGS_URG_VAR) int tcpFlagsUrg,
-      @JsonProperty(TCP_FLAGS_ACK_VAR) int tcpFlagsAck,
-      @JsonProperty(TCP_FLAGS_PSH_VAR) int tcpFlagsPsh,
-      @JsonProperty(TCP_FLAGS_RST_VAR) int tcpFlagsRst,
-      @JsonProperty(TCP_FLAGS_SYN_VAR) int tcpFlagsSyn,
-      @JsonProperty(TCP_FLAGS_FIN_VAR) int tcpFlagsFin,
-      @JsonProperty(TAG_VAR) String tag) {
+      @JsonProperty(PROP_INGRESS_NODE) String ingressNode,
+      @JsonProperty(PROP_SRC_IP) Ip6 srcIp,
+      @JsonProperty(PROP_DST_IP) Ip6 dstIp,
+      @JsonProperty(PROP_SRC_PORT) int srcPort,
+      @JsonProperty(PROP_DST_PORT) int dstPort,
+      @JsonProperty(PROP_IP_PROTOCOL) IpProtocol ipProtocol,
+      @JsonProperty(PROP_DSCP) int dscp,
+      @JsonProperty(PROP_ECN) int ecn,
+      @JsonProperty(PROP_FRAGMENT_OFFSET) int fragmentOffset,
+      @JsonProperty(PROP_ICMP_TYPE) int icmpType,
+      @JsonProperty(PROP_ICMP_CODE) int icmpCode,
+      @JsonProperty(PROP_STATE) State state,
+      @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
+      @JsonProperty(PROP_TCP_FLAGS_ECE) int tcpFlagsEce,
+      @JsonProperty(PROP_TCP_FLAGS_URG) int tcpFlagsUrg,
+      @JsonProperty(PROP_TCP_FLAGS_ACK) int tcpFlagsAck,
+      @JsonProperty(PROP_TCP_FLAGS_PSH) int tcpFlagsPsh,
+      @JsonProperty(PROP_TCP_FLAGS_RST) int tcpFlagsRst,
+      @JsonProperty(PROP_TCP_FLAGS_SYN) int tcpFlagsSyn,
+      @JsonProperty(PROP_TCP_FLAGS_FIN) int tcpFlagsFin,
+      @JsonProperty(PROP_TAG) String tag) {
     _ingressNode = ingressNode;
     _srcIp = srcIp;
     _dstIp = dstIp;
@@ -286,107 +286,107 @@ public final class Flow6 implements Comparable<Flow6> {
     return _tag.equals(other._tag);
   }
 
-  @JsonProperty(DSCP_VAR)
+  @JsonProperty(PROP_DSCP)
   public int getDscp() {
     return _dscp;
   }
 
-  @JsonProperty(DST_IP_VAR)
+  @JsonProperty(PROP_DST_IP)
   public Ip6 getDstIp() {
     return _dstIp;
   }
 
-  @JsonProperty(DST_PORT_VAR)
+  @JsonProperty(PROP_DST_PORT)
   public Integer getDstPort() {
     return _dstPort;
   }
 
-  @JsonProperty(ECN_VAR)
+  @JsonProperty(PROP_ECN)
   public int getEcn() {
     return _ecn;
   }
 
-  @JsonProperty(FRAGMENT_OFFSET_VAR)
+  @JsonProperty(PROP_FRAGMENT_OFFSET)
   public int getFragmentOffset() {
     return _fragmentOffset;
   }
 
-  @JsonProperty(ICMP_CODE_VAR)
+  @JsonProperty(PROP_ICMP_CODE)
   public Integer getIcmpCode() {
     return _icmpCode;
   }
 
-  @JsonProperty(ICMP_TYPE_VAR)
+  @JsonProperty(PROP_ICMP_TYPE)
   public Integer getIcmpType() {
     return _icmpType;
   }
 
-  @JsonProperty(INGRESS_NODE_VAR)
+  @JsonProperty(PROP_INGRESS_NODE)
   public String getIngressNode() {
     return _ingressNode;
   }
 
-  @JsonProperty(IP_PROTOCOL_VAR)
+  @JsonProperty(PROP_IP_PROTOCOL)
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
-  @JsonProperty(SRC_IP_VAR)
+  @JsonProperty(PROP_SRC_IP)
   public Ip6 getSrcIp() {
     return _srcIp;
   }
 
-  @JsonProperty(SRC_PORT_VAR)
+  @JsonProperty(PROP_SRC_PORT)
   public Integer getSrcPort() {
     return _srcPort;
   }
 
-  @JsonProperty(STATE_VAR)
+  @JsonProperty(PROP_STATE)
   public State getState() {
     return _state;
   }
 
-  @JsonProperty(TAG_VAR)
+  @JsonProperty(PROP_TAG)
   public String getTag() {
     return _tag;
   }
 
-  @JsonProperty(TCP_FLAGS_ACK_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_ACK)
   public int getTcpFlagsAck() {
     return _tcpFlagsAck;
   }
 
-  @JsonProperty(TCP_FLAGS_CWR_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_CWR)
   public int getTcpFlagsCwr() {
     return _tcpFlagsCwr;
   }
 
-  @JsonProperty(TCP_FLAGS_ECE_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_ECE)
   public int getTcpFlagsEce() {
     return _tcpFlagsEce;
   }
 
-  @JsonProperty(TCP_FLAGS_FIN_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_FIN)
   public int getTcpFlagsFin() {
     return _tcpFlagsFin;
   }
 
-  @JsonProperty(TCP_FLAGS_PSH_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_PSH)
   public int getTcpFlagsPsh() {
     return _tcpFlagsPsh;
   }
 
-  @JsonProperty(TCP_FLAGS_RST_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_RST)
   public int getTcpFlagsRst() {
     return _tcpFlagsRst;
   }
 
-  @JsonProperty(TCP_FLAGS_SYN_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_SYN)
   public int getTcpFlagsSyn() {
     return _tcpFlagsSyn;
   }
 
-  @JsonProperty(TCP_FLAGS_URG_VAR)
+  @JsonProperty(PROP_TCP_FLAGS_URG)
   public int getTcpFlagsUrg() {
     return _tcpFlagsUrg;
   }

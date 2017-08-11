@@ -9,15 +9,15 @@ import java.util.SortedSet;
 
 public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOutlierSet<T>> {
 
-  private static final String NAME_VAR = "name";
+  private static final String PROP_NAME = "name";
 
-  private static final String STRUCT_TYPE_VAR = "structType";
+  private static final String PROP_STRUCT_TYPE = "structType";
 
-  private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
+  private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
-  private static final String CONFORMERS_VAR = "conformers";
+  private static final String PROP_CONFORMERS = "conformers";
 
-  private static final String OUTLIERS_VAR = "outliers";
+  private static final String PROP_OUTLIERS = "outliers";
 
   /** A lower bound on the probability at which a hypothesis should be considered to be true */
   private static final double THRESHOLD_PROBABILITY = 0.9;
@@ -42,11 +42,11 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
 
   @JsonCreator
   public NamedStructureOutlierSet(
-      @JsonProperty(STRUCT_TYPE_VAR) String structType,
-      @JsonProperty(NAME_VAR) String name,
-      @JsonProperty(NAMED_STRUCT_TYPES_VAR) T namedStructure,
-      @JsonProperty(CONFORMERS_VAR) SortedSet<String> conformers,
-      @JsonProperty(OUTLIERS_VAR) SortedSet<String> outliers) {
+      @JsonProperty(PROP_STRUCT_TYPE) String structType,
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_NAMED_STRUCT_TYPES) T namedStructure,
+      @JsonProperty(PROP_CONFORMERS) SortedSet<String> conformers,
+      @JsonProperty(PROP_OUTLIERS) SortedSet<String> outliers) {
     _structType = structType;
     _name = name;
     _namedStructure = namedStructure;
@@ -79,7 +79,7 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
     return _conformers;
   }
 
-  @JsonProperty(NAME_VAR)
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
@@ -94,7 +94,7 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
     return _outliers;
   }
 
-  @JsonProperty(STRUCT_TYPE_VAR)
+  @JsonProperty(PROP_STRUCT_TYPE)
   public String getStructType() {
     return _structType;
   }

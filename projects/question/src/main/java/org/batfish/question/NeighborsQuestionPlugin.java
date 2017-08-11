@@ -79,29 +79,29 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
   public static class NeighborsAnswerElement implements AnswerElement {
 
-    private static final String EBGP_NEIGHBORS_VAR = "ebgpNeighbors";
+    private static final String PROP_EBGP_NEIGHBORS = "ebgpNeighbors";
 
-    private static final String IBGP_NEIGHBORS_VAR = "ibgpNeighbors";
+    private static final String PROP_IBGP_NEIGHBORS = "ibgpNeighbors";
 
-    private static final String LAN_NEIGHBORS_VAR = "lanNeighbors";
+    private static final String PROP_LAN_NEIGHBORS = "lanNeighbors";
 
-    private static final String OSPF_NEIGHBORS_VAR = "ospfNeighbors";
+    private static final String PROP_OSPF_NEIGHBORS = "ospfNeighbors";
 
-    private static final String ROLE_EBGP_NEIGHBORS_VAR = "roleEbgpNeighbors";
+    private static final String PROP_ROLE_EBGP_NEIGHBORS = "roleEbgpNeighbors";
 
-    private static final String ROLE_IBGP_NEIGHBORS_VAR = "roleIbgpNeighbors";
+    private static final String PROP_ROLE_IBGP_NEIGHBORS = "roleIbgpNeighbors";
 
-    private static final String ROLE_LAN_NEIGHBORS_VAR = "roleLanNeighbors";
+    private static final String PROP_ROLE_LAN_NEIGHBORS = "roleLanNeighbors";
 
-    private static final String ROLE_OSPF_NEIGHBORS_VAR = "roleOspfNeighbors";
+    private static final String PROP_ROLE_OSPF_NEIGHBORS = "roleOspfNeighbors";
 
-    private static final String VERBOSE_EBGP_NEIGHBORS_VAR = "verboseEbgpNeighbors";
+    private static final String PROP_VERBOSE_EBGP_NEIGHBORS = "verboseEbgpNeighbors";
 
-    private static final String VERBOSE_IBGP_NEIGHBORS_VAR = "verboseIbgpNeighbors";
+    private static final String PROP_VERBOSE_IBGP_NEIGHBORS = "verboseIbgpNeighbors";
 
-    private static final String VERBOSE_LAN_NEIGHBORS_VAR = "verboseLanNeighbors";
+    private static final String PROP_VERBOSE_LAN_NEIGHBORS = "verboseLanNeighbors";
 
-    private static final String VERBOSE_OSPF_NEIGHBORS_VAR = "verboseOspfNeighbors";
+    private static final String PROP_VERBOSE_OSPF_NEIGHBORS = "verboseOspfNeighbors";
 
     private SortedSet<IpEdge> _ebgpNeighbors;
 
@@ -131,62 +131,62 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _lanNeighbors.add(edge);
     }
 
-    @JsonProperty(EBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_EBGP_NEIGHBORS)
     public SortedSet<IpEdge> getEbgpNeighbors() {
       return _ebgpNeighbors;
     }
 
-    @JsonProperty(IBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_IBGP_NEIGHBORS)
     public SortedSet<IpEdge> getIbgpNeighbors() {
       return _ibgpNeighbors;
     }
 
-    @JsonProperty(LAN_NEIGHBORS_VAR)
+    @JsonProperty(PROP_LAN_NEIGHBORS)
     public SortedSet<Edge> getLanNeighbors() {
       return _lanNeighbors;
     }
 
-    @JsonProperty(OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_OSPF_NEIGHBORS)
     public SortedSet<IpEdge> getOspfNeighbors() {
       return _ospfNeighbors;
     }
 
-    @JsonProperty(ROLE_EBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_EBGP_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleEbgpNeighbors() {
       return _roleEbgpNeighbors;
     }
 
-    @JsonProperty(ROLE_IBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_IBGP_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleIbgpNeighbors() {
       return _roleIbgpNeighbors;
     }
 
-    @JsonProperty(ROLE_LAN_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_LAN_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleLanNeighbors() {
       return _roleLanNeighbors;
     }
 
-    @JsonProperty(ROLE_OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_OSPF_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleOspfNeighbors() {
       return _roleOspfNeighbors;
     }
 
-    @JsonProperty(VERBOSE_EBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_EBGP_NEIGHBORS)
     public SortedSet<VerboseBgpEdge> getVerboseEbgpNeighbors() {
       return _verboseEbgpNeighbors;
     }
 
-    @JsonProperty(VERBOSE_IBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_IBGP_NEIGHBORS)
     public SortedSet<VerboseBgpEdge> getVerboseIbgpNeighbors() {
       return _verboseIbgpNeighbors;
     }
 
-    @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_LAN_NEIGHBORS)
     public SortedSet<VerboseEdge> getVerboseLanNeighbors() {
       return _verboseLanNeighbors;
     }
 
-    @JsonProperty(VERBOSE_OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_OSPF_NEIGHBORS)
     public SortedSet<VerboseOspfEdge> getVerboseOspfNeighbors() {
       return _verboseOspfNeighbors;
     }
@@ -302,62 +302,62 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(EBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_EBGP_NEIGHBORS)
     public void setEbgpNeighbors(SortedSet<IpEdge> ebgpNeighbors) {
       _ebgpNeighbors = ebgpNeighbors;
     }
 
-    @JsonProperty(IBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_IBGP_NEIGHBORS)
     public void setIbgpNeighbors(SortedSet<IpEdge> ibgpNeighbors) {
       _ibgpNeighbors = ibgpNeighbors;
     }
 
-    @JsonProperty(LAN_NEIGHBORS_VAR)
+    @JsonProperty(PROP_LAN_NEIGHBORS)
     public void setLanNeighbors(SortedSet<Edge> lanNeighbors) {
       _lanNeighbors = lanNeighbors;
     }
 
-    @JsonProperty(OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_OSPF_NEIGHBORS)
     public void setOspfNeighbors(SortedSet<IpEdge> ospfNeighbors) {
       _ospfNeighbors = ospfNeighbors;
     }
 
-    @JsonProperty(ROLE_EBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_EBGP_NEIGHBORS)
     public void setRoleEbgpNeighbors(SortedSet<RoleEdge> roleEbgpNeighbors) {
       _roleEbgpNeighbors = roleEbgpNeighbors;
     }
 
-    @JsonProperty(ROLE_IBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_IBGP_NEIGHBORS)
     public void setRoleIbgpNeighbors(SortedSet<RoleEdge> roleIbgpNeighbors) {
       _roleIbgpNeighbors = roleIbgpNeighbors;
     }
 
-    @JsonProperty(ROLE_LAN_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_LAN_NEIGHBORS)
     public void setRoleLanNeighbors(SortedSet<RoleEdge> roleLanNeighbors) {
       _roleLanNeighbors = roleLanNeighbors;
     }
 
-    @JsonProperty(ROLE_OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ROLE_OSPF_NEIGHBORS)
     public void setRoleOspfNeighbors(SortedSet<RoleEdge> roleOspfNeighbors) {
       _roleOspfNeighbors = roleOspfNeighbors;
     }
 
-    @JsonProperty(VERBOSE_EBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_EBGP_NEIGHBORS)
     public void setVerboseEbgpNeighbors(SortedSet<VerboseBgpEdge> verboseEbgpNeighbors) {
       _verboseEbgpNeighbors = verboseEbgpNeighbors;
     }
 
-    @JsonProperty(VERBOSE_IBGP_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_IBGP_NEIGHBORS)
     public void setVerboseIbgpNeighbors(SortedSet<VerboseBgpEdge> verboseIbgpNeighbors) {
       _verboseIbgpNeighbors = verboseIbgpNeighbors;
     }
 
-    @JsonProperty(VERBOSE_LAN_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_LAN_NEIGHBORS)
     public void setVerboseLanNeighbors(SortedSet<VerboseEdge> verboseLanNeighbors) {
       _verboseLanNeighbors = verboseLanNeighbors;
     }
 
-    @JsonProperty(VERBOSE_OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_VERBOSE_OSPF_NEIGHBORS)
     public void setVerboseOspfNeighbors(SortedSet<VerboseOspfEdge> verboseOspfNeighbors) {
       _verboseOspfNeighbors = verboseOspfNeighbors;
     }
@@ -688,15 +688,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
    */
   public static class NeighborsQuestion extends Question {
 
-    private static final String NEIGHBOR_TYPES_VAR = "neighborTypes";
+    private static final String PROP_NEIGHBOR_TYPES = "neighborTypes";
 
-    private static final String NODE1_REGEX_VAR = "node1Regex";
+    private static final String PROP_NODE1_REGEX = "node1Regex";
 
-    private static final String NODE2_REGEX_VAR = "node2Regex";
+    private static final String PROP_NODE2_REGEX = "node2Regex";
 
-    private static final String STYLE_VAR = "style";
+    private static final String PROP_STYLE = "style";
 
-    private static final String ROLE_SPECIFIER_VAR = "roleSpecifier";
+    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
     private SortedSet<NeighborType> _neighborTypes;
 
@@ -725,27 +725,27 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return "neighbors";
     }
 
-    @JsonProperty(NEIGHBOR_TYPES_VAR)
+    @JsonProperty(PROP_NEIGHBOR_TYPES)
     public SortedSet<NeighborType> getNeighborTypes() {
       return _neighborTypes;
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public String getNode1Regex() {
       return _node1Regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public String getNode2Regex() {
       return _node2Regex;
     }
 
-    @JsonProperty(STYLE_VAR)
+    @JsonProperty(PROP_STYLE)
     public EdgeStyle getStyle() {
       return _style;
     }
 
-    @JsonProperty(ROLE_SPECIFIER_VAR)
+    @JsonProperty(PROP_ROLE_SPECIFIER)
     public NodeRoleSpecifier getRoleSpecifier() {
       return _roleSpecifier;
     }
@@ -762,13 +762,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             String.format(
                 "neighbors %s%s=%s | %s=%s | %s=%s | %s=%b",
                 prettyPrintBase(),
-                NODE1_REGEX_VAR,
+                PROP_NODE1_REGEX,
                 _node1Regex,
-                NODE2_REGEX_VAR,
+                PROP_NODE2_REGEX,
                 _node2Regex,
-                NEIGHBOR_TYPES_VAR,
+                PROP_NEIGHBOR_TYPES,
                 _neighborTypes.toString(),
-                STYLE_VAR,
+                PROP_STYLE,
                 _style);
         return retString;
       } catch (Exception e) {
@@ -780,27 +780,27 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
     }
 
-    @JsonProperty(NEIGHBOR_TYPES_VAR)
+    @JsonProperty(PROP_NEIGHBOR_TYPES)
     public void setNeighborTypes(SortedSet<NeighborType> neighborTypes) {
       _neighborTypes = neighborTypes;
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public void setNode1Regex(String regex) {
       _node1Regex = regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public void setNode2Regex(String regex) {
       _node2Regex = regex;
     }
 
-    @JsonProperty(STYLE_VAR)
+    @JsonProperty(PROP_STYLE)
     public void setStyle(EdgeStyle style) {
       _style = style;
     }
 
-    @JsonProperty(ROLE_SPECIFIER_VAR)
+    @JsonProperty(PROP_ROLE_SPECIFIER)
     public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
       _roleSpecifier = roleSpecifier;
     }

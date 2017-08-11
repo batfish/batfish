@@ -33,15 +33,15 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
 
   public static class OspfSessionCheckAnswerElement implements AnswerElement {
 
-    private static final String ALL_OSPF_NEIGHBORS_VAR = "allOspfNeighbors";
+    private static final String PROP_ALL_OSPF_NEIGHBORS = "allOspfNeighbors";
 
-    private static final String BROKEN_VAR = "broken";
+    private static final String PROP_BROKEN = "broken";
 
-    private static final String HALF_OPEN_VAR = "halfOpen";
+    private static final String PROP_HALF_OPEN = "halfOpen";
 
-    private static final String IGNORED_FOREIGN_ENDPOINTS_VAR = "ignoredForeignEndpoints";
+    private static final String PROP_IGNORED_FOREIGN_ENDPOINTS = "ignoredForeignEndpoints";
 
-    private static final String MISMATCH_LINK_COST_VAR = "mismatchLinkCost";
+    private static final String PROP_MISMATCH_LINK_COST = "mismatchLinkCost";
 
     private SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>>
         _allOspfNeighbors;
@@ -88,28 +88,28 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       neighborsByIp.put(ipPair, ospfNeighbor);
     }
 
-    @JsonProperty(ALL_OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ALL_OSPF_NEIGHBORS)
     public SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>>
         getAllOspfNeighbors() {
       return _allOspfNeighbors;
     }
 
-    @JsonProperty(BROKEN_VAR)
+    @JsonProperty(PROP_BROKEN)
     private SortedMap<String, SortedMap<String, SortedSet<IpPair>>> getBroken() {
       return _broken;
     }
 
-    @JsonProperty(HALF_OPEN_VAR)
+    @JsonProperty(PROP_HALF_OPEN)
     private SortedMap<String, SortedMap<String, SortedSet<IpPair>>> getHalfOpen() {
       return _halfOpen;
     }
 
-    @JsonProperty(IGNORED_FOREIGN_ENDPOINTS_VAR)
+    @JsonProperty(PROP_IGNORED_FOREIGN_ENDPOINTS)
     private SortedMap<String, SortedMap<String, SortedSet<IpPair>>> getIgnoredForeignEndpoints() {
       return _ignoredForeignEndpoints;
     }
 
-    @JsonProperty(MISMATCH_LINK_COST_VAR)
+    @JsonProperty(PROP_MISMATCH_LINK_COST)
     private SortedMap<String, SortedMap<String, SortedSet<IpPair>>> getMismatchLinkCost() {
       return _mismatchLinkCost;
     }
@@ -117,8 +117,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
-      sb.append(prettyPrintCategory(_halfOpen, HALF_OPEN_VAR));
-      sb.append(prettyPrintCategory(_mismatchLinkCost, MISMATCH_LINK_COST_VAR));
+      sb.append(prettyPrintCategory(_halfOpen, PROP_HALF_OPEN));
+      sb.append(prettyPrintCategory(_mismatchLinkCost, PROP_MISMATCH_LINK_COST));
       return sb.toString();
     }
 
@@ -148,30 +148,30 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       return sb;
     }
 
-    @JsonProperty(ALL_OSPF_NEIGHBORS_VAR)
+    @JsonProperty(PROP_ALL_OSPF_NEIGHBORS)
     public void setAllOspfNeighbors(
         SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>>
             allOspfNeighbors) {
       _allOspfNeighbors = allOspfNeighbors;
     }
 
-    @JsonProperty(BROKEN_VAR)
+    @JsonProperty(PROP_BROKEN)
     public void setBroken(SortedMap<String, SortedMap<String, SortedSet<IpPair>>> broken) {
       _broken = broken;
     }
 
-    @JsonProperty(HALF_OPEN_VAR)
+    @JsonProperty(PROP_HALF_OPEN)
     public void setHalfOpen(SortedMap<String, SortedMap<String, SortedSet<IpPair>>> halfOpen) {
       _halfOpen = halfOpen;
     }
 
-    @JsonProperty(IGNORED_FOREIGN_ENDPOINTS_VAR)
+    @JsonProperty(PROP_IGNORED_FOREIGN_ENDPOINTS)
     public void setIgnoredForeignEndpoints(
         SortedMap<String, SortedMap<String, SortedSet<IpPair>>> ignoredForeignEndpoints) {
       _ignoredForeignEndpoints = ignoredForeignEndpoints;
     }
 
-    @JsonProperty(MISMATCH_LINK_COST_VAR)
+    @JsonProperty(PROP_MISMATCH_LINK_COST)
     public void setMismatchLinkCost(
         SortedMap<String, SortedMap<String, SortedSet<IpPair>>> mismatchLinkCost) {
       _mismatchLinkCost = mismatchLinkCost;
@@ -303,11 +303,11 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
    */
   public static class OspfSessionCheckQuestion extends Question {
 
-    private static final String FOREIGN_OSPF_NETWORKS_VAR = "foreignOspfNetworks";
+    private static final String PROP_FOREIGN_OSPF_NETWORKS = "foreignOspfNetworks";
 
-    private static final String NODE1_REGEX_VAR = "node1Regex";
+    private static final String PROP_NODE1_REGEX = "node1Regex";
 
-    private static final String NODE2_REGEX_VAR = "node2Regex";
+    private static final String PROP_NODE2_REGEX = "node2Regex";
 
     private SortedSet<Prefix> _foreignOspfNetworks;
 
@@ -326,7 +326,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(FOREIGN_OSPF_NETWORKS_VAR)
+    @JsonProperty(PROP_FOREIGN_OSPF_NETWORKS)
     public SortedSet<Prefix> getForeignOspfNetworks() {
       return _foreignOspfNetworks;
     }
@@ -336,12 +336,12 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       return "ospfsessioncheck";
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public String getNode1Regex() {
       return _node1Regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public String getNode2Regex() {
       return _node2Regex;
     }
@@ -351,17 +351,17 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(FOREIGN_OSPF_NETWORKS_VAR)
+    @JsonProperty(PROP_FOREIGN_OSPF_NETWORKS)
     public void setForeignOspfNetworks(SortedSet<Prefix> foreignOspfNetworks) {
       _foreignOspfNetworks = foreignOspfNetworks;
     }
 
-    @JsonProperty(NODE1_REGEX_VAR)
+    @JsonProperty(PROP_NODE1_REGEX)
     public void setNode1Regex(String regex) {
       _node1Regex = regex;
     }
 
-    @JsonProperty(NODE2_REGEX_VAR)
+    @JsonProperty(PROP_NODE2_REGEX)
     public void setNode2Regex(String regex) {
       _node2Regex = regex;
     }

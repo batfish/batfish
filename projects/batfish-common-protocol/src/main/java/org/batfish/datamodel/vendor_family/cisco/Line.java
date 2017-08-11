@@ -32,7 +32,7 @@ public class Line extends ComparableStructure<String> {
   private SortedSet<String> _transportPreferred;
 
   @JsonCreator
-  public Line(@JsonProperty(NAME_VAR) String name) {
+  public Line(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _transportInput = new TreeSet<>();
     _transportOutput = new TreeSet<>();

@@ -12,9 +12,9 @@ public class AclLinesAnswerElement implements AnswerElement {
 
   public static class AclReachabilityEntry implements Comparable<AclReachabilityEntry> {
 
-    private static final String INDEX_VAR = "index";
+    private static final String PROP_INDEX = "index";
 
-    private static final String NAME_VAR = "name";
+    private static final String PROP_NAME = "name";
 
     private boolean _differentAction;
 
@@ -28,7 +28,7 @@ public class AclLinesAnswerElement implements AnswerElement {
 
     @JsonCreator
     public AclReachabilityEntry(
-        @JsonProperty(INDEX_VAR) int index, @JsonProperty(NAME_VAR) String name) {
+        @JsonProperty(PROP_INDEX) int index, @JsonProperty(PROP_NAME) String name) {
       _index = index;
       _name = name;
     }

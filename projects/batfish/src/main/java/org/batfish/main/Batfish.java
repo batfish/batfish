@@ -3214,8 +3214,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   private String preprocessQuestion(String rawQuestionText) {
     try {
       JSONObject jobj = new JSONObject(rawQuestionText);
-      if (jobj.has(BfConsts.INSTANCE_VAR) && !jobj.isNull(BfConsts.INSTANCE_VAR)) {
-        String instanceDataStr = jobj.getString(BfConsts.INSTANCE_VAR);
+      if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
+        String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         InstanceData instanceData =
             mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
