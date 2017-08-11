@@ -1442,8 +1442,15 @@ public class Client extends AbstractClient implements IClient {
     WorkItem wItemGenDdp =
         _workHelper.getWorkItemCompileDeltaEnvironment(
             _currContainerName, _currDeltaTestrig, _currEnv, _currDeltaEnv);
-
     if (!execute(wItemGenDdp, outWriter)) {
+      return false;
+    }
+
+    WorkItem wItemValidateEnvironment =
+        _workHelper.getWorkItemValidateEnvironment(
+            _currContainerName, _currDeltaTestrig, _currDeltaEnv);
+
+    if (!execute(wItemValidateEnvironment, outWriter)) {
       return false;
     }
 
