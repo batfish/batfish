@@ -37,18 +37,14 @@ public class Route6FilterLine implements Serializable {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
+    } else if (!(obj instanceof Route6FilterLine)) {
+      return false;
     }
+
     Route6FilterLine other = (Route6FilterLine) obj;
-    if (_action != other._action) {
-      return false;
-    }
-    if (!_lengthRange.equals(other._lengthRange)) {
-      return false;
-    }
-    if (!_prefix.equals(other._prefix)) {
-      return false;
-    }
-    return true;
+    return _action == other._action
+        && _lengthRange.equals(other._lengthRange)
+        && _prefix.equals(other._prefix);
   }
 
   @JsonProperty(ACTION_VAR)

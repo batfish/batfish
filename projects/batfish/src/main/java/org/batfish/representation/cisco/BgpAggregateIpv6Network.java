@@ -14,6 +14,11 @@ public class BgpAggregateIpv6Network extends BgpAggregateNetwork {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof BgpAggregateIpv6Network)) {
+      return false;
+    }
     BgpAggregateIpv6Network rhs = (BgpAggregateIpv6Network) o;
     return _prefix6.equals(rhs._prefix6);
   }
