@@ -3463,9 +3463,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (config == null) {
         veae.setValid(false);
         veae.getUndefinedNodeRoleSpecifierNodes().add(hostname);
+      } else {
+        SortedSet<String> roles = nodeRolesEntry.getValue();
+        config.setRoles(roles);
       }
-      SortedSet<String> roles = nodeRolesEntry.getValue();
-      config.setRoles(roles);
     }
   }
 
