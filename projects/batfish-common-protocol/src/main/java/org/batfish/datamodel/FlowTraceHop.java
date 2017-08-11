@@ -7,14 +7,14 @@ import java.util.SortedSet;
 
 public final class FlowTraceHop implements Serializable {
 
-  private static final String EDGE_VAR = "edge";
+  private static final String PROP_EDGE = "edge";
 
-  private static final String ROUTES_VAR = "routes";
+  private static final String PROP_ROUTES = "routes";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String TRANSFORMED_FLOW_VAR = "transformedFlow";
+  private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
   private final Edge _edge;
 
@@ -24,9 +24,9 @@ public final class FlowTraceHop implements Serializable {
 
   @JsonCreator
   public FlowTraceHop(
-      @JsonProperty(EDGE_VAR) Edge edge,
-      @JsonProperty(ROUTES_VAR) SortedSet<String> routes,
-      @JsonProperty(TRANSFORMED_FLOW_VAR) Flow transformedFlow) {
+      @JsonProperty(PROP_EDGE) Edge edge,
+      @JsonProperty(PROP_ROUTES) SortedSet<String> routes,
+      @JsonProperty(PROP_TRANSFORMED_FLOW) Flow transformedFlow) {
     _edge = edge;
     _routes = routes;
     _transformedFlow = transformedFlow;
@@ -68,17 +68,17 @@ public final class FlowTraceHop implements Serializable {
     return true;
   }
 
-  @JsonProperty(EDGE_VAR)
+  @JsonProperty(PROP_EDGE)
   public Edge getEdge() {
     return _edge;
   }
 
-  @JsonProperty(ROUTES_VAR)
+  @JsonProperty(PROP_ROUTES)
   public SortedSet<String> getRoutes() {
     return _routes;
   }
 
-  @JsonProperty(TRANSFORMED_FLOW_VAR)
+  @JsonProperty(PROP_TRANSFORMED_FLOW)
   public Flow getTransformedFlow() {
     return _transformedFlow;
   }

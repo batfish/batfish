@@ -33,7 +33,7 @@ import org.batfish.datamodel.routing_policy.Result;
 })
 public abstract class Statement implements Serializable {
 
-  private static final String COMMENT_VAR = "comment";
+  private static final String PROP_COMMENT = "comment";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -45,7 +45,7 @@ public abstract class Statement implements Serializable {
 
   public abstract Result execute(Environment environment);
 
-  @JsonProperty(COMMENT_VAR)
+  @JsonProperty(PROP_COMMENT)
   public final String getComment() {
     return _comment;
   }
@@ -53,7 +53,7 @@ public abstract class Statement implements Serializable {
   @Override
   public abstract int hashCode();
 
-  @JsonProperty(COMMENT_VAR)
+  @JsonProperty(PROP_COMMENT)
   public final void setComment(String comment) {
     _comment = comment;
   }

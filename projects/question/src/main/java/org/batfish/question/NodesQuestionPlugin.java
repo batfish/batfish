@@ -272,9 +272,9 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       }
     }
 
-    private static final String NODES_SUMMARY_VAR = "nodesSummary";
+    private static final String PROP_NODES_SUMMARY = "nodesSummary";
 
-    private static final String NODES_VAR = "nodes";
+    private static final String PROP_NODES = "nodes";
 
     private final SortedMap<String, Configuration> _nodes;
 
@@ -298,18 +298,18 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     @JsonCreator
     public NodesAnswerElement(
-        @JsonProperty(NODES_VAR) SortedMap<String, Configuration> nodes,
-        @JsonProperty(NODES_SUMMARY_VAR) SortedMap<String, NodeSummary> nodesSummary) {
+        @JsonProperty(PROP_NODES) SortedMap<String, Configuration> nodes,
+        @JsonProperty(PROP_NODES_SUMMARY) SortedMap<String, NodeSummary> nodesSummary) {
       _nodes = nodes;
       _nodesSummary = nodesSummary;
     }
 
-    @JsonProperty(NODES_VAR)
+    @JsonProperty(PROP_NODES)
     public SortedMap<String, Configuration> getAnswer() {
       return _nodes;
     }
 
-    @JsonProperty(NODES_SUMMARY_VAR)
+    @JsonProperty(PROP_NODES_SUMMARY)
     public SortedMap<String, NodeSummary> getNodesSummary() {
       return _nodesSummary;
     }
@@ -384,13 +384,13 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
   public static class NodesDiffAnswerElement implements AnswerElement {
 
-    private static final String CONFIG_DIFF_VAR = "configDiff";
+    private static final String PROP_CONFIG_DIFF = "configDiff";
 
-    // private static final String IDENTICAL_VAR = "identical";
+    // private static final String PROP_IDENTICAL = "identical";
 
-    private static final String IN_AFTER_ONLY_VAR = "inAfterOnly";
+    private static final String PROP_IN_AFTER_ONLY = "inAfterOnly";
 
-    private static final String IN_BEFORE_ONLY_VAR = "inBeforeOnly";
+    private static final String PROP_IN_BEFORE_ONLY = "inBeforeOnly";
 
     private static final int MAX_IDENTICAL = 10;
 
@@ -440,44 +440,44 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     }
 
     /** @return the _configDiff */
-    @JsonProperty(CONFIG_DIFF_VAR)
+    @JsonProperty(PROP_CONFIG_DIFF)
     public SortedMap<String, ConfigurationDiff> getConfigDiff() {
       return _configDiff;
     }
 
-    // @JsonProperty(IDENTICAL_VAR)
+    // @JsonProperty(PROP_IDENTICAL)
     @JsonIgnore
     public SortedSet<String> getIdentical() {
       return _identical;
     }
 
-    @JsonProperty(IN_AFTER_ONLY_VAR)
+    @JsonProperty(PROP_IN_AFTER_ONLY)
     public SortedSet<String> getInAfterOnly() {
       return _inAfterOnly;
     }
 
-    @JsonProperty(IN_BEFORE_ONLY_VAR)
+    @JsonProperty(PROP_IN_BEFORE_ONLY)
     public SortedSet<String> getInBeforeOnly() {
       return _inBeforeOnly;
     }
 
-    @JsonProperty(CONFIG_DIFF_VAR)
+    @JsonProperty(PROP_CONFIG_DIFF)
     public void setConfigDiff(SortedMap<String, ConfigurationDiff> configDiff) {
       _configDiff = configDiff;
     }
 
-    // @JsonProperty(IDENTICAL_VAR)
+    // @JsonProperty(PROP_IDENTICAL)
     @JsonIgnore
     public void setIdentical(SortedSet<String> identical) {
       _identical = identical;
     }
 
-    @JsonProperty(IN_AFTER_ONLY_VAR)
+    @JsonProperty(PROP_IN_AFTER_ONLY)
     public void setInAfterOnly(SortedSet<String> inAfterOnly) {
       _inAfterOnly = inAfterOnly;
     }
 
-    @JsonProperty(IN_BEFORE_ONLY_VAR)
+    @JsonProperty(PROP_IN_BEFORE_ONLY)
     public void setInBeforeOnly(SortedSet<String> inBeforeOnly) {
       _inBeforeOnly = inBeforeOnly;
     }
@@ -511,11 +511,11 @@ public class NodesQuestionPlugin extends QuestionPlugin {
    */
   public static class NodesQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String NODE_TYPES_VAR = "nodeTypes";
+    private static final String PROP_NODE_TYPES = "nodeTypes";
 
-    private static final String SUMMARY_VAR = "summary";
+    private static final String PROP_SUMMARY = "summary";
 
     private String _nodeRegex;
 
@@ -539,17 +539,17 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       return "nodes";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(NODE_TYPES_VAR)
+    @JsonProperty(PROP_NODE_TYPES)
     public SortedSet<NodeType> getNodeTypes() {
       return _nodeTypes;
     }
 
-    @JsonProperty(SUMMARY_VAR)
+    @JsonProperty(PROP_SUMMARY)
     public boolean getSummary() {
       return _summary;
     }
@@ -559,17 +559,17 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }
 
-    @JsonProperty(NODE_TYPES_VAR)
+    @JsonProperty(PROP_NODE_TYPES)
     public void setNodeTypes(SortedSet<NodeType> nodeTypes) {
       _nodeTypes = nodeTypes;
     }
 
-    @JsonProperty(SUMMARY_VAR)
+    @JsonProperty(PROP_SUMMARY)
     public void setSummary(boolean summary) {
       _summary = summary;
     }

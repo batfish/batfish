@@ -6,24 +6,24 @@ import org.batfish.common.Pair;
 
 public class NodeInterfacePair extends Pair<String, String> {
 
-  private static final String HOSTNAME_VAR = "hostname";
+  private static final String PROP_HOSTNAME = "hostname";
 
-  private static final String INTERFACE_VAR = "interface";
+  private static final String PROP_INTERFACE = "interface";
   /** */
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
   public NodeInterfacePair(
-      @JsonProperty(HOSTNAME_VAR) String node, @JsonProperty(INTERFACE_VAR) String iface) {
+      @JsonProperty(PROP_HOSTNAME) String node, @JsonProperty(PROP_INTERFACE) String iface) {
     super(node, iface);
   }
 
-  @JsonProperty(HOSTNAME_VAR)
+  @JsonProperty(PROP_HOSTNAME)
   public String getHostname() {
     return _first;
   }
 
-  @JsonProperty(INTERFACE_VAR)
+  @JsonProperty(PROP_INTERFACE)
   public String getInterface() {
     return _second;
   }

@@ -106,73 +106,73 @@ public abstract class Question implements IQuestion {
         _allowedValues = new TreeSet<>();
       }
 
-      @JsonProperty(BfConsts.ALLOWED_VALUES_VAR)
+      @JsonProperty(BfConsts.PROP_ALLOWED_VALUES)
       public SortedSet<String> getAllowedValues() {
         return _allowedValues;
       }
 
-      @JsonProperty(BfConsts.DESCRIPTION_VAR)
+      @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public String getDescription() {
         return _description;
       }
 
-      @JsonProperty(BfConsts.MIN_ELEMENTS_VAR)
+      @JsonProperty(BfConsts.PROP_MIN_ELEMENTS)
       public Integer getMinElements() {
         return _minElements;
       }
 
-      @JsonProperty(BfConsts.MIN_LENGTH_VAR)
+      @JsonProperty(BfConsts.PROP_MIN_LENGTH)
       public Integer getMinLength() {
         return _minLength;
       }
 
-      @JsonProperty(BfConsts.OPTIONAL_VAR)
+      @JsonProperty(BfConsts.PROP_OPTIONAL)
       public boolean getOptional() {
         return _optional;
       }
 
-      @JsonProperty(BfConsts.TYPE_VAR)
+      @JsonProperty(BfConsts.PROP_TYPE)
       public Type getType() {
         return _type;
       }
 
-      @JsonProperty(BfConsts.VALUE_VAR)
+      @JsonProperty(BfConsts.PROP_VALUE)
       @JsonInclude(Include.NON_NULL)
       public JsonNode getValue() {
         return _value;
       }
 
-      @JsonProperty(BfConsts.ALLOWED_VALUES_VAR)
+      @JsonProperty(BfConsts.PROP_ALLOWED_VALUES)
       public void setAllowedValues(SortedSet<String> allowedValues) {
         _allowedValues = allowedValues;
       }
 
-      @JsonProperty(BfConsts.DESCRIPTION_VAR)
+      @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public void setDescription(String description) {
         _description = description;
       }
 
-      @JsonProperty(BfConsts.MIN_ELEMENTS_VAR)
+      @JsonProperty(BfConsts.PROP_MIN_ELEMENTS)
       public void setMinElements(Integer minElements) {
         _minElements = minElements;
       }
 
-      @JsonProperty(BfConsts.MIN_LENGTH_VAR)
+      @JsonProperty(BfConsts.PROP_MIN_LENGTH)
       public void setMinLength(Integer minLength) {
         _minLength = minLength;
       }
 
-      @JsonProperty(BfConsts.OPTIONAL_VAR)
+      @JsonProperty(BfConsts.PROP_OPTIONAL)
       public void setOptional(boolean optional) {
         _optional = optional;
       }
 
-      @JsonProperty(BfConsts.TYPE_VAR)
+      @JsonProperty(BfConsts.PROP_TYPE)
       public void setType(Type type) {
         _type = type;
       }
 
-      @JsonProperty(BfConsts.VALUE_VAR)
+      @JsonProperty(BfConsts.PROP_VALUE)
       public void setValue(JsonNode value) {
         if (value != null && value.isNull()) {
           _value = null;
@@ -197,52 +197,52 @@ public abstract class Question implements IQuestion {
       _variables = new TreeMap<>();
     }
 
-    @JsonProperty(BfConsts.DESCRIPTION_VAR)
+    @JsonProperty(BfConsts.PROP_DESCRIPTION)
     public String getDescription() {
       return _description;
     }
 
-    @JsonProperty(BfConsts.INSTANCE_NAME_VAR)
+    @JsonProperty(BfConsts.PROP_INSTANCE_NAME)
     public String getInstanceName() {
       return _instanceName;
     }
 
-    @JsonProperty(BfConsts.LONG_DESCRIPTION_VAR)
+    @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
     public String getLongDescription() {
       return _longDescription;
     }
 
-    @JsonProperty(BfConsts.TAGS_VAR)
+    @JsonProperty(BfConsts.PROP_TAGS)
     public SortedSet<String> getTags() {
       return _tags;
     }
 
-    @JsonProperty(BfConsts.VARIABLES_VAR)
+    @JsonProperty(BfConsts.PROP_VARIABLES)
     public SortedMap<String, Variable> getVariables() {
       return _variables;
     }
 
-    @JsonProperty(BfConsts.DESCRIPTION_VAR)
+    @JsonProperty(BfConsts.PROP_DESCRIPTION)
     public void setDescription(String description) {
       _description = description;
     }
 
-    @JsonProperty(BfConsts.INSTANCE_NAME_VAR)
+    @JsonProperty(BfConsts.PROP_INSTANCE_NAME)
     public void setInstanceName(String instanceName) {
       _instanceName = instanceName;
     }
 
-    @JsonProperty(BfConsts.LONG_DESCRIPTION_VAR)
+    @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
     public void setLongDescription(String longDescription) {
       _longDescription = longDescription;
     }
 
-    @JsonProperty(BfConsts.TAGS_VAR)
+    @JsonProperty(BfConsts.PROP_TAGS)
     public void setTags(SortedSet<String> tags) {
       _tags = tags;
     }
 
-    @JsonProperty(BfConsts.VARIABLES_VAR)
+    @JsonProperty(BfConsts.PROP_VARIABLES)
     public void setVariables(SortedMap<String, Variable> variables) {
       _variables = variables;
     }
@@ -259,12 +259,12 @@ public abstract class Question implements IQuestion {
   @JsonIgnore
   public abstract boolean getDataPlane();
 
-  @JsonProperty(BfConsts.DIFFERENTIAL_VAR)
+  @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public boolean getDifferential() {
     return _differential;
   }
 
-  @JsonProperty(BfConsts.INSTANCE_VAR)
+  @JsonProperty(BfConsts.PROP_INSTANCE)
   public InstanceData getInstance() {
     return _instance;
   }
@@ -277,7 +277,7 @@ public abstract class Question implements IQuestion {
 
   protected boolean isBaseParamKey(String paramKey) {
     switch (paramKey) {
-      case BfConsts.DIFFERENTIAL_VAR:
+      case BfConsts.PROP_DIFFERENTIAL:
         return true;
       default:
         return false;
@@ -308,12 +308,12 @@ public abstract class Question implements IQuestion {
     }
   }
 
-  @JsonProperty(BfConsts.DIFFERENTIAL_VAR)
+  @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public void setDifferential(boolean differential) {
     _differential = differential;
   }
 
-  @JsonProperty(BfConsts.INSTANCE_VAR)
+  @JsonProperty(BfConsts.PROP_INSTANCE)
   public void setInstance(InstanceData instance) {
     _instance = instance;
   }

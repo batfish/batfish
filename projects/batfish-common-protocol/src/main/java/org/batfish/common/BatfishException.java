@@ -19,7 +19,7 @@ public class BatfishException extends RuntimeException {
 
   public static class BatfishStackTrace implements Serializable, AnswerElement {
 
-    private static final String LINES_VAR = "answer";
+    private static final String PROP_LINES = "answer";
 
     /** */
     private static final long serialVersionUID = 1L;
@@ -35,7 +35,7 @@ public class BatfishException extends RuntimeException {
     }
 
     @JsonCreator
-    public BatfishStackTrace(@JsonProperty(LINES_VAR) List<String> lines) {
+    public BatfishStackTrace(@JsonProperty(PROP_LINES) List<String> lines) {
       _lines = lines;
       _exception = null;
     }
@@ -45,7 +45,7 @@ public class BatfishException extends RuntimeException {
       return _exception;
     }
 
-    @JsonProperty(LINES_VAR)
+    @JsonProperty(PROP_LINES)
     public List<String> getLineMap() {
       return _lines;
     }

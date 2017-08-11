@@ -32,15 +32,15 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
   @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
   public static class BgpAdvertisementsAnswerElement implements AnswerElement {
 
-    private static final String ALL_REQUESTED_ADVERTISEMENTS_VAR = "allRequestedAdvertisements";
+    private static final String PROP_ALL_REQUESTED_ADVERTISEMENTS = "allRequestedAdvertisements";
 
-    private static final String RECEIVED_EBGP_ADVERTISEMENTS_VAR = "receivedEbgpAdvertisements";
+    private static final String PROP_RECEIVED_EBGP_ADVERTISEMENTS = "receivedEbgpAdvertisements";
 
-    private static final String RECEIVED_IBGP_ADVERTISEMENTS_VAR = "receivedIbgpAdvertisements";
+    private static final String PROP_RECEIVED_IBGP_ADVERTISEMENTS = "receivedIbgpAdvertisements";
 
-    private static final String SENT_EBGP_ADVERTISEMENTS_VAR = "sentEbgpAdvertisements";
+    private static final String PROP_SENT_EBGP_ADVERTISEMENTS = "sentEbgpAdvertisements";
 
-    private static final String SENT_IBGP_ADVERTISEMENTS_VAR = "sentIbgpAdvertisements";
+    private static final String PROP_SENT_IBGP_ADVERTISEMENTS = "sentIbgpAdvertisements";
 
     private SortedSet<BgpAdvertisement> _added;
 
@@ -162,19 +162,19 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       return _added;
     }
 
-    @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_ALL_REQUESTED_ADVERTISEMENTS)
     public SortedSet<BgpAdvertisement> getAllRequestedAdvertisements() {
       return _allRequestedAdvertisements;
     }
 
     @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(RECEIVED_EBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_RECEIVED_EBGP_ADVERTISEMENTS)
     public SortedMap<String, SortedSet<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
       return _receivedEbgpAdvertisements;
     }
 
     @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_RECEIVED_IBGP_ADVERTISEMENTS)
     public SortedMap<String, SortedSet<BgpAdvertisement>> getReceivedIbgpAdvertisements() {
       return _receivedIbgpAdvertisements;
     }
@@ -184,13 +184,13 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_SENT_EBGP_ADVERTISEMENTS)
     public SortedMap<String, SortedSet<BgpAdvertisement>> getSentEbgpAdvertisements() {
       return _sentEbgpAdvertisements;
     }
 
     @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_SENT_IBGP_ADVERTISEMENTS)
     public SortedMap<String, SortedSet<BgpAdvertisement>> getSentIbgpAdvertisements() {
       return _sentIbgpAdvertisements;
     }
@@ -215,19 +215,19 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       _added = added;
     }
 
-    @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_ALL_REQUESTED_ADVERTISEMENTS)
     public void setAllRequestedAdvertisements(
         SortedSet<BgpAdvertisement> allRequestedAdvertisements) {
       _allRequestedAdvertisements = allRequestedAdvertisements;
     }
 
-    @JsonProperty(RECEIVED_EBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_RECEIVED_EBGP_ADVERTISEMENTS)
     public void setReceivedEbgpAdvertisements(
         SortedMap<String, SortedSet<BgpAdvertisement>> receivedEbgpAdvertisements) {
       _receivedEbgpAdvertisements = receivedEbgpAdvertisements;
     }
 
-    @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_RECEIVED_IBGP_ADVERTISEMENTS)
     public void setReceivedIbgpAdvertisements(
         SortedMap<String, SortedSet<BgpAdvertisement>> receivedIbgpAdvertisements) {
       _receivedIbgpAdvertisements = receivedIbgpAdvertisements;
@@ -237,13 +237,13 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       _removed = removed;
     }
 
-    @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_SENT_EBGP_ADVERTISEMENTS)
     public void setSentEbgpAdvertisements(
         SortedMap<String, SortedSet<BgpAdvertisement>> sentEbgpAdvertisements) {
       _sentEbgpAdvertisements = sentEbgpAdvertisements;
     }
 
-    @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR)
+    @JsonProperty(PROP_SENT_IBGP_ADVERTISEMENTS)
     public void setSentIbgpAdvertisements(
         SortedMap<String, SortedSet<BgpAdvertisement>> sentIbgpAdvertisements) {
       _sentIbgpAdvertisements = sentIbgpAdvertisements;
@@ -327,19 +327,19 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
    */
   public static class BgpAdvertisementsQuestion extends Question {
 
-    private static final String EBGP_VAR = "ebgp";
+    private static final String PROP_EBGP = "ebgp";
 
-    private static final String FROM_ENVIRONMENT_VAR = "fromEnvironment";
+    private static final String PROP_FROM_ENVIRONMENT = "fromEnvironment";
 
-    private static final String IBGP_VAR = "ibgp";
+    private static final String PROP_IBGP = "ibgp";
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String PREFIX_SPACE_VAR = "prefixSpace";
+    private static final String PROP_PREFIX_SPACE = "prefixSpace";
 
-    private static final String RECEIVED_VAR = "received";
+    private static final String PROP_RECEIVED = "received";
 
-    private static final String SENT_VAR = "sent";
+    private static final String PROP_SENT = "sent";
 
     private boolean _ebgp;
 
@@ -370,17 +370,17 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       return true;
     }
 
-    @JsonProperty(EBGP_VAR)
+    @JsonProperty(PROP_EBGP)
     public boolean getEbgp() {
       return _ebgp;
     }
 
-    @JsonProperty(FROM_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_FROM_ENVIRONMENT)
     public boolean getFromEnvironment() {
       return _fromEnvironment;
     }
 
-    @JsonProperty(IBGP_VAR)
+    @JsonProperty(PROP_IBGP)
     public boolean getIbgp() {
       return _ibgp;
     }
@@ -390,22 +390,22 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       return "bgpadvertisements";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(PREFIX_SPACE_VAR)
+    @JsonProperty(PROP_PREFIX_SPACE)
     public PrefixSpace getPrefixSpace() {
       return _prefixSpace;
     }
 
-    @JsonProperty(RECEIVED_VAR)
+    @JsonProperty(PROP_RECEIVED)
     public boolean getReceived() {
       return _received;
     }
 
-    @JsonProperty(SENT_VAR)
+    @JsonProperty(PROP_SENT)
     public boolean getSent() {
       return _sent;
     }
@@ -422,52 +422,52 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
               "%s %s%s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\"",
               getName(),
               prettyPrintBase(),
-              EBGP_VAR,
+              PROP_EBGP,
               _ebgp,
-              IBGP_VAR,
+              PROP_IBGP,
               _ibgp,
-              NODE_REGEX_VAR,
+              PROP_NODE_REGEX,
               _nodeRegex,
-              PREFIX_SPACE_VAR,
+              PROP_PREFIX_SPACE,
               _prefixSpace.toString(),
-              RECEIVED_VAR,
+              PROP_RECEIVED,
               _received,
-              SENT_VAR,
+              PROP_SENT,
               _sent);
       return retString;
     }
 
-    @JsonProperty(EBGP_VAR)
+    @JsonProperty(PROP_EBGP)
     public void setEbgp(boolean ebgp) {
       _ebgp = ebgp;
     }
 
-    @JsonProperty(FROM_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_FROM_ENVIRONMENT)
     public void setFromEnvironment(boolean fromEnvironment) {
       _fromEnvironment = fromEnvironment;
     }
 
-    @JsonProperty(IBGP_VAR)
+    @JsonProperty(PROP_IBGP)
     public void setIbgp(boolean ibgp) {
       _ibgp = ibgp;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }
 
-    @JsonProperty(PREFIX_SPACE_VAR)
+    @JsonProperty(PROP_PREFIX_SPACE)
     private void setPrefixSpace(PrefixSpace prefixSpace) {
       _prefixSpace = prefixSpace;
     }
 
-    @JsonProperty(RECEIVED_VAR)
+    @JsonProperty(PROP_RECEIVED)
     public void setReceived(boolean received) {
       _received = received;
     }
 
-    @JsonProperty(SENT_VAR)
+    @JsonProperty(PROP_SENT)
     public void setSent(boolean sent) {
       _sent = sent;
     }

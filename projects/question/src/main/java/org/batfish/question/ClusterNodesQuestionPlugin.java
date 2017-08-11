@@ -23,13 +23,13 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
   public static class ClusterNodesAnswerElement implements AnswerElement {
 
-    private static final String CLUSTERS_VAR = "clusters";
+    private static final String PROP_CLUSTERS = "clusters";
 
     private List<Set<String>> _clusters;
 
     public ClusterNodesAnswerElement() {}
 
-    @JsonProperty(CLUSTERS_VAR)
+    @JsonProperty(PROP_CLUSTERS)
     public List<Set<String>> getClusters() {
       return _clusters;
     }
@@ -43,7 +43,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(CLUSTERS_VAR)
+    @JsonProperty(PROP_CLUSTERS)
     public void setClusters(List<Set<String>> clusters) {
       _clusters = clusters;
     }
@@ -310,13 +310,13 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
    */
   public static final class ClusterNodesQuestion extends Question {
 
-    private static final String NAME_ONLY_VAR = "nameOnly";
+    private static final String PROP_NAME_ONLY = "nameOnly";
 
-    private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
+    private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String NUM_CLUSTERS_VAR = "numClusters";
+    private static final String PROP_NUM_CLUSTERS = "numClusters";
 
     private SortedSet<String> _namedStructTypes;
 
@@ -342,22 +342,22 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       return "ClusterNodes";
     }
 
-    @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public SortedSet<String> getNamedStructTypes() {
       return _namedStructTypes;
     }
 
-    @JsonProperty(NAME_ONLY_VAR)
+    @JsonProperty(PROP_NAME_ONLY)
     public boolean getNameOnly() {
       return _nameOnly;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(NUM_CLUSTERS_VAR)
+    @JsonProperty(PROP_NUM_CLUSTERS)
     public int getNumClusters() {
       return _numClusters;
     }
@@ -367,22 +367,22 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
       _namedStructTypes = namedStructTypes;
     }
 
-    @JsonProperty(NAME_ONLY_VAR)
+    @JsonProperty(PROP_NAME_ONLY)
     public void setNameOnly(boolean nameOnly) {
       _nameOnly = nameOnly;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }
 
-    @JsonProperty(NUM_CLUSTERS_VAR)
+    @JsonProperty(PROP_NUM_CLUSTERS)
     public void setNumClusters(int numClusters) {
       _numClusters = numClusters;
     }

@@ -8,7 +8,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class CallStatement extends Statement {
 
-  private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
+  private static final String PROP_CALLED_POLICY_NAME = "calledPolicyName";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -63,7 +63,7 @@ public class CallStatement extends Statement {
     return result;
   }
 
-  @JsonProperty(CALLED_POLICY_NAME_VAR)
+  @JsonProperty(PROP_CALLED_POLICY_NAME)
   public String getCalledPolicyName() {
     return _calledPolicyName;
   }
@@ -76,7 +76,7 @@ public class CallStatement extends Statement {
     return result;
   }
 
-  @JsonProperty(CALLED_POLICY_NAME_VAR)
+  @JsonProperty(PROP_CALLED_POLICY_NAME)
   public void setCalledPolicyName(String calledPolicyName) {
     _calledPolicyName = calledPolicyName;
   }

@@ -211,7 +211,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
    */
   public static class IsisLoopbacksQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -229,7 +229,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       return "isisloopbacks";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -239,7 +239,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }

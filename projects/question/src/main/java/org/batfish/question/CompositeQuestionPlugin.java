@@ -12,7 +12,7 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
 
   public static class CompositeAnswerElement implements AnswerElement {
 
-    private static final String ANSWERS_VAR = "answers";
+    private static final String PROP_ANSWERS = "answers";
 
     private List<AnswerElement> _answers;
 
@@ -20,12 +20,12 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
       _answers = new ArrayList<>();
     }
 
-    @JsonProperty(ANSWERS_VAR)
+    @JsonProperty(PROP_ANSWERS)
     public List<AnswerElement> getAnswers() {
       return _answers;
     }
 
-    @JsonProperty(ANSWERS_VAR)
+    @JsonProperty(PROP_ANSWERS)
     public void setAnswers(List<AnswerElement> answers) {
       _answers = answers;
     }
@@ -54,7 +54,7 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
 
   public static class CompositeQuestion extends Question {
 
-    private static final String QUESTIONS_VAR = "questions";
+    private static final String PROP_QUESTIONS = "questions";
 
     private List<Question> _questions;
 
@@ -72,7 +72,7 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
       return "composite";
     }
 
-    @JsonProperty(QUESTIONS_VAR)
+    @JsonProperty(PROP_QUESTIONS)
     public List<Question> getQuestions() {
       return _questions;
     }
@@ -82,7 +82,7 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(QUESTIONS_VAR)
+    @JsonProperty(PROP_QUESTIONS)
     public void setQuestions(List<Question> questions) {
       _questions = questions;
     }
