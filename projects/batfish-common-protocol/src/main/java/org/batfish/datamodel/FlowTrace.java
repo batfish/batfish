@@ -7,9 +7,9 @@ import java.util.Set;
 
 public class FlowTrace implements Comparable<FlowTrace> {
 
-  private static final String DISPOSITION_VAR = "disposition";
-  private static final String HOPS_VAR = "hops";
-  private static final String NOTES_VAR = "notes";
+  private static final String PROP_DISPOSITION = "disposition";
+  private static final String PROP_HOPS = "hops";
+  private static final String PROP_NOTES = "notes";
 
   private final FlowDisposition _disposition;
 
@@ -18,9 +18,9 @@ public class FlowTrace implements Comparable<FlowTrace> {
   private final String _notes;
 
   public FlowTrace(
-      @JsonProperty(DISPOSITION_VAR) FlowDisposition disposition,
-      @JsonProperty(HOPS_VAR) List<FlowTraceHop> hops,
-      @JsonProperty(NOTES_VAR) String notes) {
+      @JsonProperty(PROP_DISPOSITION) FlowDisposition disposition,
+      @JsonProperty(PROP_HOPS) List<FlowTraceHop> hops,
+      @JsonProperty(PROP_NOTES) String notes) {
     _disposition = disposition;
     _hops = hops != null ? hops : Collections.emptyList();
     _notes = notes;
@@ -61,17 +61,17 @@ public class FlowTrace implements Comparable<FlowTrace> {
     return true;
   }
 
-  @JsonProperty(DISPOSITION_VAR)
+  @JsonProperty(PROP_DISPOSITION)
   public FlowDisposition getDisposition() {
     return _disposition;
   }
 
-  @JsonProperty(HOPS_VAR)
+  @JsonProperty(PROP_HOPS)
   public List<FlowTraceHop> getHops() {
     return _hops;
   }
 
-  @JsonProperty(NOTES_VAR)
+  @JsonProperty(PROP_NOTES)
   public String getNotes() {
     return _notes;
   }

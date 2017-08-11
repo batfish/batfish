@@ -20,7 +20,7 @@ import org.batfish.common.util.ComparableStructure;
     "An AsPathAccessList is used to filter e/iBGP routes according to their AS-path attribute.")
 public final class AsPathAccessList extends ComparableStructure<String> implements Serializable {
 
-  private static final String LINES_VAR = "lines";
+  private static final String PROP_LINES = "lines";
 
   private static final long serialVersionUID = 1L;
 
@@ -37,8 +37,8 @@ public final class AsPathAccessList extends ComparableStructure<String> implemen
 
   @JsonCreator
   public AsPathAccessList(
-      @JsonProperty(NAME_VAR) String name,
-      @JsonProperty(LINES_VAR) List<AsPathAccessListLine> lines) {
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_LINES) List<AsPathAccessListLine> lines) {
     super(name);
     _lines = lines;
   }
@@ -52,7 +52,7 @@ public final class AsPathAccessList extends ComparableStructure<String> implemen
     return other._lines.equals(_lines);
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   @JsonPropertyDescription(
       "The list of lines against which a route's AS-path will be checked in order.")
   public List<AsPathAccessListLine> getLines() {

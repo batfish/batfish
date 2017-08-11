@@ -16,7 +16,7 @@ public class TacplusServer extends ComparableStructure<String> {
   private Ip _sourceAddress;
 
   @JsonCreator
-  public TacplusServer(@JsonProperty(NAME_VAR) String name) {
+  public TacplusServer(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 

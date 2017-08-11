@@ -10,7 +10,7 @@ public class NtpServer extends ComparableStructure<String> {
 
   private String _vrf;
 
-  public NtpServer(@JsonProperty(NAME_VAR) String hostname) {
+  public NtpServer(@JsonProperty(PROP_NAME) String hostname) {
     super(hostname);
   }
 

@@ -7,13 +7,13 @@ import org.batfish.datamodel.Ip;
 
 public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
 
-  private static final String IP1_VAR = "ip1";
+  private static final String PROP_IP1 = "ip1";
 
-  private static final String IP2_VAR = "ip2";
+  private static final String PROP_IP2 = "ip2";
 
-  private static final String NODE1_VAR = "node1";
+  private static final String PROP_NODE1 = "node1";
 
-  private static final String NODE2_VAR = "node2";
+  private static final String PROP_NODE2 = "node2";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -24,29 +24,29 @@ public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
 
   @JsonCreator
   public IpEdge(
-      @JsonProperty(NODE1_VAR) String node1,
-      @JsonProperty(IP1_VAR) Ip ip1,
-      @JsonProperty(NODE2_VAR) String node2,
-      @JsonProperty(IP2_VAR) Ip ip2) {
+      @JsonProperty(PROP_NODE1) String node1,
+      @JsonProperty(PROP_IP1) Ip ip1,
+      @JsonProperty(PROP_NODE2) String node2,
+      @JsonProperty(PROP_IP2) Ip ip2) {
     super(new NodeIpPair(node1, ip1), new NodeIpPair(node2, ip2));
   }
 
-  @JsonProperty(IP1_VAR)
+  @JsonProperty(PROP_IP1)
   public Ip getIp1() {
     return _first.getIp();
   }
 
-  @JsonProperty(IP2_VAR)
+  @JsonProperty(PROP_IP2)
   public Ip getIp2() {
     return _second.getIp();
   }
 
-  @JsonProperty(NODE1_VAR)
+  @JsonProperty(PROP_NODE1)
   public String getNode1() {
     return _first.getNode();
   }
 
-  @JsonProperty(NODE2_VAR)
+  @JsonProperty(PROP_NODE2)
   public String getNode2() {
     return _second.getNode();
   }

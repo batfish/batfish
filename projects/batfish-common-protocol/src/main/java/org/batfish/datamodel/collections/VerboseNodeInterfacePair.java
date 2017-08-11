@@ -8,24 +8,24 @@ import org.batfish.datamodel.Interface;
 
 public final class VerboseNodeInterfacePair extends Pair<Configuration, Interface> {
 
-  private static final String HOST_VAR = "host";
+  private static final String PROP_HOST = "host";
 
-  private static final String INTERFACE_VAR = "interface";
+  private static final String PROP_INTERFACE = "interface";
   /** */
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
   public VerboseNodeInterfacePair(
-      @JsonProperty(HOST_VAR) Configuration node, @JsonProperty(INTERFACE_VAR) Interface iface) {
+      @JsonProperty(PROP_HOST) Configuration node, @JsonProperty(PROP_INTERFACE) Interface iface) {
     super(node, iface);
   }
 
-  @JsonProperty(HOST_VAR)
+  @JsonProperty(PROP_HOST)
   public Configuration getHost() {
     return _first;
   }
 
-  @JsonProperty(INTERFACE_VAR)
+  @JsonProperty(PROP_INTERFACE)
   public Interface getInterface() {
     return _second;
   }

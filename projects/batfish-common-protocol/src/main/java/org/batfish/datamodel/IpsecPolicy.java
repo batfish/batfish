@@ -12,7 +12,7 @@ import org.batfish.common.util.ComparableStructure;
 
 public class IpsecPolicy extends ComparableStructure<String> {
 
-  private static final String PROPOSALS_VAR = "proposals";
+  private static final String PROP_PROPOSALS = "proposals";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -26,7 +26,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
   private SortedMap<String, IpsecProposal> _proposals;
 
   @JsonCreator
-  public IpsecPolicy(@JsonProperty(NAME_VAR) String name) {
+  public IpsecPolicy(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _proposals = new TreeMap<>();
   }
@@ -39,7 +39,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
     return _pfsKeyGroupDynamicIke;
   }
 
-  @JsonProperty(PROPOSALS_VAR)
+  @JsonProperty(PROP_PROPOSALS)
   @JsonPropertyDescription("IPSEC proposals to try with this policy")
   public SortedSet<String> getProposalNames() {
     if (_proposals != null && !_proposals.isEmpty()) {
@@ -70,7 +70,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
     _pfsKeyGroupDynamicIke = pfsKeyGroupDynamicIke;
   }
 
-  @JsonProperty(PROPOSALS_VAR)
+  @JsonProperty(PROP_PROPOSALS)
   public void setProposalNames(SortedSet<String> proposalNames) {
     _proposalNames = proposalNames;
   }

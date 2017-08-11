@@ -6,9 +6,9 @@ import org.batfish.datamodel.Ip;
 
 public class NatPool extends ComparableStructure<String> {
 
-  private static final String FIRST_VAR = "first";
+  private static final String PROP_FIRST = "first";
 
-  private static final String LAST_VAR = "last";
+  private static final String PROP_LAST = "last";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -28,22 +28,22 @@ public class NatPool extends ComparableStructure<String> {
     return _definitionLine;
   }
 
-  @JsonProperty(FIRST_VAR)
+  @JsonProperty(PROP_FIRST)
   public Ip getFirst() {
     return _first;
   }
 
-  @JsonProperty(LAST_VAR)
+  @JsonProperty(PROP_LAST)
   public Ip getLast() {
     return _last;
   }
 
-  @JsonProperty(FIRST_VAR)
+  @JsonProperty(PROP_FIRST)
   public void setFirst(Ip first) {
     _first = first;
   }
 
-  @JsonProperty(LAST_VAR)
+  @JsonProperty(PROP_LAST)
   public void setLast(Ip last) {
     _last = last;
   }

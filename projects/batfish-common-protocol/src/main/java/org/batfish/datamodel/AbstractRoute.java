@@ -13,29 +13,29 @@ import org.batfish.common.BatfishException;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class AbstractRoute implements Serializable, Comparable<AbstractRoute> {
 
-  protected static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+  protected static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
 
-  protected static final String METRIC_VAR = "metric";
+  protected static final String PROP_METRIC = "metric";
 
-  protected static final String NETWORK_VAR = "network";
+  protected static final String PROP_NETWORK = "network";
 
-  protected static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+  protected static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
 
-  protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
+  protected static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
-  private static final String NEXT_HOP_VAR = "nextHop";
+  private static final String PROP_NEXT_HOP = "nextHop";
 
   public static final int NO_TAG = -1;
 
-  private static final String NODE_VAR = "node";
+  private static final String PROP_NODE = "node";
 
-  protected static final String PROTOCOL_VAR = "protocol";
+  protected static final String PROP_PROTOCOL = "protocol";
 
   private static final long serialVersionUID = 1L;
 
-  protected static final String TAG_VAR = "tag";
+  protected static final String PROP_TAG = "tag";
 
-  private static final String VRF_VAR = "vrf";
+  private static final String PROP_VRF = "vrf";
 
   protected final Prefix _network;
 
@@ -48,7 +48,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   private String _vrf;
 
   @JsonCreator
-  public AbstractRoute(@JsonProperty(NETWORK_VAR) Prefix network) {
+  public AbstractRoute(@JsonProperty(PROP_NETWORK) Prefix network) {
     if (network == null) {
       throw new BatfishException("Cannot construct AbstractRoute with null network");
     }
@@ -159,13 +159,13 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonIgnore
   public abstract Integer getMetric();
 
-  @JsonProperty(NETWORK_VAR)
+  @JsonProperty(PROP_NETWORK)
   @JsonPropertyDescription("IPV4 network of this route")
   public final Prefix getNetwork() {
     return _network;
   }
 
-  @JsonProperty(NEXT_HOP_VAR)
+  @JsonProperty(PROP_NEXT_HOP)
   public String getNextHop() {
     return _nextHop;
   }
@@ -178,7 +178,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonIgnore
   public abstract Ip getNextHopIp();
 
-  @JsonProperty(NODE_VAR)
+  @JsonProperty(PROP_NODE)
   public String getNode() {
     return _node;
   }
@@ -194,7 +194,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @JsonIgnore
   public abstract int getTag();
 
-  @JsonProperty(VRF_VAR)
+  @JsonProperty(PROP_VRF)
   public String getVrf() {
     return _vrf;
   }
@@ -206,12 +206,12 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   public abstract int routeCompare(AbstractRoute rhs);
 
-  @JsonProperty(NEXT_HOP_VAR)
+  @JsonProperty(PROP_NEXT_HOP)
   public void setNextHop(String nextHop) {
     _nextHop = nextHop;
   }
 
-  @JsonProperty(NODE_VAR)
+  @JsonProperty(PROP_NODE)
   public void setNode(String node) {
     _node = node;
   }
@@ -221,7 +221,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     _nonRouting = nonRouting;
   }
 
-  @JsonProperty(VRF_VAR)
+  @JsonProperty(PROP_VRF)
   public void setVrf(String vrf) {
     _vrf = vrf;
   }

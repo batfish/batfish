@@ -10,9 +10,9 @@ public class JsonPathResult {
 
   public static class JsonPathResultEntry {
 
-    private static final String CONCRETE_PATH_VAR = "concretePath";
+    private static final String PROP_CONCRETE_PATH = "concretePath";
 
-    private static final String SUFFIX_VAR = "suffix";
+    private static final String PROP_SUFFIX = "suffix";
 
     private final ConcreteJsonPath _concretePath;
 
@@ -20,8 +20,8 @@ public class JsonPathResult {
 
     @JsonCreator
     public JsonPathResultEntry(
-        @JsonProperty(CONCRETE_PATH_VAR) ConcreteJsonPath concretePath,
-        @JsonProperty(SUFFIX_VAR) JsonNode suffix) {
+        @JsonProperty(PROP_CONCRETE_PATH) ConcreteJsonPath concretePath,
+        @JsonProperty(PROP_SUFFIX) JsonNode suffix) {
       _concretePath = concretePath;
       if (suffix != null && suffix.isNull()) {
         _suffix = null;
@@ -30,12 +30,12 @@ public class JsonPathResult {
       }
     }
 
-    @JsonProperty(CONCRETE_PATH_VAR)
+    @JsonProperty(PROP_CONCRETE_PATH)
     public ConcreteJsonPath getConcretePath() {
       return _concretePath;
     }
 
-    @JsonProperty(SUFFIX_VAR)
+    @JsonProperty(PROP_SUFFIX)
     public JsonNode getSuffix() {
       return _suffix;
     }

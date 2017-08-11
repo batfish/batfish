@@ -40,7 +40,7 @@ public class Directory extends ComparableStructure<String> {
   }
 
   @JsonCreator
-  public Directory(@JsonProperty(NAME_VAR) String name) {
+  public Directory(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _directories = new TreeSet<>();
     _files = new TreeSet<>();

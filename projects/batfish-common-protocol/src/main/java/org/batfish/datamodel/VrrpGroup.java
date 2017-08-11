@@ -6,14 +6,14 @@ import org.batfish.common.util.ComparableStructure;
 
 public class VrrpGroup extends ComparableStructure<Integer> {
 
-  private static final String PREEMPT_VAR = "preempt";
+  private static final String PROP_PREEMPT = "preempt";
 
-  private static final String PRIORITY_VAR = "priority";
+  private static final String PROP_PRIORITY = "priority";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String VIRTUAL_ADDRESS_VAR = "virtualAddress";
+  private static final String PROP_VIRTUAL_ADDRESS = "virtualAddress";
 
   private boolean _preempt;
 
@@ -22,36 +22,36 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   private Prefix _virtualAddress;
 
   @JsonCreator
-  public VrrpGroup(@JsonProperty(NAME_VAR) Integer name) {
+  public VrrpGroup(@JsonProperty(PROP_NAME) Integer name) {
     super(name);
   }
 
-  @JsonProperty(PREEMPT_VAR)
+  @JsonProperty(PROP_PREEMPT)
   public boolean getPreempt() {
     return _preempt;
   }
 
-  @JsonProperty(PRIORITY_VAR)
+  @JsonProperty(PROP_PRIORITY)
   public int getPriority() {
     return _priority;
   }
 
-  @JsonProperty(VIRTUAL_ADDRESS_VAR)
+  @JsonProperty(PROP_VIRTUAL_ADDRESS)
   public Prefix getVirtualAddress() {
     return _virtualAddress;
   }
 
-  @JsonProperty(PREEMPT_VAR)
+  @JsonProperty(PROP_PREEMPT)
   public void setPreempt(boolean preempt) {
     _preempt = preempt;
   }
 
-  @JsonProperty(PRIORITY_VAR)
+  @JsonProperty(PROP_PRIORITY)
   public void setPriority(int priority) {
     _priority = priority;
   }
 
-  @JsonProperty(VIRTUAL_ADDRESS_VAR)
+  @JsonProperty(PROP_VIRTUAL_ADDRESS)
   public void setVirtualAddress(Prefix virtualAddress) {
     _virtualAddress = virtualAddress;
   }

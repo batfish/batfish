@@ -22,7 +22,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
 
   public static class PerRoleAnswerElement implements AnswerElement {
 
-    private static final String ANSWERS_VAR = "answers";
+    private static final String PROP_ANSWERS = "answers";
 
     private SortedMap<String, AnswerElement> _answers;
 
@@ -30,7 +30,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       _answers = new TreeMap<>();
     }
 
-    @JsonProperty(ANSWERS_VAR)
+    @JsonProperty(PROP_ANSWERS)
     public SortedMap<String, AnswerElement> getAnswers() {
       return _answers;
     }
@@ -45,7 +45,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(ANSWERS_VAR)
+    @JsonProperty(PROP_ANSWERS)
     public void setAnswers(SortedMap<String, AnswerElement> answers) {
       _answers = answers;
     }
@@ -143,11 +143,11 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
    */
   public static final class PerRoleQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String QUESTION_VAR = "question";
+    private static final String PROP_QUESTION = "question";
 
-    private static final String ROLES_VAR = "roles";
+    private static final String PROP_ROLES = "roles";
 
     private String _nodeRegex;
 
@@ -169,17 +169,17 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return "perrole";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(QUESTION_VAR)
+    @JsonProperty(PROP_QUESTION)
     public Question getQuestion() {
       return _question;
     }
 
-    @JsonProperty(ROLES_VAR)
+    @JsonProperty(PROP_ROLES)
     public List<String> getRoles() {
       return _roles;
     }
@@ -189,17 +189,17 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }
 
-    @JsonProperty(QUESTION_VAR)
+    @JsonProperty(PROP_QUESTION)
     public void setQuestion(Question question) {
       _question = question;
     }
 
-    @JsonProperty(ROLES_VAR)
+    @JsonProperty(PROP_ROLES)
     public void setRoleRegexes(List<String> roles) {
       _roles = roles;
     }

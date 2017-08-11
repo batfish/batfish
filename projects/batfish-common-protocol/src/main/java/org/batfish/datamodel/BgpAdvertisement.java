@@ -57,42 +57,42 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     }
   }
 
-  private static final String AS_PATH_VAR = "asPath";
+  private static final String PROP_AS_PATH = "asPath";
 
-  private static final String CLUSTER_LIST_VAR = "clusterList";
+  private static final String PROP_CLUSTER_LIST = "clusterList";
 
-  private static final String COMMUNITIES_VAR = "communities";
+  private static final String PROP_COMMUNITIES = "communities";
 
-  private static final String DST_IP_VAR = "dstIp";
+  private static final String PROP_DST_IP = "dstIp";
 
-  private static final String DST_NODE_VAR = "dstNode";
+  private static final String PROP_DST_NODE = "dstNode";
 
-  private static final String DST_VRF_VAR = "dstVrf";
+  private static final String PROP_DST_VRF = "dstVrf";
 
-  private static final String LOCAL_PREFERENCE_VAR = "localPreference";
+  private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
-  private static final String MED_VAR = "med";
+  private static final String PROP_MED = "med";
 
-  private static final String NETWORK_VAR = "network";
+  private static final String PROP_NETWORK = "network";
 
-  private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+  private static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
-  private static final String ORIGIN_TYPE_VAR = "originType";
+  private static final String PROP_ORIGIN_TYPE = "originType";
 
-  private static final String ORIGINATOR_IP_VAR = "originatorIp";
+  private static final String PROP_ORIGINATOR_IP = "originatorIp";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String SRC_IP_VAR = "srcIp";
+  private static final String PROP_SRC_IP = "srcIp";
 
-  private static final String SRC_NODE_VAR = "srcNode";
+  private static final String PROP_SRC_NODE = "srcNode";
 
-  private static final String SRC_PROTOCOL_VAR = "srcProtocol";
+  private static final String PROP_SRC_PROTOCOL = "srcProtocol";
 
-  private static final String SRC_VRF_VAR = "srcVrf";
+  private static final String PROP_SRC_VRF = "srcVrf";
 
-  private static final String TYPE_VAR = "type";
+  private static final String PROP_TYPE = "type";
 
   public static final int UNSET_LOCAL_PREFERENCE = 0;
 
@@ -100,7 +100,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   public static final int UNSET_WEIGHT = 0;
 
-  private static final String WEIGHT_VAR = "weight";
+  private static final String PROP_WEIGHT = "weight";
 
   private final AsPath _asPath;
 
@@ -140,24 +140,24 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   @JsonCreator
   public BgpAdvertisement(
-      @JsonProperty(TYPE_VAR) BgpAdvertisementType type,
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(SRC_NODE_VAR) String srcNode,
-      @JsonProperty(SRC_VRF_VAR) String srcVrf,
-      @JsonProperty(SRC_IP_VAR) Ip srcIp,
-      @JsonProperty(DST_NODE_VAR) String dstNode,
-      @JsonProperty(DST_VRF_VAR) String dstVrf,
-      @JsonProperty(DST_IP_VAR) Ip dstIp,
-      @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol,
-      @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
-      @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference,
-      @JsonProperty(MED_VAR) int med,
-      @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
-      @JsonProperty(AS_PATH_VAR) AsPath asPath,
-      @JsonProperty(COMMUNITIES_VAR) SortedSet<Long> communities,
-      @JsonProperty(CLUSTER_LIST_VAR) SortedSet<Long> clusterList,
-      @JsonProperty(WEIGHT_VAR) int weight) {
+      @JsonProperty(PROP_TYPE) BgpAdvertisementType type,
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_SRC_NODE) String srcNode,
+      @JsonProperty(PROP_SRC_VRF) String srcVrf,
+      @JsonProperty(PROP_SRC_IP) Ip srcIp,
+      @JsonProperty(PROP_DST_NODE) String dstNode,
+      @JsonProperty(PROP_DST_VRF) String dstVrf,
+      @JsonProperty(PROP_DST_IP) Ip dstIp,
+      @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @JsonProperty(PROP_LOCAL_PREFERENCE) int localPreference,
+      @JsonProperty(PROP_MED) int med,
+      @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
+      @JsonProperty(PROP_AS_PATH) AsPath asPath,
+      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
+      @JsonProperty(PROP_WEIGHT) int weight) {
     _type = type;
     _network = network;
     _nextHopIp = nextHopIp;
@@ -329,92 +329,92 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     return true;
   }
 
-  @JsonProperty(AS_PATH_VAR)
+  @JsonProperty(PROP_AS_PATH)
   public AsPath getAsPath() {
     return _asPath;
   }
 
-  @JsonProperty(CLUSTER_LIST_VAR)
+  @JsonProperty(PROP_CLUSTER_LIST)
   public SortedSet<Long> getClusterList() {
     return Collections.unmodifiableSortedSet(_clusterList);
   }
 
-  @JsonProperty(COMMUNITIES_VAR)
+  @JsonProperty(PROP_COMMUNITIES)
   public SortedSet<Long> getCommunities() {
     return Collections.unmodifiableSortedSet(_communities);
   }
 
-  @JsonProperty(DST_IP_VAR)
+  @JsonProperty(PROP_DST_IP)
   public Ip getDstIp() {
     return _dstIp;
   }
 
-  @JsonProperty(DST_NODE_VAR)
+  @JsonProperty(PROP_DST_NODE)
   public String getDstNode() {
     return _dstNode;
   }
 
-  @JsonProperty(DST_VRF_VAR)
+  @JsonProperty(PROP_DST_VRF)
   public String getDstVrf() {
     return _dstVrf;
   }
 
-  @JsonProperty(LOCAL_PREFERENCE_VAR)
+  @JsonProperty(PROP_LOCAL_PREFERENCE)
   public int getLocalPreference() {
     return _localPreference;
   }
 
-  @JsonProperty(MED_VAR)
+  @JsonProperty(PROP_MED)
   public int getMed() {
     return _med;
   }
 
-  @JsonProperty(NETWORK_VAR)
+  @JsonProperty(PROP_NETWORK)
   public Prefix getNetwork() {
     return _network;
   }
 
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   public Ip getNextHopIp() {
     return _nextHopIp;
   }
 
-  @JsonProperty(ORIGINATOR_IP_VAR)
+  @JsonProperty(PROP_ORIGINATOR_IP)
   public Ip getOriginatorIp() {
     return _originatorIp;
   }
 
-  @JsonProperty(ORIGIN_TYPE_VAR)
+  @JsonProperty(PROP_ORIGIN_TYPE)
   public OriginType getOriginType() {
     return _originType;
   }
 
-  @JsonProperty(SRC_IP_VAR)
+  @JsonProperty(PROP_SRC_IP)
   public Ip getSrcIp() {
     return _srcIp;
   }
 
-  @JsonProperty(SRC_NODE_VAR)
+  @JsonProperty(PROP_SRC_NODE)
   public String getSrcNode() {
     return _srcNode;
   }
 
-  @JsonProperty(SRC_PROTOCOL_VAR)
+  @JsonProperty(PROP_SRC_PROTOCOL)
   public RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
   }
 
-  @JsonProperty(SRC_VRF_VAR)
+  @JsonProperty(PROP_SRC_VRF)
   public String getSrcVrf() {
     return _srcVrf;
   }
 
-  @JsonProperty(TYPE_VAR)
+  @JsonProperty(PROP_TYPE)
   public BgpAdvertisementType getType() {
     return _type;
   }
 
-  @JsonProperty(WEIGHT_VAR)
+  @JsonProperty(PROP_WEIGHT)
   public int getWeight() {
     return _weight;
   }

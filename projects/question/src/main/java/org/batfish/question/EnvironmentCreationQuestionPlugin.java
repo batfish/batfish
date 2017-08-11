@@ -42,13 +42,13 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
   public static class EnvironmentCreationQuestion extends Question
       implements IEnvironmentCreationQuestion {
 
-    private static final String EDGE_BLACKLIST_VAR = "edgeBlacklist";
+    private static final String PROP_EDGE_BLACKLIST = "edgeBlacklist";
 
-    private static final String ENVIRONMENT_NAME_VAR = ENVIRONMENT_NAME_KEY;
+    private static final String PROP_ENVIRONMENT_NAME = ENVIRONMENT_NAME_KEY;
 
-    private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
+    private static final String PROP_INTERFACE_BLACKLIST = "interfaceBlacklist";
 
-    private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
+    private static final String PROP_NODE_BLACKLIST = "nodeBlacklist";
 
     private SortedSet<Edge> _edgeBlacklist;
 
@@ -75,17 +75,17 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(EDGE_BLACKLIST_VAR)
+    @JsonProperty(PROP_EDGE_BLACKLIST)
     public SortedSet<Edge> getEdgeBlacklist() {
       return _edgeBlacklist;
     }
 
-    @JsonProperty(ENVIRONMENT_NAME_VAR)
+    @JsonProperty(PROP_ENVIRONMENT_NAME)
     public String getEnvironmentName() {
       return _environmentName;
     }
 
-    @JsonProperty(INTERFACE_BLACKLIST_VAR)
+    @JsonProperty(PROP_INTERFACE_BLACKLIST)
     public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
       return _interfaceBlacklist;
     }
@@ -95,7 +95,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       return NAME;
     }
 
-    @JsonProperty(NODE_BLACKLIST_VAR)
+    @JsonProperty(PROP_NODE_BLACKLIST)
     public SortedSet<String> getNodeBlacklist() {
       return _nodeBlacklist;
     }
@@ -105,22 +105,22 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(EDGE_BLACKLIST_VAR)
+    @JsonProperty(PROP_EDGE_BLACKLIST)
     public void setEdgeBlacklist(SortedSet<Edge> edgeBlacklist) {
       _edgeBlacklist = edgeBlacklist;
     }
 
-    @JsonProperty(ENVIRONMENT_NAME_VAR)
+    @JsonProperty(PROP_ENVIRONMENT_NAME)
     public void setEnvironmentName(String environmentName) {
       _environmentName = environmentName;
     }
 
-    @JsonProperty(INTERFACE_BLACKLIST_VAR)
+    @JsonProperty(PROP_INTERFACE_BLACKLIST)
     public void setInterfaceBlacklist(SortedSet<NodeInterfacePair> blacklist) {
       _interfaceBlacklist = blacklist;
     }
 
-    @JsonProperty(NODE_BLACKLIST_VAR)
+    @JsonProperty(PROP_NODE_BLACKLIST)
     public void setNodeBlacklist(NodeSet blacklist) {
       _nodeBlacklist = blacklist;
     }

@@ -37,11 +37,11 @@ public class HostConfiguration extends VendorConfiguration {
 
   private static final Object FILTER_OUTPUT = "filter::OUTPUT";
 
-  private static final String HOST_INTERFACES_VAR = "hostInterfaces";
+  private static final String PROP_HOST_INTERFACES = "hostInterfaces";
 
-  private static final String HOSTNAME_VAR = "hostname";
+  private static final String PROP_HOSTNAME = "hostname";
 
-  private static final String IPTABLES_FILE_VAR = "iptablesFile";
+  private static final String PROP_IPTABLES_FILE = "iptablesFile";
 
   private static final String MANGLE_FORWARD = "mangle::FORWARD";
 
@@ -87,7 +87,7 @@ public class HostConfiguration extends VendorConfiguration {
   private final Set<HostStaticRoute> _staticRoutes;
 
   // @JsonCreator
-  // public HostConfiguration(@JsonProperty(HOSTNAME_VAR) String name) {
+  // public HostConfiguration(@JsonProperty(PROP_HOSTNAME) String name) {
   // _hostname = name;
   // _interfaces = new HashMap<String, Interface>();
   // _roles = new RoleSet();
@@ -100,12 +100,12 @@ public class HostConfiguration extends VendorConfiguration {
     _staticRoutes = new TreeSet<>();
   }
 
-  @JsonProperty(HOST_INTERFACES_VAR)
+  @JsonProperty(PROP_HOST_INTERFACES)
   public Map<String, HostInterface> getHostInterfaces() {
     return _hostInterfaces;
   }
 
-  @JsonProperty(HOSTNAME_VAR)
+  @JsonProperty(PROP_HOSTNAME)
   @Override
   public String getHostname() {
     return _hostname;
@@ -115,7 +115,7 @@ public class HostConfiguration extends VendorConfiguration {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @JsonProperty(IPTABLES_FILE_VAR)
+  @JsonProperty(PROP_IPTABLES_FILE)
   public String getIptablesFile() {
     return _iptablesFile;
   }

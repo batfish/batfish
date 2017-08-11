@@ -29,17 +29,17 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
   public static class RoutesAnswerElement implements AnswerElement {
 
-    private static final String ADDED_VAR = "added";
+    private static final String PROP_ADDED = "added";
 
-    private static final String AGAINST_ENVIRONMENT_VAR = "againstEnvironment";
+    private static final String PROP_AGAINST_ENVIRONMENT = "againstEnvironment";
 
-    private static final String DETAIL_ROUTES_BY_HOSTNAME_VAR = "detailRoutesByHostname";
+    private static final String PROP_DETAIL_ROUTES_BY_HOSTNAME = "detailRoutesByHostname";
 
-    private static final String DETAIL_VAR = "detail";
+    private static final String PROP_DETAIL = "detail";
 
-    private static final String REMOVED_VAR = "removed";
+    private static final String PROP_REMOVED = "removed";
 
-    private static final String ROUTES_BY_HOSTNAME_VAR = "routesByHostname";
+    private static final String PROP_ROUTES_BY_HOSTNAME = "routesByHostname";
 
     private SortedSet<Route> _added;
 
@@ -218,33 +218,33 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       }
     }
 
-    @JsonProperty(ADDED_VAR)
+    @JsonProperty(PROP_ADDED)
     public SortedSet<Route> getAdded() {
       return _added;
     }
 
-    @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_AGAINST_ENVIRONMENT)
     public boolean getAgainstEnvironment() {
       return _againstEnvironment;
     }
 
-    @JsonProperty(DETAIL_VAR)
+    @JsonProperty(PROP_DETAIL)
     public boolean getDetail() {
       return _detail;
     }
 
-    @JsonProperty(DETAIL_ROUTES_BY_HOSTNAME_VAR)
+    @JsonProperty(PROP_DETAIL_ROUTES_BY_HOSTNAME)
     public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
         getDetailRoutesByHostname() {
       return _detailRoutesByHostname;
     }
 
-    @JsonProperty(REMOVED_VAR)
+    @JsonProperty(PROP_REMOVED)
     public SortedSet<Route> getRemoved() {
       return _removed;
     }
 
-    @JsonProperty(ROUTES_BY_HOSTNAME_VAR)
+    @JsonProperty(PROP_ROUTES_BY_HOSTNAME)
     public SortedMap<String, RoutesByVrf> getRoutesByHostname() {
       return _routesByHostname;
     }
@@ -294,33 +294,33 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(ADDED_VAR)
+    @JsonProperty(PROP_ADDED)
     public void setAdded(SortedSet<Route> added) {
       _added = added;
     }
 
-    @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_AGAINST_ENVIRONMENT)
     public void setAgainstEnvironment(boolean againstEnvironment) {
       _againstEnvironment = againstEnvironment;
     }
 
-    @JsonProperty(DETAIL_VAR)
+    @JsonProperty(PROP_DETAIL)
     public void setDetail(boolean detail) {
       _detail = detail;
     }
 
-    @JsonProperty(DETAIL_ROUTES_BY_HOSTNAME_VAR)
+    @JsonProperty(PROP_DETAIL_ROUTES_BY_HOSTNAME)
     public void setDetailRoutesByHostname(
         SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> detailRoutesByHostname) {
       _detailRoutesByHostname = detailRoutesByHostname;
     }
 
-    @JsonProperty(REMOVED_VAR)
+    @JsonProperty(PROP_REMOVED)
     public void setRemoved(SortedSet<Route> removed) {
       _removed = removed;
     }
 
-    @JsonProperty(ROUTES_BY_HOSTNAME_VAR)
+    @JsonProperty(PROP_ROUTES_BY_HOSTNAME)
     public void setRoutesByHostname(SortedMap<String, RoutesByVrf> routesByHostname) {
       _routesByHostname = routesByHostname;
     }
@@ -339,13 +339,13 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
         throw new BatfishException(
             String.format(
                 "%s and %s flags are mutually exclusive",
-                RoutesQuestion.AGAINST_ENVIRONMENT_VAR, RoutesQuestion.FROM_ENVIRONMENT_VAR));
+                RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_AGAINST_ENVIRONMENT));
       }
       if (question._againstEnvironment && question._fromEnvironment) {
         throw new BatfishException(
             String.format(
                 "%s and %s flags together are currently unsupported",
-                RoutesQuestion.AGAINST_ENVIRONMENT_VAR, RoutesQuestion.DETAIL_VAR));
+                RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_DETAIL));
       }
       Pattern nodeRegex;
       try {
@@ -400,7 +400,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             "Differential "
                 + _question.getName()
                 + " routes question unsupported when '"
-                + RoutesQuestion.AGAINST_ENVIRONMENT_VAR
+                + RoutesQuestion.PROP_AGAINST_ENVIRONMENT
                 + "' is set, due to unclear semantics of result.");
       }
       _batfish.pushBaseEnvironment();
@@ -428,17 +428,17 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
    */
   public static class RoutesQuestion extends Question {
 
-    private static final String AGAINST_ENVIRONMENT_VAR = "againstEnvironment";
+    private static final String PROP_AGAINST_ENVIRONMENT = "againstEnvironment";
 
-    private static final String DETAIL_VAR = "detail";
+    private static final String PROP_DETAIL = "detail";
 
-    private static final String FROM_ENVIRONMENT_VAR = "fromEnvironment";
+    private static final String PROP_FROM_ENVIRONMENT = "fromEnvironment";
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String PREFIX_SPACE_VAR = "prefixSpace";
+    private static final String PROP_PREFIX_SPACE = "prefixSpace";
 
-    private static final String PROTOCOLS_VAR = "protocols";
+    private static final String PROP_PROTOCOLS = "protocols";
 
     private boolean _againstEnvironment;
 
@@ -458,7 +458,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       _protocols = new TreeSet<>();
     }
 
-    @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_AGAINST_ENVIRONMENT)
     public boolean getAgainstEnvironment() {
       return _againstEnvironment;
     }
@@ -468,12 +468,12 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       return !_fromEnvironment;
     }
 
-    @JsonProperty(DETAIL_VAR)
+    @JsonProperty(PROP_DETAIL)
     public boolean getDetail() {
       return _detail;
     }
 
-    @JsonProperty(FROM_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_FROM_ENVIRONMENT)
     public boolean getFromEnvironment() {
       return _fromEnvironment;
     }
@@ -483,17 +483,17 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       return "routes";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(PREFIX_SPACE_VAR)
+    @JsonProperty(PROP_PREFIX_SPACE)
     public PrefixSpace getPrefixSpace() {
       return _prefixSpace;
     }
 
-    @JsonProperty(PROTOCOLS_VAR)
+    @JsonProperty(PROP_PROTOCOLS)
     public SortedSet<RoutingProtocol> getProtocols() {
       return _protocols;
     }
@@ -503,32 +503,32 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(AGAINST_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_AGAINST_ENVIRONMENT)
     public void setAgainstEnvironment(boolean againstEnvironment) {
       _againstEnvironment = againstEnvironment;
     }
 
-    @JsonProperty(DETAIL_VAR)
+    @JsonProperty(PROP_DETAIL)
     public void setDetail(boolean detail) {
       _detail = detail;
     }
 
-    @JsonProperty(FROM_ENVIRONMENT_VAR)
+    @JsonProperty(PROP_FROM_ENVIRONMENT)
     public void setFromEnvironment(boolean fromEnvironment) {
       _fromEnvironment = fromEnvironment;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }
 
-    @JsonProperty(PREFIX_SPACE_VAR)
+    @JsonProperty(PROP_PREFIX_SPACE)
     public void setPrefixSpace(PrefixSpace prefixSpace) {
       _prefixSpace = prefixSpace;
     }
 
-    @JsonProperty(PROTOCOLS_VAR)
+    @JsonProperty(PROP_PROTOCOLS)
     public void setProtocols(SortedSet<RoutingProtocol> protocols) {
       _protocols = protocols;
     }
