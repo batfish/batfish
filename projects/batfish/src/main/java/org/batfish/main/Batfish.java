@@ -3735,6 +3735,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     veae.setVersion(Version.getVersion());
+    veae.setValid(true);
     processDeltaConfigurations(configurations);
     processNodeBlacklist(configurations, veae);
     processNodeRoles(configurations, veae);
