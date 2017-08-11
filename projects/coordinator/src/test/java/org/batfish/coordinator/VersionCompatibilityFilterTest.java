@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -38,16 +37,22 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
   public void testMissingVersion() {
     Response response = target("/test").request().get();
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(
-        response.readEntity(String.class), containsString("should contain a client version"));
+    String expectMessage =
+        String.format(
+            "HTTP header %s should contain a client version",
+            CoordConsts.SVC_KEY_VERSION);
+    assertThat(response.readEntity(String.class), equalTo(expectMessage));
   }
 
   @Test
   public void testEmptyVersion() {
     Response response = target("/test").request().header(CoordConsts.SVC_KEY_VERSION, "").get();
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(
-        response.readEntity(String.class), containsString("should contain a client version"));
+    String expectMessage =
+        String.format(
+            "HTTP header %s should contain a client version",
+            CoordConsts.SVC_KEY_VERSION);
+    assertThat(response.readEntity(String.class), equalTo(expectMessage));
   }
 
   @Test
@@ -55,7 +60,12 @@ public class VersionCompatibilityFilterTest extends JerseyTest {
     Response response =
         target("/test").request().header(CoordConsts.SVC_KEY_VERSION, "1.0.1").get();
     assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo("Illegal version '1.0.1' for Client"));
+    assertThat(
+        response.readEntity(String.class),
+        equalTo(
+            String.format(
+                "Client version '1.0.1' is not compatible with server version '%s'",
+                Version.getVersion())));
   }
 
   @Test

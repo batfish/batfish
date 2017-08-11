@@ -72,7 +72,7 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
   public void testUnauthorizedApiKey() {
     Response response = target("/test").request().header(CoordConsts.SVC_KEY_API_KEY, "100").get();
     assertThat(response.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
-    String expectMessage = "Authorizer: 100 is NOT a valid key";
+    String expectMessage = "Authorizer: '100' is NOT a valid key";
     assertThat(response.readEntity(String.class), equalTo(expectMessage));
   }
 
