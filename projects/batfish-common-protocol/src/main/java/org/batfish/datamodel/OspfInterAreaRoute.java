@@ -54,7 +54,6 @@ public class OspfInterAreaRoute extends OspfRoute {
     return _area;
   }
 
-  // TODO(http://github.com/batfish/batfish/issues/207)
   @Nonnull
   @Override
   public String getNextHopInterface() {

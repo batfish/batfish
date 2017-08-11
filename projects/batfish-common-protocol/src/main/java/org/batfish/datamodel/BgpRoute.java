@@ -317,7 +317,6 @@ public class BgpRoute extends AbstractRoute {
     return _med;
   }
 
-  // TODO(http://github.com/batfish/batfish/issues/207)
   @Nonnull
   @Override
   public String getNextHopInterface() {
