@@ -66,6 +66,10 @@ public class FileAuthorizer implements Authorizer {
         throw new BatfishException("Do not understand the format of perms file");
       }
       JSONArray permsArray = jObj.getJSONArray(PERMS_KEY);
+      if (doPermsExist(apiKey, containerName, permsArray)) {
+        _logger.infof("Authorizer: %s is already allowed to access %s\n", apiKey, containerName);
+        return;
+      }
       JSONObject jPermsObj = new JSONObject();
       jPermsObj.put(APIKEY_KEY, apiKey);
       jPermsObj.put(CONTAINER_KEY, containerName);
@@ -78,6 +82,18 @@ public class FileAuthorizer implements Authorizer {
     CommonUtil.writeFile(_permsFile, newAllPerms);
   }
 
+  private boolean doPermsExist(String apiKey, String containerName, JSONArray permsArray)
+      throws JSONException {
+    for (int index = 0; index < permsArray.length(); index++) {
+      JSONObject jPermsObj = permsArray.getJSONObject(index);
+      if (apiKey.equals(jPermsObj.getString(APIKEY_KEY))
+          && containerName.equals(jPermsObj.getString(CONTAINER_KEY))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
     String allPerms = CommonUtil.readFile(_permsFile);
@@ -87,13 +103,9 @@ public class FileAuthorizer implements Authorizer {
         throw new BatfishException("Do not understand the format of perms file");
       }
       JSONArray permsArray = jObj.getJSONArray(PERMS_KEY);
-      for (int index = 0; index < permsArray.length(); index++) {
-        JSONObject jPermsObj = permsArray.getJSONObject(index);
-        if (apiKey.equals(jPermsObj.getString(APIKEY_KEY))
-            && containerName.equals(jPermsObj.getString(CONTAINER_KEY))) {
-          _logger.infof("Authorizer: %s is allowed to access %s\n", apiKey, containerName);
-          return true;
-        }
+      if (doPermsExist(apiKey, containerName, permsArray)) {
+        _logger.infof("Authorizer: %s is allowed to access %s\n", apiKey, containerName);
+        return true;
       }
     } catch (JSONException e) {
       throw new BatfishException("Could not process perms JSON object", e);

@@ -1,0 +1,9 @@
+!
+hostname cisco_bgp_confederation
+!
+router bgp 3
+  no synchronization
+  bgp bestpath as-path confed
+  bgp confederation identifier 100
+  bgp confederation peers 10 11
+!
