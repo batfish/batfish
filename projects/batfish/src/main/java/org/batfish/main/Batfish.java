@@ -527,7 +527,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     AnswerElement answerElement = null;
     BatfishException exception = null;
     try {
-      if (question.getDifferential() == true) {
+      if (question.getDifferential()) {
         answerElement = Answerer.create(question, this).answerDiff();
       } else {
         answerElement = Answerer.create(question, this).answer();
