@@ -1,8 +1,10 @@
 package org.batfish.coordinator;
 
-import static org.hamcrest.CoreMatchers.is;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.util.SortedSet;
@@ -53,6 +55,7 @@ public class WorkMgrServiceTest {
     String containerName = "non-existing-folder";
     initContainerEnvironment();
     Response response = _service.getContainer("100", "0.0.0", containerName);
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
     String actualMessage = response.getEntity().toString();
     String expected = "Container '" + containerName + "' not found";
     assertThat(actualMessage, equalTo(expected));
@@ -63,6 +66,7 @@ public class WorkMgrServiceTest {
     initContainerEnvironment();
     Response response = _service.getContainer("100", "invalid version", _containerName);
     String actualMessage = response.getEntity().toString();
+    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     String expected = "Illegal version 'invalid version' for Client";
     assertThat(actualMessage, equalTo(expected));
   }
@@ -72,9 +76,9 @@ public class WorkMgrServiceTest {
     initContainerEnvironment();
     Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
     Path testrigPath = containerPath.resolve("testrig1");
-    assertThat(testrigPath.toFile().mkdir(), is(true));
+    assertTrue(testrigPath.toFile().mkdir());
     Path testrigPath2 = containerPath.resolve("testrig2");
-    assertThat(testrigPath2.toFile().mkdir(), is(true));
+    assertTrue(testrigPath2.toFile().mkdir());
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
@@ -84,4 +88,5 @@ public class WorkMgrServiceTest {
     expectedTestrigs.add("testrig2");
     assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
   }
+
 }

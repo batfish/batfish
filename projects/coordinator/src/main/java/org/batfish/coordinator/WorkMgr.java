@@ -1024,4 +1024,14 @@ public class WorkMgr {
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
   }
+
+  private Path getContainerPath(String containerName) {
+    return Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+  }
+
+  public boolean checkContainerExist(String containerName) {
+    Path containerDir = getContainerPath(containerName);
+    return containerDir != null && Files.exists(containerDir);
+  }
+
 }

@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -44,13 +45,6 @@ public class WorkMgrTest {
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     String initResult = _manager.initContainer(null, containerPrefix);
     assertThat(initResult, startsWith(containerPrefix));
-  }
-
-  @Test
-  public void initContainerWithNullInput() throws IOException {
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    String initResult = _manager.initContainer(null, null);
-    assertThat(initResult, startsWith("null_"));
   }
 
   @Test
@@ -133,6 +127,7 @@ public class WorkMgrTest {
     initContainerEnvironment(containerName);
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     Container container = _manager.getContainer(containerDir);
+    assertThat(container.getName(), equalTo(containerName));
     assertThat(container.getTestrigs(), equalTo(new TreeSet<String>()));
   }
 
@@ -142,11 +137,10 @@ public class WorkMgrTest {
     initContainerEnvironment(containerName);
     Path containerPath = _folder.getRoot().toPath().resolve(containerName);
     Path testrigPath = containerPath.resolve("testrig1");
-    assertThat(testrigPath.toFile().mkdir(), is(true));
-    Path testrigPath2 = containerPath.resolve("testrig2");
-    assertThat(testrigPath2.toFile().mkdir(), is(true));
-    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
-    Container container = _manager.getContainer(containerDir);
+    assertTrue(testrigPath.toFile().mkdir());
+    testrigPath = containerPath.resolve("testrig2");
+    assertTrue(testrigPath.toFile().mkdir());
+    Container container = _manager.getContainer(containerName);
     SortedSet<String> expectedTestrigs = new TreeSet<>();
     expectedTestrigs.add("testrig1");
     expectedTestrigs.add("testrig2");
@@ -156,9 +150,9 @@ public class WorkMgrTest {
   @Test
   public void getNonExistContainer() {
     String containerName = "myContainer";
-    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Error listing directory '" + containerDir + "'"));
-    _manager.getContainer(containerDir);
+    _thrown.expectMessage(equalTo("Container '" + containerName + "' does not exist"));
+    _manager.getContainer(containerName);
   }
+  
 }
