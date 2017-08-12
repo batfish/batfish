@@ -14,13 +14,13 @@ import org.batfish.common.util.ComparableStructure;
 
 public class OspfArea extends ComparableStructure<Long> implements Serializable {
 
-  private static final String INTERFACES_VAR = "interfaces";
+  private static final String PROP_INTERFACES = "interfaces";
 
   private static final long serialVersionUID = 1L;
 
-  private static final String SUMMARIES_VAR = "summaries";
+  private static final String PROP_SUMMARIES = "summaries";
 
-  private static final String SUMMARY_FILTER_VAR = "summaryFilter";
+  private static final String PROP_SUMMARY_FILTER = "summaryFilter";
 
   private transient SortedSet<String> _interfaceNames;
 
@@ -31,13 +31,13 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   private String _summaryFilter;
 
   @JsonCreator
-  public OspfArea(@JsonProperty(NAME_VAR) Long number) {
+  public OspfArea(@JsonProperty(PROP_NAME) Long number) {
     super(number);
     _interfaces = new TreeSet<>();
     _summaries = new TreeMap<>();
   }
 
-  @JsonProperty(INTERFACES_VAR)
+  @JsonProperty(PROP_INTERFACES)
   @JsonPropertyDescription("The interfaces assigned to this OSPF area")
   public SortedSet<String> getInterfaceNames() {
     if (_interfaces != null && !_interfaces.isEmpty()) {
@@ -52,12 +52,12 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     return _interfaces;
   }
 
-  @JsonProperty(SUMMARIES_VAR)
+  @JsonProperty(PROP_SUMMARIES)
   public SortedMap<Prefix, Boolean> getSummaries() {
     return _summaries;
   }
 
-  @JsonProperty(SUMMARY_FILTER_VAR)
+  @JsonProperty(PROP_SUMMARY_FILTER)
   public String getSummaryFilter() {
     return _summaryFilter;
   }
@@ -73,7 +73,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     }
   }
 
-  @JsonProperty(INTERFACES_VAR)
+  @JsonProperty(PROP_INTERFACES)
   public void setInterfaceNames(SortedSet<String> interfaceNames) {
     _interfaceNames = interfaceNames;
   }
@@ -83,12 +83,12 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     _interfaces = interfaces;
   }
 
-  @JsonProperty(SUMMARIES_VAR)
+  @JsonProperty(PROP_SUMMARIES)
   public void setSummaries(SortedMap<Prefix, Boolean> summaries) {
     _summaries = summaries;
   }
 
-  @JsonProperty(SUMMARY_FILTER_VAR)
+  @JsonProperty(PROP_SUMMARY_FILTER)
   public void setSummaryFilter(String summaryFilterName) {
     this._summaryFilter = summaryFilterName;
   }

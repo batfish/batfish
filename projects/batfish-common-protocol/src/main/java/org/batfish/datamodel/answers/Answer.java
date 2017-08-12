@@ -44,17 +44,17 @@ public class Answer {
     }
   }
 
-  @JsonProperty(BfConsts.ANSWER_ELEMENTS_VAR)
+  @JsonProperty(BfConsts.PROP_ANSWER_ELEMENTS)
   public List<AnswerElement> getAnswerElements() {
     return _answerElements;
   }
 
-  @JsonProperty(BfConsts.QUESTION_VAR)
+  @JsonProperty(BfConsts.PROP_QUESTION)
   public Question getQuestion() {
     return _question;
   }
 
-  @JsonProperty(BfConsts.STATUS_VAR)
+  @JsonProperty(BfConsts.PROP_STATUS)
   public AnswerStatus getStatus() {
     return _status;
   }
@@ -87,17 +87,17 @@ public class Answer {
     return answer;
   }
 
-  @JsonProperty(BfConsts.ANSWER_ELEMENTS_VAR)
+  @JsonProperty(BfConsts.PROP_ANSWER_ELEMENTS)
   public void setAnswerElements(List<AnswerElement> answerElements) {
     _answerElements = answerElements;
   }
 
-  @JsonProperty(BfConsts.QUESTION_VAR)
+  @JsonProperty(BfConsts.PROP_QUESTION)
   public void setQuestion(Question question) {
     _question = question;
   }
 
-  @JsonProperty(BfConsts.STATUS_VAR)
+  @JsonProperty(BfConsts.PROP_STATUS)
   public void setStatus(AnswerStatus status) {
     _status = status;
   }

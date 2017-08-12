@@ -20,13 +20,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
   public static class OutliersAnswerElement implements AnswerElement {
 
-    private static final String RANKED_OUTLIERS_VAR = "rankedOutliers";
+    private static final String PROP_RANKED_OUTLIERS = "rankedOutliers";
 
     private SortedSet<NamedStructureOutlierSet<?>> _rankedOutliers;
 
     public OutliersAnswerElement() {}
 
-    @JsonProperty(RANKED_OUTLIERS_VAR)
+    @JsonProperty(PROP_RANKED_OUTLIERS)
     public SortedSet<NamedStructureOutlierSet<?>> getRankedOutliers() {
       return _rankedOutliers;
     }
@@ -41,7 +41,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(RANKED_OUTLIERS_VAR)
+    @JsonProperty(PROP_RANKED_OUTLIERS)
     public void setRankedOutliers(SortedSet<NamedStructureOutlierSet<?>> rankedOutliers) {
       _rankedOutliers = rankedOutliers;
     }
@@ -143,11 +143,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    */
   public static final class OutliersQuestion extends Question implements INodeRegexQuestion {
 
-    private static final String MISSING_VAR = "missing";
+    private static final String PROP_MISSING = "missing";
 
-    private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
+    private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private boolean _missing;
 
@@ -165,7 +165,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(MISSING_VAR)
+    @JsonProperty(PROP_MISSING)
     public boolean getMissing() {
       return _missing;
     }
@@ -175,13 +175,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return "outliers";
     }
 
-    @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public SortedSet<String> getNamedStructTypes() {
       return _namedStructTypes;
     }
 
     @Override
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -191,18 +191,18 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(MISSING_VAR)
+    @JsonProperty(PROP_MISSING)
     public void setMissing(boolean missing) {
       _missing = missing;
     }
 
-    @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
       _namedStructTypes = namedStructTypes;
     }
 
     @Override
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }

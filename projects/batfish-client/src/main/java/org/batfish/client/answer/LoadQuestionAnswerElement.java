@@ -8,11 +8,11 @@ import org.batfish.datamodel.answers.AnswerElement;
 
 public class LoadQuestionAnswerElement implements AnswerElement {
 
-  private static final String ADDED_VAR = "added";
+  private static final String PROP_ADDED = "added";
 
-  private static final String NUM_LOADED_VAR = "numLoaded";
+  private static final String PROP_NUM_LOADED = "numLoaded";
 
-  private static final String REPLACED_VAR = "replaced";
+  private static final String PROP_REPLACED = "replaced";
 
   private SortedSet<String> _added;
 
@@ -26,17 +26,17 @@ public class LoadQuestionAnswerElement implements AnswerElement {
     _replaced = new TreeSet<>();
   }
 
-  @JsonProperty(ADDED_VAR)
+  @JsonProperty(PROP_ADDED)
   public SortedSet<String> getAdded() {
     return _added;
   }
 
-  @JsonProperty(NUM_LOADED_VAR)
+  @JsonProperty(PROP_NUM_LOADED)
   public int getNumLoaded() {
     return _numLoaded;
   }
 
-  @JsonProperty(REPLACED_VAR)
+  @JsonProperty(PROP_REPLACED)
   public SortedSet<String> getReplaced() {
     return _replaced;
   }
@@ -55,17 +55,17 @@ public class LoadQuestionAnswerElement implements AnswerElement {
     }
   }
 
-  @JsonProperty(ADDED_VAR)
+  @JsonProperty(PROP_ADDED)
   public void setAdded(SortedSet<String> added) {
     _added = added;
   }
 
-  @JsonProperty(NUM_LOADED_VAR)
+  @JsonProperty(PROP_NUM_LOADED)
   public void setNumLoaded(int numLoaded) {
     _numLoaded = numLoaded;
   }
 
-  @JsonProperty(REPLACED_VAR)
+  @JsonProperty(PROP_REPLACED)
   public void setReplaced(SortedSet<String> replaced) {
     _replaced = replaced;
   }

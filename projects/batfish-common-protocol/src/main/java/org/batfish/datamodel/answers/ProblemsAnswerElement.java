@@ -6,7 +6,7 @@ import java.util.TreeMap;
 
 public abstract class ProblemsAnswerElement implements AnswerElement {
 
-  private static final String PROBLEMS_VAR = "problems";
+  private static final String PROP_PROBLEMS = "problems";
 
   private SortedMap<String, Problem> _problems;
 
@@ -14,12 +14,12 @@ public abstract class ProblemsAnswerElement implements AnswerElement {
     _problems = new TreeMap<>();
   }
 
-  @JsonProperty(PROBLEMS_VAR)
+  @JsonProperty(PROP_PROBLEMS)
   public SortedMap<String, Problem> getProblems() {
     return _problems;
   }
 
-  @JsonProperty(PROBLEMS_VAR)
+  @JsonProperty(PROP_PROBLEMS)
   public void setProblems(SortedMap<String, Problem> problems) {
     _problems = problems;
   }

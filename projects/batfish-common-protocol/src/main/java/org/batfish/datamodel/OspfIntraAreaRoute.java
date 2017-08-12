@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 
 public class OspfIntraAreaRoute extends OspfRoute {
 
-  private static final String AREA_VAR = "area";
+  private static final String PROP_AREA = "area";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -15,11 +15,11 @@ public class OspfIntraAreaRoute extends OspfRoute {
 
   @JsonCreator
   public OspfIntraAreaRoute(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
-      @JsonProperty(METRIC_VAR) int metric,
-      @JsonProperty(AREA_VAR) long area) {
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_METRIC) int metric,
+      @JsonProperty(PROP_AREA) long area) {
     super(network, nextHopIp, admin, metric);
     _area = area;
   }
@@ -49,7 +49,7 @@ public class OspfIntraAreaRoute extends OspfRoute {
     return _network.equals(other._network);
   }
 
-  @JsonProperty(AREA_VAR)
+  @JsonProperty(PROP_AREA)
   public long getArea() {
     return _area;
   }

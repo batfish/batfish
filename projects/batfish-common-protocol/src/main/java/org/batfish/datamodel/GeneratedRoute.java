@@ -73,15 +73,15 @@ public final class GeneratedRoute extends AbstractRoute {
     }
   }
 
-  private static final String AS_PATH_VAR = "asPath";
+  private static final String PROP_AS_PATH = "asPath";
 
-  private static final String ATTRIBUTE_POLICY_VAR = "attributePolicy";
+  private static final String PROP_ATTRIBUTE_POLICY = "attributePolicy";
 
-  private static final String DISCARD_VAR = "discard";
+  private static final String PROP_DISCARD = "discard";
 
-  private static final String GENERATION_POLICY_VAR = "generationPolicy";
+  private static final String PROP_GENERATION_POLICY = "generationPolicy";
 
-  private static final String METRIC_VAR = "metric";
+  private static final String PROP_METRIC = "metric";
 
   private static final long serialVersionUID = 1L;
 
@@ -103,15 +103,15 @@ public final class GeneratedRoute extends AbstractRoute {
 
   @JsonCreator
   public GeneratedRoute(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(AS_PATH_VAR) AsPath asPath,
-      @JsonProperty(ATTRIBUTE_POLICY_VAR) String attributePolicy,
-      @JsonProperty(DISCARD_VAR) boolean discard,
-      @JsonProperty(GENERATION_POLICY_VAR) String generationPolicy,
-      @JsonProperty(METRIC_VAR) Integer metric,
-      @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface) {
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_AS_PATH) AsPath asPath,
+      @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
+      @JsonProperty(PROP_DISCARD) boolean discard,
+      @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
+      @JsonProperty(PROP_METRIC) Integer metric,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
     super(network);
     _administrativeCost = administrativeCost;
     _asPath = asPath;
@@ -130,31 +130,31 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @JsonIgnore(false)
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   @Override
   public int getAdministrativeCost() {
     return _administrativeCost;
   }
 
-  @JsonProperty(AS_PATH_VAR)
+  @JsonProperty(PROP_AS_PATH)
   @JsonPropertyDescription("A BGP AS-path attribute to associate with this generated route")
   public AsPath getAsPath() {
     return _asPath;
   }
 
-  @JsonProperty(ATTRIBUTE_POLICY_VAR)
+  @JsonProperty(PROP_ATTRIBUTE_POLICY)
   @JsonPropertyDescription("The name of the policy that sets attributes of this route")
   public String getAttributePolicy() {
     return _attributePolicy;
   }
 
-  @JsonProperty(DISCARD_VAR)
+  @JsonProperty(PROP_DISCARD)
   @JsonPropertyDescription("Whether this route is route is meant to discard all matching packets")
   public boolean getDiscard() {
     return _discard;
   }
 
-  @JsonProperty(GENERATION_POLICY_VAR)
+  @JsonProperty(PROP_GENERATION_POLICY)
   @JsonPropertyDescription(
       "The name of the policy that will generate this route if another route matches it")
   public String getGenerationPolicy() {
@@ -162,7 +162,7 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @JsonIgnore(false)
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   @Override
   public Integer getMetric() {
     return _metric;
@@ -176,7 +176,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
   @Nonnull
   @JsonIgnore(false)
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   @Override
   public Ip getNextHopIp() {
     return _nextHopIp;

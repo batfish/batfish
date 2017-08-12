@@ -147,29 +147,29 @@ public class BgpRoute extends AbstractRoute {
     }
   }
 
-  private static final String AS_PATH_VAR = "asPath";
+  private static final String PROP_AS_PATH = "asPath";
 
-  private static final String CLUSTER_LIST_VAR = "clusterList";
+  private static final String PROP_CLUSTER_LIST = "clusterList";
 
-  private static final String COMMUNITIES_VAR = "communities";
+  private static final String PROP_COMMUNITIES = "communities";
 
   public static final int DEFAULT_LOCAL_PREFERENCE = 100;
 
-  private static final String LOCAL_PREFERENCE_VAR = "localPreference";
+  private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
-  private static final String ORIGIN_TYPE_VAR = "originType";
+  private static final String PROP_ORIGIN_TYPE = "originType";
 
-  private static final String ORIGINATOR_IP_VAR = "originatorIp";
+  private static final String PROP_ORIGINATOR_IP = "originatorIp";
 
-  private static final String RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR =
+  private static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String SRC_PROTOCOL_VAR = "srcProtocol";
+  private static final String PROP_SRC_PROTOCOL = "srcProtocol";
 
-  private static final String WEIGHT_VAR = "weight";
+  private static final String PROP_WEIGHT = "weight";
 
   private final int _admin;
 
@@ -199,21 +199,21 @@ public class BgpRoute extends AbstractRoute {
 
   @JsonCreator
   public BgpRoute(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
-      @JsonProperty(AS_PATH_VAR) AsPath asPath,
-      @JsonProperty(COMMUNITIES_VAR) SortedSet<Long> communities,
-      @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference,
-      @JsonProperty(METRIC_VAR) int med,
-      @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
-      @JsonProperty(CLUSTER_LIST_VAR) SortedSet<Long> clusterList,
-      @JsonProperty(RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR)
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_AS_PATH) AsPath asPath,
+      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @JsonProperty(PROP_LOCAL_PREFERENCE) int localPreference,
+      @JsonProperty(PROP_METRIC) int med,
+      @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
+      @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
+      @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
           boolean receivedFromRouteReflectorClient,
-      @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
-      @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol,
-      @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol,
-      @JsonProperty(WEIGHT_VAR) int weight) {
+      @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
+      @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_WEIGHT) int weight) {
     super(network);
     _admin = admin;
     _asPath = asPath;
@@ -284,34 +284,34 @@ public class BgpRoute extends AbstractRoute {
   }
 
   @JsonIgnore(false)
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   @Override
   public int getAdministrativeCost() {
     return _admin;
   }
 
-  @JsonProperty(AS_PATH_VAR)
+  @JsonProperty(PROP_AS_PATH)
   public AsPath getAsPath() {
     return _asPath;
   }
 
-  @JsonProperty(CLUSTER_LIST_VAR)
+  @JsonProperty(PROP_CLUSTER_LIST)
   public SortedSet<Long> getClusterList() {
     return Collections.unmodifiableSortedSet(_clusterList);
   }
 
-  @JsonProperty(COMMUNITIES_VAR)
+  @JsonProperty(PROP_COMMUNITIES)
   public SortedSet<Long> getCommunities() {
     return Collections.unmodifiableSortedSet(_communities);
   }
 
-  @JsonProperty(LOCAL_PREFERENCE_VAR)
+  @JsonProperty(PROP_LOCAL_PREFERENCE)
   public int getLocalPreference() {
     return _localPreference;
   }
 
   @JsonIgnore(false)
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   @Override
   public Integer getMetric() {
     return _med;
@@ -325,35 +325,35 @@ public class BgpRoute extends AbstractRoute {
 
   @Nonnull
   @JsonIgnore(false)
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   @Override
   public Ip getNextHopIp() {
     return _nextHopIp;
   }
 
-  @JsonProperty(ORIGINATOR_IP_VAR)
+  @JsonProperty(PROP_ORIGINATOR_IP)
   public Ip getOriginatorIp() {
     return _originatorIp;
   }
 
-  @JsonProperty(ORIGIN_TYPE_VAR)
+  @JsonProperty(PROP_ORIGIN_TYPE)
   public OriginType getOriginType() {
     return _originType;
   }
 
   @JsonIgnore(false)
-  @JsonProperty(PROTOCOL_VAR)
+  @JsonProperty(PROP_PROTOCOL)
   @Override
   public RoutingProtocol getProtocol() {
     return _protocol;
   }
 
-  @JsonProperty(RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT_VAR)
+  @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
   public boolean getReceivedFromRouteReflectorClient() {
     return _receivedFromRouteReflectorClient;
   }
 
-  @JsonProperty(SRC_PROTOCOL_VAR)
+  @JsonProperty(PROP_SRC_PROTOCOL)
   public RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
   }
@@ -363,7 +363,7 @@ public class BgpRoute extends AbstractRoute {
     return NO_TAG;
   }
 
-  @JsonProperty(WEIGHT_VAR)
+  @JsonProperty(PROP_WEIGHT)
   public int getWeight() {
     return _weight;
   }

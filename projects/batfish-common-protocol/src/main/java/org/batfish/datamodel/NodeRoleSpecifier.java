@@ -15,9 +15,9 @@ import org.batfish.common.BatfishException;
 
 public class NodeRoleSpecifier {
 
-  private static final String ROLE_MAP_VAR = "roleMap";
+  private static final String PROP_ROLE_MAP = "roleMap";
 
-  private static final String ROLE_REGEXES_VAR = "roleRegexes";
+  private static final String PROP_ROLE_REGEXES = "roleRegexes";
 
   // a map from roles to the set of nodes that have that role
   private SortedMap<String, SortedSet<String>> _roleMap;
@@ -90,22 +90,22 @@ public class NodeRoleSpecifier {
     return nodeRolesMap;
   }
 
-  @JsonProperty(ROLE_MAP_VAR)
+  @JsonProperty(PROP_ROLE_MAP)
   public SortedMap<String, SortedSet<String>> getRoleMap() {
     return _roleMap;
   }
 
-  @JsonProperty(ROLE_REGEXES_VAR)
+  @JsonProperty(PROP_ROLE_REGEXES)
   public List<String> getRoleRegexes() {
     return _roleRegexes;
   }
 
-  @JsonProperty(ROLE_MAP_VAR)
+  @JsonProperty(PROP_ROLE_MAP)
   public void setRoleMap(SortedMap<String, SortedSet<String>> roleMap) {
     _roleMap = roleMap;
   }
 
-  @JsonProperty(ROLE_REGEXES_VAR)
+  @JsonProperty(PROP_ROLE_REGEXES)
   public void setRoleRegexes(List<String> roleRegexes) {
     _roleRegexes = roleRegexes;
   }

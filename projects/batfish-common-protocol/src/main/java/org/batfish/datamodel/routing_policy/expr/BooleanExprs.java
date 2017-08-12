@@ -17,12 +17,12 @@ public enum BooleanExprs {
     /** */
     private static final long serialVersionUID = 1L;
 
-    private static final String TYPE_VAR = "type";
+    private static final String PROP_TYPE = "type";
 
     private BooleanExprs _type;
 
     @JsonCreator
-    public StaticBooleanExpr(@JsonProperty(TYPE_VAR) BooleanExprs type) {
+    public StaticBooleanExpr(@JsonProperty(PROP_TYPE) BooleanExprs type) {
       _type = type;
     }
 
@@ -57,7 +57,7 @@ public enum BooleanExprs {
       return result;
     }
 
-    @JsonProperty(TYPE_VAR)
+    @JsonProperty(PROP_TYPE)
     public BooleanExprs getType() {
       return _type;
     }

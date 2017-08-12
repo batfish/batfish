@@ -11,11 +11,11 @@ import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
 public class JsonPathDiffResult {
 
-  private static final String ADDED_VAR = "added";
+  private static final String PROP_ADDED = "added";
 
-  private static final String PATH_VAR = "path";
+  private static final String PROP_PATH = "path";
 
-  private static final String REMOVED_VAR = "removed";
+  private static final String PROP_REMOVED = "removed";
 
   private SortedMap<String, JsonPathResultEntry> _added;
 
@@ -52,32 +52,32 @@ public class JsonPathDiffResult {
     }
   }
 
-  @JsonProperty(ADDED_VAR)
+  @JsonProperty(PROP_ADDED)
   public SortedMap<String, JsonPathResultEntry> getAdded() {
     return _added;
   }
 
-  @JsonProperty(PATH_VAR)
+  @JsonProperty(PROP_PATH)
   public JsonPathQuery getPath() {
     return _path;
   }
 
-  @JsonProperty(REMOVED_VAR)
+  @JsonProperty(PROP_REMOVED)
   public SortedMap<String, JsonPathResultEntry> getRemoved() {
     return _removed;
   }
 
-  @JsonProperty(ADDED_VAR)
+  @JsonProperty(PROP_ADDED)
   public void setAdded(SortedMap<String, JsonPathResultEntry> added) {
     _added = added;
   }
 
-  @JsonProperty(PATH_VAR)
+  @JsonProperty(PROP_PATH)
   public void setPath(JsonPathQuery path) {
     _path = path;
   }
 
-  @JsonProperty(REMOVED_VAR)
+  @JsonProperty(PROP_REMOVED)
   public void setRemoved(SortedMap<String, JsonPathResultEntry> removed) {
     _removed = removed;
   }

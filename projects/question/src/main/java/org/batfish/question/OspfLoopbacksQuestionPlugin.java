@@ -230,7 +230,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
    */
   public static class OspfLoopbacksQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -248,7 +248,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
       return "ospfloopbacks";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -265,7 +265,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
       return retString;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }
