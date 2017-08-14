@@ -28,7 +28,9 @@ import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -174,6 +176,90 @@ public class BatfishTest {
     Batfish batfish = initBatfish();
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);
+  }
+
+  //positive example
+  @Test
+  public void testCheckTopologyNodePos() throws IOException {
+    String topologyJson =
+        "["
+            + "{ "
+            + "\"node1\" : \"h1\","
+            + "\"node1interface\" : \"eth0\","
+            + "\"node2\" : \"h2\","
+            + "\"node2interface\" : \"e0\""
+            + "}"
+            + "]";
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Batfish batfish = initBatfish();
+    Topology topology = batfish.parseTopology(topologyFilePath);
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config1 = new Configuration("h1");
+    config1.setConfigurationFormat(ConfigurationFormat.HOST);
+    config1.getInterfaces().put("eth0", new Interface("eth0", config1));
+    Configuration config2 = new Configuration("h2");
+    config2.setConfigurationFormat(ConfigurationFormat.HOST);
+    config2.getInterfaces().put("e0", new Interface("e0", config2));
+    configs.put("h1", config1);
+    configs.put("h2", config2);
+    batfish.checkTopology(configs, topology);
+  }
+
+  //negative example
+  @Test
+  public void testCheckTopologyNodeNeg() throws IOException {
+    String topologyJson =
+        "["
+            + "{ "
+            + "\"node1\" : \"h1\","
+            + "\"node1interface\" : \"eth0\","
+            + "\"node2\" : \"h2\","
+            + "\"node2interface\" : \"e0\""
+            + "}"
+            + "]";
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Batfish batfish = initBatfish();
+    Topology topology = batfish.parseTopology(topologyFilePath);
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config1 = new Configuration("h1");
+    config1.setConfigurationFormat(ConfigurationFormat.HOST);
+    config1.getInterfaces().put("eth0", new Interface("eth0", config1));
+    configs.put("h1", config1);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("ERROR: topology contains a non-existent node\n");
+    batfish.checkTopology(configs, topology);
+  }
+
+  //Non-matching interface
+  @Test
+  public void testCheckTopologyInterface() throws IOException {
+    String topologyJson =
+        "["
+            + "{ "
+            + "\"node1\" : \"h1\","
+            + "\"node1interface\" : \"eth1\","
+            + "\"node2\" : \"h2\","
+            + "\"node2interface\" : \"e0\""
+            + "}"
+            + "]";
+    Path topologyFilePath =
+        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Batfish batfish = initBatfish();
+    Topology topology = batfish.parseTopology(topologyFilePath);
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config1 = new Configuration("h1");
+    config1.setConfigurationFormat(ConfigurationFormat.HOST);
+    config1.getInterfaces().put("eth0", new Interface("eth0", config1));
+    Configuration config2 = new Configuration("h2");
+    config2.setConfigurationFormat(ConfigurationFormat.HOST);
+    config2.getInterfaces().put("e0", new Interface("e0", config2));
+    configs.put("h1", config1);
+    configs.put("h2", config2);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("ERROR: topology contains a non-existent interface\n");
+    batfish.checkTopology(configs, topology);
   }
 
   public void testReadMissingIptableFile() throws IOException {

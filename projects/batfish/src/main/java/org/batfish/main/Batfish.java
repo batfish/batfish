@@ -4042,7 +4042,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
-    addMissingConfigurations(configurations, topology);
+    checkTopology(configurations, topology);
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
         "inferred node roles");
@@ -4426,30 +4426,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
-  private void addMissingConfigurations(
-      Map<String, Configuration> configurations, Topology topology) {
-    Map<String, Configuration> configsToAdd = new TreeMap<>();
+  public void checkTopology(Map<String, Configuration> configurations, Topology topology) {
     for (Edge edge : topology.getEdges()) {
-      if (!configurations.containsKey(edge.getNode1())) {
-        Configuration config = new Configuration(edge.getNode1());
-        config.setConfigurationFormat(ConfigurationFormat.HOST);
-        config.getInterfaces().put(edge.getInt1(), new Interface(edge.getInt1(), config));
-        configurations.put(config.getHostname(), config);
+      if (!configurations.containsKey(edge.getNode1())
+          || !configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException("ERROR: topology contains a non-existent node\n");
       } else {
-        Configuration config = configurations.get(edge.getNode1());
-        if (!config.getInterfaces().containsKey(edge.getInt1())) {
-          config.getInterfaces().put(edge.getInt1(), new Interface(edge.getInt1(), config));
-        }
-      }
-      if (!configurations.containsKey(edge.getNode2())) {
-        Configuration config = new Configuration(edge.getNode2());
-        config.setConfigurationFormat(ConfigurationFormat.HOST);
-        config.getInterfaces().put(edge.getInt2(), new Interface(edge.getInt2(), config));
-        configurations.put(config.getHostname(), config);
-      } else {
-        Configuration config = configurations.get(edge.getNode2());
-        if (!config.getInterfaces().containsKey(edge.getInt2())) {
-          config.getInterfaces().put(edge.getInt2(), new Interface(edge.getInt2(), config));
+        //nodes are valid, now checking corresponding interfaces
+        Configuration config1 = configurations.get(edge.getNode1());
+        Configuration config2 = configurations.get(edge.getNode2());
+        if (!config1.getInterfaces().containsKey(edge.getInt1())
+            || !config2.getInterfaces().containsKey(edge.getInt2())) {
+          throw new BatfishException("ERROR: topology contains a non-existent interface\n");
         }
       }
     }
