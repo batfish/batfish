@@ -185,21 +185,23 @@ public class BatfishTest {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
     configs.put("h2", createConfiguration("h2", "e0"));
-    //test that checking a valid topology does not throw any exception
-    EdgeSet edges = new EdgeSet();
-    edges.add(new Edge("h1", "eth0", "h2", "e0"));
-    Batfish.checkTopology(configs, new Topology(edges));
+    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+    Topology topology = new Topology(edges);
+
+    //test that checkTopology does not throw
+    Batfish.checkTopology(configs, topology);
   }
 
   @Test
   public void testCheckTopologyInvalidNode() throws IOException {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
-    EdgeSet edges = new EdgeSet();
-    edges.add(new Edge("h1", "eth0", "h2", "e0"));
+    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+    Topology topology = new Topology(edges);
+
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Topology contains a non-existent node 'h2'");
-    Batfish.checkTopology(configs, new Topology(edges));
+    Batfish.checkTopology(configs, topology);
   }
 
   @Test
@@ -207,11 +209,12 @@ public class BatfishTest {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
     configs.put("h2", createConfiguration("h2", "e0"));
-    EdgeSet edges = new EdgeSet();
-    edges.add(new Edge("h1", "eth1", "h2", "e0"));
+    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth1", "h2", "e0")));
+    Topology topology = new Topology(edges);
+
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Node 'h1' doesn't has the interface 'eth1'");
-    Batfish.checkTopology(configs, new Topology(edges));
+    _thrown.expectMessage("Topology contains a non-existent interface 'eth1' on node 'h1'");
+    Batfish.checkTopology(configs, topology);
   }
 
   public void testReadMissingIptableFile() throws IOException {
