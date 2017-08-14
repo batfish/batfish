@@ -182,31 +182,28 @@ public class BatfishTest {
 
   @Test
   public void testCheckValidTopology() throws IOException {
-    Batfish batfish = initBatfish();
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
     configs.put("h2", createConfiguration("h2", "e0"));
     //test that checking a valid topology does not throw any exception
     EdgeSet edges = new EdgeSet();
     edges.add(new Edge("h1", "eth0", "h2", "e0"));
-    batfish.checkTopology(configs, new Topology(edges));
+    Batfish.checkTopology(configs, new Topology(edges));
   }
 
   @Test
   public void testCheckTopologyInvalidNode() throws IOException {
-    Batfish batfish = initBatfish();
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Topology contains a non-existent node 'h2'");
     EdgeSet edges = new EdgeSet();
     edges.add(new Edge("h1", "eth0", "h2", "e0"));
-    batfish.checkTopology(configs, new Topology(edges));
+    Batfish.checkTopology(configs, new Topology(edges));
   }
 
   @Test
   public void testCheckTopologyInvalidInterface() throws IOException {
-    Batfish batfish = initBatfish();
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
     configs.put("h2", createConfiguration("h2", "e0"));
@@ -214,7 +211,7 @@ public class BatfishTest {
     _thrown.expectMessage("Node 'h1' doesn't has the interface 'eth1'");
     EdgeSet edges = new EdgeSet();
     edges.add(new Edge("h1", "eth1", "h2", "e0"));
-    batfish.checkTopology(configs, new Topology(edges));
+    Batfish.checkTopology(configs, new Topology(edges));
   }
 
   public void testReadMissingIptableFile() throws IOException {
