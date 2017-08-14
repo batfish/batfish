@@ -4426,19 +4426,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
-  public void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
     for (Edge edge : topology.getEdges()) {
-      if (!configurations.containsKey(edge.getNode1())
-          || !configurations.containsKey(edge.getNode2())) {
-        throw new BatfishException("ERROR: topology contains a non-existent node\n");
-      } else {
-        //nodes are valid, now checking corresponding interfaces
-        Configuration config1 = configurations.get(edge.getNode1());
-        Configuration config2 = configurations.get(edge.getNode2());
-        if (!config1.getInterfaces().containsKey(edge.getInt1())
-            || !config2.getInterfaces().containsKey(edge.getInt2())) {
-          throw new BatfishException("ERROR: topology contains a non-existent interface\n");
-        }
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            "Topology contains a non-existent node '" + edge.getNode1() + "'");
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            "Topology contains a non-existent node '" + edge.getNode2() + "'");
+      }
+      //nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            "Node '" + edge.getNode1() + "' doesn't has the interface '" + edge.getInt1() + "'");
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            "Node '" + edge.getNode2() + "' doesn't has the interface '" + edge.getInt2() + "'");
       }
     }
   }

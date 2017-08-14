@@ -23,6 +23,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
@@ -30,6 +31,7 @@ import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
@@ -37,6 +39,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -178,87 +181,50 @@ public class BatfishTest {
     assertEquals(topology.getEdges().size(), 2);
   }
 
-  //positive example
+
   @Test
-  public void testCheckTopologyNodePos() throws IOException {
-    String topologyJson =
-        "["
-            + "{ "
-            + "\"node1\" : \"h1\","
-            + "\"node1interface\" : \"eth0\","
-            + "\"node2\" : \"h2\","
-            + "\"node2interface\" : \"e0\""
-            + "}"
-            + "]";
-    Path topologyFilePath =
-        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+  public void testCheckValidTopology() throws IOException {
+    EdgeSet edges = new EdgeSet();
+    edges.add(new Edge("h1", "eth0", "h2", "e0"));
+    File topologyFile = _folder.newFile("testTopologyJson.json");
+    createTopology(edges, topologyFile);
     Batfish batfish = initBatfish();
-    Topology topology = batfish.parseTopology(topologyFilePath);
+    Topology topology = batfish.parseTopology(topologyFile.toPath());
     Map<String, Configuration> configs = new HashMap<>();
-    Configuration config1 = new Configuration("h1");
-    config1.setConfigurationFormat(ConfigurationFormat.HOST);
-    config1.getInterfaces().put("eth0", new Interface("eth0", config1));
-    Configuration config2 = new Configuration("h2");
-    config2.setConfigurationFormat(ConfigurationFormat.HOST);
-    config2.getInterfaces().put("e0", new Interface("e0", config2));
-    configs.put("h1", config1);
-    configs.put("h2", config2);
+    configs.put("h1", createConfiguration("h1", "eth0"));
+    configs.put("h2", createConfiguration("h2", "e0"));
+    //test that checking a valid topology does not throw any exception
     batfish.checkTopology(configs, topology);
   }
 
-  //negative example
   @Test
-  public void testCheckTopologyNodeNeg() throws IOException {
-    String topologyJson =
-        "["
-            + "{ "
-            + "\"node1\" : \"h1\","
-            + "\"node1interface\" : \"eth0\","
-            + "\"node2\" : \"h2\","
-            + "\"node2interface\" : \"e0\""
-            + "}"
-            + "]";
-    Path topologyFilePath =
-        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+  public void testCheckTopologyInvalidNode() throws IOException {
+    EdgeSet edges = new EdgeSet();
+    edges.add(new Edge("h1", "eth0", "h2", "e0"));
+    File topologyFile = _folder.newFile("testTopologyJson.json");
+    createTopology(edges, topologyFile);
     Batfish batfish = initBatfish();
-    Topology topology = batfish.parseTopology(topologyFilePath);
+    Topology topology = batfish.parseTopology(topologyFile.toPath());
     Map<String, Configuration> configs = new HashMap<>();
-    Configuration config1 = new Configuration("h1");
-    config1.setConfigurationFormat(ConfigurationFormat.HOST);
-    config1.getInterfaces().put("eth0", new Interface("eth0", config1));
-    configs.put("h1", config1);
+    configs.put("h1", createConfiguration("h1", "eth0"));
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("ERROR: topology contains a non-existent node\n");
+    _thrown.expectMessage("Topology contains a non-existent node 'h2'");
     batfish.checkTopology(configs, topology);
   }
 
-  //Non-matching interface
   @Test
-  public void testCheckTopologyInterface() throws IOException {
-    String topologyJson =
-        "["
-            + "{ "
-            + "\"node1\" : \"h1\","
-            + "\"node1interface\" : \"eth1\","
-            + "\"node2\" : \"h2\","
-            + "\"node2interface\" : \"e0\""
-            + "}"
-            + "]";
-    Path topologyFilePath =
-        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+  public void testCheckTopologyInvalidInterface() throws IOException {
+    EdgeSet edges = new EdgeSet();
+    edges.add(new Edge("h1", "eth1", "h2", "e0"));
+    File topologyFile = _folder.newFile("testTopologyJson.json");
+    createTopology(edges, topologyFile);
     Batfish batfish = initBatfish();
-    Topology topology = batfish.parseTopology(topologyFilePath);
+    Topology topology = batfish.parseTopology(topologyFile.toPath());
     Map<String, Configuration> configs = new HashMap<>();
-    Configuration config1 = new Configuration("h1");
-    config1.setConfigurationFormat(ConfigurationFormat.HOST);
-    config1.getInterfaces().put("eth0", new Interface("eth0", config1));
-    Configuration config2 = new Configuration("h2");
-    config2.setConfigurationFormat(ConfigurationFormat.HOST);
-    config2.getInterfaces().put("e0", new Interface("e0", config2));
-    configs.put("h1", config1);
-    configs.put("h2", config2);
+    configs.put("h1", createConfiguration("h1", "eth0"));
+    configs.put("h2", createConfiguration("h2", "e0"));
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("ERROR: topology contains a non-existent interface\n");
+    _thrown.expectMessage("Node 'h1' doesn't has the interface 'eth1'");
     batfish.checkTopology(configs, topology);
   }
 
@@ -377,5 +343,23 @@ public class BatfishTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Failed to walk path: " + nonExistPath);
     Batfish.listAllFiles(nonExistPath);
+  }
+
+  private static Configuration createConfiguration(String hostname, String interfaceName) {
+    Configuration config = new Configuration(hostname);
+    config.setConfigurationFormat(ConfigurationFormat.HOST);
+    config.getInterfaces().put(interfaceName, new Interface(interfaceName, config));
+    return config;
+  }
+
+  private static void createTopology(EdgeSet edges, File tempFile) {
+    try {
+      BatfishObjectMapper mapper =
+          new BatfishObjectMapper(Thread.currentThread().getContextClassLoader());
+      Topology topology = new Topology(edges);
+      mapper.writeValue(tempFile, topology);
+    } catch (IOException e) {
+      throw new BatfishException("Failed to create the topology during setup");
+    }
   }
 }
