@@ -9,6 +9,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
@@ -43,9 +44,10 @@ public class WorkMgrServiceTest {
   public void getEmptyContainer() throws Exception {
     initContainerEnvironment();
     Response response = _service.getContainer("100", "0.0.0", _containerName);
-    String containerJson = response.getEntity().toString();
-    String expected = "{\n  \"name\" : \"myContainer\"\n}";
-    assertThat(containerJson, equalTo(expected));
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    Container container = mapper.readValue(response.getEntity().toString(), Container.class);
+    Container expected = Container.of(_containerName, null);
+    assertThat(container, equalTo(expected));
   }
 
   @Test
@@ -71,10 +73,10 @@ public class WorkMgrServiceTest {
   public void getNonEmptyContainer() throws Exception {
     initContainerEnvironment();
     Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
-    Path testrigPath = containerPath.resolve("testrig1");
-    assertThat(testrigPath.toFile().mkdir(), is(true));
-    Path testrigPath2 = containerPath.resolve("testrig2");
-    assertThat(testrigPath2.toFile().mkdir(), is(true));
+    Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig1");
+    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    Path testrigPath2 = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig2");
+    assertThat(testrigPath2.toFile().mkdirs(), is(true));
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);

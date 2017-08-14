@@ -75,19 +75,25 @@ public class WorkMgrTest {
 
   @Test
   public void listEmptyQuestion() throws IOException {
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     String containerPath = _folder.newFolder("container").getPath();
-    String testrigPath = _folder.newFolder("testrigPath").getPath();
-    SortedSet<String> questions = _manager.listQuestions(containerPath, testrigPath);
+    Path testrigPath =
+        Paths.get(containerPath).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrigPath");
+    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    SortedSet<String> questions = _manager.listQuestions("container", "testrigPath");
     assertThat(questions.isEmpty(), is(true));
   }
 
   @Test
   public void listQuestionNames() throws IOException {
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     String containerPath = _folder.newFolder("container").getPath();
-    String testrigPath = _folder.newFolder("testrigPath").getPath();
-    Path questionsDir = Paths.get(testrigPath).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    Path testrigPath =
+        Paths.get(containerPath).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrigPath");
+    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    Path questionsDir = testrigPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     assertThat(questionsDir.resolve("initinfo").toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions(containerPath, testrigPath);
+    SortedSet<String> questions = _manager.listQuestions("container", "testrigPath");
     assertThat(questions.size(), is(1));
     assertThat(questions.first(), equalTo("initinfo"));
   }
@@ -111,13 +117,16 @@ public class WorkMgrTest {
 
   @Test
   public void listSortedQuestionNames() throws IOException {
+    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     String containerPath = _folder.newFolder("container").getPath();
-    String testrigPath = _folder.newFolder("testrigPath").getPath();
-    Path questionsDir = Paths.get(testrigPath).resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    Path testrigPath =
+        Paths.get(containerPath).resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrigPath");
+    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    Path questionsDir = testrigPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     assertThat(questionsDir.resolve("nodes").toFile().mkdirs(), is(true));
     assertThat(questionsDir.resolve("access").toFile().mkdirs(), is(true));
     assertThat(questionsDir.resolve("initinfo").toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions(containerPath, testrigPath);
+    SortedSet<String> questions = _manager.listQuestions("container", "testrigPath");
     assertThat(questions.size(), is(3));
     assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
   }
@@ -141,24 +150,15 @@ public class WorkMgrTest {
     String containerName = "myContainer";
     initContainerEnvironment(containerName);
     Path containerPath = _folder.getRoot().toPath().resolve(containerName);
-    Path testrigPath = containerPath.resolve("testrig1");
-    assertThat(testrigPath.toFile().mkdir(), is(true));
-    Path testrigPath2 = containerPath.resolve("testrig2");
-    assertThat(testrigPath2.toFile().mkdir(), is(true));
+    Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig1");
+    assertThat(testrigPath.toFile().mkdirs(), is(true));
+    Path testrigPath2 = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig2");
+    assertThat(testrigPath2.toFile().mkdirs(), is(true));
     Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
     Container container = _manager.getContainer(containerDir);
     SortedSet<String> expectedTestrigs = new TreeSet<>();
     expectedTestrigs.add("testrig1");
     expectedTestrigs.add("testrig2");
     assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
-  }
-
-  @Test
-  public void getNonExistContainer() {
-    String containerName = "myContainer";
-    Path containerDir = Paths.get(_folder.getRoot().toPath().resolve(containerName).toString());
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Error listing directory '" + containerDir + "'"));
-    _manager.getContainer(containerDir);
   }
 }

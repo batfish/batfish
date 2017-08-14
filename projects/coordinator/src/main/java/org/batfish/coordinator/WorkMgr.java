@@ -129,7 +129,8 @@ public class WorkMgr {
       Path containerDir =
           Main.getSettings().getContainersLocation().resolve(work.getWorkItem().getContainerName());
       String testrigName = work.getWorkItem().getTestrigName();
-      Path testrigBaseDir = containerDir.resolve(testrigName).toAbsolutePath();
+      Path testrigBaseDir =
+          containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrigName).toAbsolutePath();
       task.put(BfConsts.ARG_CONTAINER_DIR, containerDir.toAbsolutePath().toString());
       task.put(BfConsts.ARG_TESTRIG, testrigName);
       task.put(
@@ -536,6 +537,9 @@ public class WorkMgr {
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
+    if (!Files.exists(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))) {
+      return Container.of(containerDir.toFile().getName(), new TreeSet<>());
+    }
     SortedSet<String> testrigs =
         new TreeSet<>(
             CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
@@ -830,7 +834,9 @@ public class WorkMgr {
     Path testrigDir =
         Main.getSettings()
             .getContainersLocation()
-            .resolve(Paths.get(workItem.getContainerName(), workItem.getTestrigName()));
+            .resolve(workItem.getContainerName())
+            .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+            .resolve(workItem.getTestrigName());
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
       throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
     }

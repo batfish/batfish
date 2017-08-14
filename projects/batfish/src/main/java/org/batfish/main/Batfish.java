@@ -201,7 +201,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, String testrig, String envName) {
-    Path testrigDir = containerDir.resolve(testrig);
+    Path testrigDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve(testrig);
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
