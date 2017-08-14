@@ -195,8 +195,6 @@ public class BatfishTest {
   public void testCheckTopologyInvalidNode() throws IOException {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("h1", createConfiguration("h1", "eth0"));
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Topology contains a non-existent node 'h2'");
     EdgeSet edges = new EdgeSet();
     edges.add(new Edge("h1", "eth0", "h2", "e0"));
     _thrown.expect(BatfishException.class);
