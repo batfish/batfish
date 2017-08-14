@@ -7,7 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
+/**
+ * The {@link Container Container} is an Object representation of the container for Batfish service.
+ *
+ * <p>{@link Container container} contains all information about the testrigs and analyses inside
+ * the container {@link Container#_name}.
+ */
 @JsonInclude(Include.NON_NULL)
 public final class Container {
   private static final String PROP_NAME = "name";
@@ -15,8 +22,8 @@ public final class Container {
   private static final String PROP_ANALYSES = "analyses";
 
   private String _name;
-  private List<Testrig> _testrigs;
-  private List<Analysis> _analyses;
+  private @Nullable List<Testrig> _testrigs;
+  private @Nullable List<Analysis> _analyses;
 
   public static Container of(@JsonProperty(PROP_NAME) String name) {
     return of(name, null, null);
@@ -25,12 +32,13 @@ public final class Container {
   @JsonCreator
   public static Container of(
       @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_TESTRIGS) List<Testrig> testrigs,
-      @JsonProperty(PROP_ANALYSES) List<Analysis> analyses) {
+      @Nullable @JsonProperty(PROP_TESTRIGS) List<Testrig> testrigs,
+      @Nullable @JsonProperty(PROP_ANALYSES) List<Analysis> analyses) {
     return new Container(name, testrigs, analyses);
   }
 
-  private Container(String name, List<Testrig> testrigs, List<Analysis> analyses) {
+  private Container(
+      String name, @Nullable List<Testrig> testrigs, @Nullable List<Analysis> analyses) {
     this._name = name;
     this._testrigs = testrigs;
     this._analyses = analyses;
@@ -41,11 +49,13 @@ public final class Container {
     return _name;
   }
 
+  @Nullable
   @JsonProperty(PROP_TESTRIGS)
   public List<Testrig> getTestrigs() {
     return _testrigs;
   }
 
+  @Nullable
   @JsonProperty(PROP_ANALYSES)
   public List<Analysis> getAnalyses() {
     return _analyses;

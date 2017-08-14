@@ -9,6 +9,13 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.Question;
 
+/**
+ * The {@link TestrigQuestion TestrigQuestion} is an Object representation of the question used for
+ * Batfish service.
+ *
+ * <p>{@link TestrigQuestion TestrigQuestion} contains a list of {@link Question questions} that
+ * need to be analyzed, along with the name of the question.
+ */
 @JsonInclude(Include.NON_NULL)
 public class TestrigQuestion {
 
@@ -24,11 +31,12 @@ public class TestrigQuestion {
 
   @JsonCreator
   public static TestrigQuestion of(
-      @JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_QUESTION) Question question) {
+      @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_QUESTION) Question question) {
     return new TestrigQuestion(name, question);
   }
 
-  private TestrigQuestion(String name, Question question) {
+  private TestrigQuestion(String name, @Nullable Question question) {
     this._name = name;
     this._question = question;
   }
@@ -38,6 +46,7 @@ public class TestrigQuestion {
     return _name;
   }
 
+  @Nullable
   @JsonProperty(PROP_QUESTION)
   public Question getQuestion() {
     return _question;

@@ -9,6 +9,13 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
+/**
+ * The {@link Testrig Testrig} is an Object representation of the testrig for Batfish service.
+ *
+ * <p>{@link Testrig Testrig} contains all information about the testrig {@link Testrig#_name},
+ * including configuration files in the testrig, environments, and questions been asked for the
+ * testrig, etc.
+ */
 @JsonInclude(Include.NON_NULL)
 public class Testrig {
 
@@ -29,17 +36,17 @@ public class Testrig {
   @JsonCreator
   public static Testrig of(
       @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_CONFIGS) List<String> configs,
-      @JsonProperty(PROP_ENV) List<String> environments,
-      @JsonProperty(PROP_QUESTIONS) List<TestrigQuestion> questions) {
+      @Nullable @JsonProperty(PROP_CONFIGS) List<String> configs,
+      @Nullable @JsonProperty(PROP_ENV) List<String> environments,
+      @Nullable @JsonProperty(PROP_QUESTIONS) List<TestrigQuestion> questions) {
     return new Testrig(name, configs, environments, questions);
   }
 
   private Testrig(
       String name,
-      List<String> configs,
-      List<String> environments,
-      List<TestrigQuestion> questions) {
+      @Nullable List<String> configs,
+      @Nullable List<String> environments,
+      @Nullable List<TestrigQuestion> questions) {
     this._name = name;
     this._configs = configs;
     this._environments = environments;
@@ -51,16 +58,19 @@ public class Testrig {
     return _name;
   }
 
+  @Nullable
   @JsonProperty(PROP_CONFIGS)
   public List<String> getConfigs() {
     return _configs;
   }
 
+  @Nullable
   @JsonProperty(PROP_ENV)
   public List<String> getEnvironments() {
     return _environments;
   }
 
+  @Nullable
   @JsonProperty(PROP_QUESTIONS)
   public List<TestrigQuestion> getQuestions() {
     return _questions;
@@ -112,5 +122,4 @@ public class Testrig {
   public int hashCode() {
     return Objects.hash(_name, _configs, _environments, _questions);
   }
-
 }

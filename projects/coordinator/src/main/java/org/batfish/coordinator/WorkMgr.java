@@ -1,10 +1,13 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +32,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
-import org.batfish.common.Container;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -39,6 +41,12 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.pojo.AccessLevel;
+import org.batfish.datamodel.pojo.Analysis;
+import org.batfish.datamodel.pojo.Container;
+import org.batfish.datamodel.pojo.Testrig;
+import org.batfish.datamodel.pojo.TestrigQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -529,22 +537,22 @@ public class WorkMgr {
     return answer;
   }
 
-  /** Return a {@link Container container} contains all testrigs directories inside it. */
-  public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
-  }
+  //  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  //  public Container getContainer(String containerName) {
+  //    return getContainer(getdirContainer(containerName));
+  //  }
+  //
+  //  /** Return a {@link Container container} contains all testrigs directories inside it */
+  //  public Container getContainer(Path containerDir) {
+  //    SortedSet<String> testrigs =
+  //        new TreeSet<>(
+  //            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
+  //                .stream()
+  //                .map(dir -> dir.getFileName().toString())
+  //                .collect(Collectors.toSet()));
+  //
+  //    return Container.of(containerDir.toFile().getName(), testrigs);
+  //  }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
@@ -753,10 +761,6 @@ public class WorkMgr {
                         Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
                 .collect(Collectors.toSet()));
     return authorizedContainers;
-  }
-
-  public List<Container> getContainers(@Nullable String apiKey) {
-    return listContainers(apiKey).stream().map(this::getContainer).collect(Collectors.toList());
   }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
@@ -1023,5 +1027,165 @@ public class WorkMgr {
     // delete the empty directory and the zip file
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
+  }
+
+  /** Returns {@code true} if the container {@code containerName} exists, false otherwise. */
+  public boolean checkContainerExists(String containerName) {
+    Path containerDir =
+        Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+    return containerDir != null && Files.exists(containerDir);
+  }
+
+  /**
+   * Returns a {@link Container container} contains all information about the container {@code
+   * containerName} at the accessLevel of {@code accessLevel}.
+   */
+  public Container getContainer(String containerName, AccessLevel accessLevel) {
+    if (!checkContainerExists(containerName)) {
+      throw new BatfishException(String.format("Container '%s' does not exist", containerName));
+    }
+    if (accessLevel == AccessLevel.ONELINE) {
+      return Container.of(containerName);
+    } else {
+      List<Testrig> testrigs = listTestrigs(containerName, accessLevel.nextLevel());
+      List<Analysis> analyses = listAnalyses(containerName, accessLevel.nextLevel());
+      return Container.of(containerName, testrigs, analyses);
+    }
+  }
+
+  /**
+   * Returns a list of {@link Container container} that the given {@code apiKey} may access, each
+   * {@link Container container} contains all information about the container at the accessLevel of
+   * {@code accessLevel}.
+   */
+  public List<Container> listContainers(String apiKey, AccessLevel accessLevel) {
+    return listContainers(apiKey)
+        .stream()
+        .map(x -> getContainer(x, accessLevel))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns {@code true} if the testrig {@code testrigName} exists in container {@code
+   * containerName}, false otherwise.
+   */
+  public boolean checkTestrigExists(String containerName, String testrigName) {
+    Path containerDir = getdirContainer(containerName);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+    return testrigDir != null && Files.exists(testrigDir);
+  }
+
+  /**
+   * Returns a {@link Testrig testrig} contains all information about the testrig {@code
+   * testrigName} in container {@code containerName} at the accessLevel of {@code accessLevel}.
+   */
+  public Testrig getTestrig(String containerName, String testrigName, AccessLevel accessLevel) {
+    if (!checkTestrigExists(containerName, testrigName)) {
+      throw new BatfishException(
+          String.format(
+              "Testrig '%s' does not exist in container '%s'", testrigName, containerName));
+    }
+    if (accessLevel == AccessLevel.ONELINE) {
+      return Testrig.of(testrigName);
+    } else {
+      List<String> configs = new ArrayList<>();
+      List<String> environments =
+          listEnvironments(containerName, testrigName).stream().collect(Collectors.toList());
+      List<TestrigQuestion> questions = new ArrayList<>();
+      return Testrig.of(testrigName, configs, environments, questions);
+    }
+  }
+
+  /**
+   * Returns a list of {@link Testrig testrig} in the container {@code containerName}, each {@link
+   * Testrig testrig} contains all information about the testrig at the accessLevel of {@code
+   * accessLevel}.
+   */
+  public List<Testrig> listTestrigs(String containerName, AccessLevel accessLevel) {
+    return listTestrigs(containerName)
+        .stream()
+        .map(x -> getTestrig(containerName, x, accessLevel))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns {@code true} if the Analysis {@code analysisName} exists in container {@code
+   * containerName}, false otherwise.
+   */
+  public boolean checkAnalysisExists(String containerName, String analysisName) {
+    Path containerDir = getdirContainer(containerName);
+    Path analysisDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
+    return analysisDir != null && Files.exists(analysisDir);
+  }
+
+  /**
+   * Returns an {@link Analysis analysis} contains all information about the analysis {@code
+   * analysisName} in container {@code containerName} at the accessLevel of {@code accessLevel}.
+   */
+  public Analysis getAnalysis(String containerName, String analysisName, AccessLevel accessLevel) {
+    if (!checkAnalysisExists(containerName, analysisName)) {
+      throw new BatfishException(
+          String.format(
+              "Analysis '%s' does not exist in container '%s", analysisName, containerName));
+    }
+    if (accessLevel == AccessLevel.ONELINE) {
+      return Analysis.of(analysisName);
+    } else {
+      List<TestrigQuestion> questions =
+          listTestrigQuestions(containerName, analysisName, accessLevel.nextLevel());
+      return Analysis.of(analysisName, questions);
+    }
+  }
+
+  /**
+   * Returns a list of {@link Analysis analysis} in the container {@code containerName}, each {@link
+   * Analysis analysis} contains all information about the analysis at the accessLevel of {@code
+   * accessLevel}.
+   */
+  public List<Analysis> listAnalyses(String containerName, AccessLevel accessLevel) {
+    return listAnalyses(containerName)
+        .stream()
+        .map(x -> getAnalysis(containerName, x, accessLevel))
+        .collect(Collectors.toList());
+  }
+
+  /** Returns true if question {@code questionName} exists in analysis {@code analysisName}. */
+  public boolean checkTestrigQuestionExists(
+      String containerName, String analysisName, String questionName) {
+    Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
+    Path testrigQuestionDir =
+        analysisDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, questionName));
+    return testrigQuestionDir != null && Files.exists(testrigQuestionDir);
+  }
+
+  public List<TestrigQuestion> listTestrigQuestions(
+      String containerName, String analysisName, AccessLevel accessLevel) {
+    return listAnalysisQuestions(containerName, analysisName)
+        .stream()
+        .map(x -> getTestrigQuestion(containerName, analysisName, x, accessLevel))
+        .collect(Collectors.toList());
+  }
+
+  public TestrigQuestion getTestrigQuestion(
+      String containerName, String analysisName, String questionName, AccessLevel accessLevel) {
+    if (!checkTestrigQuestionExists(containerName, analysisName, questionName)) {
+      throw new BatfishException(
+          String.format(
+              "TestrigQuestion '%s' does not exist in analysis '%s", questionName, analysisName));
+    }
+    if (accessLevel == AccessLevel.ONELINE) {
+      return TestrigQuestion.of(questionName);
+    } else {
+      String questionContent = getAnalysisQuestion(containerName, analysisName, questionName);
+      Question question;
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      try {
+        question = mapper.readValue(questionContent, new TypeReference<Question>() {});
+      } catch (IOException e) {
+        throw new BatfishException(
+            "Question content is not valid JSON representation of a Question", e);
+      }
+      return TestrigQuestion.of(questionName, question);
+    }
   }
 }

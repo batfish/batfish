@@ -7,9 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+/**
+ * The {@link Analysis Analysis} is an Object representation of the analysis for Batfish service.
+ *
+ * <p>{@link Analysis Analysis} contains all information about the Analysis {@link Analysis#_name}.
+ */
 @JsonInclude(Include.NON_NULL)
 public class Analysis {
   private static final String PROP_NAME = "name";
@@ -25,11 +29,11 @@ public class Analysis {
   @JsonCreator
   public static Analysis of(
       @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_QUESTIONS) List<TestrigQuestion> questions) {
+      @Nullable @JsonProperty(PROP_QUESTIONS) List<TestrigQuestion> questions) {
     return new Analysis(name, questions);
   }
 
-  private Analysis(String name, List<TestrigQuestion> questions) {
+  private Analysis(String name, @Nullable List<TestrigQuestion> questions) {
     this._name = name;
     this._questions = questions;
   }
@@ -39,6 +43,7 @@ public class Analysis {
     return _name;
   }
 
+  @Nullable
   @JsonProperty(PROP_QUESTIONS)
   public List<TestrigQuestion> getQuestions() {
     return _questions;
