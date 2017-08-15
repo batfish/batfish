@@ -493,8 +493,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           .parallelStream()
           .forEach(
               n -> {
-                boolean staticChanged = false;
+                boolean staticChanged;
                 do {
+                  staticChanged = false;
                   for (VirtualRouter vr : n._virtualRouters.values()) {
                     if (vr.activateStaticRoutes()) {
                       staticChanged = true;
@@ -515,7 +516,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n._virtualRouters.values()) {
-                  boolean generatedChanged = false;
+                  boolean generatedChanged;
                   vr._generatedRib = new Rib(vr);
                   do {
                     generatedChanged = false;
