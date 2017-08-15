@@ -493,15 +493,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           .parallelStream()
           .forEach(
               n -> {
-                boolean staticChanged = true;
-                while (staticChanged) {
+                boolean staticChanged = false;
+                do {
                   for (VirtualRouter vr : n._virtualRouters.values()) {
-                    staticChanged = false;
                     if (vr.activateStaticRoutes()) {
                       staticChanged = true;
                     }
                   }
-                }
+                } while (staticChanged);
                 recomputeStaticCompleted.incrementAndGet();
               });
 
@@ -516,14 +515,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n._virtualRouters.values()) {
-                  boolean generatedChanged = true;
+                  boolean generatedChanged = false;
                   vr._generatedRib = new Rib(vr);
-                  while (generatedChanged) {
+                  do {
                     generatedChanged = false;
                     if (vr.activateGeneratedRoutes()) {
                       generatedChanged = true;
                     }
-                  }
+                  } while (generatedChanged);
                   vr.importRib(vr._mainRib, vr._generatedRib);
                 }
                 recomputeAggregateCompleted.incrementAndGet();
