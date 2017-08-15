@@ -1,13 +1,12 @@
-package org.batfish.question.smt;
+package org.batfish.question;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.question.QuestionPlugin;
 
-public class BlackholeQuestionPlugin extends QuestionPlugin {
+public class SmtBlackholeQuestionPlugin extends QuestionPlugin {
 
   public static class BlackholeAnswerer extends Answerer {
 

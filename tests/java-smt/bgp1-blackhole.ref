@@ -8,7 +8,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.BlackholeQuestionPlugin$BlackholeQuestion",
+    "class" : "org.batfish.question.SmtBlackholeQuestionPlugin$BlackholeQuestion",
     "differential" : false,
     "failures" : 0,
     "fullModel" : true

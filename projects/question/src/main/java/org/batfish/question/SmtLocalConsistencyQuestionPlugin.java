@@ -1,4 +1,4 @@
-package org.batfish.question.smt;
+package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
@@ -9,10 +9,9 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.question.QuestionPlugin;
 
 
-public class LocalConsistencyQuestionPlugin extends QuestionPlugin {
+public class SmtLocalConsistencyQuestionPlugin extends QuestionPlugin {
 
   public static class LocalConsistencyAnswerer extends Answerer {
 

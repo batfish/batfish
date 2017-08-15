@@ -10,7 +10,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
     "differential" : false,
     "failures" : 0,
     "finalIfaceRegex" : "FastEthernet1/0",

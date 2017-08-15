@@ -8,7 +8,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.RoutingLoopQuestionPlugin$RoutingLoopQuestion",
+    "class" : "org.batfish.question.SmtRoutingLoopQuestionPlugin$RoutingLoopQuestion",
     "differential" : false,
     "failures" : 0,
     "fullModel" : true

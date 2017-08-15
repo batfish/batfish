@@ -21,7 +21,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
     "differential" : false,
     "equivalence" : false,
     "failures" : 2,

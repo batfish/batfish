@@ -5,7 +5,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.LocalConsistencyQuestionPlugin$LocalConsistencyQuestion",
+    "class" : "org.batfish.question.SmtLocalConsistencyQuestionPlugin$LocalConsistencyQuestion",
     "differential" : false,
     "failures" : 0,
     "fullModel" : true,

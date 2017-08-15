@@ -97,7 +97,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.MultipathConsistencyQuestionPlugin$MultipathConsistencyQuestion",
+    "class" : "org.batfish.question.SmtMultipathConsistencyQuestionPlugin$MultipathConsistencyQuestion",
     "differential" : false,
     "equivalence" : false,
     "failures" : 0,

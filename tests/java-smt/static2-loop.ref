@@ -49,7 +49,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.RoutingLoopQuestionPlugin$RoutingLoopQuestion",
+    "class" : "org.batfish.question.SmtRoutingLoopQuestionPlugin$RoutingLoopQuestion",
     "differential" : false,
     "dstIps" : [
       "172.0.0.0/8"

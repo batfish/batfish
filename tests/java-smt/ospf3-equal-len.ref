@@ -10,7 +10,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.EqualLengthQuestionPlugin$EqualLengthQuestion",
+    "class" : "org.batfish.question.SmtEqualLengthQuestionPlugin$EqualLengthQuestion",
     "differential" : false,
     "failures" : 0,
     "finalIfaceRegex" : "Loopback.*",

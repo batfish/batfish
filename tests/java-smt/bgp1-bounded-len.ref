@@ -10,7 +10,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.BoundedLengthQuestionPlugin$BoundedLengthQuestion",
+    "class" : "org.batfish.question.SmtBoundedLengthQuestionPlugin$BoundedLengthQuestion",
     "bound" : 1,
     "differential" : false,
     "failures" : 0,

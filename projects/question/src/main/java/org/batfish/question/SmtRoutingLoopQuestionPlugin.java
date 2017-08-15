@@ -1,28 +1,27 @@
-package org.batfish.question.smt;
+package org.batfish.question;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.question.QuestionPlugin;
 
-public class ForwardingQuestionPlugin extends QuestionPlugin {
+public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
 
-  public static class ForwardingAnswerer extends Answerer {
+  public static class RoutingLoopAnswerer extends Answerer {
 
-    public ForwardingAnswerer(Question question, IBatfish batfish) {
+    public RoutingLoopAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      ForwardingQuestion q = (ForwardingQuestion) _question;
-      return _batfish.smtForwarding(q);
+      RoutingLoopQuestion q = (RoutingLoopQuestion) _question;
+      return _batfish.smtRoutingLoop(q);
     }
   }
 
-  public static class ForwardingQuestion extends HeaderQuestion {
+  public static class RoutingLoopQuestion extends HeaderQuestion {
 
     @Override
     public boolean getDataPlane() {
@@ -31,17 +30,22 @@ public class ForwardingQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "smt-forwarding";
+      return "smt-routing-loop";
+    }
+
+    @Override
+    public boolean getTraffic() {
+      return false;
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new ForwardingAnswerer(question, batfish);
+    return new RoutingLoopAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new ForwardingQuestion();
+    return new RoutingLoopQuestion();
   }
 }

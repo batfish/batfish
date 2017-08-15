@@ -98,7 +98,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.EqualLengthQuestionPlugin$EqualLengthQuestion",
+    "class" : "org.batfish.question.SmtEqualLengthQuestionPlugin$EqualLengthQuestion",
     "differential" : false,
     "equivalence" : false,
     "failures" : 0,

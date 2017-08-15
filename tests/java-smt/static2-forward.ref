@@ -45,7 +45,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.ForwardingQuestionPlugin$ForwardingQuestion",
+    "class" : "org.batfish.question.SmtForwardingQuestionPlugin$ForwardingQuestion",
     "differential" : false,
     "dstIps" : [
       "172.0.0.0"

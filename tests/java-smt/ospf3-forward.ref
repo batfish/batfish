@@ -92,7 +92,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.smt.ForwardingQuestionPlugin$ForwardingQuestion",
+    "class" : "org.batfish.question.SmtForwardingQuestionPlugin$ForwardingQuestion",
     "differential" : false,
     "dstIps" : [
       "70.70.70.70"
