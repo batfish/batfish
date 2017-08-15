@@ -8,62 +8,60 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.question.QuestionPlugin;
 
-
 public class BoundedLengthQuestionPlugin extends QuestionPlugin {
 
-    public static class BoundedLengthAnswerer extends Answerer {
+  public static class BoundedLengthAnswerer extends Answerer {
 
-        public BoundedLengthAnswerer(Question question, IBatfish batfish) {
-            super(question, batfish);
-        }
-
-        @Override
-        public AnswerElement answer() {
-            BoundedLengthQuestion q = (BoundedLengthQuestion) _question;
-
-            return _batfish.smtBoundedLength(q, q.getBound());
-        }
-    }
-
-    public static class BoundedLengthQuestion extends HeaderLocationQuestion {
-
-        private static final String LENGTH_VAR = "bound";
-
-        private Integer _bound;
-
-        public BoundedLengthQuestion() {
-            _bound = null;
-        }
-
-        @JsonProperty(LENGTH_VAR)
-        public Integer getBound() {
-            return _bound;
-        }
-
-        @JsonProperty(LENGTH_VAR)
-        public void setBound(int i) {
-            this._bound = i;
-        }
-
-        @Override
-        public boolean getDataPlane() {
-            return false;
-        }
-
-        @Override
-        public String getName() {
-            return "smt-bounded-length";
-        }
-    }
-
-
-    @Override
-    protected Answerer createAnswerer(Question question, IBatfish batfish) {
-        return new BoundedLengthAnswerer(question, batfish);
+    public BoundedLengthAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
     }
 
     @Override
-    protected Question createQuestion() {
-        return new BoundedLengthQuestion();
+    public AnswerElement answer() {
+      BoundedLengthQuestion q = (BoundedLengthQuestion) _question;
+
+      return _batfish.smtBoundedLength(q, q.getBound());
     }
+  }
+
+  public static class BoundedLengthQuestion extends HeaderLocationQuestion {
+
+    private static final String LENGTH_VAR = "bound";
+
+    private Integer _bound;
+
+    public BoundedLengthQuestion() {
+      _bound = null;
+    }
+
+    @JsonProperty(LENGTH_VAR)
+    public Integer getBound() {
+      return _bound;
+    }
+
+    @JsonProperty(LENGTH_VAR)
+    public void setBound(int i) {
+      this._bound = i;
+    }
+
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
+
+    @Override
+    public String getName() {
+      return "smt-bounded-length";
+    }
+  }
+
+  @Override
+  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+    return new BoundedLengthAnswerer(question, batfish);
+  }
+
+  @Override
+  protected Question createQuestion() {
+    return new BoundedLengthQuestion();
+  }
 }

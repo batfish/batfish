@@ -1,0 +1,25 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "result" : {
+        "R3,Loopback0" : {
+          "verified" : true
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.smt.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "differential" : false,
+    "equivalence" : true,
+    "failures" : 1,
+    "finalIfaceRegex" : "Loopback.*",
+    "finalNodeRegex" : "R3",
+    "fullModel" : false,
+    "ingressNodeRegex" : ".*",
+    "minimize" : false,
+    "noEnvironment" : false
+  },
+  "status" : "SUCCESS"
+}

@@ -1,6 +1,5 @@
 package org.batfish.datamodel.questions.smt;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class HeaderLocationQuestion extends HeaderQuestion {

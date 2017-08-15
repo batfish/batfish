@@ -1,16 +1,18 @@
 package org.batfish.datamodel.questions.smt;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.BatfishException;
-import org.batfish.datamodel.*;
-import org.batfish.datamodel.questions.IQuestion;
-import org.batfish.datamodel.questions.Question;
-
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.TreeSet;
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.questions.IQuestion;
+import org.batfish.datamodel.questions.Question;
 
 public class HeaderQuestion extends Question implements IQuestion {
 
@@ -302,8 +304,7 @@ public class HeaderQuestion extends Question implements IQuestion {
             getNotSrcPorts());
       }
       return retString;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       return "Pretty printing failed. Printing Json\n" + toJsonString();
     }
   }

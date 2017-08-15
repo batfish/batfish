@@ -1,0 +1,23 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "result" : {
+        "as2dept1,FastEthernet1/0" : {
+          "verified" : true
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.smt.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "differential" : false,
+    "failures" : 1,
+    "finalIfaceRegex" : "FastEthernet1/0",
+    "finalNodeRegex" : "as2dept1",
+    "fullModel" : false,
+    "ingressNodeRegex" : "as2border.*",
+    "noEnvironment" : false
+  },
+  "status" : "SUCCESS"
+}

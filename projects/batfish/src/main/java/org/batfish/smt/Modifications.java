@@ -1,221 +1,230 @@
 package org.batfish.smt;
 
-
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.statement.*;
-
 import java.util.HashSet;
 import java.util.Set;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /**
- * <p>A class representing a collection of modifications made to
- * a protocols message after passing through an import/export filter</p>
+ * A class representing a collection of modifications made to a protocols message after passing
+ * through an import/export filter
  *
  * @author Ryan Beckett
  */
 class Modifications {
 
-    private EncoderSlice _encoderSlice;
+  private EncoderSlice _encoderSlice;
 
-    private Configuration _conf;
+  private Configuration _conf;
 
-    private boolean _defaultAccept;
+  private boolean _defaultAccept;
 
-    private boolean _defaultAcceptLocal;
+  private boolean _defaultAcceptLocal;
 
-    private SetDefaultPolicy _defaultPolicy;
+  private SetDefaultPolicy _defaultPolicy;
 
-    private PrependAsPath _prependPath;
+  private PrependAsPath _prependPath;
 
-    private SetLocalPreference _setLp;
+  private SetLocalPreference _setLp;
 
-    private SetMetric _setMetric;
+  private SetMetric _setMetric;
 
-    private SetOspfMetricType _setOspfMetricType;
+  private SetOspfMetricType _setOspfMetricType;
 
-    private SetWeight _setWeight;
+  private SetWeight _setWeight;
 
-    private SetNextHop _setNextHop;
+  private SetNextHop _setNextHop;
 
-    private Set<CommunityVar> _positiveCommunities;
+  private Set<CommunityVar> _positiveCommunities;
 
-    private Set<CommunityVar> _negativeCommunities;
+  private Set<CommunityVar> _negativeCommunities;
 
-    Modifications(EncoderSlice encoderSlice, Configuration conf) {
-        _encoderSlice = encoderSlice;
-        _conf = conf;
-        _defaultPolicy = null;
+  Modifications(EncoderSlice encoderSlice, Configuration conf) {
+    _encoderSlice = encoderSlice;
+    _conf = conf;
+    _defaultPolicy = null;
+    _defaultAccept = false;
+    _defaultAcceptLocal = false;
+    _prependPath = null;
+    _setLp = null;
+    _setMetric = null;
+    _setOspfMetricType = null;
+    _setWeight = null;
+    _setNextHop = null;
+    _positiveCommunities = new HashSet<>();
+    _negativeCommunities = new HashSet<>();
+  }
+
+  Modifications(Modifications other) {
+    PrependAsPath a = other.getPrependPath();
+    SetLocalPreference b = other.getSetLp();
+    SetMetric c = other.getSetMetric();
+    SetWeight d = other.getSetWeight();
+    SetNextHop e = other.getSetNextHop();
+    Set<CommunityVar> f = other.getPositiveCommunities();
+    Set<CommunityVar> g = other.getNegativeCommunities();
+    SetOspfMetricType h = other.getSetOspfMetricType();
+    SetDefaultPolicy i = other.getSetDefaultPolicy();
+
+    _encoderSlice = other._encoderSlice;
+    _conf = other._conf;
+    _defaultPolicy = (i == null ? null : new SetDefaultPolicy(i.getDefaultPolicy()));
+    _defaultAccept = other._defaultAccept;
+    _defaultAcceptLocal = other._defaultAcceptLocal;
+    _prependPath = (a == null ? null : new PrependAsPath(a.getExpr()));
+    _setLp = (b == null ? null : new SetLocalPreference(b.getLocalPreference()));
+    _setMetric = (c == null ? null : new SetMetric(c.getMetric()));
+    _setWeight = (d == null ? null : new SetWeight(d.getWeight()));
+    _setNextHop = (e == null ? null : new SetNextHop(e.getExpr(), e.getDestinationVrf()));
+    _positiveCommunities = (f == null ? null : new HashSet<>(f));
+    _negativeCommunities = (g == null ? null : new HashSet<>(g));
+    _setOspfMetricType = (h == null ? null : new SetOspfMetricType(h.getMetricType()));
+  }
+
+  private void addPositiveCommunities(Set<CommunityVar> cs) {
+    for (CommunityVar c : cs) {
+      _positiveCommunities.add(c);
+      _negativeCommunities.remove(c);
+    }
+  }
+
+  private void addNegativeCommunities(Set<CommunityVar> cs) {
+    for (CommunityVar c : cs) {
+      _positiveCommunities.remove(c);
+      _negativeCommunities.add(c);
+    }
+  }
+
+  void addModification(Statement stmt) {
+
+    if (stmt instanceof Statements.StaticStatement) {
+      Statements.StaticStatement ss = (Statements.StaticStatement) stmt;
+      if (ss.getType() == Statements.SetDefaultActionAccept) {
+        _defaultAccept = true;
+      }
+      if (ss.getType() == Statements.SetDefaultActionReject) {
         _defaultAccept = false;
+      }
+      if (ss.getType() == Statements.SetLocalDefaultActionAccept) {
+        _defaultAcceptLocal = true;
+      }
+      if (ss.getType() == Statements.SetLocalDefaultActionReject) {
         _defaultAcceptLocal = false;
-        _prependPath = null;
-        _setLp = null;
-        _setMetric = null;
-        _setOspfMetricType = null;
-        _setWeight = null;
-        _setNextHop = null;
-        _positiveCommunities = new HashSet<>();
-        _negativeCommunities = new HashSet<>();
+      }
     }
 
-    Modifications(Modifications other) {
-        PrependAsPath a = other.getPrependPath();
-        SetLocalPreference b = other.getSetLp();
-        SetMetric c = other.getSetMetric();
-        SetWeight d = other.getSetWeight();
-        SetNextHop e = other.getSetNextHop();
-        Set<CommunityVar> f = other.getPositiveCommunities();
-        Set<CommunityVar> g = other.getNegativeCommunities();
-        SetOspfMetricType h = other.getSetOspfMetricType();
-        SetDefaultPolicy i = other.getSetDefaultPolicy();
-
-        _encoderSlice = other._encoderSlice;
-        _conf = other._conf;
-        _defaultPolicy = (i == null ? null : new SetDefaultPolicy(i.getDefaultPolicy()));
-        _defaultAccept = other._defaultAccept;
-        _defaultAcceptLocal = other._defaultAcceptLocal;
-        _prependPath = (a == null ? null : new PrependAsPath(a.getExpr()));
-        _setLp = (b == null ? null : new SetLocalPreference(b.getLocalPreference()));
-        _setMetric = (c == null ? null : new SetMetric(c.getMetric()));
-        _setWeight = (d == null ? null : new SetWeight(d.getWeight()));
-        _setNextHop = (e == null ? null : new SetNextHop(e.getExpr(), e.getDestinationVrf()));
-        _positiveCommunities = (f == null ? null : new HashSet<>(f));
-        _negativeCommunities = (g == null ? null : new HashSet<>(g));
-        _setOspfMetricType = (h == null ? null : new SetOspfMetricType(h.getMetricType()));
+    if (stmt instanceof SetDefaultPolicy) {
+      _defaultPolicy = (SetDefaultPolicy) stmt;
     }
 
-    private void addPositiveCommunities(Set<CommunityVar> cs) {
-        for (CommunityVar c : cs) {
-            _positiveCommunities.add(c);
-            _negativeCommunities.remove(c);
-        }
+    if (stmt instanceof PrependAsPath) {
+      _prependPath = (PrependAsPath) stmt;
     }
 
-    private void addNegativeCommunities(Set<CommunityVar> cs) {
-        for (CommunityVar c : cs) {
-            _positiveCommunities.remove(c);
-            _negativeCommunities.add(c);
-        }
+    if (stmt instanceof SetLocalPreference) {
+      _setLp = (SetLocalPreference) stmt;
     }
 
-    void addModification(Statement stmt) {
-
-        if (stmt instanceof Statements.StaticStatement) {
-            Statements.StaticStatement ss = (Statements.StaticStatement) stmt;
-            if (ss.getType() == Statements.SetDefaultActionAccept) {
-                _defaultAccept = true;
-            }
-            if (ss.getType() == Statements.SetDefaultActionReject) {
-                _defaultAccept = false;
-            }
-            if (ss.getType() == Statements.SetLocalDefaultActionAccept) {
-                _defaultAcceptLocal = true;
-            }
-            if (ss.getType() == Statements.SetLocalDefaultActionReject) {
-                _defaultAcceptLocal = false;
-            }
-        }
-
-        if (stmt instanceof SetDefaultPolicy) {
-            _defaultPolicy = (SetDefaultPolicy) stmt;
-        }
-
-        if (stmt instanceof PrependAsPath) {
-            _prependPath = (PrependAsPath) stmt;
-        }
-
-        if (stmt instanceof SetLocalPreference) {
-            _setLp = (SetLocalPreference) stmt;
-        }
-
-        if (stmt instanceof SetMetric) {
-            _setMetric = (SetMetric) stmt;
-        }
-
-        if (stmt instanceof SetOspfMetricType) {
-            _setOspfMetricType = (SetOspfMetricType) stmt;
-        }
-
-        if (stmt instanceof SetWeight) {
-            _setWeight = (SetWeight) stmt;
-        }
-
-        if (stmt instanceof SetNextHop) {
-            _setNextHop = (SetNextHop) stmt;
-        }
-
-        if (stmt instanceof AddCommunity) {
-            AddCommunity x = (AddCommunity) stmt;
-            Set<CommunityVar> comms = _encoderSlice.findAllCommunities(_conf, x.getExpr());
-            addPositiveCommunities(comms);
-        }
-
-        if (stmt instanceof SetCommunity) {
-            SetCommunity x = (SetCommunity) stmt;
-            Set<CommunityVar> comms = _encoderSlice.findAllCommunities(_conf, x.getExpr());
-            addPositiveCommunities(comms);
-        }
-
-        if (stmt instanceof DeleteCommunity) {
-            DeleteCommunity x = (DeleteCommunity) stmt;
-            Set<CommunityVar> comms = _encoderSlice.findAllCommunities(_conf, x.getExpr());
-            addNegativeCommunities(comms);
-        }
-
-        if (stmt instanceof RetainCommunity) {
-            // TODO
-        }
-
+    if (stmt instanceof SetMetric) {
+      _setMetric = (SetMetric) stmt;
     }
 
-    void resetDefaultPolicy() {
-        _defaultPolicy = null;
+    if (stmt instanceof SetOspfMetricType) {
+      _setOspfMetricType = (SetOspfMetricType) stmt;
     }
 
-    PrependAsPath getPrependPath() {
-        return _prependPath;
+    if (stmt instanceof SetWeight) {
+      _setWeight = (SetWeight) stmt;
     }
 
-    SetLocalPreference getSetLp() {
-        return _setLp;
+    if (stmt instanceof SetNextHop) {
+      _setNextHop = (SetNextHop) stmt;
     }
 
-    SetMetric getSetMetric() {
-        return _setMetric;
+    if (stmt instanceof AddCommunity) {
+      AddCommunity x = (AddCommunity) stmt;
+      Set<CommunityVar> comms = _encoderSlice.findAllCommunities(_conf, x.getExpr());
+      addPositiveCommunities(comms);
     }
 
-    SetOspfMetricType getSetOspfMetricType() {
-        return _setOspfMetricType;
+    if (stmt instanceof SetCommunity) {
+      SetCommunity x = (SetCommunity) stmt;
+      Set<CommunityVar> comms = _encoderSlice.findAllCommunities(_conf, x.getExpr());
+      addPositiveCommunities(comms);
     }
 
-    SetWeight getSetWeight() {
-        return _setWeight;
+    if (stmt instanceof DeleteCommunity) {
+      DeleteCommunity x = (DeleteCommunity) stmt;
+      Set<CommunityVar> comms = _encoderSlice.findAllCommunities(_conf, x.getExpr());
+      addNegativeCommunities(comms);
     }
 
-    SetNextHop getSetNextHop() {
-        return _setNextHop;
+    if (stmt instanceof RetainCommunity) {
+      // TODO
     }
+  }
 
-    Set<CommunityVar> getPositiveCommunities() {
-        return _positiveCommunities;
-    }
+  void resetDefaultPolicy() {
+    _defaultPolicy = null;
+  }
 
-    Set<CommunityVar> getNegativeCommunities() {
-        return _negativeCommunities;
-    }
+  PrependAsPath getPrependPath() {
+    return _prependPath;
+  }
 
-    boolean getDefaultAccept() {
-        return _defaultAccept;
-    }
+  SetLocalPreference getSetLp() {
+    return _setLp;
+  }
 
-    boolean getDefaultAcceptLocal() {
-        return _defaultAcceptLocal;
-    }
+  SetMetric getSetMetric() {
+    return _setMetric;
+  }
 
-    SetDefaultPolicy getSetDefaultPolicy() {
-        return _defaultPolicy;
-    }
+  SetOspfMetricType getSetOspfMetricType() {
+    return _setOspfMetricType;
+  }
 
-    public void setDefaultAcceptLocal(boolean _defaultAcceptLocal) {
-        this._defaultAcceptLocal = _defaultAcceptLocal;
-    }
+  SetWeight getSetWeight() {
+    return _setWeight;
+  }
+
+  SetNextHop getSetNextHop() {
+    return _setNextHop;
+  }
+
+  Set<CommunityVar> getPositiveCommunities() {
+    return _positiveCommunities;
+  }
+
+  Set<CommunityVar> getNegativeCommunities() {
+    return _negativeCommunities;
+  }
+
+  boolean getDefaultAccept() {
+    return _defaultAccept;
+  }
+
+  boolean getDefaultAcceptLocal() {
+    return _defaultAcceptLocal;
+  }
+
+  SetDefaultPolicy getSetDefaultPolicy() {
+    return _defaultPolicy;
+  }
+
+  public void setDefaultAcceptLocal(boolean defaultAcceptLocal) {
+    this._defaultAcceptLocal = defaultAcceptLocal;
+  }
 }

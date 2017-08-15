@@ -1,0 +1,37 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "result" : {
+        "R3,Loopback0" : {
+          "failuresModel" : [
+            "link(R1,R3)",
+            "link(R2,R3)"
+          ],
+          "forwardingModel" : [
+            "R1,Serial1 --> R3,Serial0",
+            "R2,Serial1 --> R3,Serial1",
+            "R3,Loopback0 --> _,_"
+          ],
+          "packetModel" : {
+            "dstIp" : "70.70.70.70"
+          },
+          "verified" : false
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.smt.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "differential" : false,
+    "equivalence" : true,
+    "failures" : 2,
+    "finalIfaceRegex" : "Loopback.*",
+    "finalNodeRegex" : "R3",
+    "fullModel" : false,
+    "ingressNodeRegex" : ".*",
+    "minimize" : false,
+    "noEnvironment" : false
+  },
+  "status" : "SUCCESS"
+}

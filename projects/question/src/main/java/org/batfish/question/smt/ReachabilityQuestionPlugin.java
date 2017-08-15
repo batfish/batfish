@@ -7,43 +7,41 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.question.QuestionPlugin;
 
-
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
-    @Override
-    protected Answerer createAnswerer(Question question, IBatfish batfish) {
-        return new ReachabilityAnswerer(question, batfish);
+  @Override
+  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+    return new ReachabilityAnswerer(question, batfish);
+  }
+
+  @Override
+  protected Question createQuestion() {
+    return new ReachabilityQuestion();
+  }
+
+  public static class ReachabilityAnswerer extends Answerer {
+
+    public ReachabilityAnswerer(Question question, IBatfish batfish) {
+      super(question, batfish);
     }
 
     @Override
-    protected Question createQuestion() {
-        return new ReachabilityQuestion();
+    public AnswerElement answer() {
+      ReachabilityQuestion q = (ReachabilityQuestion) _question;
+      return _batfish.smtReachability(q);
+    }
+  }
+
+  public static class ReachabilityQuestion extends HeaderLocationQuestion {
+
+    @Override
+    public boolean getDataPlane() {
+      return false;
     }
 
-    public static class ReachabilityAnswerer extends Answerer {
-
-        public ReachabilityAnswerer(Question question, IBatfish batfish) {
-            super(question, batfish);
-        }
-
-        @Override
-        public AnswerElement answer() {
-            ReachabilityQuestion q = (ReachabilityQuestion) _question;
-            return _batfish.smtReachability(q);
-        }
+    @Override
+    public String getName() {
+      return "smt-reachability";
     }
-
-    public static class ReachabilityQuestion extends HeaderLocationQuestion {
-
-        @Override
-        public boolean getDataPlane() {
-            return false;
-        }
-
-        @Override
-        public String getName() {
-            return "smt-reachability";
-        }
-
-    }
+  }
 }
