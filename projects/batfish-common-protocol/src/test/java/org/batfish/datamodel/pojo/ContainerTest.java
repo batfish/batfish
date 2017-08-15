@@ -1,4 +1,4 @@
-package org.batfish.common;
+package org.batfish.datamodel.pojo;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
