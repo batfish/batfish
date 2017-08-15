@@ -537,23 +537,6 @@ public class WorkMgr {
     return answer;
   }
 
-  //  /** Return a {@link Container container} contains all testrigs directories inside it. */
-  //  public Container getContainer(String containerName) {
-  //    return getContainer(getdirContainer(containerName));
-  //  }
-  //
-  //  /** Return a {@link Container container} contains all testrigs directories inside it */
-  //  public Container getContainer(Path containerDir) {
-  //    SortedSet<String> testrigs =
-  //        new TreeSet<>(
-  //            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-  //                .stream()
-  //                .map(dir -> dir.getFileName().toString())
-  //                .collect(Collectors.toSet()));
-  //
-  //    return Container.of(containerDir.toFile().getName(), testrigs);
-  //  }
-
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path qDir = analysisDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
