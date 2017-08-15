@@ -135,6 +135,8 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -163,6 +165,7 @@ import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.smt.PropertyChecker;
 import org.batfish.role.InferRoles;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -4424,4 +4427,53 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
   }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
 }
