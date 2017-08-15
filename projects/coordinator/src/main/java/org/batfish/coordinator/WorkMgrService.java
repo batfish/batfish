@@ -21,12 +21,13 @@ import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.AccessLevel;
+import org.batfish.datamodel.pojo.Container;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -622,12 +623,9 @@ public class WorkMgrService {
 
       checkContainerAccessibility(apiKey, containerName);
 
-      Container container = Main.getWorkMgr().getContainer(containerDir);
-      container.setName(containerName);
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
-      String containerString = mapper.writeValueAsString(container);
+      Container container = Main.getWorkMgr().getContainer(containerName, AccessLevel.SUMMARY);
 
-      return Response.ok(containerString, MediaType.APPLICATION_JSON).build();
+      return Response.ok(container).build();
     } catch (AccessControlException e) {
       return Response.status(Status.FORBIDDEN)
           .entity(e.getMessage())

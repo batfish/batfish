@@ -4,7 +4,6 @@ import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.common.CoordConsts.SVC_KEY_API_KEY;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -16,8 +15,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
+import org.batfish.datamodel.pojo.AccessLevel;
+import org.batfish.datamodel.pojo.Container;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -37,7 +37,7 @@ public class WorkMgrServiceV2 {
   @Path("/containers")
   public Response getContainers(
       @DefaultValue(DEFAULT_API_KEY) @HeaderParam(SVC_KEY_API_KEY) String apiKey) {
-    List<Container> containers = Main.getWorkMgr().getContainers(apiKey);
+    List<Container> containers = Main.getWorkMgr().listContainers(apiKey, AccessLevel.SUMMARY);
     return Response.ok(containers).build();
   }
 
@@ -62,7 +62,7 @@ public class WorkMgrServiceV2 {
       return Response.status(Status.NOT_FOUND).build();
     }
 
-    Container container = Main.getWorkMgr().getContainer(id);
+    Container container = Main.getWorkMgr().getContainer(id, AccessLevel.SUMMARY);
     return Response.ok(container).build();
   }
 }
