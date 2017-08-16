@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractClient;
 import org.batfish.common.plugin.IClient;
+import org.batfish.common.util.Backoff;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
@@ -913,19 +915,24 @@ public class Client extends AbstractClient implements IClient {
     if (!queueWorkResult) {
       return queueWorkResult;
     }
+
+    // Poll the work item until it finishes or fails.
     Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(wItem.getId());
     if (response == null) {
       return false;
     }
+
     WorkStatusCode status = response.getFirst();
+    Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
     while (status != WorkStatusCode.TERMINATEDABNORMALLY
         && status != WorkStatusCode.TERMINATEDNORMALLY
-        && status != WorkStatusCode.ASSIGNMENTERROR) {
+        && status != WorkStatusCode.ASSIGNMENTERROR
+        && backoff.hasNext()) {
       printWorkStatusResponse(response);
       try {
-        Thread.sleep(1 * 1000);
+        Thread.sleep(backoff.nextBackoff().toMillis());
       } catch (InterruptedException e) {
-        throw new BatfishException("Interrupted while waiting for response", e);
+        throw new BatfishException("Interrupted while waiting for work item to complete", e);
       }
       response = _workHelper.getWorkStatus(wItem.getId());
       if (response == null) {
@@ -934,6 +941,7 @@ public class Client extends AbstractClient implements IClient {
       status = response.getFirst();
     }
     printWorkStatusResponse(response);
+
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
     String downloadedAnsFile =
