@@ -157,17 +157,17 @@ public class WorkMgrService {
       checkContainerAccessibility(apiKey, containerName);
 
       boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
-      List<String> questionToDelete = new ArrayList<>();
+      List<String> questionsToDelete = new ArrayList<>();
       if (!Strings.isNullOrEmpty(delQuestions)) {
         JSONArray delQuestionsArray = new JSONArray(delQuestions);
         for (int i = 0; i < delQuestionsArray.length(); i++) {
-          questionToDelete.add(delQuestionsArray.getString(i));
+          questionsToDelete.add(delQuestionsArray.getString(i));
         }
       }
 
       Main.getWorkMgr()
           .configureAnalysis(
-              containerName, newAnalysis, analysisName, addQuestionsStream, questionToDelete);
+              containerName, newAnalysis, analysisName, addQuestionsStream, questionsToDelete);
 
       return new JSONArray(
           Arrays.asList(

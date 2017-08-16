@@ -182,9 +182,8 @@ public class WorkMgrTest {
     assertTrue(question3Path.toFile().mkdirs());
     List<String> questionsToDelete = Lists.newArrayList();
     _manager.configureAnalysis(containerName, false, "analysis", null, questionsToDelete);
-    assertTrue(Files.exists(question1Path));
-    assertTrue(Files.exists(question2Path));
-    assertTrue(Files.exists(question3Path));
+    assertTrue(
+        Files.exists(question1Path) && Files.exists(question2Path) && Files.exists(question2Path));
     questionsToDelete = Lists.newArrayList("question1", "question2");
     _manager.configureAnalysis(containerName, false, "analysis", null, questionsToDelete);
     assertFalse(Files.exists(question1Path));

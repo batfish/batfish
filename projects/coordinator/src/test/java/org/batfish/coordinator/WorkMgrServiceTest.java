@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests for {@link WorkMgrService}. */
 public class WorkMgrServiceTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -98,13 +99,9 @@ public class WorkMgrServiceTest {
     Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
     Path analysisPath = containerPath.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve("analysis");
     assertTrue(analysisPath.toFile().mkdirs());
-    Path question1Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question1");
-    assertTrue(question1Path.toFile().mkdirs());
-    Path question2Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question2");
-    assertTrue(question2Path.toFile().mkdirs());
-    Path question3Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question3");
-    assertTrue(question3Path.toFile().mkdirs());
-    String questionsToDelete = "";
+    Path questionPath = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question");
+    assertTrue(questionPath.toFile().mkdirs());
+    String questionsToDelete = "[question]";
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
@@ -113,26 +110,7 @@ public class WorkMgrServiceTest {
         "analysis",
         null,
         questionsToDelete);
-    assertTrue(Files.exists(question1Path));
-    assertTrue(Files.exists(question2Path));
-    assertTrue(Files.exists(question3Path));
-    JSONArray delQuestionsArray = new JSONArray();
-    delQuestionsArray.put("question1");
-    delQuestionsArray.put("question2");
-    questionsToDelete = delQuestionsArray.toString(1);
-    _service.configureAnalysis(
-        CoordConsts.DEFAULT_API_KEY,
-        Version.getVersion(),
-        _containerName,
-        "",
-        "analysis",
-        null,
-        questionsToDelete);
-    assertFalse(Files.exists(question1Path));
-    assertFalse(Files.exists(question2Path));
-    assertTrue(Files.exists(question3Path));
-    delQuestionsArray.remove("question2");
-    questionsToDelete = delQuestionsArray.toString(1);
+    assertFalse(Files.exists(questionPath));
     JSONArray result =
         _service.configureAnalysis(
             CoordConsts.DEFAULT_API_KEY,
