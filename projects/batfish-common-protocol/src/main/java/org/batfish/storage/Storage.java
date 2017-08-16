@@ -18,4 +18,6 @@ public interface Storage {
   Analysis updateAnalysis(String containerName, Analysis analysis);
 
   Analysis saveOrUpdateAnalysis(String containerName, Analysis analysis);
+
+  boolean deleteAnalysis(String containerName, String analysisName, boolean force);
 }
