@@ -49,13 +49,17 @@ public class FileStorageImpl implements Storage {
     return null;
   }
 
-  @Override
-  public Analysis updateAnalysis(String containerName, String analysisName) {
+  @Override public Analysis updateAnalysis(String containerName, Analysis analysis) {
     return null;
   }
 
-  @Override
-  public Analysis saveOrUpdateAnalysis(String containerName, String analysisName) {
+  @Override public Analysis saveOrUpdateAnalysis(String containerName, Analysis analysis) {
     return null;
   }
+
+  @Override public boolean deleteAnalysis(String containerName, String analysisName,
+      boolean force) {
+    return false;
+  }
+
 }
