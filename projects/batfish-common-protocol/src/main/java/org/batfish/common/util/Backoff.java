@@ -98,6 +98,7 @@ public abstract class Backoff {
       _attempts = 0;
     }
 
+    @Override
     public boolean hasNext() {
       return ((_attempts + 1) < _builder._attemptLimit)
           && (_cumulativeBackoff.compareTo(_builder._cumulativeBackoffLimit) < 0);
