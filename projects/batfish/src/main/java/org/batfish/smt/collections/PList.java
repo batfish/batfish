@@ -33,7 +33,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
   @SuppressWarnings("unchecked")
   public static <E> PList<E> from(final Collection<? extends E> list) {
     if (list instanceof PList) {
-        return (PList<E>) list; //(actually we only know it's ConsPStack<? extends E>)
+      return (PList<E>) list; //(actually we only know it's ConsPStack<? extends E>)
     }
     // but that's good enough for an immutable
     // (i.e. we can't mess someone else up by adding the wrong type to it)
@@ -42,7 +42,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
 
   private static <E> PList<E> from(final Iterator<? extends E> i) {
     if (!i.hasNext()) {
-        return empty();
+      return empty();
     }
     E e = i.next();
     return PList.<E>from(i).plus(e);
@@ -56,7 +56,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
 
   private PList() { // EMPTY constructor
     if (EMPTY != null) {
-        throw new RuntimeException("empty constructor should only be used once");
+      throw new RuntimeException("empty constructor should only be used once");
     }
     _size = 0;
     _first = null;
@@ -79,49 +79,58 @@ public final class PList<E> extends AbstractSequentialList<E> {
   @Override
   public ListIterator<E> listIterator(final int index) {
     if (index < 0 || index > _size) {
-        throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException();
     }
 
     return new ListIterator<E>() {
       int _i = index;
       PList<E> _next = subList(index);
 
+      @Override
       public boolean hasNext() {
         return _next._size > 0;
       }
 
+      @Override
       public boolean hasPrevious() {
         return _i > 0;
       }
 
+      @Override
       public int nextIndex() {
         return index;
       }
 
+      @Override
       public int previousIndex() {
         return index - 1;
       }
 
+      @Override
       public E next() {
         E e = _next._first;
         _next = _next._rest;
         return e;
       }
 
+      @Override
       public E previous() {
         System.err.println("ConsPStack.listIterator().previous() is inefficient, don't use it!");
         _next = subList(index - 1); // go from beginning...
         return _next._first;
       }
 
+      @Override
       public void add(final E o) {
         throw new UnsupportedOperationException();
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }
 
+      @Override
       public void set(final E o) {
         throw new UnsupportedOperationException();
       }
@@ -155,7 +164,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
   public PList<E> plusAll(final Collection<? extends E> list) {
     PList<E> result = this;
     for (E e : list) {
-        result = result.plus(e);
+      result = result.plus(e);
     }
     return result;
   }
@@ -202,13 +211,13 @@ public final class PList<E> extends AbstractSequentialList<E> {
     } else if (i == 0) {
       return _rest;
     } else {
-        return new PList<E>(_first, _rest.minus(i - 1));
+      return new PList<E>(_first, _rest.minus(i - 1));
     }
   }
 
   public PList<E> minusAll(final Collection<?> list) {
     if (_size == 0) {
-        return this;
+      return this;
     }
     if (list.contains(_first)) { // get rid of current element
       return _rest.minusAll(list); // recursively delete all
