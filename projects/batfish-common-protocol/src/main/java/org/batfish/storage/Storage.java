@@ -15,7 +15,7 @@ public interface Storage {
 
   Analysis createAnalysis(String containerName, String analysisName);
 
-  Analysis updateAnalysis(String containerName, String analysisName);
+  Analysis updateAnalysis(String containerName, Analysis analysis);
 
-  Analysis saveOrUpdateAnalysis(String containerName, String analysisName);
+  Analysis saveOrUpdateAnalysis(String containerName, Analysis analysis);
 }
