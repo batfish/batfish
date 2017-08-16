@@ -156,7 +156,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      boolean newAnalysis = newAnalysisStr != null && !newAnalysisStr.equals("");
+      boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
       List<String> questionToDelete = new ArrayList<>();
       if (!Strings.isNullOrEmpty(delQuestions)) {
         JSONArray delQuestionsArray = new JSONArray(delQuestions);
