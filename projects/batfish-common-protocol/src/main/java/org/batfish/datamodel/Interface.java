@@ -78,7 +78,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private static final String PROP_SOURCE_NAT = "sourceNat";
+  private static final String PROP_SOURCE_NATS = "sourceNats";
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
@@ -315,7 +315,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient String _routingPolicyName;
 
-  private SourceNat _sourceNat;
+  private List<SourceNat> _sourceNats;
 
   private boolean _spanningTreePortfast;
 
@@ -672,9 +672,9 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  @JsonProperty(PROP_SOURCE_NAT)
-  public SourceNat getSourceNat() {
-    return _sourceNat;
+  @JsonProperty(PROP_SOURCE_NATS)
+  public List<SourceNat> getSourceNats() {
+    return _sourceNats;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
@@ -936,9 +936,9 @@ public final class Interface extends ComparableStructure<String> {
     _routingPolicyName = routingPolicyName;
   }
 
-  @JsonProperty(PROP_SOURCE_NAT)
-  public void setSourceNat(SourceNat sourceNat) {
-    _sourceNat = sourceNat;
+  @JsonProperty(PROP_SOURCE_NATS)
+  public void setSourceNats(List<SourceNat> sourceNats) {
+    _sourceNats = sourceNats;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
