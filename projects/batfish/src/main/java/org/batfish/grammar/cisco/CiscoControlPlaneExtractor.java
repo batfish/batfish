@@ -1056,12 +1056,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentNamedPeerGroup = afGroup;
   }
 
-   @Override
-   public void enterBgp_confederation_rb_stanza(Bgp_confederation_rb_stanzaContext ctx) {
-      todo(ctx, F_BGP_CONFEDERATION);
-   }
+  @Override
+  public void enterBgp_confederation_rb_stanza(Bgp_confederation_rb_stanzaContext ctx) {
+    todo(ctx, F_BGP_CONFEDERATION);
+  }
 
-   @Override
+  @Override
   public void enterCisco_configuration(Cisco_configurationContext ctx) {
     _configuration = new CiscoConfiguration(_unimplementedFeatures);
     _configuration.setVendor(_format);
@@ -4020,6 +4020,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  @Override
   public void exitPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
     _currentPrefixSetName = null;
   }
