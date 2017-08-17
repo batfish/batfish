@@ -83,8 +83,8 @@ echo # --> buggy ACL on as2border2!
 echo #############
 echo # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
 
-echo # initialize the delta environment and generate its dataplane
-init-delta-environment test_rigs/example-with-delta
+echo # initialize the delta testrig and generate its dataplane
+init-delta-testrig test_rigs/example-with-delta
 
 echo # any earlier query can be executed differentially, to see if how behavior differs
 get neighbors differential=true
@@ -97,7 +97,7 @@ echo #############
 echo # fault-tolerance can be ensured in a similar manner by studying the impact of failures
 
 echo # this command creates a network view after an interface failure
-get environmentcreation interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
+init-environment interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
 
 echo # we can see if reachability changes at all after this failure
 get reachability type=reduced
