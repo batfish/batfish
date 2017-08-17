@@ -537,9 +537,6 @@ public class WorkMgr {
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
-    if (!Files.exists(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))) {
-      return Container.of(containerDir.toFile().getName(), new TreeSet<>());
-    }
     SortedSet<String> testrigs =
         new TreeSet<>(
             CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
@@ -702,6 +699,14 @@ public class WorkMgr {
     if (!containerDir.toFile().mkdirs()) {
       throw new BatfishException("failed to create directory '" + containerDir + "'");
     }
+    Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
+    if (!testrigsDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + testrigsDir + "'");
+    }
+    Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
+    if (!analysesDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + analysesDir + "'");
+    }
     return containerName;
   }
 
@@ -834,9 +839,11 @@ public class WorkMgr {
     Path testrigDir =
         Main.getSettings()
             .getContainersLocation()
-            .resolve(workItem.getContainerName())
-            .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-            .resolve(workItem.getTestrigName());
+            .resolve(
+                Paths.get(
+                    workItem.getContainerName(),
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    workItem.getTestrigName()));
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
       throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
     }
