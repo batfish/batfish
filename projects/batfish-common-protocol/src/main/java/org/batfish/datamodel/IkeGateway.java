@@ -7,7 +7,7 @@ import org.batfish.common.util.ComparableStructure;
 
 public class IkeGateway extends ComparableStructure<String> {
 
-  private static final String IKE_POLICY_VAR = "ikePolicy";
+  private static final String PROP_IKE_POLICY = "ikePolicy";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -74,7 +74,7 @@ public class IkeGateway extends ComparableStructure<String> {
     return _ikePolicy;
   }
 
-  @JsonProperty(IKE_POLICY_VAR)
+  @JsonProperty(PROP_IKE_POLICY)
   @JsonPropertyDescription("IKE policy to be used with this IKE gateway.")
   public String getIkePolicyName() {
     if (_ikePolicy != null) {
@@ -119,7 +119,7 @@ public class IkeGateway extends ComparableStructure<String> {
     _ikePolicy = ikePolicy;
   }
 
-  @JsonProperty(IKE_POLICY_VAR)
+  @JsonProperty(PROP_IKE_POLICY)
   public void setIkePolicyName(String ikePolicyName) {
     _ikePolicyName = ikePolicyName;
   }

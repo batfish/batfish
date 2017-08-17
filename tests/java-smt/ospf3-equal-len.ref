@@ -1,0 +1,22 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "result" : {
+        "R3,Loopback0" : {
+          "verified" : true
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtEqualLengthQuestionPlugin$EqualLengthQuestion",
+    "differential" : false,
+    "failures" : 0,
+    "finalIfaceRegex" : "Loopback.*",
+    "finalNodeRegex" : "R3",
+    "fullModel" : true,
+    "ingressNodeRegex" : "R(1|2)"
+  },
+  "status" : "SUCCESS"
+}

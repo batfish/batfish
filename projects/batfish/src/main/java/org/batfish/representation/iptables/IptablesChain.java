@@ -25,6 +25,7 @@ public class IptablesChain implements Serializable {
 
   public IptablesChain(String name) {
     _name = name;
+    _policy = ChainPolicy.ACCEPT;
     _rules = new LinkedList<>();
   }
 

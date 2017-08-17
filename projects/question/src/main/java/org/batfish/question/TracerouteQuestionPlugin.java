@@ -174,53 +174,53 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
    */
   public static class TracerouteQuestion extends Question implements ITracerouteQuestion {
 
-    private static final String DSCP_VAR = "dscp";
+    private static final String PROP_DSCP = "dscp";
 
-    private static final String DST_IP_VAR = "dstIp";
+    private static final String PROP_DST_IP = "dstIp";
 
-    private static final String DST_PORT_VAR = "dstPort";
+    private static final String PROP_DST_PORT = "dstPort";
 
-    private static final String DST_PROTOCOL_VAR = "dstProtocol";
+    private static final String PROP_DST_PROTOCOL = "dstProtocol";
 
-    private static final String ECN_VAR = "ecn";
+    private static final String PROP_ECN = "ecn";
 
-    private static final String ICMP_CODE_VAR = "icmpCode";
+    private static final String PROP_ICMP_CODE = "icmpCode";
 
-    private static final String ICMP_TYPE_VAR = "icmpType";
+    private static final String PROP_ICMP_TYPE = "icmpType";
 
-    private static final String INGRESS_INTERFACE_VAR = "ingressInterface";
+    private static final String PROP_INGRESS_INTERFACE = "ingressInterface";
 
-    private static final String INGRESS_NODE_VAR = "ingressNode";
+    private static final String PROP_INGRESS_NODE = "ingressNode";
 
-    private static final String INGRESS_VRF_VAR = "ingressVrf";
+    private static final String PROP_INGRESS_VRF = "ingressVrf";
 
-    private static final String IP_PROTOCOL_VAR = "ipProtocol";
+    private static final String PROP_IP_PROTOCOL = "ipProtocol";
 
-    private static final String PACKET_LENGTH_VAR = "packetLength";
+    private static final String PROP_PACKET_LENGTH = "packetLength";
 
-    private static final String SRC_IP_VAR = "srcIp";
+    private static final String PROP_SRC_IP = "srcIp";
 
-    private static final String SRC_PORT_VAR = "srcPort";
+    private static final String PROP_SRC_PORT = "srcPort";
 
-    private static final String SRC_PROTOCOL_VAR = "srcProtocol";
+    private static final String PROP_SRC_PROTOCOL = "srcProtocol";
 
-    private static final String STATE_VAR = "state";
+    private static final String PROP_STATE = "state";
 
-    private static final String TCP_FLAGS_ACK_VAR = "tcpAck";
+    private static final String PROP_TCP_FLAGS_ACK = "tcpAck";
 
-    private static final String TCP_FLAGS_CWR_VAR = "tcpCwr";
+    private static final String PROP_TCP_FLAGS_CWR = "tcpCwr";
 
-    private static final String TCP_FLAGS_ECE_VAR = "tcpEce";
+    private static final String PROP_TCP_FLAGS_ECE = "tcpEce";
 
-    private static final String TCP_FLAGS_FIN_VAR = "tcpFin";
+    private static final String PROP_TCP_FLAGS_FIN = "tcpFin";
 
-    private static final String TCP_FLAGS_PSH_VAR = "tcpPsh";
+    private static final String PROP_TCP_FLAGS_PSH = "tcpPsh";
 
-    private static final String TCP_FLAGS_RST_VAR = "tcpRst";
+    private static final String PROP_TCP_FLAGS_RST = "tcpRst";
 
-    private static final String TCP_FLAGS_SYN_VAR = "tcpSyn";
+    private static final String PROP_TCP_FLAGS_SYN = "tcpSyn";
 
-    private static final String TCP_FLAGS_URG_VAR = "tcpUrg";
+    private static final String PROP_TCP_FLAGS_URG = "tcpUrg";
 
     private Integer _dscp;
 
@@ -367,27 +367,27 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       return true;
     }
 
-    @JsonProperty(DSCP_VAR)
+    @JsonProperty(PROP_DSCP)
     public Integer getDscp() {
       return _dscp;
     }
 
-    @JsonProperty(DST_IP_VAR)
+    @JsonProperty(PROP_DST_IP)
     public Ip getDstIp() {
       return _dstIp;
     }
 
-    @JsonProperty(DST_PORT_VAR)
+    @JsonProperty(PROP_DST_PORT)
     public Integer getDstPort() {
       return _dstPort;
     }
 
-    @JsonProperty(DST_PROTOCOL_VAR)
+    @JsonProperty(PROP_DST_PROTOCOL)
     public Protocol getDstProtocol() {
       return _dstProtocol;
     }
 
-    @JsonProperty(ECN_VAR)
+    @JsonProperty(PROP_ECN)
     public Integer getEcn() {
       return _ecn;
     }
@@ -397,32 +397,32 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       return Collections.singleton(createFlowBuilder());
     }
 
-    @JsonProperty(ICMP_CODE_VAR)
+    @JsonProperty(PROP_ICMP_CODE)
     public Integer getIcmpCode() {
       return _icmpCode;
     }
 
-    @JsonProperty(ICMP_TYPE_VAR)
+    @JsonProperty(PROP_ICMP_TYPE)
     public Integer getIcmpType() {
       return _icmpType;
     }
 
-    @JsonProperty(INGRESS_INTERFACE_VAR)
+    @JsonProperty(PROP_INGRESS_INTERFACE)
     public String getIngressInterface() {
       return _ingressInterface;
     }
 
-    @JsonProperty(INGRESS_NODE_VAR)
+    @JsonProperty(PROP_INGRESS_NODE)
     public String getIngressNode() {
       return _ingressNode;
     }
 
-    @JsonProperty(INGRESS_VRF_VAR)
+    @JsonProperty(PROP_INGRESS_VRF)
     public String getIngressVrf() {
       return _ingressVrf;
     }
 
-    @JsonProperty(IP_PROTOCOL_VAR)
+    @JsonProperty(PROP_IP_PROTOCOL)
     public IpProtocol getIpProtocol() {
       return _ipProtocol;
     }
@@ -432,67 +432,67 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       return NAME;
     }
 
-    @JsonProperty(PACKET_LENGTH_VAR)
+    @JsonProperty(PROP_PACKET_LENGTH)
     public Integer getPacketLength() {
       return _packetLength;
     }
 
-    @JsonProperty(SRC_IP_VAR)
+    @JsonProperty(PROP_SRC_IP)
     public Ip getSrcIp() {
       return _srcIp;
     }
 
-    @JsonProperty(SRC_PORT_VAR)
+    @JsonProperty(PROP_SRC_PORT)
     public Integer getSrcPort() {
       return _srcPort;
     }
 
-    @JsonProperty(SRC_PROTOCOL_VAR)
+    @JsonProperty(PROP_SRC_PROTOCOL)
     public Protocol getSrcProtocol() {
       return _srcProtocol;
     }
 
-    @JsonProperty(STATE_VAR)
+    @JsonProperty(PROP_STATE)
     public State getState() {
       return _state;
     }
 
-    @JsonProperty(TCP_FLAGS_ACK_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_ACK)
     public Boolean getTcpFlagsAck() {
       return _tcpFlagsAck;
     }
 
-    @JsonProperty(TCP_FLAGS_CWR_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_CWR)
     public Boolean getTcpFlagsCwr() {
       return _tcpFlagsCwr;
     }
 
-    @JsonProperty(TCP_FLAGS_ECE_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_ECE)
     public Boolean getTcpFlagsEce() {
       return _tcpFlagsEce;
     }
 
-    @JsonProperty(TCP_FLAGS_FIN_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_FIN)
     public Boolean getTcpFlagsFin() {
       return _tcpFlagsFin;
     }
 
-    @JsonProperty(TCP_FLAGS_PSH_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_PSH)
     public Boolean getTcpFlagsPsh() {
       return _tcpFlagsPsh;
     }
 
-    @JsonProperty(TCP_FLAGS_RST_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_RST)
     public Boolean getTcpFlagsRst() {
       return _tcpFlagsRst;
     }
 
-    @JsonProperty(TCP_FLAGS_SYN_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_SYN)
     public Boolean getTcpFlagsSyn() {
       return _tcpFlagsSyn;
     }
 
-    @JsonProperty(TCP_FLAGS_URG_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_URG)
     public Boolean getTcpFlagsUrg() {
       return _tcpFlagsUrg;
     }
@@ -509,73 +509,73 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             String.format("traceroute %singressNode=%s", prettyPrintBase(), _ingressNode);
         // we only print "interesting" values
         if (_ingressInterface != null) {
-          retString += String.format(" | %s=%s", INGRESS_INTERFACE_VAR, _ingressInterface);
+          retString += String.format(" | %s=%s", PROP_INGRESS_INTERFACE, _ingressInterface);
         }
         if (_ingressVrf != null) {
-          retString += String.format(" | %s=%s", INGRESS_VRF_VAR, _ingressVrf);
+          retString += String.format(" | %s=%s", PROP_INGRESS_VRF, _ingressVrf);
         }
         if (_dscp != null) {
-          retString += String.format(" | %s=%s", DSCP_VAR, _dscp);
+          retString += String.format(" | %s=%s", PROP_DSCP, _dscp);
         }
         if (_dstIp != null) {
-          retString += String.format(" | %s=%s", DST_IP_VAR, _dstIp);
+          retString += String.format(" | %s=%s", PROP_DST_IP, _dstIp);
         }
         if (_dstPort != null) {
-          retString += String.format(" | %S=%s", DST_PORT_VAR, _dstPort);
+          retString += String.format(" | %S=%s", PROP_DST_PORT, _dstPort);
         }
         if (_dstProtocol != null) {
-          retString += String.format(" | %s=%s", DST_PROTOCOL_VAR, _dstProtocol);
+          retString += String.format(" | %s=%s", PROP_DST_PROTOCOL, _dstProtocol);
         }
         if (_ecn != null) {
-          retString += String.format(" | %s=%s", ECN_VAR, _ecn);
+          retString += String.format(" | %s=%s", PROP_ECN, _ecn);
         }
         if (_icmpCode != null) {
-          retString += String.format(" | %s=%s", ICMP_CODE_VAR, _icmpCode);
+          retString += String.format(" | %s=%s", PROP_ICMP_CODE, _icmpCode);
         }
         if (_icmpType != null) {
-          retString += String.format(" | %s=%s", ICMP_TYPE_VAR, _icmpType);
+          retString += String.format(" | %s=%s", PROP_ICMP_TYPE, _icmpType);
         }
         if (_ipProtocol != null) {
-          retString += String.format(" | %s=%s", IP_PROTOCOL_VAR, _ipProtocol);
+          retString += String.format(" | %s=%s", PROP_IP_PROTOCOL, _ipProtocol);
         }
         if (_packetLength != null) {
-          retString += String.format(" | %s=%s", PACKET_LENGTH_VAR, _packetLength);
+          retString += String.format(" | %s=%s", PROP_PACKET_LENGTH, _packetLength);
         }
         if (_srcIp != null) {
-          retString += String.format(" | %s=%s", SRC_IP_VAR, _srcIp);
+          retString += String.format(" | %s=%s", PROP_SRC_IP, _srcIp);
         }
         if (_srcPort != null) {
-          retString += String.format(" | %s=%s", SRC_PORT_VAR, _srcPort);
+          retString += String.format(" | %s=%s", PROP_SRC_PORT, _srcPort);
         }
         if (_srcProtocol != null) {
-          retString += String.format(" | %s=%s", SRC_PROTOCOL_VAR, _srcProtocol);
+          retString += String.format(" | %s=%s", PROP_SRC_PROTOCOL, _srcProtocol);
         }
         if (_state != null) {
-          retString += String.format(" | %s=%s", STATE_VAR, _state);
+          retString += String.format(" | %s=%s", PROP_STATE, _state);
         }
         if (_tcpFlagsAck != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_ACK_VAR, _tcpFlagsAck);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_ACK, _tcpFlagsAck);
         }
         if (_tcpFlagsCwr != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_CWR_VAR, _tcpFlagsCwr);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_CWR, _tcpFlagsCwr);
         }
         if (_tcpFlagsEce != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_ECE_VAR, _tcpFlagsEce);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_ECE, _tcpFlagsEce);
         }
         if (_tcpFlagsFin != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_FIN_VAR, _tcpFlagsFin);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_FIN, _tcpFlagsFin);
         }
         if (_tcpFlagsPsh != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_PSH_VAR, _tcpFlagsPsh);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_PSH, _tcpFlagsPsh);
         }
         if (_tcpFlagsRst != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_RST_VAR, _tcpFlagsRst);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_RST, _tcpFlagsRst);
         }
         if (_tcpFlagsSyn != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_SYN_VAR, _tcpFlagsSyn);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_SYN, _tcpFlagsSyn);
         }
         if (_tcpFlagsUrg != null) {
-          retString += String.format(" | %s=%s", TCP_FLAGS_URG_VAR, _tcpFlagsUrg);
+          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_URG, _tcpFlagsUrg);
         }
         return retString;
       } catch (Exception e) {
@@ -587,126 +587,126 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       }
     }
 
-    @JsonProperty(DSCP_VAR)
+    @JsonProperty(PROP_DSCP)
     public void setDscp(Integer dscp) {
       _dscp = dscp;
     }
 
     @Override
-    @JsonProperty(DST_IP_VAR)
+    @JsonProperty(PROP_DST_IP)
     public void setDstIp(Ip dstIp) {
       _dstIp = dstIp;
     }
 
-    @JsonProperty(DST_PORT_VAR)
+    @JsonProperty(PROP_DST_PORT)
     public void setDstPort(Integer dstPort) {
       _dstPort = dstPort;
     }
 
     @Override
-    @JsonProperty(DST_PROTOCOL_VAR)
+    @JsonProperty(PROP_DST_PROTOCOL)
     public void setDstProtocol(Protocol dstProtocol) {
       _dstProtocol = dstProtocol;
     }
 
-    @JsonProperty(ECN_VAR)
+    @JsonProperty(PROP_ECN)
     public void setEcn(Integer ecn) {
       _ecn = ecn;
     }
 
-    @JsonProperty(ICMP_CODE_VAR)
+    @JsonProperty(PROP_ICMP_CODE)
     public void setIcmpCode(Integer icmpCode) {
       _icmpCode = icmpCode;
     }
 
-    @JsonProperty(ICMP_TYPE_VAR)
+    @JsonProperty(PROP_ICMP_TYPE)
     public void setIcmpType(Integer icmpType) {
       _icmpType = icmpType;
     }
 
-    @JsonProperty(INGRESS_INTERFACE_VAR)
+    @JsonProperty(PROP_INGRESS_INTERFACE)
     public void setIngressInterface(String ingressInterface) {
       _ingressInterface = ingressInterface;
     }
 
     @Override
-    @JsonProperty(INGRESS_NODE_VAR)
+    @JsonProperty(PROP_INGRESS_NODE)
     public void setIngressNode(String ingressNode) {
       _ingressNode = ingressNode;
     }
 
     @Override
-    @JsonProperty(INGRESS_VRF_VAR)
+    @JsonProperty(PROP_INGRESS_VRF)
     public void setIngressVrf(String ingressVrf) {
       _ingressVrf = ingressVrf;
     }
 
-    @JsonProperty(IP_PROTOCOL_VAR)
+    @JsonProperty(PROP_IP_PROTOCOL)
     public void setIpProtocol(IpProtocol ipProtocol) {
       _ipProtocol = ipProtocol;
     }
 
-    @JsonProperty(PACKET_LENGTH_VAR)
+    @JsonProperty(PROP_PACKET_LENGTH)
     public void setPacketLength(Integer packetLength) {
       _packetLength = packetLength;
     }
 
-    @JsonProperty(SRC_IP_VAR)
+    @JsonProperty(PROP_SRC_IP)
     public void setSrcIp(Ip srcIp) {
       _srcIp = srcIp;
     }
 
-    @JsonProperty(SRC_PORT_VAR)
+    @JsonProperty(PROP_SRC_PORT)
     public void setSrcPort(Integer srcPort) {
       _srcPort = srcPort;
     }
 
-    @JsonProperty(SRC_PROTOCOL_VAR)
+    @JsonProperty(PROP_SRC_PROTOCOL)
     public void setSrcProtocol(Protocol srcProtocol) {
       _srcProtocol = srcProtocol;
     }
 
-    @JsonProperty(STATE_VAR)
+    @JsonProperty(PROP_STATE)
     public void setState(State state) {
       _state = state;
     }
 
-    @JsonProperty(TCP_FLAGS_ACK_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_ACK)
     public void setTcpFlagsAck(Boolean tcpFlagsAck) {
       _tcpFlagsAck = tcpFlagsAck;
     }
 
-    @JsonProperty(TCP_FLAGS_CWR_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_CWR)
     public void setTcpFlagsCwr(Boolean tcpFlagsCwr) {
       _tcpFlagsCwr = tcpFlagsCwr;
     }
 
-    @JsonProperty(TCP_FLAGS_ECE_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_ECE)
     public void setTcpFlagsEce(Boolean tcpFlagsEce) {
       _tcpFlagsEce = tcpFlagsEce;
     }
 
-    @JsonProperty(TCP_FLAGS_FIN_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_FIN)
     public void setTcpFlagsFin(Boolean tcpFlagsFin) {
       _tcpFlagsFin = tcpFlagsFin;
     }
 
-    @JsonProperty(TCP_FLAGS_PSH_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_PSH)
     public void setTcpFlagsPsh(Boolean tcpFlagsPsh) {
       _tcpFlagsPsh = tcpFlagsPsh;
     }
 
-    @JsonProperty(TCP_FLAGS_RST_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_RST)
     public void setTcpFlagsRst(Boolean tcpFlagsRst) {
       _tcpFlagsRst = tcpFlagsRst;
     }
 
-    @JsonProperty(TCP_FLAGS_SYN_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_SYN)
     public void setTcpFlagsSyn(Boolean tcpFlagsSyn) {
       _tcpFlagsSyn = tcpFlagsSyn;
     }
 
-    @JsonProperty(TCP_FLAGS_URG_VAR)
+    @JsonProperty(PROP_TCP_FLAGS_URG)
     public void setTcpFlagsUrg(Boolean tcpFlagsUrg) {
       _tcpFlagsUrg = tcpFlagsUrg;
     }

@@ -21,14 +21,14 @@ public class RoutingPolicy extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String STATEMENTS_VAR = "statements";
+  private static final String PROP_STATEMENTS = "statements";
 
   private Configuration _owner;
 
   private List<Statement> _statements;
 
   @JsonCreator
-  private RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
+  private RoutingPolicy(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _statements = new ArrayList<>();
   }
@@ -69,7 +69,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
     return _owner;
   }
 
-  @JsonProperty(STATEMENTS_VAR)
+  @JsonProperty(PROP_STATEMENTS)
   @JsonPropertyDescription("The list of routing-policy statements to execute")
   public List<Statement> getStatements() {
     return _statements;
@@ -86,7 +86,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
     return result.getBooleanValue();
   }
 
-  @JsonProperty(STATEMENTS_VAR)
+  @JsonProperty(PROP_STATEMENTS)
   public void setStatements(List<Statement> statements) {
     _statements = statements;
   }

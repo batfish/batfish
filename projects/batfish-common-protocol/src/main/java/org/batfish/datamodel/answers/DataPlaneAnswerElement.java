@@ -5,8 +5,8 @@ import java.io.Serializable;
 
 public interface DataPlaneAnswerElement extends AnswerElement, Serializable {
 
-  String VERSION_VAR = "version";
+  String PROP_VERSION = "version";
 
-  @JsonProperty(VERSION_VAR)
+  @JsonProperty(PROP_VERSION)
   String getVersion();
 }

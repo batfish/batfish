@@ -25,57 +25,57 @@ import org.codehaus.jettison.json.JSONObject;
         + "firewall.")
 public final class Configuration extends ComparableStructure<String> {
 
-  private static final String AS_PATH_ACCESS_LISTS_VAR = "asPathAccessLists";
+  private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
 
-  private static final String COMMUNITY_LISTS_VAR = "communityLists";
+  private static final String PROP_COMMUNITY_LISTS = "communityLists";
 
-  private static final String CONFIGURATION_FORMAT_VAR = "configurationFormat";
+  private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
 
-  private static final String DEFAULT_CROSS_ZONE_ACTION_VAR = "defaultCrossZoneAction";
+  private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
 
-  private static final String DEFAULT_INBOUND_ACTION_VAR = "defaultInboundAction";
+  private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
 
   public static final String DEFAULT_VRF_NAME = "default";
 
-  private static final String DNS_SOURCE_INTERFACE_VAR = "dnsSourceInterface";
+  private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
 
-  private static final String IKE_GATEWAYS_VAR = "ikeGateways";
+  private static final String PROP_IKE_GATEWAYS = "ikeGateways";
 
-  private static final String IKE_POLICIES_VAR = "ikePolicies";
+  private static final String PROP_IKE_POLICIES = "ikePolicies";
 
-  private static final String IKE_PROPOSALS_VAR = "ikeProposals";
+  private static final String PROP_IKE_PROPOSALS = "ikeProposals";
 
-  private static final String IP_ACCESS_LISTS_VAR = "ipAccessLists";
+  private static final String PROP_IP_ACCESS_LISTS = "ipAccessLists";
 
-  private static final String IPSEC_POLICIES_VAR = "ipsecPolicies";
+  private static final String PROP_IPSEC_POLICIES = "ipsecPolicies";
 
-  private static final String IPSEC_PROPOSALS_VAR = "ipsecProposals";
+  private static final String PROP_IPSEC_PROPOSALS = "ipsecProposals";
 
-  private static final String IPSEC_VPNS_VAR = "ipsecVpns";
+  private static final String PROP_IPSEC_VPNS = "ipsecVpns";
 
-  private static final String LOGGING_SOURCE_INTERFACE_VAR = "loggingSourceInterface";
+  private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
 
   public static final String NODE_NONE_NAME = "(none)";
 
-  private static final String NTP_SOURCE_INTERFACE_VAR = "ntpSourceInterface";
+  private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
-  private static final String ROLES_VAR = "roles";
+  private static final String PROP_ROLES = "roles";
 
-  private static final String ROUTE_FILTER_LISTS_VAR = "routeFilterLists";
+  private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
 
-  private static final String ROUTING_POLICIES_VAR = "routingPolicies";
+  private static final String PROP_ROUTING_POLICIES = "routingPolicies";
 
   private static final long serialVersionUID = 1L;
 
-  private static final String SNMP_SOURCE_INTERFACE_VAR = "snmpSourceInterface";
+  private static final String PROP_SNMP_SOURCE_INTERFACE = "snmpSourceInterface";
 
-  private static final String TACACS_SOURCE_INTERFACE_VAR = "tacacsSourceInterface";
+  private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
 
   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
 
-  private static final String ZONES_VAR = "zones";
+  private static final String PROP_ZONES = "zones";
 
   private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
@@ -169,7 +169,7 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Zone> _zones;
 
   @JsonCreator
-  public Configuration(@JsonProperty(NAME_VAR) String hostname) {
+  public Configuration(@JsonProperty(PROP_NAME) String hostname) {
     super(hostname);
     _asPathAccessLists = new TreeMap<>();
     _communityLists = new TreeMap<>();
@@ -197,7 +197,7 @@ public final class Configuration extends ComparableStructure<String> {
     _zones = new TreeMap<>();
   }
 
-  @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
+  @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
   @JsonPropertyDescription("Dictionary of all AS-path access-lists for this node.")
   public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
@@ -208,13 +208,13 @@ public final class Configuration extends ComparableStructure<String> {
     return _bgpAdvertisements;
   }
 
-  @JsonProperty(COMMUNITY_LISTS_VAR)
+  @JsonProperty(PROP_COMMUNITY_LISTS)
   @JsonPropertyDescription("Dictionary of all community-lists for this node.")
   public NavigableMap<String, CommunityList> getCommunityLists() {
     return _communityLists;
   }
 
-  @JsonProperty(CONFIGURATION_FORMAT_VAR)
+  @JsonProperty(PROP_CONFIGURATION_FORMAT)
   @JsonPropertyDescription(
       "Best guess at vendor configuration format. Used for setting default values, protocol "
           + "costs, etc.")
@@ -222,14 +222,14 @@ public final class Configuration extends ComparableStructure<String> {
     return _configurationFormat;
   }
 
-  @JsonProperty(DEFAULT_CROSS_ZONE_ACTION_VAR)
+  @JsonProperty(PROP_DEFAULT_CROSS_ZONE_ACTION)
   @JsonPropertyDescription(
       "Default forwarding action to take for traffic that crosses firewall zones.")
   public LineAction getDefaultCrossZoneAction() {
     return _defaultCrossZoneAction;
   }
 
-  @JsonProperty(DEFAULT_INBOUND_ACTION_VAR)
+  @JsonProperty(PROP_DEFAULT_INBOUND_ACTION)
   @JsonPropertyDescription(
       "Default forwarding action to take for traffic destined for this device.")
   public LineAction getDefaultInboundAction() {
@@ -245,7 +245,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _dnsServers;
   }
 
-  @JsonProperty(DNS_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_DNS_SOURCE_INTERFACE)
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
   }
@@ -255,25 +255,25 @@ public final class Configuration extends ComparableStructure<String> {
     return _domainName;
   }
 
-  @JsonProperty(NAME_VAR)
+  @JsonProperty(PROP_NAME)
   @JsonPropertyDescription("Hostname of this node.")
   public String getHostname() {
     return _key;
   }
 
-  @JsonProperty(IKE_GATEWAYS_VAR)
+  @JsonProperty(PROP_IKE_GATEWAYS)
   @JsonPropertyDescription("Dictionary of all IKE gateways for this node.")
   public NavigableMap<String, IkeGateway> getIkeGateways() {
     return _ikeGateways;
   }
 
-  @JsonProperty(IKE_POLICIES_VAR)
+  @JsonProperty(PROP_IKE_POLICIES)
   @JsonPropertyDescription("Dictionary of all IKE policies for this node.")
   public NavigableMap<String, IkePolicy> getIkePolicies() {
     return _ikePolicies;
   }
 
-  @JsonProperty(IKE_PROPOSALS_VAR)
+  @JsonProperty(PROP_IKE_PROPOSALS)
   @JsonPropertyDescription("Dictionary of all IKE proposals for this node.")
   public NavigableMap<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
@@ -289,25 +289,25 @@ public final class Configuration extends ComparableStructure<String> {
     return _ip6AccessLists;
   }
 
-  @JsonProperty(IP_ACCESS_LISTS_VAR)
+  @JsonProperty(PROP_IP_ACCESS_LISTS)
   @JsonPropertyDescription("Dictionary of all IPV4 access-lists for this node.")
   public NavigableMap<String, IpAccessList> getIpAccessLists() {
     return _ipAccessLists;
   }
 
-  @JsonProperty(IPSEC_POLICIES_VAR)
+  @JsonProperty(PROP_IPSEC_POLICIES)
   @JsonPropertyDescription("Dictionary of all IPSEC policies for this node.")
   public NavigableMap<String, IpsecPolicy> getIpsecPolicies() {
     return _ipsecPolicies;
   }
 
-  @JsonProperty(IPSEC_PROPOSALS_VAR)
+  @JsonProperty(PROP_IPSEC_PROPOSALS)
   @JsonPropertyDescription("Dictionary of all IPSEC proposals for this node.")
   public NavigableMap<String, IpsecProposal> getIpsecProposals() {
     return _ipsecProposals;
   }
 
-  @JsonProperty(IPSEC_VPNS_VAR)
+  @JsonProperty(PROP_IPSEC_VPNS)
   @JsonPropertyDescription("Dictionary of all IPSEC VPNs for this node.")
   public NavigableMap<String, IpsecVpn> getIpsecVpns() {
     return _ipsecVpns;
@@ -317,7 +317,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _loggingServers;
   }
 
-  @JsonProperty(LOGGING_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_LOGGING_SOURCE_INTERFACE)
   public String getLoggingSourceInterface() {
     return _loggingSourceInterface;
   }
@@ -331,7 +331,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _ntpServers;
   }
 
-  @JsonProperty(NTP_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_NTP_SOURCE_INTERFACE)
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
   }
@@ -366,7 +366,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _receivedIbgpAdvertisements;
   }
 
-  @JsonProperty(ROLES_VAR)
+  @JsonProperty(PROP_ROLES)
   @JsonPropertyDescription("Set of all roles in which this node serves.")
   public SortedSet<String> getRoles() {
     return _roles;
@@ -377,7 +377,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _route6FilterLists;
   }
 
-  @JsonProperty(ROUTE_FILTER_LISTS_VAR)
+  @JsonProperty(PROP_ROUTE_FILTER_LISTS)
   @JsonPropertyDescription("Dictionary of all IPV4 route filter lists for this node.")
   public NavigableMap<String, RouteFilterList> getRouteFilterLists() {
     return _routeFilterLists;
@@ -388,7 +388,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _routes;
   }
 
-  @JsonProperty(ROUTING_POLICIES_VAR)
+  @JsonProperty(PROP_ROUTING_POLICIES)
   @JsonPropertyDescription("Dictionary of all routing policies for this node.")
   public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
@@ -409,7 +409,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _sentIbgpAdvertisements;
   }
 
-  @JsonProperty(SNMP_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_SNMP_SOURCE_INTERFACE)
   public String getSnmpSourceInterface() {
     return _snmpSourceInterface;
   }
@@ -422,7 +422,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _tacacsServers;
   }
 
-  @JsonProperty(TACACS_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_TACACS_SOURCE_INTERFACE)
   public String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
   }
@@ -437,7 +437,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _vrfs;
   }
 
-  @JsonProperty(ZONES_VAR)
+  @JsonProperty(PROP_ZONES)
   @JsonPropertyDescription("Dictionary of all firewall zones for this node.")
   public NavigableMap<String, Zone> getZones() {
     return _zones;
@@ -503,12 +503,12 @@ public final class Configuration extends ComparableStructure<String> {
     }
   }
 
-  @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
+  @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
   public void setAsPathAccessLists(NavigableMap<String, AsPathAccessList> asPathAccessLists) {
     _asPathAccessLists = asPathAccessLists;
   }
 
-  @JsonProperty(COMMUNITY_LISTS_VAR)
+  @JsonProperty(PROP_COMMUNITY_LISTS)
   public void setCommunityLists(NavigableMap<String, CommunityList> communityLists) {
     _communityLists = communityLists;
   }
@@ -529,7 +529,7 @@ public final class Configuration extends ComparableStructure<String> {
     _dnsServers = dnsServers;
   }
 
-  @JsonProperty(DNS_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_DNS_SOURCE_INTERFACE)
   public void setDnsSourceInterface(String dnsSourceInterface) {
     _dnsSourceInterface = dnsSourceInterface;
   }
@@ -538,17 +538,17 @@ public final class Configuration extends ComparableStructure<String> {
     _domainName = domainName;
   }
 
-  @JsonProperty(IKE_GATEWAYS_VAR)
+  @JsonProperty(PROP_IKE_GATEWAYS)
   public void setIkeGateways(NavigableMap<String, IkeGateway> ikeGateways) {
     _ikeGateways = ikeGateways;
   }
 
-  @JsonProperty(IKE_POLICIES_VAR)
+  @JsonProperty(PROP_IKE_POLICIES)
   public void setIkePolicies(NavigableMap<String, IkePolicy> ikePolicies) {
     _ikePolicies = ikePolicies;
   }
 
-  @JsonProperty(IKE_PROPOSALS_VAR)
+  @JsonProperty(PROP_IKE_PROPOSALS)
   public void setIkeProposals(NavigableMap<String, IkeProposal> ikeProposals) {
     _ikeProposals = ikeProposals;
   }
@@ -561,22 +561,22 @@ public final class Configuration extends ComparableStructure<String> {
     _ip6AccessLists = ip6AccessLists;
   }
 
-  @JsonProperty(IP_ACCESS_LISTS_VAR)
+  @JsonProperty(PROP_IP_ACCESS_LISTS)
   public void setIpAccessLists(NavigableMap<String, IpAccessList> ipAccessLists) {
     _ipAccessLists = ipAccessLists;
   }
 
-  @JsonProperty(IPSEC_POLICIES_VAR)
+  @JsonProperty(PROP_IPSEC_POLICIES)
   public void setIpsecPolicies(NavigableMap<String, IpsecPolicy> ipsecPolicies) {
     _ipsecPolicies = ipsecPolicies;
   }
 
-  @JsonProperty(IPSEC_PROPOSALS_VAR)
+  @JsonProperty(PROP_IPSEC_PROPOSALS)
   public void setIpsecProposals(NavigableMap<String, IpsecProposal> ipsecProposals) {
     _ipsecProposals = ipsecProposals;
   }
 
-  @JsonProperty(IPSEC_VPNS_VAR)
+  @JsonProperty(PROP_IPSEC_VPNS)
   public void setIpsecVpns(NavigableMap<String, IpsecVpn> ipsecVpns) {
     _ipsecVpns = ipsecVpns;
   }
@@ -585,7 +585,7 @@ public final class Configuration extends ComparableStructure<String> {
     _loggingServers = loggingServers;
   }
 
-  @JsonProperty(LOGGING_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_LOGGING_SOURCE_INTERFACE)
   public void setLoggingSourceInterface(String loggingSourceInterface) {
     _loggingSourceInterface = loggingSourceInterface;
   }
@@ -599,7 +599,7 @@ public final class Configuration extends ComparableStructure<String> {
     _ntpServers = ntpServers;
   }
 
-  @JsonProperty(NTP_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_NTP_SOURCE_INTERFACE)
   public void setNtpSourceInterface(String ntpSourceInterface) {
     _ntpSourceInterface = ntpSourceInterface;
   }
@@ -612,17 +612,17 @@ public final class Configuration extends ComparableStructure<String> {
     _route6FilterLists = route6FilterLists;
   }
 
-  @JsonProperty(ROUTE_FILTER_LISTS_VAR)
+  @JsonProperty(PROP_ROUTE_FILTER_LISTS)
   public void setRouteFilterLists(NavigableMap<String, RouteFilterList> routeFilterLists) {
     _routeFilterLists = routeFilterLists;
   }
 
-  @JsonProperty(ROUTING_POLICIES_VAR)
+  @JsonProperty(PROP_ROUTING_POLICIES)
   public void setRoutingPolicies(NavigableMap<String, RoutingPolicy> routingPolicies) {
     _routingPolicies = routingPolicies;
   }
 
-  @JsonProperty(SNMP_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_SNMP_SOURCE_INTERFACE)
   public void setSnmpSourceInterface(String snmpSourceInterface) {
     _snmpSourceInterface = snmpSourceInterface;
   }
@@ -635,7 +635,7 @@ public final class Configuration extends ComparableStructure<String> {
     _tacacsServers = tacacsServers;
   }
 
-  @JsonProperty(TACACS_SOURCE_INTERFACE_VAR)
+  @JsonProperty(PROP_TACACS_SOURCE_INTERFACE)
   public void setTacacsSourceInterface(String tacacsSourceInterface) {
     _tacacsSourceInterface = tacacsSourceInterface;
   }
@@ -648,7 +648,7 @@ public final class Configuration extends ComparableStructure<String> {
     _vrfs = vrfs;
   }
 
-  @JsonProperty(ZONES_VAR)
+  @JsonProperty(PROP_ZONES)
   public void setZones(NavigableMap<String, Zone> zones) {
     _zones = zones;
   }

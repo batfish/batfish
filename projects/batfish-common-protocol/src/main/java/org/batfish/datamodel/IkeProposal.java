@@ -101,7 +101,7 @@ public final class IkeProposal extends ComparableStructure<String> {
   private Integer _lifetimeSeconds;
 
   @JsonCreator
-  private IkeProposal(@JsonProperty(NAME_VAR) String name) {
+  private IkeProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _definitionLine = -1;
   }

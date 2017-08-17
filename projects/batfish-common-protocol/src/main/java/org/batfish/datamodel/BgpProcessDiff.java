@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BgpProcessDiff {
 
-  private static final String IN_AFTER_ONLY_VAR = "inAfterOnly";
+  private static final String PROP_IN_AFTER_ONLY = "inAfterOnly";
 
-  private static final String IN_BEFORE_ONLY_VAR = "inBeforeOnly";
+  private static final String PROP_IN_BEFORE_ONLY = "inBeforeOnly";
 
   private Boolean _inAfterOnly;
 
@@ -32,12 +32,12 @@ public class BgpProcessDiff {
     }
   }
 
-  @JsonProperty(IN_AFTER_ONLY_VAR)
+  @JsonProperty(PROP_IN_AFTER_ONLY)
   public Boolean getInAfterOnly() {
     return _inAfterOnly;
   }
 
-  @JsonProperty(IN_BEFORE_ONLY_VAR)
+  @JsonProperty(PROP_IN_BEFORE_ONLY)
   public Boolean getInBeforeOnly() {
     return _inBeforeOnly;
   }
@@ -47,12 +47,12 @@ public class BgpProcessDiff {
     return _neighborsDiff == null && _inBeforeOnly == null && _inAfterOnly == null;
   }
 
-  @JsonProperty(IN_AFTER_ONLY_VAR)
+  @JsonProperty(PROP_IN_AFTER_ONLY)
   public void setInAfterOnly(Boolean inAfterOnly) {
     _inAfterOnly = inAfterOnly;
   }
 
-  @JsonProperty(IN_BEFORE_ONLY_VAR)
+  @JsonProperty(PROP_IN_BEFORE_ONLY)
   public void setInBeforeOnly(Boolean inBeforeOnly) {
     _inBeforeOnly = inBeforeOnly;
   }

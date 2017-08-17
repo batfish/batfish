@@ -106,7 +106,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
    */
   public static class ReachabilityQuestion extends Question implements IReachabilityQuestion {
 
-    private static final String ACTIONS_VAR = "actions";
+    private static final String PROP_ACTIONS = "actions";
 
     private static final String DEFAULT_FINAL_NODE_REGEX = ".*";
 
@@ -116,67 +116,67 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String DEFAULT_NOT_INGRESS_NODE_REGEX = "";
 
-    private static final String DST_IPS_VAR = "dstIps";
+    private static final String PROP_DST_IPS = "dstIps";
 
-    private static final String DST_PORTS_VAR = "dstPorts";
+    private static final String PROP_DST_PORTS = "dstPorts";
 
-    private static final String DST_PROTOCOLS_VAR = "dstProtocols";
+    private static final String PROP_DST_PROTOCOLS = "dstProtocols";
 
-    private static final String FINAL_NODE_REGEX_VAR = "finalNodeRegex";
+    private static final String PROP_FINAL_NODE_REGEX = "finalNodeRegex";
 
-    private static final String FRAGMENT_OFFSETS_VAR = "fragmentOffsets";
+    private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
 
-    private static final String ICMP_CODES_VAR = "icmpCodes";
+    private static final String PROP_ICMP_CODES = "icmpCodes";
 
-    private static final String ICMP_TYPES_VAR = "icmpTypes";
+    private static final String PROP_ICMP_TYPES = "icmpTypes";
 
-    private static final String INGRESS_NODE_REGEX_VAR = "ingressNodeRegex";
+    private static final String PROP_INGRESS_NODE_REGEX = "ingressNodeRegex";
 
-    private static final String IP_PROTOCOLS_VAR = "ipProtocols";
+    private static final String PROP_IP_PROTOCOLS = "ipProtocols";
 
-    private static final String NEGATE_HEADER_VAR = "negateHeader";
+    private static final String PROP_NEGATE_HEADER = "negateHeader";
 
-    private static final String NOT_DST_IPS_VAR = "notDstIps";
+    private static final String PROP_NOT_DST_IPS = "notDstIps";
 
-    private static final String NOT_DST_PORTS_VAR = "notDstPorts";
+    private static final String PROP_NOT_DST_PORTS = "notDstPorts";
 
-    private static final String NOT_DST_PROTOCOLS_VAR = "notDstProtocols";
+    private static final String PROP_NOT_DST_PROTOCOLS = "notDstProtocols";
 
-    private static final String NOT_FINAL_NODE_REGEX_VAR = "notFinalNodeRegex";
+    private static final String PROP_NOT_FINAL_NODE_REGEX = "notFinalNodeRegex";
 
-    private static final String NOT_FRAGMENT_OFFSETS_VAR = "notFragmentOffsets";
+    private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
 
-    private static final String NOT_ICMP_CODES_VAR = "notIcmpCodes";
+    private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
 
-    private static final String NOT_ICMP_TYPES_VAR = "notIcmpTypes";
+    private static final String PROP_NOT_ICMP_TYPES = "notIcmpTypes";
 
-    private static final String NOT_INGRESS_NODE_REGEX_VAR = "notIngressNodeRegex";
+    private static final String PROP_NOT_INGRESS_NODE_REGEX = "notIngressNodeRegex";
 
-    private static final String NOT_IP_PROTOCOLS_VAR = "notIpProtocols";
+    private static final String PROP_NOT_IP_PROTOCOLS = "notIpProtocols";
 
-    private static final String NOT_PACKET_LENGTHS_VAR = "notPacketLengths";
+    private static final String PROP_NOT_PACKET_LENGTHS = "notPacketLengths";
 
-    private static final String NOT_SRC_IPS_VAR = "notSrcIps";
+    private static final String PROP_NOT_SRC_IPS = "notSrcIps";
 
-    private static final String NOT_SRC_PORTS_VAR = "notSrcPorts";
+    private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
 
-    private static final String NOT_SRC_PROTOCOLS_VAR = "notSrcProtocols";
+    private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
 
-    private static final String PACKET_LENGTHS_VAR = "packetLengths";
+    private static final String PROP_PACKET_LENGTHS = "packetLengths";
 
-    private static final String REACHABILITY_TYPE_VAR = "type";
+    private static final String PROP_REACHABILITY_TYPE = "type";
 
-    private static final String SRC_IPS_VAR = "srcIps";
+    private static final String PROP_SRC_IPS = "srcIps";
 
-    private static final String SRC_OR_DST_IPS_VAR = "srcOrDstIps";
+    private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
 
-    private static final String SRC_OR_DST_PORTS_VAR = "srcOrDstPorts";
+    private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
 
-    private static final String SRC_OR_DST_PROTOCOLS_VAR = "srcOrDstProtocols";
+    private static final String PROP_SRC_OR_DST_PROTOCOLS = "srcOrDstProtocols";
 
-    private static final String SRC_PORTS_VAR = "srcPorts";
+    private static final String PROP_SRC_PORTS = "srcPorts";
 
-    private static final String SRC_PROTOCOLS_VAR = "srcProtocols";
+    private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
 
     private SortedSet<ForwardingAction> _actions;
 
@@ -202,7 +202,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
     }
 
-    @JsonProperty(ACTIONS_VAR)
+    @JsonProperty(PROP_ACTIONS)
     public SortedSet<ForwardingAction> getActions() {
       return _actions;
     }
@@ -212,27 +212,27 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return true;
     }
 
-    @JsonProperty(DST_IPS_VAR)
+    @JsonProperty(PROP_DST_IPS)
     public SortedSet<IpWildcard> getDstIps() {
       return _headerSpace.getDstIps();
     }
 
-    @JsonProperty(DST_PORTS_VAR)
+    @JsonProperty(PROP_DST_PORTS)
     public SortedSet<SubRange> getDstPorts() {
       return _headerSpace.getDstPorts();
     }
 
-    @JsonProperty(DST_PROTOCOLS_VAR)
+    @JsonProperty(PROP_DST_PROTOCOLS)
     public SortedSet<Protocol> getDstProtocols() {
       return _headerSpace.getDstProtocols();
     }
 
-    @JsonProperty(FINAL_NODE_REGEX_VAR)
+    @JsonProperty(PROP_FINAL_NODE_REGEX)
     public String getFinalNodeRegex() {
       return _finalNodeRegex;
     }
 
-    @JsonProperty(FRAGMENT_OFFSETS_VAR)
+    @JsonProperty(PROP_FRAGMENT_OFFSETS)
     public SortedSet<SubRange> getFragmentOffsets() {
       return _headerSpace.getFragmentOffsets();
     }
@@ -242,22 +242,22 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return _headerSpace;
     }
 
-    @JsonProperty(ICMP_CODES_VAR)
+    @JsonProperty(PROP_ICMP_CODES)
     public SortedSet<SubRange> getIcmpCodes() {
       return _headerSpace.getIcmpCodes();
     }
 
-    @JsonProperty(ICMP_TYPES_VAR)
+    @JsonProperty(PROP_ICMP_TYPES)
     public SortedSet<SubRange> getIcmpTypes() {
       return _headerSpace.getIcmpTypes();
     }
 
-    @JsonProperty(INGRESS_NODE_REGEX_VAR)
+    @JsonProperty(PROP_INGRESS_NODE_REGEX)
     public String getIngressNodeRegex() {
       return _ingressNodeRegex;
     }
 
-    @JsonProperty(IP_PROTOCOLS_VAR)
+    @JsonProperty(PROP_IP_PROTOCOLS)
     public SortedSet<IpProtocol> getIpProtocols() {
       return _headerSpace.getIpProtocols();
     }
@@ -267,112 +267,112 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return NAME;
     }
 
-    @JsonProperty(NEGATE_HEADER_VAR)
+    @JsonProperty(PROP_NEGATE_HEADER)
     public boolean getNegateHeader() {
       return _headerSpace.getNegate();
     }
 
-    @JsonProperty(NOT_DST_IPS_VAR)
+    @JsonProperty(PROP_NOT_DST_IPS)
     public SortedSet<IpWildcard> getNotDstIps() {
       return _headerSpace.getNotDstIps();
     }
 
-    @JsonProperty(NOT_DST_PORTS_VAR)
+    @JsonProperty(PROP_NOT_DST_PORTS)
     public SortedSet<SubRange> getNotDstPorts() {
       return _headerSpace.getNotDstPorts();
     }
 
-    @JsonProperty(NOT_DST_PROTOCOLS_VAR)
+    @JsonProperty(PROP_NOT_DST_PROTOCOLS)
     public SortedSet<Protocol> getNotDstProtocols() {
       return _headerSpace.getNotDstProtocols();
     }
 
-    @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)
+    @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
     public String getNotFinalNodeRegex() {
       return _notFinalNodeRegex;
     }
 
-    @JsonProperty(NOT_FRAGMENT_OFFSETS_VAR)
+    @JsonProperty(PROP_NOT_FRAGMENT_OFFSETS)
     private SortedSet<SubRange> getNotFragmentOffsets() {
       return _headerSpace.getNotFragmentOffsets();
     }
 
-    @JsonProperty(NOT_ICMP_CODES_VAR)
+    @JsonProperty(PROP_NOT_ICMP_CODES)
     public SortedSet<SubRange> getNotIcmpCodes() {
       return _headerSpace.getNotIcmpCodes();
     }
 
-    @JsonProperty(NOT_ICMP_TYPES_VAR)
+    @JsonProperty(PROP_NOT_ICMP_TYPES)
     public SortedSet<SubRange> getNotIcmpTypes() {
       return _headerSpace.getNotIcmpTypes();
     }
 
-    @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)
+    @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
     public String getNotIngressNodeRegex() {
       return _notIngressNodeRegex;
     }
 
-    @JsonProperty(NOT_IP_PROTOCOLS_VAR)
+    @JsonProperty(PROP_NOT_IP_PROTOCOLS)
     public SortedSet<IpProtocol> getNotIpProtocols() {
       return _headerSpace.getNotIpProtocols();
     }
 
-    @JsonProperty(NOT_PACKET_LENGTHS_VAR)
+    @JsonProperty(PROP_NOT_PACKET_LENGTHS)
     public SortedSet<SubRange> getNotPacketLengths() {
       return _headerSpace.getNotPacketLengths();
     }
 
-    @JsonProperty(NOT_SRC_IPS_VAR)
+    @JsonProperty(PROP_NOT_SRC_IPS)
     public SortedSet<IpWildcard> getNotSrcIps() {
       return _headerSpace.getNotSrcIps();
     }
 
-    @JsonProperty(NOT_SRC_PORTS_VAR)
+    @JsonProperty(PROP_NOT_SRC_PORTS)
     public SortedSet<SubRange> getNotSrcPorts() {
       return _headerSpace.getNotSrcPorts();
     }
 
-    @JsonProperty(NOT_SRC_PROTOCOLS_VAR)
+    @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
     public SortedSet<Protocol> getNotSrcProtocols() {
       return _headerSpace.getNotSrcProtocols();
     }
 
-    @JsonProperty(PACKET_LENGTHS_VAR)
+    @JsonProperty(PROP_PACKET_LENGTHS)
     public SortedSet<SubRange> getPacketLengths() {
       return _headerSpace.getPacketLengths();
     }
 
-    @JsonProperty(REACHABILITY_TYPE_VAR)
+    @JsonProperty(PROP_REACHABILITY_TYPE)
     public ReachabilityType getReachabilityType() {
       return _reachabilityType;
     }
 
-    @JsonProperty(SRC_IPS_VAR)
+    @JsonProperty(PROP_SRC_IPS)
     public SortedSet<IpWildcard> getSrcIps() {
       return _headerSpace.getSrcIps();
     }
 
-    @JsonProperty(SRC_OR_DST_IPS_VAR)
+    @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
       return _headerSpace.getSrcOrDstIps();
     }
 
-    @JsonProperty(SRC_OR_DST_PORTS_VAR)
+    @JsonProperty(PROP_SRC_OR_DST_PORTS)
     public SortedSet<SubRange> getSrcOrDstPorts() {
       return _headerSpace.getSrcOrDstPorts();
     }
 
-    @JsonProperty(SRC_OR_DST_PROTOCOLS_VAR)
+    @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
     public SortedSet<Protocol> getSrcOrDstProtocols() {
       return _headerSpace.getSrcOrDstProtocols();
     }
 
-    @JsonProperty(SRC_PORTS_VAR)
+    @JsonProperty(PROP_SRC_PORTS)
     public SortedSet<SubRange> getSrcPorts() {
       return _headerSpace.getSrcPorts();
     }
 
-    @JsonProperty(SRC_PROTOCOLS_VAR)
+    @JsonProperty(PROP_SRC_PROTOCOLS)
     public SortedSet<Protocol> getSrcProtocols() {
       return _headerSpace.getSrcProtocols();
     }
@@ -389,99 +389,101 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
             String.format("reachability %sactions=%s", prettyPrintBase(), _actions.toString());
         // we only print "interesting" values
         if (_reachabilityType != ReachabilityType.STANDARD) {
-          retString += String.format(" | %s=%s", REACHABILITY_TYPE_VAR, _reachabilityType);
+          retString += String.format(" | %s=%s", PROP_REACHABILITY_TYPE, _reachabilityType);
         }
         if (getNegateHeader()) {
           retString += " | negateHeader=true";
         }
         if (getDstIps() != null && !getDstIps().isEmpty()) {
-          retString += String.format(" | %s=%s", DST_IPS_VAR, getDstIps());
+          retString += String.format(" | %s=%s", PROP_DST_IPS, getDstIps());
         }
         if (getDstPorts() != null && !getDstPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", DST_PORTS_VAR, getDstPorts());
+          retString += String.format(" | %s=%s", PROP_DST_PORTS, getDstPorts());
         }
         if (getDstProtocols() != null && !getDstProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", DST_PROTOCOLS_VAR, getDstProtocols());
+          retString += String.format(" | %s=%s", PROP_DST_PROTOCOLS, getDstProtocols());
         }
         if (!_finalNodeRegex.equals(DEFAULT_FINAL_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", FINAL_NODE_REGEX_VAR, _finalNodeRegex);
+          retString += String.format(" | %s=%s", PROP_FINAL_NODE_REGEX, _finalNodeRegex);
         }
         if (getFragmentOffsets() != null && !getFragmentOffsets().isEmpty()) {
-          retString += String.format(" | %s=%s", FRAGMENT_OFFSETS_VAR, getFragmentOffsets());
+          retString += String.format(" | %s=%s", PROP_FRAGMENT_OFFSETS, getFragmentOffsets());
         }
         if (getIcmpCodes() != null && !getIcmpCodes().isEmpty()) {
-          retString += String.format(" | %s=%s", ICMP_CODES_VAR, getIcmpCodes());
+          retString += String.format(" | %s=%s", PROP_ICMP_CODES, getIcmpCodes());
         }
         if (getIcmpTypes() != null && !getIcmpTypes().isEmpty()) {
-          retString += String.format(" | %s=%s", ICMP_TYPES_VAR, getIcmpTypes());
+          retString += String.format(" | %s=%s", PROP_ICMP_TYPES, getIcmpTypes());
         }
         if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", INGRESS_NODE_REGEX_VAR, _ingressNodeRegex);
+          retString += String.format(" | %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
         }
         if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", IP_PROTOCOLS_VAR, getIpProtocols().toString());
+          retString += String.format(" | %s=%s", PROP_IP_PROTOCOLS, getIpProtocols().toString());
         }
         if (getPacketLengths() != null && !getPacketLengths().isEmpty()) {
-          retString += String.format(" | %s=%s", PACKET_LENGTHS_VAR, getPacketLengths().toString());
+          retString +=
+              String.format(" | %s=%s", PROP_PACKET_LENGTHS, getPacketLengths().toString());
         }
         if (getSrcIps() != null && !getSrcIps().isEmpty()) {
-          retString += String.format(" | %s=%s", SRC_IPS_VAR, getSrcIps());
+          retString += String.format(" | %s=%s", PROP_SRC_IPS, getSrcIps());
         }
         if (getSrcPorts() != null && !getSrcPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", SRC_PORTS_VAR, getSrcPorts());
+          retString += String.format(" | %s=%s", PROP_SRC_PORTS, getSrcPorts());
         }
         if (getSrcProtocols() != null && !getSrcProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", SRC_PROTOCOLS_VAR, getSrcProtocols());
+          retString += String.format(" | %s=%s", PROP_SRC_PROTOCOLS, getSrcProtocols());
         }
         if (getSrcOrDstIps() != null && !getSrcOrDstIps().isEmpty()) {
-          retString += String.format(" | %s=%s", SRC_OR_DST_IPS_VAR, getSrcOrDstIps());
+          retString += String.format(" | %s=%s", PROP_SRC_OR_DST_IPS, getSrcOrDstIps());
         }
         if (getSrcOrDstPorts() != null && !getSrcOrDstPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", SRC_OR_DST_PORTS_VAR, getSrcOrDstPorts());
+          retString += String.format(" | %s=%s", PROP_SRC_OR_DST_PORTS, getSrcOrDstPorts());
         }
         if (getSrcOrDstProtocols() != null && !getSrcOrDstProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", SRC_OR_DST_PROTOCOLS_VAR, getSrcOrDstProtocols());
+          retString += String.format(" | %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
         }
         if (getNotDstIps() != null && !getNotDstIps().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_DST_IPS_VAR, getNotDstIps());
+          retString += String.format(" | %s=%s", PROP_NOT_DST_IPS, getNotDstIps());
         }
         if (getNotDstPorts() != null && !getNotDstPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_DST_PORTS_VAR, getNotDstPorts());
+          retString += String.format(" | %s=%s", PROP_NOT_DST_PORTS, getNotDstPorts());
         }
         if (getNotDstProtocols() != null && !getNotDstProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_DST_PROTOCOLS_VAR, getNotDstProtocols());
+          retString += String.format(" | %s=%s", PROP_NOT_DST_PROTOCOLS, getNotDstProtocols());
         }
         if (!_notFinalNodeRegex.equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", NOT_FINAL_NODE_REGEX_VAR, _notFinalNodeRegex);
+          retString += String.format(" | %s=%s", PROP_NOT_FINAL_NODE_REGEX, _notFinalNodeRegex);
         }
         if (getNotFragmentOffsets() != null && !getNotFragmentOffsets().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_FRAGMENT_OFFSETS_VAR, getNotFragmentOffsets());
+          retString +=
+              String.format(" | %s=%s", PROP_NOT_FRAGMENT_OFFSETS, getNotFragmentOffsets());
         }
         if (getNotIcmpCodes() != null && !getNotIcmpCodes().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_ICMP_CODES_VAR, getNotIcmpCodes());
+          retString += String.format(" | %s=%s", PROP_NOT_ICMP_CODES, getNotIcmpCodes());
         }
         if (getNotIcmpTypes() != null && !getNotIcmpTypes().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_ICMP_TYPES_VAR, getNotIcmpTypes());
+          retString += String.format(" | %s=%s", PROP_NOT_ICMP_TYPES, getNotIcmpTypes());
         }
         if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", NOT_INGRESS_NODE_REGEX_VAR, _notIngressNodeRegex);
+          retString += String.format(" | %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
         }
         if (getNotIpProtocols() != null && !getNotIpProtocols().isEmpty()) {
           retString +=
-              String.format(" | %s=%s", NOT_IP_PROTOCOLS_VAR, getNotIpProtocols().toString());
+              String.format(" | %s=%s", PROP_NOT_IP_PROTOCOLS, getNotIpProtocols().toString());
         }
         if (getNotPacketLengths() != null && !getNotPacketLengths().isEmpty()) {
           retString +=
-              String.format(" | %s=%s", NOT_PACKET_LENGTHS_VAR, getNotPacketLengths().toString());
+              String.format(" | %s=%s", PROP_NOT_PACKET_LENGTHS, getNotPacketLengths().toString());
         }
         if (getNotSrcIps() != null && !getNotSrcIps().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_SRC_IPS_VAR, getNotSrcIps());
+          retString += String.format(" | %s=%s", PROP_NOT_SRC_IPS, getNotSrcIps());
         }
         if (getNotSrcPorts() != null && !getNotSrcPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_SRC_PORTS_VAR, getNotSrcPorts());
+          retString += String.format(" | %s=%s", PROP_NOT_SRC_PORTS, getNotSrcPorts());
         }
         if (getNotSrcProtocols() != null && !getNotSrcProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", NOT_SRC_PROTOCOLS_VAR, getNotSrcProtocols());
+          retString += String.format(" | %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
         }
         return retString;
       } catch (Exception e) {
@@ -494,126 +496,126 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    @JsonProperty(ACTIONS_VAR)
+    @JsonProperty(PROP_ACTIONS)
     public void setActions(SortedSet<ForwardingAction> actionSet) {
       _actions = new TreeSet<>(actionSet);
     }
 
     @Override
-    @JsonProperty(DST_IPS_VAR)
+    @JsonProperty(PROP_DST_IPS)
     public void setDstIps(SortedSet<IpWildcard> dstIps) {
       _headerSpace.setDstIps(new TreeSet<>(dstIps));
     }
 
-    @JsonProperty(DST_PORTS_VAR)
+    @JsonProperty(PROP_DST_PORTS)
     public void setDstPorts(SortedSet<SubRange> dstPorts) {
       _headerSpace.setDstPorts(new TreeSet<>(dstPorts));
     }
 
     @Override
-    @JsonProperty(DST_PROTOCOLS_VAR)
+    @JsonProperty(PROP_DST_PROTOCOLS)
     public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
       _headerSpace.setDstProtocols(new TreeSet<>(dstProtocols));
     }
 
-    @JsonProperty(FINAL_NODE_REGEX_VAR)
+    @JsonProperty(PROP_FINAL_NODE_REGEX)
     public void setFinalNodeRegex(String regex) {
       _finalNodeRegex = regex;
     }
 
-    @JsonProperty(ICMP_CODES_VAR)
+    @JsonProperty(PROP_ICMP_CODES)
     public void setIcmpCodes(SortedSet<SubRange> icmpCodes) {
       _headerSpace.setIcmpCodes(new TreeSet<>(icmpCodes));
     }
 
-    @JsonProperty(ICMP_TYPES_VAR)
+    @JsonProperty(PROP_ICMP_TYPES)
     public void setIcmpTypes(SortedSet<SubRange> icmpTypes) {
       _headerSpace.setIcmpTypes(new TreeSet<>(icmpTypes));
     }
 
     @Override
-    @JsonProperty(INGRESS_NODE_REGEX_VAR)
+    @JsonProperty(PROP_INGRESS_NODE_REGEX)
     public void setIngressNodeRegex(String regex) {
       _ingressNodeRegex = regex;
     }
 
-    @JsonProperty(IP_PROTOCOLS_VAR)
+    @JsonProperty(PROP_IP_PROTOCOLS)
     public void setIpProtocols(SortedSet<IpProtocol> ipProtocols) {
       _headerSpace.setIpProtocols(ipProtocols);
     }
 
-    @JsonProperty(NEGATE_HEADER_VAR)
+    @JsonProperty(PROP_NEGATE_HEADER)
     public void setNegateHeader(boolean negateHeader) {
       _headerSpace.setNegate(negateHeader);
     }
 
-    @JsonProperty(NOT_DST_IPS_VAR)
+    @JsonProperty(PROP_NOT_DST_IPS)
     public void setNotDstIps(SortedSet<IpWildcard> notDstIps) {
       _headerSpace.setNotDstIps(new TreeSet<>(notDstIps));
     }
 
-    @JsonProperty(NOT_DST_PORTS_VAR)
+    @JsonProperty(PROP_NOT_DST_PORTS)
     public void setNotDstPorts(SortedSet<SubRange> notDstPorts) {
       _headerSpace.setNotDstPorts(new TreeSet<>(notDstPorts));
     }
 
     @Override
-    @JsonProperty(NOT_DST_PROTOCOLS_VAR)
+    @JsonProperty(PROP_NOT_DST_PROTOCOLS)
     public void setNotDstProtocols(SortedSet<Protocol> notDstProtocols) {
       _headerSpace.setNotDstProtocols(new TreeSet<>(notDstProtocols));
     }
 
-    @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)
+    @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
     public void setNotFinalNodeRegex(String notFinalNodeRegex) {
       _notFinalNodeRegex = notFinalNodeRegex;
     }
 
-    @JsonProperty(NOT_ICMP_CODES_VAR)
+    @JsonProperty(PROP_NOT_ICMP_CODES)
     public void setNotIcmpCodes(SortedSet<SubRange> notIcmpCodes) {
       _headerSpace.setNotIcmpCodes(new TreeSet<>(notIcmpCodes));
     }
 
-    @JsonProperty(NOT_ICMP_TYPES_VAR)
+    @JsonProperty(PROP_NOT_ICMP_TYPES)
     public void setNotIcmpTypes(SortedSet<SubRange> notIcmpType) {
       _headerSpace.setNotIcmpTypes(new TreeSet<>(notIcmpType));
     }
 
-    @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)
+    @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
     public void setNotIngressNodeRegex(String notIngressNodeRegex) {
       _notIngressNodeRegex = notIngressNodeRegex;
     }
 
-    @JsonProperty(NOT_IP_PROTOCOLS_VAR)
+    @JsonProperty(PROP_NOT_IP_PROTOCOLS)
     public void setNotIpProtocols(SortedSet<IpProtocol> notIpProtocols) {
       _headerSpace.setNotIpProtocols(notIpProtocols);
     }
 
-    @JsonProperty(NOT_PACKET_LENGTHS_VAR)
+    @JsonProperty(PROP_NOT_PACKET_LENGTHS)
     public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
       _headerSpace.setNotPacketLengths(new TreeSet<>(notPacketLengths));
     }
 
-    @JsonProperty(NOT_SRC_IPS_VAR)
+    @JsonProperty(PROP_NOT_SRC_IPS)
     public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
       _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
     }
 
-    @JsonProperty(NOT_SRC_PORTS_VAR)
+    @JsonProperty(PROP_NOT_SRC_PORTS)
     public void setNotSrcPortRange(SortedSet<SubRange> notSrcPorts) {
       _headerSpace.setNotSrcPorts(new TreeSet<>(notSrcPorts));
     }
 
-    @JsonProperty(NOT_SRC_PROTOCOLS_VAR)
+    @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
     public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
       _headerSpace.setNotSrcProtocols(new TreeSet<>(notSrcProtocols));
     }
 
-    @JsonProperty(PACKET_LENGTHS_VAR)
+    @JsonProperty(PROP_PACKET_LENGTHS)
     public void setPacketLengths(SortedSet<SubRange> packetLengths) {
       _headerSpace.setPacketLengths(new TreeSet<>(packetLengths));
     }
 
-    @JsonProperty(REACHABILITY_TYPE_VAR)
+    @JsonProperty(PROP_REACHABILITY_TYPE)
     public void setReachabilityType(ReachabilityType reachabilityType) {
       _reachabilityType = reachabilityType;
       switch (reachabilityType) {
@@ -633,32 +635,32 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       }
     }
 
-    @JsonProperty(SRC_IPS_VAR)
+    @JsonProperty(PROP_SRC_IPS)
     public void setSrcIps(SortedSet<IpWildcard> srcIps) {
       _headerSpace.setSrcIps(new TreeSet<>(srcIps));
     }
 
-    @JsonProperty(SRC_OR_DST_IPS_VAR)
+    @JsonProperty(PROP_SRC_OR_DST_IPS)
     public void setSrcOrDstIps(SortedSet<IpWildcard> srcOrDstIps) {
       _headerSpace.setSrcOrDstIps(new TreeSet<>(srcOrDstIps));
     }
 
-    @JsonProperty(SRC_OR_DST_PORTS_VAR)
+    @JsonProperty(PROP_SRC_OR_DST_PORTS)
     public void setSrcOrDstPorts(SortedSet<SubRange> srcOrDstPorts) {
       _headerSpace.setSrcOrDstPorts(new TreeSet<>(srcOrDstPorts));
     }
 
-    @JsonProperty(SRC_OR_DST_PROTOCOLS_VAR)
+    @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
     public void setSrcOrDstProtocols(SortedSet<Protocol> srcOrDstProtocols) {
       _headerSpace.setSrcOrDstProtocols(new TreeSet<>(srcOrDstProtocols));
     }
 
-    @JsonProperty(SRC_PORTS_VAR)
+    @JsonProperty(PROP_SRC_PORTS)
     public void setSrcPorts(SortedSet<SubRange> srcPorts) {
       _headerSpace.setSrcPorts(new TreeSet<>(srcPorts));
     }
 
-    @JsonProperty(SRC_PROTOCOLS_VAR)
+    @JsonProperty(PROP_SRC_PROTOCOLS)
     public void setSrcProtocols(SortedSet<Protocol> srcProtocols) {
       _headerSpace.setSrcProtocols(new TreeSet<>(srcProtocols));
     }

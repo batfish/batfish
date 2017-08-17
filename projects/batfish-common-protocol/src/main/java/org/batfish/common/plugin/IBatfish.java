@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
@@ -34,8 +35,11 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -155,4 +159,22 @@ public interface IBatfish extends IPluginConsumer {
       String notFinalNodeRegexStr);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
+
+  AnswerElement smtForwarding(HeaderQuestion q);
+
+  AnswerElement smtReachability(HeaderLocationQuestion q);
+
+  AnswerElement smtBlackhole(HeaderQuestion q);
+
+  AnswerElement smtRoutingLoop(HeaderQuestion q);
+
+  AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
+
+  AnswerElement smtEqualLength(HeaderLocationQuestion q);
+
+  AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
+
+  AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold);
+
+  AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
 }

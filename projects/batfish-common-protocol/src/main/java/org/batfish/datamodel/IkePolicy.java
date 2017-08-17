@@ -12,7 +12,7 @@ import org.batfish.common.util.ComparableStructure;
 
 public final class IkePolicy extends ComparableStructure<String> {
 
-  private static final String PROPOSALS_VAR = "proposals";
+  private static final String PROP_PROPOSALS = "proposals";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -24,7 +24,7 @@ public final class IkePolicy extends ComparableStructure<String> {
   private SortedMap<String, IkeProposal> _proposals;
 
   @JsonCreator
-  public IkePolicy(@JsonProperty(NAME_VAR) String name) {
+  public IkePolicy(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _proposals = new TreeMap<>();
   }
@@ -35,7 +35,7 @@ public final class IkePolicy extends ComparableStructure<String> {
     return _preSharedKeyHash;
   }
 
-  @JsonProperty(PROPOSALS_VAR)
+  @JsonProperty(PROP_PROPOSALS)
   @JsonPropertyDescription(
       "Dictionary of IKE proposals attached to this policy. Each stored as @id")
   public SortedSet<String> getProposalNames() {
@@ -63,7 +63,7 @@ public final class IkePolicy extends ComparableStructure<String> {
     _preSharedKeyHash = preSharedKeyHash;
   }
 
-  @JsonProperty(PROPOSALS_VAR)
+  @JsonProperty(PROP_PROPOSALS)
   public void setProposalNames(SortedSet<String> proposalNames) {
     _proposalNames = proposalNames;
   }

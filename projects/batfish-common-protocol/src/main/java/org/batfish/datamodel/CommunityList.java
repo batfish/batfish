@@ -20,7 +20,7 @@ import org.batfish.common.util.ComparableStructure;
         + "attributes sent with a bgp advertisement")
 public class CommunityList extends ComparableStructure<String> {
 
-  private static final String LINES_VAR = "lines";
+  private static final String PROP_LINES = "lines";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -46,7 +46,8 @@ public class CommunityList extends ComparableStructure<String> {
    */
   @JsonCreator
   public CommunityList(
-      @JsonProperty(NAME_VAR) String name, @JsonProperty(LINES_VAR) List<CommunityListLine> lines) {
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_LINES) List<CommunityListLine> lines) {
     super(name);
     _lines = lines;
   }
@@ -67,7 +68,7 @@ public class CommunityList extends ComparableStructure<String> {
     return _invertMatch;
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   @JsonPropertyDescription(
       "The list of lines that are checked in order against the community attribute(s) of a bgp "
           + "advertisement")

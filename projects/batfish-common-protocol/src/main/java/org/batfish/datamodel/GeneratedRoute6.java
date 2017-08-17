@@ -56,11 +56,11 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     }
   }
 
-  private static final String AS_PATH_VAR = "asPath";
+  private static final String PROP_AS_PATH = "asPath";
 
-  private static final String DISCARD_VAR = "discard";
+  private static final String PROP_DISCARD = "discard";
 
-  private static final String METRIC_VAR = "metric";
+  private static final String PROP_METRIC = "metric";
 
   private static final long serialVersionUID = 1L;
 
@@ -79,7 +79,7 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
   private String _nextHopInterface;
 
   @JsonCreator
-  public GeneratedRoute6(@JsonProperty(NETWORK_VAR) Prefix6 prefix6) {
+  public GeneratedRoute6(@JsonProperty(PROP_NETWORK) Prefix6 prefix6) {
     super(prefix6, Route6.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
@@ -108,7 +108,7 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     return _administrativeCost;
   }
 
-  @JsonProperty(AS_PATH_VAR)
+  @JsonProperty(PROP_AS_PATH)
   public AsPath getAsPath() {
     return _asPath;
   }
@@ -117,7 +117,7 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     return _attributePolicy;
   }
 
-  @JsonProperty(DISCARD_VAR)
+  @JsonProperty(PROP_DISCARD)
   public boolean getDiscard() {
     return _discard;
   }
@@ -126,7 +126,7 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     return _generationPolicy;
   }
 
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   @Override
   public Integer getMetric() {
     return _metric;
@@ -159,12 +159,12 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     return _network.hashCode();
   }
 
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   public void setAdministrativePreference(int preference) {
     _administrativeCost = preference;
   }
 
-  @JsonProperty(AS_PATH_VAR)
+  @JsonProperty(PROP_AS_PATH)
   public void setAsPath(AsPath asPath) {
     _asPath = asPath;
   }
@@ -173,7 +173,7 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     _attributePolicy = attributePolicy;
   }
 
-  @JsonProperty(DISCARD_VAR)
+  @JsonProperty(PROP_DISCARD)
   public void setDiscard(boolean discard) {
     _discard = discard;
   }
@@ -182,7 +182,7 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
     _generationPolicy = generationPolicy;
   }
 
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   public void setMetric(int metric) {
     _metric = metric;
   }

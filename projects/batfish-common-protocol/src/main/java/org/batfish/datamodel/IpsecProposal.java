@@ -83,7 +83,7 @@ public class IpsecProposal extends ComparableStructure<String> {
   private IpsecProtocol _protocol;
 
   @JsonCreator
-  private IpsecProposal(@JsonProperty(NAME_VAR) String name) {
+  private IpsecProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _definitionLine = -1;
   }

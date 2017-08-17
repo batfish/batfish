@@ -135,6 +135,8 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -164,6 +166,7 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
+import org.batfish.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -524,7 +527,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     AnswerElement answerElement = null;
     BatfishException exception = null;
     try {
-      if (question.getDifferential() == true) {
+      if (question.getDifferential()) {
         answerElement = Answerer.create(question, this).answerDiff();
       } else {
         answerElement = Answerer.create(question, this).answer();
@@ -3181,8 +3184,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   private String preprocessQuestion(String rawQuestionText) {
     try {
       JSONObject jobj = new JSONObject(rawQuestionText);
-      if (jobj.has(BfConsts.INSTANCE_VAR) && !jobj.isNull(BfConsts.INSTANCE_VAR)) {
-        String instanceDataStr = jobj.getString(BfConsts.INSTANCE_VAR);
+      if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
+        String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         InstanceData instanceData =
             mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
@@ -4453,4 +4456,53 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
     }
   }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
 }

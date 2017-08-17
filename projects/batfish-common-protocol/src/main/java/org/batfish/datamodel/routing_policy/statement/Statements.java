@@ -29,12 +29,12 @@ public enum Statements {
     /** */
     private static final long serialVersionUID = 1L;
 
-    private static final String TYPE_VAR = "type";
+    private static final String PROP_TYPE = "type";
 
     private Statements _type;
 
     @JsonCreator
-    public StaticStatement(@JsonProperty(TYPE_VAR) Statements type) {
+    public StaticStatement(@JsonProperty(PROP_TYPE) Statements type) {
       _type = type;
     }
 
@@ -133,7 +133,7 @@ public enum Statements {
       return result;
     }
 
-    @JsonProperty(TYPE_VAR)
+    @JsonProperty(PROP_TYPE)
     public Statements getType() {
       return _type;
     }

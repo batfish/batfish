@@ -1,0 +1,31 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
+      "result" : {
+        "forwardingModel" : [
+          "R1,Loopback0 --> _,_",
+          "R2,Serial1 --> R3,Serial0",
+          "R3,Serial1 --> R1,Serial1"
+        ],
+        "packetModel" : {
+          "dstIp" : "42.42.42.0"
+        },
+        "verified" : false
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtForwardingQuestionPlugin$ForwardingQuestion",
+    "differential" : false,
+    "dstIps" : [
+      "42.42.42.0"
+    ],
+    "equivalence" : false,
+    "failures" : 0,
+    "fullModel" : false,
+    "minimize" : false,
+    "noEnvironment" : false
+  },
+  "status" : "SUCCESS"
+}

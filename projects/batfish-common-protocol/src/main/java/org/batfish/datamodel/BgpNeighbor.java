@@ -20,24 +20,24 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   public static final class BgpNeighborSummary extends ComparableStructure<String> {
 
-    private static final String DESCRIPTION_VAR = "description";
+    private static final String PROP_DESCRIPTION = "description";
 
-    private static final String GROUP_VAR = "group";
+    private static final String PROP_GROUP = "group";
 
-    private static final String LOCAL_AS_VAR = "localAs";
+    private static final String PROP_LOCAL_AS = "localAs";
 
-    private static final String LOCAL_IP_VAR = "localIp";
+    private static final String PROP_LOCAL_IP = "localIp";
 
-    private static final String REMOTE_AS_VAR = "remoteAs";
+    private static final String PROP_REMOTE_AS = "remoteAs";
 
-    private static final String REMOTE_IP_VAR = "remoteIp";
+    private static final String PROP_REMOTE_IP = "remoteIp";
 
-    private static final String REMOTE_PREFIX_VAR = "dynamicRemotePrefix";
+    private static final String PROP_REMOTE_PREFIX = "dynamicRemotePrefix";
 
     /** */
     private static final long serialVersionUID = 1L;
 
-    private static final String VRF_VAR = "vrf";
+    private static final String PROP_VRF = "vrf";
 
     private final String _description;
 
@@ -74,15 +74,15 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
     @JsonCreator
     public BgpNeighborSummary(
-        @JsonProperty(NAME_VAR) String name,
-        @JsonProperty(DESCRIPTION_VAR) String description,
-        @JsonProperty(GROUP_VAR) String group,
-        @JsonProperty(LOCAL_AS_VAR) int localAs,
-        @JsonProperty(LOCAL_IP_VAR) Ip localIp,
-        @JsonProperty(REMOTE_AS_VAR) int remoteAs,
-        @JsonProperty(REMOTE_IP_VAR) Ip remoteIp,
-        @JsonProperty(REMOTE_PREFIX_VAR) Prefix remotePrefix,
-        @JsonProperty(VRF_VAR) String vrf) {
+        @JsonProperty(PROP_NAME) String name,
+        @JsonProperty(PROP_DESCRIPTION) String description,
+        @JsonProperty(PROP_GROUP) String group,
+        @JsonProperty(PROP_LOCAL_AS) int localAs,
+        @JsonProperty(PROP_LOCAL_IP) Ip localIp,
+        @JsonProperty(PROP_REMOTE_AS) int remoteAs,
+        @JsonProperty(PROP_REMOTE_IP) Ip remoteIp,
+        @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
+        @JsonProperty(PROP_VRF) String vrf) {
       super(name);
       _description = description;
       _group = group;
@@ -94,22 +94,22 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       _vrf = vrf;
     }
 
-    @JsonProperty(DESCRIPTION_VAR)
+    @JsonProperty(PROP_DESCRIPTION)
     public String getDescription() {
       return _description;
     }
 
-    @JsonProperty(GROUP_VAR)
+    @JsonProperty(PROP_GROUP)
     public String getGroup() {
       return _group;
     }
 
-    @JsonProperty(LOCAL_AS_VAR)
+    @JsonProperty(PROP_LOCAL_AS)
     public int getLocalAs() {
       return _localAs;
     }
 
-    @JsonProperty(LOCAL_IP_VAR)
+    @JsonProperty(PROP_LOCAL_IP)
     public Ip getLocalIp() {
       return _localIp;
     }
@@ -123,70 +123,70 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       }
     }
 
-    @JsonProperty(REMOTE_AS_VAR)
+    @JsonProperty(PROP_REMOTE_AS)
     public int getRemoteAs() {
       return _remoteAs;
     }
 
-    @JsonProperty(REMOTE_IP_VAR)
+    @JsonProperty(PROP_REMOTE_IP)
     public Ip getRemoteIp() {
       return _remoteIp;
     }
 
-    @JsonProperty(REMOTE_PREFIX_VAR)
+    @JsonProperty(PROP_REMOTE_PREFIX)
     public Prefix getRemotePrefix() {
       return _remotePrefix;
     }
 
-    @JsonProperty(VRF_VAR)
+    @JsonProperty(PROP_VRF)
     public String getVrf() {
       return _vrf;
     }
   }
 
-  private static final String ADDITIONAL_PATHS_RECEIVE_VAR = "additionalPathsReceive";
+  private static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
 
-  private static final String ADDITIONAL_PATHS_SELECT_ALL_VAR = "additionalPathsSelectAll";
+  private static final String PROP_ADDITIONAL_PATHS_SELECT_ALL = "additionalPathsSelectAll";
 
-  private static final String ADDITIONAL_PATHS_SEND_VAR = "additionalPathsSend";
+  private static final String PROP_ADDITIONAL_PATHS_SEND = "additionalPathsSend";
 
-  private static final String ADDRESS_VAR = "address";
+  private static final String PROP_ADDRESS = "address";
 
-  private static final String ADVERTISE_EXTERNAL_VAR = "advertiseExternal";
+  private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
 
-  private static final String ADVERTISE_INACTIVE_VAR = "advertiseInactive";
+  private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
 
-  private static final String ALLOW_LOCAL_AS_IN_VAR = "allowLocalAsIn";
+  private static final String PROP_ALLOW_LOCAL_AS_IN = "allowLocalAsIn";
 
-  private static final String ALLOW_REMOTE_AS_OUT_VAR = "allowRemoteAsOut";
+  private static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
 
-  private static final String CLUSTER_ID_VAR = "clusterId";
+  private static final String PROP_CLUSTER_ID = "clusterId";
 
-  private static final String DEFAULT_METRIC_VAR = "defaultMetric";
+  private static final String PROP_DEFAULT_METRIC = "defaultMetric";
 
-  private static final String DESCRIPTION_VAR = "description";
+  private static final String PROP_DESCRIPTION = "description";
 
-  private static final String DYNAMIC_VAR = "dynamic";
+  private static final String PROP_DYNAMIC = "dynamic";
 
-  private static final String EBGP_MULTIHOP_VAR = "ebgpMultihop";
+  private static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
 
-  private static final String GENERATED_ROUTES_VAR = "generatedRoutes";
+  private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
-  private static final String GROUP_VAR = "group";
+  private static final String PROP_GROUP = "group";
 
-  private static final String LOCAL_AS_VAR = "localAs";
+  private static final String PROP_LOCAL_AS = "localAs";
 
-  private static final String LOCAL_IP_VAR = "localIp";
+  private static final String PROP_LOCAL_IP = "localIp";
 
-  private static final String NAME_VAR = "name";
+  private static final String PROP_NAME = "name";
 
-  private static final String OWNER_VAR = "owner";
+  private static final String PROP_OWNER = "owner";
 
-  private static final String REMOTE_AS_VAR = "remoteAs";
+  private static final String PROP_REMOTE_AS = "remoteAs";
 
-  private static final String REMOTE_PREFIX_VAR = "remotePrefix";
+  private static final String PROP_REMOTE_PREFIX = "remotePrefix";
 
-  private static final String SEND_COMMUNITY_VAR = "sendCommunity";
+  private static final String PROP_SEND_COMMUNITY = "sendCommunity";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -274,7 +274,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   @JsonCreator
-  public BgpNeighbor(@JsonProperty(NAME_VAR) Prefix prefix) {
+  public BgpNeighbor(@JsonProperty(PROP_NAME) Prefix prefix) {
     super(prefix);
     _generatedRoutes = new LinkedHashSet<>();
   }
@@ -352,23 +352,23 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return true;
   }
 
-  @JsonProperty(ADDITIONAL_PATHS_RECEIVE_VAR)
+  @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
   public boolean getAdditionalPathsReceive() {
     return _additionalPathsReceive;
   }
 
-  @JsonProperty(ADDITIONAL_PATHS_SELECT_ALL_VAR)
+  @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL)
   public boolean getAdditionalPathsSelectAll() {
     return _additionalPathsSelectAll;
   }
 
-  @JsonProperty(ADDITIONAL_PATHS_SEND_VAR)
+  @JsonProperty(PROP_ADDITIONAL_PATHS_SEND)
   public boolean getAdditionalPathsSend() {
     return _additionalPathsSend;
   }
 
   @Nullable
-  @JsonProperty(ADDRESS_VAR)
+  @JsonProperty(PROP_ADDRESS)
   @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
   public Ip getAddress() {
     if (_key != null && _key.getPrefixLength() == 32) {
@@ -378,7 +378,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     }
   }
 
-  @JsonProperty(ADVERTISE_EXTERNAL_VAR)
+  @JsonProperty(PROP_ADVERTISE_EXTERNAL)
   @JsonPropertyDescription(
       "Whether to advertise the best eBGP route for each network independently of whether it is "
           + "the best BGP route for that network")
@@ -386,7 +386,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _advertiseExternal;
   }
 
-  @JsonProperty(ADVERTISE_INACTIVE_VAR)
+  @JsonProperty(PROP_ADVERTISE_INACTIVE)
   @JsonPropertyDescription(
       "Whether to advertise the best BGP route for each network independently of whether it is "
           + "the best overall route for that network")
@@ -394,14 +394,14 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _advertiseInactive;
   }
 
-  @JsonProperty(ALLOW_LOCAL_AS_IN_VAR)
+  @JsonProperty(PROP_ALLOW_LOCAL_AS_IN)
   @JsonPropertyDescription(
       "Whether to allow reception of advertisements containing the local AS number in the AS-path")
   public boolean getAllowLocalAsIn() {
     return _allowLocalAsIn;
   }
 
-  @JsonProperty(ALLOW_REMOTE_AS_OUT_VAR)
+  @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
   @JsonPropertyDescription(
       "Whether to allow sending of advertisements containing the remote AS number in the AS-path")
   public boolean getAllowRemoteAsOut() {
@@ -413,25 +413,25 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _candidateRemoteBgpNeighbors;
   }
 
-  @JsonProperty(CLUSTER_ID_VAR)
+  @JsonProperty(PROP_CLUSTER_ID)
   @JsonPropertyDescription("Route-reflection cluster-id for this peer")
   public Long getClusterId() {
     return _clusterId;
   }
 
-  @JsonProperty(DEFAULT_METRIC_VAR)
+  @JsonProperty(PROP_DEFAULT_METRIC)
   @JsonPropertyDescription("Default MED for routes sent to this neighbor")
   public int getDefaultMetric() {
     return _defaultMetric;
   }
 
-  @JsonProperty(DESCRIPTION_VAR)
+  @JsonProperty(PROP_DESCRIPTION)
   @JsonPropertyDescription("Description of this peer")
   public String getDescription() {
     return _description;
   }
 
-  @JsonProperty(DYNAMIC_VAR)
+  @JsonProperty(PROP_DYNAMIC)
   @JsonPropertyDescription(
       "Whether this represents a connection to a specific peer (false) or a passive connection to "
           + "a network of peers (true)")
@@ -439,7 +439,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _key != null && _key.getPrefixLength() < 32;
   }
 
-  @JsonProperty(EBGP_MULTIHOP_VAR)
+  @JsonProperty(PROP_EBGP_MULTIHOP)
   @JsonPropertyDescription(
       "Whether to allow establishment of a multihop eBGP connection with this peer")
   public boolean getEbgpMultihop() {
@@ -451,14 +451,14 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _exportPolicy;
   }
 
-  @JsonProperty(GENERATED_ROUTES_VAR)
+  @JsonProperty(PROP_GENERATED_ROUTES)
   @JsonPropertyDescription(
       "Generated routes specific to this peer not otherwise imported into any of this node's RIBs")
   public Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
-  @JsonProperty(GROUP_VAR)
+  @JsonProperty(PROP_GROUP)
   @JsonPropertyDescription(
       "Name of a group in the original vendor-specific configuration to which this peer is "
           + "assigned")
@@ -471,13 +471,13 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _importPolicy;
   }
 
-  @JsonProperty(LOCAL_AS_VAR)
+  @JsonProperty(PROP_LOCAL_AS)
   @JsonPropertyDescription("The local autonomous sysem of this peering")
   public Integer getLocalAs() {
     return _localAs;
   }
 
-  @JsonProperty(LOCAL_IP_VAR)
+  @JsonProperty(PROP_LOCAL_IP)
   @JsonPropertyDescription("The local (source) IPV4 address of this peering")
   public Ip getLocalIp() {
     return _localIp;
@@ -488,7 +488,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _owner;
   }
 
-  @JsonProperty(REMOTE_PREFIX_VAR)
+  @JsonProperty(PROP_REMOTE_PREFIX)
   @JsonPropertyDescription(
       "The remote (destination) IPV4 address of this peering (when prefix-length is 32), or the "
           + "network of peers allowed to connect on this peering (otherwise)")
@@ -496,7 +496,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _key;
   }
 
-  @JsonProperty(REMOTE_AS_VAR)
+  @JsonProperty(PROP_REMOTE_AS)
   @JsonPropertyDescription("The remote autonomous sysem of this peering")
   public Integer getRemoteAs() {
     return _remoteAs;
@@ -512,7 +512,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _routeReflectorClient;
   }
 
-  @JsonProperty(SEND_COMMUNITY_VAR)
+  @JsonProperty(PROP_SEND_COMMUNITY)
   @JsonPropertyDescription(
       "Whether or not to propagate the community attribute(s) of advertisements to this peer")
   public boolean getSendCommunity() {
@@ -533,67 +533,67 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _owner = owner;
   }
 
-  @JsonProperty(ADDITIONAL_PATHS_RECEIVE_VAR)
+  @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
   public void setAdditionalPathsReceive(boolean additionalPathsReceive) {
     _additionalPathsReceive = additionalPathsReceive;
   }
 
-  @JsonProperty(ADDITIONAL_PATHS_SELECT_ALL_VAR)
+  @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL)
   public void setAdditionalPathsSelectAll(boolean additionalPathsSelectAll) {
     _additionalPathsSelectAll = additionalPathsSelectAll;
   }
 
-  @JsonProperty(ADDITIONAL_PATHS_SEND_VAR)
+  @JsonProperty(PROP_ADDITIONAL_PATHS_SEND)
   public void setAdditionalPathsSend(boolean additionalPathsSend) {
     _additionalPathsSend = additionalPathsSend;
   }
 
-  @JsonProperty(ADDRESS_VAR)
+  @JsonProperty(PROP_ADDRESS)
   public void setAddress(Ip address) {
     // Intentionally empty
   }
 
-  @JsonProperty(ADVERTISE_EXTERNAL_VAR)
+  @JsonProperty(PROP_ADVERTISE_EXTERNAL)
   public void setAdvertiseExternal(boolean advertiseExternal) {
     _advertiseExternal = advertiseExternal;
   }
 
-  @JsonProperty(ADVERTISE_INACTIVE_VAR)
+  @JsonProperty(PROP_ADVERTISE_INACTIVE)
   public void setAdvertiseInactive(boolean advertiseInactive) {
     _advertiseInactive = advertiseInactive;
   }
 
-  @JsonProperty(ALLOW_LOCAL_AS_IN_VAR)
+  @JsonProperty(PROP_ALLOW_LOCAL_AS_IN)
   public void setAllowLocalAsIn(boolean allowLocalAsIn) {
     _allowLocalAsIn = allowLocalAsIn;
   }
 
-  @JsonProperty(ALLOW_REMOTE_AS_OUT_VAR)
+  @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
   public void setAllowRemoteAsOut(boolean allowRemoteAsOut) {
     _allowRemoteAsOut = allowRemoteAsOut;
   }
 
-  @JsonProperty(CLUSTER_ID_VAR)
+  @JsonProperty(PROP_CLUSTER_ID)
   public void setClusterId(Long clusterId) {
     _clusterId = clusterId;
   }
 
-  @JsonProperty(DEFAULT_METRIC_VAR)
+  @JsonProperty(PROP_DEFAULT_METRIC)
   public void setDefaultMetric(int defaultMetric) {
     _defaultMetric = defaultMetric;
   }
 
-  @JsonProperty(DESCRIPTION_VAR)
+  @JsonProperty(PROP_DESCRIPTION)
   public void setDescription(String description) {
     _description = description;
   }
 
-  @JsonProperty(DYNAMIC_VAR)
+  @JsonProperty(PROP_DYNAMIC)
   public void setDynamic(boolean dynamic) {
     // Intentionally empty
   }
 
-  @JsonProperty(EBGP_MULTIHOP_VAR)
+  @JsonProperty(PROP_EBGP_MULTIHOP)
   public void setEbgpMultihop(boolean ebgpMultihop) {
     _ebgpMultihop = ebgpMultihop;
   }
@@ -602,12 +602,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _exportPolicy = originationPolicyName;
   }
 
-  @JsonProperty(GENERATED_ROUTES_VAR)
+  @JsonProperty(PROP_GENERATED_ROUTES)
   public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
   }
 
-  @JsonProperty(GROUP_VAR)
+  @JsonProperty(PROP_GROUP)
   public void setGroup(String name) {
     _group = name;
   }
@@ -616,22 +616,22 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _importPolicy = importPolicy;
   }
 
-  @JsonProperty(LOCAL_AS_VAR)
+  @JsonProperty(PROP_LOCAL_AS)
   public void setLocalAs(Integer localAs) {
     _localAs = localAs;
   }
 
-  @JsonProperty(LOCAL_IP_VAR)
+  @JsonProperty(PROP_LOCAL_IP)
   public void setLocalIp(Ip localIp) {
     _localIp = localIp;
   }
 
-  @JsonProperty(OWNER_VAR)
+  @JsonProperty(PROP_OWNER)
   public void setOwner(Configuration owner) {
     _owner = owner;
   }
 
-  @JsonProperty(REMOTE_AS_VAR)
+  @JsonProperty(PROP_REMOTE_AS)
   public void setRemoteAs(Integer remoteAs) {
     _remoteAs = remoteAs;
   }
@@ -640,7 +640,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _remoteBgpNeighbor = remoteBgpNeighbor;
   }
 
-  @JsonProperty(REMOTE_PREFIX_VAR)
+  @JsonProperty(PROP_REMOTE_PREFIX)
   public void setRemotePrefix(Prefix remotePrefix) {
     // Intentionally empty
   }
@@ -649,7 +649,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _routeReflectorClient = routeReflectorClient;
   }
 
-  @JsonProperty(SEND_COMMUNITY_VAR)
+  @JsonProperty(PROP_SEND_COMMUNITY)
   public void setSendCommunity(boolean sendCommunity) {
     _sendCommunity = sendCommunity;
   }

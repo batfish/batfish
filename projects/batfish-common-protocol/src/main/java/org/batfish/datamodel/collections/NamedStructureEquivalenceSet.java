@@ -10,7 +10,7 @@ import org.batfish.common.util.CommonUtil;
 public class NamedStructureEquivalenceSet<T>
     implements Comparable<NamedStructureEquivalenceSet<T>> {
 
-  private static final String REPRESENTATIVE_ELEMENT_VAR = "representativeElement";
+  private static final String PROP_REPRESENTATIVE_ELEMENT = "representativeElement";
 
   // a null _namedStructure represents an equivalence class for nodes that are missing
   // a structure of a given name
@@ -22,7 +22,7 @@ public class NamedStructureEquivalenceSet<T>
 
   @JsonCreator
   public NamedStructureEquivalenceSet(
-      @JsonProperty(REPRESENTATIVE_ELEMENT_VAR) String representativeElement) {
+      @JsonProperty(PROP_REPRESENTATIVE_ELEMENT) String representativeElement) {
     _representativeElement = representativeElement;
   }
 
@@ -62,7 +62,7 @@ public class NamedStructureEquivalenceSet<T>
     return _nodes;
   }
 
-  @JsonProperty(REPRESENTATIVE_ELEMENT_VAR)
+  @JsonProperty(PROP_REPRESENTATIVE_ELEMENT)
   public String getRepresentativeElement() {
     return _representativeElement;
   }
