@@ -26,6 +26,11 @@ public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof OspfNetwork)) {
+      return false;
+    }
     OspfNetwork rhs = (OspfNetwork) o;
     return _prefix.equals(rhs._prefix) && _area == rhs._area;
   }

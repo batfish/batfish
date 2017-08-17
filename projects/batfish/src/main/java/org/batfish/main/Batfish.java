@@ -1476,11 +1476,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         throw new BatfishException(
             "The following interface set contains less than two interfaces: " + interfaceSet);
       }
-      int numHostBits = 0;
-      for (int shiftedValue = numInterfaces - 1;
-          shiftedValue != 0;
-          shiftedValue >>= 1, numHostBits++) {}
-      int subnetBits = 32 - numHostBits;
+      int subnetBits = Integer.numberOfLeadingZeros(numInterfaces - 1);
       int offset = 0;
       for (NodeInterfacePair currentPair : interfaceSet) {
         Ip ip = new Ip(currentStartingIpAsLong + offset);
@@ -1502,7 +1498,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         config.getInterfaces().put(ifaceName, iface);
         offset++;
       }
-      currentStartingIpAsLong += (1 << numHostBits);
+      currentStartingIpAsLong += (1L << (Prefix.MAX_PREFIX_LENGTH - subnetBits));
     }
     for (Configuration config : configs.values()) {
       // use cisco arbitrarily
