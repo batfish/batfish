@@ -2328,10 +2328,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                     Vrf remoteVrf = remoteIface.getVrf();
                     String remoteVrfName = remoteVrf.getName();
                     OspfProcess remoteProc = remoteVrf.getOspfProcess();
-                    if (remoteProc.getOspfNeighbors() == null) {
-                      remoteProc.setOspfNeighbors(new TreeMap<>());
-                    }
                     if (remoteProc != null) {
+                      if (remoteProc.getOspfNeighbors() == null) {
+                        remoteProc.setOspfNeighbors(new TreeMap<>());
+                      }
                       OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
                       if (remoteArea != null
                           && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
