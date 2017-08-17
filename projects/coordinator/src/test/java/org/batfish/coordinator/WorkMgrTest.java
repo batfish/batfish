@@ -47,7 +47,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void initContainerWithcontainerPrefix() {
+  public void initContainerWithContainerPrefix() {
     String initResult = _manager.initContainer(null, "containerPrefix");
     assertThat(initResult, startsWith("containerPrefix"));
   }

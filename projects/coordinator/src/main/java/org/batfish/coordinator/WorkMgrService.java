@@ -623,8 +623,10 @@ public class WorkMgrService {
       checkContainerAccessibility(apiKey, containerName);
 
       Container container = Main.getWorkMgr().getContainer(containerDir);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String containerString = mapper.writeValueAsString(container);
 
-      return Response.ok(container).build();
+      return Response.ok(containerString).build();
     } catch (AccessControlException e) {
       return Response.status(Status.FORBIDDEN)
           .entity(e.getMessage())
