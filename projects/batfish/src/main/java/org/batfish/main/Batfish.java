@@ -4045,6 +4045,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
+    checkTopology(configurations, topology);
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
         "inferred node roles");
@@ -4425,6 +4426,34 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.output(text);
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
+    }
+  }
+
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+    for (Edge edge : topology.getEdges()) {
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
+      }
+      //nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt1(), edge.getNode1()));
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt2(), edge.getNode2()));
+      }
     }
   }
 
