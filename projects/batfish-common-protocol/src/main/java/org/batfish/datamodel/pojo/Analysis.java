@@ -7,24 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.questions.Question;
 
 /**
  * The {@link Analysis Analysis} is an Object representation of the analysis for BatFish service.
  *
- * <p>Each {@link Analysis Analysis} contains a name and a mapping from question name to {@link
- * Question question} for questions in the Analysis.
+ * <p>Each {@link Analysis Analysis} contains a name and a mapping from question name to the Json
+ * string representation of the question for questions in the Analysis.
  */
 public class Analysis {
   private static final String PROP_NAME = "name";
   private static final String PROP_QUESTIONS = "questions";
 
-  private String _name;
-  private Map<String, String> _questions;
-
-  public Analysis(String name) {
-    this(name, new HashMap<>());
-  }
+  private final String _name;
+  private final Map<String, String> _questions;
 
   @JsonCreator
   public Analysis(
@@ -44,20 +39,10 @@ public class Analysis {
     return _questions;
   }
 
-  @JsonProperty(PROP_NAME)
-  public void setName(String name) {
-    _name = name;
-  }
-
-  @JsonProperty(PROP_QUESTIONS)
-  public void setQuestions(Map<String, String> questions) {
-    _questions = questions;
-  }
-
   public void addQuestion(String questionName, String questionContent) {
     if (this._questions.containsKey(questionName)) {
       throw new BatfishException(
-          "Question '" + questionName + "' already exists for analysis '" + _name + "'");
+          String.format("Question %s already exists for analysis %s", questionName, _name));
     }
     this._questions.put(questionName, questionContent);
   }
@@ -65,7 +50,7 @@ public class Analysis {
   public void deleteQuestion(String questionName) {
     if (!this._questions.containsKey(questionName)) {
       throw new BatfishException(
-          "Question '" + questionName + "' does not exist for analysis '" + _name + "'");
+          String.format("Question %s does not exist for analysis %s", questionName, _name));
     }
     this._questions.remove(questionName);
   }
