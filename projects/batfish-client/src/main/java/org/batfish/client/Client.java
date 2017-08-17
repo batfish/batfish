@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jline.console.ConsoleReader;
+import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -468,6 +469,7 @@ public class Client extends AbstractClient implements IClient {
           _reader.setHistory(history);
           _reader.setPrompt("batfish> ");
           _reader.setExpandEvents(false);
+          _reader.setHandleUserInterrupt(true);
 
           List<Completer> completors = new LinkedList<>();
           completors.add(new CommandCompleter());
@@ -2283,9 +2285,16 @@ public class Client extends AbstractClient implements IClient {
 
   private void runInteractive() {
     try {
-      String rawLine;
-      while (!_exit && (rawLine = _reader.readLine()) != null) {
-        processCommand(rawLine);
+      while (!_exit) {
+        try {
+          String rawLine = _reader.readLine();
+          if (rawLine == null) {
+            break;
+          }
+          processCommand(rawLine);
+        } catch (UserInterruptException e) {
+          continue;
+        }
       }
     } catch (Throwable t) {
       t.printStackTrace();
