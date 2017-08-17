@@ -40,6 +40,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
+  public static final String SVC_KEY_CONTAINERS = "containers";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
   public static final String SVC_KEY_CONTAINER_PREFIX = "containerprefix";
@@ -59,6 +60,8 @@ public class CoordConsts {
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
+  public static final String SVC_KEY_TESTRIG = "testrig";
+  public static final String SVC_KEY_TESTRIGS = "testrigs";
   public static final String SVC_KEY_TESTRIG_INFO = "testriginfo";
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
