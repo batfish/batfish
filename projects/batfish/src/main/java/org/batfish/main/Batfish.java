@@ -1498,7 +1498,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         config.getInterfaces().put(ifaceName, iface);
         offset++;
       }
-      currentStartingIpAsLong += (1 << (32 - subnetBits));
+      currentStartingIpAsLong += (1L << (Prefix.MAX_PREFIX_LENGTH - subnetBits));
     }
     for (Configuration config : configs.values()) {
       // use cisco arbitrarily
