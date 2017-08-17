@@ -5,13 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.testing.EqualsTester;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.questions.Question;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,34 +22,6 @@ public class AnalysisTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private class TestQuestion extends Question {
-    String _name;
-
-    TestQuestion(String name) {
-      this._name = name;
-    }
-
-    @Override
-    public boolean getDataPlane() {
-      return false;
-    }
-
-    @Override
-    public String getName() {
-      return _name;
-    }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(TestQuestion.class).add("name", _name).toString();
-    }
-  }
-
   @Test
   public void testConstructorWithName() {
     Analysis a = new Analysis("analysis");
@@ -60,16 +30,15 @@ public class AnalysisTest {
   }
 
   @Test
-  public void testGetterSetter() {
-    Map<String, Question> questions =
-        Collections.singletonMap("question", new TestQuestion("question"));
+  public void testBasicFunctions() {
+    Map<String, String> questions = Collections.singletonMap("question", "questionContent");
     Analysis a = new Analysis("analysis", questions);
     assertThat(a.getName(), equalTo("analysis"));
     assertThat(a.getQuestions(), equalTo(questions));
     a.setName("other-analysis");
     assertThat(a.getName(), equalTo("other-analysis"));
-    Map<String, Question> otherQuestions =
-        Collections.singletonMap("other-question", new TestQuestion("other-question"));
+    Map<String, String> otherQuestions =
+        Collections.singletonMap("other-question", "other question content");
     a.setQuestions(otherQuestions);
     assertThat(a.getQuestions(), equalTo(otherQuestions));
   }
@@ -77,20 +46,18 @@ public class AnalysisTest {
   @Test
   public void testAddQuestion() {
     Analysis a = new Analysis("analysis");
-    Question question = new TestQuestion("question");
-    a.addQuestion("question", question);
-    assertThat(a.getQuestions().get("question"), equalTo(question));
+    a.addQuestion("question", "questionContent");
+    assertThat(a.getQuestions().get("question"), equalTo("questionContent"));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Question 'question' already exists for analysis 'analysis'"));
-    a.addQuestion("question", new TestQuestion("other-question"));
+    a.addQuestion("question", "questionContent");
   }
 
   @Test
   public void testDeleteQuestion() {
-    Analysis a = new Analysis("analysis");
-    Question question = new TestQuestion("question");
-    a.addQuestion("question", question);
-    assertThat(a.getQuestions().get("question"), equalTo(question));
+    Map<String, String> questions = new HashMap<>();
+    questions.put("question", "questionContent");
+    Analysis a = new Analysis("analysis", questions);
     a.deleteQuestion("question");
     assertThat(a.getQuestions().size(), is(0));
     _thrown.expect(BatfishException.class);
@@ -102,10 +69,8 @@ public class AnalysisTest {
   public void testToString() {
     Analysis a = new Analysis("foo", new HashMap<>());
     assertThat(a.toString(), equalTo("Analysis{name=foo, questions={}}"));
-    a.addQuestion("question", new TestQuestion("question"));
-    assertThat(
-        a.toString(),
-        equalTo("Analysis{name=foo, questions={question=TestQuestion{name=question}}}"));
+    a.addQuestion("question", "questionContent");
+    assertThat(a.toString(), equalTo("Analysis{name=foo, questions={question=questionContent}}"));
   }
 
   @Test
@@ -113,7 +78,7 @@ public class AnalysisTest {
     Analysis a = new Analysis("foo", new HashMap<>());
     Analysis aCopy = new Analysis("foo", new HashMap<>());
     Analysis aWithQuestion =
-        new Analysis("foo", Collections.singletonMap("question", new TestQuestion("question")));
+        new Analysis("foo", Collections.singletonMap("question", "questionContent"));
     Analysis aOtherName = new Analysis("bar", new HashMap<>());
 
     new EqualsTester()
