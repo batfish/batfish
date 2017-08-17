@@ -189,7 +189,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 /** This class encapsulates the main control logic for Batfish. */
-public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
+public class Batfish extends PluginConsumer implements IBatfish {
 
   private static final String BASE_TESTRIG_TAG = "BASE";
 
@@ -797,9 +797,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
           "questions dir does not exist: \"" + questionsDir.getFileName() + "\"");
     }
   }
-
-  @Override
-  public void close() {}
 
   private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
     Answer answer = new Answer();
