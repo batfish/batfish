@@ -10,7 +10,7 @@ import org.batfish.common.util.ComparableStructure;
 @JsonSchemaDescription("An access-list used to filter IPV6 packets")
 public class Ip6AccessList extends ComparableStructure<String> {
 
-  private static final String LINES_VAR = "lines";
+  private static final String PROP_LINES = "lines";
 
   private static final long serialVersionUID = 1L;
 
@@ -37,7 +37,7 @@ public class Ip6AccessList extends ComparableStructure<String> {
   private List<Ip6AccessListLine> _lines;
 
   @JsonCreator
-  public Ip6AccessList(@JsonProperty(NAME_VAR) String name) {
+  public Ip6AccessList(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 
@@ -65,7 +65,7 @@ public class Ip6AccessList extends ComparableStructure<String> {
     return new FilterResult(null, LineAction.REJECT);
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   @JsonPropertyDescription("The lines against which to check an IPV6 packet")
   public List<Ip6AccessListLine> getLines() {
     return _lines;
@@ -82,7 +82,7 @@ public class Ip6AccessList extends ComparableStructure<String> {
     return true;
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   public void setLines(List<Ip6AccessListLine> lines) {
     _lines = lines;
   }

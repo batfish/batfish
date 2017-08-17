@@ -134,7 +134,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
    */
   public static class UnusedStructuresQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -152,7 +152,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       return "unusedstructures";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -162,7 +162,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }

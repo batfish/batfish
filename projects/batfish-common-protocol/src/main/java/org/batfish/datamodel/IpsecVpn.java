@@ -12,11 +12,11 @@ import org.batfish.common.util.ComparableStructure;
 
 public final class IpsecVpn extends ComparableStructure<String> {
 
-  private static final String BIND_INTERFACE_VAR = "bindInterface";
+  private static final String PROP_BIND_INTERFACE = "bindInterface";
 
-  private static final String IKE_GATEWAY_VAR = "ikeGateway";
+  private static final String PROP_IKE_GATEWAY = "ikeGateway";
 
-  private static final String IPSEC_POLICY_VAR = "ipsecPolicy";
+  private static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -40,7 +40,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
   private transient IpsecVpn _remoteIpsecVpn;
 
   @JsonCreator
-  public IpsecVpn(@JsonProperty(NAME_VAR) String name) {
+  public IpsecVpn(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 
@@ -104,7 +104,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _bindInterface;
   }
 
-  @JsonProperty(BIND_INTERFACE_VAR)
+  @JsonProperty(PROP_BIND_INTERFACE)
   @JsonPropertyDescription("Tunnel interface on which the VPN will be bound")
   public String getBindInterfaceName() {
     if (_bindInterface != null) {
@@ -124,7 +124,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _ikeGateway;
   }
 
-  @JsonProperty(IKE_GATEWAY_VAR)
+  @JsonProperty(PROP_IKE_GATEWAY)
   @JsonPropertyDescription("Remote VPN gateway configuration")
   public String getIkeGatewayName() {
     if (_ikeGateway != null) {
@@ -139,7 +139,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _ipsecPolicy;
   }
 
-  @JsonProperty(IPSEC_POLICY_VAR)
+  @JsonProperty(PROP_IPSEC_POLICY)
   @JsonPropertyDescription("IPSEC policy for this VPN")
   public String getIpsecPolicyName() {
     if (_ipsecPolicy != null) {
@@ -181,7 +181,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     _bindInterface = bindInterface;
   }
 
-  @JsonProperty(BIND_INTERFACE_VAR)
+  @JsonProperty(PROP_BIND_INTERFACE)
   public void setBindInterfaceName(String bindInterfaceName) {
     _bindInterfaceName = bindInterfaceName;
   }
@@ -191,7 +191,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     _ikeGateway = ikeGateway;
   }
 
-  @JsonProperty(IKE_GATEWAY_VAR)
+  @JsonProperty(PROP_IKE_GATEWAY)
   public void setIkeGatewayName(String ikeGatewayName) {
     _ikeGatewayName = ikeGatewayName;
   }
@@ -201,7 +201,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     _ipsecPolicy = ipsecPolicy;
   }
 
-  @JsonProperty(IPSEC_POLICY_VAR)
+  @JsonProperty(PROP_IPSEC_POLICY)
   public void setIpsecPolicyName(String ipsecPolicyName) {
     _ipsecPolicyName = ipsecPolicyName;
   }

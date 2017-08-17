@@ -14,9 +14,9 @@ import org.batfish.common.util.CommonUtil;
 @JsonSchemaDescription("A line in a CommunityList")
 public class CommunityListLine implements Serializable {
 
-  private static final String ACTION_VAR = "action";
+  private static final String PROP_ACTION = "action";
 
-  private static final String REGEX_VAR = "regex";
+  private static final String PROP_REGEX = "regex";
 
   private static final long serialVersionUID = 1L;
 
@@ -26,7 +26,7 @@ public class CommunityListLine implements Serializable {
 
   @JsonCreator
   public CommunityListLine(
-      @JsonProperty(ACTION_VAR) LineAction action, @JsonProperty(REGEX_VAR) String regex) {
+      @JsonProperty(PROP_ACTION) LineAction action, @JsonProperty(PROP_REGEX) String regex) {
     _action = action;
     _regex = regex;
   }
@@ -46,7 +46,7 @@ public class CommunityListLine implements Serializable {
     return true;
   }
 
-  @JsonProperty(ACTION_VAR)
+  @JsonProperty(PROP_ACTION)
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches a route.")
   public LineAction getAction() {
@@ -79,7 +79,7 @@ public class CommunityListLine implements Serializable {
     return matchingCommunitites;
   }
 
-  @JsonProperty(REGEX_VAR)
+  @JsonProperty(PROP_REGEX)
   @JsonPropertyDescription("The regex against which a route's communities will be compared")
   public String getRegex() {
     return _regex;

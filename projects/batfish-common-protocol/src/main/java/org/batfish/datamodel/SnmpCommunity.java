@@ -21,7 +21,7 @@ public class SnmpCommunity extends ComparableStructure<String> {
 
   private boolean _rw;
 
-  public SnmpCommunity(@JsonProperty(NAME_VAR) String name) {
+  public SnmpCommunity(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 

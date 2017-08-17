@@ -20,10 +20,10 @@ public abstract class OspfRoute extends AbstractRoute {
 
   @JsonCreator
   public OspfRoute(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int admin,
-      @JsonProperty(METRIC_VAR) int metric) {
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_METRIC) int metric) {
     super(network);
     _admin = admin;
     _metric = metric;
@@ -31,14 +31,14 @@ public abstract class OspfRoute extends AbstractRoute {
   }
 
   @JsonIgnore(false)
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   @Override
   public final int getAdministrativeCost() {
     return _admin;
   }
 
   @JsonIgnore(false)
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   @Override
   public final Integer getMetric() {
     return _metric;
@@ -46,7 +46,7 @@ public abstract class OspfRoute extends AbstractRoute {
 
   @Nonnull
   @JsonIgnore(false)
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   @Override
   public final Ip getNextHopIp() {
     return _nextHopIp;

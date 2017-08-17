@@ -23,6 +23,9 @@ allinone -cmdfile tests/basic/commands || exit 1
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit 1
 
+echo -e "\n  ..... Running java-smt client tests"
+allinone -cmdfile tests/java-smt/commands || exit 1
+
 #Test running separately
 coordinator &
 batfish -servicemode -register -coordinatorhost localhost -loglevel output &
@@ -30,9 +33,9 @@ batfish -servicemode -register -coordinatorhost localhost -loglevel output &
 echo -e "\n  ..... Running java demo tests"
 if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then
    echo "DEMO FAILED!" 1>&2
-   exit 1
+else
+   rm demos/example/commands.ref.testout
 fi
-rm demos/example/commands.ref.testout
 
 echo -e "\n .... Failed tests: "
 $GNU_FIND -name *.testout

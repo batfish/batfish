@@ -9,13 +9,13 @@ import org.batfish.common.BatfishException;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class AbstractRoute6 implements Serializable {
 
-  protected static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+  protected static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
 
-  private static final String METRIC_VAR = "metric";
+  private static final String PROP_METRIC = "metric";
 
-  protected static final String NETWORK_VAR = "network";
+  protected static final String PROP_NETWORK = "network";
 
-  protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
+  protected static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
   public static final int NO_TAG = -1;
 
@@ -38,20 +38,20 @@ public abstract class AbstractRoute6 implements Serializable {
   @Override
   public abstract boolean equals(Object o);
 
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   public abstract int getAdministrativeCost();
 
-  @JsonProperty(METRIC_VAR)
+  @JsonProperty(PROP_METRIC)
   public abstract Integer getMetric();
 
-  @JsonProperty(NETWORK_VAR)
+  @JsonProperty(PROP_NETWORK)
   public final Prefix6 getNetwork() {
     return _network;
   }
 
   public abstract String getNextHopInterface();
 
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   public Ip6 getNextHopIp() {
     return _nextHopIp;
   }

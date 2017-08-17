@@ -28,12 +28,14 @@ public final class Route6FilterLineUpTo extends Route6FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route6FilterLineUpTo)) {
       return false;
-    } else {
-      Route6FilterLineUpTo rhs = (Route6FilterLineUpTo) o;
-      return _prefix6.equals(rhs._prefix6) && _maxPrefixLength == rhs._maxPrefixLength;
     }
+
+    Route6FilterLineUpTo rhs = (Route6FilterLineUpTo) o;
+    return _prefix6.equals(rhs._prefix6) && _maxPrefixLength == rhs._maxPrefixLength;
   }
 
   public int getMaxPrefixLength() {

@@ -10,27 +10,25 @@ import javax.annotation.Nullable;
 
 public class StaticRoute extends AbstractRoute {
 
-  private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+  private static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
 
   private static final long serialVersionUID = 1L;
 
   private final int _administrativeCost;
 
-  @Nonnull
-  private final String _nextHopInterface;
+  @Nonnull private final String _nextHopInterface;
 
-  @Nonnull
-  private final Ip _nextHopIp;
+  @Nonnull private final Ip _nextHopIp;
 
   private final int _tag;
 
   @JsonCreator
   public StaticRoute(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-      @Nullable @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
-      @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
-      @JsonProperty(TAG_VAR) int tag) {
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_TAG) int tag) {
     super(network);
     _administrativeCost = administrativeCost;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
@@ -40,6 +38,11 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof StaticRoute)) {
+      return false;
+    }
     StaticRoute rhs = (StaticRoute) o;
     boolean res = _network.equals(rhs._network);
     res = res && _administrativeCost == rhs._administrativeCost;
@@ -50,7 +53,7 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   @JsonIgnore(false)
-  @JsonProperty(ADMINISTRATIVE_COST_VAR)
+  @JsonProperty(PROP_ADMINISTRATIVE_COST)
   public int getAdministrativeCost() {
     return _administrativeCost;
   }
@@ -64,14 +67,14 @@ public class StaticRoute extends AbstractRoute {
   @Nonnull
   @Override
   @JsonIgnore(false)
-  @JsonProperty(NEXT_HOP_INTERFACE_VAR)
+  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   public String getNextHopInterface() {
     return _nextHopInterface;
   }
 
   @Nonnull
   @JsonIgnore(false)
-  @JsonProperty(NEXT_HOP_IP_VAR)
+  @JsonProperty(PROP_NEXT_HOP_IP)
   @Override
   public Ip getNextHopIp() {
     return _nextHopIp;
@@ -84,7 +87,7 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   @JsonIgnore(false)
-  @JsonProperty(TAG_VAR)
+  @JsonProperty(PROP_TAG)
   public int getTag() {
     return _tag;
   }

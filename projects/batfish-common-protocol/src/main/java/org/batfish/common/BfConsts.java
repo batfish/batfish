@@ -30,8 +30,8 @@ public class BfConsts {
   /*
    * JSON key names
    */
-  public static final String ALLOWED_VALUES_VAR = "allowedValues";
-  public static final String ANSWER_ELEMENTS_VAR = "answerElements";
+  public static final String PROP_ALLOWED_VALUES = "allowedValues";
+  public static final String PROP_ANSWER_ELEMENTS = "answerElements";
   public static final String ARG_ANALYSIS_NAME = "analysisname";
   public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
   public static final String ARG_BLOCK_NAMES = "blocknames";
@@ -81,22 +81,22 @@ public class BfConsts {
   public static final String COMMAND_QUERY = "query";
   public static final String COMMAND_REPORT = "report";
 
-  public static final String DESCRIPTION_VAR = "description";
-  public static final String DIFFERENTIAL_VAR = "differential";
-  public static final String INNER_QUESTION_VAR = "innerQuestion";
-  public static final String INSTANCE_NAME_VAR = "instanceName";
-  public static final String INSTANCE_VAR = "instance";
+  public static final String PROP_DESCRIPTION = "description";
+  public static final String PROP_DIFFERENTIAL = "differential";
+  public static final String PROP_INNER_QUESTION = "innerQuestion";
+  public static final String PROP_INSTANCE_NAME = "instanceName";
+  public static final String PROP_INSTANCE = "instance";
   public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
-  public static final String LONG_DESCRIPTION_VAR = "longDescription";
-  public static final String MIN_ELEMENTS_VAR = "minElements";
-  public static final String MIN_LENGTH_VAR = "minLength";
-  public static final String OPTIONAL_VAR = "optional";
+  public static final String PROP_LONG_DESCRIPTION = "longDescription";
+  public static final String PROP_MIN_ELEMENTS = "minElements";
+  public static final String PROP_MIN_LENGTH = "minLength";
+  public static final String PROP_OPTIONAL = "optional";
   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
   public static final String PROP_CLIENT_PROPERTIES_PATH = "batfishClientPropertiesPath";
   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
   public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
-  public static final String QUESTION_VAR = "question";
+  public static final String PROP_QUESTION = "question";
   public static final String RELPATH_ANALYSES_DIR = "analyses";
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
   public static final String RELPATH_ANSWER_HTML = "answer.html";
@@ -128,6 +128,7 @@ public class BfConsts {
   public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
   public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
+  public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
   public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
@@ -148,7 +149,7 @@ public class BfConsts {
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 
   public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
-  public static final String STATUS_VAR = "status";
+  public static final String PROP_STATUS = "status";
   public static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   public static final String SUFFIX_LOG_FILE = ".log";
   public static final String SVC_BASE_RSC = "/batfishservice";
@@ -160,8 +161,8 @@ public class BfConsts {
   public static final String SVC_SUCCESS_KEY = "success";
   public static final String SVC_TASK_KEY = "task";
   public static final String SVC_TASKID_KEY = "taskid";
-  public static final String TAGS_VAR = "tags";
-  public static final String TYPE_VAR = "type";
-  public static final String VALUE_VAR = "value";
-  public static final String VARIABLES_VAR = "variables";
+  public static final String PROP_TAGS = "tags";
+  public static final String PROP_TYPE = "type";
+  public static final String PROP_VALUE = "value";
+  public static final String PROP_VARIABLES = "variables";
 }

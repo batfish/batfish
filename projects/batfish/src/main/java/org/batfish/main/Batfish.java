@@ -135,6 +135,8 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -163,6 +165,8 @@ import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.role.InferRoles;
+import org.batfish.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -214,6 +218,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     settings.setNodeRolesPath(
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_NODE_ROLES_PATH)));
+    settings.setInferredNodeRolesPath(
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
     settings.setTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
     if (envName != null) {
       envSettings.setName(envName);
@@ -478,6 +485,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             initAnalysisQuestionPath(analysisName, questionName);
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
+            _settings.setQuestionPath(null);
           });
     }
     answer.addAnswerElement(ae);
@@ -519,7 +527,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     AnswerElement answerElement = null;
     BatfishException exception = null;
     try {
-      if (question.getDifferential() == true) {
+      if (question.getDifferential()) {
         answerElement = Answerer.create(question, this).answerDiff();
       } else {
         answerElement = Answerer.create(question, this).answer();
@@ -1468,11 +1476,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         throw new BatfishException(
             "The following interface set contains less than two interfaces: " + interfaceSet);
       }
-      int numHostBits = 0;
-      for (int shiftedValue = numInterfaces - 1;
-          shiftedValue != 0;
-          shiftedValue >>= 1, numHostBits++) {}
-      int subnetBits = 32 - numHostBits;
+      int subnetBits = Integer.numberOfLeadingZeros(numInterfaces - 1);
       int offset = 0;
       for (NodeInterfacePair currentPair : interfaceSet) {
         Ip ip = new Ip(currentStartingIpAsLong + offset);
@@ -1494,7 +1498,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         config.getInterfaces().put(ifaceName, iface);
         offset++;
       }
-      currentStartingIpAsLong += (1 << numHostBits);
+      currentStartingIpAsLong += (1L << (Prefix.MAX_PREFIX_LENGTH - subnetBits));
     }
     for (Configuration config : configs.values()) {
       // use cisco arbitrarily
@@ -1924,6 +1928,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       int count = histogram.count(feature);
       _logger.output(feature + ": " + count + "\n");
     }
+  }
+
+  private NodeRoleSpecifier inferNodeRoles(Map<String, Configuration> configurations) {
+    InferRoles ir =
+        new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
+    return ir.call();
   }
 
   private void initAnalysisQuestionPath(String analysisName, String questionName) {
@@ -3170,8 +3180,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
   private String preprocessQuestion(String rawQuestionText) {
     try {
       JSONObject jobj = new JSONObject(rawQuestionText);
-      if (jobj.has(BfConsts.INSTANCE_VAR) && !jobj.isNull(BfConsts.INSTANCE_VAR)) {
-        String instanceDataStr = jobj.getString(BfConsts.INSTANCE_VAR);
+      if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
+        String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         InstanceData instanceData =
             mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
@@ -3390,22 +3400,30 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     }
   }
 
+  /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
+     if one exists; otherwise use the results of our node-role inference.
+   */
   private void processNodeRoles(Map<String, Configuration> configurations) {
     TestrigSettings settings = _settings.getActiveTestrigSettings();
     Path nodeRolesPath = settings.getNodeRolesPath();
-    if (Files.exists(nodeRolesPath)) {
-      SortedMap<String, SortedSet<String>> nodeRoles =
-          parseNodeRoles(nodeRolesPath, configurations.keySet());
-      for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
-        String hostname = nodeRolesEntry.getKey();
-        Configuration config = configurations.get(hostname);
-        if (config == null) {
-          throw new BatfishException(
-              "role set assigned to non-existent node: \"" + hostname + "\"");
-        }
-        SortedSet<String> roles = nodeRolesEntry.getValue();
-        config.setRoles(roles);
+    if (!Files.exists(nodeRolesPath)) {
+      nodeRolesPath = settings.getInferredNodeRolesPath();
+      if (!Files.exists(nodeRolesPath)) {
+        return;
       }
+    }
+
+    SortedMap<String, SortedSet<String>> nodeRoles =
+        parseNodeRoles(nodeRolesPath, configurations.keySet());
+    for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
+      String hostname = nodeRolesEntry.getKey();
+      Configuration config = configurations.get(hostname);
+      if (config == null) {
+        throw new BatfishException(
+            "role set assigned to non-existent node: \"" + hostname + "\"");
+      }
+      SortedSet<String> roles = nodeRolesEntry.getValue();
+      config.setRoles(roles);
     }
   }
 
@@ -4023,6 +4041,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
+    checkTopology(configurations, topology);
+    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
+    serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
+        "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
     return answer;
@@ -4402,4 +4424,81 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
   }
+
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+    for (Edge edge : topology.getEdges()) {
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
+      }
+      //nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt1(), edge.getNode1()));
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt2(), edge.getNode2()));
+      }
+    }
+  }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
 }

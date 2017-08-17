@@ -15,8 +15,8 @@ public class ConnectedRoute extends AbstractRoute {
 
   @JsonCreator
   public ConnectedRoute(
-      @JsonProperty(NETWORK_VAR) Prefix network,
-      @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface) {
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
     super(network);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
   }
@@ -40,7 +40,7 @@ public class ConnectedRoute extends AbstractRoute {
 
   @Nonnull
   @JsonIgnore(false)
-  @JsonProperty(NEXT_HOP_INTERFACE_VAR)
+  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   @Override
   public String getNextHopInterface() {
     return _nextHopInterface;

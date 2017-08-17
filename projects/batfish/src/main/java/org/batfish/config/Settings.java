@@ -228,6 +228,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     private EnvironmentSettings _environmentSettings;
 
+    private Path _inferredNodeRolesPath;
+
     private String _name;
 
     private Path _nodeRolesPath;
@@ -254,12 +256,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     public boolean equals(Object obj) {
       if (this == obj) {
         return true;
-      }
-      TestrigSettings other = (TestrigSettings) obj;
-      if (!_name.equals(other._name)) {
+      } else if (!(obj instanceof TestrigSettings)) {
         return false;
       }
-      return _environmentSettings._name.equals(other._environmentSettings._name);
+      TestrigSettings other = (TestrigSettings) obj;
+      return _name.equals(other._name)
+          && _environmentSettings._name.equals(other._environmentSettings._name);
     }
 
     public Path getBasePath() {
@@ -272,6 +274,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public EnvironmentSettings getEnvironmentSettings() {
       return _environmentSettings;
+    }
+
+    public Path getInferredNodeRolesPath() {
+      return _inferredNodeRolesPath;
     }
 
     public String getName() {
@@ -331,6 +337,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
       _environmentSettings = environmentSettings;
+    }
+
+    public void setInferredNodeRolesPath(Path inferredNodeRolesPath) {
+      _inferredNodeRolesPath = inferredNodeRolesPath;
     }
 
     public void setName(String name) {

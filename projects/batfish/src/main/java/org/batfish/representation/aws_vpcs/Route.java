@@ -62,8 +62,8 @@ public class Route implements Serializable {
   public StaticRoute toStaticRoute(
       AwsVpcConfiguration awsVpcConfiguration,
       Ip vpcAddress,
-      Ip igwAddress,
-      Ip vgwAddress,
+      @Nullable Ip igwAddress,
+      @Nullable Ip vgwAddress,
       Subnet subnet,
       Configuration subnetCfgNode) {
     //setting the common properties

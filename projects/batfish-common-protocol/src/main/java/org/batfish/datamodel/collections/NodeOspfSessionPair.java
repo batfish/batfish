@@ -8,24 +8,24 @@ import org.batfish.datamodel.OspfNeighbor;
 
 public class NodeOspfSessionPair extends Pair<Configuration, OspfNeighbor> {
 
-  private static final String NODE_VAR = "node";
+  private static final String PROP_NODE = "node";
 
   private static final long serialVersionUID = 1L;
 
-  private static final String SESSION_VAR = "session";
+  private static final String PROP_SESSION = "session";
 
   @JsonCreator
   public NodeOspfSessionPair(
-      @JsonProperty(NODE_VAR) Configuration t1, @JsonProperty(SESSION_VAR) OspfNeighbor t2) {
+      @JsonProperty(PROP_NODE) Configuration t1, @JsonProperty(PROP_SESSION) OspfNeighbor t2) {
     super(t1, t2);
   }
 
-  @JsonProperty(NODE_VAR)
+  @JsonProperty(PROP_NODE)
   public Configuration getHost() {
     return _first;
   }
 
-  @JsonProperty(SESSION_VAR)
+  @JsonProperty(PROP_SESSION)
   public OspfNeighbor getSession() {
     return _second;
   }

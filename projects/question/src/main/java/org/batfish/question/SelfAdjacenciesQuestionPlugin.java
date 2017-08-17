@@ -31,24 +31,24 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
     public static class InterfaceIpPair extends Pair<String, Ip> {
 
-      private static final String INTERFACE_NAME_VAR = "interfaceName";
+      private static final String PROP_INTERFACE_NAME = "interfaceName";
 
-      private static final String IP_VAR = "ip";
+      private static final String PROP_IP = "ip";
       /** */
       private static final long serialVersionUID = 1L;
 
       @JsonCreator
       public InterfaceIpPair(
-          @JsonProperty(INTERFACE_NAME_VAR) String t1, @JsonProperty(IP_VAR) Ip t2) {
+          @JsonProperty(PROP_INTERFACE_NAME) String t1, @JsonProperty(PROP_IP) Ip t2) {
         super(t1, t2);
       }
 
-      @JsonProperty(INTERFACE_NAME_VAR)
+      @JsonProperty(PROP_INTERFACE_NAME)
       public String getInterfaceName() {
         return _first;
       }
 
-      @JsonProperty(IP_VAR)
+      @JsonProperty(PROP_IP)
       public Ip getIp() {
         return _second;
       }
@@ -151,7 +151,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
    */
   public static class SelfAdjacenciesQuestion extends Question {
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private String _nodeRegex;
 
@@ -169,7 +169,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       return "selfadjacencies";
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
@@ -179,7 +179,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
     }

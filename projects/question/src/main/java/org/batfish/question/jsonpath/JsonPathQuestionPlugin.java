@@ -38,7 +38,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
   public static class JsonPathAnswerElement implements AnswerElement {
 
-    private static final String RESULTS_VAR = "results";
+    private static final String PROP_RESULTS = "results";
 
     static String prettyPrint(SortedMap<Integer, JsonPathResult> results) {
       StringBuilder sb = new StringBuilder("Results for nodespath\n");
@@ -68,7 +68,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       _results = new TreeMap<>();
     }
 
-    @JsonProperty(RESULTS_VAR)
+    @JsonProperty(PROP_RESULTS)
     public SortedMap<Integer, JsonPathResult> getResults() {
       return _results;
     }
@@ -78,7 +78,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       return prettyPrint(_results);
     }
 
-    @JsonProperty(RESULTS_VAR)
+    @JsonProperty(PROP_RESULTS)
     public void setResults(SortedMap<Integer, JsonPathResult> results) {
       _results = results;
     }
@@ -297,7 +297,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
    */
   public static class JsonPathQuestion extends Question {
 
-    private static final String PATHS_VAR = "paths";
+    private static final String PROP_PATHS = "paths";
 
     private Question _innerQuestion;
 
@@ -312,7 +312,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(BfConsts.INNER_QUESTION_VAR)
+    @JsonProperty(BfConsts.PROP_INNER_QUESTION)
     public Question getInnerQuestion() {
       return _innerQuestion;
     }
@@ -322,7 +322,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       return "jsonpath";
     }
 
-    @JsonProperty(PATHS_VAR)
+    @JsonProperty(PROP_PATHS)
     public List<JsonPathQuery> getPaths() {
       return _paths;
     }
@@ -339,19 +339,19 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
               "%s %s%s=\"%s\" %s=\"%s\"",
               getName(),
               prettyPrintBase(),
-              PATHS_VAR,
+              PROP_PATHS,
               _paths,
-              BfConsts.INNER_QUESTION_VAR,
+              BfConsts.PROP_INNER_QUESTION,
               _innerQuestion.prettyPrint());
       return retString;
     }
 
-    @JsonProperty(BfConsts.INNER_QUESTION_VAR)
+    @JsonProperty(BfConsts.PROP_INNER_QUESTION)
     public void setInnerQuestion(Question innerQuestion) {
       _innerQuestion = innerQuestion;
     }
 
-    @JsonProperty(PATHS_VAR)
+    @JsonProperty(PROP_PATHS)
     public void setPaths(List<JsonPathQuery> paths) {
       _paths = paths;
     }

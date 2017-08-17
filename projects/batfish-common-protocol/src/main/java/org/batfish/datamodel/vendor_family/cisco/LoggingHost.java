@@ -10,7 +10,7 @@ public class LoggingHost extends ComparableStructure<String> {
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
-  public LoggingHost(@JsonProperty(NAME_VAR) String name) {
+  public LoggingHost(@JsonProperty(PROP_NAME) String name) {
     super(name);
   }
 }

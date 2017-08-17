@@ -39,9 +39,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
   public static class CompareSameNameAnswerElement implements AnswerElement {
 
-    private static final String EQUIVALENCE_SETS_MAP_VAR = "equivalenceSetsMap";
+    private static final String PROP_EQUIVALENCE_SETS_MAP = "equivalenceSetsMap";
 
-    private static final String NODES_VAR = "nodes";
+    private static final String PROP_NODES = "nodes";
 
     /** Equivalence sets are keyed by classname */
     private SortedMap<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
@@ -63,12 +63,12 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)
+    @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
     public SortedMap<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
       return _equivalenceSets;
     }
 
-    @JsonProperty(NODES_VAR)
+    @JsonProperty(PROP_NODES)
     public List<String> getNodes() {
       return _nodes;
     }
@@ -84,13 +84,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)
+    @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
     public void setEquivalenceSets(
         SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
       _equivalenceSets = equivalenceSets;
     }
 
-    @JsonProperty(NODES_VAR)
+    @JsonProperty(PROP_NODES)
     public void setNodes(List<String> nodes) {
       _nodes = nodes;
     }
@@ -237,13 +237,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    */
   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
-    private static final String MISSING_VAR = "missing";
+    private static final String PROP_MISSING = "missing";
 
-    private static final String NAMED_STRUCT_TYPES_VAR = "namedStructTypes";
+    private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
-    private static final String NODE_REGEX_VAR = "nodeRegex";
+    private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String SINGLETONS_VAR = "singletons";
+    private static final String PROP_SINGLETONS = "singletons";
 
     private boolean _missing;
 
@@ -263,7 +263,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(MISSING_VAR)
+    @JsonProperty(PROP_MISSING)
     public boolean getMissing() {
       return _missing;
     }
@@ -273,18 +273,18 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return "comparesamename";
     }
 
-    @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public SortedSet<String> getNamedStructTypes() {
       return _namedStructTypes;
     }
 
     @Override
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public String getNodeRegex() {
       return _nodeRegex;
     }
 
-    @JsonProperty(SINGLETONS_VAR)
+    @JsonProperty(PROP_SINGLETONS)
     public boolean getSingletons() {
       return _singletons;
     }
@@ -294,23 +294,23 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
-    @JsonProperty(MISSING_VAR)
+    @JsonProperty(PROP_MISSING)
     public void setMissing(boolean missing) {
       _missing = missing;
     }
 
-    @JsonProperty(NAMED_STRUCT_TYPES_VAR)
+    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
       _namedStructTypes = namedStructTypes;
     }
 
     @Override
-    @JsonProperty(NODE_REGEX_VAR)
+    @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
     }
 
-    @JsonProperty(SINGLETONS_VAR)
+    @JsonProperty(PROP_SINGLETONS)
     public void setSingletons(boolean singletons) {
       _singletons = singletons;
     }

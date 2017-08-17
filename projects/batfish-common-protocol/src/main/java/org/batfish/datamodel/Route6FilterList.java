@@ -16,7 +16,7 @@ import org.batfish.common.util.ComparableStructure;
 @JsonSchemaDescription("An access-list used to filter IPV6 routes")
 public class Route6FilterList extends ComparableStructure<String> {
 
-  private static final String LINES_VAR = "lines";
+  private static final String PROP_LINES = "lines";
 
   private static final long serialVersionUID = 1L;
 
@@ -27,7 +27,7 @@ public class Route6FilterList extends ComparableStructure<String> {
   private transient Set<Prefix6> _permittedCache;
 
   @JsonCreator
-  public Route6FilterList(@JsonProperty(NAME_VAR) String name) {
+  public Route6FilterList(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _lines = new ArrayList<>();
   }
@@ -37,15 +37,18 @@ public class Route6FilterList extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
+    } else if (!(o instanceof Route6FilterList)) {
+      return false;
     }
-    Route6FilterList other = (Route6FilterList) obj;
+
+    Route6FilterList other = (Route6FilterList) o;
     return other._lines.equals(_lines);
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   @JsonPropertyDescription("The lines against which to check an IPV6 route")
   public List<Route6FilterLine> getLines() {
     return _lines;
@@ -92,7 +95,7 @@ public class Route6FilterList extends ComparableStructure<String> {
     _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
   }
 
-  @JsonProperty(LINES_VAR)
+  @JsonProperty(PROP_LINES)
   public void setLines(List<Route6FilterLine> lines) {
     _lines = lines;
   }

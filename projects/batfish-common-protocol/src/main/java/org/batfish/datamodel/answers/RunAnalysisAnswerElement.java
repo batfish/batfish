@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 public class RunAnalysisAnswerElement implements AnswerElement {
 
-  private static final String ANSWERS_VAR = "answers";
+  private static final String PROP_ANSWERS = "answers";
 
   private SortedMap<String, Answer> _answers;
 
@@ -16,12 +16,12 @@ public class RunAnalysisAnswerElement implements AnswerElement {
     _answers = new TreeMap<>();
   }
 
-  @JsonProperty(ANSWERS_VAR)
+  @JsonProperty(PROP_ANSWERS)
   public SortedMap<String, Answer> getAnswers() {
     return _answers;
   }
 
-  @JsonProperty(ANSWERS_VAR)
+  @JsonProperty(PROP_ANSWERS)
   public void setAnswers(SortedMap<String, Answer> answers) {
     _answers = answers;
   }
