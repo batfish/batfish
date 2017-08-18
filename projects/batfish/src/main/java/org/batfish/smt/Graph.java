@@ -23,13 +23,13 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.smt.collections.Table2;
 
 /**
- * <p>A graph object representing the structure of the network. The graph is built potentially by
+ * A graph object representing the structure of the network. The graph is built potentially by
  * inferring the link connectivity of the network based on interface ip addresses. Interfaces are
  * abstracted into graph edges, which include a direction. Each graph edge can be mapped to its
- * opposite edge, which may be null, if there is no such edge (e.g., for loopbacks).</p>
+ * opposite edge, which may be null, if there is no such edge (e.g., for loopbacks).
  *
  * <p>iBGP is modeled as additional "abstract" edges that do not correspond to any concrete edge in
- * the topology.</p>
+ * the topology.
  *
  * @author Ryan Beckett
  */
@@ -574,6 +574,7 @@ public class Graph {
     throw new BatfishException("TODO: findExportRoutingPolicy for " + proto.name());
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("=======================================================\n");
