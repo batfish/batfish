@@ -246,7 +246,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       vgwSubnetIface.getAllPrefixes().add(vgwSubnetIfacePrefix);
       vgwConfigNode.getInterfaces().put(vgwSubnetIfaceName, vgwSubnetIface);
       vgwConfigNode.getDefaultVrf().getInterfaces().put(vgwSubnetIfaceName, vgwSubnetIface);
-      igwAddress = vgwSubnetIfacePrefix.getAddress();
+      vgwAddress = vgwSubnetIfacePrefix.getAddress();
     }
 
     // lets find the right route table for this subnet

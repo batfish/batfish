@@ -1000,39 +1000,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Zone zone = _interfaceZones.get(iface);
     if (zone != null) {
       String zoneName = zone.getName();
-      if (zone != null) {
-        // filter for interface in zone
-        FirewallFilter zoneInboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
-        if (zoneInboundInterfaceFilter != null) {
-          String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
-          zoneInboundInterfaceFilter
-              .getReferers()
-              .put(
-                  iface,
-                  "Interface: '"
-                      + iface.getName()
-                      + "' refers to inbound filter for interface in zone : '"
-                      + zoneName
-                      + "'");
-          IpAccessList zoneInboundInterfaceFilterList =
-              _c.getIpAccessLists().get(zoneInboundInterfaceFilterName);
-          newIface.setInboundFilter(zoneInboundInterfaceFilterList);
-        } else {
-          // filter for zone
-          FirewallFilter zoneInboundFilter = zone.getInboundFilter();
-          String zoneInboundFilterName = zoneInboundFilter.getName();
-          zoneInboundFilter
-              .getReferers()
-              .put(
-                  iface,
-                  "Interface: '"
-                      + iface.getName()
-                      + "' refers to inbound filter for zone : '"
-                      + zoneName
-                      + "'");
-          IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(zoneInboundFilterName);
-          newIface.setInboundFilter(zoneInboundFilterList);
-        }
+      // filter for interface in zone
+      FirewallFilter zoneInboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
+      if (zoneInboundInterfaceFilter != null) {
+        String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
+        zoneInboundInterfaceFilter
+            .getReferers()
+            .put(
+                iface,
+                "Interface: '"
+                    + iface.getName()
+                    + "' refers to inbound filter for interface in zone : '"
+                    + zoneName
+                    + "'");
+        IpAccessList zoneInboundInterfaceFilterList =
+            _c.getIpAccessLists().get(zoneInboundInterfaceFilterName);
+        newIface.setInboundFilter(zoneInboundInterfaceFilterList);
+      } else {
+        // filter for zone
+        FirewallFilter zoneInboundFilter = zone.getInboundFilter();
+        String zoneInboundFilterName = zoneInboundFilter.getName();
+        zoneInboundFilter
+            .getReferers()
+            .put(
+                iface,
+                "Interface: '"
+                    + iface.getName()
+                    + "' refers to inbound filter for zone : '"
+                    + zoneName
+                    + "'");
+        IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(zoneInboundFilterName);
+        newIface.setInboundFilter(zoneInboundFilterList);
       }
     }
     String inAclName = iface.getIncomingFilter();

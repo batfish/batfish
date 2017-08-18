@@ -42,6 +42,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jline.console.ConsoleReader;
+import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
 import org.apache.commons.io.FileUtils;
@@ -469,6 +470,7 @@ public class Client extends AbstractClient implements IClient {
           _reader.setHistory(history);
           _reader.setPrompt("batfish> ");
           _reader.setExpandEvents(false);
+          _reader.setHandleUserInterrupt(true);
 
           List<Completer> completors = new LinkedList<>();
           completors.add(new CommandCompleter());
@@ -652,45 +654,33 @@ public class Client extends AbstractClient implements IClient {
   private boolean answerType(
       String questionType, String paramsLine, boolean isDelta, FileWriter outWriter) {
     JSONObject questionJson;
-    if (questionType.startsWith(QuestionHelper.MACRO_PREFIX)) {
-      try {
-        String questionString = QuestionHelper.resolveMacro(questionType, paramsLine, _questions);
-        questionJson = new JSONObject(questionString);
-      } catch (JSONException e) {
-        throw new BatfishException("Failed to convert unmodified question string to JSON", e);
-      } catch (BatfishException e) {
-        _logger.errorf("Could not resolve macro: %s\n", e.getMessage());
-        return false;
-      }
-    } else {
-      try {
-        String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
-        questionJson = new JSONObject(questionString);
+    try {
+      String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
+      questionJson = new JSONObject(questionString);
 
-        Map<String, JsonNode> parameters = parseParams(paramsLine);
-        for (Entry<String, JsonNode> e : parameters.entrySet()) {
-          String parameterName = e.getKey();
-          String parameterValue = e.getValue().toString();
-          Object parameterObj;
-          try {
-            parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
-            questionJson.put(parameterName, parameterObj);
-          } catch (JSONException e1) {
-            throw new BatfishException(
-                "Failed to apply parameter: '"
-                    + parameterName
-                    + "' with value: '"
-                    + parameterValue
-                    + "' to question JSON",
-                e1);
-          }
+      Map<String, JsonNode> parameters = parseParams(paramsLine);
+      for (Entry<String, JsonNode> e : parameters.entrySet()) {
+        String parameterName = e.getKey();
+        String parameterValue = e.getValue().toString();
+        Object parameterObj;
+        try {
+          parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
+          questionJson.put(parameterName, parameterObj);
+        } catch (JSONException e1) {
+          throw new BatfishException(
+              "Failed to apply parameter: '"
+                  + parameterName
+                  + "' with value: '"
+                  + parameterValue
+                  + "' to question JSON",
+              e1);
         }
-      } catch (JSONException e) {
-        throw new BatfishException("Failed to convert unmodified question string to JSON", e);
-      } catch (BatfishException e) {
-        _logger.errorf("Could not construct a question: %s\n", e.getMessage());
-        return false;
       }
+    } catch (JSONException e) {
+      throw new BatfishException("Failed to convert unmodified question string to JSON", e);
+    } catch (BatfishException e) {
+      _logger.errorf("Could not construct a question: %s\n", e.getMessage());
+      return false;
     }
 
     String modifiedQuestionJson = questionJson.toString();
@@ -1155,7 +1145,7 @@ public class Client extends AbstractClient implements IClient {
     String qTypeStr = parameters.get(0).toLowerCase();
     String paramsLine =
         String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
-      return answerType(qTypeStr, paramsLine, delta, outWriter);
+    return answerType(qTypeStr, paramsLine, delta, outWriter);
   }
 
   private boolean getAnalysisAnswers(
@@ -2308,9 +2298,16 @@ public class Client extends AbstractClient implements IClient {
 
   private void runInteractive() {
     try {
-      String rawLine;
-      while (!_exit && (rawLine = _reader.readLine()) != null) {
-        processCommand(rawLine);
+      while (!_exit) {
+        try {
+          String rawLine = _reader.readLine();
+          if (rawLine == null) {
+            break;
+          }
+          processCommand(rawLine);
+        } catch (UserInterruptException e) {
+          continue;
+        }
       }
     } catch (Throwable t) {
       t.printStackTrace();

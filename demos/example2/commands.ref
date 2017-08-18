@@ -1412,9 +1412,40 @@ Flow: ingress:dc1-host-01-02 vrf:default 0.0.0.0->2.128.1.101 ICMP icmpType:255 
 # another example: we also want to ensure that outsiders can *never* reach the SSH server
 # we have ACLs on DC border routers to prevent this. to test that things are correctly implemented:
 Status: SUCCESS
-Question: reachability actions=[ACCEPT] | dstIps=[2.128.1.101] | dstProtocols=[SSH] | ingressNodeRegex=bb(1|2)-border01
-NOTHING TO DO: No nodes both match ingressNodeRegex: 'bb(1|2)-border01' and fail to match notIngressNodeRegex: ''
-# --> buggy ACL on dc1-border02!
+Question: reachability actions=[ACCEPT] | dstIps=[2.128.1.101] | dstProtocols=[SSH] | ingressNodeRegex=bb(1|2)-border-01
+
+Flow: ingress:bb2-border-01 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+    Hop 1: bb2-border-01:GigabitEthernet1/0 -> dc1-border-02:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 2: dc1-border-02:GigabitEthernet1/0 -> dc1-core-02:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: dc1-core-02:GigabitEthernet2/0 -> dc1-spine-02:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 4: dc1-spine-02:GigabitEthernet2/0 -> dc1-leaf-01:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: dc1-leaf-01:GigabitEthernet3/0 -> dc1-host-01-02:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: bb2-border-01:GigabitEthernet1/0 -> dc1-border-02:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 2: dc1-border-02:GigabitEthernet1/0 -> dc1-core-02:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: dc1-core-02:GigabitEthernet3/0 -> dc1-spine-01:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 4: dc1-spine-01:GigabitEthernet2/0 -> dc1-leaf-01:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: dc1-leaf-01:GigabitEthernet3/0 -> dc1-host-01-02:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: bb2-border-01:GigabitEthernet1/0 -> dc1-border-02:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 2: dc1-border-02:GigabitEthernet2/0 -> dc1-core-01:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: dc1-core-01:GigabitEthernet2/0 -> dc1-spine-01:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 4: dc1-spine-01:GigabitEthernet2/0 -> dc1-leaf-01:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: dc1-leaf-01:GigabitEthernet3/0 -> dc1-host-01-02:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: bb2-border-01:GigabitEthernet1/0 -> dc1-border-02:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 2: dc1-border-02:GigabitEthernet2/0 -> dc1-core-01:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: dc1-core-01:GigabitEthernet3/0 -> dc1-spine-02:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 4: dc1-spine-02:GigabitEthernet2/0 -> dc1-leaf-01:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: dc1-leaf-01:GigabitEthernet3/0 -> dc1-host-01-02:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    ACCEPTED
+
+
+# --> buggy ACL on dc1-border-02!
 #############
 # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
 # initialize the delta environment and generate its dataplane
@@ -2544,7 +2575,7 @@ Flow: ingress:dc1-spine-02 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 pack
 "##############"
 "# heuristics to uncover bugs"
 Status: SUCCESS
-Question: aclreachability aclNameRegex=".*" nodeRegex="(leaf|spine|core|border).*"
+Question: aclreachability aclNameRegex=".*" nodeRegex="dc1-.*"
 Results for unreachable ACL lines
 
 Status: SUCCESS
@@ -2552,7 +2583,7 @@ Question: {
   "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
   "differential" : false,
   "missing" : false,
-  "nodeRegex" : "(leaf|spine|core|border).*",
+  "nodeRegex" : "dc1-.*",
   "singletons" : false
 }
 Results for comparing same name structure

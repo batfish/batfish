@@ -11,7 +11,7 @@ echo #
 echo ## If you want to run against www.batfish.org
 echo ## % batfish_client -runmode interactive
 
-echo # load the testing 
+echo # load the testing
 init-testrig test_rigs/example2
 
 echo ################
@@ -34,10 +34,10 @@ echo # our logical representation of the network that can be queried in various 
 echo # we have many queries and can write more
 
 echo # for example, we can ask simple questions on adjacencies
-get neighbors 
+get neighbors
 echo # --> can help ensure that adjacencies are as expected (i.e., interfaces are properly configured)
 
-echo # we can also ask for protocol-level adjacencies 
+echo # we can also ask for protocol-level adjacencies
 get neighbors neighborTypes=["ebgp"]
 echo # --> can help ensure that protocol sessions are configured correctly
 
@@ -53,32 +53,32 @@ get ospfloopbacks
 echo ################
 echo # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
 
-echo # for example, we can see how dc1-host-01-01 reaches a particular IP address 
+echo # for example, we can see how dc1-host-01-01 reaches a particular IP address
 echo # the query will take time if the dataplane has not been computed before
-get #traceroute dc1-host-01-01 1.0.2.2
+get traceroute ingressNode="dc1-host-01-01", dstIp="1.0.2.2"
 echo # --> unlike a regular traceroute we show multipath and interface information
 
-echo # suppose dc1-host-01-01 (2.128.0.101) is running DNS and we want to ensure that the server is reachable 
+echo # suppose dc1-host-01-01 (2.128.0.101) is running DNS and we want to ensure that the server is reachable
 echo # can easily do this using protocol-specific traceroutes
-get #traceroute dc1-border-01 2.128.0.101 dns
+get traceroute ingressNode="dc1-border-01", dstIp="2.128.0.101", dstProtocol="DNS"
 
 echo ################
-echo # while the above could be done using testing/emulation, we alone can be comprehensive 
+echo # while the above could be done using testing/emulation, we alone can be comprehensive
 
 echo # for example, find *all* (starting node, packet header) combinations where the DNS server is unreachable
-get #checkreachability 2.128.0.101 dns
+get reachability actions=["DROP"], dstIps=["2.128.0.101"], dstProtocols=["DNS"]
 echo # --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
 echo # --> but also shows that a bad ACL on dc1-host-01-02 is blocking access (bad)
 
 echo # another example: dc1-host-01-02 (2.128.1.101) is running SSH. we can run similar queries to learn who cannot reach it
-echo # but we can also ensure that non-ssh traffic can *never* reach dc1-host-01-02 
-get #checkprotection 2.128.1.101 !ssh
+echo # but we can also ensure that non-ssh traffic can *never* reach host-01-02
+get reachability actions=["ACCEPT"], dstIps=["2.128.1.101"], notDstProtocols=["SSH"]
 echo # --> all good! hard to guarantee with testing but easy for us
 
 echo # another example: we also want to ensure that outsiders can *never* reach the SSH server
 echo # we have ACLs on DC border routers to prevent this. to test that things are correctly implemented:
-get #checkprotection 2.128.1.101 ssh bb(1|2)-border01
-echo # --> buggy ACL on dc1-border02!
+get reachability actions=["ACCEPT"], dstIps=["2.128.1.101"], dstProtocols=["SSH"], ingressNodeRegex="bb(1|2)-border-01"
+echo # --> buggy ACL on dc1-border-02!
 
 echo #############
 echo # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
@@ -105,8 +105,8 @@ echo # --> any lack of fault tolerance is easy to see
 
 echo "##############"
 echo "# heuristics to uncover bugs"
-get aclreachability nodeRegex="(leaf|spine|core|border).*"
-get comparesamename nodeRegex="(leaf|spine|core|border).*"
+get aclreachability nodeRegex="dc1-.*"
+get comparesamename nodeRegex="dc1-.*"
 
 
 echo ##############

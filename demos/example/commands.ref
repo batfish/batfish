@@ -2199,7 +2199,7 @@ Flow: ingress:as2dist1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 packetLe
     Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
-Flow: ingress:as2dist2 vrf:default 2.0.0.0->3.0.2.2 UDP sport:0 dport:0 packetLength:0 state:NEW
+Flow: ingress:as2dist2 vrf:default 2.0.0.0->3.0.1.1 UDP sport:0 dport:0 packetLength:0 state:NEW
   environment:BASE
     Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
     Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
@@ -2555,7 +2555,7 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.2 TCP sport:0 dport:TELNET(23)
     Hop 2: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:as2dist1 vrf:default 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+Flow: ingress:as2dist1 vrf:default 2.0.0.0->2.1.1.2 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.1.1/32,nhip:2.23.11.2,nhint:dynamic>_fnhip:2.23.11.2]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
