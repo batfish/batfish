@@ -6055,15 +6055,6 @@
             }
           },
           "ipAccessLists" : {
-            "filter::FORWARD" : {
-              "name" : "filter::FORWARD",
-              "lines" : [
-                {
-                  "action" : "ACCEPT",
-                  "negate" : false
-                }
-              ]
-            },
             "filter::INPUT" : {
               "name" : "filter::INPUT",
               "lines" : [
