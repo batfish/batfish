@@ -27,6 +27,7 @@ public class GroupPruner extends FlatJuniperParserBaseListener {
     _configurationContext.children = _newConfigurationLines;
   }
 
+  @Override
   public void exitS_groups(S_groupsContext ctx) {
     _isGroupsLine = true;
   }

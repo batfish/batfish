@@ -34,12 +34,14 @@ public final class Route6FilterLineThrough extends Route6FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route6FilterLineThrough)) {
       return false;
-    } else {
-      Route6FilterLineThrough rhs = (Route6FilterLineThrough) o;
-      return _prefix6.equals(rhs._prefix6) && _throughPrefix6.equals(rhs._throughPrefix6);
     }
+
+    Route6FilterLineThrough rhs = (Route6FilterLineThrough) o;
+    return _prefix6.equals(rhs._prefix6) && _throughPrefix6.equals(rhs._throughPrefix6);
   }
 
   public Prefix6 getThroughPrefix6() {

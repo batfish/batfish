@@ -419,7 +419,6 @@ public class Driver {
         batfish.setTerminatedWithException(true);
       }
 
-      batfish.close();
       return !batfish.getTerminatedWithException();
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
