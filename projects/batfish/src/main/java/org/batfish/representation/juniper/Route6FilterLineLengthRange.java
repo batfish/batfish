@@ -30,14 +30,16 @@ public final class Route6FilterLineLengthRange extends Route6FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route6FilterLineLengthRange)) {
       return false;
-    } else {
-      Route6FilterLineLengthRange rhs = (Route6FilterLineLengthRange) o;
-      return _prefix6.equals(rhs._prefix6)
-          && _minPrefixLength == rhs._minPrefixLength
-          && _maxPrefixLength == rhs._maxPrefixLength;
     }
+
+    Route6FilterLineLengthRange rhs = (Route6FilterLineLengthRange) o;
+    return _prefix6.equals(rhs._prefix6)
+        && _minPrefixLength == rhs._minPrefixLength
+        && _maxPrefixLength == rhs._maxPrefixLength;
   }
 
   public int getMaxPrefixLength() {

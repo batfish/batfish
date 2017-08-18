@@ -34,12 +34,14 @@ public final class Route4FilterLineThrough extends Route4FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route4FilterLineThrough)) {
       return false;
-    } else {
-      Route4FilterLineThrough rhs = (Route4FilterLineThrough) o;
-      return _prefix.equals(rhs._prefix) && _throughPrefix.equals(rhs._throughPrefix);
     }
+
+    Route4FilterLineThrough rhs = (Route4FilterLineThrough) o;
+    return _prefix.equals(rhs._prefix) && _throughPrefix.equals(rhs._throughPrefix);
   }
 
   public Prefix getThroughPrefix() {

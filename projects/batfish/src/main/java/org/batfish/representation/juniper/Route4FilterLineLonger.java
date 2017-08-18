@@ -29,12 +29,14 @@ public class Route4FilterLineLonger extends Route4FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route4FilterLineLonger)) {
       return false;
-    } else {
-      Route4FilterLineLonger rhs = (Route4FilterLineLonger) o;
-      return _prefix.equals(rhs._prefix);
     }
+
+    Route4FilterLineLonger rhs = (Route4FilterLineLonger) o;
+    return _prefix.equals(rhs._prefix);
   }
 
   @Override

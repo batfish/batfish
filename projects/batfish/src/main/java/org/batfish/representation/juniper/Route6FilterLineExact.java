@@ -25,12 +25,14 @@ public final class Route6FilterLineExact extends Route6FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route6FilterLineExact)) {
       return false;
-    } else {
-      Route6FilterLineExact rhs = (Route6FilterLineExact) o;
-      return _prefix6.equals(rhs._prefix6);
     }
+
+    Route6FilterLineExact rhs = (Route6FilterLineExact) o;
+    return _prefix6.equals(rhs._prefix6);
   }
 
   @Override

@@ -266,10 +266,10 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().delContainer(containerName);
+      boolean status = Main.getWorkMgr().delContainer(containerName);
 
       return new JSONArray(
-          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", "true"))));
+          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, new JSONObject().put("result", status)));
 
     } catch (FileExistsException
         | FileNotFoundException
