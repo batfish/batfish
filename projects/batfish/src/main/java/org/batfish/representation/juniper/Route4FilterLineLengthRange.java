@@ -30,14 +30,16 @@ public final class Route4FilterLineLengthRange extends Route4FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route4FilterLineLengthRange)) {
       return false;
-    } else {
-      Route4FilterLineLengthRange rhs = (Route4FilterLineLengthRange) o;
-      return _prefix.equals(rhs._prefix)
-          && _minPrefixLength == rhs._minPrefixLength
-          && _maxPrefixLength == rhs._maxPrefixLength;
     }
+
+    Route4FilterLineLengthRange rhs = (Route4FilterLineLengthRange) o;
+    return _prefix.equals(rhs._prefix)
+        && _minPrefixLength == rhs._minPrefixLength
+        && _maxPrefixLength == rhs._maxPrefixLength;
   }
 
   public int getMaxPrefixLength() {

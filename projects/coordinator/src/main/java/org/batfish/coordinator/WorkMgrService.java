@@ -256,10 +256,10 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().delContainer(containerName);
+      boolean status = Main.getWorkMgr().delContainer(containerName);
 
       return new JSONArray(
-          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", "true"))));
+          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, new JSONObject().put("result", status)));
 
     } catch (FileExistsException
         | FileNotFoundException
@@ -623,11 +623,10 @@ public class WorkMgrService {
       checkContainerAccessibility(apiKey, containerName);
 
       Container container = Main.getWorkMgr().getContainer(containerDir);
-      container.setName(containerName);
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String containerString = mapper.writeValueAsString(container);
 
-      return Response.ok(containerString, MediaType.APPLICATION_JSON).build();
+      return Response.ok(containerString).build();
     } catch (AccessControlException e) {
       return Response.status(Status.FORBIDDEN)
           .entity(e.getMessage())
