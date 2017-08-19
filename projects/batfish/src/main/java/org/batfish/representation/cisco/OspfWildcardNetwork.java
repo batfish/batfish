@@ -31,6 +31,11 @@ public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork>, Ser
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof OspfWildcardNetwork)) {
+      return false;
+    }
     OspfWildcardNetwork rhs = (OspfWildcardNetwork) o;
     return _prefix.equals(rhs._prefix) && _wildcard.equals(rhs._wildcard) && _area == rhs._area;
   }
