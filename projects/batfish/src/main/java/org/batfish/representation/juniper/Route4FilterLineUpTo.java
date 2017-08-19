@@ -28,12 +28,14 @@ public final class Route4FilterLineUpTo extends Route4FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route4FilterLineUpTo)) {
       return false;
-    } else {
-      Route4FilterLineUpTo rhs = (Route4FilterLineUpTo) o;
-      return _prefix.equals(rhs._prefix) && _maxPrefixLength == rhs._maxPrefixLength;
     }
+
+    Route4FilterLineUpTo rhs = (Route4FilterLineUpTo) o;
+    return _prefix.equals(rhs._prefix) && _maxPrefixLength == rhs._maxPrefixLength;
   }
 
   public int getMaxPrefixLength() {

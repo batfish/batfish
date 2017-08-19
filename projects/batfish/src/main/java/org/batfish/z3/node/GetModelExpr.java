@@ -5,7 +5,7 @@ import java.util.List;
 
 public class GetModelExpr extends Statement implements ComplexExpr {
 
-  public static GetModelExpr INSTANCE = new GetModelExpr();
+  public static final GetModelExpr INSTANCE = new GetModelExpr();
 
   private List<Expr> _subExpressions;
 
