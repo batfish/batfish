@@ -17,25 +17,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
-import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
+import org.batfish.common.BatfishTestUtils;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.config.Settings;
-import org.batfish.config.Settings.EnvironmentSettings;
-import org.batfish.config.Settings.TestrigSettings;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
@@ -49,33 +40,6 @@ public class BatfishTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  // Tests for readIptableFiles method
-  private Batfish initBatfish() {
-    Settings settings = new Settings(new String[] {});
-    settings.setLogger(new BatfishLogger("debug", false));
-    final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
-        Collections.synchronizedMap(
-            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(5));
-    final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
-        Collections.synchronizedMap(new LRUMap<TestrigSettings, DataPlane>(2));
-    final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-        CACHED_ENVIRONMENT_BGP_TABLES =
-            Collections.synchronizedMap(
-                new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(4));
-    final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
-        CACHED_ENVIRONMENT_ROUTING_TABLES =
-            Collections.synchronizedMap(
-                new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(4));
-    Batfish batfish =
-        new Batfish(
-            settings,
-            CACHED_TESTRIGS,
-            CACHED_DATA_PLANES,
-            CACHED_ENVIRONMENT_BGP_TABLES,
-            CACHED_ENVIRONMENT_ROUTING_TABLES);
-    return batfish;
-  }
 
   @Test
   public void testAnswerBadQuestion() throws IOException {
@@ -100,7 +64,7 @@ public class BatfishTest {
 
     Path questionPath =
           CommonUtil.createTempFileWithContent("testAnswerBadQuestion", badQuestionStr);
-    Batfish batfish = initBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish();
     batfish.getSettings().setQuestionPath(questionPath);
     Answer answer = batfish.answer();
     assertThat(answer.getQuestion(), is(nullValue()));
@@ -132,7 +96,7 @@ public class BatfishTest {
 
     Path topologyFilePath =
         CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyBadJson);
-    Batfish batfish = initBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish();
     String errorMessage = "Topology format error";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(errorMessage);
@@ -144,7 +108,7 @@ public class BatfishTest {
     String topologyEmpty = "";
     Path topologyFilePath =
         CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyEmpty);
-    Batfish batfish = initBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish();
     String errorMessage = "ERROR: empty topology\n";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(errorMessage);
@@ -171,7 +135,7 @@ public class BatfishTest {
 
     Path topologyFilePath =
         CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
-    Batfish batfish = initBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish();
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);
   }
@@ -187,7 +151,7 @@ public class BatfishTest {
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
-    Batfish batfish = initBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish();
     String failureMessage =
         "Iptables file iptables/host1.iptables for host host1 "
             + "is not contained within the testrig";
@@ -279,7 +243,7 @@ public class BatfishTest {
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
-    Batfish batfish = initBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish();
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
     assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
     assertThat(answerElement.getErrors().size(), is(0));
