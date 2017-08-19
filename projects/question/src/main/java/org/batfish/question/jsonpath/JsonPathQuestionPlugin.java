@@ -41,13 +41,16 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     private static final String PROP_RESULTS = "results";
 
     static String prettyPrint(SortedMap<Integer, JsonPathResult> results) {
-      StringBuilder sb = new StringBuilder("Results for nodespath\n");
+      StringBuilder sb = new StringBuilder("Results for JsonPath\n");
       for (Integer index : results.keySet()) {
         JsonPathResult result = results.get(index);
         sb.append(
             String.format(
                 "  [%d]: %d results for %s\n",
                 index, result.getNumResults(), result.getPath().toString()));
+        if (result.getAssertionResult() != null) {
+          sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
+        }
         for (JsonPathResultEntry resultEntry : result.getResult().values()) {
           ConcreteJsonPath path = resultEntry.getConcretePath();
           JsonNode suffix = resultEntry.getSuffix();
@@ -107,19 +110,19 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       AnswerElement innerAnswer = innerAnswerer.answer();
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      String nodesAnswerStr = null;
+      String innerAnswerStr = null;
       try {
-        nodesAnswerStr = mapper.writeValueAsString(innerAnswer);
+        innerAnswerStr = mapper.writeValueAsString(innerAnswer);
       } catch (IOException e) {
-        throw new BatfishException("Could not get JSON string from nodes answer", e);
+        throw new BatfishException("Could not get JSON string from inner answer", e);
       }
-      Object jsonObject = JsonPath.parse(nodesAnswerStr, c).json();
+      Object jsonObject = JsonPath.parse(innerAnswerStr, c).json();
       Map<Integer, JsonPathResult> results = new ConcurrentHashMap<>();
       List<Integer> indices = new ArrayList<>();
       for (int i = 0; i < paths.size(); i++) {
         indices.add(i);
       }
-      AtomicInteger completed = _batfish.newBatch("NodesPath queries", indices.size());
+      AtomicInteger completed = _batfish.newBatch("JsonPath queries", indices.size());
       indices
           .parallelStream()
           .forEach(
@@ -159,7 +162,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
                 nodePathResult.setPath(nodesPath);
                 nodePathResult.setNumResults(numResults);
                 boolean includeSuffix = nodesPath.getSuffix();
-                if (!nodesPath.getSummary()) {
+                if (nodesPath.getAssertion() != null) {
+                  boolean assertion = nodesPath.getAssertion().evaluate(suffixes);
+                  nodePathResult.setAssertionResult(assertion);
+                } else if (!nodesPath.getSummary()) {
                   SortedMap<String, JsonPathResultEntry> result = new TreeMap<>();
                   Iterator<JsonNode> p = prefixes.iterator();
                   Iterator<JsonNode> s = suffixes.iterator();

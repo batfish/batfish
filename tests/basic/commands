@@ -16,6 +16,8 @@ test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/ipsecVpnCheck.ref get ipsecVpnCheck
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
+test tests/basic/jsonpath-assertion-count.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion"}, paths: [{"path" : "$.nodes['as2core2']..mtu", "assertion": {"type" : "count", "expect": 6}}]
+test tests/basic/jsonpath-assertion-eq.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion"}, paths: [{"path" : "$.nodes['as2core2']..mtu", "assertion": {"type" : "eq", "expect": [1500, 1800, 1600, 1700, 1500, 1500]}}]
 test tests/basic/neighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"]
 test tests/basic/roleNeighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 test tests/basic/nodes-summary.ref get nodes summary=true

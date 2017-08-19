@@ -1,0 +1,58 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
+      "results" : {
+        "0" : {
+          "assertionResult" : false,
+          "numResults" : 0,
+          "path" : {
+            "assertion" : {
+              "expect" : [
+                1500,
+                1800,
+                1600,
+                1700,
+                1500,
+                1500
+              ],
+              "type" : "eq"
+            },
+            "path" : "$.nodes['as2core2']..mtu",
+            "suffix" : false,
+            "summary" : false
+          }
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "differential" : false,
+    "innerQuestion" : {
+      "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+      "differential" : false,
+      "nodeRegex" : ".*",
+      "summary" : true
+    },
+    "paths" : [
+      {
+        "assertion" : {
+          "expect" : [
+            1500,
+            1800,
+            1600,
+            1700,
+            1500,
+            1500
+          ],
+          "type" : "eq"
+        },
+        "path" : "$.nodes['as2core2']..mtu",
+        "suffix" : false,
+        "summary" : false
+      }
+    ]
+  },
+  "status" : "SUCCESS"
+}
