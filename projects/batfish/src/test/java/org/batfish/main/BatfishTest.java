@@ -22,11 +22,14 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishTestUtils;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
@@ -138,6 +141,43 @@ public class BatfishTest {
     Batfish batfish = BatfishTestUtils.getBatfish();
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);
+  }
+
+  @Test
+  public void testCheckValidTopology() throws IOException {
+    Map<String, Configuration> configs = new HashMap<>();
+    configs.put("h1", BatfishTestUtils.createConfiguration("h1", "eth0"));
+    configs.put("h2", BatfishTestUtils.createConfiguration("h2", "e0"));
+    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+    Topology topology = new Topology(edges);
+
+    //test that checkTopology does not throw
+    Batfish.checkTopology(configs, topology);
+  }
+
+  @Test
+  public void testCheckTopologyInvalidNode() throws IOException {
+    Map<String, Configuration> configs = new HashMap<>();
+    configs.put("h1", BatfishTestUtils.createConfiguration("h1", "eth0"));
+    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+    Topology topology = new Topology(edges);
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Topology contains a non-existent node 'h2'");
+    Batfish.checkTopology(configs, topology);
+  }
+
+  @Test
+  public void testCheckTopologyInvalidInterface() throws IOException {
+    Map<String, Configuration> configs = new HashMap<>();
+    configs.put("h1", BatfishTestUtils.createConfiguration("h1", "eth0"));
+    configs.put("h2", BatfishTestUtils.createConfiguration("h2", "e0"));
+    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth1", "h2", "e0")));
+    Topology topology = new Topology(edges);
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Topology contains a non-existent interface 'eth1' on node 'h1'");
+    Batfish.checkTopology(configs, topology);
   }
 
   public void testReadMissingIptableFile() throws IOException {
@@ -256,4 +296,5 @@ public class BatfishTest {
     _thrown.expectMessage("Failed to walk path: " + nonExistPath);
     Batfish.listAllFiles(nonExistPath);
   }
+
 }

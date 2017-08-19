@@ -135,6 +135,8 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -164,6 +166,7 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
+import org.batfish.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -4042,6 +4045,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
+    checkTopology(configurations, topology);
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
         "inferred node roles");
@@ -4424,4 +4428,81 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
   }
+
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+    for (Edge edge : topology.getEdges()) {
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
+      }
+      //nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt1(), edge.getNode1()));
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt2(), edge.getNode2()));
+      }
+    }
+  }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
 }
