@@ -36,6 +36,10 @@ public class JsonPathQuery {
     return _summary;
   }
 
+  public boolean hasValidAssertion() {
+    return (_assertion != null && _assertion.getType() != JsonPathAssertionType.none);
+  }
+
   public void setAssertion(JsonPathAssertion assertion) {
     _assertion = assertion;
   }

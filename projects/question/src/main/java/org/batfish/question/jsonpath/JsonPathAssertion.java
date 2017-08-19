@@ -1,27 +1,27 @@
 package org.batfish.question.jsonpath;
 
+import static org.batfish.question.jsonpath.JsonPathAssertionType.count;
+import static org.batfish.question.jsonpath.JsonPathAssertionType.equal;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
 public class JsonPathAssertion {
 
-  private static final String PROP_ASSERTION_TYPE = "type";
+  private static final String PROP_TYPE = "type";
 
-  private static final String PROP_ASSERTION_EXPECT = "expect";
+  private static final String PROP_EXPECT = "expect";
 
   private JsonPathAssertionType _assertionType;
 
   private JsonNode _expect;
 
   public boolean evaluate(ArrayNode suffixes) {
-    switch (getAssertionType()) {
+    switch (getType()) {
     case count:
       if (_expect.isInt()) {
         boolean match = (suffixes.size() == _expect.asInt());
@@ -38,29 +38,30 @@ public class JsonPathAssertion {
         throw new BatfishException("Expected value of assertion type equal ("
             + _expect.toString() + ") is not an JSON list");
       }
-
+    case none:
+      throw new BatfishException("Cannot evaluate ssertion type none");
     default:
-      throw new BatfishException("Unhandled assertion type: " + getAssertionType());
+      throw new BatfishException("Unhandled assertion type: " + getType());
     }
   }
 
-  @JsonProperty(PROP_ASSERTION_TYPE)
-  public JsonPathAssertionType getAssertionType() {
+  @JsonProperty(PROP_TYPE)
+  public JsonPathAssertionType getType() {
     return _assertionType;
   }
 
-  @JsonProperty(PROP_ASSERTION_EXPECT)
+  @JsonProperty(PROP_EXPECT)
   public JsonNode getExpect() {
     return _expect;
   }
 
-  @JsonProperty(PROP_ASSERTION_TYPE)
-  public void setAssertionType(JsonPathAssertionType assertionType) {
+  @JsonProperty(PROP_TYPE)
+  public void setType(JsonPathAssertionType assertionType) {
     _assertionType = assertionType;
   }
 
-  @JsonProperty(PROP_ASSERTION_EXPECT)
-  public void setRhs(JsonNode expect) {
+  @JsonProperty(PROP_EXPECT)
+  public void setExpect(JsonNode expect) {
     _expect = expect;
   }
 

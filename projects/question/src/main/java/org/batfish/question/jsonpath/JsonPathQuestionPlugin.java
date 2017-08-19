@@ -162,7 +162,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
                 nodePathResult.setPath(nodesPath);
                 nodePathResult.setNumResults(numResults);
                 boolean includeSuffix = nodesPath.getSuffix();
-                if (nodesPath.getAssertion() != null) {
+                if (nodesPath.hasValidAssertion()) {
                   boolean assertion = nodesPath.getAssertion().evaluate(suffixes);
                   nodePathResult.setAssertionResult(assertion);
                 } else if (!nodesPath.getSummary()) {
