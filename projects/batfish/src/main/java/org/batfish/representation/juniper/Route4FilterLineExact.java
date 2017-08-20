@@ -25,12 +25,14 @@ public final class Route4FilterLineExact extends Route4FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route4FilterLineExact)) {
       return false;
-    } else {
-      Route4FilterLineExact rhs = (Route4FilterLineExact) o;
-      return _prefix.equals(rhs._prefix);
     }
+
+    Route4FilterLineExact rhs = (Route4FilterLineExact) o;
+    return _prefix.equals(rhs._prefix);
   }
 
   @Override

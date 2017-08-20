@@ -5,7 +5,7 @@ import java.util.List;
 
 public class CheckSatExpr extends Statement implements ComplexExpr {
 
-  public static CheckSatExpr INSTANCE = new CheckSatExpr();
+  public static final CheckSatExpr INSTANCE = new CheckSatExpr();
 
   private List<Expr> _subExpressions;
 

@@ -135,7 +135,6 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return _costToAdvertiser;
   }
 
-  // TODO(http://github.com/batfish/batfish/issues/207)
   @Nonnull
   @Override
   public String getNextHopInterface() {

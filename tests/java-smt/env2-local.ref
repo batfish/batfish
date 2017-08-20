@@ -1,0 +1,21 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "result" : {
+        "R1<-->R2" : {
+          "verified" : true
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtLocalConsistencyQuestionPlugin$LocalConsistencyQuestion",
+    "differential" : false,
+    "failures" : 0,
+    "fullModel" : true,
+    "nodeRegex" : ".*",
+    "strict" : false
+  },
+  "status" : "SUCCESS"
+}

@@ -179,6 +179,8 @@ public class Main {
   }
 
   private static void initWorkManager() {
+    _workManager = new WorkMgr(_settings, _logger);
+    _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(
         WorkMgrService.class, JettisonFeature.class, _settings.getServiceWorkPort());
@@ -186,8 +188,6 @@ public class Main {
     startWorkManagerService(
         WorkMgrServiceV2.class, JacksonFeature.class, _settings.getServiceWorkV2Port());
 
-    _workManager = new WorkMgr(_settings, _logger);
-    _workManager.startWorkManager();
   }
 
   public static void initStorage() {

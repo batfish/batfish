@@ -4,11 +4,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Path;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Collections;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
@@ -29,13 +30,12 @@ public class WorkMgrServiceTest {
   private void initContainerEnvironment() throws Exception {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Main.mainInit(new String[] {});
-    _folder.newFolder(_containerName);
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Main.initAuthorizer();
     Main.setLogger(logger);
     _manager = new WorkMgr(settings, logger);
     Main.setWorkMgr(_manager);
+    _manager.initContainer(_containerName, null);
     _service = new WorkMgrService();
   }
 
@@ -71,17 +71,13 @@ public class WorkMgrServiceTest {
   public void getNonEmptyContainer() throws Exception {
     initContainerEnvironment();
     Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
-    Path testrigPath = containerPath.resolve("testrig1");
-    assertThat(testrigPath.toFile().mkdir(), is(true));
-    Path testrigPath2 = containerPath.resolve("testrig2");
-    assertThat(testrigPath2.toFile().mkdir(), is(true));
+    Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
+    assertThat(testrigPath.toFile().mkdirs(), is(true));
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
-    assertThat(container.getName(), equalTo(_containerName));
-    SortedSet<String> expectedTestrigs = new TreeSet<>();
-    expectedTestrigs.add("testrig1");
-    expectedTestrigs.add("testrig2");
-    assertThat(container.getTestrigs(), equalTo(expectedTestrigs));
+    Container expected =
+        Container.of(_containerName, Sets.newTreeSet(Collections.singleton("testrig")));
+    assertThat(container, equalTo(expected));
   }
 }

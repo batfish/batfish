@@ -29,12 +29,14 @@ public class Route6FilterLineLonger extends Route6FilterLine {
 
   @Override
   public boolean equals(Object o) {
-    if (!this.getClass().equals(o.getClass())) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Route6FilterLineLonger)) {
       return false;
-    } else {
-      Route6FilterLineLonger rhs = (Route6FilterLineLonger) o;
-      return _prefix6.equals(rhs._prefix6);
     }
+
+    Route6FilterLineLonger rhs = (Route6FilterLineLonger) o;
+    return _prefix6.equals(rhs._prefix6);
   }
 
   @Override

@@ -1,0 +1,23 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "result" : {
+        "R1,Loopback0" : {
+          "verified" : true
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtBoundedLengthQuestionPlugin$BoundedLengthQuestion",
+    "bound" : 1,
+    "differential" : false,
+    "failures" : 0,
+    "finalIfaceRegex" : "Loopback.*",
+    "finalNodeRegex" : "R1",
+    "fullModel" : true,
+    "ingressNodeRegex" : ".*"
+  },
+  "status" : "SUCCESS"
+}

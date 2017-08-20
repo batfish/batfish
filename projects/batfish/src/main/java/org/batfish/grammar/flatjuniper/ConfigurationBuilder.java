@@ -2892,6 +2892,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentPolicyStatement = null;
   }
 
+  @Override
   public void exitPo_prefix_list(Po_prefix_listContext ctx) {
     _currentPrefixList = null;
   }

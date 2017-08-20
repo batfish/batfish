@@ -2,6 +2,7 @@ package org.batfish.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
     implements Serializable, Comparable<Pair<T1, T2>> {
@@ -31,26 +32,12 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
+    } else if (!(obj instanceof Pair)) {
       return false;
     }
+
     Pair<?, ?> other = (Pair<?, ?>) obj;
-    if (_first == null) {
-      if (other._first != null) {
-        return false;
-      }
-    } else if (!_first.equals(other._first)) {
-      return false;
-    }
-    if (_second == null) {
-      if (other._second != null) {
-        return false;
-      }
-    } else if (!_second.equals(other._second)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_first, other._first) && Objects.equals(_second, other._second);
   }
 
   @JsonIgnore
