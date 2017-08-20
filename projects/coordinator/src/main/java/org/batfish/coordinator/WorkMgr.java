@@ -39,6 +39,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.storage.Storage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -82,10 +83,13 @@ public class WorkMgr {
 
   private WorkQueueMgr _workQueueMgr;
 
+  private Storage _storage;
+
   public WorkMgr(Settings settings, BatfishLogger logger) {
     _settings = settings;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr();
+    _storage = Main.getStorage();
   }
 
   private void assignWork() {

@@ -19,6 +19,8 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.storage.FileStorageImpl;
+import org.batfish.storage.Storage;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -34,6 +36,7 @@ public class Main {
   private static @Nullable PoolMgr _poolManager;
   private static @Nullable Settings _settings;
   private static @Nullable WorkMgr _workManager;
+  private static @Nullable Storage _storage;
 
   static Logger httpServerLogger =
       Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
@@ -53,6 +56,10 @@ public class Main {
   public static PoolMgr getPoolMgr() {
     checkState(_poolManager != null, "Error: Pool Manager has not been configured");
     return _poolManager;
+  }
+
+  public static Storage getStorage() {
+    return _storage;
   }
 
   public static Settings getSettings() {
@@ -181,6 +188,10 @@ public class Main {
 
     _workManager = new WorkMgr(_settings, _logger);
     _workManager.startWorkManager();
+  }
+
+  public static void initStorage() {
+    _storage = new FileStorageImpl(_settings.getContainersLocation());
   }
 
   public static void main(String[] args) {

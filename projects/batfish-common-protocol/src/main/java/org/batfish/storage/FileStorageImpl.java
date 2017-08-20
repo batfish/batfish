@@ -1,9 +1,16 @@
 package org.batfish.storage;
 
+import com.google.common.collect.Sets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.pojo.Analysis;
 
 public class FileStorageImpl implements Storage {
@@ -29,7 +36,7 @@ public class FileStorageImpl implements Storage {
    * @param containerName Container name
    * @return Path of the container
    */
-  //Needs to be removed eventually
+  // deprecated
   @Override
   public Path getContainerPath(String containerName) {
     Path containerDir = _containersLocation.resolve(containerName).toAbsolutePath();
@@ -41,25 +48,103 @@ public class FileStorageImpl implements Storage {
 
   @Override
   public Analysis getAnalysis(String containerName, String analysisName) {
-    return null;
+    Path aDir =
+        _containersLocation.resolve(
+            Paths.get(containerName, BfConsts.RELPATH_ANALYSES_DIR, analysisName));
+    if (!Files.exists(aDir)) {
+      throw new BatfishException(
+          String.format(
+              "Analysis '%s' doesn't exist for container '%s'", analysisName, containerName));
+    }
+    Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    if (!Files.exists(questionsDir)) {
+      throw new BatfishException(
+          String.format(
+              "Analysis '%s' doesn't have the proper structure on disk: missing questions directory",
+              analysisName));
+    }
+    Map<String, String> questions = new HashMap<>();
+    for (Path questionDir : CommonUtil.getEntries(questionsDir)) {
+      questions.put(
+          questionDir.getFileName().toString(),
+          CommonUtil.readFile(questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE)));
+    }
+    return new Analysis(analysisName, questions);
   }
 
   @Override
-  public Analysis createAnalysis(String containerName, String analysisName) {
-    return null;
+  public Analysis saveAnalysis(String containerName, Analysis analysis) {
+    Path aDir =
+        _containersLocation.resolve(
+            Paths.get(containerName, BfConsts.RELPATH_ANALYSES_DIR, analysis.get_name()));
+    if (Files.exists(aDir)) {
+      throw new BatfishException(
+          String.format(
+              "Analysis '%s' already exists for container '%s'",
+              analysis.get_name(), containerName));
+    }
+    //trying to create analysis skeleton dir with questions dir
+    if (!aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).toFile().mkdirs()) {
+      throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
+    }
+
+    for (String questionName : analysis.getQuestions().keySet()) {
+      Path questionDir = aDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, questionName));
+      if (!questionDir.toFile().mkdirs()) {
+        throw new BatfishException(
+            String.format("Failed to create question directory '%s'", questionDir));
+      }
+      Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      CommonUtil.writeFile(questionFile, analysis.getQuestions().get(questionName));
+    }
+
+    return analysis;
   }
 
-  @Override public Analysis updateAnalysis(String containerName, Analysis analysis) {
-    return null;
+  @Override
+  public Analysis updateAnalysis(String containerName, Analysis analysis) {
+    Analysis oldAnalysisObj = getAnalysis(containerName, analysis.get_name());
+    Set<String> questionsToDelete =
+        Sets.difference(oldAnalysisObj.getQuestions().keySet(), analysis.getQuestions().keySet());
+    Set<String> questionsToAdd =
+        Sets.difference(analysis.getQuestions().keySet(), oldAnalysisObj.getQuestions().keySet());
+    Path questionsDir =
+        _containersLocation.resolve(
+            Paths.get(
+                containerName,
+                BfConsts.RELPATH_ANALYSES_DIR,
+                analysis.get_name(),
+                BfConsts.RELPATH_QUESTIONS_DIR));
+    for (String question : questionsToDelete) {
+      try {
+        CommonUtil.deleteDirectory(questionsDir.resolve(question));
+      } catch (BatfishException e) {
+        throw new BatfishException(String.format("Could not delete question '%s'", question));
+      }
+    }
+    for (String question : questionsToAdd) {
+      if (!questionsDir.resolve(question).toFile().mkdirs()) {
+        throw new BatfishException(String.format("Could not add question '%s'", question));
+      }
+      try {
+
+        CommonUtil.writeFile(
+            questionsDir.resolve(Paths.get(question, BfConsts.RELPATH_QUESTION_FILE)),
+            analysis.getQuestions().get(question));
+      } catch (BatfishException e) {
+        throw new BatfishException(String.format("Could not add question '%s'", question));
+      }
+    }
+    return getAnalysis(containerName, analysis.get_name());
   }
 
-  @Override public Analysis saveOrUpdateAnalysis(String containerName, Analysis analysis) {
-    return null;
+  @Override
+  public boolean deleteAnalysis(String containerName, String analysisName, boolean force) {
+    Path analysisDir = _containersLocation.resolve(Paths.get(containerName, analysisName));
+    if (!Files.exists(analysisDir)) {
+      return false;
+    }
+    CommonUtil.deleteDirectory(analysisDir);
+    return true;
   }
-
-  @Override public boolean deleteAnalysis(String containerName, String analysisName,
-      boolean force) {
-    return false;
-  }
-
 }
