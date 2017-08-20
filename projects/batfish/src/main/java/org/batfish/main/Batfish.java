@@ -202,7 +202,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, String testrig, String envName) {
-    Path testrigDir = containerDir.resolve(testrig);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
@@ -1854,8 +1854,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private NodeRoleSpecifier inferNodeRoles(Map<String, Configuration> configurations) {
-    InferRoles ir =
-        new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
+    InferRoles ir = new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
     return ir.call();
   }
 
@@ -3322,8 +3321,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
-     if one exists; otherwise use the results of our node-role inference.
-   */
+    if one exists; otherwise use the results of our node-role inference.
+  */
   private void processNodeRoles(Map<String, Configuration> configurations) {
     TestrigSettings settings = _settings.getActiveTestrigSettings();
     Path nodeRolesPath = settings.getNodeRolesPath();
@@ -3340,8 +3339,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String hostname = nodeRolesEntry.getKey();
       Configuration config = configurations.get(hostname);
       if (config == null) {
-        throw new BatfishException(
-            "role set assigned to non-existent node: \"" + hostname + "\"");
+        throw new BatfishException("role set assigned to non-existent node: \"" + hostname + "\"");
       }
       SortedSet<String> roles = nodeRolesEntry.getValue();
       config.setRoles(roles);
@@ -3964,8 +3962,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
     checkTopology(configurations, topology);
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
-    serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
-        "inferred node roles");
+    serializeAsJson(
+        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
     return answer;
@@ -4421,5 +4419,4 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
     return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
   }
-
 }
