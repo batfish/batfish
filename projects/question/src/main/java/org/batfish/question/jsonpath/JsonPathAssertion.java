@@ -23,21 +23,15 @@ public class JsonPathAssertion {
   public boolean evaluate(ArrayNode suffixes) {
     switch (getType()) {
     case count:
-      if (_expect.isInt()) {
-        boolean match = (suffixes.size() == _expect.asInt());
-        return match;
-      } else {
-        throw new BatfishException("Expected value of assertion type count ("
-            + _expect.toString() + ") is not an integer");
+      if (!_expect.isInt()) {
+        throw new BatfishException("Expected value of assertion type count (" + _expect.toString() + ") is not an integer");
       }
+      return (suffixes.size() == _expect.asInt());
     case equal:
-      if (_expect.isArray()) {
-        boolean match = _expect.equals(suffixes);
-        return match;
-      } else {
-        throw new BatfishException("Expected value of assertion type equal ("
-            + _expect.toString() + ") is not an JSON list");
+      if (!_expect.isArray()) {
+        throw new BatfishException("Expected value of assertion type equal (" + _expect.toString() + ") is not an JSON list");
       }
+      return _expect.equals(suffixes);
     case none:
       throw new BatfishException("Cannot evaluate ssertion type none");
     default:
