@@ -62,8 +62,12 @@ public class ContainerTest {
   public void testToString() {
     Container c = new Container("foo", null, null);
     assertThat(c.toString(), equalTo("Container{name=foo, testrigs=[], analyses={}}"));
-    c.addAnalysis("analysis", null);
-    assertThat(c.toString(), equalTo("Container{name=foo, testrigs=[], analyses={analysis=null}}"));
+    c.addAnalysis("analysis", new Analysis("analysis", Maps.newHashMap()));
+    assertThat(
+        c.toString(),
+        equalTo(
+            "Container{name=foo, testrigs=[],"
+                + " analyses={analysis=Analysis{name=analysis, questions={}}}}"));
   }
 
   @Test

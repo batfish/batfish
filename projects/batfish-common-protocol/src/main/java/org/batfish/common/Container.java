@@ -51,7 +51,7 @@ public final class Container {
     return _analyses;
   }
 
-  public void addAnalysis(String analysisName, @Nullable Analysis analysis) {
+  public void addAnalysis(String analysisName, Analysis analysis) {
     if (_analyses.containsKey(analysisName)) {
       throw new BatfishException(
           String.format("Analysis %s already exists for container %s", analysisName, _name));
