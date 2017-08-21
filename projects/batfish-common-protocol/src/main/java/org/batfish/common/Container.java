@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.pojo.Analysis;
@@ -12,8 +14,8 @@ import org.batfish.datamodel.pojo.Analysis;
 /**
  * The {@link Container Container} is an Object representation of the container for BatFish service.
  *
- * <p>Each {@link Container Container} contains a name, a list of testrigs, and a list of {@link
- * Analysis Analysis}.
+ * <p>Each {@link Container Container} contains a name, a list of testrigs, and a mapping from
+ * analysis names to {@link Analysis Analysis} inside the container.
  */
 public final class Container {
   private static final String PROP_NAME = "name";
@@ -22,14 +24,16 @@ public final class Container {
 
   private final String _name;
   private final List<String> _testrigs;
-  private final List<Analysis> _analyses;
+  private final Map<String, Analysis> _analyses;
 
   @JsonCreator
   public Container(
-      String name, @Nullable List<String> testrigs, @Nullable List<Analysis> analyses) {
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_TESTRIGS) @Nullable List<String> testrigs,
+      @JsonProperty(PROP_ANALYSES) @Nullable Map<String, Analysis> analyses) {
     this._name = name;
     this._testrigs = testrigs == null ? new ArrayList<>() : testrigs;
-    this._analyses = analyses == null ? new ArrayList<>() : analyses;
+    this._analyses = analyses == null ? new HashMap<>() : analyses;
   }
 
   @JsonProperty(PROP_NAME)
@@ -43,8 +47,24 @@ public final class Container {
   }
 
   @JsonProperty(PROP_ANALYSES)
-  public List<Analysis> getAnalyses() {
+  public Map<String, Analysis> getAnalyses() {
     return _analyses;
+  }
+
+  public void addAnalysis(String analysisName, @Nullable Analysis analysis) {
+    if (_analyses.containsKey(analysisName)) {
+      throw new BatfishException(
+          String.format("Analysis %s already exists for container %s", analysisName, _name));
+    }
+    _analyses.put(analysisName, analysis);
+  }
+
+  public void deleteAnalysis(String analysisName) {
+    if (!_analyses.containsKey(analysisName)) {
+      throw new BatfishException(
+          String.format("Analysis %s does not exist for container %s", analysisName, _name));
+    }
+    _analyses.remove(analysisName);
   }
 
   @Override

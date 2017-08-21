@@ -1,10 +1,13 @@
 package org.batfish.coordinator;
 
+import com.google.common.base.Strings;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.security.AccessControlException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.UUID;
@@ -153,11 +156,18 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      boolean newAnalysis = (newAnalysisStr == null || newAnalysisStr.equals("")) ? false : true;
+      boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
+      List<String> questionsToDelete = new ArrayList<>();
+      if (!Strings.isNullOrEmpty(delQuestions)) {
+        JSONArray delQuestionsArray = new JSONArray(delQuestions);
+        for (int i = 0; i < delQuestionsArray.length(); i++) {
+          questionsToDelete.add(delQuestionsArray.getString(i));
+        }
+      }
 
       Main.getWorkMgr()
           .configureAnalysis(
-              containerName, newAnalysis, analysisName, addQuestionsStream, delQuestions);
+              containerName, newAnalysis, analysisName, addQuestionsStream, questionsToDelete);
 
       return new JSONArray(
           Arrays.asList(
@@ -256,10 +266,10 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().delContainer(containerName);
+      boolean status = Main.getWorkMgr().delContainer(containerName);
 
       return new JSONArray(
-          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", "true"))));
+          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, new JSONObject().put("result", status)));
 
     } catch (FileExistsException
         | FileNotFoundException
@@ -622,12 +632,11 @@ public class WorkMgrService {
 
       checkContainerAccessibility(apiKey, containerName);
 
-      Container container = Main.getWorkMgr().getContainer(containerDir);
-      container.setName(containerName);
+      Container container = Main.getWorkMgr().getContainer(containerName);
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String containerString = mapper.writeValueAsString(container);
 
-      return Response.ok(containerString, MediaType.APPLICATION_JSON).build();
+      return Response.ok(containerString).build();
     } catch (AccessControlException e) {
       return Response.status(Status.FORBIDDEN)
           .entity(e.getMessage())

@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -129,7 +131,10 @@ public class WorkMgr {
       Path containerDir =
           Main.getSettings().getContainersLocation().resolve(work.getWorkItem().getContainerName());
       String testrigName = work.getWorkItem().getTestrigName();
-      Path testrigBaseDir = containerDir.resolve(testrigName).toAbsolutePath();
+      Path testrigBaseDir =
+          containerDir
+              .resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName))
+              .toAbsolutePath();
       task.put(BfConsts.ARG_CONTAINER_DIR, containerDir.toAbsolutePath().toString());
       task.put(BfConsts.ARG_TESTRIG, testrigName);
       task.put(
@@ -294,15 +299,15 @@ public class WorkMgr {
    *     delQuestionsStr}.
    * @param aName The name of the analysis
    * @param addQuestionsFileStream The questions to be added to or initially populate the analysis.
-   * @param delQuestionsStr A string representation of a JSON array of names of questions to be
-   *     deleted from the analysis. Incompatible with {@code newAnalysis}.
+   * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
+   *     with {@code newAnalysis}.
    */
   public void configureAnalysis(
       String containerName,
       boolean newAnalysis,
       String aName,
       InputStream addQuestionsFileStream,
-      String delQuestionsStr) {
+      List<String> questionsToDelete) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
     if (Files.exists(aDir) && newAnalysis) {
@@ -350,30 +355,12 @@ public class WorkMgr {
     }
 
     /** Delete questions */
-    if (delQuestionsStr != null && !delQuestionsStr.equals("")) {
-      JSONArray delQuestionsArray;
-      try {
-        delQuestionsArray = new JSONArray(delQuestionsStr);
-      } catch (JSONException e) {
-        throw new BatfishException(
-            "The string of questions to be deleted does not encode a valid JSON array: "
-                + delQuestionsStr,
-            e);
+    for (String qName : questionsToDelete) {
+      Path qDir = questionsDir.resolve(qName);
+      if (!Files.exists(qDir)) {
+        throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
       }
-      for (int index = 0; index < delQuestionsArray.length(); index++) {
-        String qName;
-        try {
-          qName = delQuestionsArray.getString(index);
-        } catch (JSONException e) {
-          throw new BatfishException(
-              "Could not get name of question to be deleted at index " + index, e);
-        }
-        Path qDir = questionsDir.resolve(qName);
-        if (!Files.exists(qDir)) {
-          throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
-        }
-        CommonUtil.deleteDirectory(qDir);
-      }
+      CommonUtil.deleteDirectory(qDir);
     }
   }
 
@@ -382,9 +369,13 @@ public class WorkMgr {
     CommonUtil.deleteDirectory(aDir);
   }
 
-  public void delContainer(String containerName) {
-    Path containerDir = getdirContainer(containerName);
-    CommonUtil.deleteDirectory(containerDir);
+  public boolean delContainer(String containerName) {
+    Path containerDir = getdirContainer(containerName, false);
+    if (Files.exists(containerDir)) {
+      CommonUtil.deleteDirectory(containerDir);
+      return true;
+    }
+    return false;
   }
 
   public void delEnvironment(String containerName, String testrigName, String envName) {
@@ -529,21 +520,13 @@ public class WorkMgr {
     return answer;
   }
 
-  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  /**
+   * Returns a {@link Container container} contains all information about the container {@code
+   * containerName}
+   */
   public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    SortedSet<String> testrigs = listTestrigs(containerName);
+    return new Container(containerName, new ArrayList<>(testrigs), new HashMap<>());
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -556,9 +539,13 @@ public class WorkMgr {
   }
 
   private Path getdirContainer(String containerName) {
+    return getdirContainer(containerName, true);
+  }
+
+  private Path getdirContainer(String containerName, boolean errIfNotEixst) {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
-    if (!Files.exists(containerDir)) {
+    if (errIfNotEixst && !Files.exists(containerDir)) {
       throw new BatfishException("Container '" + containerName + "' does not exist");
     }
     return containerDir;
@@ -698,6 +685,14 @@ public class WorkMgr {
     if (!containerDir.toFile().mkdirs()) {
       throw new BatfishException("failed to create directory '" + containerDir + "'");
     }
+    Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
+    if (!testrigsDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + testrigsDir + "'");
+    }
+    Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
+    if (!analysesDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + analysesDir + "'");
+    }
     return containerName;
   }
 
@@ -830,7 +825,11 @@ public class WorkMgr {
     Path testrigDir =
         Main.getSettings()
             .getContainersLocation()
-            .resolve(Paths.get(workItem.getContainerName(), workItem.getTestrigName()));
+            .resolve(
+                Paths.get(
+                    workItem.getContainerName(),
+                    BfConsts.RELPATH_TESTRIGS_DIR,
+                    workItem.getTestrigName()));
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
       throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
     }

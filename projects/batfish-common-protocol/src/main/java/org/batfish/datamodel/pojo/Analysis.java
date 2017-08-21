@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 /**
@@ -24,7 +25,7 @@ public class Analysis {
   @JsonCreator
   public Analysis(
       @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_QUESTIONS) Map<String, String> questions) {
+      @JsonProperty(PROP_QUESTIONS) @Nullable Map<String, String> questions) {
     this._name = name;
     this._questions = questions == null ? new HashMap<>() : questions;
   }

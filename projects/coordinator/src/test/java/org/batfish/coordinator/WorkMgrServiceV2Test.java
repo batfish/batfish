@@ -8,8 +8,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.List;
-import java.util.TreeSet;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
@@ -75,7 +76,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void getContainer() throws Exception {
     String containerName = "some container";
-    Container expected = Container.of(containerName, new TreeSet<>());
+    Container expected = new Container(containerName, Lists.newArrayList(), Maps.newHashMap());
     Main.getWorkMgr().initContainer(containerName, null);
 
     Response response = target("/v2/container").path(containerName).request().get();
