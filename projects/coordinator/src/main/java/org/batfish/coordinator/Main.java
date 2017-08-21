@@ -222,6 +222,7 @@ public class Main {
 
   private static void mainRun() {
     try {
+      initStorage();
       initAuthorizer();
       initPoolManager();
       initWorkManager();

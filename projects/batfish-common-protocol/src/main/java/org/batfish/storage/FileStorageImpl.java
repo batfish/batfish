@@ -13,6 +13,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.pojo.Analysis;
 
+
 public class FileStorageImpl implements Storage {
 
   private final Path _containersLocation;
@@ -59,9 +60,7 @@ public class FileStorageImpl implements Storage {
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
       throw new BatfishException(
-          String.format(
-              "Analysis '%s' doesn't have the proper structure on disk: missing questions directory",
-              analysisName));
+          String.format("Analysis '%s' doesn't questions directory", analysisName));
     }
     Map<String, String> questions = new HashMap<>();
     for (Path questionDir : CommonUtil.getEntries(questionsDir)) {
@@ -76,16 +75,16 @@ public class FileStorageImpl implements Storage {
   public Analysis saveAnalysis(String containerName, Analysis analysis) {
     Path aDir =
         _containersLocation.resolve(
-            Paths.get(containerName, BfConsts.RELPATH_ANALYSES_DIR, analysis.get_name()));
+            Paths.get(containerName, BfConsts.RELPATH_ANALYSES_DIR, analysis.getName()));
     if (Files.exists(aDir)) {
       throw new BatfishException(
           String.format(
               "Analysis '%s' already exists for container '%s'",
-              analysis.get_name(), containerName));
+              analysis.getName(), containerName));
     }
     //trying to create analysis skeleton dir with questions dir
     if (!aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).toFile().mkdirs()) {
-      throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
+      throw new BatfishException(String.format("Failed to create analysis directory '%s'", aDir));
     }
 
     for (String questionName : analysis.getQuestions().keySet()) {
@@ -103,7 +102,7 @@ public class FileStorageImpl implements Storage {
 
   @Override
   public Analysis updateAnalysis(String containerName, Analysis analysis) {
-    Analysis oldAnalysisObj = getAnalysis(containerName, analysis.get_name());
+    Analysis oldAnalysisObj = getAnalysis(containerName, analysis.getName());
     Set<String> questionsToDelete =
         Sets.difference(oldAnalysisObj.getQuestions().keySet(), analysis.getQuestions().keySet());
     Set<String> questionsToAdd =
@@ -113,7 +112,7 @@ public class FileStorageImpl implements Storage {
             Paths.get(
                 containerName,
                 BfConsts.RELPATH_ANALYSES_DIR,
-                analysis.get_name(),
+                analysis.getName(),
                 BfConsts.RELPATH_QUESTIONS_DIR));
     for (String question : questionsToDelete) {
       try {
@@ -124,27 +123,30 @@ public class FileStorageImpl implements Storage {
     }
     for (String question : questionsToAdd) {
       if (!questionsDir.resolve(question).toFile().mkdirs()) {
-        throw new BatfishException(String.format("Could not add question '%s'", question));
+        throw new BatfishException(
+            String.format("Failed to create question directory '%s'", question));
       }
-      try {
 
-        CommonUtil.writeFile(
-            questionsDir.resolve(Paths.get(question, BfConsts.RELPATH_QUESTION_FILE)),
-            analysis.getQuestions().get(question));
-      } catch (BatfishException e) {
-        throw new BatfishException(String.format("Could not add question '%s'", question));
-      }
+      CommonUtil.writeFile(
+          questionsDir.resolve(Paths.get(question, BfConsts.RELPATH_QUESTION_FILE)),
+          analysis.getQuestions().get(question));
     }
-    return getAnalysis(containerName, analysis.get_name());
+    return getAnalysis(containerName, analysis.getName());
   }
 
   @Override
   public boolean deleteAnalysis(String containerName, String analysisName, boolean force) {
-    Path analysisDir = _containersLocation.resolve(Paths.get(containerName, analysisName));
-    if (!Files.exists(analysisDir)) {
+    Path aDir =
+        _containersLocation.resolve(
+            Paths.get(containerName, BfConsts.RELPATH_ANALYSES_DIR, analysisName));
+    if (!Files.exists(aDir)) {
       return false;
     }
-    CommonUtil.deleteDirectory(analysisDir);
+    if (aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).toFile().list().length > 0 && !force) {
+      throw new BatfishException(
+          String.format("'%s' is not empty, deletion must be forced", analysisName));
+    }
+    CommonUtil.deleteDirectory(aDir);
     return true;
   }
 }
