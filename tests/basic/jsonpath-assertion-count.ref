@@ -5,10 +5,10 @@
       "results" : {
         "0" : {
           "assertionResult" : false,
-          "numResults" : 0,
+          "numResults" : 6,
           "path" : {
             "assertion" : {
-              "expect" : 6,
+              "expect" : 5,
               "type" : "count"
             },
             "path" : "$.nodes['as2core2']..mtu",
@@ -26,12 +26,12 @@
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
       "differential" : false,
       "nodeRegex" : ".*",
-      "summary" : true
+      "summary" : false
     },
     "paths" : [
       {
         "assertion" : {
-          "expect" : 6,
+          "expect" : 5,
           "type" : "count"
         },
         "path" : "$.nodes['as2core2']..mtu",
