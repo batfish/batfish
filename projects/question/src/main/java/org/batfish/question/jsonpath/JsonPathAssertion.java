@@ -1,8 +1,5 @@
 package org.batfish.question.jsonpath;
 
-import static org.batfish.question.jsonpath.JsonPathAssertionType.count;
-import static org.batfish.question.jsonpath.JsonPathAssertionType.equal;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,7 +30,7 @@ public class JsonPathAssertion {
       }
       return _expect.equals(suffixes);
     case none:
-      throw new BatfishException("Cannot evaluate ssertion type none");
+      throw new BatfishException("Cannot evaluate assertion type none");
     default:
       throw new BatfishException("Unhandled assertion type: " + getType());
     }
