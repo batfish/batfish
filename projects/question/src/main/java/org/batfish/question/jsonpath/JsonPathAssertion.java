@@ -21,12 +21,14 @@ public class JsonPathAssertion {
     switch (getType()) {
     case count:
       if (!_expect.isInt()) {
-        throw new BatfishException("Expected value of assertion type count (" + _expect.toString() + ") is not an integer");
+        throw new BatfishException("Expected value of assertion type count ("
+            + _expect.toString() + ") is not an integer");
       }
       return (suffixes.size() == _expect.asInt());
     case equal:
       if (!_expect.isArray()) {
-        throw new BatfishException("Expected value of assertion type equal (" + _expect.toString() + ") is not an JSON list");
+        throw new BatfishException("Expected value of assertion type equal ("
+            + _expect.toString() + ") is not an JSON list");
       }
       return _expect.equals(suffixes);
     case none:
