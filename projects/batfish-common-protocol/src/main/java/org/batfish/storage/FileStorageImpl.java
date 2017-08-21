@@ -64,6 +64,13 @@ public class FileStorageImpl implements Storage {
     }
     Map<String, String> questions = new HashMap<>();
     for (Path questionDir : CommonUtil.getEntries(questionsDir)) {
+      Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      if (!Files.exists(questionFile)) {
+        throw new BatfishException(
+            String.format(
+                "Failed to read analysis '%s', question empty: '%s'",
+                analysisName, questionDir.getFileName()));
+      }
       questions.put(
           questionDir.getFileName().toString(),
           CommonUtil.readFile(questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE)));

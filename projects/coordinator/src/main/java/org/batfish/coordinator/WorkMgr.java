@@ -49,24 +49,19 @@ import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr {
 
-  final class AssignWorkTask implements Runnable {
-    @Override
-    public void run() {
-      Main.getWorkMgr().checkTask();
-      Main.getWorkMgr().assignWork();
-    }
-  }
-
-  final class CheckTaskTask implements Runnable {
-    @Override
-    public void run() {
-      Main.getWorkMgr().checkTask();
-    }
-  }
-
   private static final Set<String> ENV_FILENAMES = initEnvFilenames();
-
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
+  private final BatfishLogger _logger;
+  private final Settings _settings;
+  private WorkQueueMgr _workQueueMgr;
+  private Storage _storage;
+
+  public WorkMgr(Settings settings, BatfishLogger logger) {
+    _settings = settings;
+    _logger = logger;
+    _workQueueMgr = new WorkQueueMgr();
+    _storage = Main.getStorage();
+  }
 
   private static Set<String> initEnvFilenames() {
     Set<String> envFilenames = new HashSet<>();
@@ -77,21 +72,6 @@ public class WorkMgr {
     envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
     envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     return envFilenames;
-  }
-
-  private final BatfishLogger _logger;
-
-  private final Settings _settings;
-
-  private WorkQueueMgr _workQueueMgr;
-
-  private Storage _storage;
-
-  public WorkMgr(Settings settings, BatfishLogger logger) {
-    _settings = settings;
-    _logger = logger;
-    _workQueueMgr = new WorkQueueMgr();
-    _storage = Main.getStorage();
   }
 
   private void assignWork() {
@@ -303,15 +283,15 @@ public class WorkMgr {
    *     delQuestionsStr}.
    * @param aName The name of the analysis
    * @param addQuestionsFileStream The questions to be added to or initially populate the analysis.
-   * @param delQuestionsStr A string representation of a JSON array of names of questions to be
-   *     deleted from the analysis. Incompatible with {@code newAnalysis}.
+   * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
+   *     with {@code newAnalysis}.
    */
   public void configureAnalysis(
       String containerName,
       boolean newAnalysis,
       String aName,
       InputStream addQuestionsFileStream,
-      String delQuestionsStr) {
+      List<String> questionsToDelete) {
     Analysis storedAnalysis;
     if (newAnalysis) {
       storedAnalysis = _storage.saveAnalysis(containerName, new Analysis(aName, new HashMap<>()));
@@ -339,30 +319,11 @@ public class WorkMgr {
     }
 
     /** Delete questions */
-    if (delQuestionsStr != null && !delQuestionsStr.equals("")) {
-      JSONArray delQuestionsArray;
-      try {
-        delQuestionsArray = new JSONArray(delQuestionsStr);
-      } catch (JSONException e) {
-        throw new BatfishException(
-            "The string of questions to be deleted does not encode a valid JSON array: "
-                + delQuestionsStr,
-            e);
-      }
-      for (int index = 0; index < delQuestionsArray.length(); index++) {
-        String qName;
-        try {
-          qName = delQuestionsArray.getString(index);
-        } catch (JSONException e) {
-          throw new BatfishException(
-              "Could not get name of question to be deleted at index " + index, e);
-        }
-        storedAnalysis.deleteQuestion(qName);
-      }
+    for (String qName : questionsToDelete) {
+      storedAnalysis.deleteQuestion(qName);
     }
     _storage.updateAnalysis(containerName, storedAnalysis);
   }
-
 
   public void delAnalysis(String containerName, String aName) {
     if (!_storage.deleteAnalysis(containerName, aName, true)) {
@@ -1032,5 +993,20 @@ public class WorkMgr {
     // delete the empty directory and the zip file
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
+  }
+
+  final class AssignWorkTask implements Runnable {
+    @Override
+    public void run() {
+      Main.getWorkMgr().checkTask();
+      Main.getWorkMgr().assignWork();
+    }
+  }
+
+  final class CheckTaskTask implements Runnable {
+    @Override
+    public void run() {
+      Main.getWorkMgr().checkTask();
+    }
   }
 }
