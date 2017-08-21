@@ -60,7 +60,7 @@ public class FileStorageImpl implements Storage {
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
       throw new BatfishException(
-          String.format("Analysis '%s' doesn't questions directory", analysisName));
+          String.format("Analysis '%s' doesn't contain questions directory", analysisName));
     }
     Map<String, String> questions = new HashMap<>();
     for (Path questionDir : CommonUtil.getEntries(questionsDir)) {
@@ -104,7 +104,7 @@ public class FileStorageImpl implements Storage {
       CommonUtil.writeFile(questionFile, analysis.getQuestions().get(questionName));
     }
 
-    return analysis;
+    return getAnalysis(containerName, analysis.getName());
   }
 
   @Override
