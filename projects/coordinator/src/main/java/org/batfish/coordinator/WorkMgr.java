@@ -49,19 +49,24 @@ import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr {
 
-  private static final Set<String> ENV_FILENAMES = initEnvFilenames();
-  private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
-  private final BatfishLogger _logger;
-  private final Settings _settings;
-  private WorkQueueMgr _workQueueMgr;
-  private Storage _storage;
-
-  public WorkMgr(Settings settings, BatfishLogger logger) {
-    _settings = settings;
-    _logger = logger;
-    _workQueueMgr = new WorkQueueMgr();
-    _storage = Main.getStorage();
+  final class AssignWorkTask implements Runnable {
+    @Override
+    public void run() {
+      Main.getWorkMgr().checkTask();
+      Main.getWorkMgr().assignWork();
+    }
   }
+
+  final class CheckTaskTask implements Runnable {
+    @Override
+    public void run() {
+      Main.getWorkMgr().checkTask();
+    }
+  }
+
+  private static final Set<String> ENV_FILENAMES = initEnvFilenames();
+
+  private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
   private static Set<String> initEnvFilenames() {
     Set<String> envFilenames = new HashSet<>();
@@ -72,6 +77,21 @@ public class WorkMgr {
     envFilenames.add(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
     envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     return envFilenames;
+  }
+
+  private final BatfishLogger _logger;
+
+  private final Settings _settings;
+
+  private WorkQueueMgr _workQueueMgr;
+
+  private Storage _storage;
+
+  public WorkMgr(Settings settings, BatfishLogger logger) {
+    _settings = settings;
+    _logger = logger;
+    _workQueueMgr = new WorkQueueMgr();
+    _storage = Main.getStorage();
   }
 
   private void assignWork() {
@@ -993,20 +1013,5 @@ public class WorkMgr {
     // delete the empty directory and the zip file
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
-  }
-
-  final class AssignWorkTask implements Runnable {
-    @Override
-    public void run() {
-      Main.getWorkMgr().checkTask();
-      Main.getWorkMgr().assignWork();
-    }
-  }
-
-  final class CheckTaskTask implements Runnable {
-    @Override
-    public void run() {
-      Main.getWorkMgr().checkTask();
-    }
   }
 }
