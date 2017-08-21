@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
@@ -135,9 +136,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   public void deleteNonExistingContainer() {
     Response response =
         target().path(BASE_CONTAINER_PATH).path("nonExistingContainer").request().delete();
-    assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
-    String expectedMessage = "Container 'nonExistingContainer' does not exist";
-    assertThat(response.readEntity(String.class), containsString(expectedMessage));
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
 
   @Test

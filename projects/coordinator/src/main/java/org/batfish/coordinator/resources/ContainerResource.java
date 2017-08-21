@@ -65,12 +65,12 @@ public class ContainerResource {
   @DELETE
   public Response deleteContainer() {
     _logger.info("WMS: delContainer '" + _name + "'\n");
-    if (!Main.getAuthorizer().isAccessibleContainer(_apiKey, _name, false)) {
-      throw new ForbiddenException(
-          "container '" + _name + "' is not accessible by the api key: " + _apiKey);
+    validate();
+    if (Main.getWorkMgr().delContainer(_name)) {
+      return Response.noContent().build();
+    } else {
+      return Response.serverError().build();
     }
-    Main.getWorkMgr().delContainer(_name);
-    return Response.noContent().build();
   }
 
   /** Returns the list of testrigs that the given API key mayaccess. */
