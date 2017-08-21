@@ -39,7 +39,8 @@ public class JsonPathAssertionTest {
     Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
     ConfigurationBuilder b = new ConfigurationBuilder();
     _baseConfiguration = b.build();
-    _jsonPathAssertionTestStr = CommonUtil.readResource("org/batfish/question/jsonPathAssertionTest.json");
+    _jsonPathAssertionTestStr = CommonUtil
+        .readResource("org/batfish/question/jsonPathAssertionTest.json");
     _jsonPathAssertionTestJsonObject =
         JsonPath.parse(_jsonPathAssertionTestStr, _baseConfiguration).json();
     ConfigurationBuilder suffixCb = new ConfigurationBuilder();
