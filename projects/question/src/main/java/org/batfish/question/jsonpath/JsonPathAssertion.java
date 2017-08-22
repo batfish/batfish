@@ -25,10 +25,10 @@ public class JsonPathAssertion {
             + _expect.toString() + ") is not an integer");
       }
       return (suffixes.size() == _expect.asInt());
-    case equal:
+    case suffixEquals:
       if (!_expect.isArray()) {
-        throw new BatfishException("Expected value of assertion type equal ("
-            + _expect.toString() + ") is not an JSON list");
+        throw new BatfishException("Expected value of assertion type suffixEquals ("
+            + _expect.toString() + ") is not JSON list");
       }
       return _expect.equals(suffixes);
     case none:

@@ -16,7 +16,7 @@
                 1500,
                 1500
               ],
-              "type" : "eq"
+              "type" : "suffixequals"
             },
             "path" : "$.nodes['as2core2']..mtu",
             "suffix" : false,
@@ -46,7 +46,7 @@
             1500,
             1500
           ],
-          "type" : "eq"
+          "type" : "suffixequals"
         },
         "path" : "$.nodes['as2core2']..mtu",
         "suffix" : false,

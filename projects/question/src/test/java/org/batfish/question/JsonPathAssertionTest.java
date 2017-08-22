@@ -99,9 +99,27 @@ public class JsonPathAssertionTest {
   }
 
   @Test
-  public void testEvaluateEqualFalse() {
+  public void testEvaluateNone() {
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
-    jpAssertion.setType(JsonPathAssertionType.equal);
+    jpAssertion.setType(JsonPathAssertionType.none);
+    String path = "$.nodes..mtu";
+    JsonPath jsonPath = JsonPath.compile(path);
+    ArrayNode suffixes = null;
+    try {
+      suffixes = jsonPath.read(_jsonPathAssertionTestJsonObject, _suffixConfiguration);
+    } catch (PathNotFoundException e) {
+      suffixes = JsonNodeFactory.instance.arrayNode();
+    }
+    String errorMessage = "Cannot evaluate assertion type none";
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(errorMessage);
+    jpAssertion.evaluate(suffixes);
+  }
+
+  @Test
+  public void testEvaluateSuffixEqualsFalse() {
+    JsonPathAssertion jpAssertion = new JsonPathAssertion();
+    jpAssertion.setType(JsonPathAssertionType.suffixEquals);
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       JsonNode expect = mapper.readValue("[1500, 1600]", JsonNode.class);
@@ -122,9 +140,9 @@ public class JsonPathAssertionTest {
   }
 
   @Test
-  public void testEvaluateEqualTrue() {
+  public void testEvaluateSuffixEqualTrue() {
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
-    jpAssertion.setType(JsonPathAssertionType.equal);
+    jpAssertion.setType(JsonPathAssertionType.suffixEquals);
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       JsonNode expect = mapper.readValue("[1500, 1600]", JsonNode.class);
@@ -142,24 +160,6 @@ public class JsonPathAssertionTest {
     }
     boolean result = jpAssertion.evaluate(suffixes);
     assertThat(result, equalTo(true));
-  }
-
-  @Test
-  public void testEvaluateNone() {
-    JsonPathAssertion jpAssertion = new JsonPathAssertion();
-    jpAssertion.setType(JsonPathAssertionType.none);
-    String path = "$.nodes..mtu";
-    JsonPath jsonPath = JsonPath.compile(path);
-    ArrayNode suffixes = null;
-    try {
-      suffixes = jsonPath.read(_jsonPathAssertionTestJsonObject, _suffixConfiguration);
-    } catch (PathNotFoundException e) {
-      suffixes = JsonNodeFactory.instance.arrayNode();
-    }
-    String errorMessage = "Cannot evaluate assertion type none";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(errorMessage);
-    jpAssertion.evaluate(suffixes);
   }
 
 }
