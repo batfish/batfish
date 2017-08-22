@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.bdp.BdpDataPlanePlugin;
@@ -106,7 +105,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
-import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
@@ -1080,78 +1078,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     executor.executeJobs(jobs, configurations, answerElement);
     printElapsedTime();
     return configurations;
-  }
-
-  @Override
-  public EnvironmentCreationAnswerElement createEnvironment(
-      String newEnvName,
-      SortedSet<String> nodeBlacklist,
-      SortedSet<NodeInterfacePair> interfaceBlacklist,
-      SortedSet<Edge> edgeBlacklist,
-      boolean dp) {
-    EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    String oldEnvName = envSettings.getName();
-    if (oldEnvName.equals(newEnvName)) {
-      throw new BatfishException(
-          "Cannot create new environment: name of environment is same as that of old");
-    }
-    answerElement.setNewEnvironmentName(newEnvName);
-    answerElement.setOldEnvironmentName(oldEnvName);
-    Path oldEnvPath = envSettings.getEnvPath();
-    applyBaseDir(
-        _testrigSettings, _settings.getContainerDir(), _testrigSettings.getName(), newEnvName);
-    EnvironmentSettings newEnvSettings = _testrigSettings.getEnvironmentSettings();
-    Path newEnvPath = newEnvSettings.getEnvPath();
-    if (Files.exists(newEnvPath)) {
-      throw new BatfishException(
-          "Cannot create new environment '"
-              + newEnvName
-              + "': environment with same name already exists");
-    }
-    newEnvPath.toFile().mkdirs();
-    try {
-      FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to intialize new environment from old environment", e);
-    }
-
-    // write node blacklist from question
-    String nodeBlacklistStr;
-    if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
-      try {
-        nodeBlacklistStr = new BatfishObjectMapper().writeValueAsString(nodeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize node blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(), nodeBlacklistStr);
-    }
-    // write interface blacklist from question
-    if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
-      String interfaceBlacklistStr;
-      try {
-        interfaceBlacklistStr = new BatfishObjectMapper().writeValueAsString(interfaceBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize interface blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(), interfaceBlacklistStr);
-    }
-
-    // write edge blacklist from question
-    if (edgeBlacklist != null) {
-      String edgeBlacklistStr;
-      try {
-        edgeBlacklistStr = new BatfishObjectMapper().writeValueAsString(edgeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize edge blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(), edgeBlacklistStr);
-    }
-
-    if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-      computeDataPlane(true);
-    }
-    return answerElement;
   }
 
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
