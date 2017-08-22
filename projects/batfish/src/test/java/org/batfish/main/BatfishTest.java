@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishTestUtils;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
@@ -67,7 +67,7 @@ public class BatfishTest {
 
     Path questionPath =
           CommonUtil.createTempFileWithContent("testAnswerBadQuestion", badQuestionStr);
-    Batfish batfish = BatfishTestUtils.getBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     batfish.getSettings().setQuestionPath(questionPath);
     Answer answer = batfish.answer();
     assertThat(answer.getQuestion(), is(nullValue()));
@@ -99,7 +99,7 @@ public class BatfishTest {
 
     Path topologyFilePath =
         CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyBadJson);
-    Batfish batfish = BatfishTestUtils.getBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     String errorMessage = "Topology format error";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(errorMessage);
@@ -111,7 +111,7 @@ public class BatfishTest {
     String topologyEmpty = "";
     Path topologyFilePath =
         CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyEmpty);
-    Batfish batfish = BatfishTestUtils.getBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     String errorMessage = "ERROR: empty topology\n";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(errorMessage);
@@ -138,7 +138,7 @@ public class BatfishTest {
 
     Path topologyFilePath =
         CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
-    Batfish batfish = BatfishTestUtils.getBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);
   }
@@ -146,8 +146,10 @@ public class BatfishTest {
   @Test
   public void testCheckValidTopology() throws IOException {
     Map<String, Configuration> configs = new HashMap<>();
-    configs.put("h1", BatfishTestUtils.createConfiguration("h1", "eth0"));
-    configs.put("h2", BatfishTestUtils.createConfiguration("h2", "e0"));
+    configs.put(
+        "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
+    configs.put(
+        "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
     EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
@@ -158,7 +160,8 @@ public class BatfishTest {
   @Test
   public void testCheckTopologyInvalidNode() throws IOException {
     Map<String, Configuration> configs = new HashMap<>();
-    configs.put("h1", BatfishTestUtils.createConfiguration("h1", "eth0"));
+    configs.put(
+        "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
     EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
@@ -170,8 +173,10 @@ public class BatfishTest {
   @Test
   public void testCheckTopologyInvalidInterface() throws IOException {
     Map<String, Configuration> configs = new HashMap<>();
-    configs.put("h1", BatfishTestUtils.createConfiguration("h1", "eth0"));
-    configs.put("h2", BatfishTestUtils.createConfiguration("h2", "e0"));
+    configs.put(
+        "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
+    configs.put(
+        "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
     EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth1", "h2", "e0")));
     Topology topology = new Topology(edges);
 
@@ -191,7 +196,7 @@ public class BatfishTest {
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
-    Batfish batfish = BatfishTestUtils.getBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     String failureMessage =
         "Iptables file iptables/host1.iptables for host host1 "
             + "is not contained within the testrig";
@@ -283,7 +288,7 @@ public class BatfishTest {
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
-    Batfish batfish = BatfishTestUtils.getBatfish();
+    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
     assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
     assertThat(answerElement.getErrors().size(), is(0));
