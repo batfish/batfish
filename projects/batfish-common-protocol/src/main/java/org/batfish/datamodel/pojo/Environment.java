@@ -3,8 +3,6 @@ package org.batfish.datamodel.pojo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,13 +44,12 @@ public class Environment {
       @JsonProperty(PROP_ENVIRONMENT_ROUTING_TABLES) @Nullable Map<String, String> routingTables,
       @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS) @Nullable String externalBgpAnnouncements) {
     this._name = name;
-    this._edgeBlacklist = edgeBlacklist == null ? new ArrayList<>() : edgeBlacklist;
-    this._interfaceBlacklist = interfaceBlacklist == null ? new ArrayList<>() : interfaceBlacklist;
-    this._nodeBlacklist = nodeBlacklist == null ? new ArrayList<>() : nodeBlacklist;
-    this._bgpTables = bgpTables == null ? new HashMap<>() : bgpTables;
-    this._routingTables = routingTables == null ? new HashMap<>() : routingTables;
-    this._externalBgpAnnouncements =
-        externalBgpAnnouncements == null ? "" : externalBgpAnnouncements;
+    this._edgeBlacklist = edgeBlacklist;
+    this._interfaceBlacklist = interfaceBlacklist;
+    this._nodeBlacklist = nodeBlacklist;
+    this._bgpTables = bgpTables;
+    this._routingTables = routingTables;
+    this._externalBgpAnnouncements = externalBgpAnnouncements;
   }
 
   @JsonProperty(PROP_NAME)
