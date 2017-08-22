@@ -40,8 +40,8 @@ public enum Command {
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
-  INIT_DELTA_ENV("init-delta-environment"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
+  INIT_ENVIRONMENT("init-environment"),
   INIT_TESTRIG("init-testrig"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
@@ -164,15 +164,18 @@ public enum Command {
         new Pair<>(
             "[-setname <container-name> | <container-name-prefix>]", "Initialize a new container"));
     descs.put(
-        INIT_DELTA_ENV,
-        new Pair<>(
-            "<environment zipfile or directory> [<environment-name>]",
-            "Initialize the delta environment"));
-    descs.put(
         INIT_DELTA_TESTRIG,
         new Pair<>(
             "<testrig zipfile or directory> [<testrig-name>]",
             "Initialize the delta testrig with default environment"));
+    descs.put(
+        INIT_ENVIRONMENT,
+        new Pair<>(
+            "[-delta] [param1=value1], [param2=value2], ....]",
+            "Initialize the delta environment.\n"
+                + "Parameters are from the set (envName, baseEnvName, "
+                + "interfaceBlacklist, edgeBlacklist, nodeBlacklist, envDirOrZip).\n"
+                + "Values should be JSON objects (which includes strings)"));
     descs.put(
         INIT_TESTRIG,
         new Pair<>(
