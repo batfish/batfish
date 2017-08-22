@@ -73,7 +73,7 @@ public class FileStorageImpl implements Storage {
       }
       questions.put(
           questionDir.getFileName().toString(),
-          CommonUtil.readFile(questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE)));
+          CommonUtil.readFile(questionFile));
     }
     return new Analysis(analysisName, questions);
   }
