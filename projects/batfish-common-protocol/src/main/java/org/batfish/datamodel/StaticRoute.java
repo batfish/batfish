@@ -16,11 +16,9 @@ public class StaticRoute extends AbstractRoute {
 
   private final int _administrativeCost;
 
-  @Nonnull
-  private final String _nextHopInterface;
+  @Nonnull private final String _nextHopInterface;
 
-  @Nonnull
-  private final Ip _nextHopIp;
+  @Nonnull private final Ip _nextHopIp;
 
   private final int _tag;
 
@@ -40,6 +38,11 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof StaticRoute)) {
+      return false;
+    }
     StaticRoute rhs = (StaticRoute) o;
     boolean res = _network.equals(rhs._network);
     res = res && _administrativeCost == rhs._administrativeCost;

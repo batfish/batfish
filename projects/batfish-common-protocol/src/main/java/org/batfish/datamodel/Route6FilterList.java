@@ -37,11 +37,14 @@ public class Route6FilterList extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
+    } else if (!(o instanceof Route6FilterList)) {
+      return false;
     }
-    Route6FilterList other = (Route6FilterList) obj;
+
+    Route6FilterList other = (Route6FilterList) o;
     return other._lines.equals(_lines);
   }
 
