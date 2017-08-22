@@ -3618,8 +3618,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
                 new HeaderSpace(),
-                Collections.<String>emptySet(),
-                nodeVrfs, null, null);
+                Collections.<String>emptySet(), nodeVrfs,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(node, vrf));
