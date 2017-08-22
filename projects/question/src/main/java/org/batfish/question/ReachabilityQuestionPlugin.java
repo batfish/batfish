@@ -18,6 +18,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.Question;
+import scala.collection.generic.Sorted;
 
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
@@ -84,7 +85,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           question.getIngressNodeRegex(),
           question.getNotIngressNodeRegex(),
           question.getFinalNodeRegex(),
-          question.getNotFinalNodeRegex());
+          question.getNotFinalNodeRegex(),
+          question.getTransitNodes(),
+          question.getNotTransitNodes());
     }
   }
 
@@ -96,6 +99,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
    * <p>More details coming.
    *
    * @type Reachability dataplane
+   * @param transitNodes set of transit nodes (packet must transit through all of them)
+   * @param notTransitNodes set of non-transit nodes (packet does not transit through any of them)
    * @param DetailsComing Details coming.
    * @example bf_answer("Reachability", dstIps=["2.128.0.101"], dstPorts=[53], ipProtocols=["UDP"],
    *     actions=["drop"]) Finds all (starting node, packet header) combinations that cannot reach
@@ -178,6 +183,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
 
+    private static final String PROP_TRANSIT_NODES = "transitNodes";
+
+    private static final String PROP_NOT_TRANSIT_NODES = "notTransitNodes";
+
     private SortedSet<ForwardingAction> _actions;
 
     private String _finalNodeRegex;
@@ -189,6 +198,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private String _notFinalNodeRegex;
 
     private String _notIngressNodeRegex;
+
+    private SortedSet<String> _transitNodes;
+
+    private SortedSet<String> _notTransitNodes;
 
     private ReachabilityType _reachabilityType;
 
@@ -310,6 +323,16 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
     public String getNotIngressNodeRegex() {
       return _notIngressNodeRegex;
+    }
+
+    @JsonProperty(PROP_TRANSIT_NODES)
+    public SortedSet<String> getTransitNodes() {
+      return _transitNodes;
+    }
+
+    @JsonProperty(PROP_NOT_TRANSIT_NODES)
+    public SortedSet<String> getNotTransitNodes() {
+      return _notTransitNodes;
     }
 
     @JsonProperty(PROP_NOT_IP_PROTOCOLS)
@@ -443,6 +466,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getSrcOrDstProtocols() != null && !getSrcOrDstProtocols().isEmpty()) {
           retString += String.format(" | %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
         }
+        if (_transitNodes != null && !_transitNodes.isEmpty()) {
+          retString += String.format(" | %s=%s", PROP_TRANSIT_NODES, _transitNodes.toString());
+        }
         if (getNotDstIps() != null && !getNotDstIps().isEmpty()) {
           retString += String.format(" | %s=%s", PROP_NOT_DST_IPS, getNotDstIps());
         }
@@ -485,6 +511,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotSrcProtocols() != null && !getNotSrcProtocols().isEmpty()) {
           retString += String.format(" | %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
         }
+        if (_notTransitNodes != null && !_notTransitNodes.isEmpty()) {
+          retString += String.format(" | %s=%s", PROP_NOT_TRANSIT_NODES, _notTransitNodes);
+        }
         return retString;
       } catch (Exception e) {
         try {
@@ -521,6 +550,16 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_FINAL_NODE_REGEX)
     public void setFinalNodeRegex(String regex) {
       _finalNodeRegex = regex;
+    }
+
+    @JsonProperty(PROP_TRANSIT_NODES)
+    public void setTransitNodes(SortedSet<String> transitNodes) {
+      _transitNodes = transitNodes;
+    }
+
+    @JsonProperty(PROP_NOT_TRANSIT_NODES)
+    public void setNotTransitNodes(SortedSet<String> notTransitNodes) {
+      _notTransitNodes = notTransitNodes;
     }
 
     @JsonProperty(PROP_ICMP_CODES)

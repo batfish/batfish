@@ -26,6 +26,8 @@ import org.batfish.z3.node.NodeDropAclOutExpr;
 import org.batfish.z3.node.NodeDropExpr;
 import org.batfish.z3.node.NodeDropNoRouteExpr;
 import org.batfish.z3.node.NodeDropNullRouteExpr;
+import org.batfish.z3.node.NodeTransitExpr;
+import org.batfish.z3.node.NotExpr;
 import org.batfish.z3.node.OrExpr;
 import org.batfish.z3.node.OriginateVrfExpr;
 import org.batfish.z3.node.QueryExpr;
@@ -43,15 +45,23 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
   private Map<String, Set<String>> _ingressNodeVrfs;
 
+  private Set<String> _transitNodes;
+
+  private Set<String> _notTransitNodes;
+
   public ReachabilityQuerySynthesizer(
       Set<ForwardingAction> actions,
       HeaderSpace headerSpace,
       Set<String> finalNodes,
-      Map<String, Set<String>> ingressNodeVrfs) {
+      Map<String, Set<String>> ingressNodeVrfs,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes) {
     _actions = actions;
     _finalNodes = finalNodes;
     _headerSpace = headerSpace;
     _ingressNodeVrfs = ingressNodeVrfs;
+    _transitNodes = transitNodes;
+    _notTransitNodes = notTransitNodes;
   }
 
   @Override
@@ -162,6 +172,23 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     }
     queryConditions.addConjunct(finalActions);
     queryConditions.addConjunct(SaneExpr.INSTANCE);
+
+    // check transit constraints (unordered)
+    if (_transitNodes != null && _transitNodes.size() > 0) {
+      NodeTransitExpr transitExpr = null;
+      for (String nodeName: _transitNodes) {
+        transitExpr = new NodeTransitExpr(nodeName);
+        queryConditions.addConjunct(transitExpr);
+      }
+    }
+
+    if (_notTransitNodes != null && _notTransitNodes.size() > 0) {
+      NodeTransitExpr transitExpr = null;
+      for (String nodeName: _notTransitNodes) {
+        transitExpr = new NodeTransitExpr(nodeName);
+        queryConditions.addConjunct(new NotExpr(transitExpr));
+      }
+    }
 
     // add headerSpace constraints
     BooleanExpr matchHeaderSpace = Synthesizer.matchHeaderSpace(_headerSpace);

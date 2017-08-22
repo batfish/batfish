@@ -156,7 +156,9 @@ public interface IBatfish extends IPluginConsumer {
       String ingressNodeRegexStr,
       String notIngressNodeRegexStr,
       String finalNodeRegexStr,
-      String notFinalNodeRegexStr);
+      String notFinalNodeRegexStr,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 

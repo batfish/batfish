@@ -3611,13 +3611,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ReachabilityQuerySynthesizer acceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-                Collections.<String>emptySet(), nodeVrfs);
+                Collections.<String>emptySet(), nodeVrfs, null, null);
         ReachabilityQuerySynthesizer notAcceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
                 new HeaderSpace(),
                 Collections.<String>emptySet(),
-                nodeVrfs);
+                nodeVrfs, null, null);
         notAcceptQuery.setNegate(true);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(node, vrf));
@@ -4167,7 +4167,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String ingressNodeRegexStr,
       String notIngressNodeRegexStr,
       String finalNodeRegexStr,
-      String notFinalNodeRegexStr) {
+      String notFinalNodeRegexStr,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -4218,6 +4220,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
               + "'");
     }
 
+    //check transit nodes
+    Set<String> allNodes = configurations.keySet();
+    if (transitNodes != null) {
+      for (String node: transitNodes) {
+        if (!allNodes.contains(node)) {
+          return new StringAnswerElement(String.format("Unknown transit node %s", node));
+        }
+      }
+    }
+    if (notTransitNodes != null) {
+      for (String node: notTransitNodes) {
+        if (!allNodes.contains(node)) {
+          return new StringAnswerElement(String.format("Unknown notTransit node %s", node));
+        }
+        if (transitNodes != null && transitNodes.contains(node)) {
+          return new StringAnswerElement(
+              String.format("Same node %s can not be in both transit and notTransit", node));
+        }
+      }
+    }
+
     // build query jobs
     List<NodJob> jobs = new ArrayList<>();
     for (String ingressNode : activeIngressNodes) {
@@ -4225,7 +4248,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Map<String, Set<String>> nodeVrfs = new TreeMap<>();
         nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
         ReachabilityQuerySynthesizer query =
-            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes, nodeVrfs);
+            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes,
+                nodeVrfs, transitNodes, notTransitNodes);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
