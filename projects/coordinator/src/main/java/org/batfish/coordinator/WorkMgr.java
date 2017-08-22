@@ -32,6 +32,7 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
+import org.batfish.common.plugin.ICoordinator;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -44,7 +45,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.uri.UriComponent;
 
-public class WorkMgr {
+public class WorkMgr implements ICoordinator {
 
   final class AssignWorkTask implements Runnable {
     @Override
@@ -544,7 +545,8 @@ public class WorkMgr {
     return qDir;
   }
 
-  private Path getdirContainer(String containerName) {
+  @Override
+  public Path getdirContainer(String containerName) {
     return getdirContainer(containerName, true);
   }
 
