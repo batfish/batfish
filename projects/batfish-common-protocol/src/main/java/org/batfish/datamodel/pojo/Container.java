@@ -1,4 +1,4 @@
-package org.batfish.common;
+package org.batfish.datamodel.pojo;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
