@@ -18,7 +18,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.Question;
-import scala.collection.generic.Sorted;
 
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
@@ -121,6 +120,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String DEFAULT_NOT_INGRESS_NODE_REGEX = "";
 
+    private static final SortedSet<String> DEFAULT_TRANSIT_NODES =
+        Collections.<String>emptySortedSet();
+
+    private static final SortedSet<String> DEFAULT_NOT_TRANSIT_NODES =
+        Collections.<String>emptySortedSet();
+
     private static final String PROP_DST_IPS = "dstIps";
 
     private static final String PROP_DST_PORTS = "dstPorts";
@@ -213,6 +218,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _reachabilityType = ReachabilityType.STANDARD;
       _notFinalNodeRegex = DEFAULT_NOT_FINAL_NODE_REGEX;
       _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
+      _transitNodes = DEFAULT_TRANSIT_NODES;
+      _notTransitNodes = DEFAULT_NOT_TRANSIT_NODES;
     }
 
     @JsonProperty(PROP_ACTIONS)

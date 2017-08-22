@@ -174,21 +174,16 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     queryConditions.addConjunct(SaneExpr.INSTANCE);
 
     // check transit constraints (unordered)
-    if (_transitNodes != null && _transitNodes.size() > 0) {
-      NodeTransitExpr transitExpr = null;
-      for (String nodeName: _transitNodes) {
-        transitExpr = new NodeTransitExpr(nodeName);
-        queryConditions.addConjunct(transitExpr);
-      }
+    NodeTransitExpr transitExpr = null;
+    for (String nodeName: _transitNodes) {
+      transitExpr = new NodeTransitExpr(nodeName);
+      queryConditions.addConjunct(transitExpr);
+    }
+    for (String nodeName: _notTransitNodes) {
+      transitExpr = new NodeTransitExpr(nodeName);
+      queryConditions.addConjunct(new NotExpr(transitExpr));
     }
 
-    if (_notTransitNodes != null && _notTransitNodes.size() > 0) {
-      NodeTransitExpr transitExpr = null;
-      for (String nodeName: _notTransitNodes) {
-        transitExpr = new NodeTransitExpr(nodeName);
-        queryConditions.addConjunct(new NotExpr(transitExpr));
-      }
-    }
 
     // add headerSpace constraints
     BooleanExpr matchHeaderSpace = Synthesizer.matchHeaderSpace(_headerSpace);

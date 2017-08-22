@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -3611,7 +3612,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ReachabilityQuerySynthesizer acceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-                Collections.<String>emptySet(), nodeVrfs, null, null);
+                Collections.<String>emptySet(), nodeVrfs,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
         ReachabilityQuerySynthesizer notAcceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
@@ -4222,23 +4224,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     //check transit nodes
     Set<String> allNodes = configurations.keySet();
-    if (transitNodes != null) {
-      for (String node: transitNodes) {
-        if (!allNodes.contains(node)) {
-          return new StringAnswerElement(String.format("Unknown transit node %s", node));
-        }
-      }
+    Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
+    if (!invalidTransitNodes.isEmpty()) {
+      return new StringAnswerElement(String.format("Unknown transit nodes %s",
+          invalidTransitNodes.toString()));
     }
-    if (notTransitNodes != null) {
-      for (String node: notTransitNodes) {
-        if (!allNodes.contains(node)) {
-          return new StringAnswerElement(String.format("Unknown notTransit node %s", node));
-        }
-        if (transitNodes != null && transitNodes.contains(node)) {
+    Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
+    if (!invalidNotTransitNodes.isEmpty()) {
+      return new StringAnswerElement(String.format("Unknown notTransit nodes %s",
+          invalidNotTransitNodes.toString()));
+    }
+    Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
+    if (! illegalTransitNodes.isEmpty()) {
           return new StringAnswerElement(
-              String.format("Same node %s can not be in both transit and notTransit", node));
-        }
-      }
+              String.format("Same node %s can not be in both transit and notTransit",
+                  illegalTransitNodes.toString()));
     }
 
     // build query jobs
