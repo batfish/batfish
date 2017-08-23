@@ -41,6 +41,8 @@ public class JsonPathResult {
     }
   }
 
+  private Boolean _assertionResult;
+
   private Integer _numResults;
 
   private JsonPathQuery _path;
@@ -49,6 +51,10 @@ public class JsonPathResult {
 
   public JsonPathResult() {
     _result = new TreeMap<>();
+  }
+
+  public Boolean getAssertionResult() {
+    return _assertionResult;
   }
 
   public Integer getNumResults() {
@@ -61,6 +67,10 @@ public class JsonPathResult {
 
   public SortedMap<String, JsonPathResultEntry> getResult() {
     return _result;
+  }
+
+  public void setAssertionResult(Boolean assertionResult) {
+    _assertionResult = assertionResult;
   }
 
   public void setNumResults(Integer numResults) {

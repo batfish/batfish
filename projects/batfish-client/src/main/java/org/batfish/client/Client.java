@@ -45,6 +45,7 @@ import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
@@ -66,6 +67,7 @@ import org.batfish.common.plugin.IClient;
 import org.batfish.common.util.Backoff;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -76,7 +78,6 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1144,33 +1145,7 @@ public class Client extends AbstractClient implements IClient {
     String qTypeStr = parameters.get(0).toLowerCase();
     String paramsLine =
         String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
-    // TODO: make environment creation a command, not a question
-    if (qTypeStr.equals(IEnvironmentCreationQuestion.NAME)) {
-
-      String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
-
-      String prefixString = (paramsLine.trim().length() > 0) ? ", " : "";
-      paramsLine +=
-          String.format(
-              "%s %s='%s'",
-              prefixString, IEnvironmentCreationQuestion.ENVIRONMENT_NAME_KEY, deltaEnvName);
-
-      if (!answerType(qTypeStr, paramsLine, delta, outWriter)) {
-        unsetTestrig(true);
-        return false;
-      }
-
-      _currDeltaEnv = deltaEnvName;
-      _currDeltaTestrig = _currTestrig;
-
-      _logger.output("Active delta testrig->environment is set ");
-      _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
-      _logger.output("\n");
-
-      return true;
-    } else {
-      return answerType(qTypeStr, paramsLine, delta, outWriter);
-    }
+    return answerType(qTypeStr, paramsLine, delta, outWriter);
   }
 
   private boolean getAnalysisAnswers(
@@ -1411,26 +1386,77 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean initDeltaEnv(FileWriter outWriter, List<String> options, List<String> parameters)
+  private boolean initEnvironment(String[] words, FileWriter outWriter,
+      List<String> options, List<String> parameters)
       throws Exception {
-    if (!isValidArgument(options, parameters, 0, 1, 3, Command.INIT_DELTA_ENV)) {
+    if (!isValidArgument(options, parameters, 1, 1, 6, Command.INIT_ENVIRONMENT)) {
       return false;
     }
     if (!isSetTestrig() || !isSetContainer(true)) {
       return false;
     }
 
-    String deltaEnvLocation = parameters.get(0);
-    String deltaEnvName =
-        (parameters.size() > 1) ? parameters.get(1) : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
-    String baseEnvName = (parameters.size() > 2) ? parameters.get(2) : "";
+    String testrigName = _currTestrig;
+    if (options.contains("-delta")) {
+      if (!isSetDeltaEnvironment()) {
+        return false;
+      }
+      testrigName = _currDeltaTestrig;
+    }
 
-    if (!uploadEnv(deltaEnvLocation, deltaEnvName, baseEnvName)) {
+    String paramsLine =
+        String.join(" ", Arrays.copyOfRange(words, 1 + options.size(), words.length));
+    Map<String, JsonNode> initEnvParams = parseParams(paramsLine);
+
+    String deltaEnvName = (initEnvParams.containsKey("envName"))
+        ? initEnvParams.get("envName").asText() : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
+
+    String baseEnvName = (initEnvParams.containsKey("baseEnvName"))
+        ? initEnvParams.get("baseEnvName").asText() : "";
+
+    Path deltaEnvDir = CommonUtil.createTempDirectory("environment");
+
+    //if a environment directory or zip was given to us, copy that over
+    if (initEnvParams.containsKey("envDirOrZip")) {
+      Path envDirOrZip = Paths.get(initEnvParams.get("envDirOrZip").asText());
+      if (!Files.exists(envDirOrZip)) {
+        _logger.errorf("Environment directory or zip file %s does not exist\n",
+            envDirOrZip.toAbsolutePath().toString());
+        return false;
+      }
+
+      if (Files.isDirectory(envDirOrZip)) {
+        FileUtils.copyDirectory(new File(envDirOrZip.toAbsolutePath().toString()),
+            deltaEnvDir.toFile());
+      } else {
+        UnzipUtility.unzip(envDirOrZip, deltaEnvDir);
+      }
+    }
+
+    //Process the blacklists now. Dump them in the directory (potentially overwriting previous ones)
+    if (initEnvParams.containsKey("edgeBlacklist")) {
+      Path edgeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
+          BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
+      CommonUtil.writeFile(edgeBlacklist, initEnvParams.get("edgeBlacklist").toString());
+    }
+    if (initEnvParams.containsKey("interfaceBlacklist")) {
+      Path interfaceBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
+          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+      CommonUtil.writeFile(interfaceBlacklist, initEnvParams.get("interfaceBlacklist").toString());
+    }
+    if (initEnvParams.containsKey("nodeBlacklist")) {
+      Path nodeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
+          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+      CommonUtil.writeFile(nodeBlacklist, initEnvParams.get("nodeBlacklist").toString());
+    }
+
+    if (!uploadEnv(deltaEnvDir.toAbsolutePath().toString(),
+        deltaEnvName, baseEnvName, testrigName)) {
       return false;
     }
 
     _currDeltaEnv = deltaEnvName;
-    _currDeltaTestrig = _currTestrig;
+    _currDeltaTestrig = testrigName;
 
     _logger.output("Active delta testrig->environment is set");
     _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
@@ -2009,10 +2035,10 @@ public class Client extends AbstractClient implements IClient {
           return initOrAddAnalysis(outWriter, options, parameters, true);
         case INIT_CONTAINER:
           return initContainer(options, parameters);
-        case INIT_DELTA_ENV:
-          return initDeltaEnv(outWriter, options, parameters);
         case INIT_DELTA_TESTRIG:
           return initTestrig(outWriter, options, parameters, true);
+      case INIT_ENVIRONMENT:
+        return initEnvironment(words, outWriter, options, parameters);
         case INIT_TESTRIG:
           return initTestrig(outWriter, options, parameters, false);
         case LIST_ANALYSES:
@@ -2638,7 +2664,8 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
   }
 
-  private boolean uploadEnv(String fileOrDir, String envName, String baseEnvName) throws Exception {
+  private boolean uploadEnv(String fileOrDir, String envName, String baseEnvName,
+      String testrigName) throws Exception {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
@@ -2649,7 +2676,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       boolean result =
           _workHelper.uploadEnvironment(
-              _currContainerName, _currTestrig, baseEnvName, envName, uploadTarget.toString());
+              _currContainerName, testrigName, baseEnvName, envName, uploadTarget.toString());
       return result;
     } finally {
       if (createZip) {

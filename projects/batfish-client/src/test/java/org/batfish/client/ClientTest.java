@@ -30,8 +30,8 @@ import static org.batfish.client.Command.GET_QUESTION;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
 import static org.batfish.client.Command.INIT_CONTAINER;
-import static org.batfish.client.Command.INIT_DELTA_ENV;
 import static org.batfish.client.Command.INIT_DELTA_TESTRIG;
+import static org.batfish.client.Command.INIT_ENVIRONMENT;
 import static org.batfish.client.Command.INIT_TESTRIG;
 import static org.batfish.client.Command.LIST_ANALYSES;
 import static org.batfish.client.Command.LIST_CONTAINERS;
@@ -520,14 +520,14 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitDeltaEnvInvalidParas() throws Exception {
-    testInvalidInput(INIT_DELTA_ENV, new String[] {});
+  public void testInitEnvInvalidParas() throws Exception {
+    testInvalidInput(INIT_ENVIRONMENT, new String[] {});
   }
 
   @Test
-  public void testInitDeltaEnvValidParas() throws Exception {
+  public void testInitEnvValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(INIT_DELTA_ENV, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(INIT_ENVIRONMENT, parameters, TESTRIG_NOT_SET);
   }
 
   @Test

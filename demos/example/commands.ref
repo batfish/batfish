@@ -1448,9 +1448,14 @@ Flow: ingress:as3border1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SS
 # --> buggy ACL on as2border2!
 #############
 # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
-# initialize the delta environment and generate its dataplane
-Active delta testrig->environment is set
+# initialize the delta testrig and generate its dataplane
+Uploaded testrig. Parsing now.
 Status: SUCCESS
+PARSING SUMMARY
+STATISTICS
+  Parsing results:
+    Parsed successfully: 17
+
 # any earlier query can be executed differentially, to see if how behavior differs
 Status: SUCCESS
 Question: neighbors differential=true | node1Regex=.* | node2Regex=.* | neighborTypes=[] | style=true
@@ -1712,7 +1717,7 @@ Flow: ingress:as2border1 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:
     Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
     DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
 
-Flow: ingress:as2border2 vrf:default 253.127.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+Flow: ingress:as2border2 vrf:default 253.95.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
     Hop 2: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
@@ -2046,39 +2051,28 @@ Flow: ingress:as3core1 vrf:default 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(
 #############
 # fault-tolerance can be ensured in a similar manner by studying the impact of failures
 # this command creates a network view after an interface failure
+Active delta testrig->environment is set
 Status: SUCCESS
-Question: {
-  "class" : "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion",
-  "environmentName" : "env_7abe0eaf-8589-45c1-a652-4a8baab4e74c",
-  "interfaceBlacklist" : [
-    {
-      "hostname" : "as2border2",
-      "interface" : "GigabitEthernet0/0"
-    }
-  ]
-}
-New environment created from old environment with supplied parameters
-Active delta testrig->environment is set 
 # we can see if reachability changes at all after this failure
 Status: SUCCESS
 Question: reachability differential=true | actions=[ACCEPT] | type=REDUCED_REACHABILITY
 
-Flow: ingress:as2border1 vrf:default 2.0.0.0->3.0.1.2 UDP sport:0 dport:0 packetLength:0 state:NEW
+Flow: ingress:as2border1 vrf:default 2.0.0.0->3.0.2.2 UDP sport:0 dport:0 packetLength:0 state:NEW
   environment:BASE
-    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.11.2]
-    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
-    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
-    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
     ACCEPTED
 
-    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.12.2]
-    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
-    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
-    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
     ACCEPTED
 
   environment:DELTA
-    Hop 1: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 1: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
 Flow: ingress:as2border2 vrf:default 2.0.0.0->3.0.2.2 UDP sport:0 dport:0 packetLength:0 state:NEW
@@ -2123,14 +2117,13 @@ Flow: ingress:as2core2 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 packetLe
     Hop 2: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
-Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:65484 packetLength:0 state:NEW
+Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.2 UDP sport:0 dport:65484 packetLength:0 state:NEW
   environment:BASE
     Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
     Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2]
     Hop 3: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
     Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 5: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 6: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
@@ -2138,7 +2131,6 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:65484 pack
     Hop 3: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 5: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 6: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
@@ -2146,7 +2138,6 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:65484 pack
     Hop 3: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 5: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 6: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
@@ -2154,7 +2145,6 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:65484 pack
     Hop 3: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
     Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 5: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 6: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
   environment:DELTA
@@ -2182,50 +2172,56 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:65484 pack
     Hop 4: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
-Flow: ingress:as2dist1 vrf:default 2.0.0.0->3.0.1.1 UDP sport:0 dport:0 packetLength:0 state:NEW
+Flow: ingress:as2dist1 vrf:default 2.0.0.0->3.0.2.1 UDP sport:0 dport:0 packetLength:0 state:NEW
   environment:BASE
-    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2]
-    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
-    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2]
+    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 5: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
-    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
-    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
-    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 5: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
   environment:DELTA
-    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
-    Hop 2: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
-    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
+    Hop 2: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
-    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
-    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
-    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
 Flow: ingress:as2dist2 vrf:default 2.0.0.0->3.0.1.1 UDP sport:0 dport:0 packetLength:0 state:NEW
   environment:BASE
-    Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
-    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
-    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
     ACCEPTED
 
-    Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2]
-    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
-    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2]
+    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
+    Hop 4: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
     ACCEPTED
 
   environment:DELTA
-    Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
-    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
-    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
-    Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
-    Hop 2: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
-    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
+    Hop 2: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
 Flow: ingress:as3border1 vrf:default 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
@@ -2417,14 +2413,13 @@ Flow: ingress:host1 vrf:default 2.128.0.0->3.0.2.2 UDP sport:0 dport:0 packetLen
     Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
 
-Flow: ingress:host2 vrf:default 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
+Flow: ingress:host2 vrf:default 2.128.0.0->3.0.1.1 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
   environment:BASE
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
     Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
     Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2]
     Hop 4: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
     Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
-    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
@@ -2432,7 +2427,6 @@ Flow: ingress:host2 vrf:default 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:25
     Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
     Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
-    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
@@ -2440,7 +2434,6 @@ Flow: ingress:host2 vrf:default 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:25
     Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
     Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
-    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
@@ -2448,7 +2441,6 @@ Flow: ingress:host2 vrf:default 2.128.0.0->3.0.1.2 ICMP icmpType:255 icmpCode:25
     Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2]
     Hop 4: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
     Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
-    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
   environment:DELTA
@@ -2539,7 +2531,7 @@ Flow: ingress:as2core2 vrf:default 0.0.0.0->2.1.2.1 TCP sport:0 dport:TELNET(23)
     Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.23.11.2,nhint:dynamic>_fnhip:2.23.11.2]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.2 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
     Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2]
@@ -2550,7 +2542,6 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23)
     Hop 3: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 5: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 6: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
@@ -2558,7 +2549,6 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23)
     Hop 3: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 5: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 6: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
@@ -2567,11 +2557,11 @@ Flow: ingress:as2dept1 vrf:default 2.0.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23)
 
 Flow: ingress:as2dist1 vrf:default 2.0.0.0->2.1.1.2 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
-    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.1.2/32,nhip:2.23.11.2,nhint:dynamic>_fnhip:2.23.11.2]
+    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.1.1/32,nhip:2.23.11.2,nhint:dynamic>_fnhip:2.23.11.2]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [OspfIntraAreaRoute<2.1.1.2/32,nhip:2.23.21.2,nhint:dynamic>_fnhip:2.23.21.2]
-    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [OspfIntraAreaRoute<2.1.1.2/32,nhip:2.12.22.1,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [OspfIntraAreaRoute<2.1.1.1/32,nhip:2.23.21.2,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.1.1/32,nhip:2.12.12.1,nhint:dynamic>_fnhip:2.12.12.1]
     ACCEPTED
 
 Flow: ingress:as2dist2 vrf:default 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
@@ -2583,7 +2573,7 @@ Flow: ingress:as2dist2 vrf:default 2.0.0.0->2.1.1.1 TCP sport:0 dport:TELNET(23)
     Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [OspfIntraAreaRoute<2.1.1.1/32,nhip:2.23.12.2,nhint:dynamic>_fnhip:2.23.12.2]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:host1 vrf:default 2.128.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+Flow: ingress:host1 vrf:default 2.128.0.0->3.0.2.2 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
     Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
@@ -2596,7 +2586,6 @@ Flow: ingress:host1 vrf:default 2.128.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23) 
     Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 7: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
@@ -2605,7 +2594,6 @@ Flow: ingress:host1 vrf:default 2.128.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23) 
     Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
     Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3]
     Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
-    Hop 7: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
@@ -2613,7 +2601,7 @@ Flow: ingress:host1 vrf:default 2.128.0.0->3.0.2.1 TCP sport:0 dport:TELNET(23) 
     Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2]
     DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
 
-Flow: ingress:host2 vrf:default 2.128.0.0->1.0.2.2 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+Flow: ingress:host2 vrf:default 2.128.0.0->1.0.2.1 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
     Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
@@ -2626,6 +2614,7 @@ Flow: ingress:host2 vrf:default 2.128.0.0->1.0.2.2 TCP sport:0 dport:TELNET(23) 
     Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
     Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     Hop 6: as1border1:GigabitEthernet0/0 -> as1core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<1.0.2.0/24,nhip:1.0.1.2,nhint:dynamic>_fnhip:1.0.1.2]
+    Hop 7: as1core1:GigabitEthernet0/0 -> as1border2:GigabitEthernet1/0 --- [ConnectedRoute<1.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
@@ -2634,6 +2623,7 @@ Flow: ingress:host2 vrf:default 2.128.0.0->1.0.2.2 TCP sport:0 dport:TELNET(23) 
     Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
     Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
     Hop 6: as1border1:GigabitEthernet0/0 -> as1core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<1.0.2.0/24,nhip:1.0.1.2,nhint:dynamic>_fnhip:1.0.1.2]
+    Hop 7: as1core1:GigabitEthernet0/0 -> as1border2:GigabitEthernet1/0 --- [ConnectedRoute<1.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
     ACCEPTED
 
     Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
