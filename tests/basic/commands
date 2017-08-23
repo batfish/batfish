@@ -56,3 +56,9 @@ test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dstIp="1.
 test tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests
 test tests/basic/nodes-unit-tests.ref get nodes summary=false
 
+# get reduced reachability twice in a row
+test tests/basic/init-reachability.ref init-testrig test_rigs/example-reachability
+init-environment interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
+test tests/basic/reduced-reachability.ref get reachability type=reduced
+test tests/basic/reduced-reachability2.ref get reachability type=reduced
+
