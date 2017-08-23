@@ -101,4 +101,8 @@ public class Answer {
   public void setStatus(AnswerStatus status) {
     _status = status;
   }
+
+  @Override public String toString() {
+    return prettyPrint();
+  }
 }
