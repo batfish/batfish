@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -518,21 +520,13 @@ public class WorkMgr {
     return answer;
   }
 
-  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  /**
+   * Returns a {@link Container container} contains all information about the container {@code
+   * containerName}
+   */
   public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    SortedSet<String> testrigs = listTestrigs(containerName);
+    return new Container(containerName, new ArrayList<>(testrigs), new HashMap<>());
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {

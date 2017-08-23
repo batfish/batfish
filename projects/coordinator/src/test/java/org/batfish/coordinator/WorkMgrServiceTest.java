@@ -6,10 +6,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -84,7 +84,7 @@ public class WorkMgrServiceTest {
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
     Container expected =
-        Container.of(_containerName, Sets.newTreeSet(Collections.singleton("testrig")));
+        new Container(_containerName, Lists.newArrayList("testrig"), Maps.newHashMap());
     assertThat(container, equalTo(expected));
   }
 

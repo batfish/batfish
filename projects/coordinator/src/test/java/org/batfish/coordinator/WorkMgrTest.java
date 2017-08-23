@@ -8,13 +8,11 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -131,7 +129,8 @@ public class WorkMgrTest {
   public void getEmptyContainer() {
     _manager.initContainer("container", null);
     Container container = _manager.getContainer("container");
-    assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
+    assertThat(
+        container, equalTo(new Container("container", Lists.newArrayList(), Maps.newHashMap())));
   }
 
   @Test
@@ -144,7 +143,7 @@ public class WorkMgrTest {
     Container container = _manager.getContainer("container");
     assertThat(
         container,
-        equalTo(Container.of("container", Sets.newTreeSet(Collections.singleton("testrig")))));
+        equalTo(new Container("container", Lists.newArrayList("testrig"), Maps.newHashMap())));
   }
 
   @Test
