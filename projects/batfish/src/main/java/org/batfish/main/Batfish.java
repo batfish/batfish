@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,7 +41,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.bdp.BdpDataPlanePlugin;
@@ -106,7 +106,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
-import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
@@ -1080,78 +1079,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     executor.executeJobs(jobs, configurations, answerElement);
     printElapsedTime();
     return configurations;
-  }
-
-  @Override
-  public EnvironmentCreationAnswerElement createEnvironment(
-      String newEnvName,
-      SortedSet<String> nodeBlacklist,
-      SortedSet<NodeInterfacePair> interfaceBlacklist,
-      SortedSet<Edge> edgeBlacklist,
-      boolean dp) {
-    EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    String oldEnvName = envSettings.getName();
-    if (oldEnvName.equals(newEnvName)) {
-      throw new BatfishException(
-          "Cannot create new environment: name of environment is same as that of old");
-    }
-    answerElement.setNewEnvironmentName(newEnvName);
-    answerElement.setOldEnvironmentName(oldEnvName);
-    Path oldEnvPath = envSettings.getEnvPath();
-    applyBaseDir(
-        _testrigSettings, _settings.getContainerDir(), _testrigSettings.getName(), newEnvName);
-    EnvironmentSettings newEnvSettings = _testrigSettings.getEnvironmentSettings();
-    Path newEnvPath = newEnvSettings.getEnvPath();
-    if (Files.exists(newEnvPath)) {
-      throw new BatfishException(
-          "Cannot create new environment '"
-              + newEnvName
-              + "': environment with same name already exists");
-    }
-    newEnvPath.toFile().mkdirs();
-    try {
-      FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to intialize new environment from old environment", e);
-    }
-
-    // write node blacklist from question
-    String nodeBlacklistStr;
-    if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
-      try {
-        nodeBlacklistStr = new BatfishObjectMapper().writeValueAsString(nodeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize node blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(), nodeBlacklistStr);
-    }
-    // write interface blacklist from question
-    if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
-      String interfaceBlacklistStr;
-      try {
-        interfaceBlacklistStr = new BatfishObjectMapper().writeValueAsString(interfaceBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize interface blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(), interfaceBlacklistStr);
-    }
-
-    // write edge blacklist from question
-    if (edgeBlacklist != null) {
-      String edgeBlacklistStr;
-      try {
-        edgeBlacklistStr = new BatfishObjectMapper().writeValueAsString(edgeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize edge blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(), edgeBlacklistStr);
-    }
-
-    if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-      computeDataPlane(true);
-    }
-    return answerElement;
   }
 
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
@@ -3611,13 +3538,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ReachabilityQuerySynthesizer acceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-                Collections.<String>emptySet(), nodeVrfs);
+                Collections.<String>emptySet(), nodeVrfs,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
         ReachabilityQuerySynthesizer notAcceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
                 new HeaderSpace(),
-                Collections.<String>emptySet(),
-                nodeVrfs);
+                Collections.<String>emptySet(), nodeVrfs,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(node, vrf));
@@ -4167,7 +4095,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String ingressNodeRegexStr,
       String notIngressNodeRegexStr,
       String finalNodeRegexStr,
-      String notFinalNodeRegexStr) {
+      String notFinalNodeRegexStr,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -4218,6 +4148,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
               + "'");
     }
 
+    //check transit nodes
+    Set<String> allNodes = configurations.keySet();
+    Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
+    if (!invalidTransitNodes.isEmpty()) {
+      return new StringAnswerElement(String.format("Unknown transit nodes %s",
+          invalidTransitNodes.toString()));
+    }
+    Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
+    if (!invalidNotTransitNodes.isEmpty()) {
+      return new StringAnswerElement(String.format("Unknown notTransit nodes %s",
+          invalidNotTransitNodes.toString()));
+    }
+    Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
+    if (! illegalTransitNodes.isEmpty()) {
+          return new StringAnswerElement(
+              String.format("Same node %s can not be in both transit and notTransit",
+                  illegalTransitNodes.toString()));
+    }
+
     // build query jobs
     List<NodJob> jobs = new ArrayList<>();
     for (String ingressNode : activeIngressNodes) {
@@ -4225,7 +4174,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Map<String, Set<String>> nodeVrfs = new TreeMap<>();
         nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
         ReachabilityQuerySynthesizer query =
-            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes, nodeVrfs);
+            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes,
+                nodeVrfs, transitNodes, notTransitNodes);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);

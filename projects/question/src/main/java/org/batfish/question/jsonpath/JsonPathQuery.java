@@ -6,6 +6,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 
 public class JsonPathQuery {
 
+  private JsonPathAssertion _assertion;
+
   private String _description;
 
   private String _path;
@@ -13,6 +15,10 @@ public class JsonPathQuery {
   private boolean _suffix;
 
   private boolean _summary;
+
+  public JsonPathAssertion getAssertion() {
+    return _assertion;
+  }
 
   public String getDescription() {
     return _description;
@@ -28,6 +34,14 @@ public class JsonPathQuery {
 
   public boolean getSummary() {
     return _summary;
+  }
+
+  public boolean hasValidAssertion() {
+    return (_assertion != null && _assertion.getType() != JsonPathAssertionType.none);
+  }
+
+  public void setAssertion(JsonPathAssertion assertion) {
+    _assertion = assertion;
   }
 
   public void setDescription(String description) {
