@@ -137,8 +137,10 @@ public class WorkMgrServiceTest {
   @Test
   public void getNonExistConfig() throws Exception {
     initContainerEnvironment();
-    Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
-    Path testrigPath = containerPath.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig"));
+    Path containerDir = _folder.getRoot().toPath().resolve(_containerName);
+    Path testrigPath =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
     assertTrue(testrigPath.toFile().mkdirs());
     Response response =
         _service.getConfiguration(

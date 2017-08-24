@@ -168,7 +168,9 @@ public class WorkMgrTest {
     _manager.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
+    Path testrigPath =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
     assertThat(testrigPath.toFile().mkdirs(), is(true));
     _thrown.expect(Exception.class);
     _thrown.expectMessage(
