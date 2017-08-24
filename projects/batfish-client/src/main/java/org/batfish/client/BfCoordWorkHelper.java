@@ -420,11 +420,11 @@ public class BfCoordWorkHelper {
               .request(MediaType.APPLICATION_JSON)
               .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-      _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
+      _logger.debugf("%s %s %s\n", response.getStatus(), response.getStatusInfo(), response);
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetConfiguration: Did not get an OK response\n");
-        _logger.errorf(response.readEntity(String.class) + "\n");
+        _logger.error("GetConfiguration: Did not get an OK response\n");
+        _logger.error(response.readEntity(String.class) + "\n");
         return null;
       }
 
@@ -432,7 +432,7 @@ public class BfCoordWorkHelper {
       return configContent;
     } catch (Exception e) {
       _logger.errorf(
-          "Exception in getConFiguration from %s for container %s, testrig %s, configuration %s\n",
+          "Exception in getConfiguration from %s for container %s, testrig %s, configuration %s\n",
           _coordWorkMgr, containerName, testrigName, configName);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return null;
