@@ -1296,6 +1296,26 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
+   * Get a string representation of the file content for configuration file {@code configName}.
+   *
+   * <p>Returns {@code true} if successfully get file content, {@code false} otherwise.
+   */
+  private boolean getConfiguration(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 3, 3, Command.GET_CONFIGURATION)) {
+      return false;
+    }
+    String containerName = parameters.get(0);
+    String testrigName = parameters.get(1);
+    String configName = parameters.get(2);
+    String configContent = _workHelper.getConFiguration(containerName, testrigName, configName);
+    if (configContent != null) {
+      _logger.output(configContent + "\n");
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get information of the container (first element in {@code parameters}).
    *
    * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
@@ -1386,8 +1406,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean initEnvironment(String[] words, FileWriter outWriter,
-      List<String> options, List<String> parameters)
+  private boolean initEnvironment(
+      String[] words, FileWriter outWriter, List<String> options, List<String> parameters)
       throws Exception {
     if (!isValidArgument(options, parameters, 1, 1, 6, Command.INIT_ENVIRONMENT)) {
       return false;
@@ -1408,11 +1428,13 @@ public class Client extends AbstractClient implements IClient {
         String.join(" ", Arrays.copyOfRange(words, 1 + options.size(), words.length));
     Map<String, JsonNode> initEnvParams = parseParams(paramsLine);
 
-    String deltaEnvName = (initEnvParams.containsKey("envName"))
-        ? initEnvParams.get("envName").asText() : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
+    String deltaEnvName =
+        (initEnvParams.containsKey("envName"))
+            ? initEnvParams.get("envName").asText()
+            : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
 
-    String baseEnvName = (initEnvParams.containsKey("baseEnvName"))
-        ? initEnvParams.get("baseEnvName").asText() : "";
+    String baseEnvName =
+        (initEnvParams.containsKey("baseEnvName")) ? initEnvParams.get("baseEnvName").asText() : "";
 
     Path deltaEnvDir = CommonUtil.createTempDirectory("environment");
 
@@ -1420,14 +1442,15 @@ public class Client extends AbstractClient implements IClient {
     if (initEnvParams.containsKey("envDirOrZip")) {
       Path envDirOrZip = Paths.get(initEnvParams.get("envDirOrZip").asText());
       if (!Files.exists(envDirOrZip)) {
-        _logger.errorf("Environment directory or zip file %s does not exist\n",
+        _logger.errorf(
+            "Environment directory or zip file %s does not exist\n",
             envDirOrZip.toAbsolutePath().toString());
         return false;
       }
 
       if (Files.isDirectory(envDirOrZip)) {
-        FileUtils.copyDirectory(new File(envDirOrZip.toAbsolutePath().toString()),
-            deltaEnvDir.toFile());
+        FileUtils.copyDirectory(
+            new File(envDirOrZip.toAbsolutePath().toString()), deltaEnvDir.toFile());
       } else {
         UnzipUtility.unzip(envDirOrZip, deltaEnvDir);
       }
@@ -1435,23 +1458,25 @@ public class Client extends AbstractClient implements IClient {
 
     //Process the blacklists now. Dump them in the directory (potentially overwriting previous ones)
     if (initEnvParams.containsKey("edgeBlacklist")) {
-      Path edgeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
+      Path edgeBlacklist =
+          Paths.get(deltaEnvDir.toAbsolutePath().toString(), BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
       CommonUtil.writeFile(edgeBlacklist, initEnvParams.get("edgeBlacklist").toString());
     }
     if (initEnvParams.containsKey("interfaceBlacklist")) {
-      Path interfaceBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+      Path interfaceBlacklist =
+          Paths.get(
+              deltaEnvDir.toAbsolutePath().toString(), BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
       CommonUtil.writeFile(interfaceBlacklist, initEnvParams.get("interfaceBlacklist").toString());
     }
     if (initEnvParams.containsKey("nodeBlacklist")) {
-      Path nodeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+      Path nodeBlacklist =
+          Paths.get(
+              deltaEnvDir.toAbsolutePath().toString(), BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
       CommonUtil.writeFile(nodeBlacklist, initEnvParams.get("nodeBlacklist").toString());
     }
 
-    if (!uploadEnv(deltaEnvDir.toAbsolutePath().toString(),
-        deltaEnvName, baseEnvName, testrigName)) {
+    if (!uploadEnv(
+        deltaEnvDir.toAbsolutePath().toString(), deltaEnvName, baseEnvName, testrigName)) {
       return false;
     }
 
@@ -2011,6 +2036,8 @@ public class Client extends AbstractClient implements IClient {
           return generateDeltaDataplane(outWriter, options, parameters);
         case GET:
           return get(words, outWriter, options, parameters, false);
+        case GET_CONFIGURATION:
+          return getConfiguration(options, parameters);
         case GET_CONTAINER:
           return getContainer(options, parameters);
         case GET_DELTA:
@@ -2037,8 +2064,8 @@ public class Client extends AbstractClient implements IClient {
           return initContainer(options, parameters);
         case INIT_DELTA_TESTRIG:
           return initTestrig(outWriter, options, parameters, true);
-      case INIT_ENVIRONMENT:
-        return initEnvironment(words, outWriter, options, parameters);
+        case INIT_ENVIRONMENT:
+          return initEnvironment(words, outWriter, options, parameters);
         case INIT_TESTRIG:
           return initTestrig(outWriter, options, parameters, false);
         case LIST_ANALYSES:
@@ -2664,8 +2691,8 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
   }
 
-  private boolean uploadEnv(String fileOrDir, String envName, String baseEnvName,
-      String testrigName) throws Exception {
+  private boolean uploadEnv(
+      String fileOrDir, String envName, String baseEnvName, String testrigName) throws Exception {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);

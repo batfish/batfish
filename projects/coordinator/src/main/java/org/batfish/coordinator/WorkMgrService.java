@@ -595,6 +595,73 @@ public class WorkMgrService {
   }
 
   /**
+   * Get content of the configuration file
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the question was asked
+   * @param testrigName The name of the testrig in which the question was asked
+   * @param configName The name of the configuration file in which the question was asked
+   * @return A {@link Response Response} with an entity consists either a string of the file content
+   *     of the configuration file {@code configName} or an error message if: the configuration file
+   *     {@code configName} does not exist or the {@code apiKey} has no acess to the container
+   *     {@code containerName}
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_CONFIGURATION)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getConfiguration(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_CONFIGURATION_NAME) String configName) {
+    try {
+      _logger.info("WMS:getContainer " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      java.nio.file.Path containerDir =
+          Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+      if (containerDir == null || !Files.exists(containerDir)) {
+        return Response.status(Response.Status.NOT_FOUND)
+            .entity("Container '" + containerName + "' not found")
+            .type(MediaType.TEXT_PLAIN)
+            .build();
+      }
+
+      checkContainerAccessibility(apiKey, containerName);
+
+      String configContent =
+          Main.getWorkMgr().getConfiguration(containerName, testrigName, configName);
+
+      return Response.ok(configContent).build();
+    } catch (AccessControlException e) {
+      return Response.status(Status.FORBIDDEN)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    } catch (BatfishException e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getConfiguration exception: " + stackTrace);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity(e.getCause())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    }
+  }
+
+  /**
    * Get information of the container
    *
    * @param apiKey The API key of the client

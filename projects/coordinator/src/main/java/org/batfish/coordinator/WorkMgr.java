@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -516,6 +517,37 @@ public class WorkMgr {
       }
     }
     return answer;
+  }
+
+  /**
+   * Returns a string representation of the content of configuration file {@code configName}.
+   *
+   * @throws BatfishException if the configuration file {@code configName} does not exist or failed
+   *     to read content from the file.
+   */
+  public String getConfiguration(String containerName, String testrigName, String configName) {
+    Path testrigPath = getdirTestrig(containerName, testrigName);
+    Path configPath =
+        testrigPath.resolve(
+            Paths.get(
+                BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_CONFIGURATIONS_DIR, configName));
+    if (!Files.exists(configPath)) {
+      throw new BatfishException(
+          String.format(
+              "Configuration file %s does not exist in testrig %s for container %s",
+              configName, testrigName, containerName));
+    }
+    String configContent = "";
+    try {
+      configContent = new String(Files.readAllBytes(configPath));
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format(
+              "Failed to read configuration file %s in testrig %s for container %s",
+              configName, testrigName, containerName),
+          e);
+    }
+    return configContent;
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it. */
