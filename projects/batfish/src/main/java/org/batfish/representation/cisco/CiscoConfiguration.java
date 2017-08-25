@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
@@ -1759,6 +1761,81 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return new CommunityListLine(eclLine.getAction(), javaRegex);
   }
 
+  /**
+   * Processes a {@link CiscoSourceNat} rule. This function performs two actions:
+   *
+   * <p>1. Record references to ACLs and NAT pools by the various parsed {@link CiscoSourceNat}
+   * objects.
+   *
+   * <p>2. Convert to vendor-independent {@link SourceNat} objects if valid, aka, no undefined ACL
+   * and valid output configuration.
+   *
+   * <p>Returns the vendor-independeng {@link SourceNat}, or {@code null} if the source NAT rule is
+   * invalid.
+   */
+  @Nullable
+  SourceNat processSourceNat(
+      CiscoSourceNat nat, Interface iface, Map<String, IpAccessList> ipAccessLists) {
+    String sourceNatAclName = nat.getAclName();
+    if (sourceNatAclName == null) {
+      // Source NAT rules must have an ACL; this rule is invalid.
+      return null;
+    }
+
+    SourceNat convertedNat = new SourceNat();
+
+    /* source nat acl */
+    IpAccessList sourceNatAcl = ipAccessLists.get(sourceNatAclName);
+    int sourceNatAclLine = nat.getAclNameLine();
+    if (sourceNatAcl == null) {
+      undefined(
+          CiscoStructureType.IP_ACCESS_LIST,
+          sourceNatAclName,
+          CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+          sourceNatAclLine);
+    } else {
+      convertedNat.setAcl(sourceNatAcl);
+      String msg = "source nat acl for interface: " + iface.getName();
+      ExtendedAccessList sourceNatExtendedAccessList = _extendedAccessLists.get(sourceNatAclName);
+      if (sourceNatExtendedAccessList != null) {
+        sourceNatExtendedAccessList.getReferers().put(iface, msg);
+      }
+      StandardAccessList sourceNatStandardAccessList = _standardAccessLists.get(sourceNatAclName);
+      if (sourceNatStandardAccessList != null) {
+        sourceNatStandardAccessList.getReferers().put(iface, msg);
+      }
+    }
+
+    /* source nat pool */
+    String sourceNatPoolName = nat.getNatPool();
+    if (sourceNatPoolName != null) {
+      int sourceNatPoolLine = nat.getNatPoolLine();
+      NatPool sourceNatPool = _natPools.get(sourceNatPoolName);
+      if (sourceNatPool != null) {
+        sourceNatPool.getReferers().put(iface, "source nat pool for interface: " + iface.getName());
+        Ip firstIp = sourceNatPool.getFirst();
+        if (firstIp != null) {
+          Ip lastIp = sourceNatPool.getLast();
+          convertedNat.setPoolIpFirst(firstIp);
+          convertedNat.setPoolIpLast(lastIp);
+        }
+      } else {
+        undefined(
+            CiscoStructureType.NAT_POOL,
+            sourceNatPoolName,
+            CiscoStructureUsage.IP_NAT_SOURCE_POOL,
+            sourceNatPoolLine);
+      }
+    }
+
+    // The source NAT rule is valid iff it has an ACL and a pool of IPs to NAT into.
+    if (convertedNat.getAcl() != null && convertedNat.getPoolIpFirst() != null) {
+      return convertedNat;
+    } else {
+      return null;
+    }
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     String name = iface.getName();
@@ -1897,61 +1974,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setOutgoingFilter(outgoingFilter);
     }
-    if (iface.getSourceNat()) {
-      /*
-       * source nat acl
-       */
-      SourceNat sourceNat = new SourceNat();
-      newIface.setSourceNat(sourceNat);
-      String sourceNatAclName = iface.getSourceNatAcl();
-      if (sourceNatAclName != null) {
-        int sourceNatAclLine = iface.getSourceNatAclLine();
-        IpAccessList sourceNatAcl = ipAccessLists.get(sourceNatAclName);
-        if (sourceNatAcl == null) {
-          undefined(
-              CiscoStructureType.IP_ACCESS_LIST,
-              sourceNatAclName,
-              CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
-              sourceNatAclLine);
-        } else {
-          String msg = "source nat acl for interface: " + iface.getName();
-          ExtendedAccessList sourceNatExtendedAccessList =
-              _extendedAccessLists.get(sourceNatAclName);
-          if (sourceNatExtendedAccessList != null) {
-            sourceNatExtendedAccessList.getReferers().put(iface, msg);
-          }
-          StandardAccessList sourceNatStandardAccessList =
-              _standardAccessLists.get(sourceNatAclName);
-          if (sourceNatStandardAccessList != null) {
-            sourceNatStandardAccessList.getReferers().put(iface, msg);
-          }
-        }
-        sourceNat.setAcl(sourceNatAcl);
+    if (!CommonUtil.isNullOrEmpty(iface.getSourceNats())) {
+      List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
 
-        /** source nat pool */
-        String sourceNatPoolName = iface.getSourceNatPool();
-        if (sourceNatPoolName != null) {
-          int sourceNatPoolLine = iface.getSourceNatPoolLine();
-          NatPool sourceNatPool = _natPools.get(sourceNatPoolName);
-          if (sourceNatPool != null) {
-            sourceNatPool
-                .getReferers()
-                .put(iface, "source nat pool for interface: " + iface.getName());
-            Ip firstIp = sourceNatPool.getFirst();
-            if (firstIp != null) {
-              Ip lastIp = sourceNatPool.getLast();
-              sourceNat.setPoolIpFirst(firstIp);
-              sourceNat.setPoolIpLast(lastIp);
-            }
-          } else {
-            undefined(
-                CiscoStructureType.NAT_POOL,
-                sourceNatPoolName,
-                CiscoStructureUsage.IP_NAT_SOURCE_POOL,
-                sourceNatPoolLine);
-          }
-        }
+      if (newIface.getSourceNats() == null) {
+        newIface.setSourceNats(new ArrayList<>(origSourceNats.size()));
       }
+
+      // Process each of the CiscoSourceNats:
+      //   1) Collect references to ACLs and NAT pools.
+      //   2) For valid CiscoSourceNat rules, add them to the newIface source NATs list.
+      origSourceNats
+          .stream()
+          .map(nat -> processSourceNat(nat, iface, ipAccessLists))
+          .filter(Objects::nonNull)
+          .forEach(newIface.getSourceNats()::add);
     }
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
