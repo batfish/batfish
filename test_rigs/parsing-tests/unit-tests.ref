@@ -32397,6 +32397,11 @@
               "ip nat source dynamic access-list" : [
                 54
               ]
+            },
+            "def" : {
+              "ip nat source dynamic access-list" : [
+                53
+              ]
             }
           },
           "nat pool" : {

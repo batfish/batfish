@@ -483,6 +483,7 @@ import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoSourceNat;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -2679,20 +2680,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
+    CiscoSourceNat nat = new CiscoSourceNat();
+    String acl = ctx.acl.getText();
+    if (ctx.acl != null) {
+      int aclLine = ctx.acl.getStart().getLine();
+      nat.setAclName(acl);
+      nat.setAclNameLine(aclLine);
+    }
+    if (ctx.pool != null) {
+      String pool = ctx.pool.getText();
+      int poolLine = ctx.pool.getStart().getLine();
+      nat.setNatPool(pool);
+      nat.setNatPoolLine(poolLine);
+    }
+
     for (Interface iface : _currentInterfaces) {
-      iface.setSourceNat(true);
-      String acl = ctx.acl.getText();
-      if (ctx.acl != null) {
-        int aclLine = ctx.acl.getStart().getLine();
-        iface.setSourceNatAcl(acl);
-        iface.setSourceNatAclLine(aclLine);
+      if (iface.getSourceNats() == null) {
+        iface.setSourceNats(new ArrayList<>(1));
       }
-      if (ctx.pool != null) {
-        String pool = ctx.pool.getText();
-        int poolLine = ctx.pool.getStart().getLine();
-        iface.setSourceNatPool(pool);
-        iface.setSourceNatPoolLine(poolLine);
-      }
+      iface.getSourceNats().add(nat);
     }
   }
 
