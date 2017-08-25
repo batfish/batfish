@@ -24,7 +24,8 @@ public class AnswerSummaryTest {
 
   @Test
   public void deserializationTest() throws IOException {
-    String summaryStr = "{\"notes\" : \"notes1\", \"numFailed\" : 21, \"numPassed\" : 23, \"numResults\": 42}";
+    String summaryStr = "{\"notes\" : \"notes1\", \"numFailed\" : 21, \"numPassed\" : 23, "
+                         + "\"numResults\": 42}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     AnswerSummary summary = mapper.readValue(summaryStr, AnswerSummary.class);
     assertThat(summary.getNotes(), equalTo("notes1"));
