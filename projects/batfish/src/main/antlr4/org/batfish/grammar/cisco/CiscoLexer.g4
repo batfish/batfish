@@ -2245,6 +2245,11 @@ DIRECT
    'direct'
 ;
 
+DIRECT_INWARD_DIAL
+:
+   'direct-inward-dial'
+;
+
 DIRECTED_BROADCAST
 :
    'directed-broadcast'
@@ -4789,6 +4794,11 @@ MATCHES_ANY
 MATCHES_EVERY
 :
    'matches-every'
+;
+
+MAXSTARTUPS
+:
+   'maxstartups'
 ;
 
 MAX_ASSOCIATIONS

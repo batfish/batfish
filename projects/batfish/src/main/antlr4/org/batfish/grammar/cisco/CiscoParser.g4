@@ -606,6 +606,7 @@ ip_ssh_null
    (
       AUTHENTICATION_RETRIES
       | CLIENT
+      | MAXSTARTUPS
       | PORT
       | SOURCE_INTERFACE
       | TIME_OUT
@@ -1316,6 +1317,7 @@ s_dial_peer
          CODEC
          | DESCRIPTION
          | DESTINATION_PATTERN
+         | DIRECT_INWARD_DIAL
          | DTMF_RELAY
          | FORWARD_DIGITS
          | INCOMING
@@ -2457,6 +2459,7 @@ vi_address_family
 u
 :
    u_password
+   | u_privilege
    | u_role
 ;
 
@@ -2466,6 +2469,11 @@ u_password
       PASSWORD
       | SECRET
    ) DEC pass = variable_secret
+;
+
+u_privilege
+:
+   PRIVILEGE privilege = variable
 ;
 
 u_role
