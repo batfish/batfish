@@ -23,6 +23,11 @@
             "summary" : false
           }
         }
+      },
+      "summary" : {
+        "numFailed" : 0,
+        "numPassed" : 1,
+        "numResults" : 0
       }
     }
   ],
@@ -54,5 +59,10 @@
       }
     ]
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 1,
+    "numResults" : 0
+  }
 }
