@@ -30,10 +30,10 @@ public class TestrigQuestionTest {
     Environment environment = new Environment("environment", null, null, null, null, null, null);
     Answer answer = Answer.failureAnswer("failureAnswer", null);
     TestrigQuestion trQuestion =
-        new TestrigQuestion("trQuestion", "question content", environment, answer);
+        new TestrigQuestion("trQuestion", "questionContent", environment, answer);
     String expected =
         String.format(
-            "TestrigQuestion{name=trQuestion, question=question content, environment=%s, answer=%s}",
+            "TestrigQuestion{name=trQuestion, question=questionContent, environment=%s, answer=%s}",
             environment, answer);
     assertThat(trQuestion.toString(), equalTo(expected));
   }
