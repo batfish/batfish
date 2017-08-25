@@ -151,12 +151,12 @@ public class WorkMgr {
       // Client client = ClientBuilder.newClient();
       Client client =
           CommonUtil.createHttpClientBuilder(
-              _settings.getSslWorkDisable(),
-              _settings.getSslWorkTrustAllCerts(),
-              _settings.getSslWorkKeystoreFile(),
-              _settings.getSslWorkKeystorePassword(),
-              _settings.getSslWorkTruststoreFile(),
-              _settings.getSslWorkTruststorePassword())
+                  _settings.getSslWorkDisable(),
+                  _settings.getSslWorkTrustAllCerts(),
+                  _settings.getSslWorkKeystoreFile(),
+                  _settings.getSslWorkKeystorePassword(),
+                  _settings.getSslWorkTruststoreFile(),
+                  _settings.getSslWorkTruststorePassword())
               .build();
       String protocol = _settings.getSslWorkDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -425,7 +425,7 @@ public class WorkMgr {
         boolean answerIsStale;
         answerIsStale =
             CommonUtil.getLastModifiedTime(questionFile)
-                .compareTo(CommonUtil.getLastModifiedTime(answerFile))
+                    .compareTo(CommonUtil.getLastModifiedTime(answerFile))
                 > 0;
         if (answerIsStale) {
           Answer ans = Answer.failureAnswer("Not fresh", null);
@@ -487,7 +487,7 @@ public class WorkMgr {
       answer = mapper.writeValueAsString(ans);
     } else {
       if (CommonUtil.getLastModifiedTime(questionFile)
-          .compareTo(CommonUtil.getLastModifiedTime(answerFile))
+              .compareTo(CommonUtil.getLastModifiedTime(answerFile))
           > 0) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);

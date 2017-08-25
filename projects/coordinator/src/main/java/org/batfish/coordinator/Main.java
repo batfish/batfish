@@ -86,20 +86,20 @@ public class Main {
 
   static void initAuthorizer() throws Exception {
     switch (_settings.getAuthorizationType()) {
-    case none:
-      _authorizer = new NoneAuthorizer();
-      break;
-    case file:
-      _authorizer = new FileAuthorizer();
-      break;
-    case database:
-      _authorizer = new DbAuthorizer();
-      break;
-    default:
-      System.err.print(
-          "org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
-              + _settings.getAuthorizationType());
-      System.exit(1);
+      case none:
+        _authorizer = new NoneAuthorizer();
+        break;
+      case file:
+        _authorizer = new FileAuthorizer();
+        break;
+      case database:
+        _authorizer = new DbAuthorizer();
+        break;
+      default:
+        System.err.print(
+            "org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
+                + _settings.getAuthorizationType());
+        System.exit(1);
     }
   }
 
