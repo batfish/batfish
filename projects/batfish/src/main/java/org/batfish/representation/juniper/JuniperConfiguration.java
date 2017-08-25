@@ -56,6 +56,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -321,10 +322,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Disjunction isBgp = new Disjunction();
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
-      setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp
-          .getTrueStatements()
+      BooleanExpr isNotBgp = new Not(isBgp);
+      setOriginForNonBgp.setGuard(isNotBgp);
+      setOriginForNonBgp.getTrueStatements()
           .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+      peerExportPolicy.getStatements().add(setOriginForNonBgp);
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(
