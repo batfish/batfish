@@ -83,6 +83,10 @@ public class CommonUtil {
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
+  public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
+    return collection == null || collection.isEmpty();
+  }
+
   public static String applyPrefix(String prefix, String msg) {
     String[] lines = msg.split("\n");
     StringBuilder sb = new StringBuilder();
