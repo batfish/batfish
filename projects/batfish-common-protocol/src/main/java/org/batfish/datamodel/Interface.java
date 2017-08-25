@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
@@ -427,19 +427,19 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._prefix, other._prefix)) {
+    if (!Objects.equals(this._prefix, other._prefix)) {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._routingPolicy, other._routingPolicy)) {
+    if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._switchportMode, other._switchportMode)) {
+    if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._zone, other._zone)) {
+    if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
     return true;

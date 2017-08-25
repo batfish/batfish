@@ -92,16 +92,6 @@ public class CommonUtil {
     return sb.toString();
   }
 
-  public static boolean bothNullOrEqual(Object a, Object b) {
-    if (a == null && b == null) {
-      return true;
-    } else if (a != null && b != null) {
-      return a.equals(b);
-    } else {
-      return false;
-    }
-  }
-
   public static <T extends Throwable> boolean causedBy(Throwable e, Class<T> causeClass) {
     Set<Throwable> seenCauses = Collections.newSetFromMap(new IdentityHashMap<>());
     return causedBy(e, causeClass, seenCauses);
