@@ -15,7 +15,7 @@ public class StorageUtils {
     _containerLocation = containerLocation;
   }
 
-  public static Path resolvePath(Path basePath, String... dir) {
+  public Path resolvePath(Path basePath, String... dir) {
     if (dir.length == 0) {
       return basePath;
     }

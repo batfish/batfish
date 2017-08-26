@@ -59,6 +59,7 @@ public class Main {
   }
 
   public static Storage getStorage() {
+    checkState(_storage != null, "Error: Storage has not been configured");
     return _storage;
   }
 

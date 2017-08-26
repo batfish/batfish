@@ -1,7 +1,5 @@
 package org.batfish.storage;
 
-import static org.batfish.storage.StorageUtils.resolvePath;
-
 import com.google.common.collect.Sets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -51,7 +49,7 @@ public class FileStorageImpl implements Storage {
 
     Map<String, String> questions = new HashMap<>();
     for (Path questionDir : _utils.getAnalysisQuestions(containerName, analysisName)) {
-      Path questionFile = resolvePath(questionDir, BfConsts.RELPATH_QUESTION_FILE);
+      Path questionFile = _utils.resolvePath(questionDir, BfConsts.RELPATH_QUESTION_FILE);
       if (!Files.exists(questionFile)) {
         throw new BatfishException(
             String.format(
