@@ -729,6 +729,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _containerDir;
   }
 
+  public void setContainerDir(Path containerDir) {
+    _containerDir = containerDir;
+  }
+
   public String getCoordinatorHost() {
     return _coordinatorHost;
   }
@@ -981,6 +985,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public String getTestrig() {
     return _testrig;
+  }
+
+  public void setTestrig(String testrig) {
+    _testrig = testrig;
   }
 
   @Override

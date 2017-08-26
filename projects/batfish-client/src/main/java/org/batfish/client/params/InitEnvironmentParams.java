@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class InitEnvironmentParams {
 
@@ -30,7 +31,7 @@ public class InitEnvironmentParams {
 
   private SortedSet<Edge> _edgeBlacklist;
 
-  private SortedMap<String, SortedSet<String>> _interfaceBlacklist;
+  private SortedSet<NodeInterfacePair> _interfaceBlacklist;
 
   private String _newEnvironmentName;
 
@@ -45,7 +46,7 @@ public class InitEnvironmentParams {
   @JsonCreator
   public InitEnvironmentParams() {
     _edgeBlacklist = new TreeSet<>();
-    _interfaceBlacklist = new TreeMap<>();
+    _interfaceBlacklist = new TreeSet<>();
     _nodeBlacklist = new TreeSet<>();
   }
 
@@ -60,7 +61,7 @@ public class InitEnvironmentParams {
   }
 
   @JsonProperty(PROP_INTERFACE_BLACKLIST)
-  public SortedMap<String, SortedSet<String>> getInterfaceBlacklist() {
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
     return _interfaceBlacklist;
   }
 
@@ -100,7 +101,7 @@ public class InitEnvironmentParams {
   }
 
   @JsonProperty(PROP_INTERFACE_BLACKLIST)
-  public void setInterfaceBlacklist(SortedMap<String, SortedSet<String>> interfaceBlacklist) {
+  public void setInterfaceBlacklist(SortedSet<NodeInterfacePair> interfaceBlacklist) {
     _interfaceBlacklist = interfaceBlacklist;
   }
 

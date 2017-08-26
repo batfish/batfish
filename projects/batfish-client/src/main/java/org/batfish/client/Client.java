@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -80,6 +79,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1407,7 +1407,7 @@ public class Client extends AbstractClient implements IClient {
         paramsBaseEnv != null ? paramsBaseEnv : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
     String fileToSend;
     SortedSet<String> paramsNodeBlacklist = params.getNodeBlacklist();
-    SortedMap<String, SortedSet<String>> paramsInterfaceBlacklist = params.getInterfaceBlacklist();
+    SortedSet<NodeInterfacePair> paramsInterfaceBlacklist = params.getInterfaceBlacklist();
     SortedSet<Edge> paramsEdgeBlacklist = params.getEdgeBlacklist();
 
     if (paramsLocation == null
@@ -1918,7 +1918,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
+  static InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     InitEnvironmentParams parameters;

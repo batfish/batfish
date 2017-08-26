@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
@@ -31,17 +32,13 @@ public class BatfishTestUtils {
         Collections.synchronizedMap(
             new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(5));
     if (!configurations.isEmpty()) {
-      settings.getBaseTestrigSettings().setNodeRolesPath(Paths.get("/fakepath"));
-      settings.getBaseTestrigSettings().setInferredNodeRolesPath(Paths.get("/fakepath"));
-      settings.getBaseTestrigSettings().setTestRigPath(Paths.get("/fakepath"));
-      settings
-          .getBaseTestrigSettings()
-          .getEnvironmentSettings()
-          .setDataPlanePath(tempFolder.newFile("dataplane").toPath());
-      settings
-          .getBaseTestrigSettings()
-          .getEnvironmentSettings()
-          .setDataPlaneAnswerPath(tempFolder.newFile("dataplaneanswer").toPath());
+      Path containerDir = tempFolder.newFolder("container").toPath();
+      settings.setContainerDir(containerDir);
+      settings.setTestrig("tempTestrig");
+      settings.setEnvironmentName("tempEnvironment");
+      Batfish.initTestrigSettings(settings);
+      settings.getBaseTestrigSettings().getSerializeIndependentPath().toFile().mkdirs();
+      settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
       CACHED_TESTRIGS.put(settings.getBaseTestrigSettings(), configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
