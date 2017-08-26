@@ -74,6 +74,7 @@ public class BfConsts {
   public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
 
   public static final String COMMAND_DUMP_DP = "dp";
+
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
   public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
@@ -144,7 +145,7 @@ public class BfConsts {
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
-  public static final String RELPATH_TESTRIGS_DIR = "";
+  public static final String RELPATH_TESTRIGS_DIR = "testrigs";
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";

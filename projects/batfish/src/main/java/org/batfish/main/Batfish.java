@@ -205,7 +205,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, String testrig, String envName) {
-    Path testrigDir = containerDir.resolve(testrig);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrig));
     settings.setName(testrig);
     settings.setBasePath(testrigDir);
     EnvironmentSettings envSettings = settings.getEnvironmentSettings();
@@ -1085,78 +1085,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return configurations;
   }
 
-  @Override
-  public EnvironmentCreationAnswerElement createEnvironment(
-      String newEnvName,
-      SortedSet<String> nodeBlacklist,
-      SortedSet<NodeInterfacePair> interfaceBlacklist,
-      SortedSet<Edge> edgeBlacklist,
-      boolean dp) {
-    EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    String oldEnvName = envSettings.getName();
-    if (oldEnvName.equals(newEnvName)) {
-      throw new BatfishException(
-          "Cannot create new environment: name of environment is same as that of old");
-    }
-    answerElement.setNewEnvironmentName(newEnvName);
-    answerElement.setOldEnvironmentName(oldEnvName);
-    Path oldEnvPath = envSettings.getEnvPath();
-    applyBaseDir(
-        _testrigSettings, _settings.getContainerDir(), _testrigSettings.getName(), newEnvName);
-    EnvironmentSettings newEnvSettings = _testrigSettings.getEnvironmentSettings();
-    Path newEnvPath = newEnvSettings.getEnvPath();
-    if (Files.exists(newEnvPath)) {
-      throw new BatfishException(
-          "Cannot create new environment '"
-              + newEnvName
-              + "': environment with same name already exists");
-    }
-    newEnvPath.toFile().mkdirs();
-    try {
-      FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to intialize new environment from old environment", e);
-    }
-
-    // write node blacklist from question
-    String nodeBlacklistStr;
-    if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
-      try {
-        nodeBlacklistStr = new BatfishObjectMapper().writeValueAsString(nodeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize node blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(), nodeBlacklistStr);
-    }
-    // write interface blacklist from question
-    if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
-      String interfaceBlacklistStr;
-      try {
-        interfaceBlacklistStr = new BatfishObjectMapper().writeValueAsString(interfaceBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize interface blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(), interfaceBlacklistStr);
-    }
-
-    // write edge blacklist from question
-    if (edgeBlacklist != null) {
-      String edgeBlacklistStr;
-      try {
-        edgeBlacklistStr = new BatfishObjectMapper().writeValueAsString(edgeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize edge blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(), edgeBlacklistStr);
-    }
-
-    if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-      computeDataPlane(true);
-    }
-    return answerElement;
-  }
-
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
     Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
     return Files.exists(dpPath);
@@ -1931,8 +1859,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private NodeRoleSpecifier inferNodeRoles(Map<String, Configuration> configurations) {
-    InferRoles ir =
-        new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
+    InferRoles ir = new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
     return ir.call();
   }
 
@@ -2410,7 +2337,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     return configurations;
   }
-  
+
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement() {
     return loadConvertConfigurationAnswerElement(true);
@@ -4100,8 +4027,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
     checkTopology(configurations, topology);
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
-    serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
-        "inferred node roles");
+    serializeAsJson(
+        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
     return answer;
@@ -4564,5 +4491,4 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
     return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
   }
-
 }

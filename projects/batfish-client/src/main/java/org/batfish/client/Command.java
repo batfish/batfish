@@ -40,7 +40,6 @@ public enum Command {
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
-  INIT_DELTA_ENV("init-delta-environment"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
   INIT_ENVIRONMENT("init-environment"),
   INIT_TESTRIG("init-testrig"),
@@ -164,11 +163,6 @@ public enum Command {
         INIT_CONTAINER,
         new Pair<>(
             "[-setname <container-name> | <container-name-prefix>]", "Initialize a new container"));
-    descs.put(
-        INIT_DELTA_ENV,
-        new Pair<>(
-            "<environment zipfile or directory> [<environment-name>]",
-            "Initialize the delta environment"));
     descs.put(
         INIT_DELTA_TESTRIG,
         new Pair<>(

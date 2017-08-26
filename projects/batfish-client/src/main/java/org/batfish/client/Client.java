@@ -80,7 +80,6 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1148,33 +1147,7 @@ public class Client extends AbstractClient implements IClient {
     String qTypeStr = parameters.get(0).toLowerCase();
     String paramsLine =
         String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
-    // TODO: make environment creation a command, not a question
-    if (qTypeStr.equals(IEnvironmentCreationQuestion.NAME)) {
-
-      String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
-
-      String prefixString = (paramsLine.trim().length() > 0) ? ", " : "";
-      paramsLine +=
-          String.format(
-              "%s %s='%s'",
-              prefixString, IEnvironmentCreationQuestion.ENVIRONMENT_NAME_KEY, deltaEnvName);
-
-      if (!answerType(qTypeStr, paramsLine, delta, outWriter)) {
-        unsetTestrig(true);
-        return false;
-      }
-
-      _currDeltaEnv = deltaEnvName;
-      _currDeltaTestrig = _currTestrig;
-
-      _logger.output("Active delta testrig->environment is set ");
-      _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
-      _logger.output("\n");
-
-      return true;
-    } else {
-      return answerType(qTypeStr, paramsLine, delta, outWriter);
-    }
+    return answerType(qTypeStr, paramsLine, delta, outWriter);
   }
 
   private boolean getAnalysisAnswers(
@@ -1412,50 +1385,6 @@ public class Client extends AbstractClient implements IClient {
     _logger.output("Active container is set");
     _logger.infof(" to  %s\n", _currContainerName);
     _logger.output("\n");
-    return true;
-  }
-
-  @Deprecated
-  private boolean initDeltaEnv(FileWriter outWriter, List<String> options, List<String> parameters)
-      throws Exception {
-    if (!isValidArgument(options, parameters, 0, 1, 3, Command.INIT_DELTA_ENV)) {
-      return false;
-    }
-    if (!isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
-
-    String deltaEnvLocation = parameters.get(0);
-    String deltaEnvName =
-        (parameters.size() > 1) ? parameters.get(1) : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
-    String baseEnvName = (parameters.size() > 2) ? parameters.get(2) : "";
-
-    if (!uploadEnv(deltaEnvLocation, _currTestrig, deltaEnvName, baseEnvName)) {
-      return false;
-    }
-
-    _currDeltaEnv = deltaEnvName;
-    _currDeltaTestrig = _currTestrig;
-
-    _logger.output("Active delta testrig->environment is set");
-    _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
-    _logger.output("\n");
-
-    WorkItem wItemGenDdp =
-        _workHelper.getWorkItemCompileDeltaEnvironment(
-            _currContainerName, _currDeltaTestrig, _currEnv, _currDeltaEnv);
-    if (!execute(wItemGenDdp, outWriter)) {
-      return false;
-    }
-
-    WorkItem wItemValidateEnvironment =
-        _workHelper.getWorkItemValidateEnvironment(
-            _currContainerName, _currDeltaTestrig, _currDeltaEnv);
-
-    if (!execute(wItemValidateEnvironment, outWriter)) {
-      return false;
-    }
-
     return true;
   }
 
@@ -2167,8 +2096,6 @@ public class Client extends AbstractClient implements IClient {
           return initOrAddAnalysis(outWriter, options, parameters, true);
         case INIT_CONTAINER:
           return initContainer(options, parameters);
-        case INIT_DELTA_ENV:
-          return initDeltaEnv(outWriter, options, parameters);
         case INIT_DELTA_TESTRIG:
           return initTestrig(outWriter, options, parameters, true);
         case INIT_ENVIRONMENT:
