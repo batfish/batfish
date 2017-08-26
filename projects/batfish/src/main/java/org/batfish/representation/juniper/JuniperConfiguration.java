@@ -317,14 +317,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
+
+      /*
+       * For new BGP advertisements, i.e. those that are created from non-BGP
+       * routes, an origin code must be set. By default, Juniper sets the origin
+       * code to IGP.
+       */
       If setOriginForNonBgp = new If();
       Disjunction isBgp = new Disjunction();
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
       setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp
-          .getTrueStatements()
+      setOriginForNonBgp.getFalseStatements()
           .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+      peerExportPolicy.getStatements().add(setOriginForNonBgp);
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(

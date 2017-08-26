@@ -74,6 +74,44 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     _flowTraces = new HashMap<>();
   }
 
+  /**
+   * Applies the given list of source NAT rules to the given flow and returns the new transformed
+   * flow. If {@code sourceNats} is null, empty, or does not contain any ACL rules matching the
+   * {@link Flow}, the original flow is returned.
+   *
+   * <p>Each {@link SourceNat} is expected to be valid: it must have a NAT IP or pool.
+   */
+  static Flow applySourceNat(Flow flow, @Nullable List<SourceNat> sourceNats) {
+    if (CommonUtil.isNullOrEmpty(sourceNats)) {
+      return flow;
+    }
+
+    for (SourceNat sourceNat : sourceNats) {
+      IpAccessList acl = sourceNat.getAcl();
+      if (acl != null) {
+        FilterResult result = acl.filter(flow);
+        if (result.getAction() == LineAction.REJECT) {
+          // This ACL does not match the flow.
+          continue;
+        }
+      }
+
+      Ip natPoolStartIp = sourceNat.getPoolIpFirst();
+      if (natPoolStartIp == null) {
+        throw new BatfishException(
+            String.format(
+                "Error processing Source NAT rule %s: missing NAT address or pool",
+                sourceNat));
+      }
+      Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
+      transformedFlowBuilder.setSrcIp(natPoolStartIp);
+      return transformedFlowBuilder.build();
+    }
+
+    // No NAT rule matched.
+    return flow;
+  }
+
   private void collectFlowTraces(
       BdpDataPlane dp,
       String currentNodeName,
@@ -161,25 +199,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                     ._c
                     .getInterfaces()
                     .get(nextHopInterface.getInterface());
-            SourceNat sourceNat = outgoingInterface.getSourceNat();
-            if (sourceNat != null) {
-              boolean performTranslation = true;
-              IpAccessList acl = sourceNat.getAcl();
-              if (acl != null) {
-                FilterResult result = acl.filter(transformedFlow);
-                if (result.getAction() == LineAction.REJECT) {
-                  performTranslation = false;
-                }
-              }
-              if (performTranslation) {
-                Ip natPoolStartIp = sourceNat.getPoolIpFirst();
-                if (natPoolStartIp != null) {
-                  Flow.Builder transformedFlowBuilder = new Flow.Builder(transformedFlow);
-                  transformedFlowBuilder.setSrcIp(natPoolStartIp);
-                  transformedFlow = transformedFlowBuilder.build();
-                }
-              }
-            }
+
+            // Apply any relevant source NAT rules.
+            transformedFlow = applySourceNat(transformedFlow, outgoingInterface.getSourceNats());
+
             EdgeSet edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
               boolean continueToNextNextHopInterface = false;
@@ -493,15 +516,15 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           .parallelStream()
           .forEach(
               n -> {
-                boolean staticChanged = true;
-                while (staticChanged) {
+                boolean staticChanged;
+                do {
+                  staticChanged = false;
                   for (VirtualRouter vr : n._virtualRouters.values()) {
-                    staticChanged = false;
                     if (vr.activateStaticRoutes()) {
                       staticChanged = true;
                     }
                   }
-                }
+                } while (staticChanged);
                 recomputeStaticCompleted.incrementAndGet();
               });
 
@@ -516,14 +539,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n._virtualRouters.values()) {
-                  boolean generatedChanged = true;
+                  boolean generatedChanged;
                   vr._generatedRib = new Rib(vr);
-                  while (generatedChanged) {
+                  do {
                     generatedChanged = false;
                     if (vr.activateGeneratedRoutes()) {
                       generatedChanged = true;
                     }
-                  }
+                  } while (generatedChanged);
                   vr.importRib(vr._mainRib, vr._generatedRib);
                 }
                 recomputeAggregateCompleted.incrementAndGet();
