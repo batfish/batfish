@@ -23,6 +23,9 @@ allinone -cmdfile tests/basic/commands || exit 1
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit 1
 
+echo -e "\n  ..... Running java-smt client tests"
+allinone -cmdfile tests/java-smt/commands || exit 1
+
 #Test running separately
 coordinator &
 batfish -servicemode -register -coordinatorhost localhost -loglevel output &

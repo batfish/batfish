@@ -382,9 +382,13 @@ public class WorkMgr {
     CommonUtil.deleteDirectory(aDir);
   }
 
-  public void delContainer(String containerName) {
-    Path containerDir = getdirContainer(containerName);
-    CommonUtil.deleteDirectory(containerDir);
+  public boolean delContainer(String containerName) {
+    Path containerDir = getdirContainer(containerName, false);
+    if (Files.exists(containerDir)) {
+      CommonUtil.deleteDirectory(containerDir);
+      return true;
+    }
+    return false;
   }
 
   public void delEnvironment(String containerName, String testrigName, String envName) {
@@ -556,9 +560,13 @@ public class WorkMgr {
   }
 
   private Path getdirContainer(String containerName) {
+    return getdirContainer(containerName, true);
+  }
+
+  private Path getdirContainer(String containerName, boolean errIfNotEixst) {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
-    if (!Files.exists(containerDir)) {
+    if (errIfNotEixst && !Files.exists(containerDir)) {
       throw new BatfishException("Container '" + containerName + "' does not exist");
     }
     return containerDir;

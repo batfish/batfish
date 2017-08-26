@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jline.console.ConsoleReader;
+import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
 import org.apache.commons.io.output.WriterOutputStream;
@@ -63,6 +65,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractClient;
 import org.batfish.common.plugin.IClient;
+import org.batfish.common.util.Backoff;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -470,6 +473,7 @@ public class Client extends AbstractClient implements IClient {
           _reader.setHistory(history);
           _reader.setPrompt("batfish> ");
           _reader.setExpandEvents(false);
+          _reader.setHandleUserInterrupt(true);
 
           List<Completer> completors = new LinkedList<>();
           completors.add(new CommandCompleter());
@@ -653,45 +657,33 @@ public class Client extends AbstractClient implements IClient {
   private boolean answerType(
       String questionType, String paramsLine, boolean isDelta, FileWriter outWriter) {
     JSONObject questionJson;
-    if (questionType.startsWith(QuestionHelper.MACRO_PREFIX)) {
-      try {
-        String questionString = QuestionHelper.resolveMacro(questionType, paramsLine, _questions);
-        questionJson = new JSONObject(questionString);
-      } catch (JSONException e) {
-        throw new BatfishException("Failed to convert unmodified question string to JSON", e);
-      } catch (BatfishException e) {
-        _logger.errorf("Could not resolve macro: %s\n", e.getMessage());
-        return false;
-      }
-    } else {
-      try {
-        String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
-        questionJson = new JSONObject(questionString);
+    try {
+      String questionString = QuestionHelper.getQuestionString(questionType, _questions, false);
+      questionJson = new JSONObject(questionString);
 
-        Map<String, JsonNode> parameters = parseParams(paramsLine);
-        for (Entry<String, JsonNode> e : parameters.entrySet()) {
-          String parameterName = e.getKey();
-          String parameterValue = e.getValue().toString();
-          Object parameterObj;
-          try {
-            parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
-            questionJson.put(parameterName, parameterObj);
-          } catch (JSONException e1) {
-            throw new BatfishException(
-                "Failed to apply parameter: '"
-                    + parameterName
-                    + "' with value: '"
-                    + parameterValue
-                    + "' to question JSON",
-                e1);
-          }
+      Map<String, JsonNode> parameters = parseParams(paramsLine);
+      for (Entry<String, JsonNode> e : parameters.entrySet()) {
+        String parameterName = e.getKey();
+        String parameterValue = e.getValue().toString();
+        Object parameterObj;
+        try {
+          parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
+          questionJson.put(parameterName, parameterObj);
+        } catch (JSONException e1) {
+          throw new BatfishException(
+              "Failed to apply parameter: '"
+                  + parameterName
+                  + "' with value: '"
+                  + parameterValue
+                  + "' to question JSON",
+              e1);
         }
-      } catch (JSONException e) {
-        throw new BatfishException("Failed to convert unmodified question string to JSON", e);
-      } catch (BatfishException e) {
-        _logger.errorf("Could not construct a question: %s\n", e.getMessage());
-        return false;
       }
+    } catch (JSONException e) {
+      throw new BatfishException("Failed to convert unmodified question string to JSON", e);
+    } catch (BatfishException e) {
+      _logger.errorf("Could not construct a question: %s\n", e.getMessage());
+      return false;
     }
 
     String modifiedQuestionJson = questionJson.toString();
@@ -917,19 +909,24 @@ public class Client extends AbstractClient implements IClient {
     if (!queueWorkResult) {
       return queueWorkResult;
     }
+
+    // Poll the work item until it finishes or fails.
     Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(wItem.getId());
     if (response == null) {
       return false;
     }
+
     WorkStatusCode status = response.getFirst();
+    Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
     while (status != WorkStatusCode.TERMINATEDABNORMALLY
         && status != WorkStatusCode.TERMINATEDNORMALLY
-        && status != WorkStatusCode.ASSIGNMENTERROR) {
+        && status != WorkStatusCode.ASSIGNMENTERROR
+        && backoff.hasNext()) {
       printWorkStatusResponse(response);
       try {
-        Thread.sleep(1 * 1000);
+        Thread.sleep(backoff.nextBackoff().toMillis());
       } catch (InterruptedException e) {
-        throw new BatfishException("Interrupted while waiting for response", e);
+        throw new BatfishException("Interrupted while waiting for work item to complete", e);
       }
       response = _workHelper.getWorkStatus(wItem.getId());
       if (response == null) {
@@ -938,6 +935,7 @@ public class Client extends AbstractClient implements IClient {
       status = response.getFirst();
     }
     printWorkStatusResponse(response);
+
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
     String downloadedAnsFile =
@@ -1151,8 +1149,7 @@ public class Client extends AbstractClient implements IClient {
     String paramsLine =
         String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
     // TODO: make environment creation a command, not a question
-    if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX)
-        && qTypeStr.equals(IEnvironmentCreationQuestion.NAME)) {
+    if (qTypeStr.equals(IEnvironmentCreationQuestion.NAME)) {
 
       String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
 
@@ -2435,9 +2432,16 @@ public class Client extends AbstractClient implements IClient {
 
   private void runInteractive() {
     try {
-      String rawLine;
-      while (!_exit && (rawLine = _reader.readLine()) != null) {
-        processCommand(rawLine);
+      while (!_exit) {
+        try {
+          String rawLine = _reader.readLine();
+          if (rawLine == null) {
+            break;
+          }
+          processCommand(rawLine);
+        } catch (UserInterruptException e) {
+          continue;
+        }
       }
     } catch (Throwable t) {
       t.printStackTrace();

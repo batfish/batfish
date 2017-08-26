@@ -30,6 +30,7 @@
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+    <maven-findbugs-plugin.version>3.0.4</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
@@ -121,6 +122,12 @@
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
           <version>${antlr4-maven-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>findbugs-maven-plugin</artifactId>
+          <version>${maven-findbugs-plugin.version}</version>
         </plugin>
 
         <plugin>

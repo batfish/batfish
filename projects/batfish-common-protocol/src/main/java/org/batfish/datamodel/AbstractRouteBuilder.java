@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public abstract class AbstractRouteBuilder<
@@ -56,7 +57,7 @@ public abstract class AbstractRouteBuilder<
     return _nextHopIp;
   }
 
-  public final S setNextHopIp(Ip nextHopIp) {
+  public final S setNextHopIp(@Nullable Ip nextHopIp) {
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     return getThis();
   }

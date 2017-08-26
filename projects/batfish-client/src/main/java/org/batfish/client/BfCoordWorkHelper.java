@@ -159,6 +159,10 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
 
       JSONObject jObj = postData(webTarget, multiPart);
+      String status = null;
+      if (jObj != null && (status = jObj.getString("result")) != null) {
+        return Boolean.parseBoolean(status);
+      }
       return (jObj != null);
     } catch (Exception e) {
       _logger.errorf("exception: ");

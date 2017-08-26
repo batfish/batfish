@@ -136,6 +136,8 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -165,6 +167,7 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
+import org.batfish.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -187,7 +190,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 /** This class encapsulates the main control logic for Batfish. */
-public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
+public class Batfish extends PluginConsumer implements IBatfish {
 
   private static final String BASE_TESTRIG_TAG = "BASE";
 
@@ -797,9 +800,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
           "questions dir does not exist: \"" + questionsDir.getFileName() + "\"");
     }
   }
-
-  @Override
-  public void close() {}
 
   private Answer compileEnvironmentConfigurations(TestrigSettings testrigSettings) {
     Answer answer = new Answer();
@@ -1476,11 +1476,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         throw new BatfishException(
             "The following interface set contains less than two interfaces: " + interfaceSet);
       }
-      int numHostBits = 0;
-      for (int shiftedValue = numInterfaces - 1;
-          shiftedValue != 0;
-          shiftedValue >>= 1, numHostBits++) {}
-      int subnetBits = 32 - numHostBits;
+      int subnetBits = Integer.numberOfLeadingZeros(numInterfaces - 1);
       int offset = 0;
       for (NodeInterfacePair currentPair : interfaceSet) {
         Ip ip = new Ip(currentStartingIpAsLong + offset);
@@ -1502,7 +1498,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         config.getInterfaces().put(ifaceName, iface);
         offset++;
       }
-      currentStartingIpAsLong += (1 << numHostBits);
+      currentStartingIpAsLong += (1L << (Prefix.MAX_PREFIX_LENGTH - subnetBits));
     }
     for (Configuration config : configs.values()) {
       // use cisco arbitrarily
@@ -2312,75 +2308,73 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
         OspfProcess proc = vrf.getOspfProcess();
         if (proc != null) {
           proc.setOspfNeighbors(new TreeMap<>());
-          if (proc != null) {
-            String vrfName = e2.getKey();
-            for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
-              long areaNum = e3.getKey();
-              OspfArea area = e3.getValue();
-              for (Interface iface : area.getInterfaces()) {
-                String ifaceName = iface.getName();
-                EdgeSet ifaceEdges =
-                    topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
-                boolean hasNeighbor = false;
-                Ip localIp = iface.getPrefix().getAddress();
-                if (ifaceEdges != null) {
-                  for (Edge edge : ifaceEdges) {
-                    if (edge.getNode1().equals(hostname)) {
-                      String remoteHostname = edge.getNode2();
-                      String remoteIfaceName = edge.getInt2();
-                      Configuration remoteNode = configurations.get(remoteHostname);
-                      Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
-                      Vrf remoteVrf = remoteIface.getVrf();
-                      String remoteVrfName = remoteVrf.getName();
-                      OspfProcess remoteProc = remoteVrf.getOspfProcess();
+          String vrfName = e2.getKey();
+          for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
+            long areaNum = e3.getKey();
+            OspfArea area = e3.getValue();
+            for (Interface iface : area.getInterfaces()) {
+              String ifaceName = iface.getName();
+              EdgeSet ifaceEdges =
+                  topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
+              boolean hasNeighbor = false;
+              Ip localIp = iface.getPrefix().getAddress();
+              if (ifaceEdges != null) {
+                for (Edge edge : ifaceEdges) {
+                  if (edge.getNode1().equals(hostname)) {
+                    String remoteHostname = edge.getNode2();
+                    String remoteIfaceName = edge.getInt2();
+                    Configuration remoteNode = configurations.get(remoteHostname);
+                    Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                    Vrf remoteVrf = remoteIface.getVrf();
+                    String remoteVrfName = remoteVrf.getName();
+                    OspfProcess remoteProc = remoteVrf.getOspfProcess();
+                    if (remoteProc != null) {
                       if (remoteProc.getOspfNeighbors() == null) {
                         remoteProc.setOspfNeighbors(new TreeMap<>());
                       }
-                      if (remoteProc != null) {
-                        OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
-                        if (remoteArea != null
-                            && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
-                          Ip remoteIp = remoteIface.getPrefix().getAddress();
-                          Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
-                          OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
-                          if (neighbor == null) {
-                            hasNeighbor = true;
+                      OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
+                      if (remoteArea != null
+                          && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
+                        Ip remoteIp = remoteIface.getPrefix().getAddress();
+                        Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
+                        OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
+                        if (neighbor == null) {
+                          hasNeighbor = true;
 
-                            // initialize local neighbor
-                            neighbor = new OspfNeighbor(localKey);
-                            neighbor.setArea(areaNum);
-                            neighbor.setVrf(vrfName);
-                            neighbor.setOwner(c);
-                            neighbor.setInterface(iface);
-                            proc.getOspfNeighbors().put(localKey, neighbor);
+                          // initialize local neighbor
+                          neighbor = new OspfNeighbor(localKey);
+                          neighbor.setArea(areaNum);
+                          neighbor.setVrf(vrfName);
+                          neighbor.setOwner(c);
+                          neighbor.setInterface(iface);
+                          proc.getOspfNeighbors().put(localKey, neighbor);
 
-                            // initialize remote neighbor
-                            Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
-                            OspfNeighbor remoteNeighbor = new OspfNeighbor(remoteKey);
-                            remoteNeighbor.setArea(areaNum);
-                            remoteNeighbor.setVrf(remoteVrfName);
-                            remoteNeighbor.setOwner(remoteNode);
-                            remoteNeighbor.setInterface(remoteIface);
-                            remoteProc.getOspfNeighbors().put(remoteKey, remoteNeighbor);
+                          // initialize remote neighbor
+                          Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
+                          OspfNeighbor remoteNeighbor = new OspfNeighbor(remoteKey);
+                          remoteNeighbor.setArea(areaNum);
+                          remoteNeighbor.setVrf(remoteVrfName);
+                          remoteNeighbor.setOwner(remoteNode);
+                          remoteNeighbor.setInterface(remoteIface);
+                          remoteProc.getOspfNeighbors().put(remoteKey, remoteNeighbor);
 
-                            // link neighbors
-                            neighbor.setRemoteOspfNeighbor(remoteNeighbor);
-                            remoteNeighbor.setRemoteOspfNeighbor(neighbor);
-                          }
+                          // link neighbors
+                          neighbor.setRemoteOspfNeighbor(remoteNeighbor);
+                          remoteNeighbor.setRemoteOspfNeighbor(neighbor);
                         }
                       }
                     }
                   }
                 }
-                if (!hasNeighbor) {
-                  Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
-                  OspfNeighbor neighbor = new OspfNeighbor(key);
-                  neighbor.setArea(areaNum);
-                  neighbor.setVrf(vrfName);
-                  neighbor.setOwner(c);
-                  neighbor.setInterface(iface);
-                  proc.getOspfNeighbors().put(key, neighbor);
-                }
+              }
+              if (!hasNeighbor) {
+                Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
+                OspfNeighbor neighbor = new OspfNeighbor(key);
+                neighbor.setArea(areaNum);
+                neighbor.setVrf(vrfName);
+                neighbor.setOwner(c);
+                neighbor.setInterface(iface);
+                proc.getOspfNeighbors().put(key, neighbor);
               }
             }
           }
@@ -4104,6 +4098,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
+    checkTopology(configurations, topology);
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(_testrigSettings.getInferredNodeRolesPath(), roleSpecifier,
         "inferred node roles");
@@ -4493,4 +4488,81 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
   }
+
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+    for (Edge edge : topology.getEdges()) {
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
+      }
+      //nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt1(), edge.getNode1()));
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt2(), edge.getNode2()));
+      }
+    }
+  }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
 }
