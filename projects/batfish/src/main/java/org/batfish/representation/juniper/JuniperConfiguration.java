@@ -56,7 +56,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -318,13 +317,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
+
+      /*
+       * For new BGP advertisements, i.e. those that are created from non-BGP
+       * routes, an origin code must be set. By default, Juniper sets the origin
+       * code to IGP.
+       */
       If setOriginForNonBgp = new If();
       Disjunction isBgp = new Disjunction();
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
-      BooleanExpr isNotBgp = new Not(isBgp);
-      setOriginForNonBgp.setGuard(isNotBgp);
-      setOriginForNonBgp.getTrueStatements()
+      setOriginForNonBgp.setGuard(isBgp);
+      setOriginForNonBgp.getFalseStatements()
           .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
       peerExportPolicy.getStatements().add(setOriginForNonBgp);
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();

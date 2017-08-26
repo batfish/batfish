@@ -7866,23 +7866,7 @@
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                  "guard" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                      "disjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocol" : "bgp"
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocol" : "ibgp"
-                        }
-                      ]
-                    }
-                  },
-                  "trueStatements" : [
+                  "falseStatements" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
                       "originType" : {
@@ -7890,7 +7874,20 @@
                         "originType" : "igp"
                       }
                     }
-                  ]
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  }
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -7921,23 +7918,7 @@
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                  "guard" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                      "disjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocol" : "bgp"
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocol" : "ibgp"
-                        }
-                      ]
-                    }
-                  },
-                  "trueStatements" : [
+                  "falseStatements" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
                       "originType" : {
@@ -7945,7 +7926,20 @@
                         "originType" : "igp"
                       }
                     }
-                  ]
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  }
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -14639,5 +14633,10 @@
     "nodeRegex" : ".*",
     "summary" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }
