@@ -9,6 +9,8 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Problem;
@@ -19,11 +21,18 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
   public static class UnusedStructuresAnswerElement extends ProblemsAnswerElement {
 
+    private AnswerSummary _summary = new AnswerSummary();
+
     private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
         _unusedStructures;
 
     public UnusedStructuresAnswerElement() {
       _unusedStructures = new TreeMap<>();
+    }
+
+    @Override
+    public AnswerSummary getSummary() {
+      return _summary;
     }
 
     public SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
@@ -49,11 +58,30 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
+    @Override
+    public void setSummary(AnswerSummary summary) {
+      _summary = summary;
+    }
+
     public void setUnusedStructures(
         SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
             undefinedReferences) {
       _unusedStructures = undefinedReferences;
     }
+
+    public void updateSummary() {
+      _summary.reset();
+      int numResults = 0;
+      for (String hostname: _unusedStructures.keySet()) {
+        for (String type: _unusedStructures.get(hostname).keySet()) {
+          for (String name: _unusedStructures.get(hostname).get(type).keySet()) {
+            numResults++;
+          }
+        }
+      }
+      _summary.setNumResults(numResults);
+    }
+
   }
 
   public static class UnusedStructuresAnswerer extends Answerer {
@@ -116,6 +144,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                       });
                 }
               });
+      answerElement.updateSummary();
       return answerElement;
     }
   }

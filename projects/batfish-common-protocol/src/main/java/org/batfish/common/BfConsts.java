@@ -150,6 +150,7 @@ public class BfConsts {
 
   public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
   public static final String PROP_STATUS = "status";
+  public static final String PROP_SUMMARY = "summary";
   public static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   public static final String SUFFIX_LOG_FILE = ".log";
   public static final String SVC_BASE_RSC = "/batfishservice";

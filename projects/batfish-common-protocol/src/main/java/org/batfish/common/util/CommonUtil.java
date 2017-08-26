@@ -83,6 +83,10 @@ public class CommonUtil {
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
+  public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
+    return collection == null || collection.isEmpty();
+  }
+
   public static String applyPrefix(String prefix, String msg) {
     String[] lines = msg.split("\n");
     StringBuilder sb = new StringBuilder();
@@ -90,16 +94,6 @@ public class CommonUtil {
       sb.append(prefix + line + "\n");
     }
     return sb.toString();
-  }
-
-  public static boolean bothNullOrEqual(Object a, Object b) {
-    if (a == null && b == null) {
-      return true;
-    } else if (a != null && b != null) {
-      return a.equals(b);
-    } else {
-      return false;
-    }
   }
 
   public static <T extends Throwable> boolean causedBy(Throwable e, Class<T> causeClass) {
