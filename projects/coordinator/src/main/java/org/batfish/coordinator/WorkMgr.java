@@ -145,14 +145,14 @@ public class WorkMgr {
       // Client client = ClientBuilder.newClient();
       Client client =
           CommonUtil.createHttpClientBuilder(
-                  _settings.getSslWorkDisable(),
-                  _settings.getSslWorkTrustAllCerts(),
-                  _settings.getSslWorkKeystoreFile(),
-                  _settings.getSslWorkKeystorePassword(),
-                  _settings.getSslWorkTruststoreFile(),
-                  _settings.getSslWorkTruststorePassword())
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
               .build();
-      String protocol = _settings.getSslWorkDisable() ? "http" : "https";
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client
               .target(
