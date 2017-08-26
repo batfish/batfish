@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class OspfIntraAreaRoute extends OspfRoute {
 
@@ -16,7 +17,7 @@ public class OspfIntraAreaRoute extends OspfRoute {
   @JsonCreator
   public OspfIntraAreaRoute(
       @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_AREA) long area) {

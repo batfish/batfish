@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BfConsts;
@@ -12,7 +13,7 @@ import org.batfish.datamodel.questions.Question;
 
 public class Answer {
 
-  public static Answer failureAnswer(String message, Question question) {
+  public static Answer failureAnswer(String message, @Nullable Question question) {
     Answer answer = new Answer();
     answer.setQuestion(question);
     answer.setStatus(AnswerStatus.FAILURE);

@@ -3,6 +3,7 @@ package org.batfish.config;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -1534,7 +1535,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _pluginDirs = pluginDirs;
   }
 
-  public void setQuestionPath(Path questionPath) {
+  public void setQuestionPath(@Nullable Path questionPath) {
     _questionPath = questionPath;
   }
 
