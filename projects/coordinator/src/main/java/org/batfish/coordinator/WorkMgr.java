@@ -294,15 +294,15 @@ public class WorkMgr {
    *     delQuestionsStr}.
    * @param aName The name of the analysis
    * @param addQuestionsFileStream The questions to be added to or initially populate the analysis.
-   * @param delQuestionsStr A string representation of a JSON array of names of questions to be
-   *     deleted from the analysis. Incompatible with {@code newAnalysis}.
+   * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
+   *     with {@code newAnalysis}.
    */
   public void configureAnalysis(
       String containerName,
       boolean newAnalysis,
       String aName,
       InputStream addQuestionsFileStream,
-      String delQuestionsStr) {
+      List<String> questionsToDelete) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
     if (Files.exists(aDir) && newAnalysis) {
@@ -350,30 +350,12 @@ public class WorkMgr {
     }
 
     /** Delete questions */
-    if (delQuestionsStr != null && !delQuestionsStr.equals("")) {
-      JSONArray delQuestionsArray;
-      try {
-        delQuestionsArray = new JSONArray(delQuestionsStr);
-      } catch (JSONException e) {
-        throw new BatfishException(
-            "The string of questions to be deleted does not encode a valid JSON array: "
-                + delQuestionsStr,
-            e);
+    for (String qName : questionsToDelete) {
+      Path qDir = questionsDir.resolve(qName);
+      if (!Files.exists(qDir)) {
+        throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
       }
-      for (int index = 0; index < delQuestionsArray.length(); index++) {
-        String qName;
-        try {
-          qName = delQuestionsArray.getString(index);
-        } catch (JSONException e) {
-          throw new BatfishException(
-              "Could not get name of question to be deleted at index " + index, e);
-        }
-        Path qDir = questionsDir.resolve(qName);
-        if (!Files.exists(qDir)) {
-          throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
-        }
-        CommonUtil.deleteDirectory(qDir);
-      }
+      CommonUtil.deleteDirectory(qDir);
     }
   }
 
