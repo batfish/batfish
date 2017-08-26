@@ -15,11 +15,11 @@ public class StorageUtils {
     _containerLocation = containerLocation;
   }
 
-  public Path resolvePath(Path basePath, String... dir) {
-    if (dir.length == 0) {
+  public Path resolvePath(Path basePath, String... dirs) {
+    if (dirs.length == 0) {
       return basePath;
     }
-    return basePath.resolve("/".join("/", dir));
+    return basePath.resolve(String.join("/", dirs));
   }
 
   public Path getContainerPath(String containerName) {

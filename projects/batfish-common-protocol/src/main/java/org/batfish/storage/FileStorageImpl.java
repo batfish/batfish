@@ -88,7 +88,7 @@ public class FileStorageImpl implements Storage {
         throw new BatfishException(
             String.format("Failed to create question directory '%s'", questionDir));
       }
-      Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      Path questionFile = _utils.resolvePath(questionDir, BfConsts.RELPATH_QUESTION_FILE);
       CommonUtil.writeFile(questionFile, analysis.getQuestions().get(questionName));
     }
 
