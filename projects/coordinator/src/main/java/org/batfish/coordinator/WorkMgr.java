@@ -82,10 +82,16 @@ public class WorkMgr {
 
   private WorkQueueMgr _workQueueMgr;
 
+  private Client _assignWorkClient;
+
+  private Client _checkTaskClient;
+
   public WorkMgr(Settings settings, BatfishLogger logger) {
     _settings = settings;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr();
+    _assignWorkClient = getClient();
+    _checkTaskClient = ClientBuilder.newClient();
   }
 
   private void assignWork() {
@@ -142,19 +148,9 @@ public class WorkMgr {
           BfConsts.ARG_ANSWER_JSON_PATH,
           testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
-      // Client client = ClientBuilder.newClient();
-      Client client =
-          CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
-              .build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
-          client
+          _assignWorkClient
               .target(
                   String.format(
                       "%s://%s%s/%s",
@@ -235,10 +231,9 @@ public class WorkMgr {
     task.setStatus(TaskStatus.UnreachableOrBadResponse);
 
     try {
-      Client client = ClientBuilder.newClient();
       String protocol = _settings.getSslWorkDisable() ? "http" : "https";
       WebTarget webTarget =
-          client
+          _checkTaskClient
               .target(
                   String.format(
                       "%s://%s%s/%s",
@@ -1028,5 +1023,16 @@ public class WorkMgr {
     // delete the empty directory and the zip file
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
+  }
+
+  private Client getClient() {
+    return CommonUtil.createHttpClientBuilder(
+            _settings.getSslPoolDisable(),
+            _settings.getSslPoolTrustAllCerts(),
+            _settings.getSslPoolKeystoreFile(),
+            _settings.getSslPoolKeystorePassword(),
+            _settings.getSslPoolTruststoreFile(),
+            _settings.getSslPoolTruststorePassword())
+        .build();
   }
 }
