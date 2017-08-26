@@ -15,7 +15,7 @@ public interface AnswerElement {
 
   @Nullable
   @JsonProperty(PROP_SUMMARY)
-  default String getSummary() {
+  default AnswerSummary getSummary() {
     return null;
   }
 
@@ -29,5 +29,5 @@ public interface AnswerElement {
   }
 
   @JsonProperty(PROP_SUMMARY)
-  default void setSummary(String summary) {}
+  default void setSummary(AnswerSummary summary) {}
 }

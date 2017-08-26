@@ -148,7 +148,7 @@ public class WorkMgr {
           BfConsts.ARG_ANSWER_JSON_PATH,
           testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
-      String protocol = _settings.getSslWorkDisable() ? "http" : "https";
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           _assignWorkClient
               .target(
@@ -1027,12 +1027,12 @@ public class WorkMgr {
 
   private Client getClient() {
     return CommonUtil.createHttpClientBuilder(
-            _settings.getSslWorkDisable(),
-            _settings.getSslWorkTrustAllCerts(),
-            _settings.getSslWorkKeystoreFile(),
-            _settings.getSslWorkKeystorePassword(),
-            _settings.getSslWorkTruststoreFile(),
-            _settings.getSslWorkTruststorePassword())
+            _settings.getSslPoolDisable(),
+            _settings.getSslPoolTrustAllCerts(),
+            _settings.getSslPoolKeystoreFile(),
+            _settings.getSslPoolKeystorePassword(),
+            _settings.getSslPoolTruststoreFile(),
+            _settings.getSslPoolTruststorePassword())
         .build();
   }
 }
