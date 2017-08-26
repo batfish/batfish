@@ -227,9 +227,9 @@ public class CommonUtil {
       String keystorePassword,
       Path truststoreFile,
       String truststorePassword) {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     try {
       if (!noSsl) {
-        ClientBuilder clientBuilder = ClientBuilder.newBuilder();
         SSLContext sslcontext = SSLContext.getInstance("TLS");
         TrustManager[] trustManagers;
         if (trustAllSslCerts) {
@@ -279,13 +279,12 @@ public class CommonUtil {
           keyManagers = null;
         }
         sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
-        return clientBuilder.sslContext(sslcontext);
-      } else {
-        return ClientBuilder.newBuilder();
+        clientBuilder.sslContext(sslcontext);
       }
     } catch (Exception e) {
       throw new BatfishException("Error creating HTTP client builder", e);
     }
+    return clientBuilder;
   }
 
   public static Path createTempDirectory(String prefix, FileAttribute<?>... attrs) {
