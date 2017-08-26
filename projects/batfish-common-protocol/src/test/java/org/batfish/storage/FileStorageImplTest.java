@@ -71,13 +71,25 @@ public class FileStorageImplTest {
   }
 
   @Test
-  public void testUpdateAnalysis() {
+  public void testAddQuestion() {
     Analysis analysis =
         new Analysis(
             "testanalysisupdate", Collections.singletonMap("testquestion", "testquestionvalue"));
-    _storage.saveAnalysis("testcontainerupdate", analysis);
-    Analysis savedAnalysis = _storage.getAnalysis("testcontainerupdate", "testanalysisupdate");
+    Analysis savedAnalysis = _storage.saveAnalysis("testcontainerupdate", analysis);
     savedAnalysis.addQuestion("modifiedquestion", "modifiedquestionvalue");
+    Analysis updatedAnalysis = _storage.updateAnalysis("testcontainerupdate", savedAnalysis);
+
+    //test that attributes were updated
+    assertThat(updatedAnalysis, equalTo(savedAnalysis));
+  }
+
+  @Test
+  public void testDeleteQuestion() {
+    Analysis analysis =
+        new Analysis(
+            "testanalysisupdate", Collections.singletonMap("testquestion", "testquestionvalue"));
+    Analysis savedAnalysis = _storage.saveAnalysis("testcontainerupdate", analysis);
+    savedAnalysis.deleteQuestion("testquestion");
     Analysis updatedAnalysis = _storage.updateAnalysis("testcontainerupdate", savedAnalysis);
 
     //test that attributes were updated
