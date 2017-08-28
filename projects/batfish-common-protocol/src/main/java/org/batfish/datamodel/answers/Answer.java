@@ -26,8 +26,11 @@ public class Answer {
 
   private AnswerStatus _status;
 
+  private AnswerSummary _summary = new AnswerSummary();
+
   public void addAnswerElement(AnswerElement answerElement) {
     _answerElements.add(answerElement);
+    _summary.combine(answerElement.getSummary());
   }
 
   public void append(Answer answer) {
@@ -36,6 +39,7 @@ public class Answer {
     }
     _answerElements.addAll(answer._answerElements);
     _status = answer._status;
+    _summary.combine(answer.getSummary());
     for (AnswerElement answerElement : answer._answerElements) {
       if (answerElement instanceof BatfishStackTrace) {
         BatfishException e = ((BatfishStackTrace) answerElement).getException();
@@ -54,6 +58,11 @@ public class Answer {
     return _question;
   }
 
+  @JsonProperty(BfConsts.PROP_SUMMARY)
+  public AnswerSummary getSummary() {
+    return _summary;
+  }
+
   @JsonProperty(BfConsts.PROP_STATUS)
   public AnswerStatus getStatus() {
     return _status;
@@ -69,6 +78,9 @@ public class Answer {
     }
     for (AnswerElement ae : _answerElements) {
       string.append(ae.prettyPrint() + "\n");
+    }
+    if (_summary != null) {
+      string.append("Summary: " + _summary.prettyPrint() + "\n");
     }
     return string.toString();
   }
@@ -104,5 +116,10 @@ public class Answer {
   @JsonProperty(BfConsts.PROP_STATUS)
   public void setStatus(AnswerStatus status) {
     _status = status;
+  }
+
+  @JsonProperty(BfConsts.PROP_SUMMARY)
+  public void setSummary(AnswerSummary summary) {
+    _summary = summary;
   }
 }

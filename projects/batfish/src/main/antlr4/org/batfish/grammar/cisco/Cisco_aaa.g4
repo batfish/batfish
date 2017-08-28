@@ -11,7 +11,8 @@ aaa_accounting
    ACCOUNTING
    (
       aaa_accounting_commands
-      | aaa_accounting_connection
+      | aaa_accounting_connection_line
+      | aaa_accounting_connection_stanza
       | aaa_accounting_default
       | aaa_accounting_delay_start
       | aaa_accounting_exec_line
@@ -37,13 +38,24 @@ aaa_accounting_commands
    ) aaa_accounting_method NEWLINE
 ;
 
-aaa_accounting_connection
+aaa_accounting_connection_line
 :
    CONNECTION
    (
       DEFAULT
       | list = variable
    ) aaa_accounting_method NEWLINE
+;
+
+aaa_accounting_connection_stanza
+:
+   CONNECTION DEFAULT NEWLINE
+   (
+      (
+         ACTION_TYPE
+         | GROUP
+      ) ~NEWLINE* NEWLINE
+   )+
 ;
 
 aaa_accounting_default
