@@ -227,16 +227,8 @@ package() {
    BATFISH_USER=batfish
    DEB_OUTPUT=debian.deb
    set -x
-   if [ ! -f "$BATFISH_JAR_SRC" ]; then
-      echo "Missing $BATFISH_JAR_SRC" >&2
-      return 1
-   fi
-   if [ ! -f "$COORDINATOR_JAR_SRC" ]; then
-      echo "Missing $COORDINATOR_JAR_SRC" >&2
-      return 1
-   fi
-   if [ ! -f "$CLIENT_JAR_SRC" ]; then
-      echo "Missing $CLIENT_JAR_SRC" >&2
+   if [ ! -f "$ALLINONE_JAR_SRC" ]; then
+      echo "Missing $ALLINONE_JAR_SRC" >&2
       return 1
    fi
    if [ ! -f "$QUESTION_JAR_SRC" ]; then
