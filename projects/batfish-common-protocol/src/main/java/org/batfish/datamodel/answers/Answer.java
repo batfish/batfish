@@ -99,10 +99,6 @@ public class Answer {
     return answer;
   }
 
-  @Override public String toString() {
-    return prettyPrint();
-  }
-
   @JsonProperty(BfConsts.PROP_ANSWER_ELEMENTS)
   public void setAnswerElements(List<AnswerElement> answerElements) {
     _answerElements = answerElements;
