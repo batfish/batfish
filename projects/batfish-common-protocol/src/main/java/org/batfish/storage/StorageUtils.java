@@ -53,4 +53,18 @@ public class StorageUtils {
             .length
         == 0;
   }
+
+  public Path getTestrigPath(String containerName, String testrigName) {
+    return resolvePath(
+        _containerLocation, containerName, BfConsts.RELPATH_TESTRIGS_DIR, testrigName);
+  }
+
+  public Path getEnvironmentPath(String containerName, String testrigName, String environmentName) {
+    return resolvePath(
+        getTestrigPath(containerName, testrigName),
+        BfConsts.RELPATH_ENVIRONMENTS_DIR,
+        environmentName,
+        BfConsts.RELPATH_ENV_DIR);
+  }
+
 }

@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -894,46 +895,16 @@ public class WorkMgr {
       String baseEnvName,
       String newEnvName,
       InputStream fileStream) {
-    //    Path testrigDir = getdirTestrig(containerName, testrigName);
-    //    Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
-    //    Path newEnvDir = environmentsDir.resolve(newEnvName);
-    //    Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
-    //    if (Files.exists(newEnvDir)) {
-    //      throw new BatfishException(
-    //          "Environment: '" + newEnvName + "' already exists for testrig: '"
-    // + testrigName + "'");
-    //    }
-    //    if (!dstDir.toFile().mkdirs()) {
-    //      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
-    //    }
-    //    Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
-    //    CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    //    /** First copy base environment if it is set */
-    //    if (baseEnvName.length() > 0) {
-    //      Path baseEnvPath =
-    //     senvironmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
-    //      if (!Files.exists(baseEnvPath)) {
-    //        CommonUtil.delete(zipFile);
-    //        throw new BatfishException(
-    //            "Base environment for copy does not exist: '" + baseEnvName + "'");
-    //      }
-    //      SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
-    //      dstDir.toFile().mkdirs();
-    //      for (Path baseFile : baseFileList) {
-    //        Path target;
-    //        if (isEnvFile(baseFile)) {
-    //          target = dstDir.resolve(baseFile.getFileName());
-    //          CommonUtil.copy(baseFile, target);
-    //        }
-    //      }
-    //    }
-
-    // now unzip
     Environment environment = readEnvironmentObject(fileStream, newEnvName);
-    System.out.print("harsh");
+    if (!Strings.isNullOrEmpty(baseEnvName)) {
+      environment =
+          mergeEnvironments(
+              _storage.getEnvironment(containerName, testrigName, baseEnvName), environment);
+    }
+    _storage.saveEnvironment(containerName, testrigName, environment);
   }
 
+  //This method populates the Environment object from the given filestream
   private Environment readEnvironmentObject(InputStream fileStream, String newEnvName) {
     Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
@@ -1013,6 +984,35 @@ public class WorkMgr {
     }
     CommonUtil.deleteDirectory(unzipDir);
     CommonUtil.deleteIfExists(zipFile);
+    return envBuilder.build();
+  }
+
+
+  public Environment mergeEnvironments(Environment oldEnv, Environment newEnv) {
+    Environment.Builder envBuilder = Environment.builder();
+    envBuilder.setName(newEnv.getName());
+    envBuilder.setInterfaceBlacklist(
+        newEnv.getInterfaceBlacklist().isEmpty()
+            ? oldEnv.getInterfaceBlacklist()
+            : newEnv.getInterfaceBlacklist());
+    envBuilder.setNodeBlacklist(
+        newEnv.getNodeBlacklist().isEmpty()
+            ? oldEnv.getNodeBlacklist()
+            : newEnv.getNodeBlacklist());
+    envBuilder.setEdgeBlacklist(
+        newEnv.getEdgeBlacklist().isEmpty()
+            ? oldEnv.getEdgeBlacklist()
+            : newEnv.getEdgeBlacklist());
+    envBuilder.setBgpTables(
+        newEnv.getBgpTables().isEmpty() ? oldEnv.getBgpTables() : newEnv.getBgpTables());
+    envBuilder.setBgpTables(
+        newEnv.getRoutingTables().isEmpty()
+            ? oldEnv.getRoutingTables()
+            : newEnv.getRoutingTables());
+    envBuilder.setExternalBgpAnnouncements(
+        Strings.isNullOrEmpty(newEnv.getExternalBgpAnnouncements())
+            ? oldEnv.getExternalBgpAnnouncements()
+            : newEnv.getExternalBgpAnnouncements());
     return envBuilder.build();
   }
 

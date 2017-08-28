@@ -3,6 +3,8 @@ package org.batfish.datamodel.pojo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -134,11 +136,11 @@ public class Environment {
   public static class Builder {
 
     private String _name;
-    private List<Edge> _edgeBlacklist;
-    private List<NodeInterfacePair> _interfaceBlacklist;
-    private List<String> _nodeBlacklist;
-    private Map<String, String> _bgpTables;
-    private Map<String, String> _routingTables;
+    private List<Edge> _edgeBlacklist = new ArrayList<>();
+    private List<NodeInterfacePair> _interfaceBlacklist = new ArrayList<>();
+    private List<String> _nodeBlacklist = new ArrayList<>();
+    private Map<String, String> _bgpTables = new HashMap<>();
+    private Map<String, String> _routingTables = new HashMap<>();
     private String _externalBgpAnnouncements;
 
     private Builder() {}
