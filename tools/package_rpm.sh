@@ -433,6 +433,8 @@ $(reload_init_scripts)
 /bin/chmod 0770 $EXTRA_PLUGIN_DIR
 /bin/chown root:$BATFISH_USER $EXTRA_PLUGIN_README
 /bin/chmod 0660 $EXTRA_PLUGIN_README
+/bin/chown root:$BATFISH_USER $ALLINONE_PROPERTIES
+/bin/chmod 0660 $ALLINONE_PROPERTIES
 /bin/chown root:$BATFISH_USER $BATFISH_PROPERTIES
 /bin/chmod 0660 $BATFISH_PROPERTIES
 /bin/chown root:$BATFISH_USER $CLIENT_PROPERTIES
@@ -459,6 +461,7 @@ ${SERVICE} coordinator stop || /bin/true
 
 %files
 %defattr(-,root,root,-)
+%config(noreplace) $ALLINONE_PROPERTIES
 %config(noreplace) $BATFISH_PROPERTIES
 %config(noreplace) $CLIENT_PROPERTIES
 %config(noreplace) $COORDINATOR_CLASSPATH
