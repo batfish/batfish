@@ -636,6 +636,15 @@ public class BfCoordWorkHelper {
     return wItem;
   }
 
+  public WorkItem getWorkItemValidateEnvironment(
+      String containerName, String testrigName, String envName) {
+    WorkItem wItem = new WorkItem(containerName, testrigName);
+    wItem.addRequestParam(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "");
+    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
+    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    return wItem;
+  }
+
   @Nullable
   public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
     try {

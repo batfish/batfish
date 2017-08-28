@@ -120,6 +120,11 @@
           }
         }
       },
+      "summary" : {
+        "numFailed" : 0,
+        "numPassed" : 0,
+        "numResults" : 22
+      },
       "unusedStructures" : {
         "as1border1" : {
           "bgp group" : {
@@ -255,5 +260,10 @@
     "differential" : false,
     "nodeRegex" : ".*"
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 22
+  }
 }
