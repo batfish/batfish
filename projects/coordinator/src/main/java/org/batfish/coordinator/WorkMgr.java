@@ -1,10 +1,13 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +23,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,8 +39,12 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.pojo.Environment.Builder;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -904,39 +910,49 @@ public class WorkMgr {
       String baseEnvName,
       String newEnvName,
       InputStream fileStream) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
-    Path newEnvDir = environmentsDir.resolve(newEnvName);
-    Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
-    if (Files.exists(newEnvDir)) {
-      throw new BatfishException(
-          "Environment: '" + newEnvName + "' already exists for testrig: '" + testrigName + "'");
-    }
-    if (!dstDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
-    }
+    //    Path testrigDir = getdirTestrig(containerName, testrigName);
+    //    Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
+    //    Path newEnvDir = environmentsDir.resolve(newEnvName);
+    //    Path dstDir = newEnvDir.resolve(BfConsts.RELPATH_ENV_DIR);
+    //    if (Files.exists(newEnvDir)) {
+    //      throw new BatfishException(
+    //          "Environment: '" + newEnvName + "' already exists for testrig: '"
+    // + testrigName + "'");
+    //    }
+    //    if (!dstDir.toFile().mkdirs()) {
+    //      throw new BatfishException("Failed to create directory: '" + dstDir + "'");
+    //    }
+    //    Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
+    //    CommonUtil.writeStreamToFile(fileStream, zipFile);
+
+    //    /** First copy base environment if it is set */
+    //    if (baseEnvName.length() > 0) {
+    //      Path baseEnvPath =
+    //     senvironmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
+    //      if (!Files.exists(baseEnvPath)) {
+    //        CommonUtil.delete(zipFile);
+    //        throw new BatfishException(
+    //            "Base environment for copy does not exist: '" + baseEnvName + "'");
+    //      }
+    //      SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
+    //      dstDir.toFile().mkdirs();
+    //      for (Path baseFile : baseFileList) {
+    //        Path target;
+    //        if (isEnvFile(baseFile)) {
+    //          target = dstDir.resolve(baseFile.getFileName());
+    //          CommonUtil.copy(baseFile, target);
+    //        }
+    //      }
+    //    }
+
+    // now unzip
+    Environment environment = readEnvironmentObject(fileStream, newEnvName);
+    System.out.print("harsh");
+  }
+
+  private Environment readEnvironmentObject(InputStream fileStream, String newEnvName) {
     Path zipFile = CommonUtil.createTempFile("coord_up_env_", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
-
-    /** First copy base environment if it is set */
-    if (baseEnvName.length() > 0) {
-      Path baseEnvPath = environmentsDir.resolve(Paths.get(baseEnvName, BfConsts.RELPATH_ENV_DIR));
-      if (!Files.exists(baseEnvPath)) {
-        CommonUtil.delete(zipFile);
-        throw new BatfishException(
-            "Base environment for copy does not exist: '" + baseEnvName + "'");
-      }
-      SortedSet<Path> baseFileList = CommonUtil.getEntries(baseEnvPath);
-      dstDir.toFile().mkdirs();
-      for (Path baseFile : baseFileList) {
-        Path target;
-        if (isEnvFile(baseFile)) {
-          target = dstDir.resolve(baseFile.getFileName());
-          CommonUtil.copy(baseFile, target);
-        }
-      }
-    }
-
     // now unzip
     Path unzipDir = CommonUtil.createTempDirectory("coord_up_env_unzip_dir_");
     UnzipUtility.unzip(zipFile, unzipDir);
@@ -947,24 +963,75 @@ public class WorkMgr {
      */
     SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
     if (unzipDirEntries.size() != 1 || !Files.isDirectory(unzipDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(newEnvDir);
       CommonUtil.deleteDirectory(unzipDir);
       throw new BatfishException(
           "Unexpected packaging of environment. There should be just one top-level folder");
     }
     Path unzipSubdir = unzipDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
-
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    Builder envBuilder = Environment.builder();
+    envBuilder.setName(newEnvName);
     // things look ok, now make the move
-    for (Path subdirFile : subFileList) {
-      Path target = dstDir.resolve(subdirFile.getFileName());
-      CommonUtil.moveByCopy(subdirFile, target);
+    try {
+      for (Path subdirFile : subFileList) {
+        switch (subdirFile.getFileName().toString()) {
+          case BfConsts.RELPATH_EDGE_BLACKLIST_FILE:
+            List<Edge> edgeBlackList =
+                mapper.readValue(
+                    CommonUtil.readFile(subdirFile), new TypeReference<List<Edge>>() {});
+            envBuilder.setEdgeBlacklist(edgeBlackList);
+            break;
+          case BfConsts.RELPATH_NODE_BLACKLIST_FILE:
+            List<String> nodeBlacklist =
+                mapper.readValue(
+                    CommonUtil.readFile(subdirFile), new TypeReference<List<String>>() {});
+            envBuilder.setNodeBlacklist(nodeBlacklist);
+            break;
+          case BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE:
+            List<NodeInterfacePair> interfaceBlacklist =
+                mapper.readValue(
+                    CommonUtil.readFile(subdirFile),
+                    new TypeReference<List<NodeInterfacePair>>() {});
+            envBuilder.setInterfaceBlacklist(interfaceBlacklist);
+            break;
+          case BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES:
+            Map<String, String> bgpTables = new HashMap<>();
+            if (Files.isDirectory(subdirFile)) {
+              CommonUtil.getEntries(subdirFile)
+                  .forEach(
+                      path -> {
+                        bgpTables.put(path.getFileName().toString(), CommonUtil.readFile(path));
+                      });
+            }
+            envBuilder.setBgpTables(bgpTables);
+            break;
+          case BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES:
+            Map<String, String> routingTables = new HashMap<>();
+            if (Files.isDirectory(subdirFile)) {
+              CommonUtil.getEntries(subdirFile)
+                  .forEach(
+                      path -> {
+                        routingTables.put(path.getFileName().toString(), CommonUtil.readFile(path));
+                      });
+            }
+            envBuilder.setRoutingTables(routingTables);
+            break;
+          case BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS:
+            envBuilder.setExternalBgpAnnouncements(CommonUtil.readFile(subdirFile));
+            break;
+          default:
+            continue;
+        }
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Environment is not properly formatted");
     }
-
-    // delete the empty directory and the zip file
     CommonUtil.deleteDirectory(unzipDir);
     CommonUtil.deleteIfExists(zipFile);
+    return envBuilder.build();
   }
+
 
   public void uploadQuestion(
       String containerName,

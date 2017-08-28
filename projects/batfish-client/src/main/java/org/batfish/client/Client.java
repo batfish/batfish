@@ -1446,7 +1446,7 @@ public class Client extends AbstractClient implements IClient {
     }
     if (initEnvParams.containsKey("nodeBlacklist")) {
       Path nodeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+          BfConsts.RELPATH_NODE_BLACKLIST_FILE);
       CommonUtil.writeFile(nodeBlacklist, initEnvParams.get("nodeBlacklist").toString());
     }
 
