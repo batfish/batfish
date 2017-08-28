@@ -10365,7 +10365,7 @@
           ]
         }
       },
-      "version" : "0.29.3"
+      "version" : "0.30.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -10494,7 +10494,7 @@
           }
         }
       },
-      "version" : "0.29.3",
+      "version" : "0.30.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {
@@ -10524,5 +10524,10 @@
       }
     }
   ],
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

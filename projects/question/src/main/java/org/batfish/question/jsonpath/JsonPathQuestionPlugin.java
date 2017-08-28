@@ -30,6 +30,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
@@ -44,10 +45,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder("Results for JsonPath\n");
       for (Integer index : results.keySet()) {
         JsonPathResult result = results.get(index);
-        sb.append(
-            String.format(
-                "  [%d]: %d results for %s\n",
-                index, result.getNumResults(), result.getPath().toString()));
+        sb.append(String.format("  [%d]: %d results for %s\n",
+            index,
+            result.getNumResults(),
+            result.getPath().toString()));
         if (result.getAssertionResult() != null) {
           sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
         }
@@ -67,13 +68,21 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     private SortedMap<Integer, JsonPathResult> _results;
 
+    private AnswerSummary _summary;
+
     public JsonPathAnswerElement() {
       _results = new TreeMap<>();
+      _summary = new AnswerSummary();
     }
 
     @JsonProperty(PROP_RESULTS)
     public SortedMap<Integer, JsonPathResult> getResults() {
       return _results;
+    }
+
+    @Override
+    public AnswerSummary getSummary() {
+      return _summary;
     }
 
     @Override
@@ -84,6 +93,23 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_RESULTS)
     public void setResults(SortedMap<Integer, JsonPathResult> results) {
       _results = results;
+    }
+
+    public void updateSummary() {
+      _summary.reset();
+      for (JsonPathResult result : _results.values()) {
+        //if assertion is null, that is high-order bit of this answer result
+        //just consider assertion result and ignore count
+        if (result.getAssertionResult() != null) {
+          if (result.getAssertionResult()) {
+            _summary.setNumPassed(_summary.getNumPassed() + 1);
+          } else {
+            _summary.setNumFailed(_summary.getNumFailed() + 1);
+          }
+        } else {
+          _summary.setNumResults(_summary.getNumResults() + result.getNumResults());
+        }
+      }
     }
   }
 
@@ -187,6 +213,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
               });
       JsonPathAnswerElement answerElement = new JsonPathAnswerElement();
       answerElement.getResults().putAll(results);
+      answerElement.updateSummary();
 
       return answerElement;
     }
