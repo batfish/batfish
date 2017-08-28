@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -700,17 +699,7 @@ public class WorkMgr {
   }
 
   public SortedSet<String> listAnalyses(String containerName) {
-    Path containerDir = getdirContainer(containerName);
-    Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
-    if (!Files.exists(analysesDir)) {
-      return new TreeSet<>();
-    }
-    SortedSet<String> analyses =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(analysesDir)
-                .stream()
-                .map(subdir -> subdir.getFileName().toString())
-                .collect(Collectors.toSet()));
+    SortedSet<String> analyses = new TreeSet<>(_storage.listAnalyses(containerName));
     return analyses;
   }
 

@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -153,5 +154,21 @@ public class FileStorageImplTest {
 
     //should throw for the deleted analysis
     _storage.getAnalysis("testcontainer", "testanalysis");
+  }
+
+  @Test
+  public void testListAnalysis() {
+    Analysis analysis1 =
+        new Analysis(
+            "testanalysis1", Collections.singletonMap("testquestion", "testquestioncontent"));
+    Analysis analysis2 =
+        new Analysis(
+            "testanalysis2", Collections.singletonMap("testquestion", "testquestioncontent"));
+    _storage.saveAnalysis("testcontainer", analysis1);
+    _storage.saveAnalysis("testcontainer", analysis2);
+
+    Assert.assertThat(
+        _storage.listAnalyses("testcontainer"),
+        equalTo(Lists.newArrayList("testanalysis1", "testanalysis2")));
   }
 }

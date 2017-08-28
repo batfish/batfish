@@ -4,7 +4,9 @@ import com.google.common.collect.Sets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
@@ -152,5 +154,24 @@ public class FileStorageImpl implements Storage {
     }
     CommonUtil.deleteDirectory(aDir);
     return true;
+  }
+
+  /**
+   * List all analysis names
+   *
+   * @param containerName Parent container
+   * @return Names of all analysis in this container
+   */
+  @Override
+  public List<String> listAnalyses(String containerName) {
+    Path analysisDir =
+        _utils.resolvePath(_utils.getContainerPath(containerName), BfConsts.RELPATH_ANALYSES_DIR);
+    if (!Files.exists(analysisDir)) {
+      return new ArrayList<>();
+    }
+    List<String> analysisNames = new ArrayList<>();
+    CommonUtil.getSubdirectories(analysisDir)
+        .forEach(analysisPath -> analysisNames.add(analysisPath.getFileName().toString()));
+    return analysisNames;
   }
 }
