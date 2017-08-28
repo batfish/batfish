@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +165,6 @@ public class FileStorageImpl implements Storage {
     return true;
   }
 
-
   /**
    * Get an Environment object
    *
@@ -318,14 +318,66 @@ public class FileStorageImpl implements Storage {
     return getEnvironment(containerName, testrigName, environment.getName());
   }
 
+  //TODO Not sure we should selectively update each attribute considering the large env object
+  /**
+   * Update an Environment object
+   *
+   * @param containerName Parent container
+   * @param testrigName Parent testrig
+   * @param environment Updated Environment
+   * @return Updated environment object from storage
+   */
   @Override
   public Environment updateEnvironment(
       String containerName, String testrigName, Environment environment) {
-    return null;
+    getEnvironment(containerName, testrigName, environment.getName());
+    deleteEnvironment(containerName, testrigName, environment.getName(), true);
+    saveEnvironment(containerName, testrigName, environment);
+    return getEnvironment(containerName, testrigName, environment.getName());
   }
 
+  /**
+   * Delete an Environment object
+   *
+   * @param containerName Parent container
+   * @param testrigName Parent testrig
+   * @param environmentName Environment to be deleted
+   * @param force Force deletion of non empty environment
+   * @return true if environment deleted, false if it does not exist
+   */
   @Override
-  public boolean deleteEnvironment(String containerName, String testrigName, boolean force) {
-    return false;
+  public boolean deleteEnvironment(
+      String containerName, String testrigName, String environmentName, boolean force) {
+    Path envDir = _utils.getEnvironmentPath(containerName, testrigName, environmentName);
+    if (!Files.exists(envDir.getParent())) {
+      return false;
+    }
+    if (envDir.toFile().list().length != 0 && !force) {
+      throw new BatfishException(
+          String.format("'%s' is not empty, deletion must be forced", environmentName));
+    }
+    CommonUtil.deleteDirectory(envDir.getParent());
+    return true;
+  }
+
+  /**
+   * List all Environments in a given container and testrig
+   *
+   * @param containerName Parent container
+   * @param testrigName Parent testrig
+   * @return List of environment names
+   */
+  @Override
+  public List<String> listEnvironments(String containerName, String testrigName) {
+    Path envsDir =
+        _utils.resolvePath(
+            _utils.getTestrigPath(containerName, testrigName), BfConsts.RELPATH_ENVIRONMENTS_DIR);
+    if (!Files.exists(envsDir)) {
+      return new ArrayList<>();
+    }
+    List<String> envNames = new ArrayList<>();
+    CommonUtil.getSubdirectories(envsDir)
+        .forEach(envPath -> envNames.add(envPath.getFileName().toString()));
+    return envNames;
   }
 }

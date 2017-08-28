@@ -4,12 +4,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Analysis;
+import org.batfish.datamodel.pojo.Environment;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -153,5 +158,130 @@ public class FileStorageImplTest {
 
     //should throw for the deleted analysis
     _storage.getAnalysis("testcontainer", "testanalysis");
+  }
+
+  @Test
+  public void testInvalidGetEnvironment() {
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        String.format(
+            String.format(
+                "Environment '%s' doesn't exist for container '%s'->testrig '%s'",
+                "fakeenvironment", "fakecontainer", "faketestrig")));
+
+    //throws since the environment is not found in the container
+    _storage.getEnvironment("fakecontainer", "faketestrig", "fakeenvironment");
+  }
+
+  @Test
+  public void testSaveEnvironment() {
+    Environment environment = getTestEnvironment("env");
+    Environment savedEnvironment =
+        _storage.saveEnvironment("testcontainer", "testtestrig", environment);
+
+    //Test equality of persistent and transient instances
+    Assert.assertThat(environment, equalTo(savedEnvironment));
+  }
+
+  @Test
+  public void testInvalidSaveEnvironment() {
+    Environment environment = getTestEnvironment("env");
+    _storage.saveEnvironment("testcontainer", "testtestrig", environment);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        String.format(
+            "Environment '%s' already exists for container '%s' testrig '%s'",
+            environment.getName(), "testcontainer", "testtestrig"));
+
+    //Should throw exception for duplicate environment
+    _storage.saveEnvironment("testcontainer", "testtestrig", environment);
+  }
+
+  @Test
+  public void testUpdateEnvironment() {
+    Environment environment = getTestEnvironment("env");
+    Environment savedEnvironment =
+        _storage.saveEnvironment("testcontainer", "testtestrig", environment);
+    savedEnvironment.getEdgeBlacklist().add(new Edge("node3", "int3", "node4", "int4"));
+    Environment updatedEnvironment =
+        _storage.updateEnvironment("testcontainer", "testtestrig", savedEnvironment);
+
+    Assert.assertThat(savedEnvironment, equalTo(updatedEnvironment));
+  }
+
+  @Test
+  public void testInvalidUpdateEnvironment() {
+    Environment environment = getTestEnvironment("env");
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        String.format(
+            "Environment '%s' doesn't exist for container '%s'->testrig '%s'",
+            environment.getName(), "testcontainer", "testtestrig"));
+
+    //test that update throws for non-existent environment
+    _storage.updateEnvironment("testcontainer", "testtestrig", environment);
+  }
+
+  @Test
+  public void testDeleteEmptyEnvironment() {
+    String containerName = "testcontainer";
+    String testrigName = "testtestrig";
+    String envName = "testenv";
+    Environment environment = Environment.builder().setName(envName).build();
+    _storage.saveEnvironment(containerName, testrigName, environment);
+
+    assertTrue(_storage.deleteEnvironment(containerName, testrigName, envName, false));
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        String.format(
+            String.format(
+                "Environment '%s' doesn't exist for container '%s'->testrig '%s'",
+                envName, containerName, testrigName)));
+
+    //throws since the environment is not found in the container
+    _storage.getEnvironment(containerName, testrigName, envName);
+  }
+
+  @Test
+  public void testForceDeleteEnvironment() {
+    String containerName = "testcontainer";
+    String testrigName = "testtestrig";
+    String envName = "testenv";
+    Environment environment = getTestEnvironment(envName);
+    _storage.saveEnvironment(containerName, testrigName, environment);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(String.format("'%s' is not empty, deletion must be forced", envName));
+
+    //Should throw for non empty environment
+    _storage.deleteEnvironment(containerName, testrigName, envName, false);
+
+    //Deletion should be possible with force=true
+    assertTrue(_storage.deleteEnvironment(containerName, testrigName, envName, true));
+  }
+
+  @Test
+  public void testListEnvironments() {
+    String containerName = "testcontainer";
+    String testrigName = "testtestrig";
+    _storage.saveEnvironment(containerName, testrigName, getTestEnvironment("env1"));
+    _storage.saveEnvironment(containerName, testrigName, getTestEnvironment("env2"));
+
+    Assert.assertThat(
+        _storage.listEnvironments(containerName, testrigName),
+        Matchers.equalTo(Lists.newArrayList("env1", "env2")));
+  }
+
+  //Util function to get a sample test environment
+  private Environment getTestEnvironment(String envName) {
+    return Environment.builder()
+        .setName(envName)
+        .setEdgeBlacklist(Collections.singletonList(new Edge("node1", "int1", "node2", "int2")))
+        .setInterfaceBlacklist(Collections.singletonList(new NodeInterfacePair("node1", "int1")))
+        .setNodeBlacklist(Collections.singletonList("node1"))
+        .setBgpTables(Collections.singletonMap("testbgp", "testbgpvalue"))
+        .setRoutingTables(Collections.singletonMap("testrt", "testrtvalue"))
+        .setExternalBgpAnnouncements("testbgpannouncement")
+        .build();
   }
 }

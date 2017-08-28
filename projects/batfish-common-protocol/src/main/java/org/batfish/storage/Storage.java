@@ -1,5 +1,6 @@
 package org.batfish.storage;
 
+import java.util.List;
 import org.batfish.datamodel.pojo.Analysis;
 import org.batfish.datamodel.pojo.Environment;
 
@@ -21,5 +22,8 @@ public interface Storage {
 
   Environment updateEnvironment(String containerName, String testrigName, Environment environment);
 
-  boolean deleteEnvironment(String containerName, String testrigName, boolean force);
+  boolean deleteEnvironment(
+      String containerName, String testrigName, String environmentName, boolean force);
+
+  List<String> listEnvironments(String containerName, String testrigName);
 }

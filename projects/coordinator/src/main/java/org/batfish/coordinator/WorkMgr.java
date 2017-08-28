@@ -759,18 +759,9 @@ public class WorkMgr {
   }
 
   public SortedSet<String> listEnvironments(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    Path environmentsDir = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR);
-    if (!Files.exists(environmentsDir)) {
-      return new TreeSet<>();
-    }
-    SortedSet<String> environments =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(environmentsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-    return environments;
+    SortedSet<String> envs =
+        new TreeSet<>(_storage.listEnvironments(containerName, testrigName));
+    return envs;
   }
 
   public SortedSet<String> listQuestions(String containerName, String testrigName) {
