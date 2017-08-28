@@ -45,12 +45,12 @@ import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
+import org.batfish.client.params.InitEnvironmentParams;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -70,6 +70,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -78,6 +79,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1386,77 +1388,99 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean initEnvironment(String[] words, FileWriter outWriter,
-      List<String> options, List<String> parameters)
-      throws Exception {
-    if (!isValidArgument(options, parameters, 1, 1, 6, Command.INIT_ENVIRONMENT)) {
-      return false;
+  private boolean initEnvironment(String paramsLine, FileWriter outWriter) {
+    InitEnvironmentParams params = parseInitEnvironmentParams(paramsLine);
+    String newEnvName;
+    String paramsLocation = params.getSourcePath();
+    String paramsName = params.getNewEnvironmentName();
+    String paramsPrefix = params.getNewEnvironmentPrefix();
+    String testrigName = params.getDoDelta() ? _currDeltaTestrig : _currTestrig;
+    if (paramsName != null) {
+      newEnvName = paramsName;
+    } else if (paramsPrefix != null) {
+      newEnvName = paramsPrefix + UUID.randomUUID();
+    } else {
+      newEnvName = DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
     }
-    if (!isSetTestrig() || !isSetContainer(true)) {
-      return false;
-    }
+    String paramsBaseEnv = params.getSourceEnvironmentName();
+    String baseEnvName =
+        paramsBaseEnv != null ? paramsBaseEnv : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
+    String fileToSend;
+    SortedSet<String> paramsNodeBlacklist = params.getNodeBlacklist();
+    SortedSet<NodeInterfacePair> paramsInterfaceBlacklist = params.getInterfaceBlacklist();
+    SortedSet<Edge> paramsEdgeBlacklist = params.getEdgeBlacklist();
 
-    String testrigName = _currTestrig;
-    if (options.contains("-delta")) {
-      if (!isSetDeltaEnvironment()) {
-        return false;
-      }
-      testrigName = _currDeltaTestrig;
-    }
-
-    String paramsLine =
-        String.join(" ", Arrays.copyOfRange(words, 1 + options.size(), words.length));
-    Map<String, JsonNode> initEnvParams = parseParams(paramsLine);
-
-    String deltaEnvName = (initEnvParams.containsKey("envName"))
-        ? initEnvParams.get("envName").asText() : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID();
-
-    String baseEnvName = (initEnvParams.containsKey("baseEnvName"))
-        ? initEnvParams.get("baseEnvName").asText() : "";
-
-    Path deltaEnvDir = CommonUtil.createTempDirectory("environment");
-
-    //if a environment directory or zip was given to us, copy that over
-    if (initEnvParams.containsKey("envDirOrZip")) {
-      Path envDirOrZip = Paths.get(initEnvParams.get("envDirOrZip").asText());
-      if (!Files.exists(envDirOrZip)) {
-        _logger.errorf("Environment directory or zip file %s does not exist\n",
-            envDirOrZip.toAbsolutePath().toString());
-        return false;
-      }
-
-      if (Files.isDirectory(envDirOrZip)) {
-        FileUtils.copyDirectory(new File(envDirOrZip.toAbsolutePath().toString()),
-            deltaEnvDir.toFile());
+    if (paramsLocation == null
+        || Files.isDirectory(Paths.get(paramsLocation))
+        || !paramsNodeBlacklist.isEmpty()
+        || !paramsInterfaceBlacklist.isEmpty()
+        || !paramsEdgeBlacklist.isEmpty()) {
+      Path tempFile = CommonUtil.createTempFile("batfish_client_tmp_env_", ".zip");
+      fileToSend = tempFile.toString();
+      if (paramsLocation != null
+          && Files.isDirectory(Paths.get(paramsLocation))
+          && paramsNodeBlacklist.isEmpty()
+          && paramsInterfaceBlacklist.isEmpty()
+          && paramsEdgeBlacklist.isEmpty()) {
+        ZipUtility.zipFiles(Paths.get(paramsLocation), tempFile);
       } else {
-        UnzipUtility.unzip(envDirOrZip, deltaEnvDir);
+        Path tempDir = CommonUtil.createTempDirectory("batfish_client_tmp_env_");
+        if (paramsLocation != null) {
+          if (Files.isDirectory(Paths.get(paramsLocation))) {
+            CommonUtil.copyDirectory(Paths.get(paramsLocation), tempDir);
+          } else if (Files.isRegularFile(Paths.get(paramsLocation))) {
+            UnzipUtility.unzip(Paths.get(paramsLocation), tempDir);
+          } else {
+            throw new BatfishException(
+                "Invalid environment directory or zip: '" + paramsLocation + "'");
+          }
+        }
+        if (!paramsNodeBlacklist.isEmpty()) {
+          String nodeBlacklistText;
+          try {
+            nodeBlacklistText = new BatfishObjectMapper().writeValueAsString(paramsNodeBlacklist);
+          } catch (JsonProcessingException e) {
+            throw new BatfishException("Failed to write node blacklist to string", e);
+          }
+          Path nodeBlacklistFilePath = tempDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+          CommonUtil.writeFile(nodeBlacklistFilePath, nodeBlacklistText);
+        }
+        if (!paramsInterfaceBlacklist.isEmpty()) {
+          String interfaceBlacklistText;
+          try {
+            interfaceBlacklistText =
+                new BatfishObjectMapper().writeValueAsString(paramsInterfaceBlacklist);
+          } catch (JsonProcessingException e) {
+            throw new BatfishException("Failed to write interface blacklist to string", e);
+          }
+          Path interfaceBlacklistFilePath =
+              tempDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+          CommonUtil.writeFile(interfaceBlacklistFilePath, interfaceBlacklistText);
+        }
+        if (!paramsEdgeBlacklist.isEmpty()) {
+          String edgeBlacklistText;
+          try {
+            edgeBlacklistText = new BatfishObjectMapper().writeValueAsString(paramsEdgeBlacklist);
+          } catch (JsonProcessingException e) {
+            throw new BatfishException("Failed to write edge blacklist to string", e);
+          }
+          Path edgeBlacklistFilePath = tempDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
+          CommonUtil.writeFile(edgeBlacklistFilePath, edgeBlacklistText);
+        }
+        ZipUtility.zipFiles(tempDir, tempFile);
       }
+    } else if (Files.isRegularFile(Paths.get(paramsLocation))) {
+      fileToSend = paramsLocation;
+    } else {
+      throw new BatfishException("Invalid environment directory or zip: '" + paramsLocation + "'");
     }
 
-    //Process the blacklists now. Dump them in the directory (potentially overwriting previous ones)
-    if (initEnvParams.containsKey("edgeBlacklist")) {
-      Path edgeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-      CommonUtil.writeFile(edgeBlacklist, initEnvParams.get("edgeBlacklist").toString());
-    }
-    if (initEnvParams.containsKey("interfaceBlacklist")) {
-      Path interfaceBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-      CommonUtil.writeFile(interfaceBlacklist, initEnvParams.get("interfaceBlacklist").toString());
-    }
-    if (initEnvParams.containsKey("nodeBlacklist")) {
-      Path nodeBlacklist = Paths.get(deltaEnvDir.toAbsolutePath().toString(),
-          BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-      CommonUtil.writeFile(nodeBlacklist, initEnvParams.get("nodeBlacklist").toString());
-    }
-
-    if (!uploadEnv(deltaEnvDir.toAbsolutePath().toString(),
-        deltaEnvName, baseEnvName, testrigName)) {
+    if (!uploadEnv(fileToSend, testrigName, newEnvName, baseEnvName)) {
       return false;
     }
 
-    _currDeltaEnv = deltaEnvName;
-    _currDeltaTestrig = testrigName;
+    _currDeltaEnv = newEnvName;
+    _currDeltaTestrig = _currTestrig;
 
     _logger.output("Active delta testrig->environment is set");
     _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
@@ -1465,12 +1489,31 @@ public class Client extends AbstractClient implements IClient {
     WorkItem wItemGenDdp =
         _workHelper.getWorkItemCompileDeltaEnvironment(
             _currContainerName, _currDeltaTestrig, _currEnv, _currDeltaEnv);
-
     if (!execute(wItemGenDdp, outWriter)) {
       return false;
     }
 
+    WorkItem wItemValidateEnvironment =
+        _workHelper.getWorkItemValidateEnvironment(
+            _currContainerName, _currDeltaTestrig, _currDeltaEnv);
+
+    if (!execute(wItemValidateEnvironment, outWriter)) {
+      return false;
+    }
+
     return true;
+  }
+
+  private boolean initEnvironment(
+      String[] words, FileWriter outWriter, List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.INIT_ENVIRONMENT)) {
+      return false;
+    }
+    if (!isSetTestrig() || !isSetContainer(true)) {
+      return false;
+    }
+    String paramsLine = String.join(" ", Arrays.copyOfRange(words, 1, words.length));
+    return initEnvironment(paramsLine, outWriter);
   }
 
   private void initHelpers() {
@@ -1875,6 +1918,24 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
+  static InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
+    String jsonParamsStr = "{ " + paramsLine + " }";
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    InitEnvironmentParams parameters;
+    try {
+      parameters =
+          mapper.<InitEnvironmentParams>readValue(
+              new JSONObject(jsonParamsStr).toString(),
+              new TypeReference<InitEnvironmentParams>() {});
+      return parameters;
+    } catch (JSONException | IOException e) {
+      throw new BatfishException(
+          "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
+              + "values valid JSON?)",
+          e);
+    }
+  }
+
   private Map<String, JsonNode> parseParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
@@ -2037,8 +2098,8 @@ public class Client extends AbstractClient implements IClient {
           return initContainer(options, parameters);
         case INIT_DELTA_TESTRIG:
           return initTestrig(outWriter, options, parameters, true);
-      case INIT_ENVIRONMENT:
-        return initEnvironment(words, outWriter, options, parameters);
+        case INIT_ENVIRONMENT:
+          return initEnvironment(words, outWriter, options, parameters);
         case INIT_TESTRIG:
           return initTestrig(outWriter, options, parameters, false);
         case LIST_ANALYSES:
@@ -2664,8 +2725,8 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
   }
 
-  private boolean uploadEnv(String fileOrDir, String envName, String baseEnvName,
-      String testrigName) throws Exception {
+  private boolean uploadEnv(
+      String fileOrDir, String testrigName, String newEnvName, String baseEnvName) {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
@@ -2676,7 +2737,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       boolean result =
           _workHelper.uploadEnvironment(
-              _currContainerName, testrigName, baseEnvName, envName, uploadTarget.toString());
+              _currContainerName, testrigName, baseEnvName, newEnvName, uploadTarget.toString());
       return result;
     } finally {
       if (createZip) {
