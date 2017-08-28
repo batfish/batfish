@@ -118,4 +118,9 @@ public class Answer {
   public void setSummary(AnswerSummary summary) {
     _summary = summary;
   }
+
+  @Override
+  public String toString() {
+    return prettyPrint();
+  }
 }
