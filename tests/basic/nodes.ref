@@ -982,23 +982,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -2179,23 +2179,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -2566,23 +2566,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -3654,23 +3654,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -4761,23 +4761,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -5301,23 +5301,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -5818,23 +5818,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -6709,23 +6709,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -7342,23 +7342,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -8012,23 +8012,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -9083,23 +9083,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -10071,23 +10071,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -10622,23 +10622,23 @@
                 }
               },
               "services" : {
-                "log" : {
-                  "enabled" : true,
-                  "subservices" : {
-                    "datetime" : {
-                      "enabled" : true,
-                      "subservices" : {
-                        "msec" : {
-                          "enabled" : true
-                        }
-                      }
-                    }
-                  }
-                },
                 "timestamps" : {
                   "enabled" : true,
                   "subservices" : {
                     "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "log" : {
                       "enabled" : true,
                       "subservices" : {
                         "datetime" : {
@@ -11100,5 +11100,10 @@
     "nodeRegex" : ".*",
     "summary" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }
