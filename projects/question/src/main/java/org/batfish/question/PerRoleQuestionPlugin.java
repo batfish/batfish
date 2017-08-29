@@ -106,7 +106,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       for (Map.Entry<String, SortedSet<String>> entry : roleNodeMap.entrySet()) {
         String role = entry.getKey();
         String regex = namesToRegex(entry.getValue());
-        innerNRQuestion.setNodeRegex("(" + origRegex + ")" + "&&" + regex);
+        innerNRQuestion.setNodeRegex("(?=" + regex + ")" + origRegex);
         String innerQuestionName = innerQuestion.getName();
         Answerer innerAnswerer =
             _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
