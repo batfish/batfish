@@ -145,6 +145,7 @@ public class BfConsts {
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_TESTRIGS_DIR = "testrigs";
+  public static final String RELPATH_TESTRIG_SYNC_DIR = "testrig_sync";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 

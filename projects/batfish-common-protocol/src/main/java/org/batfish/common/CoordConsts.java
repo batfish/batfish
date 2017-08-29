@@ -18,7 +18,8 @@ public class CoordConsts {
 
   public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";
 
-  public static final String RELPATH_GIT_SYNC_DIR = "gitsync";
+  public static final String RELPATH_GIT_SYNC_DIR = "git";
+  public static final String RELPATH_GIT_SYNC_ID = "git";
 
   /** Constants for where and how services are hosted */
   public static final String SVC_CFG_POOL_MGR = "/batfishpoolmgr";
