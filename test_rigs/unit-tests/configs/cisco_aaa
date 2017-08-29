@@ -7,6 +7,10 @@ aaa accounting commands 15 default start-stop group tacacs+
 aaa accounting commands 0-1,15 default stop-only group tacacs+
 aaa accounting commands all default stop-only group tacacs+
 aaa accounting connection default wait-start group radius
+aaa accounting connection default
+ action-type start-stop
+ group radius
+!
 aaa accounting delay-start all
 aaa accounting exec default start-stop group tacacs+
 aaa accounting exec default wait-start group radius
