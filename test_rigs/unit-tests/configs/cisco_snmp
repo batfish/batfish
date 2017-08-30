@@ -6,6 +6,8 @@ snmp-server aaa-user cache-timeout 3600
 snmp-server community dummycommunity group network-operator
 snmp-server community dummycommunity RO snmp-acl
 snmp-server community dummycommunity RW 2
+snmp-server community dummy+dummy RO 1
+snmp-server community dummy@dummy RW 2
 snmp-server community dummycommunity use-acl snmp-acl
 snmp-server community dummycommunity use-acl snmp-arpa-acl
 snmp-server community dummyconnunity RO SystemOwner IPv4 dummyacl

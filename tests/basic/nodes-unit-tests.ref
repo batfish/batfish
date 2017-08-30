@@ -4805,6 +4805,18 @@
               "name" : "default",
               "snmpServer" : {
                 "communities" : {
+                  "dummy+dummy" : {
+                    "name" : "dummy+dummy",
+                    "accessList" : "1",
+                    "ro" : true,
+                    "rw" : true
+                  },
+                  "dummy@dummy" : {
+                    "name" : "dummy@dummy",
+                    "accessList" : "2",
+                    "ro" : true,
+                    "rw" : true
+                  },
                   "dummycommunity" : {
                     "name" : "dummycommunity",
                     "accessList" : "to-VTY",
