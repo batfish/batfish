@@ -11038,6 +11038,12 @@
             "            VARIABLE:'blah'  <== mode:M_Authentication)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (l_null",
+            "        TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "        LOGIN:'login'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'response'  <== mode:DEFAULT_MODE",
+            "        DEC:'120'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (l_null",
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        VACANT_MESSAGE:'vacant-message'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -32430,7 +32436,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                54
+                55
               ]
             }
           }

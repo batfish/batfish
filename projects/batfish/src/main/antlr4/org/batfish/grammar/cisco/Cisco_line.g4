@@ -84,6 +84,7 @@ l_null
       | SESSION_TIMEOUT
       | STOPBITS
       | TERMINAL_TYPE
+      | TIMEOUT
       | TIMESTAMP
       | VACANT_MESSAGE
    ) ~NEWLINE* NEWLINE
