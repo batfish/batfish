@@ -453,7 +453,7 @@
       "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
       "differential" : false,
       "missing" : false,
-      "nodeRegex" : "(?=host1|host2).*",
+      "nodeRegex" : "(?=\\Qhost1\\E|\\Qhost2\\E).*",
       "singletons" : false
     }
   },
