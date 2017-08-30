@@ -71,6 +71,7 @@ l_null
       | FLUSH_AT_ACTIVATION
       | HISTORY
       | IPV6
+      | LENGTH DEC
       | LOCATION
       | LOGGING
       | LOGOUT_WARNING

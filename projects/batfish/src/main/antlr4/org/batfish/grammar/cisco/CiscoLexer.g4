@@ -1895,6 +1895,11 @@ DAMPENING
    'dampening'
 ;
 
+DATABASE
+:
+   'database'
+;
+
 DATABITS
 :
    'databits'
@@ -3379,6 +3384,11 @@ GRACEFUL_RESTART
    'graceful-restart'
 ;
 
+GRANT
+:
+   'grant'
+;
+
 GRATUITOUS_ARPS
 :
    'gratuitous-arps'
@@ -3762,6 +3772,11 @@ IF
 IFACL
 :
    'ifacl'
+;
+
+IFDESCR
+:
+   'ifdescr'
 ;
 
 IF_NEEDED

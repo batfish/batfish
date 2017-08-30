@@ -13,6 +13,7 @@ aaa accounting connection default
 !
 aaa accounting delay-start all
 aaa accounting exec default start-stop group tacacs+
+aaa accounting exec default start-stop radius
 aaa accounting exec default wait-start group radius
 aaa accounting nested
 aaa accounting network default start-stop group tacacs+

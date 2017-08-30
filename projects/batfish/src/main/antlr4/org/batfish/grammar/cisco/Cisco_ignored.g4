@@ -880,6 +880,7 @@ null_single
             | CONFIGURATION
             | DOT1Q
             | INTERNAL
+            | IFDESCR DETAIL
          )
       )
       | VMPS

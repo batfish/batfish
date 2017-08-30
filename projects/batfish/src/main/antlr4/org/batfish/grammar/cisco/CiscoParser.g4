@@ -290,6 +290,11 @@ enable_null
    ) ~NEWLINE* NEWLINE
 ;
 
+enable_password
+:
+   PASSWORD DEC pass = variable NEWLINE
+;
+
 enable_secret
 :
    SECRET DEC pass = variable_secret NEWLINE
@@ -1379,6 +1384,7 @@ s_enable
    ENABLE
    (
       enable_null
+      | enable_password
       | enable_secret
    )
 ;
