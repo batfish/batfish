@@ -267,6 +267,7 @@ dspf_null
       | DESCRIPTION
       | CODEC
       | MAXIMUM
+      | SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -613,6 +614,7 @@ ip_ssh_null
       | CLIENT
       | MAXSTARTUPS
       | PORT
+      | SERVER
       | SOURCE_INTERFACE
       | TIME_OUT
    ) ~NEWLINE* NEWLINE
@@ -1232,6 +1234,15 @@ router_multicast_tail
    )*
 ;
 
+s_application
+:
+   APPLICATION NEWLINE
+   SERVICE variable NEWLINE
+   (
+     PARAM ~NEWLINE* NEWLINE
+   )+
+;
+
 s_archive
 :
    ARCHIVE ~NEWLINE* NEWLINE
@@ -1728,6 +1739,17 @@ s_privilege
    ) ~NEWLINE* NEWLINE
 ;
 
+s_radius_server
+:
+   RADIUS SERVER HOST NEWLINE
+   (
+      (
+         ADDRESS
+         | KEY
+      ) ~NEWLINE* NEWLINE
+   )+
+;
+
 s_redundancy
 :
    NO? REDUNDANCY ~NEWLINE* NEWLINE
@@ -1923,6 +1945,14 @@ s_voice
    NO? VOICE ~NEWLINE* NEWLINE
    (
       voice_null
+   )*
+;
+
+s_voice_card
+:
+   NO? VOICE_CARD ~NEWLINE* NEWLINE
+   (
+      vc_null
    )*
 ;
 
@@ -2198,6 +2228,7 @@ stanza
    | router_rip_stanza
    | rsvp_stanza
    | s_aaa
+   | s_application
    | s_archive
    | s_authentication
    | s_call_home
@@ -2273,6 +2304,7 @@ stanza
    | s_policy_map
    | s_privilege
    | s_qos_mapping
+   | s_radius_server
    | s_redundancy
    | s_role
    | s_router_eigrp
@@ -2300,6 +2332,7 @@ stanza
    | s_username_attributes
    | s_vlan
    | s_voice
+   | s_voice_card
    | s_voice_port
    | s_vpc
    | s_vpdn_group
@@ -2498,6 +2531,16 @@ ua_null
    ) ~NEWLINE* NEWLINE
 ;
 
+vc_null
+:
+   NO?
+   (
+      CODEC
+      | DSP
+      | WATCHDOG
+   ) ~NEWLINE* NEWLINE
+;
+
 viaf_vrrp
 :
    NO? VRRP ~NEWLINE* NEWLINE
@@ -2551,12 +2594,16 @@ voice_null
 :
    NO?
    (
-      ALLOW_CONNECTIONS
+      ADDRESS_HIDING
+      | ALLOW_CONNECTIONS
+      | ASYMMETRIC
       | FAX
       | H225
       | H323
+      | MODEM
       | RULE
       | SHUTDOWN
+      | SIP
    ) ~NEWLINE* NEWLINE
 ;
 

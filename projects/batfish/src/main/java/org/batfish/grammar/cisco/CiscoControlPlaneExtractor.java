@@ -710,6 +710,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("POS", "POS");
     prefixes.put("PTP", "PTP");
     prefixes.put("Serial", "Serial");
+    prefixes.put("Service-Engine", "Service-Engine");
     prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
     prefixes.put("TenGigE", "TenGigabitEthernet");
     prefixes.put("te", "TenGigabitEthernet");

@@ -761,6 +761,7 @@ null_single
       | NAT_CONTROL
       | NETCONF
       | NETWORK_OBJECT
+      | NETWORK_CLOCK
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
       |
@@ -863,6 +864,7 @@ null_single
       | TAG_SWITCHING
       | TELNET
       | THREAT_DETECTION
+      | THREAT_VISIBILITY
       | THU
       | TRANSLATE
       | TUE

@@ -252,6 +252,11 @@ ADDRESS_FAMILY
    'address-family'
 ;
 
+ADDRESS_HIDING
+:
+   'address-hiding'
+;
+
 ADDRESS_POOL
 :
    'address-pool'
@@ -722,6 +727,11 @@ ASSOCIATE
 ASSOCIATION
 :
    'association'
+;
+
+ASYMMETRIC
+:
+   'asymmetric'
 ;
 
 ASYNC
@@ -5461,6 +5471,11 @@ NETWORK
    'network'
 ;
 
+NETWORK_CLOCK
+:
+   'network-clock'
+;
+
 NETWORK_CLOCK_PARTICIPATE
 :
    'network-clock-participate'
@@ -7796,6 +7811,11 @@ SINGLE_TOPOLOGY
    'single-topology'
 ;
 
+SIP
+:
+   'sip'
+;
+
 SIP_UA
 :
    'sip-ua'
@@ -8551,6 +8571,11 @@ THEN
 THREAT_DETECTION
 :
    'threat-detection'
+;
+
+THREAT_VISIBILITY
+:
+   'threat-visibility'
 ;
 
 THREE_DES
@@ -9363,6 +9388,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WATCHDOG
+:
+   'watchdog'
 ;
 
 WATCH_LIST
