@@ -2167,9 +2167,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitDomain_lookup(Domain_lookupContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setDnsSourceInterface(canonicalIfaceName);
+    if (ctx.iname != null) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      _configuration.setDnsSourceInterface(canonicalIfaceName);
+    }
   }
 
   @Override
