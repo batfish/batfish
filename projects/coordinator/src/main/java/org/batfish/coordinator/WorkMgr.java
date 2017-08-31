@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -33,9 +33,6 @@ import org.batfish.common.Container;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
-import org.batfish.common.plugin.ICoordinator;
-import org.batfish.common.plugin.PluginClientType;
-import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -896,6 +893,23 @@ public class WorkMgr extends AbstractCoordinator {
             0,
             Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
+  }
+
+  public boolean syncTestrigsSyncNow(String containerName, String pluginId) {
+    if (!_testrigSyncers.containsKey(pluginId)) {
+      throw new BatfishException("PluginId " + pluginId + "not found."
+                + " (Are SyncTestrigs plugins loaded?)");
+    }
+    return _testrigSyncers.get(pluginId).syncNow(containerName);
+  }
+
+  public boolean syncTestrigsUpdateSettings(String containerName, String pluginId,
+                                            Map<String, String> settings) {
+    if (!_testrigSyncers.containsKey(pluginId)) {
+      throw new BatfishException("PluginId " + pluginId + "not found."
+              + " (Are SyncTestrigs plugins loaded?)");
+    }
+    return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
   }
 
   /**

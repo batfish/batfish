@@ -2175,6 +2175,10 @@ public class Client extends AbstractClient implements IClient {
           return showTestrig(options, parameters);
         case SHOW_VERSION:
           return showVersion(options, parameters);
+        case SYNC_TESTRIGS_SYNC_NOW:
+          return syncTestrigsSyncNow(options, parameters);
+        case SYNC_TESTRIGS_UPDATE_SETTINGS:
+          return syncTestrigsUpdateSettings(words, options, parameters);
         case TEST:
           return test(options, parameters);
         case UPLOAD_CUSTOM_OBJECT:
@@ -2593,6 +2597,54 @@ public class Client extends AbstractClient implements IClient {
     String version = map.get(CoordConsts.SVC_KEY_VERSION);
     _logger.outputf("Service version is %s\n", version);
     return true;
+  }
+
+  private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1,
+            Command.SYNC_TESTRIGS_SYNC_NOW)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    String pluginId = parameters.get(0);
+
+    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName);
+  }
+
+  private boolean syncTestrigsUpdateSettings(String[] words, List<String> options,
+                                             List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE,
+            Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    String pluginId = parameters.get(0);
+
+    String settingsStr = "{"
+            + String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length))
+            + "}";
+
+    Map<String, String> settings = null;
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      settings = mapper.readValue(new JSONObject(settingsStr).toString(),
+              new TypeReference<Map<String, String>>() {});
+    } catch (JSONException | IOException e) {
+      _logger.errorf("Failed to parse parameters. "
+              + "(Are all key-value pairs separated by commas? Are all "
+              + "values strings?)\n"
+              + e
+              + "\n");
+      return false;
+    }
+
+    return _workHelper.syncTestrigsUpdateSettings(pluginId, _currContainerName, settings);
   }
 
   private boolean test(List<String> options, List<String> parameters) throws IOException {

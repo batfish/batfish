@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterators;
 import java.io.File;
 import java.nio.file.Files;
@@ -994,6 +995,55 @@ public class BfCoordWorkHelper {
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, wItem.toJsonString());
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      return (jObj != null);
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return false;
+    }
+  }
+
+  @Nullable
+  public boolean syncTestrigsSyncNow(String pluginId, String containerName) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      return (jObj != null);
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return false;
+    }
+  }
+
+  @Nullable
+  public boolean syncTestrigsUpdateSettings(String pluginId, String containerName,
+                                            Map<String, String> settings) {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String settingsStr = mapper.writeValueAsString(settings);
+
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SETTINGS, settingsStr);
 
       JSONObject jObj = postData(webTarget, multiPart);
       return (jObj != null);

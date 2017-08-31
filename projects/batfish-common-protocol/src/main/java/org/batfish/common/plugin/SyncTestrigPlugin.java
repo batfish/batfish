@@ -1,5 +1,7 @@
 package org.batfish.common.plugin;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Map;
 
 public abstract class SyncTestrigPlugin extends CoordinatorPlugin {
@@ -9,9 +11,9 @@ public abstract class SyncTestrigPlugin extends CoordinatorPlugin {
     syncTestrigPluginInitialize();
   }
 
-  public abstract void syncNow(String container);
+  public abstract boolean syncNow(String container);
 
   public abstract void syncTestrigPluginInitialize();
 
-  public abstract void updateSettings(String container, Map<String, String> settings);
+  public abstract boolean updateSettings(String container, Map<String, String> settings);
 }
