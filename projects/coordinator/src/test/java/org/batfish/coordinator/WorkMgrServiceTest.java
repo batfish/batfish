@@ -38,7 +38,6 @@ public class WorkMgrServiceTest {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    Main.initStorage();
     Main.initAuthorizer();
     Main.setLogger(logger);
     _manager = new WorkMgr(settings, logger);
@@ -97,7 +96,6 @@ public class WorkMgrServiceTest {
     assertTrue(analysisPath.toFile().mkdirs());
     Path questionPath = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question");
     assertTrue(questionPath.toFile().mkdirs());
-    questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE).toFile().createNewFile();
     String questionsToDelete = "[question]";
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,

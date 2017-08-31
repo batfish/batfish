@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -39,8 +39,6 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.pojo.Analysis;
-import org.batfish.storage.Storage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -84,13 +82,10 @@ public class WorkMgr {
 
   private WorkQueueMgr _workQueueMgr;
 
-  private Storage _storage;
-
   public WorkMgr(Settings settings, BatfishLogger logger) {
     _settings = settings;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr();
-    _storage = Main.getStorage();
   }
 
   private void assignWork() {
@@ -318,13 +313,22 @@ public class WorkMgr {
       String aName,
       InputStream addQuestionsFileStream,
       List<String> questionsToDelete) {
-    Analysis storedAnalysis;
-    if (newAnalysis) {
-      storedAnalysis = _storage.saveAnalysis(containerName, new Analysis(aName, new HashMap<>()));
-    } else {
-      storedAnalysis = _storage.getAnalysis(containerName, aName);
+    Path containerDir = getdirContainer(containerName);
+    Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
+    if (Files.exists(aDir) && newAnalysis) {
+      throw new BatfishException(
+          "Analysis '" + aName + "' already exists for container '" + containerName);
     }
-
+    if (!Files.exists(aDir)) {
+      if (!newAnalysis) {
+        throw new BatfishException(
+            "Analysis '" + aName + "' does not exist for container '" + containerName + "'");
+      }
+      if (!aDir.toFile().mkdirs()) {
+        throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
+      }
+    }
+    Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (addQuestionsFileStream != null) {
       JSONObject jObject = CommonUtil.writeStreamToJSONObject(addQuestionsFileStream);
       Iterator<?> keys = jObject.keys();
@@ -336,26 +340,38 @@ public class WorkMgr {
         } catch (JSONException e) {
           throw new BatfishException("Provided questions lack a question named '" + qName + "'", e);
         }
+        Path qDir = questionsDir.resolve(qName);
+        if (Files.exists(qDir)) {
+          throw new BatfishException(
+              "Question '" + qName + "' already exists for analysis '" + aName + "'");
+        }
+        if (!qDir.toFile().mkdirs()) {
+          throw new BatfishException("Failed to create question directory '" + qDir + "'");
+        }
+        Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+        String qOutput;
         try {
-          storedAnalysis.addQuestion(qName, qJson.toString(1));
+          qOutput = qJson.toString(1);
         } catch (JSONException e) {
           throw new BatfishException("Failed to convert question JSON to string", e);
         }
+        CommonUtil.writeFile(qFile, qOutput);
       }
     }
 
     /** Delete questions */
     for (String qName : questionsToDelete) {
-      storedAnalysis.deleteQuestion(qName);
+      Path qDir = questionsDir.resolve(qName);
+      if (!Files.exists(qDir)) {
+        throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
+      }
+      CommonUtil.deleteDirectory(qDir);
     }
-    _storage.updateAnalysis(containerName, storedAnalysis);
   }
 
   public void delAnalysis(String containerName, String aName) {
-    if (!_storage.deleteAnalysis(containerName, aName, true)) {
-      throw new BatfishException(
-          String.format("Analysis '%s' doesn't exist for container '%s'", aName, containerName));
-    }
+    Path aDir = getdirContainerAnalysis(containerName, aName);
+    CommonUtil.deleteDirectory(aDir);
   }
 
   public boolean delContainer(String containerName) {
@@ -699,7 +715,17 @@ public class WorkMgr {
   }
 
   public SortedSet<String> listAnalyses(String containerName) {
-    SortedSet<String> analyses = new TreeSet<>(_storage.listAnalyses(containerName));
+    Path containerDir = getdirContainer(containerName);
+    Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
+    if (!Files.exists(analysesDir)) {
+      return new TreeSet<>();
+    }
+    SortedSet<String> analyses =
+        new TreeSet<>(
+            CommonUtil.getSubdirectories(analysesDir)
+                .stream()
+                .map(subdir -> subdir.getFileName().toString())
+                .collect(Collectors.toSet()));
     return analyses;
   }
 

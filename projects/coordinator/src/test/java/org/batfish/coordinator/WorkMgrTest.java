@@ -40,7 +40,6 @@ public class WorkMgrTest {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    Main.initStorage();
     Main.setLogger(logger);
     _manager = new WorkMgr(settings, logger);
   }
@@ -164,13 +163,10 @@ public class WorkMgrTest {
     assertTrue(analysisPath.toFile().mkdirs());
     Path question1Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question1");
     assertTrue(question1Path.toFile().mkdirs());
-    question1Path.resolve(BfConsts.RELPATH_QUESTION_FILE).toFile().createNewFile();
     Path question2Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question2");
     assertTrue(question2Path.toFile().mkdirs());
-    question2Path.resolve(BfConsts.RELPATH_QUESTION_FILE).toFile().createNewFile();
     Path question3Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question3");
     assertTrue(question3Path.toFile().mkdirs());
-    question3Path.resolve(BfConsts.RELPATH_QUESTION_FILE).toFile().createNewFile();
     List<String> questionsToDelete = Lists.newArrayList();
     _manager.configureAnalysis(containerName, false, "analysis", null, questionsToDelete);
     assertTrue(
