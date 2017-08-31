@@ -241,7 +241,13 @@ public class Client extends AbstractClient implements IClient {
 
   /**
    * This method calls {@link Client#validateType(JsonNode, Variable)} to check that the contents
-   * encoded in {@code value} match the requirement specified in {@code variable}.
+   * encoded in {@code value} match the requirement specified in {@code variable}. Also, this
+   * method validates the input {@code value} is allowed according to {@link
+   * Question.InstanceData.Variable#_allowedValues allowedValues} specified in {@code variable}.
+   *
+   * @throws BatfishException if the content type encoded in input {@code value} does not satisfy
+   *     the type requirements specified in {@code variable}, or the input {@code value} is not an
+   *     allowed value for {@code variable}.
    */
   static void validateNode(JsonNode value, Variable variable, String parameterName)
       throws BatfishException {
@@ -251,6 +257,13 @@ public class Client extends AbstractClient implements IClient {
       String errorMessage =
           String.format("Invalid value for parameter %s: %s", parameterName, value);
       throw new BatfishException(errorMessage, e);
+    }
+    if (!(variable.getAllowedValues().isEmpty() || variable.getAllowedValues()
+        .contains(value.asText()))) {
+      throw new BatfishException(String.format(
+          "Invalid value: %s, allowed values are: %s",
+          value.asText(),
+          variable.getAllowedValues()));
     }
   }
 
