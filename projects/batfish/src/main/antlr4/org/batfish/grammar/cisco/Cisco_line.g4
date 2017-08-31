@@ -27,6 +27,16 @@ l_access_class
    ) VRF_ALSO? NEWLINE
 ;
 
+l_accounting
+:
+    (
+       (NO ACCOUNTING (COMMANDS | EXEC))
+       |
+       (ACCOUNTING (COMMANDS | EXEC) (DEFAULT | variable))
+    )
+    NEWLINE
+;
+
 l_exec_timeout
 :
    EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
@@ -128,6 +138,7 @@ s_line
    )? NEWLINE
    (
       l_access_class
+      | l_accounting
       | l_exec_timeout
       | l_length
       | l_login
