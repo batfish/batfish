@@ -5867,6 +5867,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return NamedPort.LDAP;
     } else if (ctx.LDAPS() != null) {
       return NamedPort.LDAPS;
+    } else if (ctx.LDP() != null) {
+      return NamedPort.LDP;
     } else if (ctx.LPD() != null) {
       return NamedPort.LPD;
     } else if (ctx.LOGIN() != null) {
