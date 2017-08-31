@@ -2670,6 +2670,11 @@ ENCR
    'encr'
 ;
 
+ENCRYPTED
+:
+   'encrypted'
+;
+
 ENCRYPTION
 :
    'encryption'
@@ -6029,6 +6034,11 @@ PASSWORD_PROMPT
 PASSWORD_STORAGE
 :
    'password-storage'
+;
+
+PASSWD
+:
+   'passwd'
 ;
 
 PATH_ECHO
