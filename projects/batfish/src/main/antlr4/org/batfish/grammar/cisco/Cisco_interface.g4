@@ -21,6 +21,11 @@ if_description
    description_line
 ;
 
+if_flow_sampler
+:
+   NO? FLOW_SAMPLER variable EGRESS? NEWLINE
+;
+
 if_hsrp
 :
    HSRP group = DEC NEWLINE
@@ -926,6 +931,7 @@ s_interface
       if_autostate
       | if_default_gw
       | if_description
+      | if_flow_sampler
       | if_hsrp
       | if_ip_proxy_arp
       | if_ip_verify
