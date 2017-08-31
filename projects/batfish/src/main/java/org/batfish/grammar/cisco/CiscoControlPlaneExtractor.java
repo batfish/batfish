@@ -4598,17 +4598,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     SortedMap<String, Service> currentServices = _configuration.getCf().getServices();
     while (i.hasNext()) {
       String name = i.next();
-      Service s = currentServices.get(name);
-      if (s == null) {
-        s = new Service();
-        currentServices.put(name, s);
-        if (enabled) {
-          s.setEnabled(true);
-        } else if (!enabled && !i.hasNext()) {
-          s.disable();
-        }
-        currentServices = s.getSubservices();
+      Service s = currentServices.computeIfAbsent(name, k -> new Service());
+      if (enabled) {
+        s.setEnabled(true);
+      } else if (!enabled && !i.hasNext()) {
+        s.disable();
       }
+      currentServices = s.getSubservices();
     }
   }
 
@@ -4916,10 +4912,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
           line);
     }
-    if (ctx.RO() != null) {
+    if (ctx.readonly != null) {
       _currentSnmpCommunity.setRo(true);
     }
-    if (ctx.RW() != null) {
+    if (ctx.readwrite != null) {
       _currentSnmpCommunity.setRw(true);
     }
   }
