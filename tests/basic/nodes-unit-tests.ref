@@ -4816,7 +4816,7 @@
                     "name" : "dummyconnunity",
                     "accessList" : "dummyacl",
                     "ro" : true,
-                    "rw" : true
+                    "rw" : false
                   }
                 },
                 "hosts" : {
