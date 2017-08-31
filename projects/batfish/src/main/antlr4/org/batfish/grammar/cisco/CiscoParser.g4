@@ -160,6 +160,28 @@ cqg_null
    ) ~NEWLINE* NEWLINE
 ;
 
+cmf_null
+:
+   NO?
+   (
+      ALIAS
+      | CALL_FORWARD
+      | DEFAULT_DESTINATION
+      | DIALPLAN_PATTERN
+      | IP
+      | KEEPALIVE
+      | LIMIT_DN
+      | MAX_CONFERENCES
+      | MAX_DN
+      | MAX_EPHONES
+      | SECONDARY_DIALTONE
+      | TIME_FORMAT
+      | TIME_ZONE
+      | TRANSFER_SYSTEM
+      | TRANSLATION_PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
 ctlf_null
 :
    NO?
@@ -1274,6 +1296,14 @@ s_cluster
    ) ~NEWLINE* NEWLINE
 ;
 
+s_call_manager_fallback
+:
+   NO? CALL_MANAGER_FALLBACK NEWLINE
+   (
+      cmf_null
+   )+
+;
+
 s_control_plane
 :
    CONTROL_PLANE
@@ -1339,10 +1369,12 @@ s_dial_peer
          | INCOMING
          | MEDIA
          | PORT
+         | PREFERENCE
          | SERVICE
          | SESSION
          | TRANSLATION_PROFILE
          | VAD
+         | VOICE_CLASS
       ) ~NEWLINE* NEWLINE
    )*
 ;
@@ -2233,6 +2265,7 @@ stanza
    | s_authentication
    | s_call_home
    | s_callhome
+   | s_call_manager_fallback
    | s_class_map
    | s_cluster
    | s_control_plane
@@ -2537,6 +2570,8 @@ vc_null
    (
       CODEC
       | DSP
+      | DSPFARM
+      | VOICE_SERVICE
       | WATCHDOG
    ) ~NEWLINE* NEWLINE
 ;
@@ -2598,6 +2633,7 @@ voice_null
       | ALLOW_CONNECTIONS
       | ASYMMETRIC
       | FAX
+      | FAX_RELAY
       | H225
       | H323
       | MODEM
