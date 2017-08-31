@@ -991,6 +991,6 @@ s_interface
       // do not rearrange items below
 
       | if_null_block
-      | unrecognized_line
+      | { !_disableUnrecognized }? unrecognized_line
    )*
 ;
