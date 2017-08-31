@@ -32,6 +32,13 @@ l_exec_timeout
    EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
 ;
 
+l_length
+:
+   (LENGTH DEC NEWLINE)
+   |
+   (NO LENGTH NEWLINE)
+;
+
 l_login
 :
    LOGIN
@@ -71,7 +78,6 @@ l_null
       | FLUSH_AT_ACTIVATION
       | HISTORY
       | IPV6
-      | LENGTH DEC
       | LOCATION
       | LOGGING
       | LOGOUT_WARNING
@@ -123,6 +129,7 @@ s_line
    (
       l_access_class
       | l_exec_timeout
+      | l_length
       | l_login
       | l_null
       | l_transport
