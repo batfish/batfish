@@ -68,6 +68,11 @@ boolean_as_path_in_rp_stanza
    AS_PATH IN expr = as_path_set_expr
 ;
 
+boolean_as_path_is_local_rp_stanza
+:
+   AS_PATH IS_LOCAL
+;
+
 boolean_as_path_neighbor_is_rp_stanza
 :
    AS_PATH NEIGHBOR_IS as_range_expr
@@ -140,6 +145,7 @@ boolean_simple_rp_stanza
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
    | boolean_apply_rp_stanza
    | boolean_as_path_in_rp_stanza
+   | boolean_as_path_is_local_rp_stanza
    | boolean_as_path_neighbor_is_rp_stanza
    | boolean_as_path_originates_from_rp_stanza
    | boolean_as_path_passes_through_rp_stanza

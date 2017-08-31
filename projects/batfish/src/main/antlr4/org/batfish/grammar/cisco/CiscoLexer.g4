@@ -57,6 +57,7 @@ tokens {
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    HEX_FRAGMENT,
+   IS_LOCAL,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
@@ -10177,6 +10178,11 @@ M_AsPath_RP_VARIABLE
 M_AsPath_IN
 :
    'in' -> type ( IN ) , popMode
+;
+
+M_AsPath_IS_LOCAL
+:
+   'is-local' -> type ( IS_LOCAL ) , popMode
 ;
 
 M_AsPath_NEIGHBOR_IS

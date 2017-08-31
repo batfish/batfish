@@ -154,6 +154,7 @@ import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_in_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_is_local_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_neighbor_is_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_originates_from_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_passes_through_rp_stanzaContext;
@@ -542,6 +543,7 @@ import org.batfish.representation.cisco.RoutePolicyBoolean;
 import org.batfish.representation.cisco.RoutePolicyBooleanAnd;
 import org.batfish.representation.cisco.RoutePolicyBooleanApply;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathIn;
+import org.batfish.representation.cisco.RoutePolicyBooleanAsPathIsLocal;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathNeighborIs;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathOriginatesFrom;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathPassesThrough;
@@ -6049,6 +6051,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new RoutePolicyBooleanAsPathIn(asPathSetExpr, expressionLine);
   }
 
+  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_is_local_rp_stanzaContext ctx) {
+    return new RoutePolicyBooleanAsPathIsLocal();
+  }
+
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_neighbor_is_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
@@ -6160,6 +6166,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Boolean_as_path_in_rp_stanzaContext aictx = ctx.boolean_as_path_in_rp_stanza();
     if (aictx != null) {
       return toRoutePolicyBoolean(aictx);
+    }
+
+    Boolean_as_path_is_local_rp_stanzaContext alctx = ctx.boolean_as_path_is_local_rp_stanza();
+    if (alctx != null) {
+      return toRoutePolicyBoolean(alctx);
     }
 
     Boolean_as_path_neighbor_is_rp_stanzaContext anctx =
