@@ -6591,6 +6591,11 @@ PROCESS
    'process'
 ;
 
+PROCESS_MAX_TIME
+:
+   'process-max-time'
+;
+
 PROFILE
 :
    'profile'
