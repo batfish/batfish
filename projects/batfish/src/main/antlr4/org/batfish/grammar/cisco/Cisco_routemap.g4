@@ -246,11 +246,7 @@ match_extcommunity_rm_stanza
 :
    MATCH EXTCOMMUNITY
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable
    )+ NEWLINE
 ;
 
