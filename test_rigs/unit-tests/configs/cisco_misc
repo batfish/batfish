@@ -197,6 +197,7 @@ archive
   logging size 200
   notify syslog contenttype plaintext
   hidekeys
+ path tftp://172.16.1.10/
 tls-proxy ASA-tls-proxy
  server trust-point _internal_PP_ctl_phoneproxy_file
 ctl-file ctl_phoneproxy_file

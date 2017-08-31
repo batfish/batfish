@@ -6071,6 +6071,11 @@ PATHCOST
    'pathcost'
 ;
 
+PATH
+:
+   'path'
+;
+
 PATHS
 :
    'paths'
