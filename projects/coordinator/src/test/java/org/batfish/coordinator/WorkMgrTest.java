@@ -8,18 +8,16 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.Testrig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -131,7 +129,9 @@ public class WorkMgrTest {
   public void getEmptyContainer() {
     _manager.initContainer("container", null);
     Container container = _manager.getContainer("container");
-    assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
+    assertThat(
+        container,
+        equalTo(new Container("container", Lists.newArrayList(), Lists.newArrayList())));
   }
 
   @Test
@@ -144,7 +144,9 @@ public class WorkMgrTest {
     Container container = _manager.getContainer("container");
     assertThat(
         container,
-        equalTo(Container.of("container", Sets.newTreeSet(Collections.singleton("testrig")))));
+        equalTo(new Container("container",
+            Lists.newArrayList(new Testrig("testrig", null, null)),
+            Lists.newArrayList())));
   }
 
   @Test

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -39,6 +39,8 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.pojo.Analysis;
+import org.batfish.datamodel.pojo.Testrig;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -525,21 +527,23 @@ public class WorkMgr {
     return answer;
   }
 
-  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  /**
+   * Returns a {@link Container container} contains all information about the container {@code
+   * containerName}
+   */
   public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    SortedSet<String> testrigNames = listTestrigs(containerName);
+    List<Testrig> testrigs = new ArrayList<>();
+    // TODO use functions like getTestrig, getAnalysis when implemented in storage API
+    for (String testrigName : testrigNames) {
+      testrigs.add(new Testrig(testrigName, null, null));
+    }
+    SortedSet<String> analysisNames = listAnalyses(containerName);
+    List<Analysis> analyses = new ArrayList<>();
+    for (String analysisName : analysisNames) {
+      analyses.add(new Analysis(analysisName, null));
+    }
+    return new Container(containerName, testrigs, analyses);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {

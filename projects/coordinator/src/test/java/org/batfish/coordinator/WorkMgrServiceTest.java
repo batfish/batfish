@@ -6,10 +6,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -18,6 +17,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.Testrig;
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,8 +27,6 @@ import org.junit.rules.TemporaryFolder;
 public class WorkMgrServiceTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  private WorkMgr _manager;
 
   private WorkMgrService _service;
 
@@ -40,9 +38,9 @@ public class WorkMgrServiceTest {
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Main.initAuthorizer();
     Main.setLogger(logger);
-    _manager = new WorkMgr(settings, logger);
-    Main.setWorkMgr(_manager);
-    _manager.initContainer(_containerName, null);
+    WorkMgr manager = new WorkMgr(settings, logger);
+    Main.setWorkMgr(manager);
+    manager.initContainer(_containerName, null);
     _service = new WorkMgrService();
   }
 
@@ -83,8 +81,10 @@ public class WorkMgrServiceTest {
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
-    Container expected =
-        Container.of(_containerName, Sets.newTreeSet(Collections.singleton("testrig")));
+    Container expected = new Container(
+        _containerName,
+        Lists.newArrayList(new Testrig("testrig", null, null)),
+        Lists.newArrayList());
     assertThat(container, equalTo(expected));
   }
 
