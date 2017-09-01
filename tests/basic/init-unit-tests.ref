@@ -570,7 +570,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                54
+                55
               ]
             }
           }
