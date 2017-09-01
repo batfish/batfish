@@ -117,10 +117,10 @@ public class PoolMgr {
   public void refreshWorkerStatus(String worker) {
     // _logger.debug("PM:RefreshWorkerStatus: refreshing status of " + worker
     // +"\n");
-
+    Client client = null;
     try {
       // Client client = ClientBuilder.newClient();
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
                   _settings.getSslPoolTrustAllCerts(),
@@ -181,6 +181,10 @@ public class PoolMgr {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
       updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
   }
 
