@@ -2491,6 +2491,11 @@ DUPLICATE_MESSAGE
    'duplicate-message'
 ;
 
+DURATION
+:
+   'duration'
+;
+
 DVMRP
 :
    'dvmrp'
@@ -6625,6 +6630,11 @@ PROPOSAL
 PROTECT
 :
    'protect'
+;
+
+PROTECTION
+:
+   'protection'
 ;
 
 PROTOCOL
