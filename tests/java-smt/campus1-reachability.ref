@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "class" : "org.batfish.symbolic.smt.answers.SmtManyAnswerElement",
       "result" : {
         "as2dept1,FastEthernet1/0" : {
           "environmentModel" : {
