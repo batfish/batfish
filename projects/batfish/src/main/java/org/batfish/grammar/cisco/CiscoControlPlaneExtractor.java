@@ -1501,6 +1501,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_aaa(S_aaaContext ctx) {
+    _no = ctx.NO() != null;
     if (_configuration.getCf().getAaa() == null) {
       _configuration.getCf().setAaa(new Aaa());
     }
@@ -1884,7 +1885,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAaa_new_model(Aaa_new_modelContext ctx) {
-    _configuration.getCf().getAaa().setNewModel(true);
+    _configuration.getCf().getAaa().setNewModel(!_no);
   }
 
   @Override
