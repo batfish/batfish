@@ -9,14 +9,14 @@
               "community 3:2" : "",
               "community as1_community" : "",
               "community as3_community" : "",
-              "prefix" : "0.0.0.0/1",
+              "prefix" : "1.0.0.0/25",
               "protocol metric" : "1"
             },
             "as2border2,FastEthernet0/0 (BGP)" : {
               "community 3:2" : "",
               "community as1_community" : "",
               "community as3_community" : "",
-              "prefix" : "0.0.0.0/1",
+              "prefix" : "1.0.0.0/25",
               "protocol metric" : "1"
             }
           },
@@ -43,5 +43,10 @@
     "nodeRegex" : ".*border.*",
     "strict" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

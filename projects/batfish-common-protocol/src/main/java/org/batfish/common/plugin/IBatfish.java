@@ -172,4 +172,6 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold);
 
   AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
+
+  AnswerElement abstraction();
 }

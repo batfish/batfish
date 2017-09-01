@@ -165,7 +165,8 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
-import org.batfish.smt.PropertyChecker;
+import org.batfish.symbolic.abstraction.Abstractor;
+import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -4442,5 +4443,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
     return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
+  @Override
+  public AnswerElement abstraction() {
+    return Abstractor.computeAbstraction(this);
   }
 }
