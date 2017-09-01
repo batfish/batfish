@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -119,6 +120,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -236,6 +238,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES));
       envSettings.setSerializeEnvironmentRoutingTablesPath(
           envPath.resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES));
+      envSettings.setValidateEnvironmentAnswerPath(
+          envPath.resolve(BfConsts.RELPATH_VALIDATE_ENVIRONMENT_ANSWER));
       Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
       envSettings.setEnvPath(envDirPath);
       envSettings.setNodeBlacklistPath(envDirPath.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE));
@@ -1080,78 +1084,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     executor.executeJobs(jobs, configurations, answerElement);
     printElapsedTime();
     return configurations;
-  }
-
-  @Override
-  public EnvironmentCreationAnswerElement createEnvironment(
-      String newEnvName,
-      SortedSet<String> nodeBlacklist,
-      SortedSet<NodeInterfacePair> interfaceBlacklist,
-      SortedSet<Edge> edgeBlacklist,
-      boolean dp) {
-    EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
-    String oldEnvName = envSettings.getName();
-    if (oldEnvName.equals(newEnvName)) {
-      throw new BatfishException(
-          "Cannot create new environment: name of environment is same as that of old");
-    }
-    answerElement.setNewEnvironmentName(newEnvName);
-    answerElement.setOldEnvironmentName(oldEnvName);
-    Path oldEnvPath = envSettings.getEnvPath();
-    applyBaseDir(
-        _testrigSettings, _settings.getContainerDir(), _testrigSettings.getName(), newEnvName);
-    EnvironmentSettings newEnvSettings = _testrigSettings.getEnvironmentSettings();
-    Path newEnvPath = newEnvSettings.getEnvPath();
-    if (Files.exists(newEnvPath)) {
-      throw new BatfishException(
-          "Cannot create new environment '"
-              + newEnvName
-              + "': environment with same name already exists");
-    }
-    newEnvPath.toFile().mkdirs();
-    try {
-      FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to intialize new environment from old environment", e);
-    }
-
-    // write node blacklist from question
-    String nodeBlacklistStr;
-    if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
-      try {
-        nodeBlacklistStr = new BatfishObjectMapper().writeValueAsString(nodeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize node blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(), nodeBlacklistStr);
-    }
-    // write interface blacklist from question
-    if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
-      String interfaceBlacklistStr;
-      try {
-        interfaceBlacklistStr = new BatfishObjectMapper().writeValueAsString(interfaceBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize interface blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(), interfaceBlacklistStr);
-    }
-
-    // write edge blacklist from question
-    if (edgeBlacklist != null) {
-      String edgeBlacklistStr;
-      try {
-        edgeBlacklistStr = new BatfishObjectMapper().writeValueAsString(edgeBlacklist);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not serialize edge blacklist", e);
-      }
-      CommonUtil.writeFile(newEnvSettings.getEdgeBlacklistPath(), edgeBlacklistStr);
-    }
-
-    if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-      computeDataPlane(true);
-    }
-    return answerElement;
   }
 
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
@@ -2381,6 +2313,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
+    ValidateEnvironmentAnswerElement veae = loadValidateEnvironmentAnswerElement();
+    if (!veae.getValid()) {
+      throw new BatfishException(
+          "Cannot continue: environment '"
+              + getEnvironmentName()
+              + "' is invalid:\n"
+              + veae.prettyPrint());
+    }
+    SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
+    return configurations;
+  }
+
+  private SortedMap<String, Configuration> loadConfigurationsWithoutValidation() {
     SortedMap<String, Configuration> configurations = _cachedConfigurations.get(_testrigSettings);
     if (configurations == null) {
       ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
@@ -2391,12 +2336,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurations = deserializeConfigurations(_testrigSettings.getSerializeIndependentPath());
       _cachedConfigurations.put(_testrigSettings, configurations);
     }
-    processNodeBlacklist(configurations);
-    processNodeRoles(configurations);
-    processInterfaceBlacklist(configurations);
-    processDeltaConfigurations(configurations);
-    disableUnusableVlanInterfaces(configurations);
-    disableUnusableVpnInterfaces(configurations);
     return configurations;
   }
 
@@ -2597,6 +2536,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Topology topology = deserializeObject(topologyPath, Topology.class);
     _logger.info("OK\n");
     return topology;
+  }
+
+  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
+    return loadValidateEnvironmentAnswerElement(true);
+  }
+
+  private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement(
+      boolean firstAttempt) {
+    Path answerPath = _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath();
+    if (Files.exists(answerPath)) {
+      ValidateEnvironmentAnswerElement veae =
+          deserializeObject(answerPath, ValidateEnvironmentAnswerElement.class);
+      if (Version.isCompatibleVersion("Service", "Old processed environment", veae.getVersion())) {
+        return veae;
+      }
+    }
+    if (firstAttempt) {
+      repairEnvironment();
+      return loadValidateEnvironmentAnswerElement(false);
+    } else {
+      throw new BatfishException(
+          "Version error repairing environment for validate environment answer element");
+    }
   }
 
   @Override
@@ -3356,30 +3318,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _dataPlanePlugin.processFlows(flows);
   }
 
-  private void processInterfaceBlacklist(Map<String, Configuration> configurations) {
+  private void processInterfaceBlacklist(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     if (blacklistInterfaces != null) {
       for (NodeInterfacePair p : blacklistInterfaces) {
         String hostname = p.getHostname();
         String ifaceName = p.getInterface();
         Configuration node = configurations.get(hostname);
-        Interface iface = node.getInterfaces().get(ifaceName);
-        if (iface == null) {
-          throw new BatfishException(
-              "Cannot disable non-existent interface '"
-                  + ifaceName
-                  + "' on node '"
-                  + hostname
-                  + "'\n");
+        if (node == null) {
+          veae.setValid(false);
+          veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
         } else {
-          iface.setActive(false);
-          iface.setBlacklisted(true);
+          Interface iface = node.getInterfaces().get(ifaceName);
+          if (iface == null) {
+            veae.setValid(false);
+            veae.getUndefinedInterfaceBlacklistInterfaces()
+                .computeIfAbsent(hostname, k -> new TreeSet<>())
+                .add(ifaceName);
+          } else {
+            iface.setActive(false);
+            iface.setBlacklisted(true);
+          }
         }
       }
     }
   }
 
-  private void processNodeBlacklist(Map<String, Configuration> configurations) {
+  private void processNodeBlacklist(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     NodeSet blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null) {
       for (String hostname : blacklistNodes) {
@@ -3389,6 +3356,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             iface.setActive(false);
             iface.setBlacklisted(true);
           }
+        } else {
+          veae.setValid(false);
+          veae.getUndefinedNodeBlacklistNodes().add(hostname);
         }
       }
     }
@@ -3397,7 +3367,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
     if one exists; otherwise use the results of our node-role inference.
   */
-  private void processNodeRoles(Map<String, Configuration> configurations) {
+  private void processNodeRoles(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     TestrigSettings settings = _settings.getActiveTestrigSettings();
     Path nodeRolesPath = settings.getNodeRolesPath();
     if (!Files.exists(nodeRolesPath)) {
@@ -3406,17 +3377,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
         return;
       }
     }
-
     SortedMap<String, SortedSet<String>> nodeRoles =
         parseNodeRoles(nodeRolesPath, configurations.keySet());
     for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
       String hostname = nodeRolesEntry.getKey();
       Configuration config = configurations.get(hostname);
       if (config == null) {
-        throw new BatfishException("role set assigned to non-existent node: \"" + hostname + "\"");
+        veae.setValid(false);
+        veae.getUndefinedNodeRoleSpecifierNodes().add(hostname);
+      } else {
+        SortedSet<String> roles = nodeRolesEntry.getValue();
+        config.setRoles(roles);
       }
-      SortedSet<String> roles = nodeRolesEntry.getValue();
-      config.setRoles(roles);
     }
   }
 
@@ -3611,13 +3583,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ReachabilityQuerySynthesizer acceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-                Collections.<String>emptySet(), nodeVrfs);
+                Collections.<String>emptySet(), nodeVrfs,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
         ReachabilityQuerySynthesizer notAcceptQuery =
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
                 new HeaderSpace(),
-                Collections.<String>emptySet(),
-                nodeVrfs);
+                Collections.<String>emptySet(), nodeVrfs,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(node, vrf));
@@ -3679,6 +3652,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     CommonUtil.deleteIfExists(dataPlanePath);
     CommonUtil.deleteIfExists(dataPlaneAnswerPath);
     computeDataPlane(false);
+  }
+
+  private void repairEnvironment() {
+    SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
+    ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
+    veae.setVersion(Version.getVersion());
+    veae.setValid(true);
+    processDeltaConfigurations(configurations);
+    processNodeBlacklist(configurations, veae);
+    processNodeRoles(configurations, veae);
+    processInterfaceBlacklist(configurations, veae);
+    disableUnusableVlanInterfaces(configurations);
+    disableUnusableVpnInterfaces(configurations);
+    serializeObject(
+        veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
   }
 
   private void repairEnvironmentBgpTables() {
@@ -3861,6 +3849,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       action = true;
     }
 
+    if (_settings.getValidateEnvironment()) {
+      answer.append(validateEnvironment());
+      action = true;
+    }
+    
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
@@ -4167,7 +4160,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String ingressNodeRegexStr,
       String notIngressNodeRegexStr,
       String finalNodeRegexStr,
-      String notFinalNodeRegexStr) {
+      String notFinalNodeRegexStr,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -4218,6 +4213,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
               + "'");
     }
 
+    //check transit nodes
+    Set<String> allNodes = configurations.keySet();
+    Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
+    if (!invalidTransitNodes.isEmpty()) {
+      return new StringAnswerElement(String.format("Unknown transit nodes %s",
+          invalidTransitNodes.toString()));
+    }
+    Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
+    if (!invalidNotTransitNodes.isEmpty()) {
+      return new StringAnswerElement(String.format("Unknown notTransit nodes %s",
+          invalidNotTransitNodes.toString()));
+    }
+    Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
+    if (! illegalTransitNodes.isEmpty()) {
+          return new StringAnswerElement(
+              String.format("Same node %s can not be in both transit and notTransit",
+                  illegalTransitNodes.toString()));
+    }
+
     // build query jobs
     List<NodJob> jobs = new ArrayList<>();
     for (String ingressNode : activeIngressNodes) {
@@ -4225,7 +4239,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Map<String, Set<String>> nodeVrfs = new TreeMap<>();
         nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
         ReachabilityQuerySynthesizer query =
-            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes, nodeVrfs);
+            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes,
+                nodeVrfs, transitNodes, notTransitNodes);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
@@ -4320,6 +4335,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
     return new Topology(edges);
+  }
+
+  private Answer validateEnvironment() {
+    Answer answer = new Answer();
+    ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
+    answer.addAnswerElement(ae);
+    return answer;
   }
 
   @Override

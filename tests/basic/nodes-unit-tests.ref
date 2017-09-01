@@ -2816,7 +2816,6 @@
               "ospfPassive" : false,
               "prefix" : "1.2.3.4/30",
               "proxyArp" : false,
-              "sourceNat" : { },
               "spanningTreePortfast" : true,
               "switchport" : true,
               "switchportMode" : "TRUNK",
@@ -3163,7 +3162,10 @@
           ],
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_ip"
+              "hostname" : "cisco_ip",
+              "ssh" : {
+                "version" : 2
+              }
             }
           },
           "vrfs" : {
@@ -4304,6 +4306,14 @@
                   "name" : "abc",
                   "password" : "5514c1ad6173b3f5f18ecaf3d4393210891247bda114b989b961b0eabc73cc32",
                   "role" : "def"
+                },
+                "bob1" : {
+                  "name" : "bob1",
+                  "password" : "3faa0a07e4ece09641efc463b46eaf1c99a44151a721bb079089f1f1d3e32c9d"
+                },
+                "bob2" : {
+                  "name" : "bob2",
+                  "password" : "3faa0a07e4ece09641efc463b46eaf1c99a44151a721bb079089f1f1d3e32c9d"
                 }
               }
             }
@@ -4795,6 +4805,18 @@
               "name" : "default",
               "snmpServer" : {
                 "communities" : {
+                  "dummy+dummy" : {
+                    "name" : "dummy+dummy",
+                    "accessList" : "1",
+                    "ro" : true,
+                    "rw" : false
+                  },
+                  "dummy@dummy" : {
+                    "name" : "dummy@dummy",
+                    "accessList" : "2",
+                    "ro" : false,
+                    "rw" : true
+                  },
                   "dummycommunity" : {
                     "name" : "dummycommunity",
                     "accessList" : "to-VTY",
@@ -4806,7 +4828,7 @@
                     "name" : "dummyconnunity",
                     "accessList" : "dummyacl",
                     "ro" : true,
-                    "rw" : true
+                    "rw" : false
                   }
                 },
                 "hosts" : {
@@ -7858,6 +7880,31 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "falseStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitReject"
                     }
@@ -7880,6 +7927,31 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
                   "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  }
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -14573,5 +14645,10 @@
     "nodeRegex" : ".*",
     "summary" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

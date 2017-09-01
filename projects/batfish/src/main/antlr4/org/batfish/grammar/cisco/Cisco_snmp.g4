@@ -35,7 +35,7 @@ s_snmp_server
 
 ss_community
 :
-   COMMUNITY name = variable
+   COMMUNITY name = variable_community_name
    (
       ssc_group
       | ssc_use_ipv4_acl
@@ -175,8 +175,8 @@ ss_trap_source
 ssc_access_control
 :
    (
-      RO
-      | RW
+      readonly = RO
+      | readwrite = RW
       | SDROWNER
       | SYSTEMOWNER
       |

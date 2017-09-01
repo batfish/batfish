@@ -60,13 +60,6 @@ public interface IBatfish extends IPluginConsumer {
 
   Topology computeTopology(Map<String, Configuration> configurations);
 
-  AnswerElement createEnvironment(
-      String environmentName,
-      SortedSet<String> nodeBlacklist,
-      SortedSet<NodeInterfacePair> interfaceBlacklist,
-      SortedSet<Edge> edgeBlacklist,
-      boolean dp);
-
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   String getDifferentialFlowTag();
@@ -156,7 +149,9 @@ public interface IBatfish extends IPluginConsumer {
       String ingressNodeRegexStr,
       String notIngressNodeRegexStr,
       String finalNodeRegexStr,
-      String notFinalNodeRegexStr);
+      String notFinalNodeRegexStr,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 

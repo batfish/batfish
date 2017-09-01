@@ -7,6 +7,7 @@ bloggerd log-throttle
 no bloggerd log-transfer
 ip mfwd event-history packet size small
 no mpls strip
+vlan ifdescr detail
 wrr-queue cos-map 0 0 1
 wrr unicast-bandwidth 50
 downlink delay disable timeout 20
@@ -36,6 +37,8 @@ username abc
 username rancid attributes
  vpn-group-policy GroupPolicy_NOC-VPN
  group-lock value NOC-VPN
+username bob1 password 1 1234
+username bob2 privilege 1 password 1 1234
 transceiver qsfp default-mode 4x10G
 load-balance policies
  load-balance fm6000 profile LoadBalance_Profile1_5tuple
@@ -157,6 +160,7 @@ dial-peer voice 1 voip
  codec transparent
  description oigjaiowfjiofjweiofjowe
  destination-pattern .T
+ direct-inward-dial
  dtmf-relay rtp-nte
  forward-digits all
  incoming from-vide

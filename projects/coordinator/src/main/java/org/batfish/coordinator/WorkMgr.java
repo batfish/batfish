@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -123,6 +122,7 @@ public class WorkMgr {
     boolean assignmentError = false;
     boolean assigned = false;
 
+    Client client = null;
     try {
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
@@ -142,17 +142,16 @@ public class WorkMgr {
           BfConsts.ARG_ANSWER_JSON_PATH,
           testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
-      // Client client = ClientBuilder.newClient();
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
-                  _settings.getSslWorkDisable(),
-                  _settings.getSslWorkTrustAllCerts(),
-                  _settings.getSslWorkKeystoreFile(),
-                  _settings.getSslWorkKeystorePassword(),
-                  _settings.getSslWorkTruststoreFile(),
-                  _settings.getSslWorkTruststorePassword())
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
               .build();
-      String protocol = _settings.getSslWorkDisable() ? "http" : "https";
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client
               .target(
@@ -195,6 +194,10 @@ public class WorkMgr {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
 
     // mark the assignment results for both work and worker
@@ -234,9 +237,18 @@ public class WorkMgr {
     Task task = new Task();
     task.setStatus(TaskStatus.UnreachableOrBadResponse);
 
+    Client client = null;
     try {
-      Client client = ClientBuilder.newClient();
-      String protocol = _settings.getSslWorkDisable() ? "http" : "https";
+      client =
+          CommonUtil.createHttpClientBuilder(
+              _settings.getSslPoolDisable(),
+              _settings.getSslPoolTrustAllCerts(),
+              _settings.getSslPoolKeystoreFile(),
+              _settings.getSslPoolKeystorePassword(),
+              _settings.getSslPoolTruststoreFile(),
+              _settings.getSslPoolTruststorePassword())
+              .build();
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client
               .target(
@@ -277,6 +289,10 @@ public class WorkMgr {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
 
     _workQueueMgr.processTaskCheckResult(work, task);

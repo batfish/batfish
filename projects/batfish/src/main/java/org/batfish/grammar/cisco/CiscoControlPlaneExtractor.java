@@ -483,6 +483,7 @@ import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoSourceNat;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -709,6 +710,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("POS", "POS");
     prefixes.put("PTP", "PTP");
     prefixes.put("Serial", "Serial");
+    prefixes.put("Service-Engine", "Service-Engine");
     prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
     prefixes.put("TenGigE", "TenGigabitEthernet");
     prefixes.put("te", "TenGigabitEthernet");
@@ -2679,20 +2681,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
+    CiscoSourceNat nat = new CiscoSourceNat();
+    String acl = ctx.acl.getText();
+    if (ctx.acl != null) {
+      int aclLine = ctx.acl.getStart().getLine();
+      nat.setAclName(acl);
+      nat.setAclNameLine(aclLine);
+    }
+    if (ctx.pool != null) {
+      String pool = ctx.pool.getText();
+      int poolLine = ctx.pool.getStart().getLine();
+      nat.setNatPool(pool);
+      nat.setNatPoolLine(poolLine);
+    }
+
     for (Interface iface : _currentInterfaces) {
-      iface.setSourceNat(true);
-      String acl = ctx.acl.getText();
-      if (ctx.acl != null) {
-        int aclLine = ctx.acl.getStart().getLine();
-        iface.setSourceNatAcl(acl);
-        iface.setSourceNatAclLine(aclLine);
+      if (iface.getSourceNats() == null) {
+        iface.setSourceNats(new ArrayList<>(1));
       }
-      if (ctx.pool != null) {
-        String pool = ctx.pool.getText();
-        int poolLine = ctx.pool.getStart().getLine();
-        iface.setSourceNatPool(pool);
-        iface.setSourceNatPoolLine(poolLine);
-      }
+      iface.getSourceNats().add(nat);
     }
   }
 
@@ -4592,17 +4599,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     SortedMap<String, Service> currentServices = _configuration.getCf().getServices();
     while (i.hasNext()) {
       String name = i.next();
-      Service s = currentServices.get(name);
-      if (s == null) {
-        s = new Service();
-        currentServices.put(name, s);
-        if (enabled) {
-          s.setEnabled(true);
-        } else if (!enabled && !i.hasNext()) {
-          s.disable();
-        }
-        currentServices = s.getSubservices();
+      Service s = currentServices.computeIfAbsent(name, k -> new Service());
+      if (enabled) {
+        s.setEnabled(true);
+      } else if (!enabled && !i.hasNext()) {
+        s.disable();
       }
+      currentServices = s.getSubservices();
     }
   }
 
@@ -4910,10 +4913,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
           line);
     }
-    if (ctx.RO() != null) {
+    if (ctx.readonly != null) {
       _currentSnmpCommunity.setRo(true);
     }
-    if (ctx.RW() != null) {
+    if (ctx.readwrite != null) {
       _currentSnmpCommunity.setRw(true);
     }
   }

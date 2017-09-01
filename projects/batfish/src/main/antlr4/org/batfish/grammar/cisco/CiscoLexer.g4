@@ -252,6 +252,11 @@ ADDRESS_FAMILY
    'address-family'
 ;
 
+ADDRESS_HIDING
+:
+   'address-hiding'
+;
+
 ADDRESS_POOL
 :
    'address-pool'
@@ -722,6 +727,11 @@ ASSOCIATE
 ASSOCIATION
 :
    'association'
+;
+
+ASYMMETRIC
+:
+   'asymmetric'
 ;
 
 ASYNC
@@ -1895,6 +1905,11 @@ DAMPENING
    'dampening'
 ;
 
+DATABASE
+:
+   'database'
+;
+
 DATABITS
 :
    'databits'
@@ -2243,6 +2258,11 @@ DIALER_LIST
 DIRECT
 :
    'direct'
+;
+
+DIRECT_INWARD_DIAL
+:
+   'direct-inward-dial'
 ;
 
 DIRECTED_BROADCAST
@@ -3374,6 +3394,11 @@ GRACEFUL_RESTART
    'graceful-restart'
 ;
 
+GRANT
+:
+   'grant'
+;
+
 GRATUITOUS_ARPS
 :
    'gratuitous-arps'
@@ -3757,6 +3782,11 @@ IF
 IFACL
 :
    'ifacl'
+;
+
+IFDESCR
+:
+   'ifdescr'
 ;
 
 IF_NEEDED
@@ -4791,6 +4821,11 @@ MATCHES_EVERY
    'matches-every'
 ;
 
+MAXSTARTUPS
+:
+   'maxstartups'
+;
+
 MAX_ASSOCIATIONS
 :
    'max-associations'
@@ -5434,6 +5469,11 @@ NETMASK
 NETWORK
 :
    'network'
+;
+
+NETWORK_CLOCK
+:
+   'network-clock'
 ;
 
 NETWORK_CLOCK_PARTICIPATE
@@ -7771,6 +7811,11 @@ SINGLE_TOPOLOGY
    'single-topology'
 ;
 
+SIP
+:
+   'sip'
+;
+
 SIP_UA
 :
    'sip-ua'
@@ -8526,6 +8571,11 @@ THEN
 THREAT_DETECTION
 :
    'threat-detection'
+;
+
+THREAT_VISIBILITY
+:
+   'threat-visibility'
 ;
 
 THREE_DES
@@ -9338,6 +9388,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WATCHDOG
+:
+   'watchdog'
 ;
 
 WATCH_LIST
