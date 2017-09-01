@@ -4809,12 +4809,12 @@
                     "name" : "dummy+dummy",
                     "accessList" : "1",
                     "ro" : true,
-                    "rw" : true
+                    "rw" : false
                   },
                   "dummy@dummy" : {
                     "name" : "dummy@dummy",
                     "accessList" : "2",
-                    "ro" : true,
+                    "ro" : false,
                     "rw" : true
                   },
                   "dummycommunity" : {
