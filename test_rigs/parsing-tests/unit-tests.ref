@@ -6564,6 +6564,13 @@
             "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
             "      (domain_lookup",
             "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
+            "        DISABLE:'disable'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_domain",
+            "      DOMAIN:'domain'  <== mode:DEFAULT_MODE",
+            "      (domain_lookup",
+            "        LOOKUP:'lookup'  <== mode:DEFAULT_MODE",
             "        SOURCE_INTERFACE:'source-interface'  <== mode:DEFAULT_MODE",
             "        (interface_name",
             "          M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
@@ -7936,6 +7943,33 @@
             "      LINECARD:'linecard'  <== mode:DEFAULT_MODE",
             "      DEC:'90'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_flow_sampler_map",
+            "      FLOW_SAMPLER_MAP:'flow-sampler-map'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'SAMPLE'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (fsm_mode",
+            "        MODE:'mode'  <== mode:DEFAULT_MODE",
+            "        RANDOM:'random'  <== mode:DEFAULT_MODE",
+            "        ONE_OUT_OF:'one-out-of'  <== mode:DEFAULT_MODE",
+            "        DEC:'512'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      (interface_name",
+            "        M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_flow_sampler",
+            "        FLOW_SAMPLER:'flow-sampler'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'SAMPLE'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -10870,6 +10904,11 @@
             "          NEWLINE:'\\n'  <== mode:M_Interface",
             "          (iis_stanza",
             "            (common_iis_stanza",
+            "              (suppressed_iis_stanza",
+            "                SUPPRESSED:'suppressed'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (iis_stanza",
+            "            (common_iis_stanza",
             "              (circuit_type_iis_stanza",
             "                CIRCUIT_TYPE:'circuit-type'  <== mode:DEFAULT_MODE",
             "                LEVEL_2_ONLY:'level-2-only'  <== mode:DEFAULT_MODE",
@@ -11281,6 +11320,11 @@
             "        (variable",
             "          DEC:'99'  <== mode:DEFAULT_MODE)",
             "        IN:'in'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (l_accounting",
+            "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
+            "        COMMANDS:'commands'  <== mode:DEFAULT_MODE",
+            "        DEFAULT:'default'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (l_exec_timeout",
             "        EXEC_TIMEOUT:'exec-timeout'  <== mode:DEFAULT_MODE",
@@ -12658,6 +12702,11 @@
             "        VARIABLE:'io'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
+            "    (s_process_max_time",
+            "      PROCESS_MAX_TIME:'process-max-time'  <== mode:DEFAULT_MODE",
+            "      DEC:'23'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
             "    (s_null",
             "      (null_block",
             "        MANAGEMENT_ACCESS:'management-access'  <== mode:DEFAULT_MODE",
@@ -13201,6 +13250,14 @@
             "      VARIABLE:'plaintext'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      HIDEKEYS:'hidekeys'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      PATH:'path'  <== mode:DEFAULT_MODE",
+            "      TFTP:'tftp'  <== mode:DEFAULT_MODE",
+            "      COLON:':'  <== mode:DEFAULT_MODE",
+            "      FORWARD_SLASH:'/'  <== mode:DEFAULT_MODE",
+            "      FORWARD_SLASH:'/'  <== mode:DEFAULT_MODE",
+            "      IP_ADDRESS:'172.16.1.10'  <== mode:DEFAULT_MODE",
+            "      FORWARD_SLASH:'/'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
             "    (s_null",
@@ -13813,6 +13870,16 @@
             "              (mldpaflla_null",
             "                ROUTER_ID:'router-id'  <== mode:DEFAULT_MODE",
             "                IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "              (mldpaflla_null",
+            "                SESSION:'session'  <== mode:DEFAULT_MODE",
+            "                PROTECTION:'protection'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "              (mldpaflla_null",
+            "                MPLS:'mpls'  <== mode:DEFAULT_MODE",
+            "                LDP:'ldp'  <== mode:DEFAULT_MODE",
+            "                SESSION:'session'  <== mode:DEFAULT_MODE",
+            "                PROTECTION:'protection'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "              (mldpaflla_null",
             "                MPLS:'mpls'  <== mode:DEFAULT_MODE",
@@ -15153,6 +15220,10 @@
             "        (pmc_null",
             "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'prioritize_backbone'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (pmc_null",
+            "          TRUST:'trust'  <== mode:DEFAULT_MODE",
+            "          DSCP:'dscp'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (pmc_police",
             "          POLICE:'police'  <== mode:DEFAULT_MODE",
@@ -22439,6 +22510,15 @@
             "          TASK:'task'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'read'  <== mode:DEFAULT_MODE",
             "          ROUTE_POLICY:'route-policy'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (null_inner",
+            "          TASKGROUP:'taskgroup'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'childgroup'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (null_inner",
+            "          INHERIT:'inherit'  <== mode:DEFAULT_MODE",
+            "          TASKGROUP:'taskgroup'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'priv1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -30849,6 +30929,21 @@
             "                (boolean_and_rp_stanza",
             "                  (boolean_not_rp_stanza",
             "                    (boolean_simple_rp_stanza",
+            "                      (boolean_as_path_is_local_rp_stanza",
+            "                        AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "                        IS_LOCAL:'is-local'  <== mode:M_AsPath)))))",
+            "              THEN:'then'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "              (rp_stanza",
+            "                (disposition_rp_stanza",
+            "                  DROP:'drop'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (elseif_rp_stanza",
+            "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
+            "              (boolean_rp_stanza",
+            "                (boolean_and_rp_stanza",
+            "                  (boolean_not_rp_stanza",
+            "                    (boolean_simple_rp_stanza",
             "                      (boolean_community_matches_any_rp_stanza",
             "                        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
             "                        MATCHES_ANY:'matches-any'  <== mode:DEFAULT_MODE",
@@ -32568,7 +32663,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                55
+                56
               ]
             }
           }
@@ -33006,7 +33101,7 @@
           "ipv4 prefix-list" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
-                23
+                25
               ]
             },
             "classful_default" : {
@@ -33469,13 +33564,13 @@
         "route_policy_as_path_set" : {
           "as-path-set" : {
             "ama-coe-as-path" : [
-              32
+              34
             ],
             "ama-coe-as-path2" : [
-              35
+              37
             ],
             "ama-coe-as-path3" : [
-              37
+              39
             ]
           }
         },

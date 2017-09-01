@@ -2645,6 +2645,29 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "GigabitEthernet0/1" : {
+              "name" : "GigabitEthernet0/1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
           "roles" : [
             "cisco"
           ],
@@ -2655,7 +2678,10 @@
           },
           "vrfs" : {
             "default" : {
-              "name" : "default"
+              "name" : "default",
+              "interfaces" : [
+                "GigabitEthernet0/1"
+              ]
             }
           }
         },
@@ -12972,92 +12998,168 @@
                                   "falseStatements" : [
                                     {
                                       "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                                      "guard" : {
-                                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                                        "expr" : {
-                                          "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                                          "communities" : [
+                                      "falseStatements" : [
+                                        {
+                                          "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                                          "guard" : {
+                                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                                            "expr" : {
+                                              "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                                              "communities" : [
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5555
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5555
+                                                  }
+                                                },
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5555
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 65439
+                                                  }
+                                                },
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5555
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 65437
+                                                  }
+                                                },
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5556
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 65418
+                                                  }
+                                                },
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5556
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 65438
+                                                  }
+                                                },
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5556
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 65436
+                                                  }
+                                                },
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5556
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf",
+                                                    "range" : "65300-65419"
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "trueStatements" : [
                                             {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5555
-                                              },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5555
+                                              "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                                              "statement" : {
+                                                "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                                                "metric" : {
+                                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                                  "value" : 1000
+                                                }
                                               }
                                             },
                                             {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5555
+                                              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                                              "falseStatements" : [
+                                                {
+                                                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                                  "type" : "SetDefaultActionAccept"
+                                                }
+                                              ],
+                                              "guard" : {
+                                                "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                                                "type" : "CallExprContext"
                                               },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 65439
-                                              }
+                                              "trueStatements" : [
+                                                {
+                                                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                                  "type" : "SetLocalDefaultActionAccept"
+                                                }
+                                              ]
                                             },
                                             {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5555
+                                              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                                              "falseStatements" : [
+                                                {
+                                                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                                  "type" : "SetDefaultActionAccept"
+                                                }
+                                              ],
+                                              "guard" : {
+                                                "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                                                "type" : "CallExprContext"
                                               },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 65437
-                                              }
-                                            },
-                                            {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5556
-                                              },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 65418
-                                              }
-                                            },
-                                            {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5556
-                                              },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 65438
-                                              }
-                                            },
-                                            {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5556
-                                              },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 65436
-                                              }
-                                            },
-                                            {
-                                              "prefix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5556
-                                              },
-                                              "suffix" : {
-                                                "class" : "org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf",
-                                                "range" : "65300-65419"
-                                              }
+                                              "trueStatements" : [
+                                                {
+                                                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                                  "type" : "SetLocalDefaultActionAccept"
+                                                }
+                                              ]
                                             }
                                           ]
+                                        }
+                                      ],
+                                      "guard" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                                        "prefix" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                                        },
+                                        "prefixSet" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                                          "name" : "CENIC_DC_Internal"
                                         }
                                       },
                                       "trueStatements" : [
                                         {
                                           "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                                           "statement" : {
-                                            "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                                            "metric" : {
-                                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                              "value" : 1000
+                                            "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                                            "expr" : {
+                                              "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                                              "communities" : [
+                                                {
+                                                  "prefix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5555
+                                                  },
+                                                  "suffix" : {
+                                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                                    "value" : 5555
+                                                  }
+                                                }
+                                              ]
                                             }
                                           }
                                         },
@@ -13103,31 +13205,37 @@
                                     }
                                   ],
                                   "guard" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                                    "prefix" : {
-                                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                                    },
-                                    "prefixSet" : {
-                                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                                      "name" : "CENIC_DC_Internal"
-                                    }
+                                    "class" : "org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath",
+                                    "asRange" : [
+                                      {
+                                        "first" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                          "value" : 64527
+                                        },
+                                        "last" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                          "value" : 64527
+                                        }
+                                      }
+                                    ],
+                                    "exact" : false
                                   },
                                   "trueStatements" : [
                                     {
                                       "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                                       "statement" : {
-                                        "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                                        "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
                                         "expr" : {
                                           "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
                                           "communities" : [
                                             {
                                               "prefix" : {
                                                 "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5555
+                                                "value" : 14041
                                               },
                                               "suffix" : {
                                                 "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                                "value" : 5555
+                                                "value" : 65011
                                               }
                                             }
                                           ]
@@ -13154,6 +13262,15 @@
                                       ]
                                     },
                                     {
+                                      "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                                      "statement" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                                        "metric" : {
+                                          "class" : "org.batfish.datamodel.routing_policy.expr.IgpCost"
+                                        }
+                                      }
+                                    },
+                                    {
                                       "class" : "org.batfish.datamodel.routing_policy.statement.If",
                                       "falseStatements" : [
                                         {
@@ -13176,129 +13293,55 @@
                                 }
                               ],
                               "guard" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath",
-                                "asRange" : [
-                                  {
-                                    "first" : {
-                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                      "value" : 64527
+                                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                                "expr" : {
+                                  "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                                  "communities" : [
+                                    {
+                                      "prefix" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                        "value" : 5555
+                                      },
+                                      "suffix" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                        "value" : 65530
+                                      }
                                     },
-                                    "last" : {
-                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                      "value" : 64527
+                                    {
+                                      "prefix" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                        "value" : 5555
+                                      },
+                                      "suffix" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                        "value" : 667
+                                      }
+                                    },
+                                    {
+                                      "prefix" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                        "value" : 5555
+                                      },
+                                      "suffix" : {
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                                        "value" : 64000
+                                      }
                                     }
-                                  }
-                                ],
-                                "exact" : false
+                                  ]
+                                }
                               },
                               "trueStatements" : [
                                 {
-                                  "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
-                                  "statement" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
-                                    "expr" : {
-                                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                                      "communities" : [
-                                        {
-                                          "prefix" : {
-                                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                            "value" : 14041
-                                          },
-                                          "suffix" : {
-                                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                            "value" : 65011
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                                  "falseStatements" : [
-                                    {
-                                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                                      "type" : "SetDefaultActionAccept"
-                                    }
-                                  ],
-                                  "guard" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                                    "type" : "CallExprContext"
-                                  },
-                                  "trueStatements" : [
-                                    {
-                                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                                      "type" : "SetLocalDefaultActionAccept"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
-                                  "statement" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                                    "metric" : {
-                                      "class" : "org.batfish.datamodel.routing_policy.expr.IgpCost"
-                                    }
-                                  }
-                                },
-                                {
-                                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                                  "falseStatements" : [
-                                    {
-                                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                                      "type" : "SetDefaultActionAccept"
-                                    }
-                                  ],
-                                  "guard" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                                    "type" : "CallExprContext"
-                                  },
-                                  "trueStatements" : [
-                                    {
-                                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                                      "type" : "SetLocalDefaultActionAccept"
-                                    }
-                                  ]
+                                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                  "type" : "ExitReject"
                                 }
                               ]
                             }
                           ],
                           "guard" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
                             "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                              "communities" : [
-                                {
-                                  "prefix" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                    "value" : 5555
-                                  },
-                                  "suffix" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                    "value" : 65530
-                                  }
-                                },
-                                {
-                                  "prefix" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                    "value" : 5555
-                                  },
-                                  "suffix" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                    "value" : 667
-                                  }
-                                },
-                                {
-                                  "prefix" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                    "value" : 5555
-                                  },
-                                  "suffix" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                    "value" : 64000
-                                  }
-                                }
-                              ]
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet"
                             }
                           },
                           "trueStatements" : [
