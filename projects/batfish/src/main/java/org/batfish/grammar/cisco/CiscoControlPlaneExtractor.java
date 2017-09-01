@@ -454,6 +454,7 @@ import org.batfish.grammar.cisco.CiscoParser.Standard_ipv6_access_list_stanzaCon
 import org.batfish.grammar.cisco.CiscoParser.Standard_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.SubrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Summary_address_is_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Suppressed_iis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco.CiscoParser.T_serverContext;
@@ -5076,6 +5077,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       r.setLevel(IsisLevel.LEVEL_1_2);
     } else {
       r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
+    }
+  }
+
+  @Override
+  public void exitSuppressed_iis_stanza(Suppressed_iis_stanzaContext ctx) {
+    if (ctx.NO() != null) {
+      _currentIsisInterface.setIsisInterfaceMode(IsisInterfaceMode.SUPPRESSED);
     }
   }
 
