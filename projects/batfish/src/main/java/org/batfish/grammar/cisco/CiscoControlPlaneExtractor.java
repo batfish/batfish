@@ -710,6 +710,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("POS", "POS");
     prefixes.put("PTP", "PTP");
     prefixes.put("Serial", "Serial");
+    prefixes.put("Service-Engine", "Service-Engine");
     prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
     prefixes.put("TenGigE", "TenGigabitEthernet");
     prefixes.put("te", "TenGigabitEthernet");
@@ -4912,10 +4913,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
           line);
     }
-    if (ctx.RO() != null) {
+    if (ctx.readonly != null) {
       _currentSnmpCommunity.setRo(true);
     }
-    if (ctx.RW() != null) {
+    if (ctx.readwrite != null) {
       _currentSnmpCommunity.setRw(true);
     }
   }

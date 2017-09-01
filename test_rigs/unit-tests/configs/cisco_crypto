@@ -233,6 +233,12 @@ crypto pki trustpoint HTTPS_SS_CERT_KEYPAIR
  subject-name cn=gawerfowefoiwejfio
  no validation-usage
 !
+crypto pki server CN
+ no database archive
+ issuer-name cn=CN
+ grant auto
+ cdp-url http://192.168.0.1/CN.crl
+!
 key chain mykeychain1
  key 1
   key-string 7 0023353555485A15240155

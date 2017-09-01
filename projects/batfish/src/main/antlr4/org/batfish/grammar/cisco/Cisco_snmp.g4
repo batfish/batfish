@@ -175,8 +175,8 @@ ss_trap_source
 ssc_access_control
 :
    (
-      RO
-      | RW
+      readonly = RO
+      | readwrite = RW
       | SDROWNER
       | SYSTEMOWNER
       |

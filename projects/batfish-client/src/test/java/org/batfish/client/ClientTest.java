@@ -86,6 +86,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.apache.commons.lang.ArrayUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -1323,11 +1325,29 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidateNodeNotAllowedValue() throws IOException {
+    String parameterName = "boolean";
+    JsonNode invalidNode = _mapper.readTree("false");
+    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
+    SortedSet<String> allowedValues = new TreeSet<>();
+    allowedValues.add("true");
+    variable.setAllowedValues(allowedValues);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        String.format("Invalid value: false, allowed values are: %s", allowedValues));
+    Client.validateNode(invalidNode, variable, parameterName);
+  }
+
+  @Test
   public void testValidateValidNode() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("false");
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
+    SortedSet<String> allowedValues = new TreeSet<>();
+    allowedValues.add("false");
+    variable.setAllowedValues(allowedValues);
     Client.validateNode(invalidNode, variable, parameterName);
   }
 
