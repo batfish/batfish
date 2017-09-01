@@ -39,11 +39,12 @@ advertise_is_stanza
 
 circuit_type_iis_stanza
 :
-   CIRCUIT_TYPE
    (
-      LEVEL_2_ONLY
-      | LEVEL_2
-   ) NEWLINE
+      (NO CIRCUIT_TYPE)
+      |
+      (CIRCUIT_TYPE (LEVEL_1 | LEVEL_1_2 | LEVEL_2_ONLY))
+   )
+   NEWLINE
 ;
 
 common_iis_stanza
