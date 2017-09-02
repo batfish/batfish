@@ -84,10 +84,12 @@ public class BatfishTestUtils {
     testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR).toFile().mkdirs();
     settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
-    configurationText.forEach((filename, content) -> {
-      Path filePath = testrigPath.resolve(Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, filename));
-      CommonUtil.writeFile(filePath, content);
-      });
+    configurationText.forEach(
+        (filename, content) -> {
+          Path filePath =
+              testrigPath.resolve(Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, filename));
+          CommonUtil.writeFile(filePath, content);
+        });
 
     final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
         Collections.synchronizedMap(new LRUMap<TestrigSettings, DataPlane>(2));
@@ -106,8 +108,11 @@ public class BatfishTestUtils {
             CACHED_DATA_PLANES,
             CACHED_ENVIRONMENT_BGP_TABLES,
             CACHED_ENVIRONMENT_ROUTING_TABLES);
-    batfish.serializeVendorConfigs(testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
-    batfish.serializeIndependentConfigs(settings.getBaseTestrigSettings().getSerializeVendorPath(), settings.getBaseTestrigSettings().getSerializeIndependentPath());
+    batfish.serializeVendorConfigs(
+        testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
+    batfish.serializeIndependentConfigs(
+        settings.getBaseTestrigSettings().getSerializeVendorPath(),
+        settings.getBaseTestrigSettings().getSerializeIndependentPath());
     return batfish;
   }
 

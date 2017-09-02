@@ -1,9 +1,7 @@
 package org.batfish.grammar.cisco;
 
-import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.SortedMap;
@@ -17,26 +15,33 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests for Cisco parser and CiscoControlPlaneExtractor. */
+/** Tests for {@link CiscoParser}Cisco parser and {@link CiscoControlPlaneExtractor}. */
 public class CiscoGrammarTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco/testconfigs/";
-  
+
   @Test
   public void testAaaNewmodel() throws IOException {
-    String configurationName = "aaaNewmodel";
     SortedMap<String, String> configurationText = new TreeMap<>();
-    String aaaNewmodelConfigurationText = CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
+    String configurationName = "aaaNoNewmodel";
+    String aaaNoNewmodelConfigurationText = CommonUtil.readResource(
+        TESTCONFIGS_PREFIX + configurationName);
+    configurationText.put(configurationName, aaaNoNewmodelConfigurationText);
+    configurationName = "aaaNewmodel";
+    String aaaNewmodelConfigurationText = CommonUtil.readResource(
+        TESTCONFIGS_PREFIX + configurationName);
     configurationText.put(configurationName, aaaNewmodelConfigurationText);
     Batfish batfish = BatfishTestUtils.getBatfishFromConfigurationText(configurationText, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Configuration configuration = configurations.get(configurationName);
-    boolean aaaNewmodel = configuration.getVendorFamily().getCisco().getAaa().getNewModel();
-    assertThat(aaaNewmodel, equalTo(false));
+    Configuration newModelConfiguration = configurations.get("aaaNewmodel");
+    boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
+    assertTrue(aaaNewmodel);
+    Configuration noNewModelConfiguration = configurations.get("aaaNoNewmodel");
+    aaaNewmodel = noNewModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
+    assertFalse(aaaNewmodel);
   }
-
 
 }
