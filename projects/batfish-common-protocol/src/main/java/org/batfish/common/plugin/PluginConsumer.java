@@ -150,8 +150,9 @@ public abstract class PluginConsumer implements IPluginConsumer {
           try {
             loadPluginClass(cl, className);
           } catch (ClassNotFoundException e) {
-            jar.close();
-            throw new BatfishException("Unexpected error loading classes from jar", e);
+            //jar.close();
+            //throw new BatfishException("Unexpected error loading classes from jar", e);
+            System.err.println("Couldn't load class " + className + ". Skipping.");
           }
         }
         jar.close();
@@ -194,8 +195,14 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
-    cl.loadClass(className);
-    Class<?> pluginClass = Class.forName(className, true, cl);
+    Class<?> pluginClass = null;
+    try {
+      cl.loadClass(className);
+      pluginClass = Class.forName(className, true, cl);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      System.err.println("Couldn't load class " + className + ". Skipping.");
+      return;
+    }
     if (!Plugin.class.isAssignableFrom(pluginClass)
         || Modifier.isAbstract(pluginClass.getModifiers())) {
       return;
