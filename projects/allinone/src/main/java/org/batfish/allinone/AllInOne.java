@@ -185,10 +185,6 @@ public class AllInOne {
     final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
 
-
-    //final String[] argArray = getArgArrayFromString(_settings.getCoordinatorArgs());
-    //_logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
-
     Thread thread =
         new Thread("coordinatorThread") {
           @Override

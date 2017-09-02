@@ -150,9 +150,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
           try {
             loadPluginClass(cl, className);
           } catch (ClassNotFoundException e) {
-            //jar.close();
-            //throw new BatfishException("Unexpected error loading classes from jar", e);
-            System.err.println("Couldn't load class " + className + ". Skipping.");
+            jar.close();
+            throw new BatfishException("Unexpected error loading classes from jar", e);
           }
         }
         jar.close();
@@ -200,6 +199,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
       cl.loadClass(className);
       pluginClass = Class.forName(className, true, cl);
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      //Ignoring this exception is a potentially dangerous hack
+      //but I don't quite know yet why some classes cannot be loaded and how to do things cleanly
       System.err.println("Couldn't load class " + className + ". Skipping.");
       return;
     }
