@@ -2600,7 +2600,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1,
+    if (!isValidArgument(options, parameters, 1, 1, 1,
             Command.SYNC_TESTRIGS_SYNC_NOW)) {
       return false;
     }
@@ -2608,9 +2608,21 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
 
+    boolean force = false;
+
+    if (options.size() == 1) {
+      if (options.get(0).equals("-force")) {
+        force = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.SYNC_TESTRIGS_SYNC_NOW);
+        return false;
+      }
+    }
+
     String pluginId = parameters.get(0);
 
-    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName);
+    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
   }
 
   private boolean syncTestrigsUpdateSettings(String[] words, List<String> options,

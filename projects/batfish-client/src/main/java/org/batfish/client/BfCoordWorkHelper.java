@@ -1006,7 +1006,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public boolean syncTestrigsSyncNow(String pluginId, String containerName) {
+  public boolean syncTestrigsSyncNow(String pluginId, String containerName, boolean force) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW);
 
@@ -1017,6 +1017,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_FORCE, String.valueOf(force));
 
       JSONObject jObj = postData(webTarget, multiPart);
       return (jObj != null);

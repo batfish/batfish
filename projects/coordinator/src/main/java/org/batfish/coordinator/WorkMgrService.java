@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
@@ -105,7 +106,7 @@ public class WorkMgrService {
   }
 
   private void checkStringParam(String paramStr, String parameterName) {
-    if (paramStr == null || paramStr.equals("")) {
+    if (Strings.isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
     }
   }
@@ -1261,7 +1262,8 @@ public class WorkMgrService {
           @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
           @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
           @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-          @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId) {
+          @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+          @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
     try {
       _logger.info("WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " "
               + pluginId + "\n");
@@ -1275,7 +1277,9 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      boolean result = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId);
+      boolean force = Strings.isNullOrEmpty(forceStr) ? false : Boolean.parseBoolean(forceStr);
+
+      boolean result = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
 
       return new JSONArray(
               Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", result))));

@@ -603,12 +603,16 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private Path getdirTestrig(String containerName, String testrigName) {
-    Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+    Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
     if (!Files.exists(testrigDir)) {
       throw new BatfishException("Testrig '" + testrigName + "' does not exist");
     }
     return testrigDir;
+  }
+
+  @Override
+  public Path getdirTestrigs(String containerName) {
+    return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
   private Path getdirTestrigQuestion(String containerName, String testrigName, String qName) {
@@ -905,18 +909,18 @@ public class WorkMgr extends AbstractCoordinator {
             TimeUnit.MILLISECONDS);
   }
 
-  public boolean syncTestrigsSyncNow(String containerName, String pluginId) {
+  public boolean syncTestrigsSyncNow(String containerName, String pluginId, boolean force) {
     if (!_testrigSyncers.containsKey(pluginId)) {
-      throw new BatfishException("PluginId " + pluginId + "not found."
+      throw new BatfishException("PluginId " + pluginId + " not found."
                 + " (Are SyncTestrigs plugins loaded?)");
     }
-    return _testrigSyncers.get(pluginId).syncNow(containerName);
+    return _testrigSyncers.get(pluginId).syncNow(containerName, force);
   }
 
   public boolean syncTestrigsUpdateSettings(String containerName, String pluginId,
                                             Map<String, String> settings) {
     if (!_testrigSyncers.containsKey(pluginId)) {
-      throw new BatfishException("PluginId " + pluginId + "not found."
+      throw new BatfishException("PluginId " + pluginId + " not found."
               + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);

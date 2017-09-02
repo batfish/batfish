@@ -55,6 +55,7 @@ public class CoordConsts {
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";
+  public static final String SVC_KEY_FORCE = "force";
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";

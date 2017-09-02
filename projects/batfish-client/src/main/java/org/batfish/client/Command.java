@@ -277,7 +277,7 @@ public enum Command {
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta testrig and environment"));
     descs.put(SHOW_TESTRIG, new Pair<>("", "Show base testrig and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
-    descs.put(SYNC_TESTRIGS_SYNC_NOW, new Pair<>("<plugin-id>",
+    descs.put(SYNC_TESTRIGS_SYNC_NOW, new Pair<>("-force <plugin-id>",
             "Sync testrigs now (settings must have been configured before)"));
     descs.put(
             SYNC_TESTRIGS_UPDATE_SETTINGS,
