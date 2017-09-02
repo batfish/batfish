@@ -62,6 +62,8 @@ public class Settings extends BaseSettings {
 
   private static final String ARG_WORK_BIND_HOST = "workbindhost";
 
+  private static final String ARGNAME_PATHS = "path..";
+
   private static final String EXECUTABLE_NAME = "coordinator";
 
   private Authorizer.Type _authorizerType;
@@ -353,6 +355,8 @@ public class Settings extends BaseSettings {
 
     addOption(
         ARG_PERIOD_CHECK_WORK_MS, "period with which to check work (ms)", "period_check_work_ms");
+
+    addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
 
     addOption(ARG_QUEUE_TYPE, "queue type to use {azure, memory}", "qtype");
 

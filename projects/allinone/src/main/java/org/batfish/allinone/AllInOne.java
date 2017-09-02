@@ -1,5 +1,6 @@
 package org.batfish.allinone;
 
+import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import org.batfish.common.BfConsts;
 public class AllInOne {
 
   private static String[] getArgArrayFromString(String argString) {
-    if (argString == null || argString == "") {
+    if (Strings.isNullOrEmpty(argString)) {
       return new String[0];
     }
     return argString.trim().split("\\s+");
@@ -167,9 +168,26 @@ public class AllInOne {
   }
 
   private void runCoordinator() {
-
-    final String[] argArray = getArgArrayFromString(_settings.getCoordinatorArgs());
+    String coordinatorArgs =
+        String.format("%s", _settings.getCoordinatorArgs());
+    String[] initialArgArray = getArgArrayFromString(coordinatorArgs);
+    List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
+    List<Path> pluginDirs = _settings.getPluginDirs();
+    if (pluginDirs != null && !pluginDirs.isEmpty()) {
+      args.add("-" + BfConsts.ARG_PLUGIN_DIRS);
+      StringBuilder sb = new StringBuilder();
+      sb.append(_settings.getPluginDirs().get(0));
+      for (int i = 1; i < _settings.getPluginDirs().size(); i++) {
+        sb.append("," + _settings.getPluginDirs().get(i));
+      }
+      args.add(sb.toString());
+    }
+    final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
+
+
+    //final String[] argArray = getArgArrayFromString(_settings.getCoordinatorArgs());
+    //_logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
 
     Thread thread =
         new Thread("coordinatorThread") {
