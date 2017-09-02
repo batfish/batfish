@@ -8,6 +8,7 @@ line vty 0 15
  escape-character 0x61
  exec-timeout 15 0
  login authentication blah
+ timeout login response 120
  no vacant-message
 !
 line console

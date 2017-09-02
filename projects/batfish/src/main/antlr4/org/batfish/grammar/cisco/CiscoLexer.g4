@@ -252,6 +252,11 @@ ADDRESS_FAMILY
    'address-family'
 ;
 
+ADDRESS_HIDING
+:
+   'address-hiding'
+;
+
 ADDRESS_POOL
 :
    'address-pool'
@@ -722,6 +727,11 @@ ASSOCIATE
 ASSOCIATION
 :
    'association'
+;
+
+ASYMMETRIC
+:
+   'asymmetric'
 ;
 
 ASYNC
@@ -1893,6 +1903,11 @@ DAMPEN_IGP_METRIC
 DAMPENING
 :
    'dampening'
+;
+
+DATABASE
+:
+   'database'
 ;
 
 DATABITS
@@ -3379,6 +3394,11 @@ GRACEFUL_RESTART
    'graceful-restart'
 ;
 
+GRANT
+:
+   'grant'
+;
+
 GRATUITOUS_ARPS
 :
    'gratuitous-arps'
@@ -3762,6 +3782,11 @@ IF
 IFACL
 :
    'ifacl'
+;
+
+IFDESCR
+:
+   'ifdescr'
 ;
 
 IF_NEEDED
@@ -5444,6 +5469,11 @@ NETMASK
 NETWORK
 :
    'network'
+;
+
+NETWORK_CLOCK
+:
+   'network-clock'
 ;
 
 NETWORK_CLOCK_PARTICIPATE
@@ -7781,6 +7811,11 @@ SINGLE_TOPOLOGY
    'single-topology'
 ;
 
+SIP
+:
+   'sip'
+;
+
 SIP_UA
 :
    'sip-ua'
@@ -8536,6 +8571,11 @@ THEN
 THREAT_DETECTION
 :
    'threat-detection'
+;
+
+THREAT_VISIBILITY
+:
+   'threat-visibility'
 ;
 
 THREE_DES
@@ -9348,6 +9388,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WATCHDOG
+:
+   'watchdog'
 ;
 
 WATCH_LIST

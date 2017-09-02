@@ -144,7 +144,7 @@ aaa_accounting_method_target
 :
    BROADCAST?
    (
-      GROUP
+      GROUP?
       (
          RADIUS
          | TAC_PLUS
@@ -299,6 +299,7 @@ aaa_authentication_list_method
       | aaa_authentication_list_method_line
       | aaa_authentication_list_method_local
       | aaa_authentication_list_method_none
+      | aaa_authentication_list_method_radius
       | aaa_authentication_list_method_tacacs_local
       | aaa_authentication_list_method_tacacs_plus
    )
@@ -341,6 +342,11 @@ aaa_authentication_list_method_local
 aaa_authentication_list_method_none
 :
    NONE
+;
+
+aaa_authentication_list_method_radius
+:
+   RADIUS
 ;
 
 aaa_authentication_list_method_tacacs_local

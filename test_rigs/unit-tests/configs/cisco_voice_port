@@ -1,6 +1,14 @@
 !
 hostname cisco_voice_port
 !
+application
+ service dsapp
+ param disc-toggle-time 15
+ param callWaiting TRUE
+ param callConference TRUE
+ param blind-xfer-wait-time 10
+ param callTransfer TRUE
+!
 voice-port 0/0/0:23
  caller-id enable
  description giuahwefuiowjh
@@ -11,4 +19,7 @@ voice-port 0/0/0:23
  timing hookflash-out 50
  timing guard-out 1000
 !
-
+voice-card 0/2
+ dsp services dspfarm
+ no watchdog
+!

@@ -1,0 +1,6 @@
+!
+hostname aaaNewmodel
+!
+aaa new-model
+no aaa new-model
+!
