@@ -3,52 +3,53 @@ package org.batfish.datamodel.pojo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * The {@link Environment Environment} is an Object representation of the environment for BatFish
  * service.
  *
- * <p>Each {@link Environment Environment} contains a name and all informations of the environment
- * {@link #_name}.
+ * <p>Each {@link Environment Environment} contains a name and a summary of the environment {@link
+ * #_name}.
  */
 public class Environment {
   private static final String PROP_NAME = "name";
-  private static final String PROP_EDGE_BLACKLIST = "edgeBlacklist";
-  private static final String PROP_INTERFACE_BLACKLIST = "interfaceBlacklist";
-  private static final String PROP_NODE_BLACKLIST = "nodeBlacklist";
-  private static final String PROP_ENVIRONMENT_BGP_TABLES = "bgpTables";
-  private static final String PROP_ENVIRONMENT_ROUTING_TABLES = "routingTables";
+  private static final String PROP_EDGE_BLACKLIST_COUNT = "edgeBlacklistCount";
+  private static final String PROP_INTERFACE_BLACKLIST_COUNT = "interfaceBlacklistCount";
+  private static final String PROP_NODE_BLACKLIST_COUNT = "nodeBlacklistCount";
+  private static final String PROP_ENVIRONMENT_BGP_TABLES_COUNT = "bgpTablesCount";
+  private static final String PROP_ENVIRONMENT_ROUTING_TABLES_COUNT = "routingTablesCount";
   private static final String PROP_EXTERNAL_BGP_ANNOUNCEMENTS = "externalBgpAnnouncements";
+  private static final String PROP_CREATED_AT = "createdAt";
 
   private final String _name;
-  private final List<Edge> _edgeBlacklist;
-  private final List<NodeInterfacePair> _interfaceBlacklist;
-  private final List<String> _nodeBlacklist;
-  private final Map<String, String> _bgpTables;
-  private final Map<String, String> _routingTables;
+  private final Date _createdAt;
+  private final int _edgeBlacklistCount;
+  private final int _interfaceBlacklistCount;
+  private final int _nodeBlacklistCount;
+  private final int _bgpTablesCount;
+  private final int _routingTablesCount;
   private final String _externalBgpAnnouncements;
 
   @JsonCreator
   public Environment(
       @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_EDGE_BLACKLIST) @Nullable List<Edge> edgeBlacklist,
-      @JsonProperty(PROP_INTERFACE_BLACKLIST) @Nullable List<NodeInterfacePair> interfaceBlacklist,
-      @JsonProperty(PROP_NODE_BLACKLIST) @Nullable List<String> nodeBlacklist,
-      @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES) @Nullable Map<String, String> bgpTables,
-      @JsonProperty(PROP_ENVIRONMENT_ROUTING_TABLES) @Nullable Map<String, String> routingTables,
+      @JsonProperty(PROP_CREATED_AT) Date createdAt,
+      @JsonProperty(PROP_EDGE_BLACKLIST_COUNT) int edgeBlacklistCount,
+      @JsonProperty(PROP_INTERFACE_BLACKLIST_COUNT) int interfaceBlacklistCount,
+      @JsonProperty(PROP_NODE_BLACKLIST_COUNT) int nodeBlacklistCount,
+      @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES_COUNT) int bgpTablesCount,
+      @JsonProperty(PROP_ENVIRONMENT_ROUTING_TABLES_COUNT) int routingTablesCount,
       @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS) @Nullable String externalBgpAnnouncements) {
     this._name = name;
-    this._edgeBlacklist = edgeBlacklist;
-    this._interfaceBlacklist = interfaceBlacklist;
-    this._nodeBlacklist = nodeBlacklist;
-    this._bgpTables = bgpTables;
-    this._routingTables = routingTables;
+    this._createdAt = createdAt;
+    this._edgeBlacklistCount = edgeBlacklistCount;
+    this._interfaceBlacklistCount = interfaceBlacklistCount;
+    this._nodeBlacklistCount = nodeBlacklistCount;
+    this._bgpTablesCount = bgpTablesCount;
+    this._routingTablesCount = routingTablesCount;
     this._externalBgpAnnouncements = externalBgpAnnouncements;
   }
 
@@ -57,29 +58,34 @@ public class Environment {
     return _name;
   }
 
-  @JsonProperty(PROP_EDGE_BLACKLIST)
-  public List<Edge> getEdgeBlacklist() {
-    return _edgeBlacklist;
+  @JsonProperty(PROP_CREATED_AT)
+  public Date getCreatedAt() {
+    return _createdAt;
   }
 
-  @JsonProperty(PROP_INTERFACE_BLACKLIST)
-  public List<NodeInterfacePair> getInterfaceBlacklist() {
-    return _interfaceBlacklist;
+  @JsonProperty(PROP_EDGE_BLACKLIST_COUNT)
+  public int getEdgeBlacklistCount() {
+    return _edgeBlacklistCount;
   }
 
-  @JsonProperty(PROP_NODE_BLACKLIST)
-  public List<String> getNodeBlacklist() {
-    return _nodeBlacklist;
+  @JsonProperty(PROP_INTERFACE_BLACKLIST_COUNT)
+  public int getInterfaceBlacklistCount() {
+    return _interfaceBlacklistCount;
   }
 
-  @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
-  public Map<String, String> getBgpTables() {
-    return _bgpTables;
+  @JsonProperty(PROP_NODE_BLACKLIST_COUNT)
+  public int getNodeBlacklistCount() {
+    return _nodeBlacklistCount;
   }
 
-  @JsonProperty(PROP_ENVIRONMENT_ROUTING_TABLES)
-  public Map<String, String> getRoutingTables() {
-    return _routingTables;
+  @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES_COUNT)
+  public int getBgpTablesCount() {
+    return _bgpTablesCount;
+  }
+
+  @JsonProperty(PROP_ENVIRONMENT_ROUTING_TABLES_COUNT)
+  public int getRoutingTablesCount() {
+    return _routingTablesCount;
   }
 
   @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS)
@@ -91,11 +97,12 @@ public class Environment {
   public String toString() {
     return MoreObjects.toStringHelper(Environment.class)
         .add(PROP_NAME, _name)
-        .add(PROP_EDGE_BLACKLIST, _edgeBlacklist)
-        .add(PROP_INTERFACE_BLACKLIST, _interfaceBlacklist)
-        .add(PROP_NODE_BLACKLIST, _nodeBlacklist)
-        .add(PROP_ENVIRONMENT_BGP_TABLES, _bgpTables)
-        .add(PROP_ENVIRONMENT_ROUTING_TABLES, _routingTables)
+        .add(PROP_CREATED_AT, _createdAt)
+        .add(PROP_EDGE_BLACKLIST_COUNT, _edgeBlacklistCount)
+        .add(PROP_INTERFACE_BLACKLIST_COUNT, _interfaceBlacklistCount)
+        .add(PROP_NODE_BLACKLIST_COUNT, _nodeBlacklistCount)
+        .add(PROP_ENVIRONMENT_BGP_TABLES_COUNT, _bgpTablesCount)
+        .add(PROP_ENVIRONMENT_ROUTING_TABLES_COUNT, _routingTablesCount)
         .add(PROP_EXTERNAL_BGP_ANNOUNCEMENTS, _externalBgpAnnouncements)
         .toString();
   }
@@ -107,11 +114,12 @@ public class Environment {
     }
     Environment other = (Environment) o;
     return Objects.equals(_name, other._name)
-        && Objects.equals(_edgeBlacklist, other._edgeBlacklist)
-        && Objects.equals(_interfaceBlacklist, other._interfaceBlacklist)
-        && Objects.equals(_nodeBlacklist, other._nodeBlacklist)
-        && Objects.equals(_bgpTables, other._bgpTables)
-        && Objects.equals(_routingTables, other._routingTables)
+        && Objects.equals(_createdAt, other._createdAt)
+        && Objects.equals(_edgeBlacklistCount, other._edgeBlacklistCount)
+        && Objects.equals(_interfaceBlacklistCount, other._interfaceBlacklistCount)
+        && Objects.equals(_nodeBlacklistCount, other._nodeBlacklistCount)
+        && Objects.equals(_bgpTablesCount, other._bgpTablesCount)
+        && Objects.equals(_routingTablesCount, other._routingTablesCount)
         && Objects.equals(_externalBgpAnnouncements, other._externalBgpAnnouncements);
   }
 
@@ -119,11 +127,12 @@ public class Environment {
   public int hashCode() {
     return Objects.hash(
         _name,
-        _edgeBlacklist,
-        _interfaceBlacklist,
-        _nodeBlacklist,
-        _bgpTables,
-        _routingTables,
+        _createdAt,
+        _edgeBlacklistCount,
+        _interfaceBlacklistCount,
+        _nodeBlacklistCount,
+        _bgpTablesCount,
+        _routingTablesCount,
         _externalBgpAnnouncements);
   }
 }

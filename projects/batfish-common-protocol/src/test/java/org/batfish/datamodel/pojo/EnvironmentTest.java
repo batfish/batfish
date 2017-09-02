@@ -3,11 +3,7 @@ package org.batfish.datamodel.pojo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,43 +18,25 @@ public class EnvironmentTest {
 
   @Test
   public void testConstructorAndGetter() {
-    List<String> nodeBlacklist = Lists.newArrayList("node1");
-    Map<String, String> bgpTables = Collections.singletonMap("bgpTable1", "table1Content");
-    Map<String, String> routingTables = Collections.singletonMap("routingTable1", "table1Content");
-    Environment e =
-        new Environment(
-            "environment",
-            Lists.newArrayList(),
-            Lists.newArrayList(),
-            nodeBlacklist,
-            bgpTables,
-            routingTables,
+    Date now = new Date();
+    Environment e = new Environment("environment", now, 0, 0, 0, 0, 0,
             "announcement");
     assertThat(e.getName(), equalTo("environment"));
-    assertThat(e.getEdgeBlacklist(), equalTo(Lists.newArrayList()));
-    assertThat(e.getInterfaceBlacklist(), equalTo(Lists.newArrayList()));
-    assertThat(e.getNodeBlacklist(), equalTo(nodeBlacklist));
-    assertThat(e.getBgpTables(), equalTo(bgpTables));
-    assertThat(e.getRoutingTables(), equalTo(routingTables));
+    assertThat(e.getCreatedAt(), equalTo(now));
     assertThat(e.getExternalBgpAnnouncements(), equalTo("announcement"));
   }
 
   @Test
   public void testToString() {
-    Environment e =
-        new Environment(
-            "environment",
-            Lists.newArrayList(),
-            Lists.newArrayList(),
-            Lists.newArrayList(),
-            Maps.newHashMap(),
-            Maps.newHashMap(),
+    Date now = new Date();
+    Environment e = new Environment("environment", now, 0, 0, 0, 0, 0,
             "announcement");
     assertThat(
         e.toString(),
-        equalTo(
-            "Environment{name=environment, edgeBlacklist=[], interfaceBlacklist=[], "
-                + "nodeBlacklist=[], bgpTables={}, routingTables={}, "
-                + "externalBgpAnnouncements=announcement}"));
+        equalTo(String.format(
+            "Environment{name=environment, createdAt=%s, edgeBlacklistCount=0, "
+                + "interfaceBlacklistCount=0, nodeBlacklistCount=0, bgpTablesCount=0, "
+                + "routingTablesCount=0, externalBgpAnnouncements=announcement}",
+            now)));
   }
 }
