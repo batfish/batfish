@@ -7,7 +7,7 @@ import java.util.Map;
 
 public abstract class AbstractCoordinator extends PluginConsumer implements ICoordinator {
 
-  protected final Map<String, SyncTestrigPlugin> _testrigSyncers;
+  protected final Map<String, SyncTestrigsPlugin> _testrigSyncers;
 
   public AbstractCoordinator(boolean serializeToText, List<Path> pluginDirs) {
     super(serializeToText, pluginDirs);
@@ -20,7 +20,7 @@ public abstract class AbstractCoordinator extends PluginConsumer implements ICoo
   }
 
   @Override
-  public final void registerTestrigSyncer(String name, SyncTestrigPlugin plugin) {
+  public final void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin) {
     _testrigSyncers.put(name, plugin);
   }
 }

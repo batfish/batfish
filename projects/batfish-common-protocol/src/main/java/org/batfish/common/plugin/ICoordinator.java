@@ -10,5 +10,5 @@ public interface ICoordinator {
 
   BatfishLogger getLogger();
 
-  void registerTestrigSyncer(String name, SyncTestrigPlugin plugin);
+  void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin);
 }
