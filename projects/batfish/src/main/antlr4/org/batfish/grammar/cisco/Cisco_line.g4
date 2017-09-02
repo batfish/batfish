@@ -71,6 +71,7 @@ l_null
       | FLUSH_AT_ACTIVATION
       | HISTORY
       | IPV6
+      | LENGTH DEC
       | LOCATION
       | LOGGING
       | LOGOUT_WARNING
@@ -84,6 +85,7 @@ l_null
       | SESSION_TIMEOUT
       | STOPBITS
       | TERMINAL_TYPE
+      | TIMEOUT
       | TIMESTAMP
       | VACANT_MESSAGE
    ) ~NEWLINE* NEWLINE

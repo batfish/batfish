@@ -370,6 +370,14 @@ cpki_null
    ) ~NEWLINE* NEWLINE
 ;
 
+cpki_server
+:
+   SERVER name = variable_permissive NEWLINE
+   (
+      cpkis_null
+   )*
+;
+
 cpki_trustpoint
 :
    TRUSTPOINT name = variable_permissive NEWLINE
@@ -384,6 +392,17 @@ cpkicc_certificate
    (
       SELF_SIGNED
    )? certificate QUIT NEWLINE
+;
+
+cpkis_null
+:
+   NO?
+   (
+      CDP_URL
+      | DATABASE
+      | GRANT
+      | ISSUER_NAME
+   ) ~NEWLINE* NEWLINE
 ;
 
 cpkit_null
@@ -540,6 +559,7 @@ crypto_pki
    (
       cpki_certificate_chain
       | cpki_null
+      | cpki_server
       | cpki_trustpoint
    )
 ;

@@ -464,6 +464,11 @@ variable
    ~NEWLINE
 ;
 
+variable_community_name
+:
+   variable ( (PLUS|AT) variable)*
+;
+
 variable_hostname
 :
    ~( USE_VRF | NEWLINE | VRF )+

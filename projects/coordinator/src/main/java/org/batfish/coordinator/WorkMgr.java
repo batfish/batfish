@@ -126,6 +126,7 @@ public class WorkMgr extends AbstractCoordinator {
     boolean assignmentError = false;
     boolean assigned = false;
 
+    Client client = null;
     try {
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
@@ -145,7 +146,7 @@ public class WorkMgr extends AbstractCoordinator {
           BfConsts.ARG_ANSWER_JSON_PATH,
           testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
                   _settings.getSslPoolTrustAllCerts(),
@@ -197,6 +198,10 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
 
     // mark the assignment results for both work and worker
@@ -236,8 +241,9 @@ public class WorkMgr extends AbstractCoordinator {
     Task task = new Task();
     task.setStatus(TaskStatus.UnreachableOrBadResponse);
 
+    Client client = null;
     try {
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
               _settings.getSslPoolDisable(),
               _settings.getSslPoolTrustAllCerts(),
@@ -287,6 +293,10 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
 
     _workQueueMgr.processTaskCheckResult(work, task);

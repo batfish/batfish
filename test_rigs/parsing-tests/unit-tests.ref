@@ -2917,6 +2917,20 @@
             "          EXEC:'exec'  <== mode:DEFAULT_MODE",
             "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
             "          (aaa_accounting_method",
+            "            (aaa_accounting_method_start_stop",
+            "              START_STOP:'start-stop'  <== mode:DEFAULT_MODE",
+            "              (aaa_accounting_method_target",
+            "                RADIUS:'radius'  <== mode:DEFAULT_MODE)))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_accounting",
+            "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
+            "        (aaa_accounting_exec_line",
+            "          EXEC:'exec'  <== mode:DEFAULT_MODE",
+            "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "          (aaa_accounting_method",
             "            (aaa_accounting_method_wait_start",
             "              WAIT_START:'wait-start'  <== mode:DEFAULT_MODE",
             "              (aaa_accounting_method_target",
@@ -6127,6 +6141,35 @@
             "          (cpkit_null",
             "            NO:'no'  <== mode:DEFAULT_MODE",
             "            VALIDATION_USAGE:'validation-usage'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_pki",
+            "        PKI:'pki'  <== mode:DEFAULT_MODE",
+            "        (cpki_server",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          (variable_permissive",
+            "            VARIABLE:'CN'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          (cpkis_null",
+            "            NO:'no'  <== mode:DEFAULT_MODE",
+            "            DATABASE:'database'  <== mode:DEFAULT_MODE",
+            "            ARCHIVE:'archive'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (cpkis_null",
+            "            ISSUER_NAME:'issuer-name'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'cn=CN'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (cpkis_null",
+            "            GRANT:'grant'  <== mode:DEFAULT_MODE",
+            "            AUTO:'auto'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (cpkis_null",
+            "            CDP_URL:'cdp-url'  <== mode:DEFAULT_MODE",
+            "            HTTP:'http'  <== mode:DEFAULT_MODE",
+            "            COLON:':'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'//192.168.0.1/CN.crl'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_key",
@@ -11038,6 +11081,12 @@
             "            VARIABLE:'blah'  <== mode:M_Authentication)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (l_null",
+            "        TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "        LOGIN:'login'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'response'  <== mode:DEFAULT_MODE",
+            "        DEC:'120'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (l_null",
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        VACANT_MESSAGE:'vacant-message'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -12069,6 +12118,13 @@
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        MPLS:'mpls'  <== mode:DEFAULT_MODE",
             "        STRIP:'strip'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        VLAN:'vlan'  <== mode:DEFAULT_MODE",
+            "        IFDESCR:'ifdescr'  <== mode:DEFAULT_MODE",
+            "        DETAIL:'detail'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
@@ -15856,8 +15912,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_group",
             "          GROUP:'group'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -15868,8 +15925,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          (variable_snmp",
@@ -15880,8 +15938,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RW:'RW'  <== mode:DEFAULT_MODE",
             "          (variable_snmp",
@@ -15892,8 +15951,38 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummy'  <== mode:DEFAULT_MODE)",
+            "          PLUS:'+'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'dummy'  <== mode:DEFAULT_MODE))",
+            "        (ssc_access_control",
+            "          RO:'RO'  <== mode:DEFAULT_MODE",
+            "          (variable_snmp",
+            "            DEC:'1'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
+            "      (ss_community",
+            "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummy@dummy'  <== mode:DEFAULT_MODE))",
+            "        (ssc_access_control",
+            "          RW:'RW'  <== mode:DEFAULT_MODE",
+            "          (variable_snmp",
+            "            DEC:'2'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
+            "      (ss_community",
+            "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -15904,8 +15993,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -15916,8 +16006,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummyconnunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummyconnunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          SYSTEMOWNER:'SystemOwner'  <== mode:DEFAULT_MODE",
@@ -15930,8 +16021,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          SYSTEMOWNER:'SystemOwner'  <== mode:DEFAULT_MODE",
@@ -15943,8 +16035,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          VIEW:'view'  <== mode:DEFAULT_MODE",
             "          (variable_snmp",
@@ -15960,8 +16053,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          SYSTEMOWNER:'SystemOwner'  <== mode:DEFAULT_MODE",
@@ -18369,6 +18463,34 @@
             "      VARIABLE:'cisco_voice_port'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
+            "    (s_application",
+            "      APPLICATION:'application'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      SERVICE:'service'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'dsapp'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      PARAM:'param'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'disc-toggle-time'  <== mode:DEFAULT_MODE",
+            "      DEC:'15'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      PARAM:'param'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'callWaiting'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'TRUE'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      PARAM:'param'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'callConference'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'TRUE'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      PARAM:'param'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'blind-xfer-wait-time'  <== mode:DEFAULT_MODE",
+            "      DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      PARAM:'param'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'callTransfer'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'TRUE'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
             "    (s_voice_port",
             "      VOICE_PORT:'voice-port'  <== mode:DEFAULT_MODE",
             "      DEC:'0'  <== mode:DEFAULT_MODE",
@@ -18412,6 +18534,22 @@
             "        TIMING:'timing'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'guard-out'  <== mode:DEFAULT_MODE",
             "        DEC:'1000'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_voice_card",
+            "      VOICE_CARD:'voice-card'  <== mode:DEFAULT_MODE",
+            "      DEC:'0'  <== mode:DEFAULT_MODE",
+            "      FORWARD_SLASH:'/'  <== mode:DEFAULT_MODE",
+            "      DEC:'2'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (vc_null",
+            "        DSP:'dsp'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'services'  <== mode:DEFAULT_MODE",
+            "        DSPFARM:'dspfarm'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (vc_null",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        WATCHDOG:'watchdog'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -32430,7 +32568,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                54
+                55
               ]
             }
           }
@@ -32497,37 +32635,43 @@
           "ipv4 acl" : {
             "snmp-acl" : {
               "snmp server community ipv4 acl" : [
-                9
+                11
               ]
             },
             "snmp-arpa-acl" : {
               "snmp server community ipv4 acl" : [
-                10
+                12
               ]
             }
           },
           "ipv4/6 acl" : {
+            "1" : {
+              "snmp server community acl" : [
+                9
+              ]
+            },
             "2" : {
               "snmp server community acl" : [
-                8
+                8,
+                10
               ]
             },
             "8" : {
               "snmp server file transfer acl" : [
-                65
+                67
               ],
               "snmp server tftp-server list" : [
-                85
+                87
               ]
             },
             "customer-snmp" : {
               "snmp server community acl" : [
-                12
+                14
               ]
             },
             "dummyacl" : {
               "snmp server community acl" : [
-                11
+                13
               ]
             },
             "snmp-acl" : {
@@ -32537,19 +32681,19 @@
             },
             "to-VTY" : {
               "snmp server community acl" : [
-                14
+                16
               ]
             }
           },
           "ipv6 acl" : {
             "dummyacl" : {
               "snmp server community ipv6 acl" : [
-                13
+                15
               ]
             },
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
-                14
+                16
               ]
             }
           }
