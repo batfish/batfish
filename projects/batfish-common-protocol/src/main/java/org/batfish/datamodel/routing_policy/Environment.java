@@ -12,6 +12,11 @@ import org.batfish.datamodel.Vrf;
 
 public class Environment {
 
+  public enum Direction {
+    IN,
+    OUT
+  }
+
   private boolean _buffered;
 
   private boolean _callExprContext;
@@ -23,6 +28,8 @@ public class Environment {
   private boolean _defaultAction;
 
   private String _defaultPolicy;
+
+  private final Direction _direction;
 
   private boolean _error;
 
@@ -52,8 +59,10 @@ public class Environment {
       AbstractRoute originalRoute,
       AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
-      Ip peerAddress) {
+      Ip peerAddress,
+      Direction direction) {
     _configuration = configuration;
+    _direction = direction;
     _vrf = configuration.getVrfs().get(vrf);
     _originalRoute = originalRoute;
     _outputRoute = outputRoute;
@@ -87,6 +96,10 @@ public class Environment {
 
   public String getDefaultPolicy() {
     return _defaultPolicy;
+  }
+
+  public Direction getDirection() {
+    return _direction;
   }
 
   public boolean getError() {
