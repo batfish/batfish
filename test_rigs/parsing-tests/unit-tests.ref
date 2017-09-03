@@ -11081,6 +11081,12 @@
             "            VARIABLE:'blah'  <== mode:M_Authentication)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (l_null",
+            "        TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "        LOGIN:'login'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'response'  <== mode:DEFAULT_MODE",
+            "        DEC:'120'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (l_null",
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        VACANT_MESSAGE:'vacant-message'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -15906,8 +15912,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_group",
             "          GROUP:'group'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -15918,8 +15925,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          (variable_snmp",
@@ -15930,8 +15938,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RW:'RW'  <== mode:DEFAULT_MODE",
             "          (variable_snmp",
@@ -15942,8 +15951,38 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummy'  <== mode:DEFAULT_MODE)",
+            "          PLUS:'+'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'dummy'  <== mode:DEFAULT_MODE))",
+            "        (ssc_access_control",
+            "          RO:'RO'  <== mode:DEFAULT_MODE",
+            "          (variable_snmp",
+            "            DEC:'1'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
+            "      (ss_community",
+            "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummy@dummy'  <== mode:DEFAULT_MODE))",
+            "        (ssc_access_control",
+            "          RW:'RW'  <== mode:DEFAULT_MODE",
+            "          (variable_snmp",
+            "            DEC:'2'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
+            "      (ss_community",
+            "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -15954,8 +15993,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -15966,8 +16006,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummyconnunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummyconnunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          SYSTEMOWNER:'SystemOwner'  <== mode:DEFAULT_MODE",
@@ -15980,8 +16021,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          SYSTEMOWNER:'SystemOwner'  <== mode:DEFAULT_MODE",
@@ -15993,8 +16035,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          VIEW:'view'  <== mode:DEFAULT_MODE",
             "          (variable_snmp",
@@ -16010,8 +16053,9 @@
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (variable_community_name",
+            "          (variable",
+            "            VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE))",
             "        (ssc_access_control",
             "          RO:'RO'  <== mode:DEFAULT_MODE",
             "          SYSTEMOWNER:'SystemOwner'  <== mode:DEFAULT_MODE",
@@ -32524,7 +32568,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                54
+                55
               ]
             }
           }
@@ -32591,37 +32635,43 @@
           "ipv4 acl" : {
             "snmp-acl" : {
               "snmp server community ipv4 acl" : [
-                9
+                11
               ]
             },
             "snmp-arpa-acl" : {
               "snmp server community ipv4 acl" : [
-                10
+                12
               ]
             }
           },
           "ipv4/6 acl" : {
+            "1" : {
+              "snmp server community acl" : [
+                9
+              ]
+            },
             "2" : {
               "snmp server community acl" : [
-                8
+                8,
+                10
               ]
             },
             "8" : {
               "snmp server file transfer acl" : [
-                65
+                67
               ],
               "snmp server tftp-server list" : [
-                85
+                87
               ]
             },
             "customer-snmp" : {
               "snmp server community acl" : [
-                12
+                14
               ]
             },
             "dummyacl" : {
               "snmp server community acl" : [
-                11
+                13
               ]
             },
             "snmp-acl" : {
@@ -32631,19 +32681,19 @@
             },
             "to-VTY" : {
               "snmp server community acl" : [
-                14
+                16
               ]
             }
           },
           "ipv6 acl" : {
             "dummyacl" : {
               "snmp server community ipv6 acl" : [
-                13
+                15
               ]
             },
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
-                14
+                16
               ]
             }
           }
