@@ -85,24 +85,18 @@ cable qos profile 12345 max-downstream 12345
 cable qos profile 12345 max-ds-burst 12345
 cable qos profile 12345 max-upstream 12345
 cable service attribute ds-bonded downstream-type bonding-enabled enforce
+cable service class 1 downstream
 cable service class 1 max-burst 12345
 cable service class 1 max-concat-burst 12345
 cable service class 1 max-rate 12345
+cable service class 1 min-packet-size 1234
 cable service class 1 min-rate 12345
 cable service class 1 name foobar
-cable service class 1 upstream
 cable service class 1 priority 12345
+cable service class 1 req-trans-policy 123
 cable service class 1 sched-type 12345
 cable service class 1 tos-overwrite 12345 12345
-cable service class 2 downstream
-cable service class 2 max-burst 12345
-cable service class 2 max-concat-burst 12345
-cable service class 2 max-rate 12345
-cable service class 2 min-rate 12345
-cable service class 2 name barfoo
-cable service class 2 priority 12345
-cable service class 2 sched-type 12345
-cable service class 2 tos-overwrite 12345 12345
+cable service class 1 upstream
 cable service flow activity-timeout 12345
 cable snmp iftype ds-phy 1
 cable tag 1
@@ -115,8 +109,8 @@ cable tag 2
 !
 cable tag 3
  docsis-version docsis20
- name d20
  exclude oui fe.dc.ba
+ name d20
 !
 cable tag 4
  docsis-version docsis30

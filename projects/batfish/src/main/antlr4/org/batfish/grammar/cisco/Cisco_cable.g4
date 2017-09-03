@@ -108,7 +108,7 @@ clb_null
       | EXCLUDE
       | METHOD_UTILIZATION
       | MODEM
-   )
+   ) ~NEWLINE* NEWLINE
 ;
 
 clb_rule
@@ -203,9 +203,11 @@ csc_null
       DOWNSTREAM
       | MAX_BURST
       | MAX_CONCAT_BURST
-      | MAC_RATE
+      | MAX_RATE
+      | MIN_PACKET_SIZE
       | MIN_RATE
       | PRIORITY
+      | REQ_TRANS_POLICY
       | SCHED_TYPE
       | TOS_OVERWRITE
       | UPSTREAM
@@ -222,6 +224,7 @@ ct_null
    NO?
    (
       DOCSIS_VERSION
+      | EXCLUDE
    ) ~NEWLINE* NEWLINE
 ;
 

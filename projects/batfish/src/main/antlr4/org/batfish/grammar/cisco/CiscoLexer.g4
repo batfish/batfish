@@ -2514,7 +2514,7 @@ DROP
 
 DS_MAX_BURST
 :
-   'ds-masx-burst'
+   'ds-max-burst'
 ;
 
 DS0_GROUP
@@ -4873,11 +4873,6 @@ MAC_MOVE
    'mac-move'
 ;
 
-MAC_RATE
-:
-   'mac-rate'
-;
-
 MACRO
 :
    'macro'
@@ -5041,6 +5036,11 @@ MAX_LSP_LIFETIME
 MAX_METRIC
 :
    'max-metric'
+;
+
+MAX_RATE
+:
+   'max-rate'
 ;
 
 MAX_ROUTE
@@ -5241,6 +5241,11 @@ MICROCODE
 MICROSOFT_DS
 :
    'microsoft-ds'
+;
+
+MIN_PACKET_SIZE
+:
+   'min-packet-size'
 ;
 
 MIN_RATE
@@ -7306,6 +7311,11 @@ REPLY_TO
 REOPTIMIZE
 :
    'reoptimize'
+;
+
+REQ_TRANS_POLICY
+:
+   'req-trans-policy'
 ;
 
 REQUEST
