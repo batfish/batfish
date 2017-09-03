@@ -1,6 +1,19 @@
 !
 hostname cisco_voice_port
 !
+call-manager-fallback
+ limit-dn 7960 2
+ ip source-address 10.48.80.9 port 2000
+ max-ephones 10
+ max-dn 32
+ dialplan-pattern 1 704.... extension-length 4
+ keepalive 20
+ default-destination 5002
+ alias 1 5003 to 5002
+ call-forward busy 5002
+ call-forward noan 5002 timeout 12
+ time-format 24
+!
 application
  service dsapp
  param disc-toggle-time 15
