@@ -73,9 +73,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       int numResults = 0;
       for (String hostname: _unusedStructures.keySet()) {
         for (String type: _unusedStructures.get(hostname).keySet()) {
-          for (String name: _unusedStructures.get(hostname).get(type).keySet()) {
-            numResults++;
-          }
+          numResults += _unusedStructures.get(hostname).get(type).size();
         }
       }
       _summary.setNumResults(numResults);
