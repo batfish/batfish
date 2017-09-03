@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy;
 
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
@@ -46,7 +47,7 @@ public class Environment {
   private boolean _writeToIntermediateBgpAttributes;
 
   public Environment(
-      Configuration configuration,
+      @Nonnull Configuration configuration,
       String vrf,
       AbstractRoute originalRoute,
       AbstractRoute6 originalRoute6,

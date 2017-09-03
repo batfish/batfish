@@ -1721,7 +1721,7 @@
                     "privilegeMode" : true
                   }
                 },
-                "newModel" : true
+                "newModel" : false
               },
               "hostname" : "cisco_aaa"
             }
@@ -4805,6 +4805,18 @@
               "name" : "default",
               "snmpServer" : {
                 "communities" : {
+                  "dummy+dummy" : {
+                    "name" : "dummy+dummy",
+                    "accessList" : "1",
+                    "ro" : true,
+                    "rw" : false
+                  },
+                  "dummy@dummy" : {
+                    "name" : "dummy@dummy",
+                    "accessList" : "2",
+                    "ro" : false,
+                    "rw" : true
+                  },
                   "dummycommunity" : {
                     "name" : "dummycommunity",
                     "accessList" : "to-VTY",

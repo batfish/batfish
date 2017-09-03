@@ -315,7 +315,7 @@ enable_null
 
 enable_password
 :
-   PASSWORD DEC pass = variable NEWLINE
+   PASSWORD DEC? pass = variable ENCRYPTED? NEWLINE
 ;
 
 enable_secret
@@ -636,6 +636,7 @@ ip_ssh_null
       | CLIENT
       | MAXSTARTUPS
       | PORT
+      | RSA
       | SERVER
       | SOURCE_INTERFACE
       | TIME_OUT
@@ -1748,6 +1749,11 @@ s_openflow
    )*
 ;
 
+s_passwd
+:
+   NO? PASSWD pass = variable ENCRYPTED? NEWLINE
+;
+
 s_phone_proxy
 :
    NO? PHONE_PROXY ~NEWLINE* NEWLINE
@@ -1773,11 +1779,13 @@ s_privilege
 
 s_radius_server
 :
-   RADIUS SERVER HOST NEWLINE
+   RADIUS SERVER name = variable NEWLINE
    (
       (
          ADDRESS
          | KEY
+         | RETRANSMIT
+         | TIMEOUT
       ) ~NEWLINE* NEWLINE
    )+
 ;
@@ -2333,6 +2341,7 @@ stanza
    | s_object
    | s_object_group
    | s_openflow
+   | s_passwd
    | s_phone_proxy
    | s_policy_map
    | s_privilege
