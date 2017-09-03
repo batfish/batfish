@@ -11,6 +11,7 @@ private boolean enableIP_ADDRESS = true;
 private boolean enableDEC = true;
 private boolean enableACL_NUM = false;
 private boolean enableCOMMUNITY_LIST_NUM = false;
+private boolean enableREGEX = false;
 private boolean _inAccessList = false;
 private boolean inCommunitySet = false;
 private boolean _foundry = false;
@@ -7594,7 +7595,7 @@ RT
 
 RULE
 :
-   'rule' -> pushMode ( M_Rule )
+   'rule' {enableREGEX = true;}
 ;
 
 RUN
@@ -10266,6 +10267,7 @@ NEWLINE
    	}
    	enableIP_ADDRESS = true;
       enableDEC = true;
+      enableREGEX = false;
       enableACL_NUM = false;
       _inAccessList = false;
   }
@@ -10295,6 +10297,16 @@ PERIOD
 PLUS
 :
    '+'
+;
+
+REGEX
+:
+   '/' {enableREGEX}?
+   (
+      ~('/' | '\\')
+      |
+      ( '\\' '/')
+   )* '/'
 ;
 
 RP_VARIABLE
@@ -11405,18 +11417,6 @@ M_RouteMap_VARIABLE
 M_RouteMap_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_Rule;
-
-M_Rule_LINE
-:
-   F_NonNewline+
-;
-
-M_Rule_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_SHA1;
