@@ -59,7 +59,7 @@ nv
 sntp server 1.2.3.4
 time-range ACCTIME-247
  periodic daily 0:00 to 23:59
-object-group service SVCGRP-ICMP                                                                                                           
+object-group service SVCGRP-ICMP
  service-object icmp echo
 xdr multicast-group mode individual
 xdr multicast-group internal issu-slots-split
@@ -83,7 +83,7 @@ policy-map global_policy
  class TCP-cmap
   set connection advanced-options tcp-state-bypass
  class class-default
-  user-statistics accounting                                                                                                               
+  user-statistics accounting
 service-policy global_policy global
 device classifier
 ip inspect WAAS flush-timeout 10
@@ -121,11 +121,11 @@ aaa new-model
 ip flow-aggregation cache source-prefix
  enabled
 !
-voice service voip 
+voice service voip
  allow-connections h323 to h323
  h323
- h225 id-passthru 
- fax protocol cisco 
+ h225 id-passthru
+ fax protocol cisco
  shutdown
 !
 ip ospf name-lookup
@@ -136,7 +136,7 @@ buffers small permanent 60
 ! the following line seem to be added by RANCIC
 No l4r_shim subsystem is included in this platform.
 !
-event manager applet Interface_Load 
+event manager applet Interface_Load
  event timer cron name Runat4 cron-entry "*/1 20 19 5 *"
  action 1.0 syslog msg "Interface Status Saved - Check disk1:1.txt"
  action 2.0 cli command "enable"
@@ -168,7 +168,7 @@ dial-peer voice 1 voip
  media flow-around
  session target ras
  translation-profile incoming from-vide
- translation-profile 
+ translation-profile
  no vad
 !
 gatekeeper
@@ -229,7 +229,7 @@ qos-mapping
   dscp-value 2 3 4 5 6 7 8 9 to priority 0 drop-precedence 0
 !
 lag "[aa]-1X10-PNI-TO-ME" dynamic id 1
- ports ethernet 1/1 
+ ports ethernet 1/1
  primary-port 1/1
  physical-port 1/4 tunable-optic sfpp channel 71
  lacp-timeout short
@@ -255,7 +255,7 @@ locale CH
 monitor session 1 type erspan-source
  shutdown
  description ntp debugging
- source cpu rp 
+ source cpu rp
  destination
   erspan-id 1
   mtu 1464
