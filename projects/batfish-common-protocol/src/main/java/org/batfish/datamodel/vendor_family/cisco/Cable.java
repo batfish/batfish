@@ -19,6 +19,8 @@ public class Cable implements Serializable {
   private final SortedMap<String, ServiceClass> _serviceClassesByName;
 
   public Cable() {
+    _docsisPolicies = new TreeMap<>();
+    _docsisPolicyRules = new TreeMap<>();
     _serviceClasses = new TreeMap<>();
     _serviceClassesByName = new TreeMap<>();
   }
