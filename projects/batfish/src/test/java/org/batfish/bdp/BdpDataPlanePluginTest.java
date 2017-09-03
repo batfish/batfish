@@ -55,6 +55,7 @@ public class BdpDataPlanePluginTest {
     return builder.build();
   }
 
+  @SuppressWarnings("unused")
   private static IpAccessListLine makeAclLine(LineAction action) {
     IpAccessListLine aclLine = new IpAccessListLine();
     aclLine.setAction(action);
