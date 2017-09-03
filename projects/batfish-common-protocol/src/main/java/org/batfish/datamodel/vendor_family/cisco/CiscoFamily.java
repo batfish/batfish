@@ -14,6 +14,8 @@ public class CiscoFamily implements Serializable {
 
   private SortedMap<String, String> _banners;
 
+  private Cable _cable;
+
   private SwitchportMode _defaultSwitchportMode;
 
   private String _enableSecret;
@@ -54,6 +56,10 @@ public class CiscoFamily implements Serializable {
 
   public SortedMap<String, String> getBanners() {
     return _banners;
+  }
+
+  public Cable getCable() {
+    return _cable;
   }
 
   public SwitchportMode getDefaultSwitchportMode() {
@@ -114,6 +120,10 @@ public class CiscoFamily implements Serializable {
 
   public void setBanners(SortedMap<String, String> banners) {
     _banners = banners;
+  }
+
+  public void setCable(Cable cable) {
+    _cable = cable;
   }
 
   public void setDefaultSwitchportMode(SwitchportMode defaultSwitchportMode) {

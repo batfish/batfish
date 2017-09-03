@@ -178,6 +178,11 @@ ACCT_PORT
    'acct-port'
 ;
 
+ACFE
+:
+   'acfe'
+;
+
 ACK
 :
    'ack'
@@ -321,6 +326,11 @@ ADMINISTRATIVE_WEIGHT
 ADMISSION
 :
    'admission'
+;
+
+ADMISSION_CONTROL
+:
+   'admission-control'
 ;
 
 ADVERTISE
@@ -758,6 +768,11 @@ ATM
 ATTEMPTS
 :
    'attempts'
+;
+
+ATTRIBUTE
+:
+   'attribute'
 ;
 
 ATTRIBUTE_DOWNLOAD
@@ -1208,6 +1223,11 @@ BUFFERS
 CA
 :
    'ca'
+;
+
+CABLE
+:
+   'cable'
 ;
 
 CABLE_RANGE
@@ -1896,6 +1916,16 @@ CWR
    'cwr'
 ;
 
+D20_GGRP_DEFAULT
+:
+   'd20-ggrp-default'
+;
+
+D30_GGRP_DEFAULT
+:
+   'd30-ggrp-default'
+;
+
 DAEMON
 :
    'daemon'
@@ -2074,6 +2104,11 @@ DEFAULT_ROUTER
 DEFAULT_TASKGROUP
 :
    'default-taskgroup'
+;
+
+DEFAULT_TOS_QOS10
+:
+   'default-tos-qos10'
 ;
 
 DEFAULT_VALUE
@@ -2371,6 +2406,31 @@ DO
    'do'
 ;
 
+DOCSIS_ENABLE
+:
+   'docsis-enable'
+;
+
+DOCSIS_GROUP
+:
+   'docsis-group'
+;
+
+DOCSIS_POLICY
+:
+   'docsis-policy'
+;
+
+DOCSIS_VERSION
+:
+   'docsis-version'
+;
+
+DOCSIS30_ENABLE
+:
+   'docsis30-enable'
+;
+
 DOMAIN
 :
    'domain'
@@ -2436,6 +2496,11 @@ DOWNLINK
    'downlink'
 ;
 
+DOWNSTREAM
+:
+   'downstream'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -2444,6 +2509,11 @@ DR_PRIORITY
 DROP
 :
    'drop'
+;
+
+DS_MAX_BURST
+:
+   'ds-masx-burst'
 ;
 
 DS0_GROUP
@@ -2459,6 +2529,11 @@ DSCP
 DSCP_VALUE
 :
    'dscp-value'
+;
+
+DSG
+:
+   'dsg'
 ;
 
 DSL
@@ -2741,6 +2816,16 @@ END_SET
 ENFORCE_FIRST_AS
 :
    'enforce-first-as'
+;
+
+ENFORCE_RULE
+:
+   'enforce-rule'
+;
+
+ENFORCED
+:
+   'enforced'
 ;
 
 ENGINE
@@ -3158,6 +3243,11 @@ FEX_FABRIC
    'fex-fabric'
 ;
 
+FIBER_NODE
+:
+   'fiber-node'
+;
+
 FIELDS
 :
    'fields'
@@ -3213,6 +3303,11 @@ FINGER
 FIRMWARE
 :
    'firmware'
+;
+
+FLAP_LIST
+:
+   'flap-list'
 ;
 
 FLOW
@@ -4000,6 +4095,11 @@ INHERITANCE_DISABLE
    'inheritance-disable'
 ;
 
+INIT_TECH_LIST
+:
+   'init-tech-list'
+;
+
 INPUT
 :
    'input'
@@ -4772,6 +4872,11 @@ MAC_MOVE
    'mac-move'
 ;
 
+MAC_RATE
+:
+   'mac-rate'
+;
+
 MACRO
 :
    'macro'
@@ -4890,6 +4995,16 @@ MAXSTARTUPS
 MAX_ASSOCIATIONS
 :
    'max-associations'
+;
+
+MAX_BURST
+:
+   'max-burst'
+;
+
+MAX_CONCAT_BURST
+:
+   'max-concat-burst'
 ;
 
 MAX_CONFERENCES
@@ -5062,6 +5177,21 @@ MESSAGE_SIZE
    'message-size'
 ;
 
+METERING
+:
+   'metering'
+;
+
+METHOD
+:
+   'method'
+;
+
+METHOD_UTILIZATION
+:
+   'method-utilization'
+;
+
 METRIC
 :
    'metric'
@@ -5110,6 +5240,11 @@ MICROCODE
 MICROSOFT_DS
 :
    'microsoft-ds'
+;
+
+MIN_RATE
+:
+   'min-rate'
 ;
 
 MINIMAL
@@ -5197,6 +5332,11 @@ MODEM
    'modem'
 ;
 
+MODULATION_PROFILE
+:
+   'modulation-profile'
+;
+
 MODULE
 :
    'module'
@@ -5235,6 +5375,11 @@ MONITOR_SESSION
 MONITORING
 :
    'monitoring'
+;
+
+MONITORING_BASICS
+:
+   'monitoring-basics'
 ;
 
 MOP
@@ -6242,6 +6387,11 @@ PEER_SWITCH
    'peer-switch'
 ;
 
+PENALTY_PERIOD
+:
+   'penalty-period'
+;
+
 PERIODIC
 :
    'periodic'
@@ -6255,6 +6405,11 @@ PERIODIC_INVENTORY
 PERMANENT
 :
    'permanent'
+;
+
+PERMISSION
+:
+   'permission'
 ;
 
 PERMIT
@@ -6505,6 +6660,11 @@ PPTP
 PRC_INTERVAL
 :
    'prc-interval'
+;
+
+PRE_EQUALIZATION
+:
+   'pre-equalization'
 ;
 
 PRE_SHARED_KEY
@@ -7047,6 +7207,11 @@ REGISTER_SOURCE
    'register-source'
 ;
 
+REGISTERED
+:
+   'registered'
+;
+
 RELAY
 :
    'relay'
@@ -7170,6 +7335,11 @@ RESOURCES
 RESPONDER
 :
    'responder'
+;
+
+RESTRICTED
+:
+   'restricted'
 ;
 
 RETRANSMIT
@@ -7505,6 +7675,11 @@ SCAN_TIME
 SCCP
 :
    'sccp'
+;
+
+SCHED_TYPE
+:
+   'sched-type'
 ;
 
 SCHEDULE
@@ -8814,6 +8989,11 @@ TOS
    'tos'
 ;
 
+TOS_OVERWRITE
+:
+   'tos-overwrite'
+;
+
 TRACE
 :
    'trace'
@@ -9134,6 +9314,11 @@ UPLINKFAST
    'uplinkfast'
 ;
 
+UPSTREAM
+:
+   'upstream'
+;
+
 URG
 :
    'urg'
@@ -9217,6 +9402,11 @@ USERNAME_PROMPT
 USERS
 :
    'users'
+;
+
+UTIL_INTERVAL
+:
+   'util-interval'
 ;
 
 UUCP
@@ -9589,6 +9779,11 @@ WHOIS
 WIDE
 :
    'wide'
+;
+
+WIDEBAND
+:
+   'wideband'
 ;
 
 WINDOW_SIZE

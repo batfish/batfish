@@ -93,7 +93,10 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
+import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
+import org.batfish.datamodel.vendor_family.cisco.DocsisPolicyRule;
 import org.batfish.datamodel.vendor_family.cisco.Line;
+import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -821,6 +824,52 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  private void markDocsisPolicies(CiscoStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(CiscoStructureType.DOCSIS_POLICY);
+    if (byName != null) {
+      byName.forEach(
+          (docsisPolicyName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              DocsisPolicy docsisPolicy = _cf.getCable().getDocsisPolicies().get(docsisPolicyName);
+              if (docsisPolicy != null) {
+                String msg = usage.getDescription();
+                docsisPolicy.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(CiscoStructureType.DOCSIS_POLICY, docsisPolicyName, usage, line);
+                }
+              }
+            }
+          });
+    }
+  }
+
+  private void markDocsisPolicyRules(CiscoStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(CiscoStructureType.DOCSIS_POLICY_RULE);
+    if (byName != null) {
+      byName.forEach(
+          (docsisPolicyRuleName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              DocsisPolicyRule docsisPolicyRule =
+                  _cf.getCable().getDocsisPolicyRules().get(docsisPolicyRuleName);
+              if (docsisPolicyRule != null) {
+                String msg = usage.getDescription();
+                docsisPolicyRule.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(
+                      CiscoStructureType.DOCSIS_POLICY_RULE, docsisPolicyRuleName, usage, line);
+                }
+              }
+            }
+          });
+    }
+  }
+
   private void markIpv4Acls(CiscoStructureUsage usage, Configuration c) {
     SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
         _structureReferences.get(CiscoStructureType.IPV4_ACCESS_LIST);
@@ -902,6 +951,34 @@ public final class CiscoConfiguration extends VendorConfiguration {
               }
             }
           });
+    }
+  }
+
+  private void markServiceClasses(CiscoStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(CiscoStructureType.ROUTE_MAP);
+    if (_cf.getCable() != null) {
+      if (byName != null) {
+        byName.forEach(
+            (serviceClassName, byUsage) -> {
+              SortedSet<Integer> lines = byUsage.get(usage);
+              if (lines != null) {
+                ServiceClass serviceClass;
+                serviceClass = _cf.getCable().getServiceClasses().get(serviceClassName);
+                if (serviceClass == null) {
+                  serviceClass = _cf.getCable().getServiceClassesByName().get(serviceClassName);
+                }
+                if (serviceClass != null) {
+                  String msg = usage.getDescription();
+                  serviceClass.getReferers().put(this, msg);
+                } else {
+                  for (int line : lines) {
+                    undefined(CiscoStructureType.SERVICE_CLASS, serviceClassName, usage, line);
+                  }
+                }
+              }
+            });
+      }
     }
   }
 
@@ -3190,9 +3267,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP, c);
     markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP, c);
 
+    // Cable
+    markDocsisPolicies(CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY, c);
+    markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE, c);
+    markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS, c);
+
     // warn about unreferenced data structures
     warnUnusedAsPathSets();
     warnUnusedCommunityLists();
+    warnUnusedDocsisPolicies();
+    warnUnusedDocsisPolicyRules();
     warnUnusedIpAsPathAccessLists();
     warnUnusedIpAccessLists();
     warnUnusedIpv6AccessLists();
@@ -3203,6 +3287,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
     warnUnusedRouteMaps();
+    warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
     return c;
   }
@@ -3339,6 +3424,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
       StandardCommunityList list = e.getValue();
       if (list.isUnused()) {
         unused(CiscoStructureType.COMMUNITY_LIST_STANDARD, name, list.getDefinitionLine());
+      }
+    }
+  }
+
+  private void warnUnusedDocsisPolicies() {
+    if (_cf.getCable() != null) {
+      for (Entry<String, DocsisPolicy> e : _cf.getCable().getDocsisPolicies().entrySet()) {
+        String name = e.getKey();
+        if (name.startsWith("~")) {
+          continue;
+        }
+        DocsisPolicy docsisPolicy = e.getValue();
+        if (docsisPolicy.isUnused()) {
+          unused(CiscoStructureType.DOCSIS_POLICY, name, docsisPolicy.getDefinitionLine());
+        }
+      }
+    }
+  }
+
+  private void warnUnusedDocsisPolicyRules() {
+    if (_cf.getCable() != null) {
+      for (Entry<String, DocsisPolicyRule> e : _cf.getCable().getDocsisPolicyRules().entrySet()) {
+        String name = e.getKey();
+        if (name.startsWith("~")) {
+          continue;
+        }
+        DocsisPolicyRule docsisPolicyRule = e.getValue();
+        if (docsisPolicyRule.isUnused()) {
+          unused(CiscoStructureType.DOCSIS_POLICY_RULE, name, docsisPolicyRule.getDefinitionLine());
+        }
       }
     }
   }
@@ -3481,6 +3596,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
       RouteMap routeMap = e.getValue();
       if (routeMap.isUnused()) {
         unused(CiscoStructureType.ROUTE_MAP, name, routeMap.getDefinitionLine());
+      }
+    }
+  }
+
+  private void warnUnusedServiceClasses() {
+    if (_cf.getCable() != null) {
+      for (Entry<String, ServiceClass> e : _cf.getCable().getServiceClasses().entrySet()) {
+        String name = e.getKey();
+        if (name.startsWith("~")) {
+          continue;
+        }
+        ServiceClass serviceClass = e.getValue();
+        if (serviceClass.isUnused()) {
+          unused(CiscoStructureType.SERVICE_CLASS, name, serviceClass.getDefinitionLine());
+        }
       }
     }
   }

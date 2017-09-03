@@ -26,29 +26,29 @@ cable load-balance d20-ggrp-default disable
 cable load-balance d30-ggrp-default disable
 cable load-balance docsis-enable
 cable load-balance docsis-group 12345
+ no disable
+ docsis-policy 1
+ downstream Modular-Cable 1/2/3 rf-channel 0-100
+ init-tech-list 12345
+ interval 12345
+ method utilization
+ policy pure-ds-load
+ restricted
+ tag abc
+ threshold load 12345
+ threshold load minimum 12345
+ upstream Cable1/2/3 0
+!
 cable load-balance docsis-policy 1 rule 1
 cable load-balance docsis30-enable
+cable load-balance exclude device-class 12345
+cable load-balance exclude oui DE.AD.BE strict
 cable load-balance method-utilization min-threshold 12345
 cable load-balance modem max-failures 12345
 cable load-balance rule 1 disable-throughput-lowerbound us 12345
 cable load-balance rule 2 disable-throughput-lowerbound ds 12345
 cable load-balance rule 3 disabled
 cable load-balance rule 4 enabled
- no disable
- docsis-policy 1
- downstream Modular-Cable 1/2/3 rf-channel 0-100
- upstream Cable1/2/3 0
- method utilization
- init-tech-list 12345
- interval 12345
- policy pure-ds-load
- restricted
- tag abc
- threshold load 12345
- threshold load minimum 12345
-!
-cable load-balance exclude oui DE.AD.BE strict
-cable load-balance exclude device-class 12345
 cable logging badipsource 12345
 cable logging downstream-index 12345
 cable logging ironbus 12345
@@ -78,33 +78,33 @@ cable qos enforce-rule fooble
  service-class registered foobar
 !
 no cable qos permission create
+cable qos permission modems
 no cable qos permission update
 cable qos profile 12345 max-burst 12345
 cable qos profile 12345 max-downstream 12345
 cable qos profile 12345 max-ds-burst 12345
 cable qos profile 12345 max-upstream 12345
-cable qos permission modems
-cable snmp iftype ds-phy 1
+cable service attribute ds-bonded downstream-type bonding-enabled enforce
+cable service class 1 max-burst 12345
+cable service class 1 max-concat-burst 12345
+cable service class 1 max-rate 12345
+cable service class 1 min-rate 12345
 cable service class 1 name foobar
 cable service class 1 upstream
-cable service class 1 sched-type 12345
-cable service class 1 max-concat-burst 12345
-cable service class 1 tos-overwrite 12345 12345
-cable service class 1 max-rate 12345
-cable service class 1 max-burst 12345
-cable service class 1 min-rate 12345
 cable service class 1 priority 12345
-cable service class 2 name barfoo
+cable service class 1 sched-type 12345
+cable service class 1 tos-overwrite 12345 12345
 cable service class 2 downstream
-cable service class 2 sched-type 12345
-cable service class 2 max-concat-burst 12345
-cable service class 2 tos-overwrite 12345 12345
-cable service class 2 max-rate 12345
 cable service class 2 max-burst 12345
+cable service class 2 max-concat-burst 12345
+cable service class 2 max-rate 12345
 cable service class 2 min-rate 12345
+cable service class 2 name barfoo
 cable service class 2 priority 12345
-cable service attribute ds-bonded downstream-type bonding-enabled enforce
+cable service class 2 sched-type 12345
+cable service class 2 tos-overwrite 12345 12345
 cable service flow activity-timeout 12345
+cable snmp iftype ds-phy 1
 cable tag 1
  docsis-version docsis10
  name d10

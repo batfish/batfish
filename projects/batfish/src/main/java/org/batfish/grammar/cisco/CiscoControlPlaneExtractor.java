@@ -105,6 +105,9 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
 import org.batfish.datamodel.vendor_family.cisco.Buffered;
+import org.batfish.datamodel.vendor_family.cisco.Cable;
+import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
+import org.batfish.datamodel.vendor_family.cisco.DocsisPolicyRule;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.datamodel.vendor_family.cisco.Logging;
 import org.batfish.datamodel.vendor_family.cisco.LoggingHost;
@@ -112,6 +115,7 @@ import org.batfish.datamodel.vendor_family.cisco.LoggingType;
 import org.batfish.datamodel.vendor_family.cisco.Ntp;
 import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco.Service;
+import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
 import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
@@ -171,12 +175,18 @@ import org.batfish.grammar.cisco.CiscoParser.Boolean_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_simple_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_tag_is_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
+import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
+import org.batfish.grammar.cisco.CiscoParser.Clb_ruleContext;
+import org.batfish.grammar.cisco.CiscoParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cluster_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_match_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Cs_classContext;
+import org.batfish.grammar.cisco.CiscoParser.Csc_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_information_originate_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_metric_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_originate_bgp_tailContext;
@@ -379,6 +389,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rp_subrangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
+import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
@@ -875,6 +886,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private RoutePolicy _currentRoutePolicy;
 
+  private ServiceClass _currentServiceClass;
+
   private SnmpCommunity _currentSnmpCommunity;
 
   @SuppressWarnings("unused")
@@ -1071,6 +1084,48 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration = new CiscoConfiguration(_unimplementedFeatures);
     _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void enterClb_docsis_policy(Clb_docsis_policyContext ctx) {
+    String name = ctx.policy.getText();
+    String rule = ctx.rulenum.getText();
+    int line = ctx.getStart().getLine();
+    DocsisPolicy policy =
+        _configuration
+            .getCf()
+            .getCable()
+            .getDocsisPolicies()
+            .computeIfAbsent(name, n -> new DocsisPolicy(n, line));
+    policy.getRules().add(rule);
+    _configuration.referenceStructure(
+        CiscoStructureType.DOCSIS_POLICY_RULE,
+        rule,
+        CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE,
+        line);
+  }
+
+  @Override
+  public void enterClb_rule(Clb_ruleContext ctx) {
+    String name = ctx.rulenum.getText();
+    int line = ctx.getStart().getLine();
+    _configuration
+        .getCf()
+        .getCable()
+        .getDocsisPolicyRules()
+        .computeIfAbsent(name, n -> new DocsisPolicyRule(n, line));
+  }
+
+  @Override
+  public void enterCs_class(Cs_classContext ctx) {
+    String number = ctx.num.getText();
+    int line = ctx.num.getLine();
+    _currentServiceClass =
+        _configuration
+            .getCf()
+            .getCable()
+            .getServiceClasses()
+            .computeIfAbsent(number, n -> new ServiceClass(n, line));
   }
 
   @Override
@@ -1508,6 +1563,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _no = ctx.NO() != null;
     if (_configuration.getCf().getAaa() == null) {
       _configuration.getCf().setAaa(new Aaa());
+    }
+  }
+
+  @Override
+  public void enterS_cable(S_cableContext ctx) {
+    if (_configuration.getCf().getCable() == null) {
+      _configuration.getCf().setCable(new Cable());
     }
   }
 
@@ -2063,6 +2125,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
+    String name = ctx.policy.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.DOCSIS_POLICY,
+        name,
+        CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY,
+        line);
+  }
+
+  @Override
   public void exitCluster_id_bgp_tail(Cluster_id_bgp_tailContext ctx) {
     Ip clusterId = null;
     if (ctx.DEC() != null) {
@@ -2114,6 +2187,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCqer_service_class(Cqer_service_classContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.SERVICE_CLASS,
+        name,
+        CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS,
+        line);
+  }
+
+  @Override
   public void exitCrypto_map_ii_match_address(Crypto_map_ii_match_addressContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -2123,6 +2207,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         name,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
         line);
+  }
+
+  @Override
+  public void exitCs_class(Cs_classContext ctx) {
+    _currentServiceClass = null;
+  }
+
+  @Override
+  public void exitCsc_name(Csc_nameContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.getCf().getCable().getServiceClassesByName().put(name, _currentServiceClass);
   }
 
   @Override
