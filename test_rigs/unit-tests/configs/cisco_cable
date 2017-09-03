@@ -1,0 +1,127 @@
+!
+hostname cisco_cable
+!
+cable acfe enable
+cable admission-control preempt priority-voice
+cable clock dti
+cable default-tos-qos10 tos-overwrite 0x0 0x0
+cable ds-max-burst
+cable dsg cfr 12345 dest-ip 1.2.3.4 tunnel 12345 priority 12345 src-ip 2.3.4.5 in-dcd yes
+cable dsg client-list 12347 id-index 111 application-id DEF
+cable dsg client-list 12346 id-index 222 broadcast 12345
+cable dsg client-list 12345 id-index 333 ca-system-id ABC
+cable dsg dseh disable
+cable dsg tg 12345
+cable dsg tg 12345 channel 23456 priority 34567
+cable dsg timer 123 Tdsg123 234 Tdsg234 55555 Tdsg345 666 Tdsg66 777
+cable dsg tunnel 12345 mac-addr dead.beef.feed tg 12345 clients 12345
+cable fiber-node 1
+ downstream Modular-Cable 1/2/3 rf-channel 0-100
+ upstream Cable 1/2 connector 3
+!
+cable flap-list power-adjust threshold 12345
+cable ipv6 pd-route DEAD:BEEF:CAB::/44 Bundle1.23
+cable ipv6 source-verify leasequery-filter downstream 22 11
+cable load-balance d20-ggrp-default disable
+cable load-balance d30-ggrp-default disable
+cable load-balance docsis-enable
+cable load-balance docsis-group 12345
+cable load-balance docsis-policy 1 rule 1
+cable load-balance docsis30-enable
+cable load-balance method-utilization min-threshold 12345
+cable load-balance modem max-failures 12345
+cable load-balance rule 1 disable-throughput-lowerbound us 12345
+cable load-balance rule 2 disable-throughput-lowerbound ds 12345
+cable load-balance rule 3 disabled
+cable load-balance rule 4 enabled
+ no disable
+ docsis-policy 1
+ downstream Modular-Cable 1/2/3 rf-channel 0-100
+ upstream Cable1/2/3 0
+ method utilization
+ init-tech-list 12345
+ interval 12345
+ policy pure-ds-load
+ restricted
+ tag abc
+ threshold load 12345
+ threshold load minimum 12345
+!
+cable load-balance exclude oui DE.AD.BE strict
+cable load-balance exclude device-class 12345
+cable logging badipsource 12345
+cable logging downstream-index 12345
+cable logging ironbus 12345
+cable logging layer2events 12345
+cable logging overlapip 12345
+cable metering destination 1.2.3.4 12345 12345 12345 non-secure
+cable metering source-interface Loopback0
+cable modem max-cpe unlimited
+cable modem v6-max-cpe-prefix 12345
+cable modem vendor DE.AD.BE "EF"
+cable modulation-profile 555 a-long 0 1 2 3 64qam scrambler 12345 no-diff 12345 shortened qpsk1 12345 23456
+cable modulation-profile 555 a-short 0 1 2 3 64qam scrambler 12345 no-diff 12345 shortened qpsk1 12345 23456
+cable modulation-profile 555 a-ugs 0 1 2 3 64qam scrambler 12345 no-diff 12345 shortened qpsk1 12345 23456
+cable modulation-profile 555 initial 0 1 2 3 16qam scrambler 12345 no-diff 12345 fixed
+cable modulation-profile 555 long 0 1 2 3 16qam scrambler 12345 no-diff 12345 shortened
+cable modulation-profile 555 request 0 1 2 3 16qam scrambler 12345 no-diff 12345 fixed
+cable modulation-profile 555 short 0 1 2 3 16qam scrambler 12345 no-diff 12345 shortened
+cable modulation-profile 555 station 0 1 2 3 16qam scrambler 12345 no-diff 12345 fixed
+cable multicast mdf-disable WB-Incapable-CM
+cable pre-equalization exclude oui DE.AD.BE
+cable qos enforce-rule fooble
+ duration 12345 avg-rate 12345 sample-interval 12345 do enf
+ enabled
+ monitoring-basics legacy docsis11
+ penalty-period 12345
+ service-class enforced barfoo
+ service-class registered foobar
+!
+no cable qos permission create
+no cable qos permission update
+cable qos profile 12345 max-burst 12345
+cable qos profile 12345 max-downstream 12345
+cable qos profile 12345 max-ds-burst 12345
+cable qos profile 12345 max-upstream 12345
+cable qos permission modems
+cable snmp iftype ds-phy 1
+cable service class 1 name foobar
+cable service class 1 upstream
+cable service class 1 sched-type 12345
+cable service class 1 max-concat-burst 12345
+cable service class 1 tos-overwrite 12345 12345
+cable service class 1 max-rate 12345
+cable service class 1 max-burst 12345
+cable service class 1 min-rate 12345
+cable service class 1 priority 12345
+cable service class 2 name barfoo
+cable service class 2 downstream
+cable service class 2 sched-type 12345
+cable service class 2 max-concat-burst 12345
+cable service class 2 tos-overwrite 12345 12345
+cable service class 2 max-rate 12345
+cable service class 2 max-burst 12345
+cable service class 2 min-rate 12345
+cable service class 2 priority 12345
+cable service attribute ds-bonded downstream-type bonding-enabled enforce
+cable service flow activity-timeout 12345
+cable tag 1
+ docsis-version docsis10
+ name d10
+!
+cable tag 2
+ docsis-version docsis11
+ name d11
+!
+cable tag 3
+ docsis-version docsis20
+ name d20
+ exclude oui fe.dc.ba
+!
+cable tag 4
+ docsis-version docsis30
+ name d30
+!
+cable util-interval 12345
+cable wideband auto-reset
+!
