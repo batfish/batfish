@@ -40,6 +40,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.EdgeSet;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class VirtualRouter extends ComparableStructure<String> {
@@ -155,7 +156,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (generationPolicy != null) {
           active = false;
           for (AbstractRoute contributingRoute : _prevMainRib.getRoutes()) {
-            boolean accept = generationPolicy.process(contributingRoute, grb, null, _key);
+            boolean accept =
+                generationPolicy.process(contributingRoute, grb, null, _key, Direction.OUT);
             if (accept) {
               if (!discard) {
                 grb.setNextHopIp(contributingRoute.getNextHopIp());
@@ -442,7 +444,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                           transformedOutgoingRoute,
                           transformedIncomingRouteBuilder,
                           advert.getSrcIp(),
-                          _key);
+                          _key,
+                          Direction.IN);
                 }
               }
               if (acceptIncoming) {
@@ -588,7 +591,9 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (exportPolicy != null) {
           for (AbstractRoute potentialExport : _prevMainRib.getRoutes()) {
             OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
-            boolean accept = exportPolicy.process(potentialExport, outputRouteBuilder, null, _key);
+            boolean accept =
+                exportPolicy.process(
+                    potentialExport, outputRouteBuilder, null, _key, Direction.OUT);
             if (accept) {
               outputRouteBuilder.setAdmin(
                   outputRouteBuilder
@@ -871,7 +876,11 @@ public class VirtualRouter extends ComparableStructure<String> {
              */
             boolean acceptOutgoing =
                 remoteExportPolicy.process(
-                    remoteRoute, transformedOutgoingRouteBuilder, localIp, remoteVrfName);
+                    remoteRoute,
+                    transformedOutgoingRouteBuilder,
+                    localIp,
+                    remoteVrfName,
+                    Direction.OUT);
             if (acceptOutgoing) {
               BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
               // Record sent advertisement
@@ -990,7 +999,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                           transformedOutgoingRoute,
                           transformedIncomingRouteBuilder,
                           remoteBgpNeighbor.getLocalIp(),
-                          _key);
+                          _key,
+                          Direction.IN);
                 }
               }
               if (acceptIncoming) {
