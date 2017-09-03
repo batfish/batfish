@@ -695,6 +695,7 @@ null_single
 
             | SAP
             | SCP
+            | SPD
             | SUBNET_ZERO
             | TCP
             | TELNET

@@ -14,6 +14,8 @@ downlink delay disable timeout 20
 virtual-service
   signing level cisco
 l2protocol tunnel cos 5
+ip spd queue max-threshold 123
+ip spd queue min-threshold 123
 mac address-table aging-time 1800
 poap transit
 fabric-mode 40G
