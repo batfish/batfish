@@ -943,6 +943,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as1border1",
               "lines" : {
                 "aux0" : {
@@ -2140,6 +2143,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as1border2",
               "lines" : {
                 "aux0" : {
@@ -2527,6 +2533,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as1core1",
               "lines" : {
                 "aux0" : {
@@ -4722,6 +4731,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as2border2",
               "lines" : {
                 "aux0" : {
@@ -5262,6 +5274,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as2core1",
               "lines" : {
                 "aux0" : {
@@ -5779,6 +5794,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as2core2",
               "lines" : {
                 "aux0" : {
@@ -6670,6 +6688,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as2dept1",
               "lines" : {
                 "aux0" : {
@@ -7303,6 +7324,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as2dist1",
               "lines" : {
                 "aux0" : {
@@ -7973,6 +7997,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as2dist2",
               "lines" : {
                 "aux0" : {
@@ -9044,6 +9071,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as3border1",
               "lines" : {
                 "aux0" : {
@@ -10032,6 +10062,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as3border2",
               "lines" : {
                 "aux0" : {
@@ -10583,6 +10616,9 @@
           },
           "vendorFamily" : {
             "cisco" : {
+              "aaa" : {
+                "newModel" : false
+              },
               "hostname" : "as3core1",
               "lines" : {
                 "aux0" : {
