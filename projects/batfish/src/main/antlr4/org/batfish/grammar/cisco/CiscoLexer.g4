@@ -1234,9 +1234,19 @@ CALL
    'call'
 ;
 
+CALL_FORWARD
+:
+   'call-forward'
+;
+
 CALL_HOME
 :
    'call-home'
+;
+
+CALL_MANAGER_FALLBACK
+:
+   'call-manager-fallback'
 ;
 
 CALLER_ID
@@ -1990,6 +2000,11 @@ DEFAULT_ACTION
    'default-action'
 ;
 
+DEFAULT_DESTINATION
+:
+   'default-destination'
+;
+
 DEFAULT_DOMAIN
 :
    'default-domain'
@@ -2253,6 +2268,11 @@ DIALER_GROUP
 DIALER_LIST
 :
    'dialer-list'
+;
+
+DIALPLAN_PATTERN
+:
+   'dialplan-pattern'
 ;
 
 DIRECT
@@ -3095,6 +3115,11 @@ FAST_REROUTE
 FAX
 :
    'fax'
+;
+
+FAX_RELAY
+:
+   'fax-relay'
 ;
 
 FCOE
@@ -4451,6 +4476,11 @@ LIMIT
    'limit'
 ;
 
+LIMIT_DN
+:
+   'limit-dn'
+;
+
 LIMIT_RESOURCE
 :
    'limit-resource'
@@ -4834,6 +4864,21 @@ MAXSTARTUPS
 MAX_ASSOCIATIONS
 :
    'max-associations'
+;
+
+MAX_CONFERENCES
+:
+   'max-conferences'
+;
+
+MAX_DN
+:
+   'max-dn'
+;
+
+MAX_EPHONES
+:
+   'max-ephones'
 ;
 
 MAX_IFINDEX_PER_MODULE
@@ -6456,6 +6501,11 @@ PREFER
    'prefer'
 ;
 
+PREFERENCE
+:
+   'preference'
+;
+
 PREFERRED
 :
    'preferred'
@@ -7469,6 +7519,11 @@ SDROWNER
 SECONDARY
 :
    'secondary'
+;
+
+SECONDARY_DIALTONE
+:
+   'secondary-dialtone'
 ;
 
 SECRET
@@ -8618,6 +8673,11 @@ TIME_EXCEEDED
    'time-exceeded'
 ;
 
+TIME_FORMAT
+:
+   'time-format'
+;
+
 TIME_RANGE
 :
    'time-range'
@@ -8661,6 +8721,11 @@ TIMESTAMP_REPLY
 TIMESTAMP_REQUEST
 :
    'timestamp-request'
+;
+
+TIME_ZONE
+:
+   'time-zone'
 ;
 
 TIMING
@@ -8736,6 +8801,11 @@ TRAFFIC_ENG
 TRAFFIC_INDEX
 :
    'traffic-index'
+;
+
+TRANSFER_SYSTEM
+:
+   'transfer-system'
 ;
 
 TRANSFORM_SET
@@ -9273,9 +9343,19 @@ VOICE_CARD
    'voice-card'
 ;
 
+VOICE_CLASS
+:
+   'voice-class'
+;
+
 VOICE_PORT
 :
    'voice-port'
+;
+
+VOICE_SERVICE
+:
+   'voice-service'
 ;
 
 VPC
