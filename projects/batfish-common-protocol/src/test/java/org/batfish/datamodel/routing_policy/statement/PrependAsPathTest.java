@@ -24,7 +24,7 @@ public class PrependAsPathTest {
 
   private static Environment newTestEnvironment(BgpRoute.Builder outputRoute) {
     Configuration c = new Configuration("host");
-    return new Environment(c, "vrf", null, null, outputRoute, null);
+    return new Environment(c, "vrf", null, null, outputRoute, null, null);
   }
 
   private static List<SortedSet<Integer>> mkAsPath(Integer... explicitAs) {
