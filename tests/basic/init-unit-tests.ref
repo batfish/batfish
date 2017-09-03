@@ -570,7 +570,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                55
+                56
               ]
             }
           }
@@ -1008,7 +1008,7 @@
           "ipv4 prefix-list" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
-                23
+                25
               ]
             },
             "classful_default" : {
@@ -1471,13 +1471,13 @@
         "route_policy_as_path_set" : {
           "as-path-set" : {
             "ama-coe-as-path" : [
-              32
+              34
             ],
             "ama-coe-as-path2" : [
-              35
+              37
             ],
             "ama-coe-as-path3" : [
-              37
+              39
             ]
           }
         },

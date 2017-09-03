@@ -293,6 +293,7 @@ port
    | KSHELL
    | LDAP
    | LDAPS
+   | LDP
    | LPD
    | LOGIN
    | LOTUSNOTES

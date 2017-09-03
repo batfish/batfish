@@ -385,6 +385,7 @@ null_inner
          | IMPORT
          | INCOMING
          | INGRESS
+         | INHERIT
          | INSERVICE
          | INSTANCE
          |

@@ -49,6 +49,11 @@ mldp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+mldp_session_protection
+:
+   SESSION PROTECTION (FOR peer = variable)? (DURATION DEC)? NEWLINE
+;
+
 mldp_router_id
 :
    ROUTER_ID IP_ADDRESS NEWLINE
@@ -136,6 +141,7 @@ s_mpls_ldp
       | mldp_interface
       | mldp_log
       | mldp_neighbor
+      | mldp_session_protection
       | mldp_null
    )*
 ;

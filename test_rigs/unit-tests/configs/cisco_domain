@@ -1,6 +1,7 @@
 !
 hostname cisco_domain
 !
+domain lookup disable
 domain lookup source-interface Loopback666
 domain name my.domain.name
 domain name-server 2.3.4.5

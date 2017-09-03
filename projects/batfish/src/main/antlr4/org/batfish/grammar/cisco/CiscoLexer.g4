@@ -57,6 +57,7 @@ tokens {
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    HEX_FRAGMENT,
+   IS_LOCAL,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
@@ -2510,6 +2511,11 @@ DUPLICATE_MESSAGE
    'duplicate-message'
 ;
 
+DURATION
+:
+   'duration'
+;
+
 DVMRP
 :
    'dvmrp'
@@ -2987,7 +2993,12 @@ EXTCOMM_LIST
 
 EXTCOMMUNITY
 :
-   'extcommunity' -> pushMode ( M_Extcommunity )
+   'extcommunity'
+   {
+     if (lastTokenType == SET) {
+       pushMode(M_Extcommunity);
+     }
+   }
 ;
 
 EXTCOMMUNITY_LIST
@@ -3237,6 +3248,16 @@ FLOW_EXPORT
 FLOW_SAMPLING_MODE
 :
    'flow-sampling-mode'
+;
+
+FLOW_SAMPLER
+:
+   'flow-sampler'
+;
+
+FLOW_SAMPLER_MAP
+:
+   'flow-sampler-map'
 ;
 
 FLOW_TOP_TALKERS
@@ -5816,6 +5837,11 @@ ONE
    'one'
 ;
 
+ONE_OUT_OF
+:
+   'one-out-of'
+;
+
 ONEP
 :
    'onep'
@@ -6114,6 +6140,11 @@ PATH_RETRANSMIT
 PATHCOST
 :
    'pathcost'
+;
+
+PATH
+:
+   'path'
 ;
 
 PATHS
@@ -6636,6 +6667,11 @@ PROCESS
    'process'
 ;
 
+PROCESS_MAX_TIME
+:
+   'process-max-time'
+;
+
 PROFILE
 :
    'profile'
@@ -6659,6 +6695,11 @@ PROPOSAL
 PROTECT
 :
    'protect'
+;
+
+PROTECTION
+:
+   'protection'
 ;
 
 PROTOCOL
@@ -8361,6 +8402,11 @@ SUPPRESS
 SUPPRESS_FIB_PENDING
 :
    'suppress-fib-pending'
+;
+
+SUPPRESSED
+:
+   'suppressed'
 ;
 
 SVC
@@ -10242,6 +10288,11 @@ M_AsPath_RP_VARIABLE
 M_AsPath_IN
 :
    'in' -> type ( IN ) , popMode
+;
+
+M_AsPath_IS_LOCAL
+:
+   'is-local' -> type ( IS_LOCAL ) , popMode
 ;
 
 M_AsPath_NEIGHBOR_IS

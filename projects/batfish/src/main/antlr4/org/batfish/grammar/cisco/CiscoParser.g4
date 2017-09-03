@@ -268,7 +268,11 @@ dhcp_profile_null
 
 domain_lookup
 :
-   LOOKUP SOURCE_INTERFACE iname = interface_name NEWLINE
+   LOOKUP
+   (
+      SOURCE_INTERFACE iname = interface_name
+      | DISABLE
+   ) NEWLINE
 ;
 
 domain_name
@@ -1279,6 +1283,7 @@ s_archive
          | LOG
          | LOGGING
          | NOTIFY
+         | PATH
       ) ~NEWLINE* NEWLINE
    )*
 ;
@@ -1490,6 +1495,16 @@ s_flow
       flow_null
       | flow_version
    )*
+;
+
+s_flow_sampler_map
+:
+   NO? FLOW_SAMPLER_MAP ~NEWLINE* NEWLINE fsm_mode?
+;
+
+fsm_mode
+:
+   MODE RANDOM ONE_OUT_OF DEC NEWLINE
 ;
 
 s_gatekeeper
@@ -1779,6 +1794,11 @@ s_privilege
       | ROUTER
       | SHOW
    ) ~NEWLINE* NEWLINE
+;
+
+s_process_max_time
+:
+   NO? PROCESS_MAX_TIME DEC NEWLINE
 ;
 
 s_radius_server
@@ -2298,6 +2318,7 @@ stanza
    | s_event_handler
    | s_failover
    | s_flow
+   | s_flow_sampler_map
    | s_foundry_mac_access_list
    | s_feature
    | s_gatekeeper
@@ -2349,6 +2370,7 @@ stanza
    | s_phone_proxy
    | s_policy_map
    | s_privilege
+   | s_process_max_time
    | s_qos_mapping
    | s_radius_server
    | s_redundancy

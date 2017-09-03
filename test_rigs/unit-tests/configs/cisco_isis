@@ -48,6 +48,7 @@ router isis
   adjacency-check disable
  exit-address-family
  interface HundredGigE0/0/0/0.2302
+  suppressed
   circuit-type level-2-only
   bfd minimum-interval 300
   bfd multiplier 3
