@@ -43,7 +43,7 @@ public class LiteralAsList extends AsPathListExpr {
 
   @Override
   public List<Integer> evaluate(Environment environment) {
-    List<Integer> list = new ArrayList<>();
+    List<Integer> list = new ArrayList<>(_list.size());
     for (AsExpr expr : _list) {
       int as = expr.evaluate(environment);
       list.add(as);

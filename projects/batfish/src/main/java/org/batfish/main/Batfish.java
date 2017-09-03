@@ -4017,7 +4017,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     printElapsedTime();
   }
 
-  private Answer serializeIndependentConfigs(Path vendorConfigPath, Path outputPath) {
+  Answer serializeIndependentConfigs(Path vendorConfigPath, Path outputPath) {
     Answer answer = new Answer();
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());
@@ -4103,7 +4103,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         });
   }
 
-  private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
+  Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
     Answer answer = new Answer();
     boolean configsFound = false;
 

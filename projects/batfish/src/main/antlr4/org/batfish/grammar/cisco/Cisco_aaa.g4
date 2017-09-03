@@ -690,7 +690,7 @@ null_aaa_substanza
 
 s_aaa
 :
-   AAA
+   NO? AAA
    (
       aaa_accounting
       | aaa_authentication

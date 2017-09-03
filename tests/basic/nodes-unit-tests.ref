@@ -1721,7 +1721,7 @@
                     "privilegeMode" : true
                   }
                 },
-                "newModel" : true
+                "newModel" : false
               },
               "hostname" : "cisco_aaa"
             }
