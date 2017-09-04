@@ -257,6 +257,7 @@ ipv6 enable-acl-cam-sharing
 ipv6 global-mtu 1500
 locale CH
 pseudowire-class atom-eth-iw
+ control-word
  encapsulation mpls
  interworking ethernet
 !

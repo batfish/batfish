@@ -1752,6 +1752,11 @@ CONTROL_PLANE
    'control-plane'
 ;
 
+CONTROL_WORD
+:
+   'control-word'
+;
+
 CONTROLLER
 :
    'controller' -> pushMode ( M_Interface )

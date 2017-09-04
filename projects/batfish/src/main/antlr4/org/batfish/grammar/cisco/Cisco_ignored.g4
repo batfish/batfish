@@ -322,6 +322,7 @@ null_inner
          | COMMAND
          | CONNECT_SOURCE
          | CONTEXT
+         | CONTROL_WORD
          | CPU_SHARE
          | CREDENTIALS
          | DEADTIME
