@@ -1288,14 +1288,12 @@ router_multicast_tail
 
 s_application
 :
-   APPLICATION NEWLINE
-   SERVICE name = variable ~NEWLINE* NEWLINE
+   APPLICATION NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
    (
-     PARAM ~NEWLINE* NEWLINE
+      PARAM ~NEWLINE* NEWLINE
    )*
    (
-      GLOBAL NEWLINE
-      SERVICE name = variable ~NEWLINE* NEWLINE
+      GLOBAL NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
    )?
 ;
 
