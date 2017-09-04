@@ -19,7 +19,7 @@ public class IsisRedistributionPolicy extends RedistributionPolicy {
 
   private String _map;
 
-  private Integer _metric;
+  private Long _metric;
 
   private Prefix _summaryPrefix;
 
@@ -35,7 +35,7 @@ public class IsisRedistributionPolicy extends RedistributionPolicy {
     return _map;
   }
 
-  public Integer getMetric() {
+  public Long getMetric() {
     return _metric;
   }
 
@@ -51,7 +51,7 @@ public class IsisRedistributionPolicy extends RedistributionPolicy {
     _map = map;
   }
 
-  public void setMetric(int metric) {
+  public void setMetric(long metric) {
     _metric = metric;
   }
 

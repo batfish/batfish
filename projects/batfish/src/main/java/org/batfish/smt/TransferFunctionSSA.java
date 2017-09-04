@@ -44,6 +44,8 @@ import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -491,11 +493,11 @@ class TransferFunctionSSA {
   }
 
   /*
-   * Apply the effect of modifying an integer value (e.g., to set the local pref)
+   * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private ArithExpr applyIntExprModification(ArithExpr x, IntExpr e) {
-    if (e instanceof LiteralInt) {
-      LiteralInt z = (LiteralInt) e;
+  private ArithExpr applyLongExprModification(ArithExpr x, LongExpr e) {
+    if (e instanceof LiteralLong) {
+      LiteralLong z = (LiteralLong) e;
       return _enc.mkInt(z.getValue());
     }
     if (e instanceof DecrementMetric) {
@@ -505,6 +507,17 @@ class TransferFunctionSSA {
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
       return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
+    }
+    throw new BatfishException("TODO: int expr transfer function: " + e);
+  }
+
+  /*
+   * Apply the effect of modifying an integer value (e.g., to set the local pref)
+   */
+  private ArithExpr applyIntExprModification(ArithExpr x, IntExpr e) {
+    if (e instanceof LiteralInt) {
+      LiteralInt z = (LiteralInt) e;
+      return _enc.mkInt(z.getValue());
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
@@ -1003,8 +1016,8 @@ class TransferFunctionSSA {
       } else if (stmt instanceof SetMetric) {
         p.debug("SetMetric");
         SetMetric sm = (SetMetric) stmt;
-        IntExpr ie = sm.getMetric();
-        ArithExpr newValue = applyIntExprModification(p.getOther().getMetric(), ie);
+        LongExpr ie = sm.getMetric();
+        ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
         newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
         ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
         p.getOther().setMetric(x);

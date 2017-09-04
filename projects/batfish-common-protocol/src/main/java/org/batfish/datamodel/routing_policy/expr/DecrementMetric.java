@@ -3,17 +3,17 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class DecrementMetric extends IntExpr {
+public class DecrementMetric extends LongExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private int _subtrahend;
+  private long _subtrahend;
 
   @JsonCreator
   private DecrementMetric() {}
 
-  public DecrementMetric(int subtrahend) {
+  public DecrementMetric(long subtrahend) {
     _subtrahend = subtrahend;
   }
 
@@ -36,13 +36,13 @@ public class DecrementMetric extends IntExpr {
   }
 
   @Override
-  public int evaluate(Environment environment) {
-    int oldMetric = environment.getOriginalRoute().getMetric();
-    int newVal = oldMetric - _subtrahend;
+  public long evaluate(Environment environment) {
+    long oldMetric = environment.getOriginalRoute().getMetric();
+    long newVal = oldMetric - _subtrahend;
     return newVal;
   }
 
-  public int getSubtrahend() {
+  public long getSubtrahend() {
     return _subtrahend;
   }
 
@@ -50,11 +50,11 @@ public class DecrementMetric extends IntExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _subtrahend;
+    result = prime * result + Long.hashCode(_subtrahend);
     return result;
   }
 
-  public void setSubtrahend(int subtrahend) {
+  public void setSubtrahend(long subtrahend) {
     _subtrahend = subtrahend;
   }
 }

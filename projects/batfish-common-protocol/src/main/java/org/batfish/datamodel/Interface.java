@@ -74,6 +74,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_PREFIX = "prefix";
 
+  private static final String PROP_RIP_ENABLED = "ripEnabled";
+
+  private static final String PROP_RIP_PASSIVE = "ripPassive";
+
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
 
   private static final long serialVersionUID = 1L;
@@ -310,6 +314,10 @@ public final class Interface extends ComparableStructure<String> {
   private Prefix _prefix;
 
   private Boolean _proxyArp;
+
+  private boolean _ripEnabled;
+
+  private boolean _ripPassive;
 
   private RoutingPolicy _routingPolicy;
 
@@ -655,6 +663,16 @@ public final class Interface extends ComparableStructure<String> {
     return _proxyArp;
   }
 
+  @JsonProperty(PROP_RIP_ENABLED)
+  public boolean getRipEnabled() {
+    return _ripEnabled;
+  }
+
+  @JsonProperty(PROP_RIP_PASSIVE)
+  public boolean getRipPassive() {
+    return _ripPassive;
+  }
+
   @JsonIgnore
   public RoutingPolicy getRoutingPolicy() {
     return _routingPolicy;
@@ -924,6 +942,16 @@ public final class Interface extends ComparableStructure<String> {
 
   public void setProxyArp(Boolean proxyArp) {
     _proxyArp = proxyArp;
+  }
+
+  @JsonProperty(PROP_RIP_ENABLED)
+  public void setRipEnabled(boolean ripEnabled) {
+    _ripEnabled = ripEnabled;
+  }
+
+  @JsonProperty(PROP_RIP_PASSIVE)
+  public void setRipPassive(boolean ripPassive) {
+    _ripPassive = ripPassive;
   }
 
   @JsonIgnore

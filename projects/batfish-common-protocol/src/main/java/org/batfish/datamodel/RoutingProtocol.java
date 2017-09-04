@@ -27,6 +27,7 @@ public enum RoutingProtocol {
   OSPF_E2("ospfE2"),
   OSPF_IA("ospfIA"),
   OSPF3("ospf3"),
+  RIP("rip"),
   RSVP("rsvp"),
   STATIC("static");
 
@@ -479,6 +480,44 @@ public enum RoutingProtocol {
         }
         break;
 
+      case RIP:
+        switch (vendor) {
+          case ALCATEL_AOS:
+            break;
+          case ARISTA:
+            return 120;
+          case AWS_VPC:
+            return 120;
+          case CISCO_IOS:
+          case CISCO_IOS_XR:
+          case CISCO_NX:
+          case FORCE10:
+          case FOUNDRY:
+            return 120;
+          case FLAT_JUNIPER:
+          case JUNIPER:
+          case JUNIPER_SWITCH:
+            return 100;
+          case FLAT_VYOS:
+          case VYOS:
+            return 120;
+          case EMPTY:
+          case IGNORED:
+          case BLADENETWORK:
+          case F5:
+          case HOST:
+          case IPTABLES:
+          case MRV:
+          case MRV_COMMANDS:
+          case MSS:
+          case UNKNOWN:
+          case VXWORKS:
+            break;
+          default:
+            break;
+        }
+        break;
+
       case STATIC:
         return 1;
 
@@ -557,6 +596,7 @@ public enum RoutingProtocol {
       case OSPF_E1:
       case OSPF_E2:
       case RSVP:
+      case RIP:
       case STATIC:
       default:
         throw new BatfishException(

@@ -11,6 +11,7 @@ private boolean enableIP_ADDRESS = true;
 private boolean enableDEC = true;
 private boolean enableACL_NUM = false;
 private boolean enableCOMMUNITY_LIST_NUM = false;
+private boolean enableREGEX = false;
 private boolean _inAccessList = false;
 private boolean inCommunitySet = false;
 private boolean _foundry = false;
@@ -178,6 +179,11 @@ ACCT_PORT
    'acct-port'
 ;
 
+ACFE
+:
+   'acfe'
+;
+
 ACK
 :
    'ack'
@@ -321,6 +327,11 @@ ADMINISTRATIVE_WEIGHT
 ADMISSION
 :
    'admission'
+;
+
+ADMISSION_CONTROL
+:
+   'admission-control'
 ;
 
 ADVERTISE
@@ -653,6 +664,11 @@ AREA
    'area'
 ;
 
+AREA_PASSWORD
+:
+   'area-password'
+;
+
 ARP
 :
    'arp'
@@ -758,6 +774,11 @@ ATM
 ATTEMPTS
 :
    'attempts'
+;
+
+ATTRIBUTE
+:
+   'attribute'
 ;
 
 ATTRIBUTE_DOWNLOAD
@@ -1210,6 +1231,11 @@ CA
    'ca'
 ;
 
+CABLE
+:
+   'cable'
+;
+
 CABLE_RANGE
 :
    'cable-range'
@@ -1505,6 +1531,11 @@ CMD
    'cmd'
 ;
 
+CMTS
+:
+   'cmts'
+;
+
 CNS
 :
    'cns'
@@ -1721,9 +1752,14 @@ CONTROL_PLANE
    'control-plane'
 ;
 
+CONTROL_WORD
+:
+   'control-word'
+;
+
 CONTROLLER
 :
-   'controller'
+   'controller' -> pushMode ( M_Interface )
 ;
 
 CONVERSION_ERROR
@@ -1731,9 +1767,19 @@ CONVERSION_ERROR
    'conversion-error'
 ;
 
+COOKIE
+:
+   'cookie'
+;
+
 COPP
 :
    'copp'
+;
+
+COPS
+:
+   'cops'
 ;
 
 COPY
@@ -1894,6 +1940,16 @@ CUSTOMER_ID
 CWR
 :
    'cwr'
+;
+
+D20_GGRP_DEFAULT
+:
+   'd20-ggrp-default'
+;
+
+D30_GGRP_DEFAULT
+:
+   'd30-ggrp-default'
 ;
 
 DAEMON
@@ -2076,6 +2132,11 @@ DEFAULT_TASKGROUP
    'default-taskgroup'
 ;
 
+DEFAULT_TOS_QOS10
+:
+   'default-tos-qos10'
+;
+
 DEFAULT_VALUE
 :
    'default-value'
@@ -2121,6 +2182,21 @@ DENY
    'deny'
 ;
 
+DEPI
+:
+   'depi'
+;
+
+DEPI_CLASS
+:
+   'depi-class'
+;
+
+DEPI_TUNNEL
+:
+   'depi-tunnel'
+;
+
 DEPLOY
 :
    'deploy'
@@ -2144,6 +2220,11 @@ DESCRIPTION
 DESIRABLE
 :
    'desirable'
+;
+
+DEST_IP
+:
+   'dest-ip'
 ;
 
 DESTINATION
@@ -2371,6 +2452,31 @@ DO
    'do'
 ;
 
+DOCSIS_ENABLE
+:
+   'docsis-enable'
+;
+
+DOCSIS_GROUP
+:
+   'docsis-group'
+;
+
+DOCSIS_POLICY
+:
+   'docsis-policy'
+;
+
+DOCSIS_VERSION
+:
+   'docsis-version'
+;
+
+DOCSIS30_ENABLE
+:
+   'docsis30-enable'
+;
+
 DOMAIN
 :
    'domain'
@@ -2436,6 +2542,11 @@ DOWNLINK
    'downlink'
 ;
 
+DOWNSTREAM
+:
+   'downstream'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -2444,6 +2555,11 @@ DR_PRIORITY
 DROP
 :
    'drop'
+;
+
+DS_MAX_BURST
+:
+   'ds-max-burst'
 ;
 
 DS0_GROUP
@@ -2459,6 +2575,11 @@ DSCP
 DSCP_VALUE
 :
    'dscp-value'
+;
+
+DSG
+:
+   'dsg'
 ;
 
 DSL
@@ -2534,6 +2655,11 @@ DYNAMIC_ACCESS_POLICY_RECORD
 DYNAMIC_CAPABILITY
 :
    'dynamic-capability'
+;
+
+DYNAMIC_EXTENDED
+:
+   'dynamic-extended'
 ;
 
 DYNAMIC_MAP
@@ -2741,6 +2867,16 @@ END_SET
 ENFORCE_FIRST_AS
 :
    'enforce-first-as'
+;
+
+ENFORCE_RULE
+:
+   'enforce-rule'
+;
+
+ENFORCED
+:
+   'enforced'
 ;
 
 ENGINE
@@ -3158,6 +3294,11 @@ FEX_FABRIC
    'fex-fabric'
 ;
 
+FIBER_NODE
+:
+   'fiber-node'
+;
+
 FIELDS
 :
    'fields'
@@ -3213,6 +3354,11 @@ FINGER
 FIRMWARE
 :
    'firmware'
+;
+
+FLAP_LIST
+:
+   'flap-list'
 ;
 
 FLOW
@@ -4000,6 +4146,11 @@ INHERITANCE_DISABLE
    'inheritance-disable'
 ;
 
+INIT_TECH_LIST
+:
+   'init-tech-list'
+;
+
 INPUT
 :
    'input'
@@ -4522,6 +4673,11 @@ LINECARD
    'linecard'
 ;
 
+LINECARD_GROUP
+:
+   'linecard-group'
+;
+
 LINECODE
 :
    'linecode'
@@ -4550,6 +4706,11 @@ LIST
 LISTEN
 :
    'listen'
+;
+
+LISTENER
+:
+   'listener'
 ;
 
 LLDP
@@ -4892,6 +5053,16 @@ MAX_ASSOCIATIONS
    'max-associations'
 ;
 
+MAX_BURST
+:
+   'max-burst'
+;
+
+MAX_CONCAT_BURST
+:
+   'max-concat-burst'
+;
+
 MAX_CONFERENCES
 :
    'max-conferences'
@@ -4925,6 +5096,11 @@ MAX_LSP_LIFETIME
 MAX_METRIC
 :
    'max-metric'
+;
+
+MAX_RATE
+:
+   'max-rate'
 ;
 
 MAX_ROUTE
@@ -5062,6 +5238,21 @@ MESSAGE_SIZE
    'message-size'
 ;
 
+METERING
+:
+   'metering'
+;
+
+METHOD
+:
+   'method'
+;
+
+METHOD_UTILIZATION
+:
+   'method-utilization'
+;
+
 METRIC
 :
    'metric'
@@ -5110,6 +5301,16 @@ MICROCODE
 MICROSOFT_DS
 :
    'microsoft-ds'
+;
+
+MIN_PACKET_SIZE
+:
+   'min-packet-size'
+;
+
+MIN_RATE
+:
+   'min-rate'
 ;
 
 MINIMAL
@@ -5197,6 +5398,11 @@ MODEM
    'modem'
 ;
 
+MODULATION_PROFILE
+:
+   'modulation-profile'
+;
+
 MODULE
 :
    'module'
@@ -5235,6 +5441,11 @@ MONITOR_SESSION
 MONITORING
 :
    'monitoring'
+;
+
+MONITORING_BASICS
+:
+   'monitoring-basics'
 ;
 
 MOP
@@ -5560,6 +5771,11 @@ NETWORK_CLOCK_PARTICIPATE
 NETWORK_CLOCK_SELECT
 :
    'network-clock-select'
+;
+
+NETWORK_DELAY
+:
+   'network-delay'
 ;
 
 NETWORK_OBJECT
@@ -6027,6 +6243,11 @@ PACKET_TOO_BIG
    'packet-too-big'
 ;
 
+PACKETCABLE
+:
+   'packetcable'
+;
+
 PAGER
 :
    'pager'
@@ -6242,6 +6463,11 @@ PEER_SWITCH
    'peer-switch'
 ;
 
+PENALTY_PERIOD
+:
+   'penalty-period'
+;
+
 PERIODIC
 :
    'periodic'
@@ -6255,6 +6481,11 @@ PERIODIC_INVENTORY
 PERMANENT
 :
    'permanent'
+;
+
+PERMISSION
+:
+   'permission'
 ;
 
 PERMIT
@@ -6507,6 +6738,11 @@ PRC_INTERVAL
    'prc-interval'
 ;
 
+PRE_EQUALIZATION
+:
+   'pre-equalization'
+;
+
 PRE_SHARED_KEY
 :
    'pre-shared-key'
@@ -6695,6 +6931,11 @@ PROPOSAL
 PROTECT
 :
    'protect'
+;
+
+PROTECT_TUNNEL
+:
+   'protect-tunnel'
 ;
 
 PROTECTION
@@ -6957,6 +7198,11 @@ RECEIVE
    'receive'
 ;
 
+RECEIVE_WINDOW
+:
+   'receive-window'
+;
+
 RECONNECT_INTERVAL
 :
    'reconnect-interval'
@@ -7045,6 +7291,11 @@ REGISTER_RATE_LIMIT
 REGISTER_SOURCE
 :
    'register-source'
+;
+
+REGISTERED
+:
+   'registered'
 ;
 
 RELAY
@@ -7142,6 +7393,11 @@ REOPTIMIZE
    'reoptimize'
 ;
 
+REQ_TRANS_POLICY
+:
+   'req-trans-policy'
+;
+
 REQUEST
 :
    'request'
@@ -7170,6 +7426,11 @@ RESOURCES
 RESPONDER
 :
    'responder'
+;
+
+RESTRICTED
+:
+   'restricted'
 ;
 
 RETRANSMIT
@@ -7202,6 +7463,11 @@ REVERSE_ROUTE
    'reverse-route'
 ;
 
+REVERTIVE
+:
+   'revertive'
+;
+
 REVISION
 :
    'revision'
@@ -7215,6 +7481,26 @@ REVOCATION_CHECK
 REWRITE
 :
    'rewrite'
+;
+
+RF_CHANNEL
+:
+   'rf-channel'
+;
+
+RF_POWER
+:
+   'rf-power'
+;
+
+RF_SHUTDOWN
+:
+   'rf-shutdown'
+;
+
+RF_SWITCH
+:
+   'rf-switch'
 ;
 
 RFC1583COMPATIBILITY
@@ -7424,7 +7710,7 @@ RT
 
 RULE
 :
-   'rule' -> pushMode ( M_Rule )
+   'rule' {enableREGEX = true;}
 ;
 
 RUN
@@ -7505,6 +7791,11 @@ SCAN_TIME
 SCCP
 :
    'sccp'
+;
+
+SCHED_TYPE
+:
+   'sched-type'
 ;
 
 SCHEDULE
@@ -8519,6 +8810,11 @@ SYSTEM_PRIORITY
    'system-priority'
 ;
 
+SYSTEM_SHUTDOWN
+:
+   'system-shutdown'
+;
+
 SYSTEMOWNER
 :
    'SystemOwner'
@@ -8814,6 +9110,11 @@ TOS
    'tos'
 ;
 
+TOS_OVERWRITE
+:
+   'tos-overwrite'
+;
+
 TRACE
 :
    'trace'
@@ -8962,6 +9263,11 @@ TRUSTPOINT
 TRUSTPOOL
 :
    'trustpool'
+;
+
+TSID
+:
+   'tsid'
 ;
 
 TTL
@@ -9134,6 +9440,11 @@ UPLINKFAST
    'uplinkfast'
 ;
 
+UPSTREAM
+:
+   'upstream'
+;
+
 URG
 :
    'urg'
@@ -9217,6 +9528,11 @@ USERNAME_PROMPT
 USERS
 :
    'users'
+;
+
+UTIL_INTERVAL
+:
+   'util-interval'
 ;
 
 UUCP
@@ -9589,6 +9905,11 @@ WHOIS
 WIDE
 :
    'wide'
+;
+
+WIDEBAND
+:
+   'wideband'
 ;
 
 WINDOW_SIZE
@@ -10071,6 +10392,7 @@ NEWLINE
    	}
    	enableIP_ADDRESS = true;
       enableDEC = true;
+      enableREGEX = false;
       enableACL_NUM = false;
       _inAccessList = false;
   }
@@ -10100,6 +10422,16 @@ PERIOD
 PLUS
 :
    '+'
+;
+
+REGEX
+:
+   '/' {enableREGEX}?
+   (
+      ~('/' | '\\')
+      |
+      ( '\\' '/')
+   )* '/'
 ;
 
 RP_VARIABLE
@@ -10822,6 +11154,11 @@ M_Interface_EQ
    'eq' -> type ( EQ ) , popMode
 ;
 
+M_Interface_GLOBAL
+:
+   'global' -> type ( GLOBAL ) , popMode
+;
+
 M_Interface_GT
 :
    'gt' -> type ( GT ) , popMode
@@ -10943,6 +11280,7 @@ M_Interface_PREFIX
       )*
    )
    | 'Dot11Radio'
+   | [Tt]'1'
 ;
 
 M_Interface_RELAY
@@ -11210,18 +11548,6 @@ M_RouteMap_VARIABLE
 M_RouteMap_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_Rule;
-
-M_Rule_LINE
-:
-   F_NonNewline+
-;
-
-M_Rule_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 mode M_SHA1;

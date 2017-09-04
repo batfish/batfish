@@ -15,6 +15,8 @@ public final class Vrf extends ComparableStructure<String> {
 
   private OspfProcess _ospfProcess;
 
+  private RipProcess _ripProcess;
+
   private final Set<StaticRoute> _staticRoutes;
 
   public Vrf(String name) {
@@ -34,6 +36,10 @@ public final class Vrf extends ComparableStructure<String> {
     return _ospfProcess;
   }
 
+  public RipProcess getRipProcess() {
+    return _ripProcess;
+  }
+
   public Set<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
@@ -48,5 +54,9 @@ public final class Vrf extends ComparableStructure<String> {
 
   public void setOspfProcess(OspfProcess proc) {
     _ospfProcess = proc;
+  }
+
+  public void setRipProcess(RipProcess ripProcess) {
+    _ripProcess = ripProcess;
   }
 }

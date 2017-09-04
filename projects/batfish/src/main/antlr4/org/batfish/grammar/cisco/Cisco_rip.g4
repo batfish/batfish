@@ -6,42 +6,65 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-distance_rr_stanza
+rr_distance
 :
    DISTANCE distance = DEC NEWLINE
 ;
 
-distribute_list_rr_stanza
+rr_distribute_list
 :
-   DISTRIBUTE_LIST ~NEWLINE* NEWLINE
+   DISTRIBUTE_LIST
+   (
+      (
+         PREFIX prefix_list = variable
+      )
+      | acl = variable
+   )
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
-network_rr_stanza
+rr_network
 :
    NETWORK network = IP_ADDRESS NEWLINE
 ;
 
-passive_interface_rr_stanza
+rr_null
 :
-   NO? PASSIVE_INTERFACE ~NEWLINE* NEWLINE
+   NO?
+   (
+      AUTO_SUMMARY
+      | VERSION
+   ) ~NEWLINE* NEWLINE
 ;
 
-redistribute_rr_stanza
+rr_passive_interface
+:
+   NO? PASSIVE_INTERFACE iname=interface_name NEWLINE
+;
+
+rr_passive_interface_default
+:
+   NO? PASSIVE_INTERFACE DEFAULT NEWLINE
+;
+
+rr_redistribute
 :
    REDISTRIBUTE ~NEWLINE* NEWLINE
 ;
 
-router_rip_stanza
+s_router_rip
 :
-   ROUTER RIP NEWLINE rr_stanza*
-;
-
-rr_stanza
-:
-   distance_rr_stanza
-   | distribute_list_rr_stanza
-   | network_rr_stanza
-   | passive_interface_rr_stanza
-   | redistribute_rr_stanza
-   | unrecognized_line
+   ROUTER RIP NEWLINE
+   (
+      rr_distance
+      | rr_distribute_list
+      | rr_network
+      | rr_null
+      | rr_passive_interface
+      | rr_passive_interface_default
+      | rr_redistribute
+   )*
 ;

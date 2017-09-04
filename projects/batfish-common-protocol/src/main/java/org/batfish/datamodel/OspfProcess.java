@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 
@@ -18,11 +19,11 @@ public class OspfProcess implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private Map<Long, OspfArea> _areas;
+  private SortedMap<Long, OspfArea> _areas;
 
   private String _exportPolicy;
 
-  private Set<GeneratedRoute> _generatedRoutes;
+  private SortedSet<GeneratedRoute> _generatedRoutes;
 
   private transient Map<Pair<Ip, Ip>, OspfNeighbor> _ospfNeighbors;
 
@@ -31,12 +32,12 @@ public class OspfProcess implements Serializable {
   private Ip _routerId;
 
   public OspfProcess() {
-    _generatedRoutes = new LinkedHashSet<>();
-    _areas = new HashMap<>();
+    _generatedRoutes = new TreeSet<>();
+    _areas = new TreeMap<>();
   }
 
   @JsonPropertyDescription("The OSPF areas contained in this process")
-  public Map<Long, OspfArea> getAreas() {
+  public SortedMap<Long, OspfArea> getAreas() {
     return _areas;
   }
 
@@ -50,7 +51,7 @@ public class OspfProcess implements Serializable {
   @JsonPropertyDescription(
       "Generated IPV4 routes for the purpose of export into OSPF. These routes are not imported "
           + "into the main RIB.")
-  public Set<GeneratedRoute> getGeneratedRoutes() {
+  public SortedSet<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
@@ -101,7 +102,7 @@ public class OspfProcess implements Serializable {
     }
   }
 
-  public void setAreas(Map<Long, OspfArea> areas) {
+  public void setAreas(SortedMap<Long, OspfArea> areas) {
     _areas = areas;
   }
 
@@ -109,7 +110,7 @@ public class OspfProcess implements Serializable {
     _exportPolicy = exportPolicy;
   }
 
-  public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
+  public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
   }
 

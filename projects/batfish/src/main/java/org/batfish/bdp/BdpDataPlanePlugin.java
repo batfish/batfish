@@ -338,6 +338,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 vr.importRib(vr._independentRib, vr._staticInterfaceRib);
                 vr.importRib(vr._mainRib, vr._staticInterfaceRib);
                 vr.initBaseOspfRoutes();
+                vr.initBaseRipRoutes();
                 vr.initEbgpTopology(dp);
                 vr.initBaseBgpRibs(externalAdverts, dp.getIpOwners());
               }
@@ -415,7 +416,59 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               }
               ospfInternalImportCompleted.incrementAndGet();
             });
-    // END DONE ONCE
+    // END DONE ONCE (OSPF)
+
+    // RIP internal routes
+    final boolean[] ripInternalChanged = new boolean[] {true};
+    int ripInternalIterations = 0;
+    while (ripInternalChanged[0]) {
+      ripInternalIterations++;
+      ripInternalChanged[0] = false;
+      AtomicInteger ripInternalCompleted =
+          _batfish.newBatch(
+              "Compute RIP Internal routes: iteration " + ripInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n._virtualRouters.values()) {
+                  if (vr.propagateRipInternalRoutes(nodes, topology)) {
+                    synchronized (routesChangedMonitor) {
+                      ripInternalChanged[0] = true;
+                    }
+                  }
+                }
+                ripInternalCompleted.incrementAndGet();
+              });
+      AtomicInteger ripInternalUnstageCompleted =
+          _batfish.newBatch(
+              "Unstage RIP Internal routes: iteration " + ripInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n._virtualRouters.values()) {
+                  vr.unstageRipInternalRoutes();
+                }
+                ripInternalUnstageCompleted.incrementAndGet();
+              });
+    }
+    AtomicInteger ripInternalImportCompleted =
+        _batfish.newBatch("Import RIP Internal routes", nodes.size());
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n._virtualRouters.values()) {
+                vr.importRib(vr._ripRib, vr._ripInternalRib);
+                vr.importRib(vr._independentRib, vr._ripRib);
+              }
+              ripInternalImportCompleted.incrementAndGet();
+            });
+    // END DONE ONCE (RIP)
 
     Map<Integer, Integer> iterationByHashCode = new HashMap<>();
     Map<Integer, Integer> iterationHashCodes = new TreeMap<>();
@@ -480,6 +533,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                    * RIBs not read from
                    */
                   vr._ospfRib = new OspfRib(vr);
+                  vr._ripRib = new RipRib(vr);
 
                   /*
                    * Staging RIBs
@@ -500,6 +554,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                    */
                   vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
                   vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
+                  /*
+                   * Re-add independent RIP routes to ripRib for tie-breaking
+                   */
+                  vr.importRib(vr._ripRib, vr._ripInternalRib);
                 }
                 reinitializeDependentCompleted.incrementAndGet();
               });

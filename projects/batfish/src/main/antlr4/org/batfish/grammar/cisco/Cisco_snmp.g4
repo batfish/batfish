@@ -137,6 +137,7 @@ ss_null
       | PRIORITY
       | PROTOCOL
       | QUEUE_LENGTH
+      | SYSTEM_SHUTDOWN
       | TCP_SESSION
       | TRAP
       | TRAPS

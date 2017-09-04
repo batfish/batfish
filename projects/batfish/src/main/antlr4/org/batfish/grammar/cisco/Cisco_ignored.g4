@@ -146,7 +146,6 @@ null_block
       )
       | KEYSTORE
       | KRON
-      | L2TP_CLASS
       | LACP
       | LAG
       | LINECARD
@@ -239,7 +238,6 @@ null_block
       | TEMPLATE
       | TERMINAL
       | TIME_RANGE
-      | TIMEOUT
       | TFTP
       | TLS_PROXY
       | TRACE
@@ -324,6 +322,7 @@ null_inner
          | COMMAND
          | CONNECT_SOURCE
          | CONTEXT
+         | CONTROL_WORD
          | CPU_SHARE
          | CREDENTIALS
          | DEADTIME
@@ -479,7 +478,6 @@ null_inner
          | REQUEST
          | RESOURCES
          | RESPONDER
-         | RETRANSMIT
          | RETRIES
          | REVISION
          | RING
@@ -564,13 +562,16 @@ null_single
          ACCESS_LIST
          (
             (
-               DEC
-               | VARIABLE
+               (
+                  DEC
+                  | VARIABLE
+               )
+               (
+                  EXTENDED
+                  | REMARK
+               )
             )
-            (
-               EXTENDED
-               | REMARK
-            )
+            | DYNAMIC_EXTENDED
          )
       )
       | ACCOUNTING_PORT
@@ -602,6 +603,7 @@ null_single
       | CTS
       | CURRENT_CONFIGURATION
       | DEFAULT
+      | DEPI
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
@@ -695,6 +697,7 @@ null_single
 
             | SAP
             | SCP
+            | SPD
             | SUBNET_ZERO
             | TCP
             | TELNET
@@ -813,6 +816,7 @@ null_single
          )
       )
       | OWNER
+      | PACKETCABLE
       | PAGER
       | PARSER
       | PASSWORD
@@ -864,6 +868,7 @@ null_single
       | SYSOPT
       | TAG_SWITCHING
       | TELNET
+      | TFTP_SERVER
       | THREAT_DETECTION
       | THREAT_VISIBILITY
       | THU

@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -80,27 +80,17 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
-controller_null
+cops_listener
 :
-   NO?
+   LISTENER
    (
-      ADMIN_STATE
-      | AIS_SHUT
-      | ALARM_REPORT
-      | CABLELENGTH
-      | CHANNEL_GROUP
-      | CLOCK
-      | DESCRIPTION
-      | FRAMING
-      | G709
-      | LINECODE
-      | PM
-      | PRI_GROUP
-      | PROACTIVE
-      | SHUTDOWN
-      | STS_1
-      | WAVELENGTH
-   ) ~NEWLINE* NEWLINE
+      copsl_access_list
+   )
+;
+
+copsl_access_list
+:
+   ACCESS_LIST name = variable_permissive NEWLINE
 ;
 
 cp_ip_access_group
@@ -580,7 +570,7 @@ ip_route_stanza
       | MANAGEMENT
    ) ROUTE
    (
-      VRF vrf = ~NEWLINE
+      VRF vrf = variable
    )? ip_route_tail
 ;
 
@@ -595,6 +585,7 @@ ip_route_tail
    (
       nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
+      | GLOBAL
       | nexthopint = interface_name
    )*
    (
@@ -800,6 +791,22 @@ l2_null
       | MTU
       | NEIGHBOR
       | VPN
+   ) ~NEWLINE* NEWLINE
+;
+
+l2tpc_null
+:
+   NO? DEFAULT?
+   (
+      AUTHENTICATION
+      | COOKIE
+      | HELLO
+      | HIDDEN_LITERAL
+      | HOSTNAME
+      | PASSWORD
+      | RECEIVE_WINDOW
+      | RETRANSMIT
+      | TIMEOUT
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1041,8 +1048,8 @@ monitor_null
 :
    NO?
    (
-      DESCRIPTION
-      | DESTINATION
+      BUFFER_SIZE
+      | DESCRIPTION
       | SHUTDOWN
       | SOURCE
    ) ~NEWLINE* NEWLINE
@@ -1190,6 +1197,14 @@ phone_proxy_null
    ) ~NEWLINE* NEWLINE
 ;
 
+redundancy_linecard_group
+:
+   LINECARD_GROUP ~NEWLINE* NEWLINE
+   (
+      rlcg_null
+   )*
+;
+
 redundancy_main_cpu
 :
    MAIN_CPU ~NEWLINE* NEWLINE
@@ -1215,6 +1230,17 @@ redundancy_null
       | NOTIFICATION_TIMER
       | PROTOCOL
       | SCHEME
+   ) ~NEWLINE* NEWLINE
+;
+
+rlcg_null
+:
+   NO?
+   (
+      MEMBER
+      | MODE
+      | REVERTIVE
+      | RF_SWITCH
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1263,14 +1289,12 @@ router_multicast_tail
 
 s_application
 :
-   APPLICATION NEWLINE
-   SERVICE name = variable ~NEWLINE* NEWLINE
+   APPLICATION NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
    (
-     PARAM ~NEWLINE* NEWLINE
+      PARAM ~NEWLINE* NEWLINE
    )*
    (
-      GLOBAL NEWLINE
-      SERVICE name = variable ~NEWLINE* NEWLINE
+      GLOBAL NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
    )?
 ;
 
@@ -1331,12 +1355,12 @@ s_control_plane_tail
    | cp_service_policy
 ;
 
-s_controller
+s_cops
 :
-   NO? CONTROLLER ~NEWLINE* NEWLINE
+   COPS
    (
-      controller_null
-   )*
+      cops_listener
+   )
 ;
 
 s_cos_queue_group
@@ -1665,6 +1689,14 @@ s_l2
    )*
 ;
 
+s_l2tp_class
+:
+   NO? L2TP_CLASS name = variable NEWLINE
+   (
+      l2tpc_null
+   )*
+;
+
 s_l2vpn
 :
    NO? L2VPN ~NEWLINE* NEWLINE
@@ -1818,7 +1850,8 @@ s_redundancy
 :
    NO? REDUNDANCY ~NEWLINE* NEWLINE
    (
-      redundancy_main_cpu
+      redundancy_linecard_group
+      | redundancy_main_cpu
       | redundancy_null
    )*
 ;
@@ -2289,12 +2322,12 @@ stanza
    | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
-   | router_rip_stanza
    | rsvp_stanza
    | s_aaa
    | s_application
    | s_archive
    | s_authentication
+   | s_cable
    | s_call_home
    | s_callhome
    | s_call_manager_fallback
@@ -2302,9 +2335,12 @@ stanza
    | s_cluster
    | s_control_plane
    | s_controller
+   | s_cops
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
+   | s_depi_class
+   | s_depi_tunnel
    | s_dhcp
    | s_dial_peer
    | s_domain
@@ -2342,6 +2378,7 @@ stanza
    | s_ipsla
    | s_key
    | s_l2
+   | s_l2tp_class
    | s_l2vpn
    | s_line
    | s_logging
@@ -2378,6 +2415,7 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_rip
    | s_router_static
    | s_router_vrrp
    | s_sccp

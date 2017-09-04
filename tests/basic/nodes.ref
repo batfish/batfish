@@ -57,6 +57,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -84,6 +86,8 @@
               "ospfPassive" : false,
               "prefix" : "1.0.1.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -109,6 +113,8 @@
               "ospfPassive" : false,
               "prefix" : "10.12.11.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -136,6 +142,8 @@
               "ospfPassive" : true,
               "prefix" : "1.1.1.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -341,7 +349,7 @@
                             {
                               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                               "metric" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                                 "value" : 50
                               }
                             },
@@ -384,7 +392,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -427,7 +435,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -487,7 +495,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -530,7 +538,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -916,7 +924,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -1211,6 +1219,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1236,6 +1246,8 @@
               "ospfPassive" : false,
               "prefix" : "10.13.22.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1263,6 +1275,8 @@
               "ospfPassive" : false,
               "prefix" : "1.0.2.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1288,6 +1302,8 @@
               "ospfPassive" : false,
               "prefix" : "10.14.22.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1315,6 +1331,8 @@
               "ospfPassive" : false,
               "prefix" : "1.2.2.2/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1516,7 +1534,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -1559,7 +1577,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -1619,7 +1637,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -1662,7 +1680,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -1698,7 +1716,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 50
                   }
                 },
@@ -2116,7 +2134,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -2349,6 +2367,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2376,6 +2396,8 @@
               "ospfPassive" : false,
               "prefix" : "1.0.2.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2403,6 +2425,8 @@
               "ospfPassive" : false,
               "prefix" : "1.0.1.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2430,6 +2454,8 @@
               "ospfPassive" : false,
               "prefix" : "1.10.1.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2745,6 +2771,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2772,6 +2800,8 @@
               "outgoingFilter" : "INSIDE_TO_AS1",
               "prefix" : "10.12.11.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2799,6 +2829,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.11.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2826,6 +2858,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.12.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2853,6 +2887,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.1.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3140,7 +3176,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -3183,7 +3219,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -3243,7 +3279,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -3286,7 +3322,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -3589,7 +3625,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -3871,6 +3907,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3898,6 +3936,8 @@
               "outgoingFilter" : "INSIDE_TO_AS3",
               "prefix" : "10.23.21.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3925,6 +3965,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.22.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3952,6 +3994,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.21.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3979,6 +4023,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.1.2/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4255,7 +4301,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -4298,7 +4344,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -4358,7 +4404,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -4401,7 +4447,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -4704,7 +4750,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -4949,6 +4995,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4976,6 +5024,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.11.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5003,6 +5053,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.21.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5031,6 +5083,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.11.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5059,6 +5113,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.12.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5086,6 +5142,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.2.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5506,6 +5564,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5533,6 +5593,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.22.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5560,6 +5622,8 @@
               "ospfPassive" : false,
               "prefix" : "2.12.12.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5587,6 +5651,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.22.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5614,6 +5680,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.21.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5641,6 +5709,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.2.2/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6038,6 +6108,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6063,6 +6135,8 @@
               "ospfPassive" : false,
               "prefix" : "2.34.101.4/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6088,6 +6162,8 @@
               "ospfPassive" : false,
               "prefix" : "2.34.201.4/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6114,6 +6190,8 @@
               "ospfPassive" : false,
               "prefix" : "2.128.0.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6140,6 +6218,8 @@
               "ospfPassive" : false,
               "prefix" : "2.128.1.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6165,6 +6245,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.1.2/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6416,7 +6498,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -6869,6 +6951,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6896,6 +6980,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.11.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6923,6 +7009,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.21.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6948,6 +7036,8 @@
               "ospfPassive" : false,
               "prefix" : "2.34.101.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6975,6 +7065,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.3.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7111,7 +7203,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -7297,7 +7389,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -7542,6 +7634,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7569,6 +7663,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.22.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7596,6 +7692,8 @@
               "ospfPassive" : false,
               "prefix" : "2.23.12.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7621,6 +7719,8 @@
               "ospfPassive" : false,
               "prefix" : "2.34.201.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7648,6 +7748,8 @@
               "ospfPassive" : false,
               "prefix" : "2.1.3.2/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7784,7 +7886,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -7970,7 +8072,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -8235,6 +8337,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8262,6 +8366,8 @@
               "ospfPassive" : false,
               "prefix" : "3.0.1.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8287,6 +8393,8 @@
               "ospfPassive" : false,
               "prefix" : "10.23.21.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8314,6 +8422,8 @@
               "ospfPassive" : false,
               "prefix" : "3.1.1.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8585,7 +8695,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -8628,7 +8738,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -8692,7 +8802,7 @@
                             {
                               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                               "metric" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                                 "value" : 50
                               }
                             },
@@ -8735,7 +8845,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -8778,7 +8888,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -9044,7 +9154,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -9283,6 +9393,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9308,6 +9420,8 @@
               "ospfPassive" : false,
               "prefix" : "10.13.22.3/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9335,6 +9449,8 @@
               "ospfPassive" : false,
               "prefix" : "3.0.2.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9362,6 +9478,8 @@
               "ospfPassive" : false,
               "prefix" : "3.2.2.2/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9623,7 +9741,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -9666,7 +9784,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -9726,7 +9844,7 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                           "metric" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                             "value" : 50
                           }
                         },
@@ -9769,7 +9887,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                         "value" : 50
                       }
                     },
@@ -10035,7 +10153,7 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                   "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                     "value" : 20
                   }
                 },
@@ -10242,6 +10360,8 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10269,6 +10389,8 @@
               "ospfPassive" : false,
               "prefix" : "3.0.2.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10296,6 +10418,8 @@
               "ospfPassive" : false,
               "prefix" : "3.0.1.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10321,6 +10445,8 @@
               "ospfPassive" : false,
               "prefix" : "90.90.90.1/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10346,6 +10472,8 @@
               "ospfPassive" : false,
               "prefix" : "90.90.90.2/24",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10373,6 +10501,8 @@
               "ospfPassive" : false,
               "prefix" : "3.10.1.1/32",
               "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10802,6 +10932,8 @@
               "ospfPassive" : false,
               "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.0.101/24",
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10979,6 +11111,8 @@
               "ospfPassive" : false,
               "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.1.101/24",
+              "ripEnabled" : false,
+              "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",

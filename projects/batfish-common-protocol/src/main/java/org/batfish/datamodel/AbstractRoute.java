@@ -66,8 +66,8 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     if (ret != 0) {
       return ret;
     }
-    Integer lhsMetric = getMetric();
-    Integer rhsMetric = rhs.getMetric();
+    Long lhsMetric = getMetric();
+    Long rhsMetric = rhs.getMetric();
     if (lhsMetric == null) {
       if (rhsMetric != null) {
         ret = -1;
@@ -77,7 +77,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     } else if (rhsMetric == null) {
       ret = 1;
     } else {
-      ret = Integer.compare(lhsMetric, rhsMetric);
+      ret = Long.compare(lhsMetric, rhsMetric);
     }
     if (ret != 0) {
       return ret;
@@ -144,7 +144,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     nhip = !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? nextHopIp.toString() : "N/A";
     String net = getNetwork().toString();
     String admin = Integer.toString(getAdministrativeCost());
-    String cost = Integer.toString(getMetric());
+    String cost = Long.toString(getMetric());
     String prot = getProtocol().protocolName();
     String routeStr =
         String.format(
@@ -157,7 +157,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   public abstract int getAdministrativeCost();
 
   @JsonIgnore
-  public abstract Integer getMetric();
+  public abstract Long getMetric();
 
   @JsonProperty(PROP_NETWORK)
   @JsonPropertyDescription("IPV4 network of this route")
