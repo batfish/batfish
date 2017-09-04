@@ -98,6 +98,7 @@ exception crashinfo maximum-files 1
 exception memory ignore overflow processor
 exception memory ignore overflow io
 cops listener access-list cops-acl
+tftp-server disk0:abcdefg.bin
 process-max-time 23
 management-access inside
 vpc domain 32
