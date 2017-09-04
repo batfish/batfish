@@ -135,6 +135,7 @@ logging_null
       | ASDM
       | ASDM_BUFFER_SIZE
       | BUFFER_SIZE
+      | CMTS
       | DEBUG_TRACE
       | DISCRIMINATOR
       | ESM

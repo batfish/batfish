@@ -1526,6 +1526,11 @@ CMD
    'cmd'
 ;
 
+CMTS
+:
+   'cmts'
+;
+
 CNS
 :
    'cns'
