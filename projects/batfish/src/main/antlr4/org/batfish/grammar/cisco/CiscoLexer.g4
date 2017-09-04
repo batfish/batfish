@@ -1772,6 +1772,11 @@ COPP
    'copp'
 ;
 
+COPS
+:
+   'cops'
+;
+
 COPY
 :
    'copy'
@@ -4696,6 +4701,11 @@ LIST
 LISTEN
 :
    'listen'
+;
+
+LISTENER
+:
+   'listener'
 ;
 
 LLDP

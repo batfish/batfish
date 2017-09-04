@@ -3547,6 +3547,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to IPv4/6 ACLs that may not appear in data model
     markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP, c);
+    markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST, c);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL, c);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL, c);

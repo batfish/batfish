@@ -97,6 +97,7 @@ exception-slave core-file C2960-WM3-core
 exception crashinfo maximum-files 1
 exception memory ignore overflow processor
 exception memory ignore overflow io
+cops listener access-list cops-acl
 process-max-time 23
 management-access inside
 vpc domain 32

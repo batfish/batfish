@@ -80,6 +80,19 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
+cops_listener
+:
+   LISTENER
+   (
+      copsl_access_list
+   )
+;
+
+copsl_access_list
+:
+   ACCESS_LIST name = variable_permissive NEWLINE
+;
+
 cp_ip_access_group
 :
    (
@@ -1343,6 +1356,14 @@ s_control_plane_tail
    | cp_service_policy
 ;
 
+s_cops
+:
+   COPS
+   (
+      cops_listener
+   )
+;
+
 s_cos_queue_group
 :
    COS_QUEUE_GROUP ~NEWLINE* NEWLINE
@@ -2315,6 +2336,7 @@ stanza
    | s_cluster
    | s_control_plane
    | s_controller
+   | s_cops
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file

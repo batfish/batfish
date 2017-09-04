@@ -27,6 +27,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   CLASS_MAP_ACCESS_GROUP("class-map access-group"),
   CONTROL_PLANE_ACCESS_GROUP("control-plane ip access-group"),
   CONTROLLER_DEPI_TUNNEL("controller rf-channel depi-tunnel"),
+  COPS_LISTENER_ACCESS_LIST("cops listener access-list"),
   CRYPTO_MAP_IPSEC_ISAKMP_ACL("crypto map ipsec-isakmp acl"),
   DEPI_TUNNEL_DEPI_CLASS("depi-tunnel depi-class"),
   DEPI_TUNNEL_L2TP_CLASS("depi-tunnel l2tp-class"),

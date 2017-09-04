@@ -190,6 +190,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_match_addressContext;
@@ -2266,6 +2267,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
     _currentRouteMapClause.setContinueLine(continueLine);
+  }
+
+  @Override
+  public void exitCopsl_access_list(Copsl_access_listContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.IP_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        line);
   }
 
   @Override
