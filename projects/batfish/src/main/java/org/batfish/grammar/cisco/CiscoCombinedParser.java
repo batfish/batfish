@@ -20,6 +20,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
         foundry = true;
         // fall through
       case ARISTA:
+      case CADANT:
       case CISCO_IOS:
       case FORCE10:
         multilineBgpNeighbors = false;
@@ -36,6 +37,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
     }
     _lexer.setFoundry(foundry);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
+    _parser.setDisableUnrecognized(settings.getDisableUnrecognized());
   }
 
   @Override
