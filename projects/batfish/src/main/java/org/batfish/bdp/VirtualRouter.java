@@ -32,6 +32,8 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RipInternalRoute;
+import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -119,6 +121,12 @@ public class VirtualRouter extends ComparableStructure<String> {
   transient OspfExternalType2Rib _prevOspfExternalType2Rib;
 
   AdvertisementSet _receivedBgpAdvertisements;
+
+  transient RipInternalRib _ripInternalRib;
+
+  transient RipInternalRib _ripInternalStagingRib;
+
+  transient RipRib _ripRib;
 
   AdvertisementSet _sentBgpAdvertisements;
 
@@ -504,6 +512,33 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
+  public void initBaseRipRoutes() {
+    if (_vrf.getRipProcess() != null) {
+      // init internal routes from connected routes
+      for (String ifaceName : _vrf.getRipProcess().getInterfaces()) {
+        Interface iface = _vrf.getInterfaces().get(ifaceName);
+        if (iface.getActive()) {
+          Set<Prefix> allNetworkPrefixes =
+              iface
+                  .getAllPrefixes()
+                  .stream()
+                  .map(prefix -> prefix.getNetworkPrefix())
+                  .collect(Collectors.toSet());
+          int cost = RipProcess.DEFAULT_RIP_COST;
+          for (Prefix prefix : allNetworkPrefixes) {
+            RipInternalRoute route =
+                new RipInternalRoute(
+                    prefix,
+                    null,
+                    RoutingProtocol.RIP.getDefaultAdministrativeCost(_c.getConfigurationFormat()),
+                    cost);
+            _ripInternalRib.mergeRoute(route);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * This function creates BGP routes from generated routes that go into the BGP RIB, but cannot be
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
@@ -636,6 +671,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ospfIntraAreaRib = new OspfIntraAreaRib(this);
     _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
     _ospfRib = new OspfRib(this);
+    _ripInternalRib = new RipInternalRib(this);
+    _ripInternalStagingRib = new RipInternalRib(this);
+    _ripRib = new RipRib(this);
     _staticRib = new StaticRib(this);
     _staticInterfaceRib = new StaticRib(this);
   }
@@ -1303,6 +1341,58 @@ public class VirtualRouter extends ComparableStructure<String> {
     return changed;
   }
 
+  public boolean propagateRipInternalRoutes(Map<String, Node> nodes, Topology topology) {
+    boolean changed = false;
+    String node = _c.getHostname();
+    if (_vrf.getRipProcess() != null) {
+      int admin = RoutingProtocol.RIP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+      EdgeSet edges = topology.getNodeEdges().get(node);
+      if (edges == null) {
+        // there are no edges, so RIP won't produce anything
+        return false;
+      }
+      for (Edge edge : edges) {
+        if (!edge.getNode1().equals(node)) {
+          continue;
+        }
+        String connectingInterfaceName = edge.getInt1();
+        Interface connectingInterface = _vrf.getInterfaces().get(connectingInterfaceName);
+        if (connectingInterface == null) {
+          // wrong vrf, so skip
+          continue;
+        }
+        String neighborName = edge.getNode2();
+        Node neighbor = nodes.get(neighborName);
+        String neighborInterfaceName = edge.getInt2();
+        Configuration nc = neighbor._c;
+        Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
+        String neighborVrfName = neighborInterface.getVrfName();
+        VirtualRouter neighborVirtualRouter =
+            _nodes.get(neighborName)._virtualRouters.get(neighborVrfName);
+        if (connectingInterface.getRipEnabled()
+            && !connectingInterface.getRipPassive()
+            && neighborInterface.getRipEnabled()
+            && !neighborInterface.getRipPassive()) {
+          /*
+           * We have a RIP neighbor relationship on this edge. So we should add all RIP routes
+           * from this neighbor into our RIP internal staging rib, adding the incremental cost
+           * (?), and using the neighborInterface's address as the next hop ip
+           */
+          for (RipInternalRoute neighborRoute : neighborVirtualRouter._ripInternalRib.getRoutes()) {
+            int newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
+            Ip nextHopIp = neighborInterface.getPrefix().getAddress();
+            RipInternalRoute newRoute =
+                new RipInternalRoute(neighborRoute.getNetwork(), nextHopIp, admin, newCost);
+            if (_ripInternalStagingRib.mergeRoute(newRoute)) {
+              changed = true;
+            }
+          }
+        }
+      }
+    }
+    return changed;
+  }
+
   public void unstageBgpRoutes() {
     importRib(_ebgpMultipathRib, _ebgpStagingRib);
     importRib(_ebgpBestPathRib, _ebgpStagingRib);
@@ -1316,11 +1406,11 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   public void unstageOspfInternalRoutes() {
-    for (OspfIntraAreaRoute route : _ospfIntraAreaStagingRib.getRoutes()) {
-      _ospfIntraAreaRib.mergeRoute(route);
-    }
-    for (OspfInterAreaRoute route : _ospfInterAreaStagingRib.getRoutes()) {
-      _ospfInterAreaRib.mergeRoute(route);
-    }
+    importRib(_ospfIntraAreaRib, _ospfIntraAreaStagingRib);
+    importRib(_ospfInterAreaRib, _ospfInterAreaStagingRib);
+  }
+
+  public void unstageRipInternalRoutes() {
+    importRib(_ripInternalRib, _ripInternalStagingRib);
   }
 }

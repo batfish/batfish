@@ -2282,7 +2282,6 @@ stanza
    | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
-   | router_rip_stanza
    | rsvp_stanza
    | s_aaa
    | s_application
@@ -2375,6 +2374,7 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_rip
    | s_router_static
    | s_router_vrrp
    | s_sccp

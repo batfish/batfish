@@ -358,6 +358,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailCont
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospf_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Redistribute_rip_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
@@ -385,7 +386,6 @@ import org.batfish.grammar.cisco.CiscoParser.Route_reflector_client_bgp_tailCont
 import org.batfish.grammar.cisco.CiscoParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Router_isis_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Router_rip_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_setContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_community_set_elem_halfContext;
@@ -396,6 +396,10 @@ import org.batfish.grammar.cisco.CiscoParser.Rp_prefix_setContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_route_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Rp_subrangeContext;
+import org.batfish.grammar.cisco.CiscoParser.Rr_distribute_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Rr_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Rr_passive_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Rr_passive_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
@@ -422,6 +426,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
+import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
@@ -539,6 +544,7 @@ import org.batfish.representation.cisco.Prefix6List;
 import org.batfish.representation.cisco.Prefix6ListLine;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
+import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
 import org.batfish.representation.cisco.RouteMapContinue;
@@ -668,8 +674,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_OSPF_MAXIMUM_PATHS = "ospf - maximum-paths";
 
   private static final String F_OSPF_REDISTRIBUTE_RIP = "ospf - redistribute rip";
-
-  private static final String F_RIP = "rip";
 
   private static final String F_ROUTE_MAP_SET_METRIC_TYPE = "route-map - set metric-type";
 
@@ -894,6 +898,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private int _currentPrefixSetDefinitionLine;
 
   private String _currentPrefixSetName;
+
+  private RipProcess _currentRipProcess;
 
   private RouteMap _currentRouteMap;
 
@@ -1590,11 +1596,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
-    todo(ctx, F_RIP);
-  }
-
-  @Override
   public void enterRs_vrf(Rs_vrfContext ctx) {
     _currentVrf = ctx.name.getText();
   }
@@ -1810,6 +1811,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     OspfProcess proc = new OspfProcess(procName);
     currentVrf().setOspfProcess(proc);
     _currentOspfProcess = proc;
+  }
+
+  @Override
+  public void enterS_router_rip(S_router_ripContext ctx) {
+    RipProcess proc = new RipProcess();
+    currentVrf().setRipProcess(proc);
+    _currentRipProcess = proc;
   }
 
   @Override
@@ -4311,6 +4319,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRedistribute_rip_bgp_tail(Redistribute_rip_bgp_tailContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+      RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+        int metric = toInteger(ctx.metric);
+        r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+        String map = ctx.map.getText();
+        int mapLine = ctx.map.getStart().getLine();
+        r.setRouteMap(map);
+        r.setRouteMapLine(mapLine);
+      }
+    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
+      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    }
+  }
+
+  @Override
   public void exitRedistribute_static_bgp_tail(Redistribute_static_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
@@ -4658,6 +4688,57 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRr_distribute_list(Rr_distribute_listContext ctx) {
+    RipProcess proc = _currentRipProcess;
+    int line = ctx.getStart().getLine();
+    boolean in = ctx.IN() != null;
+    String name;
+    boolean acl;
+    if (ctx.acl != null) {
+      name = ctx.acl.getText();
+      acl = true;
+    } else {
+      name = ctx.prefix_list.getText();
+      acl = false;
+    }
+    if (in) {
+      proc.setDistributeListIn(name);
+      proc.setDistributeListInAcl(acl);
+      proc.setDistributeListInLine(line);
+    } else {
+      proc.setDistributeListOut(name);
+      proc.setDistributeListOutAcl(acl);
+      proc.setDistributeListOutLine(line);
+    }
+  }
+
+  @Override
+  public void exitRr_network(Rr_networkContext ctx) {
+    Ip networkAddress = toIp(ctx.network);
+    Ip mask = networkAddress.getClassMask();
+    Prefix network = new Prefix(networkAddress, mask);
+    _currentRipProcess.getNetworks().add(network);
+  }
+
+  @Override
+  public void exitRr_passive_interface(Rr_passive_interfaceContext ctx) {
+    boolean passive = ctx.NO() == null;
+    String iname = ctx.iname.getText();
+    RipProcess proc = _currentRipProcess;
+    if (passive) {
+      proc.getPassiveInterfaceList().add(iname);
+    } else {
+      proc.getActiveInterfaceList().add(iname);
+    }
+  }
+
+  @Override
+  public void exitRr_passive_interface_default(Rr_passive_interface_defaultContext ctx) {
+    boolean no = ctx.NO() != null;
+    _currentRipProcess.setPassiveInterfaceDefault(!no);
+  }
+
+  @Override
   public void exitRs_route(Rs_routeContext ctx) {
     if (ctx.prefix != null) {
       Prefix prefix = new Prefix(ctx.prefix.getText());
@@ -4796,6 +4877,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void exitS_router_rip(S_router_ripContext ctx) {
+    _currentRipProcess = null;
   }
 
   @Override

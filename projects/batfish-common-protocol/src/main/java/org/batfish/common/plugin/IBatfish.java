@@ -86,6 +86,9 @@ public interface IBatfish extends IPluginConsumer {
   void initRemoteOspfNeighbors(
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
 
+  void initRemoteRipNeighbors(
+      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
+
   SortedMap<String, Configuration> loadConfigurations();
 
   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();

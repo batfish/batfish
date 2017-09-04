@@ -190,6 +190,7 @@ bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
    | redistribute_ospf_bgp_tail
+   | redistribute_rip_bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
    | route_map_bgp_tail
@@ -736,6 +737,20 @@ redistribute_ospf_bgp_tail
       |
       (
          MATCH ospf_route_type*
+      )
+   )* NEWLINE
+;
+
+redistribute_rip_bgp_tail
+:
+   REDISTRIBUTE RIP
+   (
+      (
+         ROUTE_MAP map = variable
+      )
+      |
+      (
+         METRIC metric = DEC
       )
    )* NEWLINE
 ;
