@@ -516,6 +516,7 @@ public enum RoutingProtocol {
           default:
             break;
         }
+        break;
 
       case STATIC:
         return 1;
