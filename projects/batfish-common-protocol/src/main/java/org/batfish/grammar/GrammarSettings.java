@@ -6,11 +6,15 @@ public interface GrammarSettings {
 
   int getMaxParserContextTokens();
 
+  boolean getDisableUnrecognized();
+
   boolean getThrowOnLexerError();
 
   boolean getThrowOnParserError();
 
   boolean printParseTree();
+
+  void setDisableUnrecognized(boolean b);
 
   void setThrowOnLexerError(boolean b);
 
