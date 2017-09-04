@@ -83,6 +83,7 @@ snmp-server queue-length 1000
 snmp-server source-interface trap loopback0
 snmp-server source-interface trap mgmt0
 snmp-server source-interface trap Vlan1
+snmp-server system-shutdown
 snmp-server tcp-session auth
 snmp-server tftp-server-list 8
 snmp-server trap link ietf

@@ -8765,6 +8765,11 @@ SYSTEM_PRIORITY
    'system-priority'
 ;
 
+SYSTEM_SHUTDOWN
+:
+   'system-shutdown'
+;
+
 SYSTEMOWNER
 :
    'SystemOwner'
