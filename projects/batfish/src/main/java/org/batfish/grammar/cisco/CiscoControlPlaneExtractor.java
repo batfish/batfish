@@ -839,6 +839,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @SuppressWarnings("unused")
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
+  @SuppressWarnings("unused")
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
   private String _currentAddressFamily;
@@ -5021,6 +5022,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Sntp sntp = _configuration.getCf().getSntp();
     String hostname = ctx.hostname.getText();
     SntpServer server = sntp.getServers().computeIfAbsent(hostname, SntpServer::new);
+    if (ctx.version != null) {
+      int version = toInteger(ctx.version);
+      server.setVersion(version);
+    }
   }
 
   @Override
