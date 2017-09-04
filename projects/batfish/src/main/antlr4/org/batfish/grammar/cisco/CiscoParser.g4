@@ -1183,6 +1183,14 @@ phone_proxy_null
    ) ~NEWLINE* NEWLINE
 ;
 
+redundancy_linecard_group
+:
+   LINECARD_GROUP ~NEWLINE* NEWLINE
+   (
+      rlcg_null
+   )*
+;
+
 redundancy_main_cpu
 :
    MAIN_CPU ~NEWLINE* NEWLINE
@@ -1208,6 +1216,17 @@ redundancy_null
       | NOTIFICATION_TIMER
       | PROTOCOL
       | SCHEME
+   ) ~NEWLINE* NEWLINE
+;
+
+rlcg_null
+:
+   NO?
+   (
+      MEMBER
+      | MODE
+      | REVERTIVE
+      | RF_SWITCH
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1811,7 +1830,8 @@ s_redundancy
 :
    NO? REDUNDANCY ~NEWLINE* NEWLINE
    (
-      redundancy_main_cpu
+      redundancy_linecard_group
+      | redundancy_main_cpu
       | redundancy_null
    )*
 ;

@@ -4658,6 +4658,11 @@ LINECARD
    'linecard'
 ;
 
+LINECARD_GROUP
+:
+   'linecard-group'
+;
+
 LINECODE
 :
    'linecode'
@@ -7438,6 +7443,11 @@ REVERSE_ROUTE
    'reverse-route'
 ;
 
+REVERTIVE
+:
+   'revertive'
+;
+
 REVISION
 :
    'revision'
@@ -7466,6 +7476,11 @@ RF_POWER
 RF_SHUTDOWN
 :
    'rf-shutdown'
+;
+
+RF_SWITCH
+:
+   'rf-switch'
 ;
 
 RFC1583COMPATIBILITY
