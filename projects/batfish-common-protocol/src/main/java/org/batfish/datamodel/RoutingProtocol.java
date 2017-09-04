@@ -67,6 +67,8 @@ public enum RoutingProtocol {
             break;
           case AWS_VPC:
             break;
+          case CADANT:
+            break;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -104,6 +106,8 @@ public enum RoutingProtocol {
           case ARISTA:
             return 200;
           case AWS_VPC:
+            return 20;
+          case CADANT:
             return 20;
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -146,6 +150,8 @@ public enum RoutingProtocol {
             return 200;
           case AWS_VPC:
             return 200;
+          case CADANT:
+            return 20;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -184,6 +190,8 @@ public enum RoutingProtocol {
             break;
           case AWS_VPC:
             return 115;
+          case CADANT:
+            return 117;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -222,6 +230,8 @@ public enum RoutingProtocol {
             break;
           case AWS_VPC:
             return 115;
+          case CADANT:
+            return 118;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -259,6 +269,8 @@ public enum RoutingProtocol {
           case ARISTA:
             break;
           case AWS_VPC:
+            return 115;
+          case CADANT:
             return 115;
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -298,6 +310,8 @@ public enum RoutingProtocol {
             break;
           case AWS_VPC:
             return 115;
+          case CADANT:
+            return 116;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -335,6 +349,9 @@ public enum RoutingProtocol {
           case ARISTA:
             return 110;
           case AWS_VPC:
+            return 110;
+          case CADANT:
+            //TODO: verify. assumption due to missing information in manual.
             return 110;
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -374,6 +391,9 @@ public enum RoutingProtocol {
             return 110;
           case AWS_VPC:
             return 110;
+          case CADANT:
+            //TODO: verify. assumption based on incrementing IS-IS costs in manual.
+            return 112;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -412,6 +432,9 @@ public enum RoutingProtocol {
             return 110;
           case AWS_VPC:
             return 110;
+          case CADANT:
+            //TODO: verify. assumption based on incrementing IS-IS costs in manual.
+            return 113;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -450,6 +473,9 @@ public enum RoutingProtocol {
             return 110;
           case AWS_VPC:
             return 110;
+          case CADANT:
+            //TODO: verify. assumption based on incrementing IS-IS costs in manual.
+            return 111;
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
@@ -487,6 +513,8 @@ public enum RoutingProtocol {
           case ARISTA:
             return 120;
           case AWS_VPC:
+            return 120;
+          case CADANT:
             return 120;
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -545,6 +573,7 @@ public enum RoutingProtocol {
       case OSPF_IA:
         switch (vendor) {
           case ARISTA:
+          case CADANT:
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
