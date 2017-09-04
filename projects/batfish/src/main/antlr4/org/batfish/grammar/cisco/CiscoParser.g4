@@ -570,7 +570,7 @@ ip_route_stanza
       | MANAGEMENT
    ) ROUTE
    (
-      VRF vrf = ~NEWLINE
+      VRF vrf = variable
    )? ip_route_tail
 ;
 
@@ -585,6 +585,7 @@ ip_route_tail
    (
       nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
+      | GLOBAL
       | nexthopint = interface_name
    )*
    (

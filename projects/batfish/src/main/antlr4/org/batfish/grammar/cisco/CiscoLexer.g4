@@ -11154,6 +11154,11 @@ M_Interface_EQ
    'eq' -> type ( EQ ) , popMode
 ;
 
+M_Interface_GLOBAL
+:
+   'global' -> type ( GLOBAL ) , popMode
+;
+
 M_Interface_GT
 :
    'gt' -> type ( GT ) , popMode
