@@ -7,23 +7,23 @@ public class RipRedistributionPolicy extends RedistributionPolicy {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public static final Integer DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 1;
+  public static final long DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 1L;
 
-  public static final Integer DEFAULT_REDISTRIBUTE_STATIC_METRIC = 1;
+  public static final long DEFAULT_REDISTRIBUTE_STATIC_METRIC = 1L;
 
-  public static final Integer DEFAULT_REDISTRIBUTE_BGP_METRIC = 1;
+  public static final long DEFAULT_REDISTRIBUTE_BGP_METRIC = 1L;
 
-  private Integer _metric;
+  private Long _metric;
 
   public RipRedistributionPolicy(RoutingProtocol sourceProtocol) {
     super(sourceProtocol, RoutingProtocol.RIP);
   }
 
-  public Integer getMetric() {
+  public Long getMetric() {
     return _metric;
   }
 
-  public void setMetric(Integer metric) {
+  public void setMetric(Long metric) {
     _metric = metric;
   }
 }

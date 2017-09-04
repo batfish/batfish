@@ -14,6 +14,6 @@ public class RipInternalRib extends AbstractRib<RipInternalRoute> {
   @Override
   public int comparePreference(RipInternalRoute lhs, RipInternalRoute rhs) {
     // reversed on purpose
-    return Integer.compare(rhs.getMetric(), lhs.getMetric());
+    return Long.compare(rhs.getMetric(), lhs.getMetric());
   }
 }

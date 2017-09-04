@@ -4,7 +4,7 @@ public class RouteBuilder {
 
   private int _administrativeCost;
 
-  private int _cost;
+  private long _cost;
 
   private Prefix _network;
 
@@ -49,7 +49,7 @@ public class RouteBuilder {
     _administrativeCost = administrativeCost;
   }
 
-  public void setCost(int cost) {
+  public void setCost(long cost) {
     _cost = cost;
   }
 

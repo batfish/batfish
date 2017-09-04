@@ -3,18 +3,18 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class DecrementMetric extends LongExpr {
+public class VarLong extends LongExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private long _subtrahend;
+  private String _var;
 
   @JsonCreator
-  private DecrementMetric() {}
+  private VarLong() {}
 
-  public DecrementMetric(long subtrahend) {
-    _subtrahend = subtrahend;
+  public VarLong(String var) {
+    _var = var;
   }
 
   @Override
@@ -28,8 +28,12 @@ public class DecrementMetric extends LongExpr {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    DecrementMetric other = (DecrementMetric) obj;
-    if (_subtrahend != other._subtrahend) {
+    VarLong other = (VarLong) obj;
+    if (_var == null) {
+      if (other._var != null) {
+        return false;
+      }
+    } else if (!_var.equals(other._var)) {
       return false;
     }
     return true;
@@ -37,24 +41,23 @@ public class DecrementMetric extends LongExpr {
 
   @Override
   public long evaluate(Environment environment) {
-    long oldMetric = environment.getOriginalRoute().getMetric();
-    long newVal = oldMetric - _subtrahend;
-    return newVal;
+    throw new UnsupportedOperationException("no implementation for generated method");
+    // TODO Auto-generated method stub
   }
 
-  public long getSubtrahend() {
-    return _subtrahend;
+  public String getVar() {
+    return _var;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + Long.hashCode(_subtrahend);
+    result = prime * result + ((_var == null) ? 0 : _var.hashCode());
     return result;
   }
 
-  public void setSubtrahend(long subtrahend) {
-    _subtrahend = subtrahend;
+  public void setVar(String var) {
+    _var = var;
   }
 }

@@ -14,7 +14,7 @@ public class RipInternalRoute extends RipRoute {
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) int metric) {
+      @JsonProperty(PROP_METRIC) long metric) {
     super(network, nextHopIp, admin, metric);
   }
 
@@ -61,7 +61,7 @@ public class RipInternalRoute extends RipRoute {
     final int prime = 31;
     int result = 1;
     result = prime * result + _admin;
-    result = prime * result + _metric;
+    result = prime * result + Long.hashCode(_metric);
     result = prime * result + _network.hashCode();
     result = prime * result + (_nextHopIp == null ? 0 : _nextHopIp.hashCode());
     return result;

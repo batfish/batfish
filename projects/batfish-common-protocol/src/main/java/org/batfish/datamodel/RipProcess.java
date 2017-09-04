@@ -10,7 +10,7 @@ import org.batfish.common.Pair;
 
 public class RipProcess implements Serializable {
 
-  public static final int DEFAULT_RIP_COST = 1;
+  public static final long DEFAULT_RIP_COST = 1;
 
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
 

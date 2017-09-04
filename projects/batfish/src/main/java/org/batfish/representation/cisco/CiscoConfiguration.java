@@ -73,7 +73,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -2652,8 +2652,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                       new PrefixSpace(
                           Collections.singleton(
                               new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
-      int metric = proc.getDefaultInformationMetric();
-      ospfExportDefaultStatements.add(new SetMetric(new LiteralInt(metric)));
+      long metric = proc.getDefaultInformationMetric();
+      ospfExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       OspfMetricType metricType = proc.getDefaultInformationMetricType();
       ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
       // add default export map with metric
@@ -2712,14 +2712,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .add(new MatchProtocol(RoutingProtocol.CONNECTED));
       List<Statement> ospfExportConnectedStatements = ospfExportConnected.getTrueStatements();
 
-      Integer metric = rcp.getMetric();
+      Long metric = rcp.getMetric();
       OspfMetricType metricType = rcp.getMetricType();
       ospfExportConnectedStatements.add(new SetOspfMetricType(metricType));
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
         metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
       }
-      ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
+      ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ospfExportStatements.add(ospfExportConnected);
       // add default export map with metric
       String exportConnectedRouteMapName = rcp.getRouteMap();
@@ -2763,14 +2763,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               Collections.singleton(
                                   new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
 
-      Integer metric = rsp.getMetric();
+      Long metric = rsp.getMetric();
       OspfMetricType metricType = rsp.getMetricType();
       ospfExportStaticStatements.add(new SetOspfMetricType(metricType));
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
         metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
       }
-      ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
+      ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ospfExportStatements.add(ospfExportStatic);
       // add export map with metric
       String exportStaticRouteMapName = rsp.getRouteMap();
@@ -2812,14 +2812,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               Collections.singleton(
                                   new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
 
-      Integer metric = rbp.getMetric();
+      Long metric = rbp.getMetric();
       OspfMetricType metricType = rbp.getMetricType();
       ospfExportBgpStatements.add(new SetOspfMetricType(metricType));
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
         metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_BGP_METRIC;
       }
-      ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
+      ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ospfExportStatements.add(ospfExportBgp);
       // add export map with metric
       String exportBgpRouteMapName = rbp.getRouteMap();
@@ -2929,8 +2929,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                       new PrefixSpace(
                           Collections.singleton(
                               new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
-      int metric = proc.getDefaultInformationMetric();
-      ripExportDefaultStatements.add(new SetMetric(new LiteralInt(metric)));
+      long metric = proc.getDefaultInformationMetric();
+      ripExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       // add default export map with metric
       String defaultOriginateMapName = proc.getDefaultInformationOriginateMap();
       if (defaultOriginateMapName != null) {
@@ -2973,12 +2973,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ripExportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
       List<Statement> ripExportConnectedStatements = ripExportConnected.getTrueStatements();
 
-      Integer metric = rcp.getMetric();
+      Long metric = rcp.getMetric();
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
         metric = RipRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
       }
-      ripExportStatements.add(new SetMetric(new LiteralInt(metric)));
+      ripExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ripExportStatements.add(ripExportConnected);
       // add default export map with metric
       String exportConnectedRouteMapName = rcp.getRouteMap();
@@ -3021,12 +3021,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               Collections.singleton(
                                   new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
 
-      Integer metric = rsp.getMetric();
+      Long metric = rsp.getMetric();
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
         metric = RipRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
       }
-      ripExportStatements.add(new SetMetric(new LiteralInt(metric)));
+      ripExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ripExportStatements.add(ripExportStatic);
       // add export map with metric
       String exportStaticRouteMapName = rsp.getRouteMap();
@@ -3067,12 +3067,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               Collections.singleton(
                                   new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
 
-      Integer metric = rbp.getMetric();
+      Long metric = rbp.getMetric();
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
         metric = RipRedistributionPolicy.DEFAULT_REDISTRIBUTE_BGP_METRIC;
       }
-      ripExportStatements.add(new SetMetric(new LiteralInt(metric)));
+      ripExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ripExportStatements.add(ripExportBgp);
       // add export map with metric
       String exportBgpRouteMapName = rbp.getRouteMap();

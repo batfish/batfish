@@ -58,7 +58,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
      * normally we only do this comparison if the first AS is the same in the
      * paths for both routes
      */
-    res = Integer.compare(rhs.getMetric(), lhs.getMetric());
+    res = Long.compare(rhs.getMetric(), lhs.getMetric());
     if (res != 0) {
       return res;
     }

@@ -223,12 +223,12 @@ public class VirtualRouter extends ComparableStructure<String> {
           Prefix prefix = e2.getKey();
           boolean advertise = e2.getValue();
           if (advertise) {
-            Integer metric = null;
+            Long metric = null;
             for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
               if (contributingRoute.getArea() != areaNum) {
                 Prefix contributingRoutePrefix = contributingRoute.getNetwork();
                 if (prefix.containsPrefix(contributingRoutePrefix)) {
-                  int contributingRouteMetric = contributingRoute.getMetric();
+                  long contributingRouteMetric = contributingRoute.getMetric();
                   if (metric == null) {
                     metric = contributingRouteMetric;
                   } else {
@@ -241,7 +241,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               if (contributingRoute.getArea() != areaNum) {
                 Prefix contributingRoutePrefix = contributingRoute.getNetwork();
                 if (prefix.containsPrefix(contributingRoutePrefix)) {
-                  int contributingRouteMetric = contributingRoute.getMetric();
+                  long contributingRouteMetric = contributingRoute.getMetric();
                   if (metric == null) {
                     metric = contributingRouteMetric;
                   } else {
@@ -333,7 +333,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               SortedSet<Long> clusterList = advert.getClusterList();
               SortedSet<Long> communities = new TreeSet<>(advert.getCommunities());
               int localPreference = advert.getLocalPreference();
-              int metric = advert.getMed();
+              long metric = advert.getMed();
               Prefix network = advert.getNetwork();
               Ip nextHopIp = advert.getNextHopIp();
               Ip originatorIp = advert.getOriginatorIp();
@@ -524,7 +524,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   .stream()
                   .map(prefix -> prefix.getNetworkPrefix())
                   .collect(Collectors.toSet());
-          int cost = RipProcess.DEFAULT_RIP_COST;
+          long cost = RipProcess.DEFAULT_RIP_COST;
           for (Prefix prefix : allNetworkPrefixes) {
             RipInternalRoute route =
                 new RipInternalRoute(
@@ -947,7 +947,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 sentNextHopIp = transformedOutgoingRoute.getNextHopIp();
               }
               int sentLocalPreference = transformedOutgoingRoute.getLocalPreference();
-              int sentMed = transformedOutgoingRoute.getMetric();
+              long sentMed = transformedOutgoingRoute.getMetric();
               OriginType sentOriginType = transformedOutgoingRoute.getOriginType();
               RoutingProtocol sentSrcProtocol = targetProtocol;
               BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
@@ -1058,7 +1058,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 RoutingProtocol receivedSrcProtocol = sentSrcProtocol;
                 OriginType receivedOriginType = transformedIncomingRoute.getOriginType();
                 int receivedLocalPreference = transformedIncomingRoute.getLocalPreference();
-                int receivedMed = transformedIncomingRoute.getMetric();
+                long receivedMed = transformedIncomingRoute.getMetric();
                 Ip receivedOriginatorIp = sentOriginatorIp;
                 AsPath receivedAsPath = transformedIncomingRoute.getAsPath();
                 SortedSet<Long> receivedCommunities =
@@ -1147,8 +1147,9 @@ public class VirtualRouter extends ComparableStructure<String> {
           int connectingInterfaceCost = connectingInterface.getOspfCost();
           for (OspfExternalType1Route neighborRoute :
               neighborVirtualRouter._prevOspfExternalType1Rib.getRoutes()) {
-            int newMetric = neighborRoute.getMetric() + connectingInterfaceCost;
-            int newCostToAdvertiser = neighborRoute.getCostToAdvertiser() + connectingInterfaceCost;
+            long newMetric = neighborRoute.getMetric() + connectingInterfaceCost;
+            long newCostToAdvertiser =
+                neighborRoute.getCostToAdvertiser() + connectingInterfaceCost;
             OspfExternalType1Route newRoute =
                 new OspfExternalType1Route(
                     neighborRoute.getNetwork(),
@@ -1163,7 +1164,8 @@ public class VirtualRouter extends ComparableStructure<String> {
           }
           for (OspfExternalType2Route neighborRoute :
               neighborVirtualRouter._prevOspfExternalType2Rib.getRoutes()) {
-            int newCostToAdvertiser = neighborRoute.getCostToAdvertiser() + connectingInterfaceCost;
+            long newCostToAdvertiser =
+                neighborRoute.getCostToAdvertiser() + connectingInterfaceCost;
             OspfExternalType2Route newRoute =
                 new OspfExternalType2Route(
                     neighborRoute.getNetwork(),
@@ -1231,7 +1233,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             long areaNum = area.getName();
             for (OspfIntraAreaRoute neighborRoute :
                 neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
-              int newCost = neighborRoute.getMetric() + connectingInterfaceCost;
+              long newCost = neighborRoute.getMetric() + connectingInterfaceCost;
               Ip nextHopIp = neighborInterface.getPrefix().getAddress();
               OspfIntraAreaRoute newRoute =
                   new OspfIntraAreaRoute(
@@ -1256,7 +1258,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
                 }
                 if (allowed) {
-                  int newCost = neighborRoute.getMetric() + connectingInterfaceCost;
+                  long newCost = neighborRoute.getMetric() + connectingInterfaceCost;
                   Ip nextHopIp = neighborInterface.getPrefix().getAddress();
                   OspfInterAreaRoute newRoute =
                       new OspfInterAreaRoute(
@@ -1299,7 +1301,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
                 }
                 if (allowed) {
-                  int newCost = neighborRoute.getMetric() + connectingInterfaceCost;
+                  long newCost = neighborRoute.getMetric() + connectingInterfaceCost;
                   Ip nextHopIp = neighborInterface.getPrefix().getAddress();
                   OspfIntraAreaRoute newRoute =
                       new OspfIntraAreaRoute(
@@ -1324,7 +1326,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
               }
               if (allowed) {
-                int newCost = neighborRoute.getMetric() + connectingInterfaceCost;
+                long newCost = neighborRoute.getMetric() + connectingInterfaceCost;
                 Ip nextHopIp = neighborInterface.getPrefix().getAddress();
                 OspfInterAreaRoute newRoute =
                     new OspfInterAreaRoute(
@@ -1379,7 +1381,7 @@ public class VirtualRouter extends ComparableStructure<String> {
            * (?), and using the neighborInterface's address as the next hop ip
            */
           for (RipInternalRoute neighborRoute : neighborVirtualRouter._ripInternalRib.getRoutes()) {
-            int newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
+            long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
             Ip nextHopIp = neighborInterface.getPrefix().getAddress();
             RipInternalRoute newRoute =
                 new RipInternalRoute(neighborRoute.getNetwork(), nextHopIp, admin, newCost);

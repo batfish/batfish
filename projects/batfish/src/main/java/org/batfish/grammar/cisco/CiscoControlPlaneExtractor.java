@@ -81,8 +81,10 @@ import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LiteralRouteType;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf;
@@ -95,6 +97,7 @@ import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
+import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
@@ -815,6 +818,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static Ip6 toIp6(Token t) {
     return new Ip6(t.getText());
+  }
+
+  private static long toLong(TerminalNode t) {
+    return Long.parseLong(t.getText());
   }
 
   private static long toLong(Token t) {
@@ -4350,7 +4357,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       if (ctx.metric != null) {
-        int metric = toInteger(ctx.metric);
+        long metric = toLong(ctx.metric);
         r.setMetric(metric);
       }
       if (ctx.map != null) {
@@ -5063,7 +5070,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_metric_rm_stanza(Set_metric_rm_stanzaContext ctx) {
-    IntExpr metric = toMetricIntExpr(ctx.metric);
+    LongExpr metric = toMetricLongExpr(ctx.metric);
     RouteMapSetMetricLine line = new RouteMapSetMetricLine(metric);
     _currentRouteMapClause.addSetLine(line);
   }
@@ -5766,6 +5773,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  private LongExpr toCommonLongExpr(Int_exprContext ctx) {
+    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+      long val = toLong(ctx.DEC());
+      return new LiteralLong(val);
+    } else if (ctx.RP_VARIABLE() != null) {
+      return new VarLong(ctx.RP_VARIABLE().getText());
+    } else {
+      /*
+       * Unsupported static integer expression - do not add cases unless you
+       * know what you are doing
+       */
+      throw convError(LongExpr.class, ctx);
+    }
+  }
+
   private CommunitySetElem toCommunitySetElemExpr(Rp_community_set_elemContext ctx) {
     if (ctx.prefix != null) {
       CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
@@ -6085,26 +6107,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private IntExpr toMetricIntExpr(Int_exprContext ctx) {
+  private LongExpr toMetricLongExpr(Int_exprContext ctx) {
     if (ctx.DEC() != null) {
-      int val = toInteger(ctx.DEC());
+      long val = toLong(ctx.DEC());
       if (ctx.PLUS() != null) {
         return new IncrementMetric(val);
       } else if (ctx.DASH() != null) {
         return new DecrementMetric(val);
       } else {
-        return new LiteralInt(val);
+        return new LiteralLong(val);
       }
     } else if (ctx.IGP_COST() != null) {
       return new IgpCost();
     } else if (ctx.RP_VARIABLE() != null) {
-      return new VarInt(ctx.RP_VARIABLE().getText());
+      return new VarLong(ctx.RP_VARIABLE().getText());
     } else {
       /*
-       * Unsupported metric integer expression - do not add cases unless you
+       * Unsupported metric long expression - do not add cases unless you
        * know what you are doing
        */
-      throw convError(IntExpr.class, ctx);
+      throw convError(LongExpr.class, ctx);
     }
   }
 
@@ -6730,7 +6752,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_isis_metric_rp_stanzaContext ctx) {
-    IntExpr metric = toCommonIntExpr(ctx.int_expr());
+    LongExpr metric = toCommonLongExpr(ctx.int_expr());
     return new RoutePolicySetIsisMetric(metric);
   }
 
@@ -6743,7 +6765,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_med_rp_stanzaContext ctx) {
-    return new RoutePolicySetMed(toMetricIntExpr(ctx.med));
+    return new RoutePolicySetMed(toMetricLongExpr(ctx.med));
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_metric_type_rp_stanzaContext ctx) {

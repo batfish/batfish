@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -11,9 +11,9 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
 
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _metric;
+  private LongExpr _metric;
 
-  public RouteMapSetMetricLine(IntExpr metric) {
+  public RouteMapSetMetricLine(LongExpr metric) {
     _metric = metric;
   }
 
@@ -23,7 +23,7 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
     statements.add(new SetMetric(_metric));
   }
 
-  public IntExpr getMetric() {
+  public LongExpr getMetric() {
     return _metric;
   }
 

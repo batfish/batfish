@@ -17,7 +17,7 @@ public class RipProcess implements Serializable {
 
   private final SortedSet<String> _activeInterfaceList;
 
-  private int _defaultInformationMetric;
+  private long _defaultInformationMetric;
 
   private boolean _defaultInformationOriginate;
 
@@ -57,7 +57,7 @@ public class RipProcess implements Serializable {
     return _activeInterfaceList;
   }
 
-  public int getDefaultInformationMetric() {
+  public long getDefaultInformationMetric() {
     return _defaultInformationMetric;
   }
 
