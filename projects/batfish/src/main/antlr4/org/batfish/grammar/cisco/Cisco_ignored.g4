@@ -851,6 +851,7 @@ null_single
       | SERVER_TYPE
       | SERVICE_POLICY
       | SETUP
+      | SHELFNAME
       | SHELL
       | SIP_UA
       | SMTP_SERVER

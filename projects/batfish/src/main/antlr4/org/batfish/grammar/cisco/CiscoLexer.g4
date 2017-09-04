@@ -15,6 +15,7 @@ private boolean enableREGEX = false;
 private boolean _inAccessList = false;
 private boolean inCommunitySet = false;
 private boolean _foundry = false;
+private boolean _cadant = false;
 
 @Override
 public void emit(Token token) {
@@ -22,6 +23,10 @@ public void emit(Token token) {
     if (token.getChannel() != HIDDEN) {
        lastTokenType = token.getType();
     }
+}
+
+public void setCadant(boolean cadant) {
+   _cadant = cadant;
 }
 
 public void setFoundry(boolean foundry) {
@@ -57,9 +62,11 @@ tokens {
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
+   END_CADANT,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
+   LINE_CADANT,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PIPE,
@@ -8153,6 +8160,11 @@ SHAPE
    'shape'
 ;
 
+SHELFNAME
+:
+   'shelfname'
+;
+
 SHELL
 :
    'shell'
@@ -10245,7 +10257,7 @@ COMMENT_LINE
    (
       F_Whitespace
    )* [!#]
-   {lastTokenType == NEWLINE || lastTokenType == -1}?
+   {lastTokenType == NEWLINE || lastTokenType == END_CADANT || lastTokenType == -1}?
 
    F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;
@@ -10939,6 +10951,18 @@ M_Banner_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_BannerCadant;
+
+M_BannerCadant_END_CADANT
+:
+   '/end' F_Newline -> type ( END_CADANT ) , popMode
+;
+
+M_BannerCadant_LINE_CADANT
+:
+   F_NonNewline* F_Newline+ -> type ( LINE_CADANT )
+;
+
 mode M_BannerText;
 
 M_BannerText_WS
@@ -10952,17 +10976,22 @@ M_BannerText_ESCAPE_C
       '^C'
       | '^'
       | '\u0003'
-   ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
+   ) {!_cadant}? -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
 ;
 
 M_BannerText_HASH
 :
-   '#' -> type ( POUND ) , mode ( M_MOTD_HASH )
+   '#' {!_cadant}? -> type ( POUND ) , mode ( M_MOTD_HASH )
 ;
 
 M_BannerText_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
+   F_Newline {!_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
+;
+
+M_BannerText_NEWLINE_CADANT
+:
+   F_Newline {_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_BannerCadant )
 ;
 
 mode M_Certificate;

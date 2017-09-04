@@ -33,7 +33,11 @@ banner
          )
          |
          (
-            NEWLINE ~EOF_LITERAL* EOF_LITERAL
+            NEWLINE ~( EOF_LITERAL | LINE_CADANT )* EOF_LITERAL
+         )
+         |
+         (
+            NEWLINE LINE_CADANT* END_CADANT
          )
       )
    ) NEWLINE?
@@ -467,7 +471,13 @@ variable
 
 variable_community_name
 :
-   variable ( (PLUS|AT) variable)*
+   variable
+   (
+      (
+         PLUS
+         | AT
+      ) variable
+   )*
 ;
 
 variable_hostname

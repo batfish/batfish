@@ -35,6 +35,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       Pattern.compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
   private static String preprocessBanner(String fileText, ConfigurationFormat format) {
+    if (format == ConfigurationFormat.CADANT) {
+      return fileText;
+    }
     Matcher matcher = BANNER_PATTERN.matcher(fileText);
     if (matcher.find()) {
       int delimiterIndex = matcher.start(1);

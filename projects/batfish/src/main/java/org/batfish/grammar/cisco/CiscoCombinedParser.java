@@ -8,17 +8,11 @@ import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 
 public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, CiscoLexer> {
 
-  @SuppressWarnings("fallthrough")
   public CiscoCombinedParser(String input, Settings settings, ConfigurationFormat format) {
     super(CiscoParser.class, CiscoLexer.class, input, settings);
     boolean multilineBgpNeighbors;
-    boolean foundry = false;
-
-    // do not rearrange cases
     switch (format) {
       case FOUNDRY:
-        foundry = true;
-        // fall through
       case ARISTA:
       case CADANT:
       case CISCO_IOS:
@@ -35,7 +29,8 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
       default:
         throw new BatfishException("Should not be possible");
     }
-    _lexer.setFoundry(foundry);
+    _lexer.setCadant(format == ConfigurationFormat.CADANT);
+    _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
     _parser.setDisableUnrecognized(settings.getDisableUnrecognized());
   }
