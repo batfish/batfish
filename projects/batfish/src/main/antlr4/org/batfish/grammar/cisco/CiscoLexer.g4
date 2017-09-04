@@ -2637,6 +2637,11 @@ DYNAMIC_CAPABILITY
    'dynamic-capability'
 ;
 
+DYNAMIC_EXTENDED
+:
+   'dynamic-extended'
+;
+
 DYNAMIC_MAP
 :
    'dynamic-map'

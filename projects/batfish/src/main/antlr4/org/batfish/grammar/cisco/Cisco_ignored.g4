@@ -561,13 +561,16 @@ null_single
          ACCESS_LIST
          (
             (
-               DEC
-               | VARIABLE
+               (
+                  DEC
+                  | VARIABLE
+               )
+               (
+                  EXTENDED
+                  | REMARK
+               )
             )
-            (
-               EXTENDED
-               | REMARK
-            )
+            | DYNAMIC_EXTENDED
          )
       )
       | ACCOUNTING_PORT
