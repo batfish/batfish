@@ -2167,6 +2167,11 @@ DENY
    'deny'
 ;
 
+DEPI
+:
+   'depi'
+;
+
 DEPI_CLASS
 :
    'depi-class'
@@ -6211,6 +6216,11 @@ PACKET
 PACKET_TOO_BIG
 :
    'packet-too-big'
+;
+
+PACKETCABLE
+:
+   'packetcable'
 ;
 
 PAGER

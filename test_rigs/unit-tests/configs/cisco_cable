@@ -127,6 +127,7 @@ controller Modular-Cable 1/2/3
  rf-channel 0 rf-power 12.3
  no rf-channel 0 rf-shutdown
 !
+depi cin-failover
 depi-class depiclass1
  mode mpt
 !
@@ -169,4 +170,7 @@ interface Cable1/2/3
  downstream Modular-Cable 1/2/3 rf-channel 0-3
  no keepalive
 !
+packetcable
+packetcable authorize vanilla-docsis-mta
+packetcable multimedia
 !

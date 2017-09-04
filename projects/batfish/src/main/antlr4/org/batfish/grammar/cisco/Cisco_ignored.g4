@@ -602,6 +602,7 @@ null_single
       | CTS
       | CURRENT_CONFIGURATION
       | DEFAULT
+      | DEPI
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
@@ -814,6 +815,7 @@ null_single
          )
       )
       | OWNER
+      | PACKETCABLE
       | PAGER
       | PARSER
       | PASSWORD
