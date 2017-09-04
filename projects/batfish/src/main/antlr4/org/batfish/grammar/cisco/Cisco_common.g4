@@ -225,6 +225,12 @@ line_type
    | VTY
 ;
 
+line_type_cadant
+:
+   CONSOLE
+   | VTY
+;
+
 ospf_route_type
 :
    (

@@ -29,8 +29,10 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
       default:
         throw new BatfishException("Should not be possible");
     }
-    _lexer.setCadant(format == ConfigurationFormat.CADANT);
+    boolean cadant = format == ConfigurationFormat.CADANT;
+    _lexer.setCadant(cadant);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
+    _parser.setCadant(cadant);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
     _parser.setDisableUnrecognized(settings.getDisableUnrecognized());
   }

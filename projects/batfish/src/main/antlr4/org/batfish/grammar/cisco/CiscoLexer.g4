@@ -2809,6 +2809,11 @@ ENABLE_ACL_COUNTER
    'enable-acl-counter'
 ;
 
+ENABLE_AUTHENTICATION
+:
+   'enable-authentication'
+;
+
 ENABLE_QOS_STATISTICS
 :
    'enable-qos-statistics'
@@ -4843,6 +4848,11 @@ LOGIN
 LOGIN_ATTEMPTS
 :
    'login-attempts'
+;
+
+LOGIN_AUTHENTICATION
+:
+   'login-authentication'
 ;
 
 LOGOUT_WARNING
@@ -10719,6 +10729,11 @@ M_AsPathAccessList_WS
 
 mode M_Authentication;
 
+M_Authentication_DOUBLE_QUOTE
+:
+   '"' -> mode ( M_DoubleQuote )
+;
+
 M_Authentication_BANNER
 :
    'banner' -> type ( BANNER ) , mode ( M_BannerText )
@@ -11115,6 +11130,18 @@ M_Description_NEWLINE
 M_Description_NON_NEWLINE
 :
    F_NonNewline+ -> type ( RAW_TEXT )
+;
+
+mode M_DoubleQuote;
+
+M_DoubleQuote_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ) , popMode
+;
+
+M_DoubleQuote_TEXT
+:
+   ~'"'+
 ;
 
 mode M_Execute;

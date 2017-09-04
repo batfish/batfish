@@ -9,9 +9,15 @@ options {
 }
 
 @members {
-   private boolean _multilineBgpNeighbors;
+   private boolean _cadant;
 
    private boolean _disableUnrecognized;
+
+   private boolean _multilineBgpNeighbors;
+
+   public void setCadant(boolean b) {
+      _cadant = b;
+   }
 
    public void setDisableUnrecognized(boolean b) {
      _disableUnrecognized = b;
@@ -23,9 +29,12 @@ options {
    
    @Override
    public String getStateInfo() {
-      return "_multilineBgpNeighbors: " + _multilineBgpNeighbors + "\n";
+      return String.format("_cadant: %s\n_disableUnrecognized: %s\n_multilineBgpNeighbors: %s\n",
+         _cadant,
+         _disableUnrecognized,
+         _multilineBgpNeighbors
+      );
    }
-   
 }
 
 address_aiimgp_stanza
@@ -2386,7 +2395,14 @@ stanza
    | s_l2
    | s_l2tp_class
    | s_l2vpn
-   | s_line
+   |
+   {!_cadant}?
+
+   s_line
+   |
+   {_cadant}?
+
+   s_line_cadant
    | s_logging
    | s_lpts
    | s_management
@@ -2458,7 +2474,10 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
-   | { !_disableUnrecognized }? unrecognized_block_stanza
+   |
+   { !_disableUnrecognized }?
+
+   unrecognized_block_stanza
 ;
 
 statistics_null
