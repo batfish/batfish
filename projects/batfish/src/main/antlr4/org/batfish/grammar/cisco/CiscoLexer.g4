@@ -1744,12 +1744,17 @@ CONTROL_PLANE
 
 CONTROLLER
 :
-   'controller'
+   'controller' -> pushMode ( M_Interface )
 ;
 
 CONVERSION_ERROR
 :
    'conversion-error'
+;
+
+COOKIE
+:
+   'cookie'
 ;
 
 COPP
@@ -2157,6 +2162,16 @@ DENY
    'deny'
 ;
 
+DEPI_CLASS
+:
+   'depi-class'
+;
+
+DEPI_TUNNEL
+:
+   'depi-tunnel'
+;
+
 DEPLOY
 :
    'deploy'
@@ -2180,6 +2195,11 @@ DESCRIPTION
 DESIRABLE
 :
    'desirable'
+;
+
+DEST_IP
+:
+   'dest-ip'
 ;
 
 DESTINATION
@@ -5713,6 +5733,11 @@ NETWORK_CLOCK_SELECT
    'network-clock-select'
 ;
 
+NETWORK_DELAY
+:
+   'network-delay'
+;
+
 NETWORK_OBJECT
 :
    'network-object'
@@ -6863,6 +6888,11 @@ PROTECT
    'protect'
 ;
 
+PROTECT_TUNNEL
+:
+   'protect-tunnel'
+;
+
 PROTECTION
 :
    'protection'
@@ -7121,6 +7151,11 @@ REAL
 RECEIVE
 :
    'receive'
+;
+
+RECEIVE_WINDOW
+:
+   'receive-window'
 ;
 
 RECONNECT_INTERVAL
@@ -7396,6 +7431,21 @@ REVOCATION_CHECK
 REWRITE
 :
    'rewrite'
+;
+
+RF_CHANNEL
+:
+   'rf-channel'
+;
+
+RF_POWER
+:
+   'rf-power'
+;
+
+RF_SHUTDOWN
+:
+   'rf-shutdown'
 ;
 
 RFC1583COMPATIBILITY
@@ -9153,6 +9203,11 @@ TRUSTPOINT
 TRUSTPOOL
 :
    'trustpool'
+;
+
+TSID
+:
+   'tsid'
 ;
 
 TTL
@@ -11160,6 +11215,7 @@ M_Interface_PREFIX
       )*
    )
    | 'Dot11Radio'
+   | [Tt]'1'
 ;
 
 M_Interface_RELAY

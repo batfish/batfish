@@ -119,3 +119,24 @@ cable tag 4
 cable util-interval 12345
 cable wideband auto-reset
 !
+controller Modular-Cable 1/2/3
+ rf-channel 0 cable downstream channel-id 1
+ rf-channel 0 depi-tunnel depitun0 tsid 1234
+ rf-channel 0 frequency 123456789 annex B modulation 256qam interleave 32
+ rf-channel 0 network-delay auto
+ rf-channel 0 rf-power 12.3
+ no rf-channel 0 rf-shutdown
+!
+depi-class depiclass1
+ mode mpt
+!
+depi-tunnel foo1
+ dest-ip 1.2.3.4
+!
+depi-tunnel bar1
+ depi-class depiclass1
+ dest-ip 1.2.3.5
+ l2tp-class l2tpclass1
+ protect-tunnel foo1
+!
+!

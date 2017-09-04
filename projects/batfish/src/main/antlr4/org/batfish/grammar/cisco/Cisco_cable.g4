@@ -138,6 +138,55 @@ clbdg_null
    ) ~NEWLINE* NEWLINE
 ;
 
+cntlr_null
+:
+   NO?
+   (
+      ADMIN_STATE
+      | AIS_SHUT
+      | ALARM_REPORT
+      | CABLELENGTH
+      | CHANNEL_GROUP
+      | CLOCK
+      | DESCRIPTION
+      | FRAMING
+      | G709
+      | LINECODE
+      | PM
+      | PRI_GROUP
+      | PROACTIVE
+      | SHUTDOWN
+      | STS_1
+      | WAVELENGTH
+   ) ~NEWLINE* NEWLINE
+;
+
+cntlr_rf_channel
+:
+   RF_CHANNEL channel = DEC
+   (
+      cntlrrfc_depi_tunnel
+      | cntrlrrfc_null
+   )*
+;
+
+cntlrrfc_depi_tunnel
+:
+   DEPI_TUNNEL name = variable TSID tsid = DEC NEWLINE
+;
+
+cntrlrrfc_null
+:
+   NO?
+   (
+      CABLE
+      | FREQUENCY
+      | NETWORK_DELAY
+      | RF_POWER
+      | RF_SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
 cq_enforce_rule
 :
    ENFORCE_RULE name = variable NEWLINE
@@ -228,6 +277,37 @@ ct_null
    ) ~NEWLINE* NEWLINE
 ;
 
+dc_null
+:
+   NO?
+   (
+      MODE
+   ) ~NEWLINE* NEWLINE
+;
+
+dt_depi_class
+:
+   DEPI_CLASS name = variable NEWLINE
+;
+
+dt_l2tp_class
+:
+   L2TP_CLASS name = variable NEWLINE
+;
+
+dt_null
+:
+   NO?
+   (
+      DEST_IP
+   ) ~NEWLINE* NEWLINE
+;
+
+dt_protect_tunnel
+:
+   PROTECT_TUNNEL name = variable NEWLINE
+;
+
 s_cable
 :
    NO? CABLE
@@ -239,4 +319,32 @@ s_cable
       | c_service
       | c_tag
    )
+;
+
+s_controller
+:
+   CONTROLLER iname = interface_name NEWLINE
+   (
+      cntlr_null
+      | cntlr_rf_channel
+   )*
+;
+
+s_depi_class
+:
+   DEPI_CLASS name = variable NEWLINE
+   (
+      dc_null
+   )*
+;
+
+s_depi_tunnel
+:
+   DEPI_TUNNEL name = variable NEWLINE
+   (
+      dt_depi_class
+      | dt_l2tp_class
+      | dt_null
+      | dt_protect_tunnel
+   )*
 ;

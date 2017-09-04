@@ -18,11 +18,17 @@ public class CiscoFamily implements Serializable {
 
   private SwitchportMode _defaultSwitchportMode;
 
+  private SortedMap<String, DepiClass> _depiClasses;
+
+  private SortedMap<String, DepiTunnel> _depiTunnels;
+
   private String _enableSecret;
 
   private SortedMap<String, Boolean> _features;
 
   private String _hostname;
+
+  private SortedMap<String, L2tpClass> _l2tpClasses;
 
   private SortedMap<String, Line> _lines;
 
@@ -44,7 +50,10 @@ public class CiscoFamily implements Serializable {
 
   public CiscoFamily() {
     _banners = new TreeMap<>();
+    _depiClasses = new TreeMap<>();
+    _depiTunnels = new TreeMap<>();
     _features = new TreeMap<>();
+    _l2tpClasses = new TreeMap<>();
     _lines = new TreeMap<>();
     _services = new TreeMap<>();
     _users = new TreeMap<>();
@@ -66,6 +75,14 @@ public class CiscoFamily implements Serializable {
     return _defaultSwitchportMode;
   }
 
+  public SortedMap<String, DepiClass> getDepiClasses() {
+    return _depiClasses;
+  }
+
+  public SortedMap<String, DepiTunnel> getDepiTunnels() {
+    return _depiTunnels;
+  }
+
   public String getEnableSecret() {
     return _enableSecret;
   }
@@ -76,6 +93,10 @@ public class CiscoFamily implements Serializable {
 
   public String getHostname() {
     return _hostname;
+  }
+
+  public SortedMap<String, L2tpClass> getL2tpClasses() {
+    return _l2tpClasses;
   }
 
   public SortedMap<String, Line> getLines() {
@@ -130,6 +151,14 @@ public class CiscoFamily implements Serializable {
     _defaultSwitchportMode = defaultSwitchportMode;
   }
 
+  public void setDepiClasses(SortedMap<String, DepiClass> depiClasses) {
+    _depiClasses = depiClasses;
+  }
+
+  public void setDepiTunnels(SortedMap<String, DepiTunnel> depiTunnels) {
+    _depiTunnels = depiTunnels;
+  }
+
   public void setEnableSecret(String enableSecret) {
     _enableSecret = enableSecret;
   }
@@ -140,6 +169,10 @@ public class CiscoFamily implements Serializable {
 
   public void setHostname(String hostname) {
     _hostname = hostname;
+  }
+
+  public void setL2tpClasses(SortedMap<String, L2tpClass> l2tpClasses) {
+    _l2tpClasses = l2tpClasses;
   }
 
   public void setLines(SortedMap<String, Line> lines) {

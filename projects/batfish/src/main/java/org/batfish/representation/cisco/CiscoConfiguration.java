@@ -93,8 +93,11 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
+import org.batfish.datamodel.vendor_family.cisco.DepiClass;
+import org.batfish.datamodel.vendor_family.cisco.DepiTunnel;
 import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
 import org.batfish.datamodel.vendor_family.cisco.DocsisPolicyRule;
+import org.batfish.datamodel.vendor_family.cisco.L2tpClass;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
 import org.batfish.vendor.StructureUsage;
@@ -824,6 +827,50 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  private void markDepiClasses(CiscoStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(CiscoStructureType.DEPI_CLASS);
+    if (byName != null) {
+      byName.forEach(
+          (depiClassName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              DepiClass depiClass = _cf.getDepiClasses().get(depiClassName);
+              if (depiClass != null) {
+                String msg = usage.getDescription();
+                depiClass.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(CiscoStructureType.DEPI_CLASS, depiClassName, usage, line);
+                }
+              }
+            }
+          });
+    }
+  }
+
+  private void markDepiTunnels(CiscoStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(CiscoStructureType.DEPI_TUNNEL);
+    if (byName != null) {
+      byName.forEach(
+          (depiTunnelName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              DepiTunnel depiTunnel = _cf.getDepiTunnels().get(depiTunnelName);
+              if (depiTunnel != null) {
+                String msg = usage.getDescription();
+                depiTunnel.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(CiscoStructureType.DEPI_TUNNEL, depiTunnelName, usage, line);
+                }
+              }
+            }
+          });
+    }
+  }
+
   private void markDocsisPolicies(CiscoStructureUsage usage, Configuration c) {
     SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
         _structureReferences.get(CiscoStructureType.DOCSIS_POLICY);
@@ -925,6 +972,28 @@ public final class CiscoConfiguration extends VendorConfiguration {
               } else {
                 for (int line : lines) {
                   undefined(CiscoStructureType.IPV6_ACCESS_LIST, listName, usage, line);
+                }
+              }
+            }
+          });
+    }
+  }
+
+  private void markL2tpClasses(CiscoStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(CiscoStructureType.L2TP_CLASS);
+    if (byName != null) {
+      byName.forEach(
+          (l2tpClassName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              L2tpClass l2tpClass = _cf.getL2tpClasses().get(l2tpClassName);
+              if (l2tpClass != null) {
+                String msg = usage.getDescription();
+                l2tpClass.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(CiscoStructureType.L2TP_CLASS, l2tpClassName, usage, line);
                 }
               }
             }
@@ -3268,18 +3337,27 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP, c);
 
     // Cable
+    markDepiClasses(CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS, c);
+    markDepiTunnels(CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL, c);
+    markDepiTunnels(CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL, c);
     markDocsisPolicies(CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY, c);
     markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE, c);
     markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS, c);
 
+    // L2tp
+    markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS, c);
+    
     // warn about unreferenced data structures
     warnUnusedAsPathSets();
     warnUnusedCommunityLists();
+    warnUnusedDepiClasses();
+    warnUnusedDepiTunnels();
     warnUnusedDocsisPolicies();
     warnUnusedDocsisPolicyRules();
     warnUnusedIpAsPathAccessLists();
     warnUnusedIpAccessLists();
     warnUnusedIpv6AccessLists();
+    warnUnusedL2tpClasses();
     warnUnusedMacAccessLists();
     warnUnusedNatPools();
     warnUnusedPrefixLists();
@@ -3428,6 +3506,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  private void warnUnusedDepiClasses() {
+    for (Entry<String, DepiClass> e : _cf.getDepiClasses().entrySet()) {
+      String name = e.getKey();
+      if (name.startsWith("~")) {
+        continue;
+      }
+      DepiClass depiClass = e.getValue();
+      if (depiClass.isUnused()) {
+        unused(CiscoStructureType.DEPI_CLASS, name, depiClass.getDefinitionLine());
+      }
+    }
+  }
+
+  private void warnUnusedDepiTunnels() {
+    for (Entry<String, DepiTunnel> e : _cf.getDepiTunnels().entrySet()) {
+      String name = e.getKey();
+      if (name.startsWith("~")) {
+        continue;
+      }
+      DepiTunnel depiTunnel = e.getValue();
+      if (depiTunnel.isUnused()) {
+        unused(CiscoStructureType.DEPI_TUNNEL, name, depiTunnel.getDefinitionLine());
+      }
+    }
+  }
+
   private void warnUnusedDocsisPolicies() {
     if (_cf.getCable() != null) {
       for (Entry<String, DocsisPolicy> e : _cf.getCable().getDocsisPolicies().entrySet()) {
@@ -3513,6 +3617,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
       StandardIpv6AccessList acl = e.getValue();
       if (acl.isUnused()) {
         unused(CiscoStructureType.IPV6_ACCESS_LIST_STANDARD, name, acl.getDefinitionLine());
+      }
+    }
+  }
+
+  private void warnUnusedL2tpClasses() {
+    for (Entry<String, L2tpClass> e : _cf.getL2tpClasses().entrySet()) {
+      String name = e.getKey();
+      if (name.startsWith("~")) {
+        continue;
+      }
+      L2tpClass l2tpClass = e.getValue();
+      if (l2tpClass.isUnused()) {
+        unused(CiscoStructureType.L2TP_CLASS, name, l2tpClass.getDefinitionLine());
       }
     }
   }

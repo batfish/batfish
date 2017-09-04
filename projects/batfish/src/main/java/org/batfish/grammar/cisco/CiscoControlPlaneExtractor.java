@@ -106,8 +106,11 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
 import org.batfish.datamodel.vendor_family.cisco.Buffered;
 import org.batfish.datamodel.vendor_family.cisco.Cable;
+import org.batfish.datamodel.vendor_family.cisco.DepiClass;
+import org.batfish.datamodel.vendor_family.cisco.DepiTunnel;
 import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
 import org.batfish.datamodel.vendor_family.cisco.DocsisPolicyRule;
+import org.batfish.datamodel.vendor_family.cisco.L2tpClass;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.datamodel.vendor_family.cisco.Logging;
 import org.batfish.datamodel.vendor_family.cisco.LoggingHost;
@@ -180,6 +183,7 @@ import org.batfish.grammar.cisco.CiscoParser.Clb_ruleContext;
 import org.batfish.grammar.cisco.CiscoParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cluster_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
@@ -200,6 +204,9 @@ import org.batfish.grammar.cisco.CiscoParser.Domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Domain_name_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Dscp_typeContext;
+import org.batfish.grammar.cisco.CiscoParser.Dt_depi_classContext;
+import org.batfish.grammar.cisco.CiscoParser.Dt_l2tp_classContext;
+import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Else_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Elseif_rp_stanzaContext;
@@ -390,6 +397,8 @@ import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
+import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
+import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
@@ -401,6 +410,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_ip_pimContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_source_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_sshContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_tacacs_source_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_l2tp_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.S_loggingContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_listContext;
@@ -1129,6 +1139,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterDt_depi_class(Dt_depi_classContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.DEPI_CLASS, name, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS, line);
+  }
+
+  @Override
+  public void enterDt_l2tp_class(Dt_l2tp_classContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.L2TP_CLASS, name, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS, line);
+  }
+
+  @Override
   public void enterExtended_access_list_stanza(Extended_access_list_stanzaContext ctx) {
     String name;
     int definitionLine;
@@ -1574,6 +1600,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_depi_class(S_depi_classContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.getCf().getDepiClasses().computeIfAbsent(name, n -> new DepiClass(n, line));
+  }
+
+  @Override
+  public void enterS_depi_tunnel(S_depi_tunnelContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.getCf().getDepiTunnels().computeIfAbsent(name, n -> new DepiTunnel(n, line));
+  }
+
+  @Override
   public void enterS_interface(S_interfaceContext ctx) {
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
     String canonicalNamePrefix;
@@ -1620,6 +1660,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getCf().getSsh() == null) {
       _configuration.getCf().setSsh(new SshSettings());
     }
+  }
+
+  @Override
+  public void enterS_l2tp_class(S_l2tp_classContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.getCf().getL2tpClasses().computeIfAbsent(name, n -> new L2tpClass(n, line));
   }
 
   @Override
@@ -2164,6 +2211,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCntlrrfc_depi_tunnel(Cntlrrfc_depi_tunnelContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.DEPI_TUNNEL, name, CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL, line);
+  }
+
+  @Override
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
     Integer target = null;
@@ -2284,6 +2339,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Set<String> dnsServers = _configuration.getDnsServers();
     String hostname = ctx.hostname.getText();
     dnsServers.add(hostname);
+  }
+
+  @Override
+  public void exitDt_protect_tunnel(Dt_protect_tunnelContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.DEPI_TUNNEL, name, CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL, line);
   }
 
   @Override

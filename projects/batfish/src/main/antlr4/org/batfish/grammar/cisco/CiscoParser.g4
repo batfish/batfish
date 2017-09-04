@@ -80,29 +80,6 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
-controller_null
-:
-   NO?
-   (
-      ADMIN_STATE
-      | AIS_SHUT
-      | ALARM_REPORT
-      | CABLELENGTH
-      | CHANNEL_GROUP
-      | CLOCK
-      | DESCRIPTION
-      | FRAMING
-      | G709
-      | LINECODE
-      | PM
-      | PRI_GROUP
-      | PROACTIVE
-      | SHUTDOWN
-      | STS_1
-      | WAVELENGTH
-   ) ~NEWLINE* NEWLINE
-;
-
 cp_ip_access_group
 :
    (
@@ -803,6 +780,22 @@ l2_null
    ) ~NEWLINE* NEWLINE
 ;
 
+l2tpc_null
+:
+   NO? DEFAULT?
+   (
+      AUTHENTICATION
+      | COOKIE
+      | HELLO
+      | HIDDEN_LITERAL
+      | HOSTNAME
+      | PASSWORD
+      | RECEIVE_WINDOW
+      | RETRANSMIT
+      | TIMEOUT
+   ) ~NEWLINE* NEWLINE
+;
+
 l2vpn_bridge_group
 :
    BRIDGE GROUP name = variable NEWLINE
@@ -1331,14 +1324,6 @@ s_control_plane_tail
    | cp_service_policy
 ;
 
-s_controller
-:
-   NO? CONTROLLER ~NEWLINE* NEWLINE
-   (
-      controller_null
-   )*
-;
-
 s_cos_queue_group
 :
    COS_QUEUE_GROUP ~NEWLINE* NEWLINE
@@ -1662,6 +1647,14 @@ s_l2
    NO? L2 ~NEWLINE* NEWLINE
    (
       l2_null
+   )*
+;
+
+s_l2tp_class
+:
+   NO? L2TP_CLASS name = variable NEWLINE
+   (
+      l2tpc_null
    )*
 ;
 
@@ -2306,6 +2299,8 @@ stanza
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
+   | s_depi_class
+   | s_depi_tunnel
    | s_dhcp
    | s_dial_peer
    | s_domain
@@ -2343,6 +2338,7 @@ stanza
    | s_ipsla
    | s_key
    | s_l2
+   | s_l2tp_class
    | s_l2vpn
    | s_line
    | s_logging

@@ -146,7 +146,6 @@ null_block
       )
       | KEYSTORE
       | KRON
-      | L2TP_CLASS
       | LACP
       | LAG
       | LINECARD
@@ -239,7 +238,6 @@ null_block
       | TEMPLATE
       | TERMINAL
       | TIME_RANGE
-      | TIMEOUT
       | TFTP
       | TLS_PROXY
       | TRACE
@@ -479,7 +477,6 @@ null_inner
          | REQUEST
          | RESOURCES
          | RESPONDER
-         | RETRANSMIT
          | RETRIES
          | REVISION
          | RING
