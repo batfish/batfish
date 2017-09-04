@@ -755,6 +755,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("Virtual-Template", "Virtual-Template");
     prefixes.put("Vlan", "Vlan");
     prefixes.put("Vxlan", "Vxlan");
+    prefixes.put("Wideband-Cable", "Wideband-Cable");
     return prefixes;
   }
 
