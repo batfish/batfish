@@ -205,6 +205,8 @@ interface Ethernet0
 !
 interface Async1
 !
+interface Cable 1/2/3:4
+!
 interface Crypto-Engine1/2/3
 !
 interface Dot11Radio0
@@ -212,6 +214,8 @@ interface Dot11Radio0
 interface ethernet 1/11
 !
 interface Loopback0
+!
+interface Modular-Cable1/2/3:4
 !
 interface Null0
 !
