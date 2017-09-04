@@ -1047,8 +1047,8 @@ monitor_null
 :
    NO?
    (
-      DESCRIPTION
-      | DESTINATION
+      BUFFER_SIZE
+      | DESCRIPTION
       | SHUTDOWN
       | SOURCE
    ) ~NEWLINE* NEWLINE
