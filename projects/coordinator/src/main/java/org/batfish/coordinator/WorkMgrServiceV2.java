@@ -4,7 +4,6 @@ import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.common.CoordConsts.SVC_KEY_API_KEY;
 
 import java.util.List;
-import javax.annotation.Nullable;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
