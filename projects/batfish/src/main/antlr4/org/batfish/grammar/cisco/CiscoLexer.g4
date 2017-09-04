@@ -664,6 +664,11 @@ AREA
    'area'
 ;
 
+AREA_PASSWORD
+:
+   'area-password'
+;
+
 ARP
 :
    'arp'
