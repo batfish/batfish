@@ -101,8 +101,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       if (natPoolStartIp == null) {
         throw new BatfishException(
             String.format(
-                "Error processing Source NAT rule %s: missing NAT address or pool",
-                sourceNat));
+                "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
       }
       Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
       transformedFlowBuilder.setSrcIp(natPoolStartIp);
