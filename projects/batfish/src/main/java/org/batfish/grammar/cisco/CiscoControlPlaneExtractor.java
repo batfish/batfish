@@ -129,7 +129,7 @@ import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accountingContext;
-import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_commandsContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_commands_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
@@ -1006,7 +1006,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterAaa_accounting_commands(Aaa_accounting_commandsContext ctx) {
+  public void enterAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
     Map<String, AaaAccountingCommands> commands =
         _configuration.getCf().getAaa().getAccounting().getCommands();
     Set<String> levels = new TreeSet<>();
@@ -2003,7 +2003,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitAaa_accounting_commands(Aaa_accounting_commandsContext ctx) {
+  public void exitAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
     _currentAaaAccountingCommands = null;
   }
 
