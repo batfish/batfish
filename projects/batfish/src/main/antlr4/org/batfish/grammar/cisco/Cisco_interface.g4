@@ -149,7 +149,8 @@ if_ip_igmp
 :
    NO? IP IGMP
    (
-      ifigmp_null
+      ifigmp_access_group
+      | ifigmp_null
       | ifigmp_static_group
    )
 ;
@@ -339,6 +340,7 @@ if_null_block
       | BGP_POLICY
       | BRIDGE_GROUP
       | BUNDLE
+      | CABLE
       | CABLELENGTH
       | CARRIER_DELAY
       | CDP
@@ -360,6 +362,7 @@ if_null_block
       | DIALER
       | DIALER_GROUP
       | DFS
+      | DOWNSTREAM
       | DSL
       |
       (
@@ -879,6 +882,11 @@ ifdhcpr_null
       CLIENT
       | INFORMATION
    ) ~NEWLINE* NEWLINE
+;
+
+ifigmp_access_group
+:
+   ACCESS_GROUP name = variable NEWLINE
 ;
 
 ifigmp_null

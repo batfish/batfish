@@ -139,4 +139,34 @@ depi-tunnel bar1
  l2tp-class l2tpclass1
  protect-tunnel foo1
 !
+interface Cable1/2/3
+ cable bundle 1
+ cable default-phy-burst 0
+ cable downstream dsg timer 1
+ cable downstream dsg tg 1234 channel 1234
+ cable enable-trap cmonoff-notification
+ cable ip-init apm
+ no cable mtc-mode
+ no cable packet-cache
+ cable privacy mandatory
+ cable shared-secondary-secret index 1 7 FEDCBA
+ cable shared-secret 7 ABCDEF
+ cable tftp-enforce
+ cable upstream max-ports 6
+ cable upstream 0 attribute-mask 12345678
+ cable upstream 0 channel-width 1234567 1234567
+ cable upstream 0 connector 0
+ cable upstream 0 description bippety boppety
+ cable upstream 0 docsis-mode atdma
+ cable upstream 0 docsis-mode tdma
+ cable upstream 0 equalization-coefficient
+ cable upstream 0 frequency 12345678
+ cable upstream 0 minislot-size 123
+ cable upstream 0 modulation-profile 123
+ cable upstream 0 power-adjust continue 123
+ cable upstream 0 range-backoff 123 456
+ cable upstream 0 shutdown
+ downstream Modular-Cable 1/2/3 rf-channel 0-3
+ no keepalive
+!
 !

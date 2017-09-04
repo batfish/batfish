@@ -3298,6 +3298,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP, c);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL, c);
+    markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER, c);

@@ -163,7 +163,7 @@ cntlr_null
 
 cntlr_rf_channel
 :
-   RF_CHANNEL channel = DEC
+   NO? RF_CHANNEL channel = DEC
    (
       cntlrrfc_depi_tunnel
       | cntrlrrfc_null

@@ -32,6 +32,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   DEPI_TUNNEL_PROTECT_TUNNEL("depi-tunnel protect-tunnel"),
   DOCSIS_GROUP_DOCSIS_POLICY("cable load-balance docsis-group docsis-policy"),
   DOCSIS_POLICY_DOCSIS_POLICY_RULE("cable load-balance docsis-policy rule"),
+  INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
   INTERFACE_INCOMING_FILTER("interface incoming ip access-list"),
   INTERFACE_IP_VERIFY_ACCESS_LIST("interface ip verify access-list"),

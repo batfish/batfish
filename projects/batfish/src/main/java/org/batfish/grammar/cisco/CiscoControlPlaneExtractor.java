@@ -183,6 +183,7 @@ import org.batfish.grammar.cisco.CiscoParser.Clb_ruleContext;
 import org.batfish.grammar.cisco.CiscoParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cluster_id_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_access_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
@@ -228,6 +229,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_helper_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_areaContext;
@@ -256,6 +258,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_session_bgp_tailContext;
@@ -706,6 +709,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("BRI", "BRI");
     prefixes.put("Bundle-Ether", "Bundle-Ethernet");
     prefixes.put("BVI", "BVI");
+    prefixes.put("Cable", "Cable");
     prefixes.put("Crypto-Engine", "Crypto-Engine");
     prefixes.put("cmp-mgmt", "cmp-mgmt");
     prefixes.put("Dialer", "Dialer");
@@ -1127,6 +1131,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
+    _no = (ctx.NO() != null);
+  }
+
+  @Override
   public void enterCs_class(Cs_classContext ctx) {
     String number = ctx.num.getText();
     int line = ctx.num.getLine();
@@ -1201,6 +1210,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setDescription(description);
     }
+  }
+
+  @Override
+  public void enterIf_ip_igmp(If_ip_igmpContext ctx) {
+    _no = (ctx.NO() != null);
   }
 
   @Override
@@ -2211,11 +2225,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
+    _no = false;
+  }
+
+  @Override
   public void exitCntlrrfc_depi_tunnel(Cntlrrfc_depi_tunnelContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(
-        CiscoStructureType.DEPI_TUNNEL, name, CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL, line);
+    if (!_no) {
+      String name = ctx.name.getText();
+      int line = ctx.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.DEPI_TUNNEL, name, CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL, line);
+    }
   }
 
   @Override
@@ -2832,6 +2853,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_igmp(If_ip_igmpContext ctx) {
+    _no = false;
+  }
+
+  @Override
   public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
@@ -3120,6 +3146,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip address = toIp(ctx.address);
       iface.getDhcpRelayAddresses().add(address);
     }
+  }
+
+  @Override
+  public void exitIfigmp_access_group(Ifigmp_access_groupContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.IP_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
+        line);
   }
 
   @Override
