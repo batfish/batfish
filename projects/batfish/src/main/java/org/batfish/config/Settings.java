@@ -530,6 +530,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private boolean _diffQuestion;
 
+  private boolean _disableUnrecognized;
+
   private String _environmentName;
 
   private boolean _exitOnFirstError;
@@ -863,6 +865,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _maxParserContextTokens;
   }
 
+  @Override
+  public boolean getDisableUnrecognized() {
+    return _disableUnrecognized;
+  }
+
   public int getMaxRuntimeMs() {
     return _maxRuntimeMs;
   }
@@ -1050,6 +1057,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
+    setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
@@ -1153,6 +1161,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         BfConsts.ARG_DIFFERENTIAL,
         "force treatment of question as differential (to be used when not answering question)");
+
+    addBooleanOption(
+        BfConsts.ARG_DISABLE_UNRECOGNIZED, "disable parser recognition of unrecognized stanzas");
 
     addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
 
@@ -1386,6 +1397,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _deltaTestrig = getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     _differential = getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
+    _disableUnrecognized = getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
     _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     _flatten = getBooleanOptionValue(ARG_FLATTEN);
@@ -1455,6 +1467,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public boolean printParseTree() {
     return _printParseTree;
+  }
+
+  @Override
+  public void setDisableUnrecognized(boolean b) {
+    _disableUnrecognized = b;
   }
 
   public boolean runInServiceMode() {

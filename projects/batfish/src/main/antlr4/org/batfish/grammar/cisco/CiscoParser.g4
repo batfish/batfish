@@ -10,7 +10,13 @@ options {
 
 @members {
    private boolean _multilineBgpNeighbors;
-   
+
+   private boolean _disableUnrecognized;
+
+   public void setDisableUnrecognized(boolean b) {
+     _disableUnrecognized = b;
+   }
+
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
@@ -2452,7 +2458,7 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
-   | unrecognized_block_stanza
+   | { !_disableUnrecognized }? unrecognized_block_stanza
 ;
 
 statistics_null

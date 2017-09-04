@@ -36,6 +36,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
     }
     _lexer.setFoundry(foundry);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
+    _parser.setDisableUnrecognized(settings.getDisableUnrecognized());
   }
 
   @Override
