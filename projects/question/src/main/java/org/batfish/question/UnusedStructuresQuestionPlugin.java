@@ -9,7 +9,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -74,9 +73,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       int numResults = 0;
       for (String hostname: _unusedStructures.keySet()) {
         for (String type: _unusedStructures.get(hostname).keySet()) {
-          for (String name: _unusedStructures.get(hostname).get(type).keySet()) {
-            numResults++;
-          }
+          numResults += _unusedStructures.get(hostname).get(type).size();
         }
       }
       _summary.setNumResults(numResults);

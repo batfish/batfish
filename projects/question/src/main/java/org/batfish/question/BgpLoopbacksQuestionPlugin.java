@@ -24,6 +24,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
@@ -147,7 +148,8 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
               for (Prefix prefix : iface.getAllPrefixes()) {
                 ConnectedRoute route = new ConnectedRoute(prefix, interfaceName);
                 for (RoutingPolicy exportPolicy : exportPolicies) {
-                  if (exportPolicy.process(route, new BgpRoute.Builder(), null, vrf.getName())) {
+                  if (exportPolicy.process(
+                      route, new BgpRoute.Builder(), null, vrf.getName(), Direction.OUT)) {
                     exported = true;
                     break outerloop;
                   }

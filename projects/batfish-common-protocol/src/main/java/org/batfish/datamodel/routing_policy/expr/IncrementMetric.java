@@ -3,17 +3,17 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IncrementMetric extends IntExpr {
+public class IncrementMetric extends LongExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private int _addend;
+  private long _addend;
 
   @JsonCreator
   private IncrementMetric() {}
 
-  public IncrementMetric(int addend) {
+  public IncrementMetric(long addend) {
     _addend = addend;
   }
 
@@ -36,13 +36,13 @@ public class IncrementMetric extends IntExpr {
   }
 
   @Override
-  public int evaluate(Environment environment) {
-    int oldMetric = environment.getOriginalRoute().getMetric();
-    int newVal = oldMetric + _addend;
+  public long evaluate(Environment environment) {
+    long oldMetric = environment.getOriginalRoute().getMetric();
+    long newVal = oldMetric + _addend;
     return newVal;
   }
 
-  public int getAddend() {
+  public long getAddend() {
     return _addend;
   }
 
@@ -50,7 +50,7 @@ public class IncrementMetric extends IntExpr {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _addend;
+    result = prime * result + Long.hashCode(_addend);
     return result;
   }
 

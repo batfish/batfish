@@ -66,6 +66,11 @@ address_family_rb_stanza
    )* address_family_footer
 ;
 
+address_family_enable_rb_stanza
+:
+   ADDRESS_FAMILY af = bgp_address_family ENABLE NEWLINE
+;
+
 af_group_rb_stanza
 :
    AF_GROUP name = variable ADDRESS_FAMILY bgp_address_family NEWLINE bgp_tail*
@@ -190,6 +195,7 @@ bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
    | redistribute_ospf_bgp_tail
+   | redistribute_rip_bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
    | route_map_bgp_tail
@@ -556,6 +562,7 @@ null_bgp_tail
       | CAPABILITY
       | CLIENT_TO_CLIENT
       | COMPARE_ROUTERID
+      | CONNECT_RETRY
       | DAMPEN
       | DAMPEN_IGP_METRIC
       | DAMPENING
@@ -583,6 +590,7 @@ null_bgp_tail
             REMOTE_AS
             | ROUTE_MAP
             | UPDATE_SOURCE
+            | SHUTDOWN
          )
       )
       | NEIGHBOR_DOWN
@@ -740,6 +748,20 @@ redistribute_ospf_bgp_tail
    )* NEWLINE
 ;
 
+redistribute_rip_bgp_tail
+:
+   REDISTRIBUTE RIP
+   (
+      (
+         ROUTE_MAP map = variable
+      )
+      |
+      (
+         METRIC metric = DEC
+      )
+   )* NEWLINE
+;
+
 redistribute_static_bgp_tail
 :
    REDISTRIBUTE STATIC
@@ -770,6 +792,7 @@ router_bgp_stanza_tail
 :
    additional_paths_rb_stanza
    | address_family_rb_stanza
+   | address_family_enable_rb_stanza
    | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
@@ -800,7 +823,7 @@ router_bgp_stanza_tail
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    | vrf_block_rb_stanza
-   | unrecognized_line
+   | { !_disableUnrecognized }? unrecognized_line
 ;
 
 router_id_bgp_tail

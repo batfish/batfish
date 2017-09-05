@@ -611,6 +611,9 @@ public class CommonUtil {
   public static String readResource(String resourcePath) {
     try (InputStream is =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+      if (is == null) {
+        throw new BatfishException("Error opening resource: '" + resourcePath + "'");
+      }
       String output = IOUtils.toString(is);
       return output;
     } catch (IOException e) {

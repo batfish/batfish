@@ -4,12 +4,19 @@ hostname cisco_redundancy
 redundancy inter-device
  scheme standby HSRP
 redundancy
- protocol
- notification-timer 60000
  keepalive-enable
- mode sso
+ linecard-group 1 cable
+  member subslot 3/4 protect
+  no member subslot 6/7 protect config
+  member subslot 1/2 working
+  mode sso
+  no revertive
+  rf-switch snmp-community abcdefg
  main-cpu
   auto-sync running-config
+ mode sso
+ notification-timer 60000
+ protocol
 !
 !
 

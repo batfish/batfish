@@ -27,9 +27,45 @@ l_access_class
    ) VRF_ALSO? NEWLINE
 ;
 
+l_accounting
+:
+   (
+      (
+         NO ACCOUNTING
+         (
+            COMMANDS
+            | EXEC
+         )
+      )
+      |
+      (
+         ACCOUNTING
+         (
+            COMMANDS
+            | EXEC
+         )
+         (
+            DEFAULT
+            | variable
+         )
+      )
+   ) NEWLINE
+;
+
 l_exec_timeout
 :
    EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
+;
+
+l_length
+:
+   (
+      LENGTH DEC NEWLINE
+   )
+   |
+   (
+      NO LENGTH NEWLINE
+   )
 ;
 
 l_login
@@ -71,7 +107,6 @@ l_null
       | FLUSH_AT_ACTIVATION
       | HISTORY
       | IPV6
-      | LENGTH DEC
       | LOCATION
       | LOGGING
       | LOGOUT_WARNING
@@ -101,6 +136,22 @@ l_transport
    ) prot += variable+ NEWLINE
 ;
 
+lc_null
+:
+   (
+      ACCOUNTING
+      | AUTHENTICATION
+      | AUTHORIZATION
+      | ENABLE_AUTHENTICATION
+      | IDLE_TIMEOUT
+      | LENGTH
+      | LOGIN_AUTHENTICATION
+      | PASSWORD
+      | SESSION_TIMEOUT
+      | SPEED
+   ) ~NEWLINE* NEWLINE
+;
+
 s_line
 :
    LINE line_type
@@ -122,7 +173,9 @@ s_line
    )? NEWLINE
    (
       l_access_class
+      | l_accounting
       | l_exec_timeout
+      | l_length
       | l_login
       | l_null
       | l_transport
@@ -130,3 +183,10 @@ s_line
    )*
 ;
 
+s_line_cadant
+:
+   LINE line_type_cadant start_line = DEC end_line = DEC?
+   (
+      lc_null
+   )
+;

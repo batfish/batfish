@@ -242,13 +242,13 @@ public class Hierarchy {
 
     private HierarchyRootNode _root;
 
-    private HierarchyTree(String groupName) {
+    private HierarchyTree(@Nullable String groupName) {
       _groupName = groupName;
       _root = new HierarchyRootNode();
     }
 
     private void addGroupPaths(
-        Set_lineContext groupLine,
+        @Nullable Set_lineContext groupLine,
         Collection<HierarchyChildNode> currentGroupChildren,
         HierarchyTree masterTree,
         HierarchyPath path,
@@ -303,7 +303,8 @@ public class Hierarchy {
       }
     }
 
-    public AddPathResult addPath(HierarchyPath path, Set_lineContext ctx, String group) {
+    public AddPathResult addPath(
+        HierarchyPath path, @Nullable Set_lineContext ctx, @Nullable String group) {
       AddPathResult result = AddPathResult.UNMODIFIED;
       HierarchyNode currentNode = _root;
       HierarchyChildNode matchNode = null;
@@ -623,7 +624,7 @@ public class Hierarchy {
     _deactivateTree.pruneAfterPath(path);
   }
 
-  public void addMasterPath(HierarchyPath path, Set_lineContext ctx) {
+  public void addMasterPath(HierarchyPath path, @Nullable Set_lineContext ctx) {
     _masterTree.addPath(path, ctx, null);
   }
 

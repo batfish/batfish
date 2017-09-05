@@ -44,7 +44,7 @@ public class IsisRoute extends AbstractRoute {
   }
 
   @Override
-  public Integer getMetric() {
+  public Long getMetric() {
     throw new UnsupportedOperationException("no implementation for generated method");
     // TODO Auto-generated method stub
   }

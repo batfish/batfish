@@ -49,6 +49,7 @@ line 2
 !
 line vty 0 4
  access-class 99 in
+ accounting commands default
  exec-timeout 60 0
  password xxx  
  logging synchronous

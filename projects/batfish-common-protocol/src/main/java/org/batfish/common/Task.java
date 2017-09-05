@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.BatfishObjectMapper;
 
@@ -110,7 +111,7 @@ public class Task {
   @JsonCreator
   public Task() {}
 
-  public Task(String[] args) {
+  public Task(@Nullable String[] args) {
     this._args = args;
     _batches = new ArrayList<>();
     _obtained = new Date();

@@ -27,6 +27,8 @@ import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.RipNeighbor;
+import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.RoleEdge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VerboseEdge;
@@ -35,6 +37,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseOspfEdge;
+import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.questions.Question;
 
 public class NeighborsQuestionPlugin extends QuestionPlugin {
@@ -87,6 +90,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_OSPF_NEIGHBORS = "ospfNeighbors";
 
+    private static final String PROP_RIP_NEIGHBORS = "ripNeighbors";
+
     private static final String PROP_ROLE_EBGP_NEIGHBORS = "roleEbgpNeighbors";
 
     private static final String PROP_ROLE_IBGP_NEIGHBORS = "roleIbgpNeighbors";
@@ -94,6 +99,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ROLE_LAN_NEIGHBORS = "roleLanNeighbors";
 
     private static final String PROP_ROLE_OSPF_NEIGHBORS = "roleOspfNeighbors";
+
+    private static final String PROP_ROLE_RIP_NEIGHBORS = "roleRipNeighbors";
 
     private static final String PROP_VERBOSE_EBGP_NEIGHBORS = "verboseEbgpNeighbors";
 
@@ -103,6 +110,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_VERBOSE_OSPF_NEIGHBORS = "verboseOspfNeighbors";
 
+    private static final String PROP_VERBOSE_RIP_NEIGHBORS = "verboseRipNeighbors";
+
     private SortedSet<IpEdge> _ebgpNeighbors;
 
     private SortedSet<IpEdge> _ibgpNeighbors;
@@ -110,6 +119,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private SortedSet<Edge> _lanNeighbors;
 
     private SortedSet<IpEdge> _ospfNeighbors;
+
+    private SortedSet<IpEdge> _ripNeighbors;
 
     private SortedSet<RoleEdge> _roleEbgpNeighbors;
 
@@ -119,6 +130,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<RoleEdge> _roleOspfNeighbors;
 
+    private SortedSet<RoleEdge> _roleRipNeighbors;
+
     private SortedSet<VerboseBgpEdge> _verboseEbgpNeighbors;
 
     private SortedSet<VerboseBgpEdge> _verboseIbgpNeighbors;
@@ -126,6 +139,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private SortedSet<VerboseEdge> _verboseLanNeighbors;
 
     private SortedSet<VerboseOspfEdge> _verboseOspfNeighbors;
+
+    private SortedSet<VerboseRipEdge> _verboseRipNeighbors;
 
     public void addLanEdge(Edge edge) {
       _lanNeighbors.add(edge);
@@ -151,6 +166,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _ospfNeighbors;
     }
 
+    @JsonProperty(PROP_RIP_NEIGHBORS)
+    public SortedSet<IpEdge> getRipNeighbors() {
+      return _ripNeighbors;
+    }
+
     @JsonProperty(PROP_ROLE_EBGP_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleEbgpNeighbors() {
       return _roleEbgpNeighbors;
@@ -169,6 +189,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ROLE_OSPF_NEIGHBORS)
     public SortedSet<RoleEdge> getRoleOspfNeighbors() {
       return _roleOspfNeighbors;
+    }
+
+    @JsonProperty(PROP_ROLE_RIP_NEIGHBORS)
+    public SortedSet<RoleEdge> getRoleRipNeighbors() {
+      return _roleRipNeighbors;
     }
 
     @JsonProperty(PROP_VERBOSE_EBGP_NEIGHBORS)
@@ -191,6 +216,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _verboseOspfNeighbors;
     }
 
+    @JsonProperty(PROP_VERBOSE_RIP_NEIGHBORS)
+    public SortedSet<VerboseRipEdge> getVerboseRipNeighbors() {
+      return _verboseRipNeighbors;
+    }
+
     public void initEbgpNeighbors() {
       _ebgpNeighbors = new TreeSet<>();
     }
@@ -205,6 +235,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     public void initOspfNeighbors() {
       _ospfNeighbors = new TreeSet<>();
+    }
+
+    public void initRipNeighbors() {
+      _ripNeighbors = new TreeSet<>();
     }
 
     public void initVerboseLanNeighbors() {
@@ -322,6 +356,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ospfNeighbors = ospfNeighbors;
     }
 
+    @JsonProperty(PROP_RIP_NEIGHBORS)
+    public void setRipNeighbors(SortedSet<IpEdge> ripNeighbors) {
+      _ripNeighbors = ripNeighbors;
+    }
+
     @JsonProperty(PROP_ROLE_EBGP_NEIGHBORS)
     public void setRoleEbgpNeighbors(SortedSet<RoleEdge> roleEbgpNeighbors) {
       _roleEbgpNeighbors = roleEbgpNeighbors;
@@ -340,6 +379,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ROLE_OSPF_NEIGHBORS)
     public void setRoleOspfNeighbors(SortedSet<RoleEdge> roleOspfNeighbors) {
       _roleOspfNeighbors = roleOspfNeighbors;
+    }
+
+    @JsonProperty(PROP_ROLE_RIP_NEIGHBORS)
+    public void setRoleRipNeighbors(SortedSet<RoleEdge> roleRipNeighbors) {
+      _roleRipNeighbors = roleRipNeighbors;
     }
 
     @JsonProperty(PROP_VERBOSE_EBGP_NEIGHBORS)
@@ -361,9 +405,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     public void setVerboseOspfNeighbors(SortedSet<VerboseOspfEdge> verboseOspfNeighbors) {
       _verboseOspfNeighbors = verboseOspfNeighbors;
     }
+
+    @JsonProperty(PROP_VERBOSE_RIP_NEIGHBORS)
+    public void setVerboseRipNeighbors(SortedSet<VerboseRipEdge> verboseRipNeighbors) {
+      _verboseRipNeighbors = verboseRipNeighbors;
+    }
   }
 
   public static class NeighborsAnswerer extends Answerer {
+
+    private SortedMap<String, SortedSet<String>> _nodeRolesMap;
 
     private boolean _remoteBgpNeighborsInitialized;
 
@@ -371,7 +422,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     Topology _topology;
 
-    private SortedMap<String, SortedSet<String>> _nodeRolesMap;
+    private boolean _remoteRipNeighborsInitialized;
 
     public NeighborsAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
@@ -452,6 +503,66 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           case ROLE:
             SortedSet<RoleEdge> redges = new TreeSet<>();
             for (VerboseOspfEdge vedge : vedges) {
+              SortedSet<String> roles1 =
+                  _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
+              SortedSet<String> roles2 =
+                  _nodeRolesMap.getOrDefault(vedge.getNode2().getName(), new TreeSet<>());
+              for (String r1 : roles1) {
+                for (String r2 : roles2) {
+                  redges.add(new RoleEdge(r1, r2));
+                }
+              }
+            }
+            answerElement.setRoleOspfNeighbors(redges);
+            break;
+          default:
+            throw new BatfishException(
+                "Unsupported " + EdgeStyle.class.getCanonicalName() + ": " + question.getStyle());
+        }
+      }
+
+      if (question.getNeighborTypes().contains(NeighborType.RIP)) {
+        SortedSet<VerboseRipEdge> vedges = new TreeSet<>();
+        initTopology(configurations);
+        initRemoteRipNeighbors(_batfish, configurations, _topology);
+        for (Configuration c : configurations.values()) {
+          String hostname = c.getHostname();
+          for (Vrf vrf : c.getVrfs().values()) {
+            RipProcess proc = vrf.getRipProcess();
+            if (proc != null) {
+              for (RipNeighbor ripNeighbor : proc.getRipNeighbors().values()) {
+                RipNeighbor remoteRipNeighbor = ripNeighbor.getRemoteRipNeighbor();
+                if (remoteRipNeighbor != null) {
+                  Configuration remoteHost = remoteRipNeighbor.getOwner();
+                  String remoteHostname = remoteHost.getHostname();
+                  Matcher node1Matcher = node1Regex.matcher(hostname);
+                  Matcher node2Matcher = node2Regex.matcher(remoteHostname);
+                  if (node1Matcher.matches() && node2Matcher.matches()) {
+                    Ip localIp = ripNeighbor.getLocalIp();
+                    Ip remoteIp = remoteRipNeighbor.getLocalIp();
+                    IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
+                    vedges.add(
+                        new VerboseRipEdge(c, ripNeighbor, remoteHost, remoteRipNeighbor, edge));
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        switch (question.getStyle()) {
+          case SUMMARY:
+            answerElement.initRipNeighbors();
+            for (VerboseRipEdge vedge : vedges) {
+              answerElement.getRipNeighbors().add(vedge.getEdgeSummary());
+            }
+            break;
+          case VERBOSE:
+            answerElement.setVerboseRipNeighbors(vedges);
+            break;
+          case ROLE:
+            SortedSet<RoleEdge> redges = new TreeSet<>();
+            for (VerboseRipEdge vedge : vedges) {
               SortedSet<String> roles1 =
                   _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
               SortedSet<String> roles2 =
@@ -637,6 +748,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
     }
 
+    private void initRemoteRipNeighbors(
+        IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
+      if (!_remoteRipNeighborsInitialized) {
+        Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
+        batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
+        _remoteRipNeighborsInitialized = true;
+      }
+    }
+
     private void initTopology(Map<String, Configuration> configurations) {
       if (_topology == null) {
         _topology = _batfish.computeTopology(configurations);
@@ -694,9 +814,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE2_REGEX = "node2Regex";
 
-    private static final String PROP_STYLE = "style";
-
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
+
+    private static final String PROP_STYLE = "style";
 
     private SortedSet<NeighborType> _neighborTypes;
 
@@ -704,9 +824,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private String _node2Regex;
 
-    private EdgeStyle _style;
-
     private NodeRoleSpecifier _roleSpecifier;
+
+    private EdgeStyle _style;
 
     public NeighborsQuestion() {
       _node1Regex = ".*";
@@ -740,14 +860,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _node2Regex;
     }
 
-    @JsonProperty(PROP_STYLE)
-    public EdgeStyle getStyle() {
-      return _style;
-    }
-
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public NodeRoleSpecifier getRoleSpecifier() {
       return _roleSpecifier;
+    }
+
+    @JsonProperty(PROP_STYLE)
+    public EdgeStyle getStyle() {
+      return _style;
     }
 
     @Override
@@ -795,14 +915,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _node2Regex = regex;
     }
 
-    @JsonProperty(PROP_STYLE)
-    public void setStyle(EdgeStyle style) {
-      _style = style;
-    }
-
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
       _roleSpecifier = roleSpecifier;
+    }
+
+    @JsonProperty(PROP_STYLE)
+    public void setStyle(EdgeStyle style) {
+      _style = style;
     }
   }
 

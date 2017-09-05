@@ -39,10 +39,19 @@ advertise_is_stanza
 
 circuit_type_iis_stanza
 :
-   CIRCUIT_TYPE
    (
-      LEVEL_2_ONLY
-      | LEVEL_2
+      (
+         NO CIRCUIT_TYPE
+      )
+      |
+      (
+         CIRCUIT_TYPE
+         (
+            LEVEL_1
+            | LEVEL_1_2
+            | LEVEL_2_ONLY
+         )
+      )
    ) NEWLINE
 ;
 
@@ -53,11 +62,13 @@ common_iis_stanza
    | null_iis_stanza
    | passive_iis_stanza
    | shutdown_iis_stanza
+   | suppressed_iis_stanza
 ;
 
 common_is_stanza
 :
    advertise_is_stanza
+   | distribute_list_is_stanza
    | is_type_is_stanza
    | metric_is_stanza
    | metric_style_is_stanza
@@ -69,6 +80,15 @@ common_is_stanza
    | passive_interface_default_is_stanza
    | passive_interface_is_stanza
    | summary_address_is_stanza
+;
+
+distribute_list_is_stanza
+:
+   DISTRIBUTE_LIST name = variable
+   (
+      IN
+      | OUT
+   ) CONNECTED NEWLINE
 ;
 
 iis_stanza
@@ -87,7 +107,6 @@ is_stanza
    address_family_is_stanza
    | common_is_stanza
    | interface_is_stanza
-   | unrecognized_line
 ;
 
 is_type_is_stanza
@@ -130,6 +149,7 @@ metric_style_is_stanza
    METRIC_STYLE
    (
       WIDE
+      | LEVEL_1
       | LEVEL_2
    )* NEWLINE
 ;
@@ -158,8 +178,10 @@ null_is_stanza
    NO?
    (
       ADJACENCY_CHECK
+      | AREA_PASSWORD
       | AUTHENTICATION
       | BFD
+      | ENABLE
       | FAST_FLOOD
       | HELLO
       | ISPF
@@ -172,6 +194,13 @@ null_is_stanza
       | MAXIMUM_PATHS
       | MPLS
       | MULTI_TOPOLOGY
+      |
+      (
+         NO
+         (
+            SHUTDOWN
+         )
+      )
       | NSF
       | NSR
       | PRC_INTERVAL
@@ -198,6 +227,11 @@ passive_interface_default_is_stanza
 passive_interface_is_stanza
 :
    NO? PASSIVE_INTERFACE name = interface_name NEWLINE
+;
+
+suppressed_iis_stanza
+:
+   NO? SUPPRESSED NEWLINE
 ;
 
 redistribute_connected_is_stanza

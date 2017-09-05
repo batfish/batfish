@@ -134,6 +134,7 @@ public abstract class BaseSettings {
     }
   }
 
+  @Nullable
   protected final Path getPathOptionValue(String key) {
     String value = _line.getOptionValue(key, _config.getString(key));
     return nullablePath(value);
@@ -180,7 +181,7 @@ public abstract class BaseSettings {
     formatter.printHelp(executableName, _options);
   }
 
-  protected final void setDefaultProperty(String key, Object value) {
+  protected final void setDefaultProperty(String key, @Nullable Object value) {
     if (_config.getProperty(key) == null) {
       _config.setProperty(key, value);
     }

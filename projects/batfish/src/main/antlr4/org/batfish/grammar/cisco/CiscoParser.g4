@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -9,17 +9,32 @@ options {
 }
 
 @members {
+   private boolean _cadant;
+
+   private boolean _disableUnrecognized;
+
    private boolean _multilineBgpNeighbors;
-   
+
+   public void setCadant(boolean b) {
+      _cadant = b;
+   }
+
+   public void setDisableUnrecognized(boolean b) {
+     _disableUnrecognized = b;
+   }
+
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
    
    @Override
    public String getStateInfo() {
-      return "_multilineBgpNeighbors: " + _multilineBgpNeighbors + "\n";
+      return String.format("_cadant: %s\n_disableUnrecognized: %s\n_multilineBgpNeighbors: %s\n",
+         _cadant,
+         _disableUnrecognized,
+         _multilineBgpNeighbors
+      );
    }
-   
 }
 
 address_aiimgp_stanza
@@ -80,27 +95,17 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
-controller_null
+cops_listener
 :
-   NO?
+   LISTENER
    (
-      ADMIN_STATE
-      | AIS_SHUT
-      | ALARM_REPORT
-      | CABLELENGTH
-      | CHANNEL_GROUP
-      | CLOCK
-      | DESCRIPTION
-      | FRAMING
-      | G709
-      | LINECODE
-      | PM
-      | PRI_GROUP
-      | PROACTIVE
-      | SHUTDOWN
-      | STS_1
-      | WAVELENGTH
-   ) ~NEWLINE* NEWLINE
+      copsl_access_list
+   )
+;
+
+copsl_access_list
+:
+   ACCESS_LIST name = variable_permissive NEWLINE
 ;
 
 cp_ip_access_group
@@ -157,6 +162,28 @@ cqg_null
       PRECEDENCE
       | QUEUE
       | RANDOM_DETECT_LABEL
+   ) ~NEWLINE* NEWLINE
+;
+
+cmf_null
+:
+   NO?
+   (
+      ALIAS
+      | CALL_FORWARD
+      | DEFAULT_DESTINATION
+      | DIALPLAN_PATTERN
+      | IP
+      | KEEPALIVE
+      | LIMIT_DN
+      | MAX_CONFERENCES
+      | MAX_DN
+      | MAX_EPHONES
+      | SECONDARY_DIALTONE
+      | TIME_FORMAT
+      | TIME_ZONE
+      | TRANSFER_SYSTEM
+      | TRANSLATION_PROFILE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -246,7 +273,11 @@ dhcp_profile_null
 
 domain_lookup
 :
-   LOOKUP SOURCE_INTERFACE iname = interface_name NEWLINE
+   LOOKUP
+   (
+      SOURCE_INTERFACE iname = interface_name
+      | DISABLE
+   ) NEWLINE
 ;
 
 domain_name
@@ -285,7 +316,8 @@ eh_null
 enable_null
 :
    (
-      READ_ONLY_PASSWORD
+      ENCRYPTED_PASSWORD
+      | READ_ONLY_PASSWORD
       | SUPER_USER_PASSWORD
       | TELNET
    ) ~NEWLINE* NEWLINE
@@ -293,7 +325,7 @@ enable_null
 
 enable_password
 :
-   PASSWORD DEC pass = variable NEWLINE
+   PASSWORD DEC? pass = variable ENCRYPTED? NEWLINE
 ;
 
 enable_secret
@@ -554,7 +586,7 @@ ip_route_stanza
       | MANAGEMENT
    ) ROUTE
    (
-      VRF vrf = ~NEWLINE
+      VRF vrf = variable
    )? ip_route_tail
 ;
 
@@ -569,10 +601,20 @@ ip_route_tail
    (
       nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
+      | GLOBAL
       | nexthopint = interface_name
    )*
    (
-      distance = DEC
+      (
+         (
+            ADMIN_DIST
+            | ADMIN_DISTANCE
+         )? distance = DEC
+      )
+      |
+      (
+         METRIC metric = DEC
+      )
       |
       (
          TAG tag = DEC
@@ -614,10 +656,25 @@ ip_ssh_null
       | CLIENT
       | MAXSTARTUPS
       | PORT
+      | RSA
       | SERVER
+      |
+      (
+         NO SHUTDOWN
+      )
       | SOURCE_INTERFACE
       | TIME_OUT
    ) ~NEWLINE* NEWLINE
+;
+
+ip_ssh_private_key
+:
+   PRIVATE_KEY ~END_CADANT+ END_CADANT
+;
+
+ip_ssh_public_key
+:
+   PUBLIC_KEY ~END_CADANT+ END_CADANT
 ;
 
 ip_ssh_pubkey_chain
@@ -773,6 +830,22 @@ l2_null
       | MTU
       | NEIGHBOR
       | VPN
+   ) ~NEWLINE* NEWLINE
+;
+
+l2tpc_null
+:
+   NO? DEFAULT?
+   (
+      AUTHENTICATION
+      | COOKIE
+      | HELLO
+      | HIDDEN_LITERAL
+      | HOSTNAME
+      | PASSWORD
+      | RECEIVE_WINDOW
+      | RETRANSMIT
+      | TIMEOUT
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1014,8 +1087,8 @@ monitor_null
 :
    NO?
    (
-      DESCRIPTION
-      | DESTINATION
+      BUFFER_SIZE
+      | DESCRIPTION
       | SHUTDOWN
       | SOURCE
    ) ~NEWLINE* NEWLINE
@@ -1163,6 +1236,14 @@ phone_proxy_null
    ) ~NEWLINE* NEWLINE
 ;
 
+redundancy_linecard_group
+:
+   LINECARD_GROUP ~NEWLINE* NEWLINE
+   (
+      rlcg_null
+   )*
+;
+
 redundancy_main_cpu
 :
    MAIN_CPU ~NEWLINE* NEWLINE
@@ -1188,6 +1269,17 @@ redundancy_null
       | NOTIFICATION_TIMER
       | PROTOCOL
       | SCHEME
+   ) ~NEWLINE* NEWLINE
+;
+
+rlcg_null
+:
+   NO?
+   (
+      MEMBER
+      | MODE
+      | REVERTIVE
+      | RF_SWITCH
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1236,11 +1328,13 @@ router_multicast_tail
 
 s_application
 :
-   APPLICATION NEWLINE
-   SERVICE variable NEWLINE
+   APPLICATION NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
    (
-     PARAM ~NEWLINE* NEWLINE
-   )+
+      PARAM ~NEWLINE* NEWLINE
+   )*
+   (
+      GLOBAL NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
+   )?
 ;
 
 s_archive
@@ -1252,17 +1346,14 @@ s_archive
          | LOG
          | LOGGING
          | NOTIFY
+         | PATH
       ) ~NEWLINE* NEWLINE
    )*
 ;
 
 s_authentication
 :
-   AUTHENTICATION
-   (
-      COMMAND
-      | MAC_MOVE
-   ) ~NEWLINE* NEWLINE
+   AUTHENTICATION ~NEWLINE* NEWLINE
 ;
 
 s_cluster
@@ -1272,6 +1363,14 @@ s_cluster
       ENABLE
       | RUN
    ) ~NEWLINE* NEWLINE
+;
+
+s_call_manager_fallback
+:
+   NO? CALL_MANAGER_FALLBACK NEWLINE
+   (
+      cmf_null
+   )+
 ;
 
 s_control_plane
@@ -1291,12 +1390,12 @@ s_control_plane_tail
    | cp_service_policy
 ;
 
-s_controller
+s_cops
 :
-   NO? CONTROLLER ~NEWLINE* NEWLINE
+   COPS
    (
-      controller_null
-   )*
+      cops_listener
+   )
 ;
 
 s_cos_queue_group
@@ -1339,10 +1438,12 @@ s_dial_peer
          | INCOMING
          | MEDIA
          | PORT
+         | PREFERENCE
          | SERVICE
          | SESSION
          | TRANSLATION_PROFILE
          | VAD
+         | VOICE_CLASS
       ) ~NEWLINE* NEWLINE
    )*
 ;
@@ -1455,6 +1556,16 @@ s_flow
    )*
 ;
 
+s_flow_sampler_map
+:
+   NO? FLOW_SAMPLER_MAP ~NEWLINE* NEWLINE fsm_mode?
+;
+
+fsm_mode
+:
+   MODE RANDOM ONE_OUT_OF DEC NEWLINE
+;
+
 s_gatekeeper
 :
    GATEKEEPER NEWLINE
@@ -1486,8 +1597,19 @@ s_hostname
       | SWITCHNAME
    )
    (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
+      quoted_name = double_quoted_string
+      |
+      (
+         (
+            name_parts += ~NEWLINE
+         )+
+      )
+   ) NEWLINE
+;
+
+s_interface_line
+:
+   NO? INTERFACE BREAKOUT ~NEWLINE* NEWLINE
 ;
 
 s_ip_dhcp
@@ -1558,9 +1680,11 @@ s_ip_source_route
 
 s_ip_ssh
 :
-   IP SSH
+   NO? IP SSH
    (
-      ip_ssh_pubkey_chain
+      ip_ssh_private_key
+      | ip_ssh_pubkey_chain
+      | ip_ssh_public_key
       | ip_ssh_version
       | ip_ssh_null
    )
@@ -1610,6 +1734,14 @@ s_l2
    NO? L2 ~NEWLINE* NEWLINE
    (
       l2_null
+   )*
+;
+
+s_l2tp_class
+:
+   NO? L2TP_CLASS name = variable NEWLINE
+   (
+      l2tpc_null
    )*
 ;
 
@@ -1716,6 +1848,11 @@ s_openflow
    )*
 ;
 
+s_passwd
+:
+   NO? PASSWD pass = variable ENCRYPTED? NEWLINE
+;
+
 s_phone_proxy
 :
    NO? PHONE_PROXY ~NEWLINE* NEWLINE
@@ -1739,13 +1876,20 @@ s_privilege
    ) ~NEWLINE* NEWLINE
 ;
 
+s_process_max_time
+:
+   NO? PROCESS_MAX_TIME DEC NEWLINE
+;
+
 s_radius_server
 :
-   RADIUS SERVER HOST NEWLINE
+   RADIUS SERVER name = variable NEWLINE
    (
       (
          ADDRESS
          | KEY
+         | RETRANSMIT
+         | TIMEOUT
       ) ~NEWLINE* NEWLINE
    )+
 ;
@@ -1754,7 +1898,8 @@ s_redundancy
 :
    NO? REDUNDANCY ~NEWLINE* NEWLINE
    (
-      redundancy_main_cpu
+      redundancy_linecard_group
+      | redundancy_main_cpu
       | redundancy_null
    )*
 ;
@@ -1865,7 +2010,8 @@ s_tacacs
 :
    TACACS
    (
-      t_server
+      t_null
+      | t_server
       | t_source_interface
    )
 ;
@@ -1874,8 +2020,12 @@ s_tacacs_server
 :
    NO? TACACS_SERVER
    (
-      ts_host
-      | ts_null
+      ts_common
+      | ts_host
+      |
+      (
+         ts_host ts_common*
+      )
    )
 ;
 
@@ -1905,7 +2055,11 @@ s_tunnel_group
 
 s_username
 :
-   USERNAME user = variable
+   USERNAME
+   (
+      quoted_user = double_quoted_string
+      | user = variable
+   )
    (
       (
          u+ NEWLINE
@@ -2225,21 +2379,25 @@ stanza
    | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
-   | router_rip_stanza
    | rsvp_stanza
    | s_aaa
    | s_application
    | s_archive
    | s_authentication
+   | s_cable
    | s_call_home
    | s_callhome
+   | s_call_manager_fallback
    | s_class_map
    | s_cluster
    | s_control_plane
    | s_controller
+   | s_cops
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
+   | s_depi_class
+   | s_depi_tunnel
    | s_dhcp
    | s_dial_peer
    | s_domain
@@ -2253,12 +2411,16 @@ stanza
    | s_event_handler
    | s_failover
    | s_flow
+   | s_flow_sampler_map
    | s_foundry_mac_access_list
    | s_feature
    | s_gatekeeper
    | s_global_port_security
    | s_hardware
    | s_hostname
+   |
+   // do not move below s_interface
+   s_interface_line
    | s_interface
    | s_ip_dhcp
    | s_ip_domain
@@ -2276,8 +2438,16 @@ stanza
    | s_ipsla
    | s_key
    | s_l2
+   | s_l2tp_class
    | s_l2vpn
-   | s_line
+   |
+   {!_cadant}?
+
+   s_line
+   |
+   {_cadant}?
+
+   s_line_cadant
    | s_logging
    | s_lpts
    | s_management
@@ -2300,9 +2470,11 @@ stanza
    | s_object
    | s_object_group
    | s_openflow
+   | s_passwd
    | s_phone_proxy
    | s_policy_map
    | s_privilege
+   | s_process_max_time
    | s_qos_mapping
    | s_radius_server
    | s_redundancy
@@ -2310,6 +2482,7 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_rip
    | s_router_static
    | s_router_vrrp
    | s_sccp
@@ -2346,7 +2519,10 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
-   | unrecognized_block_stanza
+   |
+   { !_disableUnrecognized }?
+
+   unrecognized_block_stanza
 ;
 
 statistics_null
@@ -2385,6 +2561,14 @@ system_null
       | ROUTING
       | URPF
       | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+t_null
+:
+   (
+      GROUP
+      | HOST
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2466,6 +2650,11 @@ track_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ts_common
+:
+   ts_null
+;
+
 ts_host
 :
    HOST hostname =
@@ -2497,9 +2686,15 @@ vi_address_family
 
 u
 :
-   u_password
+   u_encrypted_password
+   | u_password
    | u_privilege
    | u_role
+;
+
+u_encrypted_password
+:
+   ENCRYPTED_PASSWORD pass = variable_permissive
 ;
 
 u_password
@@ -2537,6 +2732,8 @@ vc_null
    (
       CODEC
       | DSP
+      | DSPFARM
+      | VOICE_SERVICE
       | WATCHDOG
    ) ~NEWLINE* NEWLINE
 ;
@@ -2598,6 +2795,7 @@ voice_null
       | ALLOW_CONNECTIONS
       | ASYMMETRIC
       | FAX
+      | FAX_RELAY
       | H225
       | H323
       | MODEM
@@ -2716,7 +2914,8 @@ vrfd_null
 :
    NO?
    (
-      RD
+      AUTO_IMPORT
+      | RD
       | ROUTE_TARGET
       |
       (

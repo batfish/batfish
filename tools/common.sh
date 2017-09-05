@@ -173,9 +173,9 @@ batfish_prepare_test_rig() {
    local TEST_RIG=$1
    local BASE=$2
    local NAME=$3
-   mkdir -p $BASE/$NAME/testrig || return 1
-   mkdir -p $BASE/$NAME/environments/default/env_default
-   cp -r $TEST_RIG/. $BASE/$NAME/testrig/.
+   mkdir -p $BASE/testrigs/$NAME/testrig || return 1
+   mkdir -p $BASE/testrigs/$NAME/environments/default/env_default
+   cp -r $TEST_RIG/. $BASE/testrigs/$NAME/testrig/.
    batfish_date
    echo ": END: Prepare test-rig"
 }

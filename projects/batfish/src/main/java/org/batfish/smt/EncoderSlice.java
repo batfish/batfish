@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
@@ -1606,7 +1607,7 @@ class EncoderSlice {
       Protocol proto,
       SymbolicRecord best,
       SymbolicRecord vars,
-      LogicalEdge e,
+      @Nullable LogicalEdge e,
       boolean compareCommunities) {
 
     ArithExpr defaultLocal = mkInt(defaultLocalPref());

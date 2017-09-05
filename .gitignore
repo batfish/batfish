@@ -1,6 +1,6 @@
 /containers
 /client
-/unit-tests
+/testrigs
 .DS_Store
 *.testout
 .*.swp

@@ -21,6 +21,11 @@ if_description
    description_line
 ;
 
+if_flow_sampler
+:
+   NO? FLOW_SAMPLER variable EGRESS? NEWLINE
+;
+
 if_hsrp
 :
    HSRP group = DEC NEWLINE
@@ -123,7 +128,7 @@ if_ip_address_secondary
          ip = IP_ADDRESS subnet = IP_ADDRESS
       )
       | prefix = IP_PREFIX
-   ) SECONDARY NEWLINE
+   ) SECONDARY DHCP_GIADDR? NEWLINE
 ;
 
 if_ip_dhcp
@@ -140,11 +145,18 @@ if_ip_helper_address
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+if_ip_inband_access_group
+:
+   IP INBAND ACCESS_GROUP name = variable_permissive NEWLINE
+;
+
 if_ip_igmp
 :
    NO? IP IGMP
    (
-      ifigmp_null
+      NEWLINE
+      | ifigmp_access_group
+      | ifigmp_null
       | ifigmp_static_group
    )
 ;
@@ -258,7 +270,8 @@ if_isis_circuit_type
 :
    ISIS CIRCUIT_TYPE
    (
-      LEVEL_2_ONLY
+      LEVEL_1
+      | LEVEL_2_ONLY
       | LEVEL_2
    ) NEWLINE
 ;
@@ -320,7 +333,8 @@ if_null_block
 :
    NO?
    (
-      AFFINITY
+      ACTIVE
+      | AFFINITY
       | ANTENNA
       | ARP
       | ASYNC
@@ -334,6 +348,7 @@ if_null_block
       | BGP_POLICY
       | BRIDGE_GROUP
       | BUNDLE
+      | CABLE
       | CABLELENGTH
       | CARRIER_DELAY
       | CDP
@@ -355,6 +370,7 @@ if_null_block
       | DIALER
       | DIALER_GROUP
       | DFS
+      | DOWNSTREAM
       | DSL
       |
       (
@@ -394,10 +410,6 @@ if_null_block
          )
       )
       | IGNORE
-      |
-      (
-         INTERFACE BREAKOUT
-      )
       | INGRESS
       |
       (
@@ -462,6 +474,7 @@ if_null_block
                   | SNOOPING
                   | SPARSE_DENSE_MODE
                   | SPARSE_MODE
+                  | SPARSE_MODE_SSM
                )
             )
             | PIM_SPARSE
@@ -502,10 +515,15 @@ if_null_block
          (
             AUTHENTICATION
             | CSNP_INTERVAL
+            | DS_HELLO_INTERVAL
             | HELLO
+            | HELLO_INTERVAL
             | HELLO_MULTIPLIER
             | LSP_INTERVAL
             | POINT_TO_POINT
+            | PROTOCOL
+            | SMALL_HELLO
+            | WIDE_METRIC
          )
       )
       | KEEPALIVE
@@ -578,6 +596,7 @@ if_null_block
       | PORTMODE
       | POS
       | POWER
+      | POWER_LEVEL
       | PPP
       | PREEMPT
       | PRIORITY
@@ -876,12 +895,18 @@ ifdhcpr_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ifigmp_access_group
+:
+   ACCESS_GROUP name = variable NEWLINE
+;
+
 ifigmp_null
 :
    (
       HOST_PROXY
       | LAST_MEMBER_QUERY_COUNT
       | LAST_MEMBER_QUERY_INTERVAL
+      | MULTICAST_STATIC_ONLY
       | QUERY_INTERVAL
       | QUERY_MAX_RESPONSE_TIME
       | ROUTER_ALERT
@@ -921,11 +946,19 @@ s_interface
       L2TRANSPORT
       | MULTIPOINT
       | POINT_TO_POINT
-   )? NEWLINE
+   )?
+   (
+      NEWLINE
+      |
+      {_cadant}?
+
+      NEWLINE?
+   )
    (
       if_autostate
       | if_default_gw
       | if_description
+      | if_flow_sampler
       | if_hsrp
       | if_ip_proxy_arp
       | if_ip_verify
@@ -935,6 +968,7 @@ s_interface
       | if_ip_address_secondary
       | if_ip_dhcp
       | if_ip_helper_address
+      | if_ip_inband_access_group
       | if_ip_igmp
       | if_ip_nat_destination
       | if_ip_nat_source
@@ -977,6 +1011,9 @@ s_interface
       // do not rearrange items below
 
       | if_null_block
-      | unrecognized_line
+      |
+      { !_disableUnrecognized }?
+
+      unrecognized_line
    )*
 ;

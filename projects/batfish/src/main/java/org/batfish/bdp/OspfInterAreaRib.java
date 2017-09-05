@@ -14,6 +14,6 @@ public class OspfInterAreaRib extends AbstractRib<OspfInterAreaRoute> {
   @Override
   public int comparePreference(OspfInterAreaRoute lhs, OspfInterAreaRoute rhs) {
     // reversed on purpose
-    return Integer.compare(rhs.getMetric(), lhs.getMetric());
+    return Long.compare(rhs.getMetric(), lhs.getMetric());
   }
 }
