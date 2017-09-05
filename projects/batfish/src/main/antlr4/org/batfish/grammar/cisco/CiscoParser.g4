@@ -316,7 +316,8 @@ eh_null
 enable_null
 :
    (
-      READ_ONLY_PASSWORD
+      ENCRYPTED_PASSWORD
+      | READ_ONLY_PASSWORD
       | SUPER_USER_PASSWORD
       | TELNET
    ) ~NEWLINE* NEWLINE
@@ -1596,8 +1597,14 @@ s_hostname
       | SWITCHNAME
    )
    (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
+      quoted_name = double_quoted_string
+      |
+      (
+         (
+            name_parts += ~NEWLINE
+         )+
+      )
+   ) NEWLINE
 ;
 
 s_interface_line
@@ -2044,7 +2051,11 @@ s_tunnel_group
 
 s_username
 :
-   USERNAME user = variable
+   USERNAME
+   (
+      quoted_user = double_quoted_string
+      | user = variable
+   )
    (
       (
          u+ NEWLINE
@@ -2666,9 +2677,15 @@ vi_address_family
 
 u
 :
-   u_password
+   u_encrypted_password
+   | u_password
    | u_privilege
    | u_role
+;
+
+u_encrypted_password
+:
+   ENCRYPTED_PASSWORD pass = variable_permissive
 ;
 
 u_password

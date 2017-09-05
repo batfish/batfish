@@ -471,6 +471,11 @@ AGGREGATE_ADDRESS
    'aggregate-address'
 ;
 
+AGING
+:
+   'aging'
+;
+
 AHP
 :
    'ahp'
@@ -2899,6 +2904,11 @@ ENCRYPTED
    'encrypted'
 ;
 
+ENCRYPTED_PASSWORD
+:
+   'encrypted-password'
+;
+
 ENCRYPTION
 :
    'encryption'
@@ -5163,6 +5173,11 @@ MATCHES_ANY
 MATCHES_EVERY
 :
    'matches-every'
+;
+
+MAXPOLL
+:
+   'maxpoll'
 ;
 
 MAXSTARTUPS
@@ -9140,6 +9155,11 @@ TCS_LOAD_BALANCE
 TELNET
 :
    'telnet'
+;
+
+TELNET_SERVER
+:
+   'telnet-server'
 ;
 
 TEMPLATE

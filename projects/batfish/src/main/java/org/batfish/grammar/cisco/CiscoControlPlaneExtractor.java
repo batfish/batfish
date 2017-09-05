@@ -768,7 +768,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("Wideband-Cable", "Wideband-Cable");
     return prefixes;
   }
-  
+
   private static Ip getIp(Access_list_ip_rangeContext ctx) {
     if (ctx.ip != null) {
       return toIp(ctx.ip);
@@ -851,6 +851,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new SubRange(low, high);
     } else {
       return new SubRange(low, low);
+    }
+  }
+
+  private static String unquote(String text) {
+    if (text.length() == 0) {
+      return text;
+    }
+    if (text.charAt(0) != '"') {
+      return text;
+    } else if (text.charAt(text.length() - 1) != '"') {
+      throw new BatfishException("Improperly-quoted string");
+    } else {
+      return text.substring(1, text.length() - 1);
     }
   }
 
@@ -1864,7 +1877,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_username(S_usernameContext ctx) {
-    String username = ctx.user.getText();
+    String username;
+    if (ctx.user != null) {
+      username = ctx.user.getText();
+    } else {
+      username = unquote(ctx.quoted_user.getText());
+    }
     _currentUser = _configuration.getCf().getUsers().computeIfAbsent(username, k -> new User(k));
   }
 
@@ -4862,11 +4880,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
-    StringBuilder sb = new StringBuilder();
-    for (Token namePart : ctx.name_parts) {
-      sb.append(namePart.getText());
+    String hostname;
+    if (ctx.quoted_name != null) {
+      hostname = unquote(ctx.quoted_name.getText());
+    } else {
+      StringBuilder sb = new StringBuilder();
+      for (Token namePart : ctx.name_parts) {
+        sb.append(namePart.getText());
+      }
+      hostname = sb.toString();
     }
-    String hostname = sb.toString();
     _configuration.setHostname(hostname);
     _configuration.getCf().setHostname(hostname);
   }
@@ -5966,7 +5989,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw convError(IntExpr.class, ctx);
     }
   }
-  
+
   private IpProtocol toIpProtocol(ProtocolContext ctx) {
     if (ctx.DEC() != null) {
       int num = toInteger(ctx.DEC());

@@ -578,6 +578,7 @@ null_single
       )
       | ACCOUNTING
       | ACCOUNTING_PORT
+      | AGING
       | ALIAS
       | AP
       | AQM_REGISTER_FNF
@@ -669,7 +670,10 @@ null_single
             | DEFAULT_NETWORK
             | DEVICE
             | DOMAIN_LIST
-            | DOMAIN_LOOKUP
+            |
+            (
+               NO? DOMAIN_LOOKUP
+            )
             | DVMRP
             | EXTCOMMUNITY_LIST
             | FINGER
@@ -880,6 +884,7 @@ null_single
       | SYSOPT
       | TAG_SWITCHING
       | TELNET
+      | TELNET_SERVER
       | TFTP_SERVER
       | THREAT_DETECTION
       | THREAT_VISIBILITY
