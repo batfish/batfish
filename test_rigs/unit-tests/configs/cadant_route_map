@@ -8,6 +8,6 @@ route-map foo permit 1
 exit
 route-map bar permit 99
  match ipv6 address prefix-list baz-ipv6-prefix-list
- set community 5555:1111
+ set community add 5555:1111
 exit
 #

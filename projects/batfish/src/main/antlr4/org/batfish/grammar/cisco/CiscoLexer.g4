@@ -10819,13 +10819,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' )
+   ~( [ \t\n\r(),!$'"*#] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' | ':' )
+   ~( [ \t\n\r(),!$'"*#] | '[' | ']' | ':' )
 ;
 
 fragment
@@ -11522,6 +11522,11 @@ M_Interface_NO
 M_Interface_MULTIPOINT
 :
    'multipoint' -> type ( MULTIPOINT ) , popMode
+;
+
+M_Interface_SHUTDOWN
+:
+   'shutdown' -> type ( SHUTDOWN ) , popMode
 ;
 
 M_Interface_TRAP

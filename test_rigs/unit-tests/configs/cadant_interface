@@ -27,6 +27,7 @@ interface cable-upstream 1/0/0
  description "bleh"
 exit
 interface cable-upstream 1/0/10 no shutdown
+interface cable-upstream 1/0/10 shutdown
 interface cable-upstream 1/0/0.0
  cable channel-id 1
  cable docsis-mode atdma
