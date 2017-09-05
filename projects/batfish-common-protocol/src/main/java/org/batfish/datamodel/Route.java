@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
+import javax.annotation.Nullable;
 
 @JsonPropertyOrder({Route.PROP_DIFF_SYMBOL})
 public class Route implements Comparable<Route>, Serializable {
@@ -222,7 +223,7 @@ public class Route implements Comparable<Route>, Serializable {
     return result;
   }
 
-  public String prettyPrint(String diffSymbol) {
+  public String prettyPrint(@Nullable String diffSymbol) {
     String node = getNode();
     String nhnode = getNextHop();
     Ip nextHopIp = getNextHopIp();

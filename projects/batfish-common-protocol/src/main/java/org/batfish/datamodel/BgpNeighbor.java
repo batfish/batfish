@@ -636,7 +636,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _remoteAs = remoteAs;
   }
 
-  public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
+  public void setRemoteBgpNeighbor(@Nullable BgpNeighbor remoteBgpNeighbor) {
     _remoteBgpNeighbor = remoteBgpNeighbor;
   }
 

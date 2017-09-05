@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
@@ -57,7 +58,7 @@ public class Environment {
       @Nonnull Configuration configuration,
       String vrf,
       AbstractRoute originalRoute,
-      AbstractRoute6 originalRoute6,
+      @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
       Ip peerAddress,
       Direction direction) {
@@ -65,6 +66,7 @@ public class Environment {
     _direction = direction;
     _vrf = configuration.getVrfs().get(vrf);
     _originalRoute = originalRoute;
+    _originalRoute6 = originalRoute6;
     _outputRoute = outputRoute;
     _peerAddress = peerAddress;
     ConfigurationFormat format = _configuration.getConfigurationFormat();

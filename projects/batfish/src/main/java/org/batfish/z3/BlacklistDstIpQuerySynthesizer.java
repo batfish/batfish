@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -29,7 +30,7 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
   private Set<Ip> _blacklistIps;
 
   public BlacklistDstIpQuerySynthesizer(
-      Set<Ip> explicitBlacklistIps,
+      @Nullable Set<Ip> explicitBlacklistIps,
       Set<String> blacklistNodes,
       Set<NodeInterfacePair> blacklistInterfaces,
       EdgeSet blacklistEdges,

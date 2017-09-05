@@ -3,6 +3,7 @@ package org.batfish.smt;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.RoutingProtocol;
 
@@ -42,6 +43,7 @@ class Protocol {
       Collections.unmodifiableList(
           Arrays.asList(Type.BEST, Type.OSPF, Type.BGP, Type.CONNECTED, Type.STATIC));
 
+  @Nullable
   static Protocol fromRoutingProtocol(RoutingProtocol p) {
     switch (p) {
       case CONNECTED:
