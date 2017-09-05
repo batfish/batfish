@@ -1,0 +1,11 @@
+#
+shelfname ""
+hostname "cadant_rip"
+#
+router rip
+ distribute-list blah-std-acl in
+ network 1.2.3.0
+ passive-interface cable-mac 1.23
+ no shutdown
+exit
+#
