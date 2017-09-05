@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
@@ -80,6 +81,7 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Testrig;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1322,7 +1324,11 @@ public class Client extends AbstractClient implements IClient {
     String containerName = parameters.get(0);
     Container container = _workHelper.getContainer(containerName);
     if (container != null) {
-      _logger.output(container.getTestrigs() + "\n");
+      String testrigNames = container.getTestrigs()
+          .stream()
+          .map(Testrig::getName)
+          .collect(Collectors.joining(", "));
+      _logger.output("[" + testrigNames + "]\n");
       return true;
     }
     return false;
