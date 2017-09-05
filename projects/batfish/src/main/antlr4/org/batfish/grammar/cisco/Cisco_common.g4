@@ -476,13 +476,8 @@ variable
 
 variable_community_name
 :
-   variable
-   (
-      (
-         PLUS
-         | AT
-      ) variable
-   )*
+   ~( NEWLINE | DOUBLE_QUOTE | GROUP | IPV4 | IPV6 | RO | RW | SDROWNER |
+   SYSTEMOWNER | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )+
 ;
 
 variable_hostname
@@ -492,7 +487,8 @@ variable_hostname
 
 variable_interface_name
 :
-   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC | NAME | NEWLINE | TAG | TRACK | VARIABLE )
+   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
+   NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
 variable_permissive
