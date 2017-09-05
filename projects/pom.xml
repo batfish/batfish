@@ -78,6 +78,7 @@
               <arg>-Werror</arg>
               <arg>-Xlint:all</arg>
             </compilerArgs>
+            <useIncrementalCompilation>false</useIncrementalCompilation>
           </configuration>
         </plugin>
 
