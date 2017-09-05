@@ -35,7 +35,14 @@ s_snmp_server
 
 ss_community
 :
-   COMMUNITY name = variable_community_name
+   COMMUNITY
+   (
+      name = variable_community_name
+      |
+      (
+         DOUBLE_QUOTE name = variable_community_name DOUBLE_QUOTE
+      )
+   )
    (
       ssc_group
       | ssc_use_ipv4_acl
@@ -80,19 +87,34 @@ ss_host
       ss_host_use_vrf
       |
       (
-         ss_host_informs
+         (
+            ss_host_informs
+            | ss_host_traps
+            | ss_host_version
+         )* comm_or_username = variable_snmp_host
+         (
+            traps += variable_snmp_host
+         )*
+      )
+      |
+      // cadant
+
+      (
+         ss_host_name
          | ss_host_traps
          | ss_host_version
-      )* comm_or_username = variable_snmp_host
-      (
-         traps += variable_snmp_host
-      )*
+      )+
    ) NEWLINE
 ;
 
 ss_host_informs
 :
    INFORMS
+;
+
+ss_host_name
+:
+   NAME name = variable
 ;
 
 ss_host_traps
@@ -120,6 +142,7 @@ ss_null
    (
       AAA
       | AAA_USER
+      | CARD_TRAP_INH
       | CHASSIS_ID
       | COMMUNITY_MAP
       | CONTACT
@@ -133,6 +156,7 @@ ss_null
       | LOGGING
       | MANAGER
       | MAX_IFINDEX_PER_MODULE
+      | NOTIFY_FILTER
       | OVERLOAD_CONTROL
       | PRIORITY
       | PROTOCOL
@@ -225,5 +249,5 @@ variable_snmp
 
 variable_snmp_host
 :
-   ~( NEWLINE | INFORMS | TRAPS | VERSION | USE_VRF | VRF )
+   ~( NEWLINE | INFORMS | NAME | TRAPS | VERSION | USE_VRF | VRF )
 ;

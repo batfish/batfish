@@ -66,6 +66,11 @@ address_family_rb_stanza
    )* address_family_footer
 ;
 
+address_family_enable_rb_stanza
+:
+   ADDRESS_FAMILY af = bgp_address_family ENABLE NEWLINE
+;
+
 af_group_rb_stanza
 :
    AF_GROUP name = variable ADDRESS_FAMILY bgp_address_family NEWLINE bgp_tail*
@@ -557,6 +562,7 @@ null_bgp_tail
       | CAPABILITY
       | CLIENT_TO_CLIENT
       | COMPARE_ROUTERID
+      | CONNECT_RETRY
       | DAMPEN
       | DAMPEN_IGP_METRIC
       | DAMPENING
@@ -584,6 +590,7 @@ null_bgp_tail
             REMOTE_AS
             | ROUTE_MAP
             | UPDATE_SOURCE
+            | SHUTDOWN
          )
       )
       | NEIGHBOR_DOWN
@@ -785,6 +792,7 @@ router_bgp_stanza_tail
 :
    additional_paths_rb_stanza
    | address_family_rb_stanza
+   | address_family_enable_rb_stanza
    | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza

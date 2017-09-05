@@ -13,6 +13,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
@@ -344,14 +345,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               initialCompleted.incrementAndGet();
             });
 
-    final Object routesChangedMonitor = new Object();
-
     // OSPF internal routes
-    final boolean[] ospfInternalChanged = new boolean[] {true};
+    final AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
     int ospfInternalIterations = 0;
-    while (ospfInternalChanged[0]) {
+    while (ospfInternalChanged.get()) {
       ospfInternalIterations++;
-      ospfInternalChanged[0] = false;
+      ospfInternalChanged.set(false);
       AtomicInteger ospfInterAreaSummaryCompleted =
           _batfish.newBatch(
               "Compute OSPF Inter-area summaries: iteration " + ospfInternalIterations,
@@ -363,9 +362,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               n -> {
                 for (VirtualRouter vr : n._virtualRouters.values()) {
                   if (vr.computeInterAreaSummaries()) {
-                    synchronized (routesChangedMonitor) {
-                      ospfInternalChanged[0] = true;
-                    }
+                    ospfInternalChanged.set(true);
                   }
                 }
                 ospfInterAreaSummaryCompleted.incrementAndGet();
@@ -380,9 +377,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               n -> {
                 for (VirtualRouter vr : n._virtualRouters.values()) {
                   if (vr.propagateOspfInternalRoutes(nodes, topology)) {
-                    synchronized (routesChangedMonitor) {
-                      ospfInternalChanged[0] = true;
-                    }
+                    ospfInternalChanged.set(true);
                   }
                 }
                 ospfInternalCompleted.incrementAndGet();
@@ -418,11 +413,11 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     // END DONE ONCE (OSPF)
 
     // RIP internal routes
-    final boolean[] ripInternalChanged = new boolean[] {true};
+    final AtomicBoolean ripInternalChanged = new AtomicBoolean(true);
     int ripInternalIterations = 0;
-    while (ripInternalChanged[0]) {
+    while (ripInternalChanged.get()) {
       ripInternalIterations++;
-      ripInternalChanged[0] = false;
+      ripInternalChanged.set(false);
       AtomicInteger ripInternalCompleted =
           _batfish.newBatch(
               "Compute RIP Internal routes: iteration " + ripInternalIterations, nodes.size());
@@ -433,9 +428,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               n -> {
                 for (VirtualRouter vr : n._virtualRouters.values()) {
                   if (vr.propagateRipInternalRoutes(nodes, topology)) {
-                    synchronized (routesChangedMonitor) {
-                      ripInternalChanged[0] = true;
-                    }
+                    ripInternalChanged.set(true);
                   }
                 }
                 ripInternalCompleted.incrementAndGet();
@@ -477,11 +470,11 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     } else if (DEBUG_REPEAT_ITERATIONS && DEBUG_MAX_RECORDED_ITERATIONS > 1) {
       iterationRoutes = new LRUMap<>(DEBUG_MAX_RECORDED_ITERATIONS);
     }
-    boolean[] dependentRoutesChanged = new boolean[] {true};
+    AtomicBoolean dependentRoutesChanged = new AtomicBoolean(true);
     int dependentRoutesIterations = 0;
-    while (dependentRoutesChanged[0]) {
+    while (dependentRoutesChanged.get()) {
       dependentRoutesIterations++;
-      dependentRoutesChanged[0] = false;
+      dependentRoutesChanged.set(false);
       // (Re)initialization of dependent route calculation
       AtomicInteger reinitializeDependentCompleted =
           _batfish.newBatch(
@@ -622,9 +615,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               });
 
       // repropagate exports
-      final boolean[] ospfExternalChanged = new boolean[] {true};
+      final AtomicBoolean ospfExternalChanged = new AtomicBoolean(true);
       int ospfExternalSubIterations = 0;
-      while (ospfExternalChanged[0]) {
+      while (ospfExternalChanged.get()) {
         ospfExternalSubIterations++;
         AtomicInteger propagateOspfExternalCompleted =
             _batfish.newBatch(
@@ -633,7 +626,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                     + ": Propagate OSPF external routes: subIteration: "
                     + ospfExternalSubIterations,
                 nodes.size());
-        ospfExternalChanged[0] = false;
+        ospfExternalChanged.set(false);
         nodes
             .values()
             .parallelStream()
@@ -641,9 +634,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 n -> {
                   for (VirtualRouter vr : n._virtualRouters.values()) {
                     if (vr.propagateOspfExternalRoutes(nodes, topology)) {
-                      synchronized (routesChangedMonitor) {
-                        ospfExternalChanged[0] = true;
-                      }
+                      ospfExternalChanged.set(true);
                     }
                   }
                   propagateOspfExternalCompleted.incrementAndGet();
@@ -824,9 +815,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                     changed = true;
                   }
                   if (changed) {
-                    synchronized (routesChangedMonitor) {
-                      dependentRoutesChanged[0] = true;
-                    }
+                    dependentRoutesChanged.set(true);
                   }
                 }
                 checkFixedPointCompleted.incrementAndGet();

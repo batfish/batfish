@@ -2892,11 +2892,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface i = e.getValue();
-      Prefix interfacePrefix = i.getPrefix().getNetworkPrefix();
-      if (interfacePrefix == null) {
+      Prefix interfaceAddressPrefix = i.getPrefix();
+      if (interfaceAddressPrefix == null) {
         continue;
       }
-      if (networks.contains(interfacePrefix)) {
+      Prefix interfaceNetwork = interfaceAddressPrefix.getNetworkPrefix();
+      if (networks.contains(interfaceNetwork)) {
         newProcess.getInterfaces().add(ifaceName);
         i.setRipEnabled(true);
         boolean passive =
@@ -3551,11 +3552,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL, c);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL, c);
+    markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER, c);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST, c);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST, c);
-    markIpv4Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST, c);
+    markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST, c);
     markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6, c);
     markIpv4Acls(CiscoStructureUsage.MANAGEMENT_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST, c);
@@ -3568,6 +3570,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL, c);
+    markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL, c);

@@ -1,0 +1,10 @@
+#
+shelfname ""
+hostname "cadant_prefix_list"
+#
+ip prefix-list foo seq 10 permit 1.1.1.1/32
+ip prefix-list foo seq 20 permit 2.2.0.0/19 ge 24
+ip prefix-list A+C seq 5 permit 2.2.0.0/19 ge 24
+ipv6 prefix-list bar seq 10 permit ::/128
+ipv6 prefix-list bar seq 20 permit dead:beef::/26 ge 64 le 64
+#

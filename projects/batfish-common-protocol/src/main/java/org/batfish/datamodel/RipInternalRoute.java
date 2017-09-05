@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 
 public class RipInternalRoute extends RipRoute {
@@ -24,17 +25,13 @@ public class RipInternalRoute extends RipRoute {
       return true;
     }
     RipInternalRoute other = (RipInternalRoute) obj;
-    if (_nextHopIp == null) {
-      if (other._nextHopIp != null) {
-        return false;
-      }
-    } else if (!_nextHopIp.equals(other._nextHopIp)) {
+    if (_metric != other._metric) {
       return false;
     }
     if (_admin != other._admin) {
       return false;
     }
-    if (_metric != other._metric) {
+    if (!Objects.equals(_nextHopIp, other._nextHopIp)) {
       return false;
     }
     return _network.equals(other._network);
@@ -74,6 +71,10 @@ public class RipInternalRoute extends RipRoute {
 
   @Override
   public int routeCompare(AbstractRoute rhs) {
+    /*
+     * TODO: In case we implement RipExternalRoute or something like that, we need class
+     * comparison. Need to remove if that won't happen.
+     */
     if (getClass() != rhs.getClass()) {
       return 0;
     }

@@ -9,9 +9,15 @@ options {
 }
 
 @members {
-   private boolean _multilineBgpNeighbors;
+   private boolean _cadant;
 
    private boolean _disableUnrecognized;
+
+   private boolean _multilineBgpNeighbors;
+
+   public void setCadant(boolean b) {
+      _cadant = b;
+   }
 
    public void setDisableUnrecognized(boolean b) {
      _disableUnrecognized = b;
@@ -23,9 +29,12 @@ options {
    
    @Override
    public String getStateInfo() {
-      return "_multilineBgpNeighbors: " + _multilineBgpNeighbors + "\n";
+      return String.format("_cadant: %s\n_disableUnrecognized: %s\n_multilineBgpNeighbors: %s\n",
+         _cadant,
+         _disableUnrecognized,
+         _multilineBgpNeighbors
+      );
    }
-   
 }
 
 address_aiimgp_stanza
@@ -307,7 +316,8 @@ eh_null
 enable_null
 :
    (
-      READ_ONLY_PASSWORD
+      ENCRYPTED_PASSWORD
+      | READ_ONLY_PASSWORD
       | SUPER_USER_PASSWORD
       | TELNET
    ) ~NEWLINE* NEWLINE
@@ -595,7 +605,16 @@ ip_route_tail
       | nexthopint = interface_name
    )*
    (
-      distance = DEC
+      (
+         (
+            ADMIN_DIST
+            | ADMIN_DISTANCE
+         )? distance = DEC
+      )
+      |
+      (
+         METRIC metric = DEC
+      )
       |
       (
          TAG tag = DEC
@@ -639,9 +658,23 @@ ip_ssh_null
       | PORT
       | RSA
       | SERVER
+      |
+      (
+         NO SHUTDOWN
+      )
       | SOURCE_INTERFACE
       | TIME_OUT
    ) ~NEWLINE* NEWLINE
+;
+
+ip_ssh_private_key
+:
+   PRIVATE_KEY ~END_CADANT+ END_CADANT
+;
+
+ip_ssh_public_key
+:
+   PUBLIC_KEY ~END_CADANT+ END_CADANT
 ;
 
 ip_ssh_pubkey_chain
@@ -1320,11 +1353,7 @@ s_archive
 
 s_authentication
 :
-   AUTHENTICATION
-   (
-      COMMAND
-      | MAC_MOVE
-   ) ~NEWLINE* NEWLINE
+   AUTHENTICATION ~NEWLINE* NEWLINE
 ;
 
 s_cluster
@@ -1568,8 +1597,19 @@ s_hostname
       | SWITCHNAME
    )
    (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
+      quoted_name = double_quoted_string
+      |
+      (
+         (
+            name_parts += ~NEWLINE
+         )+
+      )
+   ) NEWLINE
+;
+
+s_interface_line
+:
+   NO? INTERFACE BREAKOUT ~NEWLINE* NEWLINE
 ;
 
 s_ip_dhcp
@@ -1640,9 +1680,11 @@ s_ip_source_route
 
 s_ip_ssh
 :
-   IP SSH
+   NO? IP SSH
    (
-      ip_ssh_pubkey_chain
+      ip_ssh_private_key
+      | ip_ssh_pubkey_chain
+      | ip_ssh_public_key
       | ip_ssh_version
       | ip_ssh_null
    )
@@ -1968,7 +2010,8 @@ s_tacacs
 :
    TACACS
    (
-      t_server
+      t_null
+      | t_server
       | t_source_interface
    )
 ;
@@ -1977,8 +2020,12 @@ s_tacacs_server
 :
    NO? TACACS_SERVER
    (
-      ts_host
-      | ts_null
+      ts_common
+      | ts_host
+      |
+      (
+         ts_host ts_common*
+      )
    )
 ;
 
@@ -2008,7 +2055,11 @@ s_tunnel_group
 
 s_username
 :
-   USERNAME user = variable
+   USERNAME
+   (
+      quoted_user = double_quoted_string
+      | user = variable
+   )
    (
       (
          u+ NEWLINE
@@ -2367,6 +2418,9 @@ stanza
    | s_global_port_security
    | s_hardware
    | s_hostname
+   |
+   // do not move below s_interface
+   s_interface_line
    | s_interface
    | s_ip_dhcp
    | s_ip_domain
@@ -2386,7 +2440,14 @@ stanza
    | s_l2
    | s_l2tp_class
    | s_l2vpn
-   | s_line
+   |
+   {!_cadant}?
+
+   s_line
+   |
+   {_cadant}?
+
+   s_line_cadant
    | s_logging
    | s_lpts
    | s_management
@@ -2458,7 +2519,10 @@ stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
-   | { !_disableUnrecognized }? unrecognized_block_stanza
+   |
+   { !_disableUnrecognized }?
+
+   unrecognized_block_stanza
 ;
 
 statistics_null
@@ -2497,6 +2561,14 @@ system_null
       | ROUTING
       | URPF
       | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+t_null
+:
+   (
+      GROUP
+      | HOST
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2578,6 +2650,11 @@ track_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ts_common
+:
+   ts_null
+;
+
 ts_host
 :
    HOST hostname =
@@ -2609,9 +2686,15 @@ vi_address_family
 
 u
 :
-   u_password
+   u_encrypted_password
+   | u_password
    | u_privilege
    | u_role
+;
+
+u_encrypted_password
+:
+   ENCRYPTED_PASSWORD pass = variable_permissive
 ;
 
 u_password
@@ -2831,7 +2914,8 @@ vrfd_null
 :
    NO?
    (
-      RD
+      AUTO_IMPORT
+      | RD
       | ROUTE_TARGET
       |
       (

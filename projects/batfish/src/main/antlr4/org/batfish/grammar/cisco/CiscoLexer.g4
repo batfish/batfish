@@ -15,6 +15,7 @@ private boolean enableREGEX = false;
 private boolean _inAccessList = false;
 private boolean inCommunitySet = false;
 private boolean _foundry = false;
+private boolean _cadant = false;
 
 @Override
 public void emit(Token token) {
@@ -22,6 +23,10 @@ public void emit(Token token) {
     if (token.getChannel() != HIDDEN) {
        lastTokenType = token.getType();
     }
+}
+
+public void setCadant(boolean cadant) {
+   _cadant = cadant;
 }
 
 public void setFoundry(boolean foundry) {
@@ -57,9 +62,11 @@ tokens {
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
+   END_CADANT,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
+   LINE_CADANT,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PIPE,
@@ -314,6 +321,16 @@ ADMIN
    'admin'
 ;
 
+ADMIN_DIST
+:
+   'admin-dist'
+;
+
+ADMIN_DISTANCE
+:
+   'admin-distance'
+;
+
 ADMIN_STATE
 :
    'admin-state'
@@ -452,6 +469,11 @@ AGGREGATE
 AGGREGATE_ADDRESS
 :
    'aggregate-address'
+;
+
+AGING
+:
+   'aging'
 ;
 
 AHP
@@ -881,6 +903,11 @@ AUTO_COST
    'auto-cost'
 ;
 
+AUTO_IMPORT
+:
+   'auto-import'
+;
+
 AUTO_LOCAL_ADDR
 :
    'auto-local-addr'
@@ -919,6 +946,11 @@ AUTO_TUNNEL
 AUTOHANGUP
 :
    'autohangup'
+;
+
+AUTORECOVERY
+:
+   'autorecovery'
 ;
 
 AUTOROUTE
@@ -1236,9 +1268,19 @@ CABLE
    'cable'
 ;
 
+CABLE_DOWNSTREAM
+:
+   'cable-downstream'
+;
+
 CABLE_RANGE
 :
    'cable-range'
+;
+
+CABLE_UPSTREAM
+:
+   'cable-upstream'
 ;
 
 CABLELENGTH
@@ -1304,6 +1346,11 @@ CAPABILITY
 CARD
 :
    'card'
+;
+
+CARD_TRAP_INH
+:
+   'card-trap-inh'
 ;
 
 CARRIER_DELAY
@@ -1681,6 +1728,11 @@ CONGESTION_CONTROL
    'congestion-control'
 ;
 
+CONNECT_RETRY
+:
+   'connect-retry'
+;
+
 CONNECT_SOURCE
 :
    'connect-source'
@@ -1790,6 +1842,11 @@ COPY
 COS
 :
    'cos'
+;
+
+COS_MAPPING
+:
+   'cos-mapping'
 ;
 
 COS_QUEUE_GROUP
@@ -2317,6 +2374,11 @@ DHCP
    'dhcp'
 ;
 
+DHCP_GIADDR
+:
+   'dhcp-giaddr'
+;
+
 DHCPD
 :
    'dhcpd'
@@ -2547,6 +2609,11 @@ DOWNSTREAM
    'downstream'
 ;
 
+DOWNSTREAM_START_THRESHOLD
+:
+   'downstream-start-threshold'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -2555,6 +2622,11 @@ DR_PRIORITY
 DROP
 :
    'drop'
+;
+
+DS_HELLO_INTERVAL
+:
+   'ds-hello-interval'
 ;
 
 DS_MAX_BURST
@@ -2802,6 +2874,11 @@ ENABLE_ACL_COUNTER
    'enable-acl-counter'
 ;
 
+ENABLE_AUTHENTICATION
+:
+   'enable-authentication'
+;
+
 ENABLE_QOS_STATISTICS
 :
    'enable-qos-statistics'
@@ -2825,6 +2902,11 @@ ENCR
 ENCRYPTED
 :
    'encrypted'
+;
+
+ENCRYPTED_PASSWORD
+:
+   'encrypted-password'
 ;
 
 ENCRYPTION
@@ -3204,6 +3286,11 @@ FAILED
    'failed'
 ;
 
+FAILED_LIST
+:
+   'failed-list'
+;
+
 FAILOVER
 :
    'failover'
@@ -3237,6 +3324,11 @@ FALLBACK
 FALLBACK_DN
 :
    'fallback-dn'
+;
+
+FAN
+:
+   'fan'
 ;
 
 FAST_DETECT
@@ -3296,7 +3388,7 @@ FEX_FABRIC
 
 FIBER_NODE
 :
-   'fiber-node'
+   'fiber-node' -> pushMode ( M_FiberNode )
 ;
 
 FIELDS
@@ -3327,6 +3419,11 @@ FILE_SIZE
 FILE_TRANSFER
 :
    'file-transfer'
+;
+
+FILTER
+:
+   'filter'
 ;
 
 FILTER_LIST
@@ -3544,6 +3641,11 @@ GATEWAY
 GE
 :
    'ge'
+;
+
+GENERAL_GROUP_DEFAULTS
+:
+   'general-group-defaults'
 ;
 
 GENERATE
@@ -4096,6 +4198,11 @@ INCOMPLETE
    'incomplete'
 ;
 
+INDEX
+:
+   'index'
+;
+
 INFINITY
 :
    'infinity'
@@ -4146,6 +4253,11 @@ INHERITANCE_DISABLE
    'inheritance-disable'
 ;
 
+INIT
+:
+   'init'
+;
+
 INIT_TECH_LIST
 :
    'init-tech-list'
@@ -4189,6 +4301,11 @@ INTEGRITY
 INTERAREA
 :
    'interarea'
+;
+
+INTERCEPT
+:
+   'intercept'
 ;
 
 INTERFACE
@@ -4366,6 +4483,11 @@ ISPF
 ISSUER_NAME
 :
    'issuer-name'
+;
+
+IUC
+:
+   'iuc'
 ;
 
 JUMBOMTU
@@ -4778,6 +4900,11 @@ LOCAL_V6_ADDR
    'local-v6-addr'
 ;
 
+LOCAL_VOLATILE
+:
+   'local-volatile'
+;
+
 LOCATION
 :
    'location' -> pushMode ( M_COMMENT )
@@ -4836,6 +4963,11 @@ LOGIN
 LOGIN_ATTEMPTS
 :
    'login-attempts'
+;
+
+LOGIN_AUTHENTICATION
+:
+   'login-authentication'
 ;
 
 LOGOUT_WARNING
@@ -5041,6 +5173,11 @@ MATCHES_ANY
 MATCHES_EVERY
 :
    'matches-every'
+;
+
+MAXPOLL
+:
+   'maxpoll'
 ;
 
 MAXSTARTUPS
@@ -5543,6 +5680,11 @@ MULTICAST_ROUTING
    'multicast-routing'
 ;
 
+MULTICAST_STATIC_ONLY
+:
+   'multicast-static-only'
+;
+
 MULTILINK
 :
    'multilink'
@@ -5661,6 +5803,11 @@ ND_NA
 ND_NS
 :
    'nd-ns'
+;
+
+ND_TYPE
+:
+   'nd-type'
 ;
 
 NEGOTIATE
@@ -5981,6 +6128,11 @@ NOTIFICATIONS
 NOTIFY
 :
    'notify'
+;
+
+NOTIFY_FILTER
+:
+   'notify-filter'
 ;
 
 NSF
@@ -6403,6 +6555,11 @@ PCP_VALUE
    'pcp-value'
 ;
 
+PD_ROUTE_INJECTION
+:
+   'pd-route-injection'
+;
+
 PEAKDETECT
 :
    'peakdetect'
@@ -6718,9 +6875,19 @@ POWEROFF
    'poweroff'
 ;
 
+POWER_LEVEL
+:
+   'power-level'
+;
+
 POWER_MGR
 :
    'power-mgr'
+;
+
+POWER_MONITOR
+:
+   'power-monitor'
 ;
 
 PPP
@@ -6873,6 +7040,11 @@ PRIVATE_AS
    'private-as'
 ;
 
+PRIVATE_KEY
+:
+   'private-key' -> pushMode ( M_CadantSshKey )
+;
+
 PRIVATE_VLAN
 :
    'private-vlan'
@@ -6926,6 +7098,11 @@ PROPAGATE
 PROPOSAL
 :
    'proposal'
+;
+
+PROPRIETARY
+:
+   'proprietary'
 ;
 
 PROTECT
@@ -7008,6 +7185,11 @@ PUBKEY_CHAIN
    'pubkey-chain'
 ;
 
+PUBLIC_KEY
+:
+   'public-key' -> pushMode ( M_CadantSshKey )
+;
+
 PVC
 :
    'pvc'
@@ -7036,6 +7218,11 @@ QOS_POLICY
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
+;
+
+QOS_SC
+:
+   'qos-sc'
 ;
 
 QUERY_INTERVAL
@@ -8153,6 +8340,21 @@ SHAPE
    'shape'
 ;
 
+SHARED_SECONDARY_SECRET
+:
+   'shared-secondary-secret'
+;
+
+SHARED_SECRET
+:
+   'shared-secret'
+;
+
+SHELFNAME
+:
+   'shelfname'
+;
+
 SHELL
 :
    'shell'
@@ -8241,6 +8443,11 @@ SLOT
 SLOT_TABLE_COS
 :
    'slot-table-cos'
+;
+
+SMALL_HELLO
+:
+   'small-hello'
 ;
 
 SMTP
@@ -8366,6 +8573,11 @@ SPARSE_DENSE_MODE
 SPARSE_MODE
 :
    'sparse-mode'
+;
+
+SPARSE_MODE_SSM
+:
+   'sparse-mode-ssm'
 ;
 
 SPD
@@ -8608,6 +8820,11 @@ STUB
 SUBJECT_NAME
 :
    'subject-name'
+;
+
+SUBMGMT
+:
+   'submgmt'
 ;
 
 SUBNET
@@ -8935,9 +9152,19 @@ TCP_UDP
    'tcp-udp'
 ;
 
+TCS_LOAD_BALANCE
+:
+   'tcs-load-balance'
+;
+
 TELNET
 :
    'telnet'
+;
+
+TELNET_SERVER
+:
+   'telnet-server'
 ;
 
 TEMPLATE
@@ -9445,6 +9672,11 @@ UPSTREAM
    'upstream'
 ;
 
+UPSTREAM_START_THRESHOLD
+:
+   'upstream-start-threshold'
+;
+
 URG
 :
    'urg'
@@ -9603,6 +9835,11 @@ VERIFY_DATA
 VERSION
 :
    'version'
+;
+
+VIDEO
+:
+   'video'
 ;
 
 VIEW
@@ -9905,6 +10142,11 @@ WHOIS
 WIDE
 :
    'wide'
+;
+
+WIDE_METRIC
+:
+   'wide-metric'
 ;
 
 WIDEBAND
@@ -10245,7 +10487,7 @@ COMMENT_LINE
    (
       F_Whitespace
    )* [!#]
-   {lastTokenType == NEWLINE || lastTokenType == -1}?
+   {lastTokenType == NEWLINE || lastTokenType == END_CADANT || lastTokenType == -1}?
 
    F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;
@@ -10582,13 +10824,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' )
+   ~( [ \t\n\r(),!$'"*#] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' | ':' )
+   ~( [ \t\n\r(),!$'"*#] | '[' | ']' | ':' )
 ;
 
 fragment
@@ -10706,6 +10948,11 @@ M_AsPathAccessList_WS
 ;
 
 mode M_Authentication;
+
+M_Authentication_DOUBLE_QUOTE
+:
+   '"' -> mode ( M_DoubleQuote )
+;
 
 M_Authentication_BANNER
 :
@@ -10939,6 +11186,18 @@ M_Banner_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_BannerCadant;
+
+M_BannerCadant_END_CADANT
+:
+   '/end' F_Newline -> type ( END_CADANT ) , popMode
+;
+
+M_BannerCadant_LINE_CADANT
+:
+   F_NonNewline* F_Newline+ -> type ( LINE_CADANT )
+;
+
 mode M_BannerText;
 
 M_BannerText_WS
@@ -10952,17 +11211,34 @@ M_BannerText_ESCAPE_C
       '^C'
       | '^'
       | '\u0003'
-   ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
+   ) {!_cadant}? -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
 ;
 
 M_BannerText_HASH
 :
-   '#' -> type ( POUND ) , mode ( M_MOTD_HASH )
+   '#' {!_cadant}? -> type ( POUND ) , mode ( M_MOTD_HASH )
 ;
 
 M_BannerText_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
+   F_Newline {!_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
+;
+
+M_BannerText_NEWLINE_CADANT
+:
+   F_Newline {_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_BannerCadant )
+;
+
+mode M_CadantSshKey;
+
+M_CadantSshKey_END
+:
+   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode 
+;
+
+M_CadantSshKey_LINE
+:
+   F_NonNewline+ F_Newline+
 ;
 
 mode M_Certificate;
@@ -11088,6 +11364,18 @@ M_Description_NON_NEWLINE
    F_NonNewline+ -> type ( RAW_TEXT )
 ;
 
+mode M_DoubleQuote;
+
+M_DoubleQuote_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ) , popMode
+;
+
+M_DoubleQuote_TEXT
+:
+   ~'"'+
+;
+
 mode M_Execute;
 
 M_Execute_TEXT
@@ -11127,6 +11415,23 @@ M_Extcommunity_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_FiberNode;
+
+M_FiberNode_DEC
+:
+   F_Digit+ -> type ( DEC ) , popMode
+;
+
+M_FiberNode_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
+;
+
+M_FiberNode_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Interface;
 
 M_Interface_ALL
@@ -11137,6 +11442,11 @@ M_Interface_ALL
 M_Interface_BREAKOUT
 :
    'breakout' -> type ( BREAKOUT ) , popMode
+;
+
+M_Interface_CABLE
+:
+   'cable' -> type ( CABLE ) , popMode
 ;
 
 M_Interface_DEFAULT
@@ -11209,9 +11519,19 @@ M_Interface_MODULE
    'module' -> type ( MODULE )
 ;
 
+M_Interface_NO
+:
+   'no' -> type ( NO ) , popMode
+;
+
 M_Interface_MULTIPOINT
 :
    'multipoint' -> type ( MULTIPOINT ) , popMode
+;
+
+M_Interface_SHUTDOWN
+:
+   'shutdown' -> type ( SHUTDOWN ) , popMode
 ;
 
 M_Interface_TRAP

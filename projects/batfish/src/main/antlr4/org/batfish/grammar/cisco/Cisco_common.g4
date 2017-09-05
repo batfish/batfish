@@ -33,7 +33,11 @@ banner
          )
          |
          (
-            NEWLINE ~EOF_LITERAL* EOF_LITERAL
+            NEWLINE ~( EOF_LITERAL | LINE_CADANT )* EOF_LITERAL
+         )
+         |
+         (
+            NEWLINE LINE_CADANT* END_CADANT
          )
       )
    ) NEWLINE?
@@ -66,6 +70,14 @@ description_line
    DESCRIPTION text = RAW_TEXT? NEWLINE
 ;
 
+double_quoted_string
+:
+   DOUBLE_QUOTE
+   (
+      inner_text += ~DOUBLE_QUOTE
+   )* DOUBLE_QUOTE
+;
+
 dscp_type
 :
    DEC
@@ -95,16 +107,6 @@ dscp_type
 ec_literal
 :
    DEC COLON DEC
-;
-
-exact_match [String matchText]
-:
-   {(_input.LT(1).getType() == VARIABLE || _input.LT(1).getType() == COMMUNITY_LIST_NUM_EXPANDED) && _input.LT(1).getText().equals($matchText)}?
-
-   (
-      VARIABLE
-      | COMMUNITY_LIST_NUM_EXPANDED
-   )
 ;
 
 exit_line
@@ -218,6 +220,12 @@ line_type
       TEMPLATE name = variable
    )
    | TTY
+   | VTY
+;
+
+line_type_cadant
+:
+   CONSOLE
    | VTY
 ;
 
@@ -380,6 +388,7 @@ protocol
    | IPSEC
    | IPV4
    | IPV6
+   | ND
    | NOS
    | OSPF
    | PIM
@@ -467,7 +476,8 @@ variable
 
 variable_community_name
 :
-   variable ( (PLUS|AT) variable)*
+   ~( NEWLINE | DOUBLE_QUOTE | GROUP | IPV4 | IPV6 | RO | RW | SDROWNER |
+   SYSTEMOWNER | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )+
 ;
 
 variable_hostname
@@ -477,7 +487,8 @@ variable_hostname
 
 variable_interface_name
 :
-   ~( DEC | IP_ADDRESS | IP_PREFIX | NAME | NEWLINE | TAG | TRACK | VARIABLE )
+   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
+   NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
 variable_permissive
