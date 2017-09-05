@@ -584,6 +584,7 @@ null_single
       | ASYNC_BOOTP
       | AUTHENTICATION_PORT
       | AUTO
+      | AUTORECOVERY
       | BOOT
       | BOOT_END_MARKER
       | BOOT_START_MARKER

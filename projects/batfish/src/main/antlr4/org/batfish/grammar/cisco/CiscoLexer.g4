@@ -928,6 +928,11 @@ AUTOHANGUP
    'autohangup'
 ;
 
+AUTORECOVERY
+:
+   'autorecovery'
+;
+
 AUTOROUTE
 :
    'autoroute'
