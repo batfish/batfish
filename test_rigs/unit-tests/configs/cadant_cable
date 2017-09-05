@@ -68,6 +68,8 @@ cable modulation-profile 223
  iuc 1 mod qam16 pre-len 123 diff false fec-tbytes 0 fec-len 12 seed 345 burst-len 0 guard-time-size 123 last-cw false scrambler true docsis-mode atdma
  iuc 1 pre-type qpsk1 int-depth 1 int-blocksize 1234
 exit
+cable submgmt default v6-max-cpe 6
+cable submgmt default active
 packetcable dqos no shutdown
 packetcable pcmm no shutdown
 packetcable voice-limits allowed-total 123 allowed-emergency 45 downstream

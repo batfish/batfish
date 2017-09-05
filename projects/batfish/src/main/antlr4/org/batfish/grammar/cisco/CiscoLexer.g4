@@ -8822,6 +8822,11 @@ SUBJECT_NAME
    'subject-name'
 ;
 
+SUBMGMT
+:
+   'submgmt'
+;
+
 SUBNET
 :
    'subnet'

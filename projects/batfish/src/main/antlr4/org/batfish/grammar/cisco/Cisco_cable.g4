@@ -67,12 +67,12 @@ c_null
       | LOGGING
       | METERING
       | MODEM
-      |
       | MULTICAST
       | PRE_EQUALIZATION
       | SHARED_SECONDARY_SECRET
       | SHARED_SECRET
       | SNMP
+      | SUBMGMT
       | UTIL_INTERVAL
       | WIDEBAND
    ) ~NEWLINE* NEWLINE
