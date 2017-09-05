@@ -180,6 +180,7 @@ import org.batfish.grammar.cisco.CiscoParser.Boolean_route_type_is_rp_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Boolean_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_simple_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_tag_is_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Cadant_stdacl_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_ruleContext;
@@ -205,6 +206,7 @@ import org.batfish.grammar.cisco.CiscoParser.Description_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Disable_peer_as_check_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Disposition_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Distribute_list_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Distribute_list_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Domain_name_serverContext;
@@ -234,6 +236,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_igmpContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_areaContext;
@@ -718,6 +721,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("Bundle-Ether", "Bundle-Ethernet");
     prefixes.put("BVI", "BVI");
     prefixes.put("Cable", "Cable");
+    prefixes.put("cable-downstream", "cable-downstream");
+    prefixes.put("cable-mac", "cable-mac");
+    prefixes.put("cable-upstream", "cable-upstream");
     prefixes.put("Crypto-Engine", "Crypto-Engine");
     prefixes.put("cmp-mgmt", "cmp-mgmt");
     prefixes.put("Dialer", "Dialer");
@@ -762,7 +768,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     prefixes.put("Wideband-Cable", "Wideband-Cable");
     return prefixes;
   }
-
+  
   private static Ip getIp(Access_list_ip_rangeContext ctx) {
     if (ctx.ip != null) {
       return toIp(ctx.ip);
@@ -2206,6 +2212,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCadant_stdacl_name(Cadant_stdacl_nameContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.getStandardAcls().put(name, _currentStandardAcl);
+  }
+
+  @Override
   public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
     String name = ctx.policy.getText();
     int line = ctx.getStart().getLine();
@@ -2369,6 +2381,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
     todo(ctx, F_BGP_NEIGHBOR_DISTRIBUTE_LIST);
+  }
+
+  @Override
+  public void exitDistribute_list_is_stanza(Distribute_list_is_stanzaContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.IP_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
+        line);
   }
 
   @Override
@@ -2886,6 +2909,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_igmp(If_ip_igmpContext ctx) {
     _no = false;
+  }
+
+  @Override
+  public void exitIf_ip_inband_access_group(If_ip_inband_access_groupContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.IP_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        line);
   }
 
   @Override
@@ -5932,7 +5966,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw convError(IntExpr.class, ctx);
     }
   }
-
+  
   private IpProtocol toIpProtocol(ProtocolContext ctx) {
     if (ctx.DEC() != null) {
       int num = toInteger(ctx.DEC());
@@ -5959,6 +5993,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IpProtocol.IP;
     } else if (ctx.IPV6() != null) {
       return IpProtocol.IPV6;
+    } else if (ctx.ND() != null) {
+      return IpProtocol.IPV6_ICMP;
     } else if (ctx.OSPF() != null) {
       return IpProtocol.OSPF;
     } else if (ctx.PIM() != null) {

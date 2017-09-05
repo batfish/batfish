@@ -574,6 +574,7 @@ null_single
             | DYNAMIC_EXTENDED
          )
       )
+      | ACCOUNTING
       | ACCOUNTING_PORT
       | ALIAS
       | AP
@@ -583,6 +584,7 @@ null_single
       | ASDM
       | ASYNC_BOOTP
       | AUTHENTICATION_PORT
+      | AUTHORIZATION
       | AUTO
       | AUTORECOVERY
       | BOOT
@@ -601,6 +603,7 @@ null_single
       | CONFIG
       | CONFIG_REGISTER
       | CONSOLE
+      | COS_MAPPING
       | CTS
       | CURRENT_CONFIGURATION
       | DEFAULT
@@ -630,6 +633,7 @@ null_single
       | FABRIC
       | FABRIC_MODE
       | FACILITY_ALARM
+      | FAN
       | FILE
       | FIREWALL
       | FIRMWARE
@@ -712,6 +716,7 @@ null_single
          IPV6
          (
             CEF
+            | HOP_LIMIT
             | HOST
             | LOCAL
             | MFIB
@@ -724,6 +729,7 @@ null_single
             (
                OSPF NAME_LOOKUP
             )
+            | PD_ROUTE_INJECTION
             | PIM
             | ROUTE
             | SOURCE_ROUTE
@@ -827,6 +833,7 @@ null_single
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
+      | POWER_MONITOR
       | PRIORITY_QUEUE
       | PROCESS
       | PROMPT
@@ -882,6 +889,7 @@ null_single
       | USER_IDENTITY
       | USE_VRF
       | VERSION
+      | VIDEO
       |
       (
          VLAN

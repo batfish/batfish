@@ -604,7 +604,16 @@ ip_route_tail
       | nexthopint = interface_name
    )*
    (
-      distance = DEC
+      (
+         (
+            ADMIN_DIST
+            | ADMIN_DISTANCE
+         )? distance = DEC
+      )
+      |
+      (
+         METRIC metric = DEC
+      )
       |
       (
          TAG tag = DEC
@@ -648,9 +657,23 @@ ip_ssh_null
       | PORT
       | RSA
       | SERVER
+      |
+      (
+         NO SHUTDOWN
+      )
       | SOURCE_INTERFACE
       | TIME_OUT
    ) ~NEWLINE* NEWLINE
+;
+
+ip_ssh_private_key
+:
+   PRIVATE_KEY ~END_CADANT+ END_CADANT
+;
+
+ip_ssh_public_key
+:
+   PUBLIC_KEY ~END_CADANT+ END_CADANT
 ;
 
 ip_ssh_pubkey_chain
@@ -1329,11 +1352,7 @@ s_archive
 
 s_authentication
 :
-   AUTHENTICATION
-   (
-      COMMAND
-      | MAC_MOVE
-   ) ~NEWLINE* NEWLINE
+   AUTHENTICATION ~NEWLINE* NEWLINE
 ;
 
 s_cluster
@@ -1649,9 +1668,11 @@ s_ip_source_route
 
 s_ip_ssh
 :
-   IP SSH
+   NO? IP SSH
    (
-      ip_ssh_pubkey_chain
+      ip_ssh_private_key
+      | ip_ssh_pubkey_chain
+      | ip_ssh_public_key
       | ip_ssh_version
       | ip_ssh_null
    )
@@ -1977,7 +1998,8 @@ s_tacacs
 :
    TACACS
    (
-      t_server
+      t_null
+      | t_server
       | t_source_interface
    )
 ;
@@ -2519,6 +2541,14 @@ system_null
    ) ~NEWLINE* NEWLINE
 ;
 
+t_null
+:
+   (
+      GROUP
+      | HOST
+   ) ~NEWLINE* NEWLINE
+;
+
 t_server
 :
    SERVER hostname = variable_hostname NEWLINE
@@ -2850,7 +2880,8 @@ vrfd_null
 :
    NO?
    (
-      RD
+      AUTO_IMPORT
+      | RD
       | ROUTE_TARGET
       |
       (

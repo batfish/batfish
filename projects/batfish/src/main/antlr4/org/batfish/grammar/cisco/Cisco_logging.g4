@@ -112,20 +112,21 @@ logging_host
 :
    HOST iname = variable? hostname = variable
    (
+      VRF vrf = variable
+   )?
+   (
+      DISCRIMINATOR descr = variable
+   )?
+   (
+      PORT
       (
-         VRF vrf = variable
-      )?
-      (
-         DISCRIMINATOR descr = variable
-      )?
-      (
-         PORT
-         (
-            DEFAULT
-            | DEC
-         )
-      )?
-   ) NEWLINE
+         DEFAULT
+         | DEC
+      )
+   )?
+   (
+      FACILITY name = variable
+   )? NEWLINE
 ;
 
 logging_null
@@ -146,16 +147,20 @@ logging_null
       | IP
       | LEVEL
       | LINECARD
+      | LOCAL_VOLATILE
       | LOGFILE
       | MESSAGE_COUNTER
       | MONITOR
       | PERMIT_HOSTDOWN
+      | PROPRIETARY
+      | OVERRIDE
       | QUEUE_LIMIT
       | RATE_LIMIT
       | SEQUENCE_NUMS
       | SERVER_ARP
       | SNMP_AUTHFAIL
       | SYNCHRONOUS
+      | SYSLOG
       | TIMESTAMP
    ) ~NEWLINE* NEWLINE
 ;

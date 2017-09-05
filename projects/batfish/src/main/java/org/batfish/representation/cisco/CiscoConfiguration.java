@@ -3551,6 +3551,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL, c);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL, c);
+    markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST, c);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER, c);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST, c);
@@ -3568,6 +3569,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL, c);
+    markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL, c);

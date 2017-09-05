@@ -112,7 +112,7 @@ interface ethernet 6/0.0
  isis circuit-type level-1
  ipv6 enable
  ipv6 router isis
- isis ds-hello-interva 12345 level-1
+ isis ds-hello-interval 12345 level-1
  isis hello-interval 12345 level-1
  isis hello-multiplier 5 level-1
  isis lsp-interval 21

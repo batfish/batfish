@@ -8,9 +8,21 @@ options {
 
 c_fiber_node
 :
-   FIBER_NODE node = DEC NEWLINE
+   FIBER_NODE
+   (
+      node = DEC
+      | quoted_name = double_quoted_string
+   ) NEWLINE
    (
       cfn_null
+   )*
+;
+
+c_filter
+:
+   FILTER ~NEWLINE* NEWLINE
+   (
+      cf_null
    )*
 ;
 
@@ -25,6 +37,20 @@ c_load_balance
    )
 ;
 
+c_modulation_profile_block
+:
+   MODULATION_PROFILE DEC NEWLINE
+   (
+      cmp_null
+   )* EXIT NEWLINE
+;
+
+c_modulation_profile_single
+:
+// intentional + after ~NEWLINE
+   MODULATION_PROFILE DEC ~NEWLINE+ NEWLINE
+;
+
 c_null
 :
    (
@@ -35,13 +61,17 @@ c_null
       | DS_MAX_BURST
       | DSG
       | FLAP_LIST
+      | GLOBAL
+      | INTERCEPT
       | IPV6
       | LOGGING
       | METERING
       | MODEM
-      | MODULATION_PROFILE
+      |
       | MULTICAST
       | PRE_EQUALIZATION
+      | SHARED_SECONDARY_SECRET
+      | SHARED_SECRET
       | SNMP
       | UTIL_INTERVAL
       | WIDEBAND
@@ -75,11 +105,22 @@ c_tag
    )*
 ;
 
+cf_null
+:
+   NO?
+   (
+      INDEX
+   ) ~NEWLINE* NEWLINE
+;
+
 cfn_null
 :
    NO?
    (
-      DOWNSTREAM
+      CABLE_DOWNSTREAM
+      | CABLE_UPSTREAM
+      | DOWNSTREAM
+      | INIT
       | UPSTREAM
    ) ~NEWLINE* NEWLINE
 ;
@@ -95,7 +136,10 @@ clb_docsis_group
 
 clb_docsis_policy
 :
-   DOCSIS_POLICY policy = DEC RULE rulenum = DEC NEWLINE
+   (
+      DOCSIS_POLICY
+      | POLICY
+   ) policy = DEC RULE rulenum = DEC NEWLINE
 ;
 
 clb_null
@@ -105,9 +149,14 @@ clb_null
       | D30_GGRP_DEFAULT
       | DOCSIS_ENABLE
       | DOCSIS30_ENABLE
+      | DOWNSTREAM_START_THRESHOLD
       | EXCLUDE
+      | FAILED_LIST
+      | GENERAL_GROUP_DEFAULTS
       | METHOD_UTILIZATION
       | MODEM
+      | TCS_LOAD_BALANCE
+      | UPSTREAM_START_THRESHOLD
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -135,6 +184,14 @@ clbdg_null
       | TAG
       | THRESHOLD
       | UPSTREAM
+   ) ~NEWLINE* NEWLINE
+;
+
+cmp_null
+:
+   NO?
+   (
+      IUC
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -313,7 +370,10 @@ s_cable
    NO? CABLE
    (
       c_fiber_node
+      | c_filter
       | c_load_balance
+      | c_modulation_profile_block
+      | c_modulation_profile_single
       | c_null
       | c_qos
       | c_service

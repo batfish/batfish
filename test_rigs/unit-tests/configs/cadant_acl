@@ -21,7 +21,7 @@ ipv6 access-list ipv6-acl-foo
   deny   udp any any range netbios-ns netbios-ss
   permit icmp any any 123
   permit ip host dead:beef::1 any
-  permit nd any dead::/8 nd-type 123
+  permit nd any dead::/8 nd-type 133
   permit tcp dead::/36 eq www beef::/33
   permit tcp dead::/36 eq telnet beef::/33
   permit udp dead:beef::/36 beef:dead::/36

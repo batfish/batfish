@@ -37,8 +37,8 @@ cable global recover-US-impaired-ack
 cable global unicast-polling pri 1 slow-intvl 0
 cable intercept source-interface loopback 0
 cable modem vendor fe.dc.ba "SomeVendor"
-cable shared-secret 123456789abcdef hidden
 no cable shared-secondary-secret
+cable shared-secret 123456789abcdef hidden
 cable load-balance downstream-start-threshold 12
 cable load-balance exclude oui de.ad.be
 cable load-balance failed-list exclude-count 78

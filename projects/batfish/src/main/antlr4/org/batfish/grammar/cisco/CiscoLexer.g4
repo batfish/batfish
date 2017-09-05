@@ -321,6 +321,16 @@ ADMIN
    'admin'
 ;
 
+ADMIN_DIST
+:
+   'admin-dist'
+;
+
+ADMIN_DISTANCE
+:
+   'admin-distance'
+;
+
 ADMIN_STATE
 :
    'admin-state'
@@ -888,6 +898,11 @@ AUTO_COST
    'auto-cost'
 ;
 
+AUTO_IMPORT
+:
+   'auto-import'
+;
+
 AUTO_LOCAL_ADDR
 :
    'auto-local-addr'
@@ -1248,9 +1263,19 @@ CABLE
    'cable'
 ;
 
+CABLE_DOWNSTREAM
+:
+   'cable-downstream'
+;
+
 CABLE_RANGE
 :
    'cable-range'
+;
+
+CABLE_UPSTREAM
+:
+   'cable-upstream'
 ;
 
 CABLELENGTH
@@ -1693,6 +1718,11 @@ CONGESTION_CONTROL
    'congestion-control'
 ;
 
+CONNECT_RETRY
+:
+   'connect-retry'
+;
+
 CONNECT_SOURCE
 :
    'connect-source'
@@ -1802,6 +1832,11 @@ COPY
 COS
 :
    'cos'
+;
+
+COS_MAPPING
+:
+   'cos-mapping'
 ;
 
 COS_QUEUE_GROUP
@@ -2329,6 +2364,11 @@ DHCP
    'dhcp'
 ;
 
+DHCP_GIADDR
+:
+   'dhcp-giaddr'
+;
+
 DHCPD
 :
    'dhcpd'
@@ -2559,6 +2599,11 @@ DOWNSTREAM
    'downstream'
 ;
 
+DOWNSTREAM_START_THRESHOLD
+:
+   'downstream-start-threshold'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -2567,6 +2612,11 @@ DR_PRIORITY
 DROP
 :
    'drop'
+;
+
+DS_HELLO_INTERVAL
+:
+   'ds-hello-interval'
 ;
 
 DS_MAX_BURST
@@ -3221,6 +3271,11 @@ FAILED
    'failed'
 ;
 
+FAILED_LIST
+:
+   'failed-list'
+;
+
 FAILOVER
 :
    'failover'
@@ -3254,6 +3309,11 @@ FALLBACK
 FALLBACK_DN
 :
    'fallback-dn'
+;
+
+FAN
+:
+   'fan'
 ;
 
 FAST_DETECT
@@ -3313,7 +3373,7 @@ FEX_FABRIC
 
 FIBER_NODE
 :
-   'fiber-node'
+   'fiber-node' -> pushMode ( M_FiberNode )
 ;
 
 FIELDS
@@ -3344,6 +3404,11 @@ FILE_SIZE
 FILE_TRANSFER
 :
    'file-transfer'
+;
+
+FILTER
+:
+   'filter'
 ;
 
 FILTER_LIST
@@ -3561,6 +3626,11 @@ GATEWAY
 GE
 :
    'ge'
+;
+
+GENERAL_GROUP_DEFAULTS
+:
+   'general-group-defaults'
 ;
 
 GENERATE
@@ -4113,6 +4183,11 @@ INCOMPLETE
    'incomplete'
 ;
 
+INDEX
+:
+   'index'
+;
+
 INFINITY
 :
    'infinity'
@@ -4163,6 +4238,11 @@ INHERITANCE_DISABLE
    'inheritance-disable'
 ;
 
+INIT
+:
+   'init'
+;
+
 INIT_TECH_LIST
 :
    'init-tech-list'
@@ -4206,6 +4286,11 @@ INTEGRITY
 INTERAREA
 :
    'interarea'
+;
+
+INTERCEPT
+:
+   'intercept'
 ;
 
 INTERFACE
@@ -4383,6 +4468,11 @@ ISPF
 ISSUER_NAME
 :
    'issuer-name'
+;
+
+IUC
+:
+   'iuc'
 ;
 
 JUMBOMTU
@@ -4793,6 +4883,11 @@ LOCAL_PREFERENCE
 LOCAL_V6_ADDR
 :
    'local-v6-addr'
+;
+
+LOCAL_VOLATILE
+:
+   'local-volatile'
 ;
 
 LOCATION
@@ -5565,6 +5660,11 @@ MULTICAST_ROUTING
    'multicast-routing'
 ;
 
+MULTICAST_STATIC_ONLY
+:
+   'multicast-static-only'
+;
+
 MULTILINK
 :
    'multilink'
@@ -5683,6 +5783,11 @@ ND_NA
 ND_NS
 :
    'nd-ns'
+;
+
+ND_TYPE
+:
+   'nd-type'
 ;
 
 NEGOTIATE
@@ -6425,6 +6530,11 @@ PCP_VALUE
    'pcp-value'
 ;
 
+PD_ROUTE_INJECTION
+:
+   'pd-route-injection'
+;
+
 PEAKDETECT
 :
    'peakdetect'
@@ -6740,9 +6850,19 @@ POWEROFF
    'poweroff'
 ;
 
+POWER_LEVEL
+:
+   'power-level'
+;
+
 POWER_MGR
 :
    'power-mgr'
+;
+
+POWER_MONITOR
+:
+   'power-monitor'
 ;
 
 PPP
@@ -6895,6 +7015,11 @@ PRIVATE_AS
    'private-as'
 ;
 
+PRIVATE_KEY
+:
+   'private-key' -> pushMode ( M_CadantSshKey )
+;
+
 PRIVATE_VLAN
 :
    'private-vlan'
@@ -6948,6 +7073,11 @@ PROPAGATE
 PROPOSAL
 :
    'proposal'
+;
+
+PROPRIETARY
+:
+   'proprietary'
 ;
 
 PROTECT
@@ -7028,6 +7158,11 @@ PTP
 PUBKEY_CHAIN
 :
    'pubkey-chain'
+;
+
+PUBLIC_KEY
+:
+   'public-key' -> pushMode ( M_CadantSshKey )
 ;
 
 PVC
@@ -8175,6 +8310,16 @@ SHAPE
    'shape'
 ;
 
+SHARED_SECONDARY_SECRET
+:
+   'shared-secondary-secret'
+;
+
+SHARED_SECRET
+:
+   'shared-secret'
+;
+
 SHELFNAME
 :
    'shelfname'
@@ -8268,6 +8413,11 @@ SLOT
 SLOT_TABLE_COS
 :
    'slot-table-cos'
+;
+
+SMALL_HELLO
+:
+   'small-hello'
 ;
 
 SMTP
@@ -8393,6 +8543,11 @@ SPARSE_DENSE_MODE
 SPARSE_MODE
 :
    'sparse-mode'
+;
+
+SPARSE_MODE_SSM
+:
+   'sparse-mode-ssm'
 ;
 
 SPD
@@ -8962,6 +9117,11 @@ TCP_UDP
    'tcp-udp'
 ;
 
+TCS_LOAD_BALANCE
+:
+   'tcs-load-balance'
+;
+
 TELNET
 :
    'telnet'
@@ -9472,6 +9632,11 @@ UPSTREAM
    'upstream'
 ;
 
+UPSTREAM_START_THRESHOLD
+:
+   'upstream-start-threshold'
+;
+
 URG
 :
    'urg'
@@ -9630,6 +9795,11 @@ VERIFY_DATA
 VERSION
 :
    'version'
+;
+
+VIDEO
+:
+   'video'
 ;
 
 VIEW
@@ -9932,6 +10102,11 @@ WHOIS
 WIDE
 :
    'wide'
+;
+
+WIDE_METRIC
+:
+   'wide-metric'
 ;
 
 WIDEBAND
@@ -11014,6 +11189,18 @@ M_BannerText_NEWLINE_CADANT
    F_Newline {_cadant}? F_Newline* -> type ( NEWLINE ) , mode ( M_BannerCadant )
 ;
 
+mode M_CadantSshKey;
+
+M_CadantSshKey_END
+:
+   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode 
+;
+
+M_CadantSshKey_LINE
+:
+   F_NonNewline+ F_Newline+
+;
+
 mode M_Certificate;
 
 M_Certificate_CA
@@ -11188,6 +11375,23 @@ M_Extcommunity_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_FiberNode;
+
+M_FiberNode_DEC
+:
+   F_Digit+ -> type ( DEC ) , popMode
+;
+
+M_FiberNode_DOUBLE_QUOTE
+:
+   '"' -> type ( DOUBLE_QUOTE ) , mode ( M_DoubleQuote )
+;
+
+M_FiberNode_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_Interface;
 
 M_Interface_ALL
@@ -11198,6 +11402,11 @@ M_Interface_ALL
 M_Interface_BREAKOUT
 :
    'breakout' -> type ( BREAKOUT ) , popMode
+;
+
+M_Interface_CABLE
+:
+   'cable' -> type ( CABLE ) , popMode
 ;
 
 M_Interface_DEFAULT
@@ -11268,6 +11477,11 @@ M_Interface_LT
 M_Interface_MODULE
 :
    'module' -> type ( MODULE )
+;
+
+M_Interface_NO
+:
+   'no' -> type ( NO ) , popMode
 ;
 
 M_Interface_MULTIPOINT

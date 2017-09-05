@@ -70,6 +70,14 @@ description_line
    DESCRIPTION text = RAW_TEXT? NEWLINE
 ;
 
+double_quoted_string
+:
+   DOUBLE_QUOTE
+   (
+      inner_text += ~DOUBLE_QUOTE
+   )* DOUBLE_QUOTE
+;
+
 dscp_type
 :
    DEC
@@ -390,6 +398,7 @@ protocol
    | IPSEC
    | IPV4
    | IPV6
+   | ND
    | NOS
    | OSPF
    | PIM
@@ -493,7 +502,7 @@ variable_hostname
 
 variable_interface_name
 :
-   ~( DEC | IP_ADDRESS | IP_PREFIX | NAME | NEWLINE | TAG | TRACK | VARIABLE )
+   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC | NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
 variable_permissive

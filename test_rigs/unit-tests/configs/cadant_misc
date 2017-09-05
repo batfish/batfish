@@ -12,7 +12,6 @@ cos-mapping down-max-traffic-burst 123456 class-id 1
 cos-mapping up-tos-and-mask  0 class-id 1
 fan monitor 0 no shutdown
 fan offset 123
-fslot 0 type ucam name "slot0-foo"
 ip ssh no shutdown
 ip ssh private-key dsa1024
 0123456789abcdef0123456789abcdef0123456789abcdef01
@@ -70,6 +69,7 @@ power-monitor A no shutdown
 power-monitor B no shutdown
 slot 0 spare-group 0 failback-override fpgaCrcErr auto
 slot 0 spare-group 0 manual
+slot 0 type ucam name "slot0-foo"
 slot 1 spare-group 0
 slot 1 type dcam-b name "slot1-bar"
 slot 2 type rsm name "slot3-rsm"
