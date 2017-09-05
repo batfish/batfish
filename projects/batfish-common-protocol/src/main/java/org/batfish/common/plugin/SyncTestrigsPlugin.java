@@ -9,7 +9,7 @@ public abstract class SyncTestrigsPlugin extends CoordinatorPlugin {
     syncTestrigsPluginInitialize();
   }
 
-  public abstract boolean syncNow(String container, boolean force);
+  public abstract int syncNow(String container, boolean force);
 
   public abstract void syncTestrigsPluginInitialize();
 

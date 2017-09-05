@@ -1279,10 +1279,11 @@ public class WorkMgrService {
 
       boolean force = Strings.isNullOrEmpty(forceStr) ? false : Boolean.parseBoolean(forceStr);
 
-      boolean result = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
+      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
 
       return new JSONArray(
-              Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", result))));
+              Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+                      (new JSONObject().put("numCommits", numCommits))));
     } catch (FileExistsException
             | FileNotFoundException
             | IllegalArgumentException

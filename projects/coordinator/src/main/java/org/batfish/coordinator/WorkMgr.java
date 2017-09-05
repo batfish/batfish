@@ -909,7 +909,7 @@ public class WorkMgr extends AbstractCoordinator {
             TimeUnit.MILLISECONDS);
   }
 
-  public boolean syncTestrigsSyncNow(String containerName, String pluginId, boolean force) {
+  public int syncTestrigsSyncNow(String containerName, String pluginId, boolean force) {
     if (!_testrigSyncers.containsKey(pluginId)) {
       throw new BatfishException("PluginId " + pluginId + " not found."
                 + " (Are SyncTestrigs plugins loaded?)");
