@@ -30,9 +30,11 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -755,5 +757,32 @@ public class CommonUtil {
     } catch (IOException | JSONException e) {
       throw new BatfishException("Failed to convert input stream into JSON object", e);
     }
+  }
+
+  /**
+   * Returns a mapping of strings which contains elements of the {@link InputStream InputStream}
+   * {@code inputStream}.
+   *
+   * @throws BatfishException if the format encoded in {@code inputStream} does not meet the
+   *     requirement.
+   */
+  public static Map<String, String> writeStreamToMap(InputStream inputStream) {
+    Map<String, String> streamValue = new HashMap<>();
+    if (inputStream != null) {
+      JSONObject jObject = writeStreamToJSONObject(inputStream);
+      Iterator<?> keys = jObject.keys();
+      while (keys.hasNext()) {
+        String key = (String) keys.next();
+        String valueText;
+        try {
+          valueText = jObject.getString(key);
+        } catch (JSONException e) {
+          throw new BatfishException(
+              "No value found for key '" + key + "'", e);
+        }
+        streamValue.put(key, valueText);
+      }
+    }
+    return streamValue;
   }
 }

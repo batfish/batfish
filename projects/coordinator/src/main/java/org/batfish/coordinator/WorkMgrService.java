@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -34,7 +32,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -160,28 +157,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Map<String, String> questionsToAdd = new HashMap<>();
-      if (addQuestionsStream != null) {
-        JSONObject jObject = CommonUtil.writeStreamToJSONObject(addQuestionsStream);
-        Iterator<?> keys = jObject.keys();
-        while (keys.hasNext()) {
-          String qName = (String) keys.next();
-          JSONObject qJson;
-          try {
-            qJson = jObject.getJSONObject(qName);
-          } catch (JSONException e) {
-            throw new BatfishException(
-                "Provided questions lack a question named '" + qName + "'", e);
-          }
-          String questionText;
-          try {
-            questionText = qJson.toString(1);
-          } catch (JSONException e) {
-            throw new BatfishException("Failed to convert question JSON to string", e);
-          }
-          questionsToAdd.put(qName, questionText);
-        }
-      }
+      Map<String, String> questionsToAdd = CommonUtil.writeStreamToMap(addQuestionsStream);
       boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
       List<String> questionsToDelete = new ArrayList<>();
       if (!Strings.isNullOrEmpty(delQuestions)) {
