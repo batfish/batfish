@@ -2,6 +2,7 @@
 shelfname ""
 hostname "cadant_snmp"
 #
+snmp-server
 snmp-server card-trap-inh slot 6 0x12
 snmp-server community "somepassword" ro 52
 snmp-server context ""

@@ -2020,8 +2020,12 @@ s_tacacs_server
 :
    NO? TACACS_SERVER
    (
-      ts_host
-      | ts_null
+      ts_common
+      | ts_host
+      |
+      (
+         ts_host ts_common*
+      )
    )
 ;
 
@@ -2644,6 +2648,11 @@ track_null
       | OBJECT
       | TYPE
    ) ~NEWLINE* NEWLINE
+;
+
+ts_common
+:
+   ts_null
 ;
 
 ts_host
