@@ -2892,11 +2892,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface i = e.getValue();
-      Prefix interfacePrefix = i.getPrefix().getNetworkPrefix();
-      if (interfacePrefix == null) {
+      Prefix interfaceAddressPrefix = i.getPrefix();
+      if (interfaceAddressPrefix == null) {
         continue;
       }
-      if (networks.contains(interfacePrefix)) {
+      Prefix interfaceNetwork = interfaceAddressPrefix.getNetworkPrefix();
+      if (networks.contains(interfaceNetwork)) {
         newProcess.getInterfaces().add(ifaceName);
         i.setRipEnabled(true);
         boolean passive =
