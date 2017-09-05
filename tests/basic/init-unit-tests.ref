@@ -28,6 +28,21 @@
         "bgp_foundry" : "bgp_foundry",
         "bgp_nsr" : "bgp_nsr",
         "bgp_route_policy" : "bgp_route_policy",
+        "cadant_acl" : "cadant_acl",
+        "cadant_banner" : "cadant_banner",
+        "cadant_bgp" : "cadant_bgp",
+        "cadant_cable" : "cadant_cable",
+        "cadant_interface" : "cadant_interface",
+        "cadant_ip_route" : "cadant_ip_route",
+        "cadant_isis" : "cadant_isis",
+        "cadant_line" : "cadant_line",
+        "cadant_logging" : "cadant_logging",
+        "cadant_misc" : "cadant_misc",
+        "cadant_prefix_list" : "cadant_prefix_list",
+        "cadant_qos" : "cadant_qos",
+        "cadant_rip" : "cadant_rip",
+        "cadant_route_map" : "cadant_route_map",
+        "cadant_snmp" : "cadant_snmp",
         "cisco_aaa" : "cisco_aaa",
         "cisco_acl" : "cisco_acl",
         "cisco_additional_paths" : "cisco_additional_paths",
@@ -215,6 +230,21 @@
         "bgp_foundry" : "PASSED",
         "bgp_nsr" : "PASSED",
         "bgp_route_policy" : "PASSED",
+        "cadant_acl" : "PASSED",
+        "cadant_banner" : "PASSED",
+        "cadant_bgp" : "PASSED",
+        "cadant_cable" : "PASSED",
+        "cadant_interface" : "PASSED",
+        "cadant_ip_route" : "PASSED",
+        "cadant_isis" : "PASSED",
+        "cadant_line" : "PASSED",
+        "cadant_logging" : "PASSED",
+        "cadant_misc" : "PASSED",
+        "cadant_prefix_list" : "PASSED",
+        "cadant_qos" : "PASSED",
+        "cadant_rip" : "PASSED",
+        "cadant_route_map" : "PASSED",
+        "cadant_snmp" : "PASSED",
         "cisco_aaa" : "PASSED",
         "cisco_acl" : "PASSED",
         "cisco_additional_paths" : "PASSED",
@@ -383,6 +413,18 @@
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '13.16.3.16'"
           }
         },
+        "cadant_bgp" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
+            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
+            "3" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
+            "4" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'",
+            "5" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'",
+            "6" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'",
+            "7" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
+            "8" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: 'dead:beef:0:0:0:0:0:1'"
+          }
+        },
         "cisco_additional_paths" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'",
@@ -504,6 +546,54 @@
             }
           }
         },
+        "cadant_interface" : {
+          "ipv4/6 acl" : {
+            "fleep-acl" : {
+              "interface ip inband access-group" : [
+                130
+              ]
+            }
+          }
+        },
+        "cadant_isis" : {
+          "ipv4/6 acl" : {
+            "blah-acl-99" : {
+              "router isis distribute-list acl" : [
+                15
+              ]
+            },
+            "blah-ipv6-access-list" : {
+              "router isis distribute-list acl" : [
+                20
+              ]
+            }
+          }
+        },
+        "cadant_route_map" : {
+          "ipv4 prefix-list" : {
+            "bar-prefix-list" : {
+              "route-map match ip prefix-list" : [
+                6
+              ]
+            }
+          },
+          "ipv6 prefix-list" : {
+            "baz-ipv6-prefix-list" : {
+              "route-map match ipv6 prefix-list" : [
+                10
+              ]
+            }
+          }
+        },
+        "cadant_snmp" : {
+          "ipv4/6 acl" : {
+            "52" : {
+              "snmp server community acl" : [
+                7
+              ]
+            }
+          }
+        },
         "cisco_bgp" : {
           "bgp group" : {
             "p3" : {
@@ -618,6 +708,24 @@
           }
         },
         "cisco_line" : {
+          "ipv4/6 acl" : {
+            "40" : {
+              "line access-class list" : [
+                6,
+                22
+              ]
+            },
+            "99" : {
+              "line access-class list" : [
+                51
+              ]
+            },
+            "vty-acl" : {
+              "line access-class list" : [
+                18
+              ]
+            }
+          },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
@@ -694,18 +802,6 @@
           }
         },
         "cisco_snmp" : {
-          "ipv4 acl" : {
-            "snmp-acl" : {
-              "snmp server community ipv4 acl" : [
-                11
-              ]
-            },
-            "snmp-arpa-acl" : {
-              "snmp server community ipv4 acl" : [
-                12
-              ]
-            }
-          },
           "ipv4/6 acl" : {
             "1" : {
               "snmp server community acl" : [
@@ -1192,6 +1288,62 @@
           "bgp group" : {
             "ucr" : [
               7
+            ]
+          }
+        },
+        "cadant_acl" : {
+          "extended ipv6 access-list" : {
+            "ipv6-acl-foo" : [
+              18
+            ]
+          },
+          "standard ip access-list" : {
+            "50" : [
+              5
+            ],
+            "51" : [
+              10
+            ],
+            "99" : [
+              14
+            ],
+            "stdAcl-bar" : [
+              14
+            ],
+            "stdAcl-foo" : [
+              5
+            ]
+          }
+        },
+        "cadant_cable" : {
+          "docsis-policy" : {
+            "1" : [
+              48
+            ]
+          }
+        },
+        "cadant_prefix_list" : {
+          "ipv4 prefix-list" : {
+            "A+C" : [
+              7
+            ],
+            "foo" : [
+              5
+            ]
+          },
+          "ipv6 prefix-list" : {
+            "bar" : [
+              8
+            ]
+          }
+        },
+        "cadant_route_map" : {
+          "route-map" : {
+            "bar" : [
+              9
+            ],
+            "foo" : [
+              5
             ]
           }
         },
@@ -1702,6 +1854,21 @@
         "bgp_foundry" : "PASSED",
         "bgp_nsr" : "PASSED",
         "bgp_route_policy" : "PASSED",
+        "cadant_acl" : "PASSED",
+        "cadant_banner" : "PASSED",
+        "cadant_bgp" : "PASSED",
+        "cadant_cable" : "PASSED",
+        "cadant_interface" : "PASSED",
+        "cadant_ip_route" : "PASSED",
+        "cadant_isis" : "PASSED",
+        "cadant_line" : "PASSED",
+        "cadant_logging" : "PASSED",
+        "cadant_misc" : "PASSED",
+        "cadant_prefix_list" : "PASSED",
+        "cadant_qos" : "PASSED",
+        "cadant_rip" : "PASSED",
+        "cadant_route_map" : "PASSED",
+        "cadant_snmp" : "PASSED",
         "cisco_aaa" : "PASSED",
         "cisco_acl" : "PASSED",
         "cisco_additional_paths" : "PASSED",

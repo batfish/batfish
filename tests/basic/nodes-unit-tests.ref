@@ -1693,6 +1693,1146 @@
             }
           }
         },
+        "cadant_acl" : {
+          "name" : "cadant_acl",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "ip6AccessLists" : {
+            "ipv6-acl-foo" : {
+              "name" : "ipv6-acl-foo",
+              "lines" : [
+                {
+                  "action" : "REJECT",
+                  "dstIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ],
+                  "dstPorts" : [
+                    "123-456"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "deny   tcp any any range 123 456",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ]
+                },
+                {
+                  "action" : "REJECT",
+                  "dstIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ],
+                  "dstPorts" : [
+                    "137-139"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "deny   udp any any range netbios-ns netbios-ss",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ],
+                  "ipProtocols" : [
+                    "ICMP"
+                  ],
+                  "name" : "permit icmp any any 123",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ],
+                  "name" : "permit ip host dead:beef::1 any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0:0:0:0:0:0:0:0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "dead:0:0:0:0:0:0:0/8"
+                  ],
+                  "ipProtocols" : [
+                    "IPV6_ICMP"
+                  ],
+                  "name" : "permit nd any dead::/8 nd-type 133",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "beef:0:0:0:0:0:0:0/33"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "permit tcp dead::/36 eq www beef::/33",
+                  "negate" : false,
+                  "srcIps" : [
+                    "dead:0:0:0:0:0:0:0/36"
+                  ],
+                  "srcPorts" : [
+                    "80-80"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "beef:0:0:0:0:0:0:0/33"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "permit tcp dead::/36 eq telnet beef::/33",
+                  "negate" : false,
+                  "srcIps" : [
+                    "dead:0:0:0:0:0:0:0/36"
+                  ],
+                  "srcPorts" : [
+                    "23-23"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "beef:dead:0:0:0:0:0:0/36"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "permit udp dead:beef::/36 beef:dead::/36",
+                  "negate" : false,
+                  "srcIps" : [
+                    "dead:beef:0:0:0:0:0:0/36"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ],
+                  "dstPorts" : [
+                    "456-456"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "permit udp any eq 123 any eq 456",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0:0:0:0:0:0:0:0/0"
+                  ],
+                  "srcPorts" : [
+                    "123-123"
+                  ]
+                }
+              ]
+            }
+          },
+          "ipAccessLists" : {
+            "50" : {
+              "name" : "50",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "permit 1.2.3.0 0.0.0.255",
+                  "negate" : false,
+                  "srcIps" : [
+                    "1.2.3.0/24"
+                  ]
+                }
+              ]
+            },
+            "51" : {
+              "name" : "51",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "permit 2.3.4.0 0.0.0.255",
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.3.4.0/24"
+                  ]
+                },
+                {
+                  "action" : "REJECT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "deny   any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            },
+            "99" : {
+              "name" : "99",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "permit 3.4.5.6",
+                  "negate" : false,
+                  "srcIps" : [
+                    "3.4.5.6"
+                  ]
+                }
+              ]
+            }
+          },
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_acl"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_banner" : {
+          "name" : "cadant_banner",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : {
+                "login" : "\n****************************\n* Arris CADANT banner text *\n****************************\n/end\n"
+              },
+              "hostname" : "cadant_banner"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_bgp" : {
+          "name" : "cadant_bgp",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "route6FilterLists" : {
+            "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+            }
+          },
+          "routingPolicies" : {
+            "~BGP_COMMON_EXPORT_POLICY:default~" : {
+              "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_bgp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "multipathEbgp" : false,
+                "multipathIbgp" : false,
+                "routerId" : "0.0.0.0"
+              }
+            }
+          }
+        },
+        "cadant_cable" : {
+          "name" : "cadant_cable",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "cable" : {
+                "docsisPolicies" : {
+                  "1" : {
+                    "name" : "1",
+                    "rules" : [
+                      "1"
+                    ]
+                  }
+                },
+                "docsisPolicyRules" : {
+                  "1" : {
+                    "name" : "1"
+                  }
+                }
+              },
+              "hostname" : "cadant_cable"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_interface" : {
+          "name" : "cadant_interface",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet6/0.0" : {
+              "name" : "Ethernet6/0.0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "11.22.33.44/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "description" : "\"squeee\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "11.22.33.44/30",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet6/0.48" : {
+              "name" : "Ethernet6/0.48",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "22.33.44.55/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "22.33.44.55/30",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet6/1" : {
+              "name" : "Ethernet6/1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "cable-downstream1/2" : {
+              "name" : "cable-downstream1/2",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-downstream1/2/3" : {
+              "name" : "cable-downstream1/2/3",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "description" : "\"blah\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-downstream5/0/0" : {
+              "name" : "cable-downstream5/0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-mac1" : {
+              "name" : "cable-mac1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "description" : "\"cable-mac 1\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-mac1.1" : {
+              "name" : "cable-mac1.1",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "1.2.3.0/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "description" : "\"foobar\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.2.3.0/30",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-mac1.2" : {
+              "name" : "cable-mac1.2",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.2.2.0/25",
+                "3.3.3.0/26",
+                "4.4.4.0/28",
+                "5.5.0.0/23"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "description" : "\"bleep\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.2.2.0/25",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-mac2" : {
+              "name" : "cable-mac2",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-mac3" : {
+              "name" : "cable-mac3",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-upstream1/0/0" : {
+              "name" : "cable-upstream1/0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "description" : "\"bleh\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-upstream1/0/0.0" : {
+              "name" : "cable-upstream1/0/0.0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "description" : "\"blarp\"",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "cable-upstream1/0/10" : {
+              "name" : "cable-upstream1/0/10",
+              "accessVlan" : 0,
+              "active" : false,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            },
+            "mgmt6/0" : {
+              "name" : "mgmt6/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "management"
+            }
+          },
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_interface"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet6/0.0",
+                "Ethernet6/0.48",
+                "Ethernet6/1",
+                "cable-downstream1/2",
+                "cable-downstream1/2/3",
+                "cable-downstream5/0/0",
+                "cable-mac1",
+                "cable-mac1.1",
+                "cable-mac1.2",
+                "cable-mac2",
+                "cable-mac3",
+                "cable-upstream1/0/0",
+                "cable-upstream1/0/0.0",
+                "cable-upstream1/0/10"
+              ]
+            },
+            "management" : {
+              "name" : "management",
+              "interfaces" : [
+                "mgmt6/0"
+              ]
+            }
+          }
+        },
+        "cadant_ip_route" : {
+          "name" : "cadant_ip_route",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_ip_route"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 253,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "1.1.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 254,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "2.2.2.2",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "1.1.1.0/24",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "6.6.6.6",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "22.71.224.0/19",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "22.71.252.185",
+                  "tag" : -1
+                }
+              ]
+            },
+            "foobar" : {
+              "name" : "foobar",
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "7.7.7.7",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "9.9.9.0/27",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "10.10.10.10",
+                  "tag" : -1
+                }
+              ]
+            },
+            "management" : {
+              "name" : "management",
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "127.0.0.1",
+                  "tag" : -1
+                }
+              ]
+            }
+          }
+        },
+        "cadant_isis" : {
+          "name" : "cadant_isis",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_isis"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "isisProcess" : {
+                "level" : "LEVEL_1",
+                "netAddress" : "12.3456.7890.1234.5678.90"
+              }
+            }
+          }
+        },
+        "cadant_line" : {
+          "name" : "cadant_line",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_line"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_logging" : {
+          "name" : "cadant_logging",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "loggingServers" : [
+            "1.2.3.4"
+          ],
+          "loggingSourceInterface" : "Loopback0",
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_logging",
+              "logging" : {
+                "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  }
+                },
+                "on" : true,
+                "sourceInterface" : "Loopback0"
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_misc" : {
+          "name" : "cadant_misc",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "ntpServers" : [
+            "1.2.3.4",
+            "5.6.7.8"
+          ],
+          "ntpSourceInterface" : "Loopback0",
+          "roles" : [
+            "cadant"
+          ],
+          "tacacsSourceInterface" : "Loopback0",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_misc",
+              "ntp" : {
+                "servers" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  },
+                  "5.6.7.8" : {
+                    "name" : "5.6.7.8"
+                  }
+                }
+              },
+              "ssh" : { },
+              "users" : {
+                "admin" : {
+                  "name" : "admin"
+                }
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_prefix_list" : {
+          "name" : "cadant_prefix_list",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "bar" : {
+              "name" : "bar",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "128-128",
+                  "prefix" : "0:0:0:0:0:0:0:0/128"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "64-64",
+                  "prefix" : "dead:beef:0:0:0:0:0:0/26"
+                }
+              ]
+            }
+          },
+          "routeFilterLists" : {
+            "A+C" : {
+              "name" : "A+C",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "24-32",
+                  "prefix" : "2.2.0.0/19"
+                }
+              ]
+            },
+            "foo" : {
+              "name" : "foo",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "32-32",
+                  "prefix" : "1.1.1.1/32"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "24-32",
+                  "prefix" : "2.2.0.0/19"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_prefix_list"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_qos" : {
+          "name" : "cadant_qos",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_qos"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_rip" : {
+          "name" : "cadant_rip",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "routingPolicies" : {
+            "~RIP_EXPORT_POLICY:default~" : {
+              "name" : "~RIP_EXPORT_POLICY:default~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_rip"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "ripProcess" : {
+                "exportPolicy" : "~RIP_EXPORT_POLICY:default~"
+              }
+            }
+          }
+        },
+        "cadant_route_map" : {
+          "name" : "cadant_route_map",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "routingPolicies" : {
+            "bar" : {
+              "name" : "bar",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ]
+            },
+            "foo" : {
+              "name" : "foo",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_route_map"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cadant_snmp" : {
+          "name" : "cadant_snmp",
+          "configurationFormat" : "CADANT",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "roles" : [
+            "cadant"
+          ],
+          "snmpSourceInterface" : "Loopback0",
+          "snmpTrapServers" : [
+            "1.2.3.4"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cadant_snmp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "snmpServer" : {
+                "communities" : {
+                  "somepassword" : {
+                    "name" : "somepassword",
+                    "accessList" : "52",
+                    "ro" : true,
+                    "rw" : false
+                  }
+                },
+                "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  }
+                },
+                "vrf" : "default"
+              }
+            }
+          }
+        },
         "cisco_aaa" : {
           "name" : "cisco_aaa",
           "configurationFormat" : "CISCO_NX",
@@ -5306,6 +6446,16 @@
                     "accessList6" : "to-VTY",
                     "ro" : true,
                     "rw" : true
+                  },
+                  "dummycommunityuse-aclsnmp-acl" : {
+                    "name" : "dummycommunityuse-aclsnmp-acl",
+                    "ro" : false,
+                    "rw" : false
+                  },
+                  "dummycommunityuse-aclsnmp-arpa-acl" : {
+                    "name" : "dummycommunityuse-aclsnmp-arpa-acl",
+                    "ro" : false,
+                    "rw" : false
                   },
                   "dummyconnunity" : {
                     "name" : "dummyconnunity",
