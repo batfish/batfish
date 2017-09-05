@@ -1343,6 +1343,11 @@ CARD
    'card'
 ;
 
+CARD_TRAP_INH
+:
+   'card-trap-inh'
+;
+
 CARRIER_DELAY
 :
    'carrier-delay'
@@ -6110,6 +6115,11 @@ NOTIFY
    'notify'
 ;
 
+NOTIFY_FILTER
+:
+   'notify-filter'
+;
+
 NSF
 :
    'nsf'
@@ -7193,6 +7203,11 @@ QOS_POLICY
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
+;
+
+QOS_SC
+:
+   'qos-sc'
 ;
 
 QUERY_INTERVAL

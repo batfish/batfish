@@ -1600,6 +1600,11 @@ s_hostname
    )+ NEWLINE
 ;
 
+s_interface_line
+:
+   NO? INTERFACE BREAKOUT ~NEWLINE* NEWLINE
+;
+
 s_ip_dhcp
 :
    NO?
@@ -2398,6 +2403,9 @@ stanza
    | s_global_port_security
    | s_hardware
    | s_hostname
+   |
+   // do not move below s_interface
+   s_interface_line
    | s_interface
    | s_ip_dhcp
    | s_ip_domain

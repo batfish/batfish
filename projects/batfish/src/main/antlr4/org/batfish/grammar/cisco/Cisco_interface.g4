@@ -410,10 +410,6 @@ if_null_block
          )
       )
       | IGNORE
-      |
-      (
-         INTERFACE BREAKOUT
-      )
       | INGRESS
       |
       (

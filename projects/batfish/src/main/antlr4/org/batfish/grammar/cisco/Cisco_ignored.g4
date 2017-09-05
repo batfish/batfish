@@ -75,7 +75,6 @@ null_block
       | HSRP
       | HW_SWITCH
       | INSTALL
-      | INTERFACE BREAKOUT
       |
       (
          IP
@@ -272,7 +271,6 @@ null_block
    (
       description_line
       | null_inner
-      | { !_disableUnrecognized }? unrecognized_line
    )*
 ;
 
@@ -548,6 +546,10 @@ null_inner
          | XML_CONFIG
       ) ~NEWLINE* NEWLINE
    )
+   |
+   {!_disableUnrecognized}?
+
+   unrecognized_line
 ;
 
 null_single
@@ -839,6 +841,7 @@ null_single
       | PROMPT
       | PROTOCOL_OBJECT
       | QOS
+      | QOS_SC
       | QUEUE_MONITOR
       | QUIT
       | RADIUS_COMMON_PW
@@ -927,5 +930,5 @@ s_null
 
 unrecognized_block_stanza
 :
-   { !_disableUnrecognized }? unrecognized_line null_inner*
+   unrecognized_line null_inner*
 ;

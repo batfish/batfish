@@ -36,13 +36,17 @@ rr_null
    NO?
    (
       AUTO_SUMMARY
+      |
+      (
+         NO SHUTDOWN
+      )
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
 
 rr_passive_interface
 :
-   NO? PASSIVE_INTERFACE iname=interface_name NEWLINE
+   NO? PASSIVE_INTERFACE iname = interface_name NEWLINE
 ;
 
 rr_passive_interface_default
