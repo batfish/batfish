@@ -45,7 +45,7 @@ import org.glassfish.jersey.uri.UriComponent;
 
 public class WorkMgr {
 
-  final class AssignWorkTask implements Runnable {
+  static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
       Main.getWorkMgr().checkTask();
@@ -53,7 +53,7 @@ public class WorkMgr {
     }
   }
 
-  final class CheckTaskTask implements Runnable {
+  static final class CheckTaskTask implements Runnable {
     @Override
     public void run() {
       Main.getWorkMgr().checkTask();
