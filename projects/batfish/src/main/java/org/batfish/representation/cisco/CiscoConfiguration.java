@@ -371,8 +371,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (routingRouteMaps.contains(map)) {
       for (RouteMapClause clause : map.getClauses().values()) {
         List<RouteMapMatchLine> matchList = clause.getMatchList();
-        for (int i = 0; i < matchList.size(); i++) {
-          RouteMapMatchLine line = matchList.get(i);
+        for (RouteMapMatchLine line : matchList) {
           if (line instanceof RouteMapMatchIpAccessListLine) {
             RouteMapMatchIpAccessListLine matchIpAccessListLine =
                 (RouteMapMatchIpAccessListLine) line;
@@ -3601,7 +3600,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // L2tp
     markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS, c);
-    
+
     // warn about unreferenced data structures
     warnUnusedAsPathSets();
     warnUnusedCommunityLists();

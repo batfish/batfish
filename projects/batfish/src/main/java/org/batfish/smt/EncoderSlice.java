@@ -1143,9 +1143,7 @@ class EncoderSlice {
 
                 for (ArrayList<LogicalEdge> edgeList : edgeLists.get(proto)) {
 
-                  for (int i = 0; i < edgeList.size(); i++) {
-
-                    LogicalEdge e = edgeList.get(i);
+                  for (LogicalEdge e : edgeList) {
 
                     GraphEdge edge = e.getEdge();
                     Map<GraphEdge, ArrayList<LogicalEdge>> m;
