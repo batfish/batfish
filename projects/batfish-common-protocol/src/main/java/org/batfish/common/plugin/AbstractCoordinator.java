@@ -1,11 +1,11 @@
 package org.batfish.common.plugin;
 
-import org.batfish.common.BatfishException;
-
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.batfish.common.BatfishException;
 
 public abstract class AbstractCoordinator extends PluginConsumer implements ICoordinator {
 
