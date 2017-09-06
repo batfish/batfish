@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -16,7 +17,7 @@ public class LiteralOrigin extends OriginExpr {
   @JsonCreator
   private LiteralOrigin() {}
 
-  public LiteralOrigin(OriginType originType, Integer asNum) {
+  public LiteralOrigin(OriginType originType, @Nullable Integer asNum) {
     _asNum = asNum;
     _originType = originType;
   }

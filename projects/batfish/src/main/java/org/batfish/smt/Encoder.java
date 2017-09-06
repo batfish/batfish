@@ -20,6 +20,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
@@ -119,12 +120,12 @@ public class Encoder {
    * used.
    */
   private Encoder(
-      Encoder enc,
+      @Nullable Encoder enc,
       Graph graph,
       HeaderQuestion q,
-      Context ctx,
-      Solver solver,
-      Map<String, Expr> vars,
+      @Nullable Context ctx,
+      @Nullable Solver solver,
+      @Nullable Map<String, Expr> vars,
       int id) {
     _graph = graph;
     _previousEncoder = enc;

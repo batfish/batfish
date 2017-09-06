@@ -38,4 +38,6 @@ taskgroup priv1
  task read route-policy
 !
 !
-
+taskgroup childgroup
+ inherit taskgroup priv1
+!

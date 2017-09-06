@@ -2,6 +2,7 @@ package org.batfish.smt;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 
 /**
@@ -36,9 +37,9 @@ public class GraphEdge {
   @JsonCreator
   public GraphEdge(
       @JsonProperty(START_VAR) Interface start,
-      @JsonProperty(END_VAR) Interface end,
+      @Nullable @JsonProperty(END_VAR) Interface end,
       @JsonProperty(ROUTER_VAR) String router,
-      @JsonProperty(PEER_VAR) String peer,
+      @Nullable @JsonProperty(PEER_VAR) String peer,
       @JsonProperty(ABSTRACT_VAR) boolean isAbstract) {
     _start = start;
     _end = end;

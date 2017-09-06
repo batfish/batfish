@@ -19,6 +19,8 @@ logging buffered 5000 5
 logging buffered 5000 alerts
 logging buffered discriminator MPLS-NOL 32000 notifications
 logging buffered warnings
+logging cmts ipc-cable log-level errors
+logging cmts sea syslog-level errors
 logging console warnings
 logging console disable
 logging debug-trace

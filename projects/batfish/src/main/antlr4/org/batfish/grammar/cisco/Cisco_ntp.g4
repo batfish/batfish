@@ -52,6 +52,11 @@ ntp_authenticate
    AUTHENTICATE NEWLINE
 ;
 
+ntp_authentication
+:
+   AUTHENTICATION NEWLINE
+;
+
 ntp_clock_period
 :
    CLOCK_PERIOD ~NEWLINE* NEWLINE
@@ -66,6 +71,7 @@ ntp_common
 :
    ntp_access_group
    | ntp_authenticate
+   | ntp_authentication
    | ntp_clock_period
    | ntp_commit
    | ntp_distribute
@@ -124,6 +130,10 @@ ntp_server
    (
       (
          KEY key = DEC
+      )
+      |
+      (
+         MAXPOLL DEC
       )
       |
       (

@@ -16,7 +16,7 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public class OspfProcess extends ComparableStructure<String> {
 
-  private static final int DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
+  private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
 
   private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
 
@@ -25,7 +25,7 @@ public class OspfProcess extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private int _defaultInformationMetric;
+  private long _defaultInformationMetric;
 
   private OspfMetricType _defaultInformationMetricType;
 
@@ -101,7 +101,7 @@ public class OspfProcess extends ComparableStructure<String> {
     return _interfaceWhitelist;
   }
 
-  public int getDefaultInformationMetric() {
+  public long getDefaultInformationMetric() {
     return _defaultInformationMetric;
   }
 

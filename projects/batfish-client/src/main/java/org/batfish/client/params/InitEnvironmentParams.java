@@ -2,9 +2,7 @@ package org.batfish.client.params;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.NodeInterfacePair;

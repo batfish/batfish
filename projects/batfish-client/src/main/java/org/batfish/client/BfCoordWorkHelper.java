@@ -54,7 +54,6 @@ public class BfCoordWorkHelper {
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       throw new BatfishException("Failed to create HTTP client", e);
     }
-
   }
 
   private void addFileMultiPart(MultiPart multiPart, String key, String filename) {
@@ -92,8 +91,8 @@ public class BfCoordWorkHelper {
       String containerName,
       boolean newAnalysis,
       String analysisName,
-      String addQuestionsFileName,
-      String delQuestionsStr) {
+      @Nullable String addQuestionsFileName,
+      @Nullable String delQuestionsStr) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS);
 
@@ -684,7 +683,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public String initContainer(String containerName, String containerPrefix) {
+  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_INIT_CONTAINER);
 
@@ -826,6 +825,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listEnvironments(String containerName, String testrigName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ENVIRONMENTS);
@@ -863,6 +863,7 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listQuestions(String containerName, String testrigName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_QUESTIONS);

@@ -13,8 +13,8 @@ public class OspfExternalType2Route extends OspfExternalRoute {
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) int metric,
-      @JsonProperty(PROP_COST_TO_ADVERTISER) int costToAdvertiser,
+      @JsonProperty(PROP_METRIC) long metric,
+      @JsonProperty(PROP_COST_TO_ADVERTISER) long costToAdvertiser,
       @JsonProperty(PROP_ADVERTISER) String advertiser) {
     super(network, nextHopIp, admin, metric, advertiser, costToAdvertiser);
   }
@@ -43,7 +43,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + getCostToAdvertiser();
+    result = prime * result + Long.hashCode(getCostToAdvertiser());
     return result;
   }
 
@@ -58,7 +58,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
       return 0;
     }
     OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
-    int ret = Integer.compare(getCostToAdvertiser(), castRhs.getCostToAdvertiser());
+    int ret = Long.compare(getCostToAdvertiser(), castRhs.getCostToAdvertiser());
     return ret;
   }
 }

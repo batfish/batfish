@@ -1,0 +1,13 @@
+#
+shelfname ""
+hostname "cadant_route_map"
+#
+route-map foo permit 1
+ match ip address prefix-list bar-prefix-list
+ set community 1234:5678
+exit
+route-map bar permit 99
+ match ipv6 address prefix-list baz-ipv6-prefix-list
+ set community add 5555:1111
+exit
+#

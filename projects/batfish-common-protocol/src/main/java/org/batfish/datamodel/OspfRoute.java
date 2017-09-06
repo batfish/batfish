@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public abstract class OspfRoute extends AbstractRoute {
 
@@ -14,16 +15,16 @@ public abstract class OspfRoute extends AbstractRoute {
 
   protected final int _admin;
 
-  protected final int _metric;
+  protected final long _metric;
 
   protected final Ip _nextHopIp;
 
   @JsonCreator
   public OspfRoute(
       @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) int metric) {
+      @JsonProperty(PROP_METRIC) long metric) {
     super(network);
     _admin = admin;
     _metric = metric;
@@ -40,7 +41,7 @@ public abstract class OspfRoute extends AbstractRoute {
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public final Integer getMetric() {
+  public final Long getMetric() {
     return _metric;
   }
 

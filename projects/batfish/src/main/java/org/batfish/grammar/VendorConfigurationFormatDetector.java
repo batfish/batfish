@@ -27,7 +27,7 @@ public final class VendorConfigurationFormatDetector {
     _fileText = fileText;
   }
 
-  private void blacklist() {
+  private void configureHeuristicBlacklist() {
     Matcher bannerMatcher = Pattern.compile("(?m)^banner ").matcher(_fileText);
     if (bannerMatcher.find()) {
       _notJuniper = true;
@@ -57,6 +57,15 @@ public final class VendorConfigurationFormatDetector {
     Matcher bladeNetworkMatcher = Pattern.compile("(?m)^switch-type").matcher(_fileText);
     if (bladeNetworkMatcher.find()) {
       return ConfigurationFormat.BLADENETWORK;
+    }
+    return null;
+  }
+
+  @Nullable
+  private ConfigurationFormat checkCadant() {
+    Matcher cadantNetworkMatcher = Pattern.compile("(?m)^shelfname").matcher(_fileText);
+    if (cadantNetworkMatcher.find()) {
+      return ConfigurationFormat.CADANT;
     }
     return null;
   }
@@ -251,7 +260,15 @@ public final class VendorConfigurationFormatDetector {
     if (format != null) {
       return format;
     }
-    blacklist();
+
+    // Heuristics are somewhat brittle. This function adds information about which configuration
+    // formats we know this file does not match.
+    configureHeuristicBlacklist();
+
+    format = checkCadant();
+    if (format != null) {
+      return format;
+    }
     format = checkF5();
     if (format != null) {
       return format;

@@ -11,7 +11,8 @@ public enum NeighborType {
   EBGP("ebgp"),
   IBGP("ibgp"),
   LAN("lan"),
-  OSPF("ospf");
+  OSPF("ospf"),
+  RIP("rip");
 
   private static final Map<String, NeighborType> _map = buildMap();
 

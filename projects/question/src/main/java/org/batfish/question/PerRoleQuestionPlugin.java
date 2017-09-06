@@ -8,6 +8,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -106,7 +107,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       for (Map.Entry<String, SortedSet<String>> entry : roleNodeMap.entrySet()) {
         String role = entry.getKey();
         String regex = namesToRegex(entry.getValue());
-        innerNRQuestion.setNodeRegex("(" + origRegex + ")" + "&&" + regex);
+        innerNRQuestion.setNodeRegex("(?=" + regex + ")" + origRegex);
         String innerQuestionName = innerQuestion.getName();
         Answerer innerAnswerer =
             _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
@@ -119,8 +120,12 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return answerElement;
     }
 
+    // create a regex that matches exactly the given set of names
     String namesToRegex(Set<String> names) {
-      return names.stream().collect(Collectors.joining("|"));
+      return names
+          .stream()
+          .map(Pattern::quote)
+          .collect(Collectors.joining("|"));
     }
   }
 

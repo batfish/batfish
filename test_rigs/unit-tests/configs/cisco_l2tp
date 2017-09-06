@@ -1,0 +1,22 @@
+!
+hostname cisco_l2tp
+!
+l2tp-class foobar
+ authentication
+ cookie size 4
+ ! note that default can be followed by any other l2tp-class command
+ default authentication
+ hello 5
+ hidden
+ hostname abc.example.com
+ password 0 abcdefg
+ receive-window 123
+ retransmit initial retries 5
+ retransmit initial timeout max 8
+ retransmit initial timeout min 1
+ retransmit retries 5
+ retransmit timeout max 8
+ retransmit timeout min 1
+ timeout setup 123
+!
+!

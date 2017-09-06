@@ -75,7 +75,6 @@ null_block
       | HSRP
       | HW_SWITCH
       | INSTALL
-      | INTERFACE BREAKOUT
       |
       (
          IP
@@ -146,7 +145,6 @@ null_block
       )
       | KEYSTORE
       | KRON
-      | L2TP_CLASS
       | LACP
       | LAG
       | LINECARD
@@ -239,7 +237,6 @@ null_block
       | TEMPLATE
       | TERMINAL
       | TIME_RANGE
-      | TIMEOUT
       | TFTP
       | TLS_PROXY
       | TRACE
@@ -274,7 +271,6 @@ null_block
    (
       description_line
       | null_inner
-      | unrecognized_line
    )*
 ;
 
@@ -324,6 +320,7 @@ null_inner
          | COMMAND
          | CONNECT_SOURCE
          | CONTEXT
+         | CONTROL_WORD
          | CPU_SHARE
          | CREDENTIALS
          | DEADTIME
@@ -385,6 +382,7 @@ null_inner
          | IMPORT
          | INCOMING
          | INGRESS
+         | INHERIT
          | INSERVICE
          | INSTANCE
          |
@@ -478,7 +476,6 @@ null_inner
          | REQUEST
          | RESOURCES
          | RESPONDER
-         | RETRANSMIT
          | RETRIES
          | REVISION
          | RING
@@ -549,6 +546,10 @@ null_inner
          | XML_CONFIG
       ) ~NEWLINE* NEWLINE
    )
+   |
+   {!_disableUnrecognized}?
+
+   unrecognized_line
 ;
 
 null_single
@@ -563,16 +564,21 @@ null_single
          ACCESS_LIST
          (
             (
-               DEC
-               | VARIABLE
+               (
+                  DEC
+                  | VARIABLE
+               )
+               (
+                  EXTENDED
+                  | REMARK
+               )
             )
-            (
-               EXTENDED
-               | REMARK
-            )
+            | DYNAMIC_EXTENDED
          )
       )
+      | ACCOUNTING
       | ACCOUNTING_PORT
+      | AGING
       | ALIAS
       | AP
       | AQM_REGISTER_FNF
@@ -581,7 +587,9 @@ null_single
       | ASDM
       | ASYNC_BOOTP
       | AUTHENTICATION_PORT
+      | AUTHORIZATION
       | AUTO
+      | AUTORECOVERY
       | BOOT
       | BOOT_END_MARKER
       | BOOT_START_MARKER
@@ -598,9 +606,11 @@ null_single
       | CONFIG
       | CONFIG_REGISTER
       | CONSOLE
+      | COS_MAPPING
       | CTS
       | CURRENT_CONFIGURATION
       | DEFAULT
+      | DEPI
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
@@ -626,6 +636,7 @@ null_single
       | FABRIC
       | FABRIC_MODE
       | FACILITY_ALARM
+      | FAN
       | FILE
       | FIREWALL
       | FIRMWARE
@@ -659,7 +670,10 @@ null_single
             | DEFAULT_NETWORK
             | DEVICE
             | DOMAIN_LIST
-            | DOMAIN_LOOKUP
+            |
+            (
+               NO? DOMAIN_LOOKUP
+            )
             | DVMRP
             | EXTCOMMUNITY_LIST
             | FINGER
@@ -694,6 +708,7 @@ null_single
 
             | SAP
             | SCP
+            | SPD
             | SUBNET_ZERO
             | TCP
             | TELNET
@@ -707,6 +722,7 @@ null_single
          IPV6
          (
             CEF
+            | HOP_LIMIT
             | HOST
             | LOCAL
             | MFIB
@@ -719,6 +735,7 @@ null_single
             (
                OSPF NAME_LOOKUP
             )
+            | PD_ROUTE_INJECTION
             | PIM
             | ROUTE
             | SOURCE_ROUTE
@@ -812,6 +829,7 @@ null_single
          )
       )
       | OWNER
+      | PACKETCABLE
       | PAGER
       | PARSER
       | PASSWORD
@@ -821,11 +839,13 @@ null_single
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
+      | POWER_MONITOR
       | PRIORITY_QUEUE
       | PROCESS
       | PROMPT
       | PROTOCOL_OBJECT
       | QOS
+      | QOS_SC
       | QUEUE_MONITOR
       | QUIT
       | RADIUS_COMMON_PW
@@ -846,6 +866,7 @@ null_single
       | SERVER_TYPE
       | SERVICE_POLICY
       | SETUP
+      | SHELFNAME
       | SHELL
       | SIP_UA
       | SMTP_SERVER
@@ -863,6 +884,8 @@ null_single
       | SYSOPT
       | TAG_SWITCHING
       | TELNET
+      | TELNET_SERVER
+      | TFTP_SERVER
       | THREAT_DETECTION
       | THREAT_VISIBILITY
       | THU
@@ -874,6 +897,7 @@ null_single
       | USER_IDENTITY
       | USE_VRF
       | VERSION
+      | VIDEO
       |
       (
          VLAN

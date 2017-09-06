@@ -4,9 +4,9 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.Pair;
 import org.batfish.smt.collections.PList;
-
 
 public class TransferFunctionResult {
 
@@ -32,6 +32,7 @@ public class TransferFunctionResult {
     this._returnAssignedValue = other._returnAssignedValue;
   }
 
+  @Nullable
   private Expr find(PList<Pair<String, Expr>> vals, String s) {
     for (Pair<String, Expr> pair : vals) {
       if (pair.getFirst().equals(s)) {

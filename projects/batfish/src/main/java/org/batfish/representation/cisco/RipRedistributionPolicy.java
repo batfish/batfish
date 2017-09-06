@@ -1,0 +1,29 @@
+package org.batfish.representation.cisco;
+
+import org.batfish.datamodel.RoutingProtocol;
+
+public class RipRedistributionPolicy extends RedistributionPolicy {
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  public static final long DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 1L;
+
+  public static final long DEFAULT_REDISTRIBUTE_STATIC_METRIC = 1L;
+
+  public static final long DEFAULT_REDISTRIBUTE_BGP_METRIC = 1L;
+
+  private Long _metric;
+
+  public RipRedistributionPolicy(RoutingProtocol sourceProtocol) {
+    super(sourceProtocol, RoutingProtocol.RIP);
+  }
+
+  public Long getMetric() {
+    return _metric;
+  }
+
+  public void setMetric(Long metric) {
+    _metric = metric;
+  }
+}

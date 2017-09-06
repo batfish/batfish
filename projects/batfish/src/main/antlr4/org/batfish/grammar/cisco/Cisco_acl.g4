@@ -104,6 +104,11 @@ bandwidth_irs_stanza
    BANDWIDTH ~NEWLINE* NEWLINE
 ;
 
+cadant_stdacl_name
+:
+   NAME name = variable_permissive NEWLINE
+;
+
 community_set_stanza
 :
    COMMUNITY_SET name = variable NEWLINE community_set_elem_list END_SET
@@ -188,6 +193,7 @@ extended_access_list_additional_feature
    | ND
    | ND_NA
    | ND_NS
+   | ND_TYPE
    | NEIGHBOR
    | NETWORK_UNKNOWN
    | NET_UNREACHABLE
@@ -767,6 +773,7 @@ standard_access_list_stanza
          NEWLINE
          (
             standard_access_list_tail
+            | cadant_stdacl_name
             | standard_access_list_null_tail
          )*
       )
