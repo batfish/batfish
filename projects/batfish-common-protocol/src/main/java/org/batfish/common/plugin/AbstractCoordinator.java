@@ -1,5 +1,7 @@
 package org.batfish.common.plugin;
 
+import org.batfish.common.BatfishException;
+
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,9 @@ public abstract class AbstractCoordinator extends PluginConsumer implements ICoo
 
   @Override
   public final void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin) {
+    if (_testrigSyncers.containsKey(name)) {
+      throw new BatfishException("Multiple SyncTestrigs plugins are registering for " + name);
+    }
     _testrigSyncers.put(name, plugin);
   }
 }
