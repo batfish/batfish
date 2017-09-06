@@ -21507,7 +21507,7 @@
             "      (rr_distribute_list",
             "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
             "        (variable",
-            "          VARIABLE:'CBN-RIP-allowed'  <== mode:DEFAULT_MODE)",
+            "          VARIABLE:'some-ACL'  <== mode:DEFAULT_MODE)",
             "        IN:'in'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (rr_network",
@@ -38713,6 +38713,15 @@
             }
           }
         },
+        "cadant_rip" : {
+          "ipv4/6 acl" : {
+            "blah-std-acl" : {
+              "router rip distribute-list" : [
+                6
+              ]
+            }
+          }
+        },
         "cadant_route_map" : {
           "ipv4 prefix-list" : {
             "bar-prefix-list" : {
@@ -38920,6 +38929,15 @@
             "boop" : {
               "class-map access-group" : [
                 14
+              ]
+            }
+          }
+        },
+        "cisco_rip" : {
+          "ipv4/6 acl" : {
+            "some-ACL" : {
+              "router rip distribute-list" : [
+                6
               ]
             }
           }

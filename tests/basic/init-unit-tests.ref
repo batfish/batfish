@@ -569,6 +569,15 @@
             }
           }
         },
+        "cadant_rip" : {
+          "ipv4/6 acl" : {
+            "blah-std-acl" : {
+              "router rip distribute-list" : [
+                6
+              ]
+            }
+          }
+        },
         "cadant_route_map" : {
           "ipv4 prefix-list" : {
             "bar-prefix-list" : {
@@ -776,6 +785,15 @@
             "boop" : {
               "class-map access-group" : [
                 14
+              ]
+            }
+          }
+        },
+        "cisco_rip" : {
+          "ipv4/6 acl" : {
+            "some-ACL" : {
+              "router rip distribute-list" : [
+                6
               ]
             }
           }
