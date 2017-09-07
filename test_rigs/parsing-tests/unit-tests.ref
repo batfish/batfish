@@ -13637,6 +13637,24 @@
             "      VARIABLE:'cisco_interface'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
+            "    (extended_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'abc'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (extended_access_list_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          TCP:'tcp'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
             "      (interface_name",
@@ -21507,7 +21525,7 @@
             "      (rr_distribute_list",
             "        DISTRIBUTE_LIST:'distribute-list'  <== mode:DEFAULT_MODE",
             "        (variable",
-            "          VARIABLE:'CBN-RIP-allowed'  <== mode:DEFAULT_MODE)",
+            "          VARIABLE:'some-ACL'  <== mode:DEFAULT_MODE)",
             "        IN:'in'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (rr_network",
@@ -38713,6 +38731,15 @@
             }
           }
         },
+        "cadant_rip" : {
+          "ipv4/6 acl" : {
+            "blah-std-acl" : {
+              "router rip distribute-list" : [
+                6
+              ]
+            }
+          }
+        },
         "cadant_route_map" : {
           "ipv4 prefix-list" : {
             "bar-prefix-list" : {
@@ -38793,46 +38820,41 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                69
+                72
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                55
+                58
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                53
+                56
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                72
-              ]
-            },
-            "abc" : {
-              "ip nat source dynamic access-list" : [
-                59
+                75
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                42
+                45
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                58
+                61
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                59
+                62
               ]
             }
           }
@@ -38920,6 +38942,15 @@
             "boop" : {
               "class-map access-group" : [
                 14
+              ]
+            }
+          }
+        },
+        "cisco_rip" : {
+          "ipv4/6 acl" : {
+            "some-ACL" : {
+              "router rip distribute-list" : [
+                6
               ]
             }
           }

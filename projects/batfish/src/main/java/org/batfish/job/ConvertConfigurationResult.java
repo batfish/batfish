@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
@@ -57,8 +58,9 @@ public class ConvertConfigurationResult
       ConvertConfigurationAnswerElement answerElement) {
     appendHistory(logger);
     if (_configurations != null) {
-      for (String hostname : _configurations.keySet()) {
-        Configuration config = _configurations.get(hostname);
+      for (Entry<String, Configuration> hostConfig : _configurations.entrySet()) {
+        String hostname = hostConfig.getKey();
+        Configuration config = hostConfig.getValue();
         if (configurations.containsKey(hostname)) {
           throw new BatfishException("Duplicate hostname: " + hostname);
         } else {

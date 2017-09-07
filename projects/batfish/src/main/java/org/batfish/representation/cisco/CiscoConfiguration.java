@@ -371,8 +371,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (routingRouteMaps.contains(map)) {
       for (RouteMapClause clause : map.getClauses().values()) {
         List<RouteMapMatchLine> matchList = clause.getMatchList();
-        for (int i = 0; i < matchList.size(); i++) {
-          RouteMapMatchLine line = matchList.get(i);
+        for (RouteMapMatchLine line : matchList) {
           if (line instanceof RouteMapMatchIpAccessListLine) {
             RouteMapMatchIpAccessListLine matchIpAccessListLine =
                 (RouteMapMatchIpAccessListLine) line;
@@ -3570,6 +3569,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL, c);
+    markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST, c);
     markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, c);
@@ -3601,7 +3601,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // L2tp
     markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS, c);
-    
+
     // warn about unreferenced data structures
     warnUnusedAsPathSets();
     warnUnusedCommunityLists();

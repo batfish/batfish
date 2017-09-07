@@ -2960,12 +2960,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int aclLine = ctx.acl.getStart().getLine();
       nat.setAclName(acl);
       nat.setAclNameLine(aclLine);
+      _configuration.referenceStructure(
+          CiscoStructureType.IP_ACCESS_LIST,
+          acl,
+          CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+          aclLine);
     }
     if (ctx.pool != null) {
       String pool = ctx.pool.getText();
       int poolLine = ctx.pool.getStart().getLine();
       nat.setNatPool(pool);
       nat.setNatPoolLine(poolLine);
+      _configuration.referenceStructure(
+          CiscoStructureType.NAT_POOL, pool, CiscoStructureUsage.IP_NAT_SOURCE_POOL, poolLine);
     }
 
     for (Interface iface : _currentInterfaces) {
@@ -4779,9 +4786,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.acl != null) {
       name = ctx.acl.getText();
       acl = true;
+      _configuration.referenceStructure(
+          CiscoStructureType.IP_ACCESS_LIST, name, CiscoStructureUsage.RIP_DISTRIBUTE_LIST, line);
     } else {
       name = ctx.prefix_list.getText();
       acl = false;
+      _configuration.referenceStructure(
+          CiscoStructureType.PREFIX_LIST, name, CiscoStructureUsage.RIP_DISTRIBUTE_LIST, line);
     }
     if (in) {
       proc.setDistributeListIn(name);
