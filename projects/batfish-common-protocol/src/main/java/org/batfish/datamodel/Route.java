@@ -127,11 +127,13 @@ public class Route implements Comparable<Route>, Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Route)) {
+      return false;
     }
-    Route other = (Route) obj;
+    Route other = (Route) o;
     if (_administrativeCost != other._administrativeCost) {
       return false;
     }

@@ -221,8 +221,13 @@ public final class Flow6 implements Comparable<Flow6> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    Flow6 other = (Flow6) obj;
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof Flow6)) {
+      return false;
+    }
+    Flow6 other = (Flow6) o;
     if (_dscp != other._dscp) {
       return false;
     }

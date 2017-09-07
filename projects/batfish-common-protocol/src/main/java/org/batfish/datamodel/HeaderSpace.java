@@ -130,11 +130,13 @@ public class HeaderSpace implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof HeaderSpace)) {
+      return false;
     }
-    HeaderSpace other = (HeaderSpace) obj;
+    HeaderSpace other = (HeaderSpace) o;
     if (!_dscps.equals(other._dscps)) {
       return false;
     }

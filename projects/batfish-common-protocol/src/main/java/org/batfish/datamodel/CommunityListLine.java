@@ -32,11 +32,13 @@ public class CommunityListLine implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof CommunityListLine)) {
+      return false;
     }
-    CommunityListLine other = (CommunityListLine) obj;
+    CommunityListLine other = (CommunityListLine) o;
     if (_action != other._action) {
       return false;
     }

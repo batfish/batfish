@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class StaticRoute implements Serializable {
 
@@ -41,6 +42,11 @@ public class StaticRoute implements Serializable {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof StaticRoute)) {
+      return false;
+    }
     StaticRoute rhs = (StaticRoute) o;
     boolean res = _prefix.equals(rhs._prefix);
     if (_nextHopIp != null) {

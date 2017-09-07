@@ -125,6 +125,11 @@ public final class GeneratedRoute extends AbstractRoute {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof GeneratedRoute)) {
+      return false;
+    }
     GeneratedRoute rhs = (GeneratedRoute) o;
     return _network.equals(rhs._network);
   }

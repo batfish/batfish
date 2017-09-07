@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.RouteFilterLine;
 
 public class AclLinesAnswerElement implements AnswerElement {
 
@@ -39,8 +40,13 @@ public class AclLinesAnswerElement implements AnswerElement {
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return _index == ((AclReachabilityEntry) obj)._index;
+    public boolean equals(Object o) {
+      if (o == this) {
+        return true;
+      } else if (!(o instanceof AclReachabilityEntry)) {
+        return false;
+      }
+      return _index == ((AclReachabilityEntry) o)._index;
     }
 
     public boolean getDifferentAction() {

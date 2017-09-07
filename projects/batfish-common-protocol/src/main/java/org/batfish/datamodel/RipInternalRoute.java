@@ -20,11 +20,13 @@ public class RipInternalRoute extends RipRoute {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof RipInternalRoute)) {
+      return false;
     }
-    RipInternalRoute other = (RipInternalRoute) obj;
+    RipInternalRoute other = (RipInternalRoute) o;
     if (_metric != other._metric) {
       return false;
     }

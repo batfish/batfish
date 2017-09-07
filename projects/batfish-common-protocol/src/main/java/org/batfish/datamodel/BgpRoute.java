@@ -231,11 +231,13 @@ public class BgpRoute extends AbstractRoute {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof BgpRoute)) {
+      return false;
     }
-    BgpRoute other = (BgpRoute) obj;
+    BgpRoute other = (BgpRoute) o;
     if (_admin != other._admin) {
       return false;
     }
