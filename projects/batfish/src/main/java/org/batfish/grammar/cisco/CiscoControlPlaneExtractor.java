@@ -2955,8 +2955,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
     CiscoSourceNat nat = new CiscoSourceNat();
-    String acl = ctx.acl.getText();
     if (ctx.acl != null) {
+      String acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
       nat.setAclName(acl);
       nat.setAclNameLine(aclLine);
