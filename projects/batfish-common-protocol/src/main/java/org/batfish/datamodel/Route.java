@@ -261,17 +261,7 @@ public class Route implements Comparable<Route>, Serializable {
 
   @Override
   public String toString() {
-    String nextHop = _nextHop;
-    String nextHopIp = _nextHopIp.toString();
     String tag = Integer.toString(_tag);
-    // extra formatting
-    if (_nextHopInterface != null) {
-      // static interface
-      if (_nextHopIp.equals(null)) {
-        nextHop = "N/A";
-        nextHopIp = "N/A";
-      }
-    }
     if (_tag == UNSET_ROUTE_TAG) {
       tag = "none";
     }
@@ -280,9 +270,9 @@ public class Route implements Comparable<Route>, Serializable {
         + ", "
         + _network
         + ", "
-        + nextHopIp
+        + _nextHopIp
         + ", "
-        + nextHop
+        + _nextHop
         + ", "
         + _nextHopInterface
         + ", "
