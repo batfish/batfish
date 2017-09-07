@@ -5,21 +5,18 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 
 /** Tests for {@link org.batfish.common.util.CommonUtil}. */
 public class CommonUtilTest {
 
-  @Test
-  public void testWriteStreamToMap() {
-    String input = "{question : answer}";
-    Map<String, String> expected = new HashMap<>();
-    expected.put("question", "answer");
+  @Test public void testWriteReadQuestionsFromStream() {
+    String input = "{\"question\" : {\"question\" : \"answer\"}}";
+    String expectedQuestion = "{\n  \"question\" : \"answer\"\n}";
     InputStream stream = new ByteArrayInputStream(input.getBytes());
-    Map<String, String> actual = CommonUtil.writeStreamToMap(stream);
-    assertThat(actual, equalTo(expected));
+    Map<String, String> actual = CommonUtil.readQuestionsFromStream(stream);
+    assertThat(actual.get("question"), equalTo(expectedQuestion));
   }
 
 }

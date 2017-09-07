@@ -157,7 +157,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Map<String, String> questionsToAdd = CommonUtil.writeStreamToMap(addQuestionsStream);
+      Map<String, String> questionsToAdd = CommonUtil.readQuestionsFromStream(addQuestionsStream);
       boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
       List<String> questionsToDelete = new ArrayList<>();
       if (!Strings.isNullOrEmpty(delQuestions)) {

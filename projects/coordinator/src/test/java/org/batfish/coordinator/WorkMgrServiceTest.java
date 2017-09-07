@@ -94,7 +94,7 @@ public class WorkMgrServiceTest {
   public void testConfigureAnalysis() throws Exception {
     initContainerEnvironment();
     // test init and add questions to analysis
-    String analysisJsonString = "{question:{question: questionContent}}";
+    String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
     File analysisFile = _folder.newFile("analysis");
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
     _service.configureAnalysis(

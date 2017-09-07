@@ -1,7 +1,7 @@
 package org.batfish.common.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +35,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -61,8 +62,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -741,51 +740,28 @@ public class CommonUtil {
     }
   }
 
-  public static JSONObject writeStreamToJSONObject(InputStream inputStream) {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      int read = 0;
-      final byte[] buffer = new byte[STREAMED_FILE_BUFFER_SIZE];
-      while (true) {
-        read = inputStream.read(buffer);
-
-        if (read == -1) {
-          break;
-        }
-        baos.write(buffer, 0, read);
-      }
-      JSONObject jObject;
-      jObject = new JSONObject(baos.toString("UTF-8"));
-      return jObject;
-    } catch (IOException | JSONException e) {
-      throw new BatfishException("Failed to convert input stream into JSON object", e);
-    }
-  }
-
   /**
    * Returns a mapping of strings which contains elements of the {@link InputStream InputStream}
-   * {@code inputStream}.
+   * {@code inputStream}. Each value in the map contains a valid JSON String.
    *
-   * @throws BatfishException if the format encoded in {@code inputStream} does not meet the
-   *     requirement.
+   * @throws BatfishException if the format encoded in {@code inputStream} can not be converted into
+   *     a map from name to JSON String.
    */
-  public static Map<String, String> writeStreamToMap(InputStream inputStream) {
-    Map<String, String> streamValue = new HashMap<>();
+  public static Map<String, String> readQuestionsFromStream(InputStream inputStream) {
+    Map<String, String> retValue = new HashMap<>();
     if (inputStream != null) {
-      JSONObject jObject = writeStreamToJSONObject(inputStream);
-      Iterator<?> keys = jObject.keys();
-      while (keys.hasNext()) {
-        String key = (String) keys.next();
-        String valueText;
-        try {
-          valueText = jObject.getString(key);
-        } catch (JSONException e) {
-          throw new BatfishException(
-              "No value found for key '" + key + "'", e);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, Object> streamValue;
+      try {
+        streamValue = mapper.readValue(inputStream, new TypeReference<Map<String, Object>>() {});
+        for (Entry<String, Object> entry : streamValue.entrySet()) {
+          String textValue = mapper.writeValueAsString(entry.getValue());
+          retValue.put(entry.getKey(), textValue);
         }
-        streamValue.put(key, valueText);
+      } catch (IOException e) {
+        throw new BatfishException("Failed to read question JSON from input stream", e);
       }
     }
-    return streamValue;
+    return retValue;
   }
 }
