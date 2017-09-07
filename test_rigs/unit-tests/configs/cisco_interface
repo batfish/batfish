@@ -1,6 +1,9 @@
 !
 hostname cisco_interface
 !
+ip access-list abc
+   10 permit tcp any any
+!
 interface Ethernet0
  antenna gain 6
  arp timeout 240

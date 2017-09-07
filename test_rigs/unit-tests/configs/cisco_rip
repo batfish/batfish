@@ -3,7 +3,7 @@ hostname cisco_rip
 !
 router rip
  no auto-summary
- distribute-list CBN-RIP-allowed in
+ distribute-list some-ACL in
  network 1.2.3.0
  passive-interface default
  no passive-interface Bundle1.23

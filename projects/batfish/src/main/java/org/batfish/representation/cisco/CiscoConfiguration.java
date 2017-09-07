@@ -3569,6 +3569,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL, c);
     markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL, c);
+    markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST, c);
     markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL, c);
     markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, c);
