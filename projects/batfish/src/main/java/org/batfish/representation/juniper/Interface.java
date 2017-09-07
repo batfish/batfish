@@ -94,10 +94,10 @@ public class Interface extends ComparableStructure<String> {
 
   @SuppressWarnings("unused")
   private Interface() {
-    this(null, -1);
+    this("", -1);
   }
 
-  public Interface(@Nullable String name, int definitionLine) {
+  public Interface(String name, int definitionLine) {
     super(name);
     _active = true;
     _allPrefixes = new LinkedHashSet<>();
