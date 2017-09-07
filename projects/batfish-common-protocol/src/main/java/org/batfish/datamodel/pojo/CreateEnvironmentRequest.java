@@ -1,6 +1,5 @@
 package org.batfish.datamodel.pojo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
 import java.util.List;
 import java.util.Objects;
@@ -18,18 +17,17 @@ public class CreateEnvironmentRequest {
   private final List<Edge> _edgeBlacklist;
   private final List<NodeInterfacePair> _interfaceBlacklist;
   private final List<String> _nodeBlacklist;
-  private final List<TableObject> _bgpTables;
-  private final List<TableObject> _routingTables;
+  private final List<FileObject> _bgpTables;
+  private final List<FileObject> _routingTables;
   private final String _externalBgpAnnouncements;
 
-  @JsonCreator
   public CreateEnvironmentRequest(
       String name,
       @Nullable List<Edge> edgeBlacklist,
       @Nullable List<NodeInterfacePair> interfaceBlacklist,
       @Nullable List<String> nodeBlacklist,
-      @Nullable List<TableObject> bgpTables,
-      @Nullable List<TableObject> routingTables,
+      @Nullable List<FileObject> bgpTables,
+      @Nullable List<FileObject> routingTables,
       @Nullable String externalBgpAnnouncements) {
     this._name = name;
     this._edgeBlacklist = edgeBlacklist;
@@ -56,11 +54,11 @@ public class CreateEnvironmentRequest {
     return _nodeBlacklist;
   }
 
-  public List<TableObject> getBgpTables() {
+  public List<FileObject> getBgpTables() {
     return _bgpTables;
   }
 
-  public List<TableObject> getRoutingTables() {
+  public List<FileObject> getRoutingTables() {
     return _routingTables;
   }
 

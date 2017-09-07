@@ -20,9 +20,9 @@ public class CreateEnvironmentRequestTest {
   @Test
   public void testConstructorAndGetter() {
     List<String> nodeBlacklist = Lists.newArrayList("node1");
-    List<TableObject> bgpTables = Lists.newArrayList(new TableObject("bgpTable", "tableContent"));
-    List<TableObject> routingTables =
-        Lists.newArrayList(new TableObject("routingTable", "tableContent"));
+    List<FileObject> bgpTables = Lists.newArrayList(new FileObject("bgpTable", "tableContent"));
+    List<FileObject> routingTables =
+        Lists.newArrayList(new FileObject("routingTable", "tableContent"));
     CreateEnvironmentRequest e =
         new CreateEnvironmentRequest(
             "environment",

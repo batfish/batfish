@@ -8,29 +8,29 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link TableObject}. */
+/** Tests for {@link FileObject}. */
 @RunWith(JUnit4.class)
-public class TableObjectTest {
+public class FileObjectTest {
 
   @Test
   public void testConstructorAndGetter() {
-    TableObject fo = new TableObject("name", "content");
+    FileObject fo = new FileObject("name", "content");
     assertThat(fo.getName(), equalTo("name"));
     assertThat(fo.getContent(), equalTo("content"));
   }
 
   @Test
   public void testToString() {
-    TableObject fo = new TableObject("name", "content");
-    assertThat(fo.toString(), equalTo("TableObject{name=name, content=content}"));
+    FileObject fo = new FileObject("name", "content");
+    assertThat(fo.toString(), equalTo("FileObject{name=name, content=content}"));
   }
 
   @Test
   public void testEquals() {
-    TableObject fo = new TableObject("fileName", "fileContent");
-    TableObject foCopy = new TableObject("fileName", "fileContent");
-    TableObject foDifferentName = new TableObject("name", "fileContent");
-    TableObject foDifferentContent = new TableObject("fileName", "content");
+    FileObject fo = new FileObject("fileName", "fileContent");
+    FileObject foCopy = new FileObject("fileName", "fileContent");
+    FileObject foDifferentName = new FileObject("name", "fileContent");
+    FileObject foDifferentContent = new FileObject("fileName", "content");
     new EqualsTester()
         .addEqualityGroup(fo, foCopy)
         .addEqualityGroup(foDifferentName)
