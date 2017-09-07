@@ -24,6 +24,8 @@ import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
+import org.batfish.grammar.netscreen.NetscreenCombinedParser;
+import org.batfish.grammar.netscreen.NetscreenControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.representation.host.HostConfiguration;
@@ -257,6 +259,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         MrvCombinedParser mrvParser = new MrvCombinedParser(_fileText, _settings);
         combinedParser = mrvParser;
         extractor = new MrvControlPlaneExtractor(_fileText, mrvParser, _warnings);
+        break;
+
+      case NETSCREEN:
+        NetscreenCombinedParser netscreenParser =
+            new NetscreenCombinedParser(_fileText, _settings);
+        combinedParser = netscreenParser;
+        extractor = new NetscreenControlPlaneExtractor(_fileText, netscreenParser, _warnings);
         break;
 
       case ALCATEL_AOS:

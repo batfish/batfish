@@ -202,6 +202,17 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkNetscreen() {
+    if (_fileText.contains("set hostname")
+        && _fileText.contains("set clock")
+        && _fileText.contains("set vrouter")
+        && _fileText.contains("exit")) {
+      return ConfigurationFormat.NETSCREEN;
+    }
+    return null;
+  }
+
+  @Nullable
   private ConfigurationFormat checkRancid() {
     Matcher rancidCisco = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$").matcher(_fileText);
     Matcher rancidCiscoNx =
@@ -306,6 +317,10 @@ public final class VendorConfigurationFormatDetector {
       return format;
     }
     format = checkVxWorks();
+    if (format != null) {
+      return format;
+    }
+    format = checkNetscreen();
     if (format != null) {
       return format;
     }
