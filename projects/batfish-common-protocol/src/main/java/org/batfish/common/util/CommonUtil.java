@@ -1,6 +1,5 @@
 package org.batfish.common.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.hash.Hashing;
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,12 +27,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -697,28 +693,4 @@ public class CommonUtil {
     }
   }
 
-  /**
-   * Returns a mapping of strings which contains elements of the {@link InputStream InputStream}
-   * {@code inputStream}. Each value in the map contains a valid JSON String.
-   *
-   * @throws BatfishException if the format encoded in {@code inputStream} can not be converted into
-   *     a map from name to JSON String.
-   */
-  public static Map<String, String> readQuestionsFromStream(InputStream inputStream) {
-    Map<String, String> retValue = new HashMap<>();
-    if (inputStream != null) {
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
-      Map<String, Object> streamValue;
-      try {
-        streamValue = mapper.readValue(inputStream, new TypeReference<Map<String, Object>>() {});
-        for (Entry<String, Object> entry : streamValue.entrySet()) {
-          String textValue = mapper.writeValueAsString(entry.getValue());
-          retValue.put(entry.getKey(), textValue);
-        }
-      } catch (IOException e) {
-        throw new BatfishException("Failed to read question JSON from input stream", e);
-      }
-    }
-    return retValue;
-  }
 }

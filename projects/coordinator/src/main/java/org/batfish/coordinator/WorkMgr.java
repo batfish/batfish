@@ -341,11 +341,12 @@ public class WorkMgr {
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
       Path qDir = questionsDir.resolve(entry.getKey());
       if (Files.exists(qDir)) {
-        throw new BatfishException(
-            "Question '" + entry.getKey() + "' already exists for analysis '" + aName + "'");
+        throw new BatfishException(String.format("Question '%s' already exists for analysis '%s'",
+            entry.getKey(),
+            aName));
       }
       if (!qDir.toFile().mkdirs()) {
-        throw new BatfishException("Failed to create question directory '" + qDir + "'");
+        throw new BatfishException(String.format("Failed to create question directory '%s'", qDir));
       }
       Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
       CommonUtil.writeFile(qFile, entry.getValue());

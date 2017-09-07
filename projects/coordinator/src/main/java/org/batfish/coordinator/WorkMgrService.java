@@ -1,14 +1,18 @@
 package org.batfish.coordinator;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.zip.ZipException;
@@ -29,7 +33,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -157,7 +160,22 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Map<String, String> questionsToAdd = CommonUtil.readQuestionsFromStream(addQuestionsStream);
+      Map<String, String> questionsToAdd = new HashMap<>();
+      if (addQuestionsStream != null) {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Map<String, Object> streamValue;
+        try {
+          streamValue = mapper.readValue(addQuestionsStream,
+              new TypeReference<Map<String, Object>>() {
+              });
+          for (Entry<String, Object> entry : streamValue.entrySet()) {
+            String textValue = mapper.writeValueAsString(entry.getValue());
+            questionsToAdd.put(entry.getKey(), textValue);
+          }
+        } catch (IOException e) {
+          throw new BatfishException("Failed to read question JSON from input stream", e);
+        }
+      }
       boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
       List<String> questionsToDelete = new ArrayList<>();
       if (!Strings.isNullOrEmpty(delQuestions)) {
