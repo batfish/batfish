@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.hash.Hashing;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,11 +24,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,9 +41,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
@@ -461,24 +459,16 @@ public class CommonUtil {
   }
 
   public static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
-    List<String> matchingStrings = new ArrayList<>();
     Pattern pattern;
     try {
       pattern = Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid java regex: \"" + regex + "\"", e);
     }
-    if (pattern != null) {
-      for (String s : allStrings) {
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.matches()) {
-          matchingStrings.add(s);
-        }
-      }
-    } else {
-      matchingStrings.addAll(allStrings);
-    }
-    return matchingStrings;
+    return allStrings
+        .stream()
+        .filter(s -> pattern.matcher(s).matches())
+        .collect(Collectors.toList());
   }
 
   public static SortedSet<Path> getSubdirectories(Path directory) {
@@ -543,26 +533,10 @@ public class CommonUtil {
     return upper + ":" + lower;
   }
 
+  /** Returns a hex {@link String} representation of the MD5 hash digest of the input string. */
+  @SuppressWarnings("deprecation") // md5 is deprecated, but used deliberately.
   public static String md5Digest(String saltedSecret) {
-    MessageDigest digest = null;
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw new BatfishException("Could not initialize md5 hasher", e);
-    }
-    byte[] plainTextBytes = null;
-    plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
-    byte[] digestBytes = digest.digest(plainTextBytes);
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < digestBytes.length; i++) {
-      int digestByteAsInt = 0xff & digestBytes[i];
-      if (digestByteAsInt < 0x10) {
-        sb.append('0');
-      }
-      sb.append(Integer.toHexString(digestByteAsInt));
-    }
-    String md5 = sb.toString();
-    return md5;
+    return Hashing.md5().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
   public static void moveByCopy(Path srcPath, Path dstPath) {
@@ -627,26 +601,9 @@ public class CommonUtil {
     return SALT;
   }
 
+  /** Returns a hex {@link String} representation of the SHA-256 hash digest of the input string. */
   public static String sha256Digest(String saltedSecret) {
-    MessageDigest digest = null;
-    try {
-      digest = MessageDigest.getInstance("SHA-256");
-    } catch (NoSuchAlgorithmException e) {
-      throw new BatfishException("Could not initialize sha256 hasher", e);
-    }
-    byte[] plainTextBytes = null;
-    plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
-    byte[] digestBytes = digest.digest(plainTextBytes);
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < digestBytes.length; i++) {
-      int digestByteAsInt = 0xff & digestBytes[i];
-      if (digestByteAsInt < 0x10) {
-        sb.append('0');
-      }
-      sb.append(Integer.toHexString(digestByteAsInt));
-    }
-    String sha256 = sb.toString();
-    return sha256;
+    return Hashing.sha256().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
   public static void startSslServer(
