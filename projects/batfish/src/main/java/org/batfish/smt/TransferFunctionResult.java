@@ -96,7 +96,7 @@ public class TransferFunctionResult {
 
   public TransferFunctionResult addChangedVariables(TransferFunctionResult other) {
     TransferFunctionResult ret = new TransferFunctionResult(this);
-    ret._changedVariables.plusAll(other._changedVariables);
+    ret._changedVariables = ret._changedVariables.plusAll(other._changedVariables);
     return ret;
   }
 
