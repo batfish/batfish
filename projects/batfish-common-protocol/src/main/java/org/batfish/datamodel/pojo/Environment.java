@@ -3,6 +3,8 @@ package org.batfish.datamodel.pojo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -125,5 +127,68 @@ public class Environment {
         _bgpTables,
         _routingTables,
         _externalBgpAnnouncements);
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    private String _name;
+    private List<Edge> _edgeBlacklist = new ArrayList<>();
+    private List<NodeInterfacePair> _interfaceBlacklist = new ArrayList<>();
+    private List<String> _nodeBlacklist = new ArrayList<>();
+    private Map<String, String> _bgpTables = new HashMap<>();
+    private Map<String, String> _routingTables = new HashMap<>();
+    private String _externalBgpAnnouncements;
+
+    private Builder() {}
+
+    public Environment build() {
+      return new Environment(
+          _name,
+          _edgeBlacklist,
+          _interfaceBlacklist,
+          _nodeBlacklist,
+          _bgpTables,
+          _routingTables,
+          _externalBgpAnnouncements);
+    }
+
+    public Builder setName(String name) {
+      this._name = name;
+      return this;
+    }
+
+    public Builder setEdgeBlacklist(List<Edge> edgeBlacklist) {
+      _edgeBlacklist = edgeBlacklist;
+      return this;
+    }
+
+    public Builder setInterfaceBlacklist(List<NodeInterfacePair> interfaceBlacklist) {
+      _interfaceBlacklist = interfaceBlacklist;
+      return this;
+    }
+
+    public Builder setNodeBlacklist(List<String> nodeBlacklist) {
+      _nodeBlacklist = nodeBlacklist;
+      return this;
+    }
+
+    public Builder setBgpTables(Map<String, String> bgpTables) {
+      _bgpTables = bgpTables;
+      return this;
+    }
+
+    public Builder setRoutingTables(Map<String, String> routingTables) {
+      _routingTables = routingTables;
+      return this;
+    }
+
+    public Builder setExternalBgpAnnouncements(String externalBgpAnnouncements) {
+      _externalBgpAnnouncements = externalBgpAnnouncements;
+      return this;
+    }
   }
 }
