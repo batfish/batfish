@@ -1541,7 +1541,7 @@ class EncoderSlice {
       if (best.getRouterId() == null || e == null) {
         equalId = mkTrue();
       } else {
-        Long peerId = _logicalGraph.findRouterId(e, proto);
+        long peerId = _logicalGraph.findRouterId(e, proto);
         equalId = mkEq(best.getRouterId(), mkInt(peerId));
       }
     } else {
@@ -1749,7 +1749,7 @@ class EncoderSlice {
       if (e == null) {
         tiebreak = mkLe(best.getRouterId(), defaultId);
       } else {
-        Long peerId = _logicalGraph.findRouterId(e, proto);
+        long peerId = _logicalGraph.findRouterId(e, proto);
         tiebreak = mkLe(best.getRouterId(), mkInt(peerId));
       }
     } else {

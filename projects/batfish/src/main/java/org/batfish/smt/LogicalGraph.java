@@ -60,7 +60,7 @@ class LogicalGraph {
   /*
    * Find the router Id for the neighbor corresponding to a logical edge.
    */
-  Long findRouterId(LogicalEdge e, Protocol proto) {
+  long findRouterId(LogicalEdge e, Protocol proto) {
     LogicalEdge eOther = _otherEnd.get(e);
     if (eOther != null) {
       String peer = eOther.getEdge().getRouter();

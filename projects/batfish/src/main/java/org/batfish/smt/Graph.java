@@ -36,6 +36,8 @@ import org.batfish.smt.collections.Table2;
  */
 public class Graph {
 
+  private static final String NULL_INTERFACE_NAME = "null_interface";
+
   private IBatfish _batfish;
 
   private Map<String, Configuration> _configurations;
@@ -172,7 +174,7 @@ public class Graph {
   }
 
   public static boolean isNullRouted(StaticRoute sr) {
-    return sr.getNextHopInterface().equals("null_interface");
+    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 
   /*

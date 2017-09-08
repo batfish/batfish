@@ -20,7 +20,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
@@ -847,7 +846,6 @@ public class Encoder {
     return _ctx;
   }
 
-  @Nonnull
   public EncoderSlice getMainSlice() {
     return _slices.get(MAIN_SLICE_NAME);
   }
