@@ -172,7 +172,7 @@ public class Graph {
   }
 
   public static boolean isNullRouted(StaticRoute sr) {
-    return sr.getNextHopInterface() != null && sr.getNextHopInterface().equals("null_interface");
+    return sr.getNextHopInterface().equals("null_interface");
   }
 
   /*
@@ -205,8 +205,7 @@ public class Graph {
               // Check if next-hop ip corresponds to direct interface
               Ip nhIp = sr.getNextHopIp();
               boolean isNextHop =
-                  nhIp != null
-                      && there != null
+                  there != null
                       && there.getPrefix() != null
                       && there.getPrefix().getAddress().equals(nhIp);
 
@@ -633,7 +632,7 @@ public class Graph {
                       .append(", Interface: ")
                       .append(iface)
                       .append(" --> ")
-                      .append(sr.getNetwork().toString())
+                      .append(sr.getNetwork())
                       .append("\n");
                 }
               });

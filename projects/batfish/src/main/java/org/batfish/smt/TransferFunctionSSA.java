@@ -120,7 +120,7 @@ class TransferFunctionSSA {
 
   private static int id = 0;
 
-  private static int INLINE_HEURISTIC = 3000;
+  private static final int INLINE_HEURISTIC = 3000;
 
   private EncoderSlice _enc;
 
@@ -726,7 +726,6 @@ class TransferFunctionSSA {
     BoolExpr cid = _enc.mkTrue();
     if (_isExport && _to.isBgp() && p.getOther().getClientId() != null) {
       cid = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
-      ;
     }
     if (!_isExport && _to.isBgp()) {
       if (p.getOther().getClientId() != null) {
@@ -1132,13 +1131,12 @@ class TransferFunctionSSA {
    * check for mkTrue and mkFalse values because z3 seems to have some issue with
    * identifying the AST expression kind (e.g., e.isTrue() throws an exception).
    */
-  private boolean canInline(TransferFunctionParam p, Expr e) {
+  private boolean canInline(Expr e) {
     // TODO: such a huge hack
     String s = e.toString();
     // p.debug("[STRING]: " + s);
-    boolean b = s.length() <= INLINE_HEURISTIC;
     // p.debug("Can Inline: " + b);
-    return b;
+    return s.length() <= INLINE_HEURISTIC;
   }
 
   /*
@@ -1147,7 +1145,7 @@ class TransferFunctionSSA {
    */
   private ArithExpr createArithVariableWith(TransferFunctionParam p, String name, ArithExpr e) {
     e = (ArithExpr) e.simplify();
-    if (canInline(p, e)) {
+    if (canInline(e)) {
       p.debug(name + "=" + e);
       return e;
     }
@@ -1162,7 +1160,7 @@ class TransferFunctionSSA {
 
   private BoolExpr createBoolVariableWith(TransferFunctionParam p, String name, BoolExpr e) {
     e = (BoolExpr) e.simplify();
-    if (canInline(p, e)) {
+    if (canInline(e)) {
       p.debug(name + "=" + e);
       return e;
     }
@@ -1172,14 +1170,13 @@ class TransferFunctionSSA {
     BoolExpr eq = _enc.mkEq(x, e);
     _enc.add(eq);
     p.debug(eq.toString());
-    ;
     return x;
   }
 
   private BitVecExpr createBitVecVariableWith(
       TransferFunctionParam p, String name, int size, BitVecExpr e) {
     e = (BitVecExpr) e.simplify();
-    if (canInline(p, e)) {
+    if (canInline(e)) {
       p.debug(name + "=" + e);
       return e;
     }

@@ -34,8 +34,7 @@ public class PathRegexes {
       _notSrcRegex =
           (q.getNotIngressNodeRegex() == null ? null : Pattern.compile(q.getNotIngressNodeRegex()));
     } catch (PatternSyntaxException e) {
-      throw new BatfishException(
-          String.format("One of the supplied regexes  is not a " + "valid java regex."), e);
+      throw new BatfishException("One of the supplied regexes  is not a " + "valid java regex.", e);
     }
   }
 

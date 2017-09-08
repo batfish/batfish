@@ -20,6 +20,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
@@ -177,7 +178,7 @@ public class Encoder {
     }
 
     if (ENABLE_DEBUGGING) {
-      System.out.println(graph.toString());
+      System.out.println(graph);
     }
 
     _unsatCore = new UnsatCore(ENABLE_UNSAT_CORE);
@@ -563,28 +564,28 @@ public class Encoder {
       IpProtocol proto = IpProtocol.fromNumber(number);
       packetModel.put("protocol", proto.toString());
     }
-    if (tcpAck != null && tcpAck.equals("true")) {
+    if ("true".equals(tcpAck)) {
       packetModel.put("tcpAck", "set");
     }
-    if (tcpCwr != null && tcpCwr.equals("true")) {
+    if ("true".equals(tcpCwr)) {
       packetModel.put("tcpCwr", "set");
     }
-    if (tcpEce != null && tcpEce.equals("true")) {
+    if ("true".equals(tcpEce)) {
       packetModel.put("tcpEce", "set");
     }
-    if (tcpFin != null && tcpFin.equals("true")) {
+    if ("true".equals(tcpFin)) {
       packetModel.put("tcpFin", "set");
     }
-    if (tcpPsh != null && tcpPsh.equals("true")) {
+    if ("true".equals(tcpPsh)) {
       packetModel.put("tcpPsh", "set");
     }
-    if (tcpRst != null && tcpRst.equals("true")) {
+    if ("true".equals(tcpRst)) {
       packetModel.put("tcpRst", "set");
     }
-    if (tcpSyn != null && tcpSyn.equals("true")) {
+    if ("true".equals(tcpSyn)) {
       packetModel.put("tcpSyn", "set");
     }
-    if (tcpUrg != null && tcpUrg.equals("true")) {
+    if ("true".equals(tcpUrg)) {
       packetModel.put("tcpUrg", "set");
     }
 
@@ -657,7 +658,7 @@ public class Encoder {
                                   (cvar, e) -> {
                                     String c = valuation.get(e);
                                     // TODO: what about OTHER type?
-                                    if (c != null && c.equals("true")) {
+                                    if ("true".equals(c)) {
                                       if (displayCommunity(cvar)) {
                                         String s = cvar.getValue();
                                         String t = slice.getNamedCommunities().get(cvar.getValue());
@@ -677,7 +678,7 @@ public class Encoder {
         .forEach(
             (router, edge, e) -> {
               String s = valuation.get(e);
-              if (s != null && s.equals("true")) {
+              if ("true".equals(s)) {
                 fwdModel.add(edge.toString());
               }
             });
@@ -687,7 +688,7 @@ public class Encoder {
         .forEach(
             (x, y, e) -> {
               String s = valuation.get(e);
-              if (s != null && s.equals("1")) {
+              if ("1".equals(s)) {
                 String pair = (x.compareTo(y) < 0 ? x + "," + y : y + "," + x);
                 failures.add("link(" + pair + ")");
               }
@@ -697,7 +698,7 @@ public class Encoder {
         .forEach(
             (ge, e) -> {
               String s = valuation.get(e);
-              if (s != null && s.equals("1")) {
+              if ("1".equals(s)) {
                 failures.add("link(" + ge.getRouter() + "," + ge.getStart().getName() + ")");
               }
             });
@@ -846,6 +847,7 @@ public class Encoder {
     return _ctx;
   }
 
+  @Nonnull
   public EncoderSlice getMainSlice() {
     return _slices.get(MAIN_SLICE_NAME);
   }

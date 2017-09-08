@@ -28,10 +28,6 @@ public class SymbolicOriginatorId extends SymbolicEnum<Integer> {
     super(slice, values(slice), value);
   }
 
-  SymbolicOriginatorId(SymbolicOriginatorId other) {
-    super(other);
-  }
-
   BoolExpr isNotFromClient() {
     if (this._bitvec == null) {
       return _enc.mkTrue();
@@ -39,7 +35,4 @@ public class SymbolicOriginatorId extends SymbolicEnum<Integer> {
     return _enc.getCtx().mkEq(_bitvec, _enc.getCtx().mkBV(0, _numBits));
   }
 
-  BoolExpr isFromClient() {
-    return _enc.mkNot(isNotFromClient());
-  }
 }
