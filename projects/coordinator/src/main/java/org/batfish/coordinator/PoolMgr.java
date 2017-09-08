@@ -24,7 +24,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class PoolMgr {
 
-  final class WorkerStatusRefreshTask implements Runnable {
+  static final class WorkerStatusRefreshTask implements Runnable {
     @Override
     public void run() {
       Main.getPoolMgr().refreshWorkerStatus();

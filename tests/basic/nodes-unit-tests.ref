@@ -4611,6 +4611,27 @@
               "vrf" : "default"
             }
           },
+          "ipAccessLists" : {
+            "abc" : {
+              "name" : "abc",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "name" : "10 permit tcp any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            }
+          },
           "roles" : [
             "cisco"
           ],

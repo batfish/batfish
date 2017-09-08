@@ -1131,7 +1131,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
     Integer l2Metric = isisSettings.getLevel2Settings().getMetric();
-    if (l1Metric != l2Metric && l1Metric != null && l2Metric != null) {
+    if (l1Metric != null && l2Metric != null && (l1Metric.intValue() != l2Metric.intValue())) {
       _w.unimplemented("distinct metrics for is-is level1 and level2 on an interface");
     } else if (l1Metric != null) {
       newIface.setIsisCost(l1Metric);
