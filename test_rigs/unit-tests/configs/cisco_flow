@@ -46,3 +46,9 @@ flow platform cache timeout inactive 60
 !
 flow hardware export threshold 70 linecard 90
 !
+flow-sampler-map SAMPLE
+ mode random one-out-of 512
+!
+interface GigabitEthernet0/1
+ flow-sampler SAMPLE
+!

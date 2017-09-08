@@ -7,10 +7,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Sets;
+import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
@@ -28,8 +32,6 @@ public class WorkMgrServiceTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private WorkMgr _manager;
-
   private WorkMgrService _service;
 
   private String _containerName = "myContainer";
@@ -40,9 +42,9 @@ public class WorkMgrServiceTest {
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
     Main.initAuthorizer();
     Main.setLogger(logger);
-    _manager = new WorkMgr(settings, logger);
-    Main.setWorkMgr(_manager);
-    _manager.initContainer(_containerName, null);
+    WorkMgr manager = new WorkMgr(settings, logger);
+    Main.setWorkMgr(manager);
+    manager.initContainer(_containerName, null);
     _service = new WorkMgrService();
   }
 
@@ -89,13 +91,33 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void testDeleteQuestionsFromAnalysis() throws Exception {
+  public void testConfigureAnalysis() throws Exception {
     initContainerEnvironment();
-    Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
-    Path analysisPath = containerPath.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve("analysis");
-    assertTrue(analysisPath.toFile().mkdirs());
-    Path questionPath = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question");
-    assertTrue(questionPath.toFile().mkdirs());
+    // test init and add questions to analysis
+    String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
+    File analysisFile = _folder.newFile("analysis");
+    FileUtils.writeStringToFile(analysisFile, analysisJsonString);
+    _service.configureAnalysis(
+        CoordConsts.DEFAULT_API_KEY,
+        Version.getVersion(),
+        _containerName,
+        "new",
+        "analysis",
+        new FileInputStream(analysisFile),
+        "");
+    Path questionPath =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    _containerName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    "analysis",
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    "question"));
+    assertTrue(Files.exists(questionPath));
+    // test delete questions
     String questionsToDelete = "[question]";
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,

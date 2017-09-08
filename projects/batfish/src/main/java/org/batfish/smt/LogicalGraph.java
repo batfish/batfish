@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.smt.collections.Table2;
@@ -58,6 +59,7 @@ class LogicalGraph {
   /*
    * Find the router Id for the neighbor corresponding to a logical edge.
    */
+  @Nullable
   Long findRouterId(LogicalEdge e, Protocol proto) {
     LogicalEdge eOther = _otherEnd.get(e);
     if (eOther != null) {

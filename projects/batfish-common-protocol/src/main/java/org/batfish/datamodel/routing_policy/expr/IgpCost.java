@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IgpCost extends IntExpr {
+public class IgpCost extends LongExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -22,7 +22,7 @@ public class IgpCost extends IntExpr {
   }
 
   @Override
-  public int evaluate(Environment environment) {
+  public long evaluate(Environment environment) {
     return environment.getOriginalRoute().getMetric();
   }
 

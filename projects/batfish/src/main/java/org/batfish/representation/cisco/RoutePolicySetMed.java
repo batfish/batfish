@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -10,13 +10,13 @@ public class RoutePolicySetMed extends RoutePolicySetStatement {
 
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _med;
+  private LongExpr _med;
 
-  public RoutePolicySetMed(IntExpr intExpr) {
-    _med = intExpr;
+  public RoutePolicySetMed(LongExpr longExpr) {
+    _med = longExpr;
   }
 
-  public IntExpr getMed() {
+  public LongExpr getMed() {
     return _med;
   }
 

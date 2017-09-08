@@ -40,6 +40,7 @@ public class BfConsts {
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
   public static final String ARG_DIFF_ACTIVE = "diffactive";
   public static final String ARG_DIFFERENTIAL = "differential";
+  public static final String ARG_DISABLE_UNRECOGNIZED = "disableunrecognized";
   public static final String ARG_ENVIRONMENT_NAME = "env";
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
@@ -80,6 +81,7 @@ public class BfConsts {
   public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
   public static final String COMMAND_QUERY = "query";
   public static final String COMMAND_REPORT = "report";
+  public static final String COMMAND_VALIDATE_ENVIRONMENT = "venv";
 
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
@@ -145,11 +147,13 @@ public class BfConsts {
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_TESTRIGS_DIR = "testrigs";
+  public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 
   public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
   public static final String PROP_STATUS = "status";
+  public static final String PROP_SUMMARY = "summary";
   public static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   public static final String SUFFIX_LOG_FILE = ".log";
   public static final String SVC_BASE_RSC = "/batfishservice";

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
@@ -1142,9 +1143,7 @@ class EncoderSlice {
 
                 for (ArrayList<LogicalEdge> edgeList : edgeLists.get(proto)) {
 
-                  for (int i = 0; i < edgeList.size(); i++) {
-
-                    LogicalEdge e = edgeList.get(i);
+                  for (LogicalEdge e : edgeList) {
 
                     GraphEdge edge = e.getEdge();
                     Map<GraphEdge, ArrayList<LogicalEdge>> m;
@@ -1606,7 +1605,7 @@ class EncoderSlice {
       Protocol proto,
       SymbolicRecord best,
       SymbolicRecord vars,
-      LogicalEdge e,
+      @Nullable LogicalEdge e,
       boolean compareCommunities) {
 
     ArithExpr defaultLocal = mkInt(defaultLocalPref());

@@ -40,11 +40,19 @@ public class BfCoordWorkHelper {
   private String _coordWorkMgr;
   private BatfishLogger _logger;
   private Settings _settings;
+  private Client _client;
 
   public BfCoordWorkHelper(String workMgr, BatfishLogger logger, Settings settings) {
     _coordWorkMgr = workMgr;
     _logger = logger;
     _settings = settings;
+    try {
+      _client = getClientBuilder().build();
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      throw new BatfishException("Failed to create HTTP client", e);
+    }
   }
 
   private void addFileMultiPart(MultiPart multiPart, String key, String filename) {
@@ -59,8 +67,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public String checkApiKey() {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_CHECK_API_KEY);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CHECK_API_KEY);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -83,12 +90,10 @@ public class BfCoordWorkHelper {
       String containerName,
       boolean newAnalysis,
       String analysisName,
-      String addQuestionsFileName,
-      String delQuestionsStr) {
+      @Nullable String addQuestionsFileName,
+      @Nullable String delQuestionsStr) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -127,9 +132,7 @@ public class BfCoordWorkHelper {
 
   public boolean delAnalysis(String containerName, String analysisName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_ANALYSIS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ANALYSIS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -149,8 +152,7 @@ public class BfCoordWorkHelper {
 
   public boolean delContainer(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_CONTAINER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -173,8 +175,7 @@ public class BfCoordWorkHelper {
 
   public boolean delEnvironment(String containerName, String testrigName, String envName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_ENVIRONMENT);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ENVIRONMENT);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -195,8 +196,7 @@ public class BfCoordWorkHelper {
 
   public boolean delQuestion(String containerName, String testrigName, String questionName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_QUESTION);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_QUESTION);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -217,8 +217,7 @@ public class BfCoordWorkHelper {
 
   public boolean delTestrig(String containerName, String testrigName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_TESTRIG);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_TESTRIG);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -294,9 +293,7 @@ public class BfCoordWorkHelper {
       String deltaEnvironment,
       String analysisName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -343,9 +340,7 @@ public class BfCoordWorkHelper {
       String deltaEnv,
       String questionName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_ANSWER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANSWER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -403,8 +398,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Container getContainer(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_CONTAINER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -440,9 +434,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Map<String, String> getInfo() {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, "");
+      WebTarget webTarget = getTarget("");
 
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
@@ -484,9 +476,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public String getObject(String containerName, String testrigName, String objectName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_OBJECT);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_OBJECT);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -541,12 +531,12 @@ public class BfCoordWorkHelper {
     }
   }
 
-  private WebTarget getTarget(Client client, String resource) {
+  private WebTarget getTarget(String resource) {
     String protocol = (_settings.getSslDisable()) ? "http" : "https";
     String urlString =
         String.format(
             "%s://%s%s/%s", protocol, _coordWorkMgr, CoordConsts.SVC_CFG_WORK_MGR, resource);
-    return client.target(urlString);
+    return _client.target(urlString);
   }
 
   public WorkItem getWorkItemAnswerQuestion(
@@ -645,11 +635,19 @@ public class BfCoordWorkHelper {
     return wItem;
   }
 
+  public WorkItem getWorkItemValidateEnvironment(
+      String containerName, String testrigName, String envName) {
+    WorkItem wItem = new WorkItem(containerName, testrigName);
+    wItem.addRequestParam(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "");
+    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
+    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    return wItem;
+  }
+
   @Nullable
   public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_WORKSTATUS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -684,10 +682,9 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public String initContainer(String containerName, String containerPrefix) {
+  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_INIT_CONTAINER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_INIT_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -722,8 +719,7 @@ public class BfCoordWorkHelper {
     WebTarget webTarget = null;
 
     try {
-      Client client = getClientBuilder().build();
-      webTarget = getTarget(client, "");
+      webTarget = getTarget("");
 
       Response response = webTarget.request().get();
 
@@ -765,8 +761,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public JSONObject listAnalyses(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_ANALYSES);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ANALYSES);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -795,8 +790,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public String[] listContainers() {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_CONTAINERS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_CONTAINERS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -830,10 +824,10 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listEnvironments(String containerName, String testrigName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_ENVIRONMENTS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ENVIRONMENTS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -868,10 +862,10 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listQuestions(String containerName, String testrigName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_QUESTIONS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_QUESTIONS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -905,8 +899,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Map<String, String> listTestrigs(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_TESTRIGS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_TESTRIGS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -995,8 +988,7 @@ public class BfCoordWorkHelper {
   public boolean queueWork(WorkItem wItem) {
 
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_QUEUE_WORK);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_QUEUE_WORK);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -1016,9 +1008,7 @@ public class BfCoordWorkHelper {
   public boolean uploadCustomObject(
       String containerName, String testrigName, String objName, String objFileName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_PUT_OBJECT);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_PUT_OBJECT);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -1049,8 +1039,7 @@ public class BfCoordWorkHelper {
       String envName,
       String zipfileName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_UPLOAD_ENV);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_ENV);
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
@@ -1075,9 +1064,7 @@ public class BfCoordWorkHelper {
   public boolean uploadQuestion(
       String containerName, String testrigName, String qName, String qFileName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_UPLOAD_QUESTION);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -1103,8 +1090,7 @@ public class BfCoordWorkHelper {
 
   public boolean uploadTestrig(String containerName, String testrigName, String zipfileName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_UPLOAD_TESTRIG);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_TESTRIG);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);

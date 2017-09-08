@@ -1,0 +1,12 @@
+#
+shelfname ""
+hostname "cadant_line"
+#
+line console 0 accounting "baz" command 0 stop-only
+line console 0 authentication "foo" enable-authentication
+line console 0 authentication "foo" login-authentication
+line console 0 authorization "bar"
+line console 0 idle-timeout 1234
+line console 0 1 speed 12345
+line vty 0 length 123
+#

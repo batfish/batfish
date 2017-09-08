@@ -233,28 +233,28 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
   public Map<String, Configuration> toConfigurations(Warnings warnings) {
     _warnings = warnings;
 
-    for (String vpcId : _vpcs.keySet()) {
-      Configuration cfgNode = _vpcs.get(vpcId).toConfigurationNode(this);
+    for (Vpc vpc : _vpcs.values()) {
+      Configuration cfgNode = vpc.toConfigurationNode(this);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (String igwId : _internetGateways.keySet()) {
-      Configuration cfgNode = _internetGateways.get(igwId).toConfigurationNode(this);
+    for (InternetGateway igw : _internetGateways.values()) {
+      Configuration cfgNode = igw.toConfigurationNode(this);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (String vgwId : _vpnGateways.keySet()) {
-      Configuration cfgNode = _vpnGateways.get(vgwId).toConfigurationNode(this);
+    for (VpnGateway vgw : _vpnGateways.values()) {
+      Configuration cfgNode = vgw.toConfigurationNode(this);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (String instanceId : _instances.keySet()) {
-      Configuration cfgNode = _instances.get(instanceId).toConfigurationNode(this);
+    for (Instance instance : _instances.values()) {
+      Configuration cfgNode = instance.toConfigurationNode(this);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (String subnetId : _subnets.keySet()) {
-      Configuration cfgNode = _subnets.get(subnetId).toConfigurationNode(this);
+    for (Subnet subnet : _subnets.values()) {
+      Configuration cfgNode = subnet.toConfigurationNode(this);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 

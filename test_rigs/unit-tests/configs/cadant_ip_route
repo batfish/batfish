@@ -1,0 +1,15 @@
+#
+shelfname ""
+hostname "cadant_ip_route"
+#
+ip route vrf management 0.0.0.0 0.0.0.0 127.0.0.1
+ip route 0.0.0.0 0.0.0.0 1.1.1.1 admin-dist 253
+ip route 0.0.0.0 0.0.0.0 2.2.2.2 admin-dist 254
+ip route 1.1.1.0 255.255.255.0 6.6.6.6 metric 123
+ip route 22.71.224.0 255.255.224.0 22.71.252.185 metric 110
+ip route vrf foobar 0.0.0.0 0.0.0.0 7.7.7.7 metric 111
+ip route vrf foobar 9.9.9.0 255.255.255.224 10.10.10.10
+ipv6 route ::/0 feed::5 admin-distance 253
+ipv6 route ::/0 fede::5 admin-distance 254
+ipv6 route dead:beef::/40 null 0 admin-distance 255
+#

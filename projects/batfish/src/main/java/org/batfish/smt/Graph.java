@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
@@ -69,7 +70,7 @@ public class Graph {
   /*
    * Create a graph, while selecting the subset of routers to use.
    */
-  public Graph(IBatfish batfish, Set<String> routers) {
+  public Graph(IBatfish batfish, @Nullable Set<String> routers) {
     _batfish = batfish;
     _configurations = new HashMap<>(_batfish.loadConfigurations());
     _edgeMap = new HashMap<>();
@@ -488,6 +489,7 @@ public class Graph {
   /*
    * Find the common (default) routing policy for the protol.
    */
+  @Nullable
   public RoutingPolicy findCommonRoutingPolicy(String router, Protocol proto) {
     Configuration conf = _configurations.get(router);
     if (proto.isOspf()) {
@@ -526,6 +528,7 @@ public class Graph {
   /* TODO: move this to Logical Graph
    * Find the import routing policy for a given edge
    */
+  @Nullable
   public RoutingPolicy findImportRoutingPolicy(String router, Protocol proto, GraphEdge ge) {
     Configuration conf = _configurations.get(router);
     if (proto.isConnected()) {
@@ -550,6 +553,7 @@ public class Graph {
   /* TODO: move this to logical graph
    * Find the export routing policy for a given edge
    */
+  @Nullable
   public RoutingPolicy findExportRoutingPolicy(String router, Protocol proto, LogicalEdge e) {
     Configuration conf = _configurations.get(router);
     if (proto.isConnected()) {

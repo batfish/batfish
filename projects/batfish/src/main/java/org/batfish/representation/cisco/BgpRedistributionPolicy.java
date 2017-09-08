@@ -9,17 +9,17 @@ public class BgpRedistributionPolicy extends RedistributionPolicy implements Ser
 
   private static final long serialVersionUID = 1L;
 
-  private Integer _metric;
+  private Long _metric;
 
   public BgpRedistributionPolicy(RoutingProtocol sourceProtocol) {
     super(sourceProtocol, RoutingProtocol.BGP);
   }
 
-  public Integer getMetric() {
+  public Long getMetric() {
     return _metric;
   }
 
-  public void setMetric(int metric) {
+  public void setMetric(long metric) {
     _metric = metric;
   }
 }

@@ -62,7 +62,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   private Map<String, NamedBgpPeerGroup> _peerSessions;
 
-  private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
+  private final Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   private Ip _routerId;
 

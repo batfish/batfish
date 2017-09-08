@@ -26,7 +26,7 @@
         "pod_1_tor_0" : "PASSED",
         "pod_1_tor_1" : "PASSED"
       },
-      "version" : "0.29.3"
+      "version" : "0.30.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -182,7 +182,7 @@
           }
         }
       },
-      "version" : "0.29.3"
+      "version" : "0.30.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
@@ -200,5 +200,10 @@
       }
     }
   ],
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

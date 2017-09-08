@@ -1,0 +1,77 @@
+#
+shelfname ""
+hostname "cadant_cable"
+#
+cable dsg timer-list 1 initialization-tdsg1 5 operational-tdsg2 150 two-way-tdsg3 10 one-way-tdsg4 150
+cable dsg client-id-list 1500 index 1500 type ca-system-id value 0x96b
+cable dsg client-id-list 2500 index 2500 type broadcast value 55555
+cable dsg client-id-list 3500 index 3500 type application-id value 2000
+cable dsg client-id-list 4500 index 4500 type broadcast value 5
+cable dsg client-id-list 6500 index 6500 type ca-system-id value 0x700
+cable dsg client-id-list 7500 index 7500 type application-id value 1
+cable dsg client-id-list 8500 index 8500 type application-id value 31
+cable dsg client-id-list 8507 index 8507 type application-id value 31
+cable dsg client-id-list 8508 index 8508 type application-id value 31
+cable dsg client-id-list 9500 index 9500 type broadcast value 2
+cable dsg tunnel 1234 tunnel-group 1234 client-id-list 1234 mac-address dead.beef.feed
+cable dsg tunnel 1234 classifier 1234 priority 1 source-network 1.2.3.4 dest-ip 5.6.7.8 include-in-dcd
+cable fiber-node "abcdefg"
+ cable-downstream 55/0/0-5
+ cable-upstream 3/0/0-3
+ init
+exit
+cable filter group 602
+ index 1 ip-version ipv4
+ index 1 dest-ip 255.255.255.255
+ index 1 dest-mask 255.255.255.255
+ index 1 dest-port 123
+ index 1 ip-proto 123
+ index 1 match-action drop
+ index 1 src-ip 10.0.0.0
+ index 1 src-mask 255.0.0.0
+ index 1 src-port 123
+exit
+cable global dsa-rsp-sid-tlv-override
+cable global load-interval 123
+cable global recover-US-impaired-ack
+cable global unicast-polling pri 1 slow-intvl 0
+cable intercept source-interface loopback 0
+cable modem vendor fe.dc.ba "SomeVendor"
+no cable shared-secondary-secret
+cable shared-secret 123456789abcdef hidden
+cable load-balance downstream-start-threshold 12
+cable load-balance exclude oui de.ad.be
+cable load-balance failed-list exclude-count 78
+cable load-balance failed-list timeout 56
+cable load-balance general-group-defaults init-technique ranging
+cable load-balance general-group-defaults policy 1
+cable load-balance policy 1 rule 1
+cable load-balance rule 1 enable
+cable load-balance rule 1 method utilization
+cable load-balance rule 1 periodic-steeringD2
+cable load-balance rule 1 registration-steeringD2
+cable load-balance rule 1 registration-steeringD3
+cable load-balance rule 1 type static non-bonded-dcc bonded-us-dbc bonded-ds-dbc
+cable load-balance tcs-load-balance enable
+cable load-balance upstream-start-threshold 34
+cable metering collector  1 1.2.3.4
+cable metering enable
+cable metering export all-counts cpe-info
+cable metering report-cycle start 00:00 interval 30
+cable modulation-profile 1
+ iuc 1 mod qpsk pre-len 123 diff false fec-tbytes 0 fec-len 12 seed 345 burst-len 0 guard-time-size 123 last-cw false scrambler true docsis-mode tdma
+exit
+cable modulation-profile 2
+ iuc 1 mod qam16 pre-len 123 diff false fec-tbytes 0 fec-len 12 seed 345 burst-len 0 guard-time-size 123 last-cw false scrambler true docsis-mode tdma
+exit
+cable modulation-profile 223
+ iuc 1 mod qam16 pre-len 123 diff false fec-tbytes 0 fec-len 12 seed 345 burst-len 0 guard-time-size 123 last-cw false scrambler true docsis-mode atdma
+ iuc 1 pre-type qpsk1 int-depth 1 int-blocksize 1234
+exit
+cable submgmt default v6-max-cpe 6
+cable submgmt default active
+packetcable dqos no shutdown
+packetcable pcmm no shutdown
+packetcable voice-limits allowed-total 123 allowed-emergency 45 downstream
+packetcable voice-limits allowed-total 123 allowed-emergency 45 upstream
+#
