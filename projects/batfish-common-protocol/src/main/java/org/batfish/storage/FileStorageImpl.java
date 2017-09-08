@@ -17,20 +17,31 @@ import org.batfish.datamodel.pojo.Analysis;
 public class FileStorageImpl implements Storage {
 
   private final Path _containersLocation;
-  private final StorageUtils _utils;
+  private final FileStorageUtils _utils;
 
-  public FileStorageImpl(Path containersLocation) throws BatfishException {
+  private FileStorageImpl(Path containersLocation) throws BatfishException {
     try {
       if (containersLocation != null) {
         _containersLocation = containersLocation;
         _containersLocation.toFile().mkdirs();
-        _utils = new StorageUtils(_containersLocation);
+        _utils = new FileStorageUtils(_containersLocation);
       } else {
         throw new BatfishException("container location is null");
       }
     } catch (InvalidPathException e) {
       throw new BatfishException("cannot resolve containers location '" + containersLocation + "'");
     }
+  }
+
+  /**
+   * Gets a new instance of File Storage implementation using specified settings
+   *
+   * @param settings Settings for initializing storage. Contains containers location in property
+   *     name {@link BfConsts#PROP_CONTAINER_LOCATION}
+   * @return {@link FileStorageImpl}
+   */
+  public static Storage create(Map<String, Object> settings) {
+    return new FileStorageImpl((Path) settings.get(BfConsts.PROP_CONTAINER_LOCATION));
   }
 
   /**

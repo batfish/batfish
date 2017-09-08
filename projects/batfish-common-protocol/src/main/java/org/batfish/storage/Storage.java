@@ -5,8 +5,9 @@ import org.batfish.datamodel.pojo.Analysis;
 
 /** Common storage APIs */
 public interface Storage {
-  //Storage APIs for Configure Analysis
 
+
+  //Storage APIs for Configure Analysis
   Analysis getAnalysis(String containerName, String analysisName);
 
   Analysis saveAnalysis(String containerName, Analysis analysis);

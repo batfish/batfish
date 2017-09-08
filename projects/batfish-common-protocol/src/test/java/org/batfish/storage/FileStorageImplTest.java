@@ -10,7 +10,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
 import org.batfish.datamodel.pojo.Analysis;
+import org.batfish.storage.StorageFactory.StorageType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,7 +31,11 @@ public class FileStorageImplTest {
 
   @Before
   public void setup() throws IOException {
-    _storage = new FileStorageImpl(_folder.newFolder("containers").toPath());
+    Map<String, Object> storageSettings = new HashMap<String, Object>();
+    storageSettings.put(BfConsts.PROP_STORAGE_IMPLEMENTATION, StorageType.FILE);
+    storageSettings.put(BfConsts.PROP_CONTAINER_LOCATION, _folder.newFolder("containers").toPath());
+
+    _storage = StorageFactory.getImplementation(storageSettings);
   }
 
   @Test

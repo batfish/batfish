@@ -82,11 +82,13 @@ public class BfConsts {
   public static final String COMMAND_REPORT = "report";
   public static final String COMMAND_VALIDATE_ENVIRONMENT = "venv";
 
+  public static final String PROP_CONTAINER_LOCATION = "containerlocation";
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
   public static final String PROP_INSTANCE_NAME = "instanceName";
   public static final String PROP_INSTANCE = "instance";
+  public static final String PROP_STORAGE_IMPLEMENTATION = "storageimplementation";
   public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
   public static final String PROP_MIN_ELEMENTS = "minElements";
