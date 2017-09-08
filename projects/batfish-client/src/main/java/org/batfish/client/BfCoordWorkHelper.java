@@ -29,6 +29,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.pojo.CreateEnvironmentRequest;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -62,6 +63,10 @@ public class BfCoordWorkHelper {
 
   private void addTextMultiPart(MultiPart multiPart, String key, String value) {
     multiPart.bodyPart(new FormDataBodyPart(key, value, MediaType.TEXT_PLAIN_TYPE));
+  }
+
+  private void addJsonMultiPart(MultiPart multiPart, String key, Object value) {
+    multiPart.bodyPart(new FormDataBodyPart(key, value, MediaType.APPLICATION_JSON_TYPE));
   }
 
   @Nullable
@@ -1037,7 +1042,7 @@ public class BfCoordWorkHelper {
       String testrigName,
       String baseEnvName,
       String envName,
-      String zipfileName) {
+      CreateEnvironmentRequest request) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_ENV);
       MultiPart multiPart = new MultiPart();
@@ -1047,16 +1052,17 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_BASE_ENV_NAME, baseEnvName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, envName);
-      addFileMultiPart(multiPart, CoordConsts.SVC_KEY_ZIPFILE, zipfileName);
+      addJsonMultiPart(multiPart, CoordConsts.SVC_KEY_ENVIRONMENT_REQUEST, request);
       return postData(webTarget, multiPart) != null;
     } catch (Exception e) {
-      if (e.getMessage().contains("FileNotFoundException")) {
-        _logger.errorf("File not found: %s\n", zipfileName);
-      } else {
         _logger.errorf(
             "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, testrigName, envName, zipfileName, ExceptionUtils.getStackTrace(e));
-      }
+            _coordWorkMgr,
+            testrigName,
+            envName,
+            baseEnvName,
+            request,
+            ExceptionUtils.getStackTrace(e));
       return false;
     }
   }

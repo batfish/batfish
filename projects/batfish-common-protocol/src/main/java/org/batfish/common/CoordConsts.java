@@ -49,6 +49,7 @@ public class CoordConsts {
   public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
   public static final String SVC_KEY_ENV_NAME = "envname";
   public static final String SVC_KEY_ENVIRONMENT_LIST = "environmentlist";
+  public static final String SVC_KEY_ENVIRONMENT_REQUEST = "environmentrequest";
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";

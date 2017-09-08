@@ -26,6 +26,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +69,6 @@ import org.batfish.common.plugin.IClient;
 import org.batfish.common.util.Backoff;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -81,6 +81,8 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.CreateEnvironmentRequest;
+import org.batfish.datamodel.pojo.FileObject;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1406,6 +1408,33 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private void readEnvironmentFiles(Path basePath, Path filePath, List<FileObject> bgpTables,
+      List<FileObject> routingTables) {
+    Path bgpTablePath = basePath.resolve(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES);
+    Path routingTablePath = basePath.resolve(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES);
+    if (filePath.toFile().isFile()) {
+      try {
+        FileObject fileObject = new FileObject(filePath.getFileName().toString(),
+            CommonUtil.readFile(filePath));
+        String canonicalPath = filePath.toFile().getCanonicalPath();
+        if (canonicalPath.contains(bgpTablePath.toFile().getCanonicalPath())) {
+          if (bgpTables == null) {
+            bgpTables = new ArrayList<>();
+          }
+          bgpTables.add(fileObject);
+        } else if (canonicalPath.contains(routingTablePath.toFile().getCanonicalPath())) {
+          if (routingTables == null) {
+            routingTables = new ArrayList<>();
+          }
+          routingTables.add(fileObject);
+        }
+      } catch (IOException e) {
+        throw new BatfishException(String.format("Failed to get canonicalPath from path %s",
+            filePath), e);
+      }
+    }
+  }
+
   private boolean initEnvironment(String paramsLine, FileWriter outWriter) {
     InitEnvironmentParams params = parseInitEnvironmentParams(paramsLine);
     String newEnvName;
@@ -1423,77 +1452,41 @@ public class Client extends AbstractClient implements IClient {
     String paramsBaseEnv = params.getSourceEnvironmentName();
     String baseEnvName =
         paramsBaseEnv != null ? paramsBaseEnv : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
-    String fileToSend;
-    SortedSet<String> paramsNodeBlacklist = params.getNodeBlacklist();
-    SortedSet<NodeInterfacePair> paramsInterfaceBlacklist = params.getInterfaceBlacklist();
-    SortedSet<Edge> paramsEdgeBlacklist = params.getEdgeBlacklist();
-
-    if (paramsLocation == null
-        || Files.isDirectory(Paths.get(paramsLocation))
-        || !paramsNodeBlacklist.isEmpty()
-        || !paramsInterfaceBlacklist.isEmpty()
-        || !paramsEdgeBlacklist.isEmpty()) {
-      Path tempFile = CommonUtil.createTempFile("batfish_client_tmp_env_", ".zip");
-      fileToSend = tempFile.toString();
-      if (paramsLocation != null
-          && Files.isDirectory(Paths.get(paramsLocation))
-          && paramsNodeBlacklist.isEmpty()
-          && paramsInterfaceBlacklist.isEmpty()
-          && paramsEdgeBlacklist.isEmpty()) {
-        ZipUtility.zipFiles(Paths.get(paramsLocation), tempFile);
-      } else {
-        Path tempDir = CommonUtil.createTempDirectory("batfish_client_tmp_env_");
-        if (paramsLocation != null) {
-          if (Files.isDirectory(Paths.get(paramsLocation))) {
-            CommonUtil.copyDirectory(Paths.get(paramsLocation), tempDir);
-          } else if (Files.isRegularFile(Paths.get(paramsLocation))) {
-            UnzipUtility.unzip(Paths.get(paramsLocation), tempDir);
-          } else {
-            throw new BatfishException(
-                "Invalid environment directory or zip: '" + paramsLocation + "'");
-          }
+    List<String> NodeBlacklist = new ArrayList<>(params.getNodeBlacklist());
+    List<NodeInterfacePair> InterfaceBlacklist = new ArrayList<>(params.getInterfaceBlacklist());
+    List<Edge> EdgeBlacklist = new ArrayList<>(params.getEdgeBlacklist());
+    List<FileObject> bgpTables = null;
+    List<FileObject> routingTables = null;
+    String externalBgpAnnouncements = null;
+    if (paramsLocation != null) {
+      Path location = Paths.get(paramsLocation);
+      if (Files.isDirectory(location)) {
+        if (location.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS).toFile().exists()) {
+          externalBgpAnnouncements = CommonUtil.readFile(location.resolve(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS));
         }
-        if (!paramsNodeBlacklist.isEmpty()) {
-          String nodeBlacklistText;
-          try {
-            nodeBlacklistText = new BatfishObjectMapper().writeValueAsString(paramsNodeBlacklist);
-          } catch (JsonProcessingException e) {
-            throw new BatfishException("Failed to write node blacklist to string", e);
-          }
-          Path nodeBlacklistFilePath = tempDir.resolve(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-          CommonUtil.writeFile(nodeBlacklistFilePath, nodeBlacklistText);
+        SortedSet<Path> paths = CommonUtil.getEntries(location);
+        for (Path path : paths) {
+          readEnvironmentFiles(location, path, bgpTables, routingTables);
         }
-        if (!paramsInterfaceBlacklist.isEmpty()) {
-          String interfaceBlacklistText;
-          try {
-            interfaceBlacklistText =
-                new BatfishObjectMapper().writeValueAsString(paramsInterfaceBlacklist);
-          } catch (JsonProcessingException e) {
-            throw new BatfishException("Failed to write interface blacklist to string", e);
-          }
-          Path interfaceBlacklistFilePath =
-              tempDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-          CommonUtil.writeFile(interfaceBlacklistFilePath, interfaceBlacklistText);
+      } else if (Files.isRegularFile(location)) {
+        if (location.getFileName().toString().equals(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS)) {
+          externalBgpAnnouncements = CommonUtil.readFile(location);
         }
-        if (!paramsEdgeBlacklist.isEmpty()) {
-          String edgeBlacklistText;
-          try {
-            edgeBlacklistText = new BatfishObjectMapper().writeValueAsString(paramsEdgeBlacklist);
-          } catch (JsonProcessingException e) {
-            throw new BatfishException("Failed to write edge blacklist to string", e);
-          }
-          Path edgeBlacklistFilePath = tempDir.resolve(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-          CommonUtil.writeFile(edgeBlacklistFilePath, edgeBlacklistText);
-        }
-        ZipUtility.zipFiles(tempDir, tempFile);
       }
-    } else if (Files.isRegularFile(Paths.get(paramsLocation))) {
-      fileToSend = paramsLocation;
-    } else {
-      throw new BatfishException("Invalid environment directory or zip: '" + paramsLocation + "'");
     }
+    CreateEnvironmentRequest request = new CreateEnvironmentRequest(newEnvName,
+        EdgeBlacklist,
+        InterfaceBlacklist,
+        NodeBlacklist,
+        bgpTables,
+        routingTables,
+        externalBgpAnnouncements);
 
-    if (!uploadEnv(fileToSend, testrigName, newEnvName, baseEnvName)) {
+    if (!_workHelper.uploadEnvironment(_currContainerName,
+        testrigName,
+        baseEnvName,
+        newEnvName,
+        request)) {
       return false;
     }
 
@@ -2747,27 +2740,6 @@ public class Client extends AbstractClient implements IClient {
 
     // upload the object
     return _workHelper.uploadCustomObject(_currContainerName, _currTestrig, objectName, objectFile);
-  }
-
-  private boolean uploadEnv(
-      String fileOrDir, String testrigName, String newEnvName, String baseEnvName) {
-    Path initialUploadTarget = Paths.get(fileOrDir);
-    Path uploadTarget = initialUploadTarget;
-    boolean createZip = Files.isDirectory(initialUploadTarget);
-    if (createZip) {
-      uploadTarget = CommonUtil.createTempFile("testrigOrEnv", ".zip");
-      ZipUtility.zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
-    }
-    try {
-      boolean result =
-          _workHelper.uploadEnvironment(
-              _currContainerName, testrigName, baseEnvName, newEnvName, uploadTarget.toString());
-      return result;
-    } finally {
-      if (createZip) {
-        CommonUtil.delete(uploadTarget);
-      }
-    }
   }
 
   private boolean uploadTestrig(String fileOrDir, String testrigName) {

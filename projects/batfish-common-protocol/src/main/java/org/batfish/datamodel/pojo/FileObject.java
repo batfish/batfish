@@ -1,5 +1,7 @@
 package org.batfish.datamodel.pojo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
@@ -8,18 +10,25 @@ import java.util.Objects;
  * stores the name of the file, and {@link #_content} contains the file content.
  */
 public class FileObject {
+
+  private static final String PROP_NAME = "name";
+  private static final String PROP_CONTENT = "content";
+
   private final String _name;
   private final String _content;
 
-  public FileObject(String name, String content) {
+  @JsonCreator
+  public FileObject(@JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_CONTENT) String content) {
     this._name = name;
     this._content = content;
   }
 
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
 
+  @JsonProperty(PROP_CONTENT)
   public String getContent() {
     return _content;
   }
@@ -27,8 +36,8 @@ public class FileObject {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(FileObject.class)
-        .add("name", _name)
-        .add("content", _content)
+        .add(PROP_NAME, _name)
+        .add(PROP_CONTENT, _content)
         .toString();
   }
 
