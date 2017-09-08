@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -316,7 +316,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @param newAnalysis Whether or not to create a new analysis. Incompatible with {@code
    *     delQuestionsStr}.
    * @param aName The name of the analysis
-   * @param addQuestionsFileStream The questions to be added to or initially populate the analysis.
+   * @param questionsToAdd The questions to be added to or initially populate the analysis.
    * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
    *     with {@code newAnalysis}.
    */
@@ -324,7 +324,7 @@ public class WorkMgr extends AbstractCoordinator {
       String containerName,
       boolean newAnalysis,
       String aName,
-      InputStream addQuestionsFileStream,
+      Map<String, String> questionsToAdd,
       List<String> questionsToDelete) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
@@ -342,34 +342,18 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (addQuestionsFileStream != null) {
-      JSONObject jObject = CommonUtil.writeStreamToJSONObject(addQuestionsFileStream);
-      Iterator<?> keys = jObject.keys();
-      while (keys.hasNext()) {
-        String qName = (String) keys.next();
-        JSONObject qJson;
-        try {
-          qJson = jObject.getJSONObject(qName);
-        } catch (JSONException e) {
-          throw new BatfishException("Provided questions lack a question named '" + qName + "'", e);
-        }
-        Path qDir = questionsDir.resolve(qName);
-        if (Files.exists(qDir)) {
-          throw new BatfishException(
-              "Question '" + qName + "' already exists for analysis '" + aName + "'");
-        }
-        if (!qDir.toFile().mkdirs()) {
-          throw new BatfishException("Failed to create question directory '" + qDir + "'");
-        }
-        Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-        String qOutput;
-        try {
-          qOutput = qJson.toString(1);
-        } catch (JSONException e) {
-          throw new BatfishException("Failed to convert question JSON to string", e);
-        }
-        CommonUtil.writeFile(qFile, qOutput);
+    for (Entry<String, String> entry : questionsToAdd.entrySet()) {
+      Path qDir = questionsDir.resolve(entry.getKey());
+      if (Files.exists(qDir)) {
+        throw new BatfishException(String.format("Question '%s' already exists for analysis '%s'",
+            entry.getKey(),
+            aName));
       }
+      if (!qDir.toFile().mkdirs()) {
+        throw new BatfishException(String.format("Failed to create question directory '%s'", qDir));
+      }
+      Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      CommonUtil.writeFile(qFile, entry.getValue());
     }
 
     /** Delete questions */

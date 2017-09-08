@@ -2,7 +2,6 @@ package org.batfish.common.util;
 
 import com.google.common.hash.Hashing;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -57,8 +56,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -696,24 +693,4 @@ public class CommonUtil {
     }
   }
 
-  public static JSONObject writeStreamToJSONObject(InputStream inputStream) {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      int read = 0;
-      final byte[] buffer = new byte[STREAMED_FILE_BUFFER_SIZE];
-      while (true) {
-        read = inputStream.read(buffer);
-
-        if (read == -1) {
-          break;
-        }
-        baos.write(buffer, 0, read);
-      }
-      JSONObject jObject;
-      jObject = new JSONObject(baos.toString("UTF-8"));
-      return jObject;
-    } catch (IOException | JSONException e) {
-      throw new BatfishException("Failed to convert input stream into JSON object", e);
-    }
-  }
 }
