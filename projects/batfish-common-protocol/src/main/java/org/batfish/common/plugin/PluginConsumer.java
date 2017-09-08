@@ -201,7 +201,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       //Ignoring this exception is a potentially dangerous hack
       //but I don't quite know yet why some classes cannot be loaded and how to do things cleanly
-      System.err.println("Couldn't load class " + className + ". Skipping.");
+      getLogger().warn("Couldn't load class " + className + ". Skipping.");
       return;
     }
     if (!Plugin.class.isAssignableFrom(pluginClass)

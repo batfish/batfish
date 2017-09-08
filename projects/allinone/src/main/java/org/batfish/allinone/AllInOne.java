@@ -168,9 +168,7 @@ public class AllInOne {
   }
 
   private void runCoordinator() {
-    String coordinatorArgs =
-        String.format("%s", _settings.getCoordinatorArgs());
-    String[] initialArgArray = getArgArrayFromString(coordinatorArgs);
+    String[] initialArgArray = getArgArrayFromString(_settings.getCoordinatorArgs());
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
     List<Path> pluginDirs = _settings.getPluginDirs();
     if (pluginDirs != null && !pluginDirs.isEmpty()) {

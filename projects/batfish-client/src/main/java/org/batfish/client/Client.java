@@ -2611,8 +2611,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 1, 1, 1,
-            Command.SYNC_TESTRIGS_SYNC_NOW)) {
+    if (!isValidArgument(options, parameters, 1, 1, 1, Command.SYNC_TESTRIGS_SYNC_NOW)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -2636,10 +2635,10 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
   }
 
-  private boolean syncTestrigsUpdateSettings(String[] words, List<String> options,
-                                             List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE,
-            Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
+  private boolean syncTestrigsUpdateSettings(
+      String[] words, List<String> options, List<String> parameters) {
+    if (!isValidArgument(
+        options, parameters, 0, 1, Integer.MAX_VALUE, Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
       return false;
     }
     if (!isSetContainer(true)) {
@@ -2648,18 +2647,19 @@ public class Client extends AbstractClient implements IClient {
 
     String pluginId = parameters.get(0);
 
-    String settingsStr = "{"
-            + String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length))
-            + "}";
+    String settingsStr =
+        "{" + String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)) + "}";
 
     Map<String, String> settings = null;
 
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      settings = mapper.readValue(new JSONObject(settingsStr).toString(),
-              new TypeReference<Map<String, String>>() {});
+      settings =
+          mapper.readValue(
+              new JSONObject(settingsStr).toString(), new TypeReference<Map<String, String>>() {});
     } catch (JSONException | IOException e) {
-      _logger.errorf("Failed to parse parameters. "
+      _logger.errorf(
+          "Failed to parse parameters. "
               + "(Are all key-value pairs separated by commas? Are all "
               + "values strings?)\n"
               + e
