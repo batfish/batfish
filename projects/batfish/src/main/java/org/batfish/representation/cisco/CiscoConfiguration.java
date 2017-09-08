@@ -2228,7 +2228,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private IpAccessList toIpAccessList(ExtendedAccessList eaList) {
     String name = eaList.getName();
-    List<IpAccessListLine> lines = new ArrayList<>();
+    List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
       IpAccessListLine newLine = new IpAccessListLine();
       newLine.setName(fromLine.getName());
