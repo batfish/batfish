@@ -1,6 +1,6 @@
 {
-	"hostname" : "host-01-02",
-	"iptablesFile" : "iptables/host-01-02.iptables",
+	"hostname" : "dc1-host-01-02",
+	"iptablesFile" : "iptables/dc1-host-01-02.iptables",
 	"hostInterfaces" : {
 		"eth0" : {
 			"name": "eth0",
