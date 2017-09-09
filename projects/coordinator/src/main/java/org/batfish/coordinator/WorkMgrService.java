@@ -34,6 +34,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.CreateContainerRequest;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -857,14 +858,18 @@ public class WorkMgrService {
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      if (containerName == null || containerName.equals("")) {
+      CreateContainerRequest request;
+      if (Strings.isNullOrEmpty(containerName)) {
         checkStringParam(containerPrefix, "Container prefix");
+        request = new CreateContainerRequest(containerPrefix, false);
+      } else {
+        request = new CreateContainerRequest(containerName, true);
       }
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      String outputContainerName = Main.getWorkMgr().initContainer(containerName, containerPrefix);
+      String outputContainerName = Main.getWorkMgr().initContainer(request);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
 
