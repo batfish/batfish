@@ -25,6 +25,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.CreateContainerRequest;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -42,7 +43,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static final String BASE_CONTAINER_PATH =
-      Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINER_NAME).toString();
+      Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINERS).toString();
 
   @Before
   public void initContainerEnvironment() throws Exception {
@@ -84,13 +85,29 @@ public class WorkMgrServiceV2Test extends JerseyTest {
 
   @Test
   public void redirectContainer() {
-    Response response =
-        target(BASE_CONTAINER_PATH).property(FOLLOW_REDIRECTS, false).request().get();
+    String baseContainerPath =
+        Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINER_NAME).toString();
+    Response response = target(baseContainerPath).property(FOLLOW_REDIRECTS, false).request().get();
     assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
     assertThat(
         response.getLocation().getPath(),
         equalTo(
             Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINERS).toString()));
+  }
+
+  @Test
+  public void testCreateContainerWithBody() {
+    // init container
+    String baseContainerPath =
+        Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINER_NAME).toString();
+    Response response =
+        target()
+            .path(baseContainerPath)
+            .request()
+            .post(
+                Entity.entity(
+                    new CreateContainerRequest("container", true), MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(CREATED.getStatusCode()));
   }
 
   @Test

@@ -20,12 +20,12 @@ import org.batfish.common.CoordConsts;
 import org.batfish.coordinator.Main;
 
 /**
- * The ContainerResource is a RESTful service for servicing client API calls at container level.
+ * The {@link ContainerResource} is a resource for servicing client API calls at container level.
  *
  * <p>The ContainerResource provides information about a specified container, and provides the
  * ability to create/delete a specified container for authenticated clients.
  *
- * <p>The ContainerResource also provides the access entry for other client API calls.
+ * <p>The ContainerResource also provides the access entry for other subResources.
  */
 @Produces(MediaType.APPLICATION_JSON)
 public class ContainerResource {
@@ -51,11 +51,10 @@ public class ContainerResource {
     return Response.ok(container).build();
   }
 
-  /** Initialize a new container with name: {@link #_name}. */
+  /** Create a new container with name: {@link #_name}. */
   @POST
-  public Response initContainer() {
+  public Response createContainer() {
     _logger.info("WMS: initContainer '" + _name + "'\n");
-    // TODO do we need to worry about containerPrefix here?
     String outputContainerName = Main.getWorkMgr().initContainer(_name, null);
     Main.getAuthorizer().authorizeContainer(_apiKey, outputContainerName);
     return Response.created(_uriInfo.getRequestUri()).build();
@@ -76,7 +75,7 @@ public class ContainerResource {
   /** Returns the list of testrigs that the given API key mayaccess. */
   @GET
   @Path(CoordConsts.SVC_KEY_TESTRIGS)
-  public Response getTestrigs() {
+  public Response listTestrigs() {
     validate();
     SortedSet<String> testrigNames = Main.getWorkMgr().listTestrigs(_name);
     return Response.ok(testrigNames).build();
@@ -89,7 +88,7 @@ public class ContainerResource {
     validate();
     UriBuilder ub = _uriInfo.getBaseUriBuilder();
     ub.path(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConsts.SVC_KEY_CONTAINER_NAME)
+        .path(CoordConsts.SVC_KEY_CONTAINERS)
         .path(_name)
         .path(CoordConsts.SVC_KEY_TESTRIGS);
     return Response.status(Status.MOVED_PERMANENTLY).location(ub.build()).build();
@@ -101,7 +100,7 @@ public class ContainerResource {
     if (!Files.exists(containerDir)) {
       throw new NotFoundException("Container '" + _name + "' does not exist");
     }
-    
+
     if (!Main.getAuthorizer().isAccessibleContainer(_apiKey, _name, false)) {
       throw new ForbiddenException(
           "container '" + _name + "' is not accessible by the api key: " + _apiKey);
