@@ -362,7 +362,7 @@ class TransferFunctionSSA {
               p.setDefaultPolicy(null)
                   .setChainContext(TransferFunctionParam.ChainContext.CONJUNCTION);
           TransferFunctionResult r = compute(conjunct, param);
-          result.addChangedVariables(r);
+          result = result.addChangedVariables(r);
           acc = _enc.mkIf(r.getFallthroughValue(), acc, r.getReturnValue());
         }
         p.debug("ConjunctionChain Result: " + acc);
