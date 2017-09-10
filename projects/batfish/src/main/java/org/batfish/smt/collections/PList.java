@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.function.Predicate;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * A simple persistent stack of non-null values.
@@ -16,7 +18,7 @@ import java.util.function.Predicate;
  */
 public final class PList<E> extends AbstractSequentialList<E> {
   //// STATIC FACTORY METHODS ////
-  private static final PList<Object> EMPTY = new PList<Object>();
+  private static final PList<Object> EMPTY = new PList<>();
 
   /** @return an empty stack */
   @SuppressWarnings("unchecked")
@@ -37,7 +39,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
     }
     // but that's good enough for an immutable
     // (i.e. we can't mess someone else up by adding the wrong type to it)
-    return PList.<E>from(list.iterator());
+    return PList.from(list.iterator());
   }
 
   private static <E> PList<E> from(final Iterator<? extends E> i) {
@@ -63,7 +65,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
     _rest = null;
   }
 
-  private PList(final E first, final PList<E> rest) {
+  private PList(@Nullable final E first, final PList<E> rest) {
     this._first = first;
     this._rest = rest;
 
@@ -106,6 +108,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
         return index - 1;
       }
 
+      @Nullable
       @Override
       public E next() {
         E e = _next._first;
@@ -113,6 +116,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
         return e;
       }
 
+      @Nullable
       @Override
       public E previous() {
         System.err.println("ConsPStack.listIterator().previous() is inefficient, don't use it!");
@@ -138,6 +142,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
   }
 
   //// OVERRIDDEN METHODS FROM AbstractSequentialList ////
+  @Nonnull
   @Override
   public PList<E> subList(final int start, final int end) {
     if (start < 0 || end > _size || start > end) {
@@ -150,15 +155,17 @@ public final class PList<E> extends AbstractSequentialList<E> {
       return empty();
     }
     if (start == 0) { // want the current element
-      return new PList<E>(_first, _rest.subList(0, end - 1));
+      assert _rest != null;
+      return new PList<>(_first, _rest.subList(0, end - 1));
     }
     // otherwise, don't want the current element:
+    assert _rest != null;
     return _rest.subList(start - 1, end - 1);
   }
 
   //// IMPLEMENTED METHODS OF PStack ////
   public PList<E> plus(final E e) {
-    return new PList<E>(e, this);
+    return new PList<>(e, this);
   }
 
   public PList<E> plusAll(final Collection<? extends E> list) {
@@ -176,7 +183,8 @@ public final class PList<E> extends AbstractSequentialList<E> {
     if (i == 0) { // insert at beginning
       return plus(e);
     }
-    return new PList<E>(_first, _rest.plus(i - 1, e));
+    assert _rest != null;
+    return new PList<>(_first, _rest.plus(i - 1, e));
   }
 
   public PList<E> plusAll(final int i, final Collection<? extends E> list) {
@@ -187,31 +195,38 @@ public final class PList<E> extends AbstractSequentialList<E> {
     if (i == 0) {
       return plusAll(list);
     }
-    return new PList<E>(_first, _rest.plusAll(i - 1, list));
+    assert _rest != null;
+    return new PList<>(_first, _rest.plusAll(i - 1, list));
   }
 
+  @Nullable
   public PList<E> minus(final Object e) {
     if (_size == 0) {
       return this;
     }
+    assert _first != null;
     if (_first.equals(e)) { // found it
       return _rest; // don't recurse (only remove one)
     }
     // otherwise keep looking:
+    assert _rest != null;
     PList<E> newRest = _rest.minus(e);
     if (newRest == _rest) {
       return this;
     }
-    return new PList<E>(_first, newRest);
+    assert newRest != null;
+    return new PList<>(_first, newRest);
   }
 
   public PList<E> minus(final int i) {
     if (i < 0 || i >= _size) {
       throw new IndexOutOfBoundsException("Index: " + i + "; _size: " + _size);
     } else if (i == 0) {
+      assert _rest != null;
       return _rest;
     } else {
-      return new PList<E>(_first, _rest.minus(i - 1));
+      assert _rest != null;
+      return new PList<>(_first, _rest.minus(i - 1));
     }
   }
 
@@ -220,14 +235,16 @@ public final class PList<E> extends AbstractSequentialList<E> {
       return this;
     }
     if (list.contains(_first)) { // get rid of current element
+      assert _rest != null;
       return _rest.minusAll(list); // recursively delete all
     }
     // either way keep looking:
+    assert _rest != null;
     PList<E> newRest = _rest.minusAll(list);
     if (newRest == _rest) {
       return this;
     }
-    return new PList<E>(_first, newRest);
+    return new PList<>(_first, newRest);
   }
 
   public PList<E> with(final int i, final E e) {
@@ -235,16 +252,19 @@ public final class PList<E> extends AbstractSequentialList<E> {
       throw new IndexOutOfBoundsException();
     }
     if (i == 0) {
+      assert _first != null;
       if (_first.equals(e)) {
         return this;
       }
-      return new PList<E>(e, _rest);
+      assert _rest != null;
+      return new PList<>(e, _rest);
     }
+    assert _rest != null;
     PList<E> newRest = _rest.with(i - 1, e);
     if (newRest == _rest) {
       return this;
     }
-    return new PList<E>(_first, newRest);
+    return new PList<>(_first, newRest);
   }
 
   private int find(Predicate<E> f, final int i) {
@@ -255,6 +275,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
       return i; // don't recurse (only remove one)
     }
     // otherwise keep looking:
+    assert _rest != null;
     return _rest.find(f, i + 1);
   }
 
@@ -269,6 +290,8 @@ public final class PList<E> extends AbstractSequentialList<E> {
     if (start == 0) {
       return this;
     }
+
+    assert _rest != null;
     return _rest.subList(start - 1);
   }
 }

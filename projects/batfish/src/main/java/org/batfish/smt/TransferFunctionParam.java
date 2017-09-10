@@ -148,7 +148,7 @@ public class TransferFunctionParam {
       sb.append(scope);
       sb.append("]: ");
       sb.append(str);
-      System.out.println(sb.toString());
+      System.out.println(sb);
     }
   }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.smt.collections.Table2;
@@ -59,8 +60,7 @@ class LogicalGraph {
   /*
    * Find the router Id for the neighbor corresponding to a logical edge.
    */
-  @Nullable
-  Long findRouterId(LogicalEdge e, Protocol proto) {
+  long findRouterId(LogicalEdge e, Protocol proto) {
     LogicalEdge eOther = _otherEnd.get(e);
     if (eOther != null) {
       String peer = eOther.getEdge().getRouter();
@@ -77,7 +77,8 @@ class LogicalGraph {
     if (n != null && n.getAddress() != null) {
       return n.getAddress().asLong();
     }
-    return null;
+
+    throw new BatfishException("Unable to find router id for " + e + "," + proto.name());
   }
 
   /*
