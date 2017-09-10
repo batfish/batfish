@@ -133,10 +133,6 @@ class SymbolicEnum<T> {
     return _enc.mkEq(_bitvec, _enc.getCtx().mkBV(0, _numBits));
   }
 
-  public BitVecExpr defaultValue() {
-    return _enc.getCtx().mkBV(0, _numBits);
-  }
-
   public T value(int i) {
     return _values.get(i);
   }
