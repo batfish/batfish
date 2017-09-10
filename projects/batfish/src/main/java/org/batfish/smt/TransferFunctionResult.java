@@ -64,6 +64,7 @@ public class TransferFunctionResult {
       if (!seen.contains(s)) {
         seen.add(s);
         Expr e = find(this._changedVariables, s);
+        assert (e != null); // invariant
         Pair<Expr, Expr> pair = new Pair<>(e, x); // preserve order
         vars = vars.plus(new Pair<>(s, pair));
       }

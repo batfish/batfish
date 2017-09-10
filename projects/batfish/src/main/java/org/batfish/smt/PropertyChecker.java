@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -47,10 +46,10 @@ public class PropertyChecker {
    * and data plane packet.
    */
   public static AnswerElement computeForwarding(IBatfish batfish, HeaderQuestion q) {
-    long start = System.currentTimeMillis();
+    // long start = System.currentTimeMillis();
     Encoder encoder = new Encoder(batfish, q);
     encoder.computeEncoding();
-    long end = System.currentTimeMillis() - start;
+    // long end = System.currentTimeMillis() - start;
     // System.out.println("Encoding took: " + end);
     VerificationResult result = encoder.verify();
     // result.debug(encoder.getMainSlice(), true, null);
@@ -97,7 +96,7 @@ public class PropertyChecker {
       Encoder enc = new Encoder(graph, q);
       enc.computeEncoding();
 
-      // mkIf this is a equivalence query
+      // If this is a equivalence query
       Encoder enc2 = null;
       if (q.getEquivalence()) {
         enc2 = new Encoder(enc, graph);
@@ -111,6 +110,7 @@ public class PropertyChecker {
 
       // TODO: refactor into separate function
       if (q.getEquivalence()) {
+        assert (enc2 != null);
 
         BoolExpr related = enc.mkTrue();
 
@@ -337,7 +337,6 @@ public class PropertyChecker {
     return answer;
   }
 
-  // TODO: this is broken due to peer regex
   /*
    * Computes whether load balancing for each source node in a collection is
    * within some threshold k of the each other.
@@ -436,8 +435,6 @@ public class PropertyChecker {
     Collections.sort(routers);
 
     Map<String, VerificationResult> result = new HashMap<>();
-
-    HeaderSpace h = new HeaderSpace();
 
     int len = routers.size();
     if (len <= 1) {
@@ -561,11 +558,11 @@ public class PropertyChecker {
 
                     if (!communities.contains(cvar.getValue())) {
                       communities.add(cvar.getValue());
-                      String msg =
+                      /* String msg =
                           String.format(
                               "Warning: community %s found for router %s but not %s.",
                               cvar.getValue(), conf1.getName(), conf2.getName());
-                      // System.out.println(msg);
+                         System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce1));
                   }
@@ -579,11 +576,11 @@ public class PropertyChecker {
                   if (ce1 == null) {
                     if (!communities.contains(cvar.getValue())) {
                       communities.add(cvar.getValue());
-                      String msg =
+                      /* String msg =
                           String.format(
                               "Warning: community %s found for router %s but not %s.",
                               cvar.getValue(), conf2.getName(), conf1.getName());
-                      // System.out.println(msg);
+                         System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce2));
                   }
@@ -658,6 +655,8 @@ public class PropertyChecker {
           GraphEdge ge2 = geMap2.get(ge1.getStart().getName());
           BoolExpr dataFwd1 = slice1.getSymbolicDecisions().getDataForwarding().get(r1, ge1);
           BoolExpr dataFwd2 = slice2.getSymbolicDecisions().getDataForwarding().get(r2, ge2);
+          assert (dataFwd1 != null);
+          assert (dataFwd2 != null);
           sameForwarding = ctx.mkAnd(sameForwarding, ctx.mkEq(dataFwd1, dataFwd2));
         }
         required =
@@ -802,6 +801,7 @@ public class PropertyChecker {
         for (GraphEdge edge : graph.getEdgeMap().get(router)) {
           BoolExpr dataFwd = slice.getForwardsAcross().get(router, edge);
           BoolExpr ctrFwd = slice.getSymbolicDecisions().getControlForwarding().get(router, edge);
+          assert (ctrFwd != null);
           BoolExpr peerReach = enc.mkTrue();
           if (edge.getPeer() != null) {
             peerReach = reachableVars.get(edge.getPeer());

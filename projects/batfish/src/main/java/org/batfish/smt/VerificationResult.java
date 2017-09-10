@@ -161,7 +161,7 @@ public class VerificationResult {
                       String expr = e.toString();
                       if (expr.contains("DATA-")) {
                         String result = _model.get(expr);
-                        if (result != null && result.equals("true")) {
+                        if ("true".equals(result)) {
                           System.out.println(edge);
                         }
                       }
@@ -180,7 +180,7 @@ public class VerificationResult {
       System.out.println("================= Unsat Core ================");
       for (BoolExpr be : enc.getSolver().getUnsatCore()) {
         BoolExpr constraint = enc.getUnsatCore().getTrackingVars().get(be.toString());
-        System.out.println("Var: " + be.toString());
+        System.out.println("Var: " + be);
         System.out.println(constraint);
         System.out.println("");
       }
