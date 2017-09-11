@@ -1,18 +1,19 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
+      "class" : "org.batfish.question.RolesQuestionPlugin$RolesAnswerElement",
       "roleSpecifier" : {
         "inferred" : true,
         "roleRegexes" : [
-          "\\p{Alnum}+\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+          "(\\p{Alpha}+)\\p{Alnum}*"
         ]
       }
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesQuestion",
+    "class" : "org.batfish.question.RolesQuestionPlugin$RolesQuestion",
     "differential" : false,
+    "inferred" : true,
     "nodeRegex" : ".*"
   },
   "status" : "SUCCESS",
