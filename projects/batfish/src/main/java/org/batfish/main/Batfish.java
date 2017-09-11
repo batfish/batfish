@@ -148,7 +148,6 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.assertion.AssertionCombinedParser;
 import org.batfish.grammar.assertion.AssertionExtractor;
 import org.batfish.grammar.assertion.AssertionParser.AssertionContext;
-import org.batfish.grammar.cisco.CiscoParser.Color_setterContext;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
