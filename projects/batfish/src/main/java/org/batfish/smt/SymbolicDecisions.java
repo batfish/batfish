@@ -3,6 +3,7 @@ package org.batfish.smt;
 import com.microsoft.z3.BoolExpr;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.smt.collections.Table2;
 import org.batfish.smt.collections.Table3;
 
@@ -54,6 +55,7 @@ class SymbolicDecisions {
     return _dataForwarding;
   }
 
+  @Nullable
   SymbolicRecord getBestVars(Optimizations opts, String router, Protocol proto) {
     if (opts.getSliceHasSingleProtocol().contains(router)) {
       return _bestNeighbor.get(router);

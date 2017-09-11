@@ -467,6 +467,7 @@ pmc_null
       | SERVICE_POLICY
       | SET
       | SHAPE
+      | TRUST
       | USER_STATISTICS
    ) ~NEWLINE* NEWLINE
 ;

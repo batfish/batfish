@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import org.batfish.smt.utils.TriConsumer;
 
 public class Table2<K1, K2, V> {
@@ -18,6 +19,7 @@ public class Table2<K1, K2, V> {
     return _map.get(key1);
   }
 
+  @Nullable
   public V get(K1 key1, K2 key2) {
     Map<K2, V> inner = _map.get(key1);
     if (inner == null) {
@@ -27,11 +29,7 @@ public class Table2<K1, K2, V> {
   }
 
   public void put(K1 key1, K2 key2, V val) {
-    Map<K2, V> inner = _map.get(key1);
-    if (inner == null) {
-      inner = new HashMap<>();
-      _map.put(key1, inner);
-    }
+    Map<K2, V> inner = _map.computeIfAbsent(key1, k -> new HashMap<>());
     inner.put(key2, val);
   }
 

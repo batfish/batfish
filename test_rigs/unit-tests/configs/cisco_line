@@ -8,6 +8,7 @@ line vty 0 15
  escape-character 0x61
  exec-timeout 15 0
  login authentication blah
+ timeout login response 120
  no vacant-message
 !
 line console
@@ -48,6 +49,7 @@ line 2
 !
 line vty 0 4
  access-class 99 in
+ accounting commands default
  exec-timeout 60 0
  password xxx  
  logging synchronous

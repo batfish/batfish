@@ -3,19 +3,19 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
 public class SetMetric extends Statement {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private IntExpr _metric;
+  private LongExpr _metric;
 
   @JsonCreator
   private SetMetric() {}
 
-  public SetMetric(IntExpr metric) {
+  public SetMetric(LongExpr metric) {
     _metric = metric;
   }
 
@@ -44,7 +44,7 @@ public class SetMetric extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    int metric = _metric.evaluate(environment);
+    long metric = _metric.evaluate(environment);
     environment.getOutputRoute().setMetric(metric);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setMetric(metric);
@@ -52,7 +52,7 @@ public class SetMetric extends Statement {
     return result;
   }
 
-  public IntExpr getMetric() {
+  public LongExpr getMetric() {
     return _metric;
   }
 
@@ -64,7 +64,7 @@ public class SetMetric extends Statement {
     return result;
   }
 
-  public void setMetric(IntExpr metric) {
+  public void setMetric(LongExpr metric) {
     _metric = metric;
   }
 }

@@ -9,15 +9,15 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
-  public static final int DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
+  public static final long DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
 
-  public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
+  public static final long DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
 
-  public static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
+  public static final long DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
 
   private static final long serialVersionUID = 1L;
 
-  private Integer _metric;
+  private Long _metric;
 
   private OspfMetricType _metricType;
 
@@ -29,7 +29,7 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     super(sourceProtocol, RoutingProtocol.OSPF);
   }
 
-  public Integer getMetric() {
+  public Long getMetric() {
     return _metric;
   }
 
@@ -45,7 +45,7 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     return _tag;
   }
 
-  public void setMetric(int metric) {
+  public void setMetric(long metric) {
     _metric = metric;
   }
 

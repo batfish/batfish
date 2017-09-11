@@ -273,8 +273,9 @@ public class Driver {
   }
 
   private static boolean registerWithCoordinator(String poolRegUrl) {
+    Client client = null;
     try {
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
                   _mainSettings.getSslDisable(),
                   _mainSettings.getSslTrustAllCerts(),
@@ -323,6 +324,10 @@ public class Driver {
     } catch (Exception e) {
       _mainLogger.errorf("exception: " + ExceptionUtils.getStackTrace(e));
       return false;
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
   }
 

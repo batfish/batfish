@@ -1,0 +1,11 @@
+!
+hostname r3
+!
+interface Ethernet0
+ ip address 3.0.0.2/8
+ no shutdown
+!
+router bgp 3
+ neighbor 3.0.0.1 remote-as 2
+ neighbor 3.0.0.1 activate
+!

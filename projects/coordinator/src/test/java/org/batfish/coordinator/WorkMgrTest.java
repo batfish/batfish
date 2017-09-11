@@ -8,12 +8,15 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -199,30 +202,57 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testDeleteQuestionsFromAnalysis() throws Exception {
+  public void testConfigureAnalysis() throws Exception {
     String containerName = "myContainer";
     _manager.initContainer(containerName, null);
-    Path containerPath = _folder.getRoot().toPath().resolve(containerName);
-    Path analysisPath = containerPath.resolve(BfConsts.RELPATH_ANALYSES_DIR).resolve("analysis");
-    assertTrue(analysisPath.toFile().mkdirs());
-    Path question1Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question1");
-    assertTrue(question1Path.toFile().mkdirs());
-    Path question2Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question2");
-    assertTrue(question2Path.toFile().mkdirs());
-    Path question3Path = analysisPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve("question3");
-    assertTrue(question3Path.toFile().mkdirs());
+    // test init and add questions to analysis
+    Map<String, String> questionsToAdd =
+        Maps.newHashMap(Collections.singletonMap("question1", "question1Content"));
+    _manager.configureAnalysis(
+        containerName, true, "analysis", questionsToAdd, Lists.newArrayList());
+    questionsToAdd = Maps.newHashMap(Collections.singletonMap("question2", "question2Content"));
+    questionsToAdd.put("question3", "question3Content");
+    _manager.configureAnalysis(
+        containerName, false, "analysis", questionsToAdd, Lists.newArrayList());
+    Path questionPath =
+        _folder
+            .getRoot()
+            .toPath()
+            .resolve(
+                Paths.get(
+                    containerName,
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    "analysis",
+                    BfConsts.RELPATH_QUESTIONS_DIR));
+    Path qFile = questionPath.resolve(Paths.get("question1", BfConsts.RELPATH_QUESTION_FILE));
+    Path otherQFile = questionPath.resolve(Paths.get("question2", BfConsts.RELPATH_QUESTION_FILE));
+    try {
+      String actual = new String(Files.readAllBytes(qFile));
+      assertThat(actual, equalTo("question1Content"));
+      actual = new String(Files.readAllBytes(otherQFile));
+      assertThat(actual, equalTo("question2Content"));
+    } catch (IOException e) {
+      throw new BatfishException("Failed to read question content", e);
+    }
+
+    // test delete questions
     List<String> questionsToDelete = Lists.newArrayList();
-    _manager.configureAnalysis(containerName, false, "analysis", null, questionsToDelete);
+    _manager.configureAnalysis(
+        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete);
     assertTrue(
-        Files.exists(question1Path) && Files.exists(question2Path) && Files.exists(question2Path));
+        Files.exists(questionPath.resolve("question1"))
+            && Files.exists(questionPath.resolve("question2"))
+            && Files.exists(questionPath.resolve("question3")));
     questionsToDelete = Lists.newArrayList("question1", "question2");
-    _manager.configureAnalysis(containerName, false, "analysis", null, questionsToDelete);
-    assertFalse(Files.exists(question1Path));
-    assertFalse(Files.exists(question2Path));
-    assertTrue(Files.exists(question3Path));
+    _manager.configureAnalysis(
+        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete);
+    assertFalse(Files.exists(questionPath.resolve("question1")));
+    assertFalse(Files.exists(questionPath.resolve("question2")));
+    assertTrue(Files.exists(questionPath.resolve("question3")));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Question question1 does not exist for analysis analysis"));
     questionsToDelete = Lists.newArrayList("question1");
-    _manager.configureAnalysis(containerName, false, "analysis", null, questionsToDelete);
+    _manager.configureAnalysis(
+        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete);
   }
 }

@@ -440,7 +440,7 @@ rov3_address_family
 rov3_common
 :
    rov3_null
-   | unrecognized_line
+   | { !_disableUnrecognized }? unrecognized_line
 ;
 
 rov3_null
@@ -522,7 +522,7 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
-      | unrecognized_line
+      | { !_disableUnrecognized }? unrecognized_line
    )*
 ;
 

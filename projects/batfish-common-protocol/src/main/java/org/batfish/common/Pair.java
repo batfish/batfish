@@ -3,6 +3,7 @@ package org.batfish.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
     implements Serializable, Comparable<Pair<T1, T2>> {
@@ -13,7 +14,7 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
 
   protected final T2 _second;
 
-  public Pair(T1 t1, T2 t2) {
+  public Pair(T1 t1, @Nullable T2 t2) {
     _first = t1;
     _second = t2;
   }

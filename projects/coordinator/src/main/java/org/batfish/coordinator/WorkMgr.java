@@ -7,9 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -22,10 +22,10 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -34,6 +34,7 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
+import org.batfish.common.plugin.AbstractCoordinator;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -46,9 +47,9 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.uri.UriComponent;
 
-public class WorkMgr {
+public class WorkMgr extends AbstractCoordinator {
 
-  final class AssignWorkTask implements Runnable {
+  static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
       Main.getWorkMgr().checkTask();
@@ -56,7 +57,7 @@ public class WorkMgr {
     }
   }
 
-  final class CheckTaskTask implements Runnable {
+  static final class CheckTaskTask implements Runnable {
     @Override
     public void run() {
       Main.getWorkMgr().checkTask();
@@ -85,9 +86,11 @@ public class WorkMgr {
   private WorkQueueMgr _workQueueMgr;
 
   public WorkMgr(Settings settings, BatfishLogger logger) {
+    super(false, settings.getPluginDirs());
     _settings = settings;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr();
+    loadPlugins();
   }
 
   private void assignWork() {
@@ -125,6 +128,7 @@ public class WorkMgr {
     boolean assignmentError = false;
     boolean assigned = false;
 
+    Client client = null;
     try {
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
@@ -144,7 +148,7 @@ public class WorkMgr {
           BfConsts.ARG_ANSWER_JSON_PATH,
           testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
                   _settings.getSslPoolTrustAllCerts(),
@@ -196,6 +200,10 @@ public class WorkMgr {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
 
     // mark the assignment results for both work and worker
@@ -235,8 +243,9 @@ public class WorkMgr {
     Task task = new Task();
     task.setStatus(TaskStatus.UnreachableOrBadResponse);
 
+    Client client = null;
     try {
-      Client client =
+      client =
           CommonUtil.createHttpClientBuilder(
               _settings.getSslPoolDisable(),
               _settings.getSslPoolTrustAllCerts(),
@@ -286,6 +295,10 @@ public class WorkMgr {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
     }
 
     _workQueueMgr.processTaskCheckResult(work, task);
@@ -305,7 +318,7 @@ public class WorkMgr {
    * @param newAnalysis Whether or not to create a new analysis. Incompatible with {@code
    *     delQuestionsStr}.
    * @param aName The name of the analysis
-   * @param addQuestionsFileStream The questions to be added to or initially populate the analysis.
+   * @param questionsToAdd The questions to be added to or initially populate the analysis.
    * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
    *     with {@code newAnalysis}.
    */
@@ -313,7 +326,7 @@ public class WorkMgr {
       String containerName,
       boolean newAnalysis,
       String aName,
-      InputStream addQuestionsFileStream,
+      Map<String, String> questionsToAdd,
       List<String> questionsToDelete) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
@@ -331,34 +344,18 @@ public class WorkMgr {
       }
     }
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    if (addQuestionsFileStream != null) {
-      JSONObject jObject = CommonUtil.writeStreamToJSONObject(addQuestionsFileStream);
-      Iterator<?> keys = jObject.keys();
-      while (keys.hasNext()) {
-        String qName = (String) keys.next();
-        JSONObject qJson;
-        try {
-          qJson = jObject.getJSONObject(qName);
-        } catch (JSONException e) {
-          throw new BatfishException("Provided questions lack a question named '" + qName + "'", e);
-        }
-        Path qDir = questionsDir.resolve(qName);
-        if (Files.exists(qDir)) {
-          throw new BatfishException(
-              "Question '" + qName + "' already exists for analysis '" + aName + "'");
-        }
-        if (!qDir.toFile().mkdirs()) {
-          throw new BatfishException("Failed to create question directory '" + qDir + "'");
-        }
-        Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-        String qOutput;
-        try {
-          qOutput = qJson.toString(1);
-        } catch (JSONException e) {
-          throw new BatfishException("Failed to convert question JSON to string", e);
-        }
-        CommonUtil.writeFile(qFile, qOutput);
+    for (Entry<String, String> entry : questionsToAdd.entrySet()) {
+      Path qDir = questionsDir.resolve(entry.getKey());
+      if (Files.exists(qDir)) {
+        throw new BatfishException(String.format("Question '%s' already exists for analysis '%s'",
+            entry.getKey(),
+            aName));
       }
+      if (!qDir.toFile().mkdirs()) {
+        throw new BatfishException(String.format("Failed to create question directory '%s'", qDir));
+      }
+      Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      CommonUtil.writeFile(qFile, entry.getValue());
     }
 
     /** Delete questions */
@@ -598,8 +595,14 @@ public class WorkMgr {
     return qDir;
   }
 
-  private Path getdirContainer(String containerName) {
+  @Override
+  public Path getdirContainer(String containerName) {
     return getdirContainer(containerName, true);
+  }
+
+  @Override
+  public BatfishLogger getLogger() {
+    return _logger;
   }
 
   private Path getdirContainer(String containerName, boolean errIfNotEixst) {
@@ -631,12 +634,16 @@ public class WorkMgr {
   }
 
   private Path getdirTestrig(String containerName, String testrigName) {
-    Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+    Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
     if (!Files.exists(testrigDir)) {
       throw new BatfishException("Testrig '" + testrigName + "' does not exist");
     }
     return testrigDir;
+  }
+
+  @Override
+  public Path getdirTestrigs(String containerName) {
+    return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
   private Path getdirTestrigQuestion(String containerName, String testrigName, String qName) {
@@ -931,6 +938,23 @@ public class WorkMgr {
             0,
             Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
+  }
+
+  public int syncTestrigsSyncNow(String containerName, String pluginId, boolean force) {
+    if (!_testrigSyncers.containsKey(pluginId)) {
+      throw new BatfishException("PluginId " + pluginId + " not found."
+                + " (Are SyncTestrigs plugins loaded?)");
+    }
+    return _testrigSyncers.get(pluginId).syncNow(containerName, force);
+  }
+
+  public boolean syncTestrigsUpdateSettings(String containerName, String pluginId,
+                                            Map<String, String> settings) {
+    if (!_testrigSyncers.containsKey(pluginId)) {
+      throw new BatfishException("PluginId " + pluginId + " not found."
+              + " (Are SyncTestrigs plugins loaded?)");
+    }
+    return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
   }
 
   /**

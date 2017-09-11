@@ -10,7 +10,7 @@ public abstract class AbstractRouteBuilder<
 
   private int _admin;
 
-  private int _metric;
+  private long _metric;
 
   private Prefix _network;
 
@@ -32,11 +32,11 @@ public abstract class AbstractRouteBuilder<
   // To handle the class casting exception while returning S in chaining methods
   protected abstract S getThis();
 
-  public final Integer getMetric() {
+  public final Long getMetric() {
     return _metric;
   }
 
-  public final S setMetric(int metric) {
+  public final S setMetric(long metric) {
     _metric = metric;
     return getThis();
   }

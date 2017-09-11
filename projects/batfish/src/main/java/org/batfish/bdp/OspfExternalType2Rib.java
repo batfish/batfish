@@ -14,11 +14,11 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   @Override
   public int comparePreference(OspfExternalType2Route lhs, OspfExternalType2Route rhs) {
     // reversed on purpose
-    int costComparison = Integer.compare(rhs.getMetric(), lhs.getMetric());
+    int costComparison = Long.compare(rhs.getMetric(), lhs.getMetric());
     if (costComparison != 0) {
       return costComparison;
     }
-    return Integer.compare(rhs.getCostToAdvertiser(), lhs.getCostToAdvertiser());
+    return Long.compare(rhs.getCostToAdvertiser(), lhs.getCostToAdvertiser());
   }
 
   @Override

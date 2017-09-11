@@ -181,7 +181,7 @@ public class BgpRoute extends AbstractRoute {
 
   private final int _localPreference;
 
-  private final int _med;
+  private final long _med;
 
   private final Ip _nextHopIp;
 
@@ -205,7 +205,7 @@ public class BgpRoute extends AbstractRoute {
       @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) int localPreference,
-      @JsonProperty(PROP_METRIC) int med,
+      @JsonProperty(PROP_METRIC) long med,
       @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
@@ -313,7 +313,7 @@ public class BgpRoute extends AbstractRoute {
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public Integer getMetric() {
+  public Long getMetric() {
     return _med;
   }
 
@@ -377,7 +377,7 @@ public class BgpRoute extends AbstractRoute {
     result = prime * result + _clusterList.hashCode();
     result = prime * result + ((_communities == null) ? 0 : _communities.hashCode());
     result = prime * result + _localPreference;
-    result = prime * result + _med;
+    result = prime * result + Long.hashCode(_med);
     result = prime * result + _network.hashCode();
     result = prime * result + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
     result = prime * result + ((_originType == null) ? 0 : _originType.ordinal());

@@ -40,6 +40,7 @@ public class BfConsts {
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
   public static final String ARG_DIFF_ACTIVE = "diffactive";
   public static final String ARG_DIFFERENTIAL = "differential";
+  public static final String ARG_DISABLE_UNRECOGNIZED = "disableunrecognized";
   public static final String ARG_ENVIRONMENT_NAME = "env";
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
@@ -143,6 +144,7 @@ public class BfConsts {
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
+  public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_TESTRIGS_DIR = "testrigs";

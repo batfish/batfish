@@ -15,6 +15,8 @@ route-policy to_fooey
    drop
   elseif as-path passes-through '5556'  then
    drop
+  elseif as-path is-local then
+   drop
   elseif community matches-any (5555:65530, 5555:667, 5555:64000) then
     drop
   elseif (as-path originates-from '64527' ) then

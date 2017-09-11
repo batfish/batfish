@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.Nullable;
 import jline.console.ConsoleReader;
 import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
@@ -241,8 +242,8 @@ public class Client extends AbstractClient implements IClient {
 
   /**
    * This method calls {@link Client#validateType(JsonNode, Variable)} to check that the contents
-   * encoded in {@code value} match the requirement specified in {@code variable}. Also, this
-   * method validates the input {@code value} is allowed according to {@link
+   * encoded in {@code value} match the requirement specified in {@code variable}. Also, this method
+   * validates the input {@code value} is allowed according to {@link
    * Question.InstanceData.Variable#_allowedValues allowedValues} specified in {@code variable}.
    *
    * @throws BatfishException if the content type encoded in input {@code value} does not satisfy
@@ -258,12 +259,12 @@ public class Client extends AbstractClient implements IClient {
           String.format("Invalid value for parameter %s: %s", parameterName, value);
       throw new BatfishException(errorMessage, e);
     }
-    if (!(variable.getAllowedValues().isEmpty() || variable.getAllowedValues()
-        .contains(value.asText()))) {
-      throw new BatfishException(String.format(
-          "Invalid value: %s, allowed values are: %s",
-          value.asText(),
-          variable.getAllowedValues()));
+    if (!(variable.getAllowedValues().isEmpty()
+        || variable.getAllowedValues().contains(value.asText()))) {
+      throw new BatfishException(
+          String.format(
+              "Invalid value: %s, allowed values are: %s",
+              value.asText(), variable.getAllowedValues()));
     }
   }
 
@@ -613,7 +614,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean answer(
       String[] words,
-      FileWriter outWriter,
+      @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       boolean delta) {
@@ -779,7 +780,8 @@ public class Client extends AbstractClient implements IClient {
     return tempFilePath;
   }
 
-  private boolean delAnalysis(FileWriter outWriter, List<String> options, List<String> parameters) {
+  private boolean delAnalysis(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_ANALYSIS)) {
       return false;
     }
@@ -796,7 +798,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean delAnalysisQuestions(
-      FileWriter outWriter, List<String> options, List<String> parameters) {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(
         options, parameters, 0, 2, Integer.MAX_VALUE, Command.DEL_ANALYSIS_QUESTIONS)) {
       return false;
@@ -879,7 +881,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean delTestrig(FileWriter outWriter, List<String> options, List<String> parameters) {
+  private boolean delTestrig(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_TESTRIG)) {
       return false;
     }
@@ -910,7 +913,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean execute(WorkItem wItem, FileWriter outWriter) {
+  private boolean execute(WorkItem wItem, @Nullable FileWriter outWriter) {
     _logger.info("work-id is " + wItem.getId() + "\n");
     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _settings.getBatfishLogLevel());
     for (String option : _additionalBatfishOptions.keySet()) {
@@ -1085,7 +1088,8 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean generateDataplane(
-      FileWriter outWriter, List<String> options, List<String> parameters) throws Exception {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters)
+      throws Exception {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DP)) {
       return false;
     }
@@ -1101,7 +1105,8 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean generateDeltaDataplane(
-      FileWriter outWriter, List<String> options, List<String> parameters) throws Exception {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters)
+      throws Exception {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DELTA_DP)) {
       return false;
     }
@@ -1145,7 +1150,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean get(
       String[] words,
-      FileWriter outWriter,
+      @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       boolean delta)
@@ -1164,7 +1169,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean getAnalysisAnswers(
-      FileWriter outWriter,
+      @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       boolean delta,
@@ -1221,7 +1226,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean getAnswer(
-      FileWriter outWriter,
+      @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       boolean delta,
@@ -1537,7 +1542,10 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean initEnvironment(
-      String[] words, FileWriter outWriter, List<String> options, List<String> parameters) {
+      String[] words,
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.INIT_ENVIRONMENT)) {
       return false;
     }
@@ -1591,7 +1599,10 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean initOrAddAnalysis(
-      FileWriter outWriter, List<String> options, List<String> parameters, boolean newAnalysis) {
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters,
+      boolean newAnalysis) {
     Command command = newAnalysis ? Command.INIT_ANALYSIS : Command.ADD_ANALYSIS_QUESTIONS;
     if (!isValidArgument(options, parameters, 0, 2, 2, command)) {
       return false;
@@ -1640,7 +1651,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean initTestrig(
-      FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
       throws Exception {
     Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
     if (!isValidArgument(options, parameters, 0, 1, 2, command)) {
@@ -1754,7 +1765,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean listAnalyses(
-      FileWriter outWriter, List<String> options, List<String> parameters) {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_ANALYSES)) {
       return false;
     }
@@ -1835,7 +1846,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean listTestrigs(
-      FileWriter outWriter, List<String> options, List<String> parameters) {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_TESTRIGS)) {
       return false;
     }
@@ -1873,7 +1884,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean loadQuestions(
-      FileWriter outWriter,
+      @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       Map<String, String> bfq) {
@@ -2052,7 +2063,7 @@ public class Client extends AbstractClient implements IClient {
     return processCommand(words, null);
   }
 
-  boolean processCommand(String[] words, FileWriter outWriter) {
+  boolean processCommand(String[] words, @Nullable FileWriter outWriter) {
     try {
       List<String> options = getCommandOptions(words);
       List<String> parameters = getCommandParameters(words, options.size());
@@ -2196,6 +2207,10 @@ public class Client extends AbstractClient implements IClient {
           return showTestrig(options, parameters);
         case SHOW_VERSION:
           return showVersion(options, parameters);
+        case SYNC_TESTRIGS_SYNC_NOW:
+          return syncTestrigsSyncNow(options, parameters);
+        case SYNC_TESTRIGS_UPDATE_SETTINGS:
+          return syncTestrigsUpdateSettings(words, options, parameters);
         case TEST:
           return test(options, parameters);
         case UPLOAD_CUSTOM_OBJECT:
@@ -2260,7 +2275,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean reinitTestrig(
-      FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
       throws Exception {
     Command command = delta ? Command.REINIT_DELTA_TESTRIG : Command.REINIT_TESTRIG;
     if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
@@ -2349,7 +2364,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean runAnalysis(
-      FileWriter outWriter,
+      @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
       boolean delta,
@@ -2614,6 +2629,66 @@ public class Client extends AbstractClient implements IClient {
     String version = map.get(CoordConsts.SVC_KEY_VERSION);
     _logger.outputf("Service version is %s\n", version);
     return true;
+  }
+
+  private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 1, 1, 1, Command.SYNC_TESTRIGS_SYNC_NOW)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    boolean force = false;
+
+    if (options.size() == 1) {
+      if (options.get(0).equals("-force")) {
+        force = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.SYNC_TESTRIGS_SYNC_NOW);
+        return false;
+      }
+    }
+
+    String pluginId = parameters.get(0);
+
+    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
+  }
+
+  private boolean syncTestrigsUpdateSettings(
+      String[] words, List<String> options, List<String> parameters) {
+    if (!isValidArgument(
+        options, parameters, 0, 1, Integer.MAX_VALUE, Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    String pluginId = parameters.get(0);
+
+    String settingsStr =
+        "{" + String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)) + "}";
+
+    Map<String, String> settings = null;
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      settings =
+          mapper.readValue(
+              new JSONObject(settingsStr).toString(), new TypeReference<Map<String, String>>() {});
+    } catch (JSONException | IOException e) {
+      _logger.errorf(
+          "Failed to parse parameters. "
+              + "(Are all key-value pairs separated by commas? Are all "
+              + "values strings?)\n"
+              + e
+              + "\n");
+      return false;
+    }
+
+    return _workHelper.syncTestrigsUpdateSettings(pluginId, _currContainerName, settings);
   }
 
   private boolean test(List<String> options, List<String> parameters) throws IOException {

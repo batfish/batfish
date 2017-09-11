@@ -35,6 +35,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       Pattern.compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
   private static String preprocessBanner(String fileText, ConfigurationFormat format) {
+    if (format == ConfigurationFormat.CADANT) {
+      return fileText;
+    }
     Matcher matcher = BANNER_PATTERN.matcher(fileText);
     if (matcher.find()) {
       int delimiterIndex = matcher.start(1);
@@ -122,6 +125,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.IGNORED);
 
       case ARISTA:
+      case CADANT:
       case CISCO_IOS:
       case CISCO_IOS_XR:
       case CISCO_NX:
