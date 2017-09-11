@@ -144,6 +144,7 @@ public class BfConsts {
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
+  public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_TESTRIGS_DIR = "testrigs";

@@ -223,8 +223,16 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
-    cl.loadClass(className);
-    Class<?> pluginClass = Class.forName(className, true, cl);
+    Class<?> pluginClass = null;
+    try {
+      cl.loadClass(className);
+      pluginClass = Class.forName(className, true, cl);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      //Ignoring this exception is a potentially dangerous hack
+      //but I don't quite know yet why some classes cannot be loaded and how to do things cleanly
+      getLogger().warn("Couldn't load class " + className + ". Skipping.");
+      return;
+    }
     if (!Plugin.class.isAssignableFrom(pluginClass)
         || Modifier.isAbstract(pluginClass.getModifiers())) {
       return;
