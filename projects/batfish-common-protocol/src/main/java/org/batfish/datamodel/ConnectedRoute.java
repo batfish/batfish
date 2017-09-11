@@ -23,6 +23,11 @@ public class ConnectedRoute extends AbstractRoute {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof ConnectedRoute)) {
+      return false;
+    }
     ConnectedRoute rhs = (ConnectedRoute) o;
     boolean res = _network.equals(rhs._network);
     return res && _nextHopInterface.equals(rhs._nextHopInterface);

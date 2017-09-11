@@ -53,11 +53,13 @@ public class CommunityList extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof CommunityList)) {
+      return false;
     }
-    CommunityList other = (CommunityList) obj;
+    CommunityList other = (CommunityList) o;
     return other._lines.equals(_lines);
   }
 

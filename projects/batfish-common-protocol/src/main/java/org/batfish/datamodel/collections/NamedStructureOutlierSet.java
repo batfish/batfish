@@ -71,6 +71,11 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof NamedStructureOutlierSet)) {
+      return false;
+    }
     NamedStructureOutlierSet<?> rhs = (NamedStructureOutlierSet<?>) o;
     return _structType.equals(rhs.getStructType()) && _name.equals(rhs.getName());
   }

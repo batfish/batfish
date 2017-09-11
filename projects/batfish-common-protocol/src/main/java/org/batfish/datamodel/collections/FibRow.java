@@ -49,6 +49,11 @@ public class FibRow implements Comparable<FibRow>, Serializable {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof FibRow)) {
+      return false;
+    }
     FibRow rhs = (FibRow) o;
     return (_prefix.equals(rhs._prefix) && _interface.equals(rhs._interface));
   }

@@ -12,6 +12,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -58,8 +59,10 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof RoutingPolicy)) {
+      return false;
     }
     RoutingPolicy other = (RoutingPolicy) o;
     return _statements.equals(other._statements);
