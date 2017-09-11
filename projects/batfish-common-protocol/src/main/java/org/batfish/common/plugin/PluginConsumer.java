@@ -1,5 +1,7 @@
 package org.batfish.common.plugin;
 
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.ByteArrayInputStream;
@@ -7,8 +9,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -69,19 +73,26 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   protected <S extends Serializable> S deserializeObject(byte[] data, Class<S> outputClass) {
+    ByteArrayInputStream stream = new ByteArrayInputStream(data);
+    return deserializeObject(stream, outputClass);
+  }
+
+  protected <S extends Serializable> S deserializeObject(InputStream stream, Class<S> outputClass) {
     try {
-      boolean isJavaSerializationData = isJavaSerializationData(data);
-      ByteArrayInputStream bais = new ByteArrayInputStream(data);
+      // Allows us to peek at the beginning of the stream and then push the bytes back in for
+      // downstream consumers to read.
+      PushbackInputStream pbstream =
+          new PushbackInputStream(stream, JAVA_SERIALIZED_OBJECT_HEADER.length);
+      boolean isJavaSerializationData = isJavaSerializationData(pbstream);
       ObjectInputStream ois;
       if (!isJavaSerializationData) {
         XStream xstream = new XStream(new DomDriver("UTF-8"));
         xstream.setClassLoader(_currentClassLoader);
-        ois = xstream.createObjectInputStream(bais);
+        ois = xstream.createObjectInputStream(pbstream);
       } else {
-        ois = new BatfishObjectInputStream(bais, _currentClassLoader);
+        ois = new BatfishObjectInputStream(pbstream, _currentClassLoader);
       }
       Object o = ois.readObject();
-      ois.close();
       return outputClass.cast(o);
     } catch (IOException | ClassNotFoundException | ClassCastException e) {
       throw new BatfishException(
@@ -90,17 +101,31 @@ public abstract class PluginConsumer implements IPluginConsumer {
     }
   }
 
-  public <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass) {
-    byte[] data = fromGzipFile(inputFile);
-    return deserializeObject(data, outputClass);
+  protected <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass) {
+    try {
+      // Awkward nested try blocks required because we refuse to throw IOExceptions.
+      try (Closer closer = Closer.create()) {
+        FileInputStream fis = closer.register(new FileInputStream(inputFile.toFile()));
+        GZIPInputStream gis = closer.register(new GZIPInputStream(fis));
+        return deserializeObject(gis, outputClass);
+      }
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format(
+              "Failed to deserialize object of type %s from file %s",
+              outputClass.getCanonicalName(), inputFile),
+          e);
+    }
   }
 
   protected byte[] fromGzipFile(Path inputFile) {
     try {
-      FileInputStream fis = new FileInputStream(inputFile.toFile());
-      GZIPInputStream gis = new GZIPInputStream(fis);
-      byte[] data = IOUtils.toByteArray(gis);
-      return data;
+      // Awkward nested try blocks required because we refuse to throw IOExceptions.
+      try (Closer closer = Closer.create()) {
+        FileInputStream fis = closer.register(new FileInputStream(inputFile.toFile()));
+        GZIPInputStream gis = closer.register(new GZIPInputStream(fis));
+        return IOUtils.toByteArray(gis);
+      }
     } catch (IOException e) {
       throw new BatfishException("Failed to gunzip file: " + inputFile, e);
     }
@@ -112,13 +137,16 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
   public abstract PluginClientType getType();
 
-  private boolean isJavaSerializationData(byte[] fileBytes) {
-    int headerLength = JAVA_SERIALIZED_OBJECT_HEADER.length;
-    byte[] headerBytes = new byte[headerLength];
-    for (int i = 0; i < headerLength; i++) {
-      headerBytes[i] = fileBytes[i];
-    }
-    return Arrays.equals(headerBytes, JAVA_SERIALIZED_OBJECT_HEADER);
+  /**
+   * Determines whether the data in the stream is Java serialized bytes. Requires a {@link
+   * PushbackInputStream} so that the inspected bytes can be put back into the stream after reading.
+   */
+  private boolean isJavaSerializationData(PushbackInputStream stream) throws IOException {
+    byte[] header = new byte[JAVA_SERIALIZED_OBJECT_HEADER.length];
+    ByteStreams.readFully(stream, header);
+    boolean ret = Arrays.equals(header, JAVA_SERIALIZED_OBJECT_HEADER);
+    stream.unread(header);
+    return ret;
   }
 
   private boolean loadPluginJar(Path path) {
@@ -180,8 +208,9 @@ public abstract class PluginConsumer implements IPluginConsumer {
               throws IOException {
             String name = path.toString();
             if (name.endsWith(CLASS_EXTENSION)) {
-              String className = name.substring(baseLen, name.length() - CLASS_EXTENSION.length())
-                                     .replace(File.separatorChar, '.');
+              String className =
+                  name.substring(baseLen, name.length() - CLASS_EXTENSION.length())
+                      .replace(File.separatorChar, '.');
               try {
                 loadPluginClass(cl, className);
               } catch (ClassNotFoundException e) {
@@ -234,8 +263,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     boolean _hasClasses = false;
 
     @Override
-    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
-        throws IOException {
+    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
       if (loadPluginJar(path)) {
         _hasJars = true;
       } else if (path.toString().endsWith(CLASS_EXTENSION)) {
