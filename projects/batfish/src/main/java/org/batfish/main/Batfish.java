@@ -3455,7 +3455,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!Files.exists(nodeRolesPath) || inferred) {
       inferredRoles = true;
       nodeRolesPath = settings.getInferredNodeRolesPath();
-      if(!Files.exists(nodeRolesPath)) {
+      if (!Files.exists(nodeRolesPath)) {
         result = new NodeRoleSpecifier();
       }
     }

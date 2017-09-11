@@ -111,7 +111,9 @@ public class NodeRoleSpecifier {
   }
 
   @JsonProperty(PROP_INFERRED)
-  public boolean getInferred() { return _inferred; }
+  public boolean getInferred() {
+    return _inferred;
+  }
 
   @JsonProperty(PROP_ROLE_MAP)
   public void setRoleMap(SortedMap<String, SortedSet<String>> roleMap) {
@@ -125,5 +127,7 @@ public class NodeRoleSpecifier {
 
   // We do not make the setter for _inferred a JSON property;
   // it will only be set internally.
-  public void setInferred(boolean inferred) { _inferred = inferred; }
+  public void setInferred(boolean inferred) {
+    _inferred = inferred;
+  }
 }
