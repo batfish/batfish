@@ -74,6 +74,8 @@ public enum Command {
   SHOW_LOGLEVEL("show-loglevel"),
   SHOW_TESTRIG("show-testrig"),
   SHOW_VERSION("show-version"),
+  SYNC_TESTRIGS_SYNC_NOW("sync-testrigs-sync-now"),
+  SYNC_TESTRIGS_UPDATE_SETTINGS("sync-testrigs-update-settings"),
   TEST("test"),
   UPLOAD_CUSTOM_OBJECT("upload-custom");
 
@@ -275,6 +277,12 @@ public enum Command {
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta testrig and environment"));
     descs.put(SHOW_TESTRIG, new Pair<>("", "Show base testrig and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
+    descs.put(SYNC_TESTRIGS_SYNC_NOW, new Pair<>("[-force] <plugin-id>",
+            "Sync testrigs now (settings must have been configured before)"));
+    descs.put(
+            SYNC_TESTRIGS_UPDATE_SETTINGS,
+            new Pair<>("<plugin-id> [key1=value1, [key2=value2], ...], ",
+            "Update the settings for sync testrigs plugin"));
     descs.put(TEST, new Pair<>("<reference file> <command>", "Show base testrig and environment"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));

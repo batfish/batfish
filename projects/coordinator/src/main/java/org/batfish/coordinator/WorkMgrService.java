@@ -24,6 +24,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
@@ -108,7 +109,7 @@ public class WorkMgrService {
   }
 
   private void checkStringParam(String paramStr, String parameterName) {
-    if (paramStr == null || paramStr.equals("")) {
+    if (Strings.isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
     }
   }
@@ -1260,6 +1261,112 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:queueWork exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
+  /**
+   * Sync testrigs
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The container to sync testrigs for
+   * @param pluginId The plugin id to use for syncing
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray syncTestrigsSyncNow(
+          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+          @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+          @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
+    try {
+      _logger.info("WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " "
+              + pluginId + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(pluginId, "Plugin Id");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      boolean force = Strings.isNullOrEmpty(forceStr) ? false : Boolean.parseBoolean(forceStr);
+
+      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
+
+      return new JSONArray(
+              Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+                      (new JSONObject().put("numCommits", numCommits))));
+    } catch (FileExistsException
+            | FileNotFoundException
+            | IllegalArgumentException
+            | AccessControlException e) {
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
+  /**
+   * Update settings for syncing testrigs
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The container to sync testrigs for
+   * @param pluginId The plugin id to use for syncing
+   * @param settingsStr The stringified version of settings
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray syncTestrigsUpdateSettings(
+          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+          @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+          @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
+    try {
+      _logger.info("WMS:syncTestrigsUpdateSettings " + apiKey + " " + containerName + " "
+              + pluginId + " " + settingsStr + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(pluginId, "Plugin Id");
+      checkStringParam(settingsStr, "Settings");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, String> settings = mapper.readValue(settingsStr,
+              new TypeReference<Map<String, String>>() {});
+
+      boolean result = Main.getWorkMgr()
+              .syncTestrigsUpdateSettings(containerName, pluginId, settings);
+
+      return new JSONArray(
+              Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", result))));
+    } catch (FileExistsException
+            | FileNotFoundException
+            | IllegalArgumentException
+            | AccessControlException e) {
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + stackTrace);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
