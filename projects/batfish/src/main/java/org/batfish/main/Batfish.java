@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
@@ -413,7 +414,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
-  private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
+  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
 
   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
@@ -444,7 +445,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Batfish(
       Settings settings,
       Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
-      Map<TestrigSettings, DataPlane> cachedDataPlanes,
+      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
       Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
@@ -2483,7 +2484,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane() {
-    DataPlane dp = _cachedDataPlanes.get(_testrigSettings);
+    DataPlane dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
     if (dp == null) {
       /*
        * Data plane should exist after loading answer element, as it triggers
@@ -2491,7 +2492,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement();
-      dp = _cachedDataPlanes.get(_testrigSettings);
+      dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp =

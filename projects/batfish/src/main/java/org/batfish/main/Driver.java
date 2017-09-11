@@ -1,5 +1,7 @@
 package org.batfish.main;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,7 +64,7 @@ public class Driver {
 
   private static ConcurrentMap<String, Task> _taskLog;
 
-  private static final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
+  private static final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
       CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
@@ -94,9 +96,8 @@ public class Driver {
   static Logger networkListenerLogger =
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
-  private static synchronized Map<TestrigSettings, DataPlane> buildDataPlaneCache() {
-    return Collections.synchronizedMap(
-        new LRUMap<TestrigSettings, DataPlane>(MAX_CACHED_DATA_PLANES));
+  private static synchronized Cache<TestrigSettings, DataPlane> buildDataPlaneCache() {
+    return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES).weakValues().build();
   }
 
   private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>

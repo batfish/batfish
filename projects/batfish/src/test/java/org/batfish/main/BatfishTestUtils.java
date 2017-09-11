@@ -1,5 +1,7 @@
 package org.batfish.main;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,8 +47,8 @@ public class BatfishTestUtils {
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
 
-    final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
-        Collections.synchronizedMap(new LRUMap<TestrigSettings, DataPlane>(2));
+    final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
+        CacheBuilder.newBuilder().maximumSize(2).weakValues().build();
     final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
         CACHED_ENVIRONMENT_BGP_TABLES =
             Collections.synchronizedMap(
@@ -91,8 +93,8 @@ public class BatfishTestUtils {
           CommonUtil.writeFile(filePath, content);
         });
 
-    final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
-        Collections.synchronizedMap(new LRUMap<TestrigSettings, DataPlane>(2));
+    final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
+        CacheBuilder.newBuilder().maximumSize(2).weakValues().build();
     final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
         CACHED_ENVIRONMENT_BGP_TABLES =
             Collections.synchronizedMap(
