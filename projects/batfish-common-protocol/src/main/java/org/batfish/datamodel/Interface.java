@@ -385,12 +385,13 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object object) {
-
-    if (this == object) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Interface)) {
+      return false;
     }
-    Interface other = (Interface) object;
+    Interface other = (Interface) o;
     if (this._accessVlan != other._accessVlan) {
       return false;
     }

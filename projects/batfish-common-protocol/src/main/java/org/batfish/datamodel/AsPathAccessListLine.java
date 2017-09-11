@@ -20,11 +20,13 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof AsPathAccessListLine)) {
+      return false;
     }
-    AsPathAccessListLine other = (AsPathAccessListLine) obj;
+    AsPathAccessListLine other = (AsPathAccessListLine) o;
     if (_action != other._action) {
       return false;
     }

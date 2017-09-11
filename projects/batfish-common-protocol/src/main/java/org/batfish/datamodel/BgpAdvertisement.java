@@ -263,11 +263,13 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof BgpAdvertisement)) {
+      return false;
     }
-    BgpAdvertisement other = (BgpAdvertisement) obj;
+    BgpAdvertisement other = (BgpAdvertisement) o;
     if (!_network.equals(other._network)) {
       return false;
     }

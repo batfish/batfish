@@ -47,11 +47,13 @@ public class FlowTrace implements Comparable<FlowTrace> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof FlowTrace)) {
+      return false;
     }
-    FlowTrace rhs = (FlowTrace) obj;
+    FlowTrace rhs = (FlowTrace) o;
     if (_disposition != rhs._disposition) {
       return false;
     }

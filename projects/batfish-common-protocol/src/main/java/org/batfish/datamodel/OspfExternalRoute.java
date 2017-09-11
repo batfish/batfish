@@ -98,11 +98,13 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof OspfExternalRoute)) {
+      return false;
     }
-    OspfExternalRoute other = (OspfExternalRoute) obj;
+    OspfExternalRoute other = (OspfExternalRoute) o;
     if (!_network.equals(other._network)) {
       return false;
     }

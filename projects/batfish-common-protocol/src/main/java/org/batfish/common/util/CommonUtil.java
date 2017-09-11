@@ -145,8 +145,7 @@ public class CommonUtil {
       JSONAssert.assertEquals(aString, bString, false);
       return true;
     } catch (Exception e) {
-      throw new BatfishException(
-          "JSON equality check failed: " + e.getMessage() + e.getStackTrace());
+      throw new BatfishException("JSON equality check failed", e);
     } catch (AssertionError err) {
       return false;
     }

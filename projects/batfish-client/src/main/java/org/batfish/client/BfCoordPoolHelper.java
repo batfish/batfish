@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import com.google.common.base.Throwables;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -49,7 +50,7 @@ public class BfCoordPoolHelper {
       return true;
     } catch (ProcessingException e) {
       System.err.printf(
-          "unable to connect to %s: %s\n", _coordPoolMgr, e.getStackTrace().toString());
+          "unable to connect to %s: %s\n", _coordPoolMgr, Throwables.getStackTraceAsString(e));
       return false;
     } catch (Exception e) {
       System.err.printf("exception: ");

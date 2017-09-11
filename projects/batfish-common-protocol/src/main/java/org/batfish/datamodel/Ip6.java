@@ -87,6 +87,11 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof Ip6)) {
+      return false;
+    }
     Ip6 rhs = (Ip6) o;
     return _ip6.equals(rhs._ip6);
   }

@@ -34,11 +34,13 @@ public class RouteFilterLine implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof RouteFilterLine)) {
+      return false;
     }
-    RouteFilterLine other = (RouteFilterLine) obj;
+    RouteFilterLine other = (RouteFilterLine) o;
     if (_action != other._action) {
       return false;
     }
