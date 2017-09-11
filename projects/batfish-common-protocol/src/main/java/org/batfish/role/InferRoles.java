@@ -72,18 +72,18 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   @Override
   public NodeRoleSpecifier call() {
 
-    NodeRoleSpecifier result = new NodeRoleSpecifier();
+    NodeRoleSpecifier emptySpecifier = new NodeRoleSpecifier(true);
 
     int allNodesCount = _nodes.size();
 
     if (allNodesCount == 0) {
-      return result;
+      return emptySpecifier;
     }
 
     boolean commonRegexFound = inferCommonRegex(_nodes);
 
     if (!commonRegexFound) {
-      return result;
+      return emptySpecifier;
     }
 
 
@@ -91,7 +91,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
     int numCands = candidateRegexes.size();
     if (numCands == 0) {
-      return result;
+      return emptySpecifier;
     } else {
       // choose the role group with the maximal "role score"
       String roleRegex = candidateRegexes.get(0);
@@ -104,8 +104,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
           roleRegex = cand;
         }
       }
-      NodeRoleSpecifier roleSpecifier = regexToRoleSpecifier(roleRegex);
-      return roleSpecifier;
+      return regexToRoleSpecifier(roleRegex);
     }
   }
 
@@ -250,7 +249,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   NodeRoleSpecifier regexToRoleSpecifier(String regex) {
     List<String> regexes = new ArrayList<>();
     regexes.add(regex);
-    NodeRoleSpecifier result = new NodeRoleSpecifier();
+    NodeRoleSpecifier result = new NodeRoleSpecifier(true);
     result.setRoleRegexes(regexes);
     return result;
   }

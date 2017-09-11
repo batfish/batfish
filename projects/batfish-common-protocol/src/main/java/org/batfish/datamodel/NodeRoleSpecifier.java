@@ -19,6 +19,8 @@ public class NodeRoleSpecifier {
 
   private static final String PROP_ROLE_REGEXES = "roleRegexes";
 
+  private static final String PROP_INFERRED = "inferred";
+
   // a map from roles to the set of nodes that have that role
   private SortedMap<String, SortedSet<String>> _roleMap;
 
@@ -27,9 +29,17 @@ public class NodeRoleSpecifier {
   // there are multiple regexes to handle node names that have different formats.
   private List<String> _roleRegexes;
 
+  // indicates whether this NodeRoleSpecifier was automatically inferred.
+  private boolean _inferred;
+
   public NodeRoleSpecifier() {
     _roleMap = new TreeMap<>();
     _roleRegexes = new ArrayList<>();
+  }
+
+  public NodeRoleSpecifier(boolean inferred) {
+    this();
+    _inferred = inferred;
   }
 
   private void addToRoleNodesMap(
@@ -100,6 +110,9 @@ public class NodeRoleSpecifier {
     return _roleRegexes;
   }
 
+  @JsonProperty(PROP_INFERRED)
+  public boolean getInferred() { return _inferred; }
+
   @JsonProperty(PROP_ROLE_MAP)
   public void setRoleMap(SortedMap<String, SortedSet<String>> roleMap) {
     _roleMap = roleMap;
@@ -109,4 +122,8 @@ public class NodeRoleSpecifier {
   public void setRoleRegexes(List<String> roleRegexes) {
     _roleRegexes = roleRegexes;
   }
+
+  // We do not make the setter for _inferred a JSON property;
+  // it will only be set internally.
+  public void setInferred(boolean inferred) { _inferred = inferred; }
 }
