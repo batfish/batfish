@@ -68,6 +68,8 @@ public interface IBatfish extends IPluginConsumer {
 
   FlowHistory getHistory();
 
+  Map<String, String> getQuestionTemplates();
+
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   Directory getTestrigFileTree();
