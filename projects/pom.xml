@@ -5,6 +5,11 @@
   <name>Batfish</name>
   <url>https://www.batfish.org</url>
   <inceptionYear>2014</inceptionYear>
+  <description>Batfish is a network configuration analysis tool developed jointly by researchers at
+    Intentionet, Inc.; University of California, Los Angeles; University of Southern California; and
+    Microsoft Research. Though its individual modules have various applications, its primary purpose
+    is to detect bugs in network configurations.
+  </description>
 
   <groupId>org.batfish</groupId>
   <artifactId>batfish-parent</artifactId>
@@ -20,6 +25,19 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <organization>The Batfish developers</organization>
+      <organizationUrl>https://www.batfish.org</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/batfish/batfish.git</connection>
+    <developerConnection>scm:git:git@github.com:batfish/batfish.git</developerConnection>
+    <url>https://github.com/batfish/batfish</url>
+  </scm>
+
   <properties>
     <!-- Configuration of Maven project itself. Please keep alphabetical. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,9 +49,13 @@
     <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.4</maven-findbugs-plugin.version>
+    <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-javadoc-plugin.version>3.0.0-M1</maven-javadoc-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
+    <maven-nexus-staging-plugin.version>1.6.8</maven-nexus-staging-plugin.version>
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
+    <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
     <antlr.version>4.7</antlr.version>
@@ -110,13 +132,31 @@
         </plugin>
 
         <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>${maven-gpg-plugin.version}</version>
+        </plugin>
+
+        <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>${maven-install-plugin.version}</version>
         </plugin>
 
         <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <failOnError>false</failOnError>
+          </configuration>
+        </plugin>
+
+        <plugin>
           <artifactId>maven-shade-plugin</artifactId>
           <version>${maven-shade-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${maven-source-plugin.version}</version>
         </plugin>
 
         <plugin>
@@ -140,6 +180,18 @@
               <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache 2.0|Apache License 2.0</licenseMerge>
               <licenseMerge>MIT License|MIT|MIT license</licenseMerge>
             </licenseMerges>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>${maven-nexus-staging-plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <serverId>sonatype-ossrh</serverId>
           </configuration>
         </plugin>
       </plugins>
@@ -262,6 +314,49 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
