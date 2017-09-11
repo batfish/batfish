@@ -25,6 +25,7 @@ import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL;
 import static org.batfish.client.Command.GET_ANSWER;
 import static org.batfish.client.Command.GET_ANSWER_DELTA;
 import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
+import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.GET_DELTA;
 import static org.batfish.client.Command.GET_QUESTION;
 import static org.batfish.client.Command.HELP;
@@ -1258,6 +1259,12 @@ public class ClientTest {
   public void testShowVersionInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(SHOW_TESTRIG, parameters);
+  }
+
+  @Test
+  public void testGetConfigurationInvalidParas() throws Exception {
+    String[] parameters = new String[] {"parameter1"};
+    testInvalidInput(GET_CONFIGURATION, parameters);
   }
 
   @Test
