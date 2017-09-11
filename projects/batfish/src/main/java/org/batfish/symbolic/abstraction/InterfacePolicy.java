@@ -29,4 +29,8 @@ public class InterfacePolicy {
   @Override public int hashCode() {
     return _ospfCost != null ? _ospfCost.hashCode() : 0;
   }
+
+  @Override public String toString() {
+    return _ospfCost.toString();
+  }
 }
