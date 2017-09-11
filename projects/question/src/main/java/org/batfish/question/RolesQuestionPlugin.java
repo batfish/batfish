@@ -43,8 +43,8 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       sb = new StringBuilder(
           "Results for roles\n");
 
-      sb.append("The following role specifier was " +
-          (_roleSpecifier.getInferred() ? "inferred" : "user-provided") + ":\n");
+      sb.append("The following role specifier was "
+          + (_roleSpecifier.getInferred() ? "inferred" : "user-provided") + ":\n");
 
       sb.append("Role regexes: \n");
       for (String regex : _roleSpecifier.getRoleRegexes()) {
@@ -144,7 +144,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "inferroles";
+      return "roles";
     }
 
     @JsonProperty(PROP_NODE_REGEX)
@@ -153,7 +153,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_INFERRED)
-    public boolean getInferred() { return _inferred; }
+    public boolean getInferred() {
+      return _inferred;
+    }
 
     @Override
     public boolean getTraffic() {
@@ -166,7 +168,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_INFERRED)
-    public void setInferred(boolean inferred) { _inferred = inferred; }
+    public void setInferred(boolean inferred) {
+      _inferred = inferred;
+    }
 
   }
 
