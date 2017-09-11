@@ -2,6 +2,8 @@ package org.batfish.symbolic.smt;
 
 import javax.annotation.Nullable;
 
+import javax.annotation.Nullable;
+
 /**
  * Representation of a community variable for the symbolic encoding. Configuration languages allow
  * users match community values using either <b>exact matches</b> or <b>regular expression</b>

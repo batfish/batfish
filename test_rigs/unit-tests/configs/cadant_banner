@@ -1,0 +1,11 @@
+shelfname ""
+hostname "cadant_banner"
+#
+configure
+banner login
+****************************
+* Arris CADANT banner text *
+****************************
+/end
+#
+

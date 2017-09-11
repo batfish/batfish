@@ -12,6 +12,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 @JsonSchemaDescription(
@@ -79,9 +80,10 @@ public class RoutingPolicy extends ComparableStructure<String> {
       AbstractRoute inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       Ip peerAddress,
-      String vrf) {
+      String vrf,
+      Direction direction) {
     Environment environment =
-        new Environment(_owner, vrf, inputRoute, null, outputRoute, peerAddress);
+        new Environment(_owner, vrf, inputRoute, null, outputRoute, peerAddress, direction);
     Result result = call(environment);
     return result.getBooleanValue();
   }

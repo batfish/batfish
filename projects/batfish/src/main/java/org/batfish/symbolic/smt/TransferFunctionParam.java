@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.symbolic.smt.collections.PList;
 
@@ -111,7 +112,7 @@ public class TransferFunctionParam {
     return ret;
   }
 
-  public TransferFunctionParam setDefaultPolicy(SetDefaultPolicy defaultPolicy) {
+  public TransferFunctionParam setDefaultPolicy(@Nullable SetDefaultPolicy defaultPolicy) {
     TransferFunctionParam ret = new TransferFunctionParam(this);
     ret._defaultPolicy = defaultPolicy;
     return ret;
@@ -147,7 +148,7 @@ public class TransferFunctionParam {
       sb.append(scope);
       sb.append("]: ");
       sb.append(str);
-      System.out.println(sb.toString());
+      System.out.println(sb);
     }
   }
 }

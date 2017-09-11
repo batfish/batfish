@@ -20,8 +20,8 @@ public class Rib extends AbstractRib<AbstractRoute> {
     } else if (lhsAdmin == rhsAdmin) {
       // same administrative distance, so check protocol-specific cost
       // further down
-      int lhsMetric = lhs.getMetric();
-      int rhsMetric = rhs.getMetric();
+      long lhsMetric = lhs.getMetric();
+      long rhsMetric = rhs.getMetric();
       if (lhsMetric < rhsMetric) {
         return 1;
       } else if (lhsMetric == rhsMetric) {

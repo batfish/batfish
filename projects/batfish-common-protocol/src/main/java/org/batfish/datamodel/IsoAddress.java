@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
 import java.math.BigInteger;
 
@@ -40,9 +41,9 @@ public final class IsoAddress implements Serializable {
       shift += currentNumBits;
     }
     _systemId = systemId;
-    _afi = Byte.parseByte(parts[0], 16);
+    _afi = BaseEncoding.base16().decode(parts[0])[0];
     _areaId = areaId;
-    _nSel = Byte.parseByte(parts[parts.length - 1], 16);
+    _nSel = BaseEncoding.base16().decode(parts[parts.length - 1])[0];
   }
 
   @Override

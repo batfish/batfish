@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.Configuration;
+import javax.annotation.Nullable;
 import org.batfish.symbolic.Protocol;
 
 /**
@@ -148,7 +147,7 @@ class SymbolicRecord {
       String router,
       Protocol proto,
       Optimizations opts,
-      SymbolicEnum<Protocol> h,
+      @Nullable SymbolicEnum<Protocol> h,
       boolean isAbstract) {
 
     _name = name;
@@ -274,7 +273,7 @@ class SymbolicRecord {
    * Check if a particular protocol on a router is configured
    * to use multipath routing or not.
    */
-  private boolean isMultipath(String router, Protocol proto, boolean isIbgp) {
+  /* private boolean isMultipath(String router, Protocol proto, boolean isIbgp) {
     Configuration conf = _enc.getGraph().getConfigurations().get(router);
     if (proto.isConnected()) {
       return true;
@@ -292,7 +291,7 @@ class SymbolicRecord {
     } else {
       return true;
     }
-  }
+  } */
 
   private void addExprs(EncoderSlice enc) {
     Map<String, Expr> all = enc.getAllVariables();
@@ -451,14 +450,6 @@ class SymbolicRecord {
 
   public void setOspfType(SymbolicOspfType ospfType) {
     this._ospfType = ospfType;
-  }
-
-  public void setRouterId(ArithExpr routerId) {
-    this._routerId = routerId;
-  }
-
-  public void setProtocolHistory(SymbolicEnum<Protocol> protocolHistory) {
-    this._protocolHistory = protocolHistory;
   }
 
   public void setClientId(SymbolicOriginatorId clientId) {

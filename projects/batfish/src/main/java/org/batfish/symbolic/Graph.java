@@ -42,6 +42,8 @@ public class Graph {
 
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
 
+  private static final String NULL_INTERFACE_NAME = "null_interface";
+
   private IBatfish _batfish;
 
   private Map<String, Configuration> _configurations;
@@ -178,7 +180,7 @@ public class Graph {
   }
 
   public static boolean isNullRouted(StaticRoute sr) {
-    return sr.getNextHopInterface().equals("null_interface");
+    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 
   /*
@@ -210,9 +212,11 @@ public class Graph {
 
               // Check if next-hop ip corresponds to direct interface
               Ip nhIp = sr.getNextHopIp();
-              boolean isNextHop = there != null && there.getPrefix() != null && there.getPrefix()
-                  .getAddress()
-                  .equals(nhIp);
+
+              boolean isNextHop =
+                  there != null
+                      && there.getPrefix() != null
+                      && there.getPrefix().getAddress().equals(nhIp);
 
               if (isNextHop) {
                 someIface = true;
@@ -554,7 +558,7 @@ public class Graph {
     throw new BatfishException("TODO: findImportRoutingPolicy: " + proto.name());
   }
 
-  /* TODO: move this to logical graph
+  /*
    * Find the export routing policy for a given edge
    */
   @Nullable
@@ -696,7 +700,7 @@ public class Graph {
                       .append(", Interface: ")
                       .append(iface)
                       .append(" --> ")
-                      .append(sr.getNetwork().toString())
+                      .append(sr.getNetwork())
                       .append("\n");
                 }
               });

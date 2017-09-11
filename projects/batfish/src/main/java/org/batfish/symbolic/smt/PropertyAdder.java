@@ -51,6 +51,7 @@ public class PropertyAdder {
     String sliceName = _encoderSlice.getSliceName();
 
     BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+    assert (fwdIface != null);
 
     Map<String, BoolExpr> reachableVars = new HashMap<>();
     _encoderSlice
@@ -163,6 +164,7 @@ public class PropertyAdder {
     Solver solver = _encoderSlice.getSolver();
 
     BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+    assert (fwdIface != null);
 
     String sliceName = _encoderSlice.getSliceName();
 
@@ -205,6 +207,7 @@ public class PropertyAdder {
                   if (!edge.isAbstract()) {
                     if (edge.getPeer() != null) {
                       BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
+                      assert (dataFwd != null);
 
                       ArithExpr y = lenVars.get(edge.getPeer());
                       accNone = ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(y, zero), ctx.mkNot(dataFwd)));
@@ -234,6 +237,7 @@ public class PropertyAdder {
     String sliceName = _encoderSlice.getSliceName();
 
     BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+    assert (fwdIface != null);
 
     Map<String, ArithExpr> loadVars = new HashMap<>();
     _encoderSlice
@@ -271,6 +275,7 @@ public class PropertyAdder {
                 for (GraphEdge edge : edges) {
                   if (!edge.isAbstract()) {
                     BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
+                    assert (fwd != null);
                     if (edge.getPeer() != null) {
                       ArithExpr peerLoad = loadVars.get(edge.getPeer());
                       ArithExpr x = (ArithExpr) ctx.mkITE(fwd, peerLoad, zero);

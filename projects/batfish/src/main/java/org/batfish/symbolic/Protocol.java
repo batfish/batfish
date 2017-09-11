@@ -1,8 +1,5 @@
 package org.batfish.symbolic;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.RoutingProtocol;
@@ -38,11 +35,6 @@ public class Protocol {
   public static final Protocol CONNECTED = new Protocol(Type.CONNECTED);
 
   public static final Protocol BEST = new Protocol(Type.BEST);
-
-  public static final List<Protocol.Type> values =
-      Collections.unmodifiableList(
-          Arrays.asList(Type.BEST, Type.OSPF, Type.BGP, Type.CONNECTED, Type.STATIC));
-
 
   @Nullable
   public static Protocol fromRoutingProtocol(RoutingProtocol p) {

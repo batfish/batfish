@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 
 public class Line extends ComparableStructure<String> {
@@ -95,7 +96,7 @@ public class Line extends ComparableStructure<String> {
     _inputIpv6AccessList = inputIpv6AccessList;
   }
 
-  public void setLoginAuthentication(String loginAuthentication) {
+  public void setLoginAuthentication(@Nullable String loginAuthentication) {
     _loginAuthentication = loginAuthentication;
   }
 

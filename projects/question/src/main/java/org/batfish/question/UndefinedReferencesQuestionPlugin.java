@@ -80,9 +80,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       int numResults = 0;
       for (String hostname: _undefinedReferences.keySet()) {
         for (String type: _undefinedReferences.get(hostname).keySet()) {
-          for (String name: _undefinedReferences.get(hostname).get(type).keySet()) {
-            numResults++;
-          }
+          numResults += _undefinedReferences.get(hostname).get(type).size();
         }
       }
       _summary.setNumResults(numResults);

@@ -1,0 +1,21 @@
+!
+hostname cisco_monitor
+!
+monitor session 1 type erspan-source
+ buffer-size 12345
+ description ntp debugging
+ destination
+  erspan-id 1
+  ip address 1.2.3.4
+  mtu 1464
+  origin ip address 2.3.4.5
+ destination interface Gi1/3
+ shutdown
+ source cpu rp
+ source interface Gi1/2
+!
+monitor-session RSPAN ethernet
+ destination pseudowire
+!
+!
+

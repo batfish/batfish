@@ -10,6 +10,7 @@ import org.batfish.common.BatfishException;
 public enum IsisInterfaceMode {
   ACTIVE("active"),
   PASSIVE("passive"),
+  SUPPRESSED("suppressed"),
   UNSET("unset");
 
   private static final Map<String, IsisInterfaceMode> _map = buildMap();

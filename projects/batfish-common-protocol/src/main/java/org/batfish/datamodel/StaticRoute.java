@@ -60,8 +60,8 @@ public class StaticRoute extends AbstractRoute {
 
   @Override
   @JsonIgnore
-  public Integer getMetric() {
-    return 0;
+  public Long getMetric() {
+    return 0L;
   }
 
   @Nonnull

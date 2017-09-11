@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
@@ -49,15 +50,15 @@ public class ExtendedAccessListLine implements Serializable {
       LineAction action,
       IpProtocol protocol,
       IpWildcard srcIpWildcard,
-      String srcAddressGroup,
+      @Nullable String srcAddressGroup,
       IpWildcard dstIpWildcard,
-      String dstAddressGroup,
+      @Nullable String dstAddressGroup,
       List<SubRange> srcPortRanges,
       List<SubRange> dstPortRanges,
       Set<Integer> dscps,
       Set<Integer> ecns,
-      Integer icmpType,
-      Integer icmpCode,
+      @Nullable Integer icmpType,
+      @Nullable Integer icmpCode,
       Set<State> states,
       List<TcpFlags> tcpFlags) {
     _name = name;
