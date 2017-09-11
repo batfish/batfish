@@ -21,6 +21,7 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Rule;
@@ -138,5 +139,64 @@ public class WorkMgrServiceTest {
             null,
             questionsToDelete);
     assertThat(result.getString(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
+  }
+
+  @Test
+  public void getConfigNonExistContainer() throws Exception {
+    initContainerEnvironment();
+    Response response =
+        _service.getConfiguration(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            "nonExistContainer",
+            "testrig",
+            "config1.cfg");
+    String actualMessage = response.getEntity().toString();
+    assertThat(actualMessage, equalTo("Container 'nonExistContainer' not found"));
+  }
+
+  @Test
+  public void getNonExistConfig() throws Exception {
+    initContainerEnvironment();
+    Path containerDir = _folder.getRoot().toPath().resolve(_containerName);
+    Path testrigPath =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
+    assertTrue(testrigPath.toFile().mkdirs());
+    Response response =
+        _service.getConfiguration(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _containerName,
+            "testrig",
+            "config.cfg");
+    String actualMessage = response.getEntity().toString();
+    String expected =
+        "Configuration file config.cfg does not exist in testrig testrig for container myContainer";
+    assertThat(actualMessage, equalTo(expected));
+  }
+
+  @Test
+  public void getConfigContent() throws Exception {
+    initContainerEnvironment();
+    Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
+    Path configPath =
+        containerPath.resolve(
+            Paths.get(
+                BfConsts.RELPATH_TESTRIGS_DIR,
+                "testrig",
+                BfConsts.RELPATH_TEST_RIG_DIR,
+                BfConsts.RELPATH_CONFIGURATIONS_DIR));
+    assertTrue(configPath.toFile().mkdirs());
+    CommonUtil.writeFile(configPath.resolve("config.cfg"), "config content");
+    Response response =
+        _service.getConfiguration(
+            CoordConsts.DEFAULT_API_KEY,
+            Version.getVersion(),
+            _containerName,
+            "testrig",
+            "config.cfg");
+    String actualMessage = response.getEntity().toString();
+    assertThat(actualMessage, equalTo("config content"));
   }
 }

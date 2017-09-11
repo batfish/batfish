@@ -1316,6 +1316,26 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
+   * Get a string representation of the file content for configuration file {@code configName}.
+   *
+   * <p>Returns {@code true} if successfully get file content, {@code false} otherwise.
+   */
+  private boolean getConfiguration(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 3, 3, Command.GET_CONFIGURATION)) {
+      return false;
+    }
+    String containerName = parameters.get(0);
+    String testrigName = parameters.get(1);
+    String configName = parameters.get(2);
+    String configContent = _workHelper.getConFiguration(containerName, testrigName, configName);
+    if (configContent != null) {
+      _logger.output(configContent + "\n");
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get information of the container (first element in {@code parameters}).
    *
    * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
@@ -1492,7 +1512,6 @@ public class Client extends AbstractClient implements IClient {
     } else {
       throw new BatfishException("Invalid environment directory or zip: '" + paramsLocation + "'");
     }
-
     if (!uploadEnv(fileToSend, testrigName, newEnvName, baseEnvName)) {
       return false;
     }
@@ -2096,6 +2115,8 @@ public class Client extends AbstractClient implements IClient {
           return generateDeltaDataplane(outWriter, options, parameters);
         case GET:
           return get(words, outWriter, options, parameters, false);
+        case GET_CONFIGURATION:
+          return getConfiguration(options, parameters);
         case GET_CONTAINER:
           return getContainer(options, parameters);
         case GET_DELTA:
