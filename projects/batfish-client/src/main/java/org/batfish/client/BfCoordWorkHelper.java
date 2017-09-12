@@ -3,6 +3,7 @@ package org.batfish.client;
 import com.google.common.collect.Iterators;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,6 +16,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.config.Settings;
@@ -38,6 +40,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 public class BfCoordWorkHelper {
 
   private String _coordWorkMgr;
+  private String _coordWorkMgrV2;
   private BatfishLogger _logger;
   private Settings _settings;
   private Client _client;
@@ -46,6 +49,7 @@ public class BfCoordWorkHelper {
     _coordWorkMgr = workMgr;
     _logger = logger;
     _settings = settings;
+    _coordWorkMgrV2 = _settings.getCoordinatorHost() + ":" + CoordConsts.SVC_CFG_WORK_V2_PORT;
     try {
       _client = getClientBuilder().build();
     } catch (Exception e) {
@@ -152,22 +156,24 @@ public class BfCoordWorkHelper {
 
   public boolean delContainer(String containerName) {
     try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_CONTAINER);
+      String resource = Paths.get(CoordConsts.SVC_KEY_CONTAINERS, containerName).toString();
+      WebTarget webTarget = getTargetV2(resource);
 
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+      Response response =
+          webTarget
+              .request(MediaType.APPLICATION_JSON)
+              .header(CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey())
+              .header(CoordConsts.SVC_KEY_VERSION, Version.getVersion())
+              .delete();
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      String status = null;
-      if (jObj != null && (status = jObj.getString("result")) != null) {
-        return Boolean.parseBoolean(status);
+      if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
+        _logger.error("delContainer: Did not get the expected response\n");
+        _logger.error(response.readEntity(String.class) + "\n");
+        return false;
       }
-      return (jObj != null);
+      return true;
     } catch (Exception e) {
-      _logger.errorf("exception: ");
+      _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgrV2, containerName);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return false;
     }
@@ -442,25 +448,21 @@ public class BfCoordWorkHelper {
   @Nullable
   public Container getContainer(String containerName) {
     try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONTAINER);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      String resource = Paths.get(CoordConsts.SVC_KEY_CONTAINERS, containerName).toString();
+      WebTarget webTarget = getTargetV2(resource);
 
       Response response =
           webTarget
               .request(MediaType.APPLICATION_JSON)
-              .post(Entity.entity(multiPart, multiPart.getMediaType()));
+              .header(CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey())
+              .header(CoordConsts.SVC_KEY_VERSION, Version.getVersion())
+              .get();
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetContainer: Did not get an OK response\n");
-        _logger.errorf(response.readEntity(String.class) + "\n");
+        _logger.error("GetContainer: Did not get the expected response\n");
+        _logger.error(response.readEntity(String.class) + "\n");
         return null;
       }
 
@@ -469,7 +471,7 @@ public class BfCoordWorkHelper {
       Container container = mapper.readValue(containerStr, Container.class);
       return container;
     } catch (Exception e) {
-      _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgr, containerName);
+      _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgrV2, containerName);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return null;
     }
@@ -580,6 +582,18 @@ public class BfCoordWorkHelper {
     String urlString =
         String.format(
             "%s://%s%s/%s", protocol, _coordWorkMgr, CoordConsts.SVC_CFG_WORK_MGR, resource);
+    return _client.target(urlString);
+  }
+
+  /**
+   * Returns a {@link WebTarget webTarget} for BatFish service V2 by resolving {@code resource} to
+   * base url of service V2.
+   */
+  private WebTarget getTargetV2(String resource) {
+    String protocol = (_settings.getSslDisable()) ? "http" : "https";
+    String urlString =
+        String.format(
+            "%s://%s%s/%s", protocol, _coordWorkMgrV2, CoordConsts.SVC_CFG_WORK_MGR2, resource);
     return _client.target(urlString);
   }
 
