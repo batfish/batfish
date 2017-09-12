@@ -5,6 +5,8 @@ package org.batfish.coordinator;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -12,6 +14,7 @@ import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.authorizer.DbAuthorizer;
@@ -19,6 +22,9 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.storage.Storage;
+import org.batfish.storage.StorageFactory;
+import org.batfish.storage.StorageFactory.StorageType;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -34,6 +40,7 @@ public class Main {
   private static @Nullable PoolMgr _poolManager;
   private static @Nullable Settings _settings;
   private static @Nullable WorkMgr _workManager;
+  private static @Nullable Storage _storage;
 
   static Logger httpServerLogger =
       Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
@@ -53,6 +60,11 @@ public class Main {
   public static PoolMgr getPoolMgr() {
     checkState(_poolManager != null, "Error: Pool Manager has not been configured");
     return _poolManager;
+  }
+
+  public static Storage getStorage() {
+    checkState(_storage != null, "Error: Storage has not been configured");
+    return _storage;
   }
 
   public static Settings getSettings() {
@@ -183,6 +195,14 @@ public class Main {
 
   }
 
+  public static void initStorage() {
+    Map<String, Object> storageSettings = new HashMap<String, Object>();
+    storageSettings.put(BfConsts.PROP_STORAGE_IMPLEMENTATION, StorageType.FILE);
+    storageSettings.put(BfConsts.PROP_CONTAINER_LOCATION, _settings.getContainersLocation());
+
+    _storage = StorageFactory.getImplementation(storageSettings);
+  }
+
   public static void main(String[] args) {
     mainInit(args);
     _logger =
@@ -211,6 +231,7 @@ public class Main {
 
   private static void mainRun() {
     try {
+      initStorage();
       initAuthorizer();
       initPoolManager();
       initWorkManager();
