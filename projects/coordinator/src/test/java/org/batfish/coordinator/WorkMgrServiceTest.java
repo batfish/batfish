@@ -23,6 +23,7 @@ import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.CreateContainerRequest;
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class WorkMgrServiceTest {
     Main.setLogger(logger);
     WorkMgr manager = new WorkMgr(settings, logger);
     Main.setWorkMgr(manager);
-    manager.initContainer(_containerName, null);
+    manager.initContainer(new CreateContainerRequest(_containerName, true));
     _service = new WorkMgrService();
   }
 

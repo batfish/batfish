@@ -42,6 +42,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.pojo.CreateContainerRequest;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -741,9 +742,10 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
-    if (containerName == null || containerName.equals("")) {
-      containerName = containerPrefix + "_" + UUID.randomUUID();
+  public String initContainer(CreateContainerRequest request) {
+    String containerName = request.getName();
+    if (!request.getSetName()) {
+      containerName += "_" + UUID.randomUUID();
     }
     Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
     if (Files.exists(containerDir)) {

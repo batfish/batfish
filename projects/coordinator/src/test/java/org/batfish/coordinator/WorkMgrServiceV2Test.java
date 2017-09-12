@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.CreateContainerRequest;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -59,7 +60,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
-    Main.getWorkMgr().initContainer("some container", null);
+    Main.getWorkMgr().initContainer(new CreateContainerRequest("some container", true));
     response = target("/v2/containers").request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
@@ -76,7 +77,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   public void getContainer() throws Exception {
     String containerName = "some container";
     Container expected = Container.of(containerName, new TreeSet<>());
-    Main.getWorkMgr().initContainer(containerName, null);
+    Main.getWorkMgr().initContainer(new CreateContainerRequest(containerName, true));
 
     Response response = target("/v2/container").path(containerName).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));

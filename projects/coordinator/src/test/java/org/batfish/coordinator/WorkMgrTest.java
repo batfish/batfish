@@ -25,6 +25,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.pojo.CreateContainerRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,52 +52,52 @@ public class WorkMgrTest {
 
   @Test
   public void initContainerWithContainerName() {
-    String initResult = _manager.initContainer("container", null);
+    String containerName = "container";
+    String initResult = _manager.initContainer(new CreateContainerRequest(containerName, true));
     assertThat(initResult, equalTo("container"));
   }
 
   @Test
   public void initContainerWithContainerPrefix() {
-    String initResult = _manager.initContainer(null, "containerPrefix");
+    String prefix = "containerPrefix";
+    String initResult = _manager.initContainer(new CreateContainerRequest(prefix, false));
     assertThat(initResult, startsWith("containerPrefix"));
   }
 
   @Test
-  public void initContainerWithNullInput() {
-    String initResult = _manager.initContainer(null, null);
-    assertThat(initResult, startsWith("null_"));
-  }
-
-  @Test
   public void initExistingContainer() {
-    _manager.initContainer("container", null);
+    String containerName = "container";
+    CreateContainerRequest request = new CreateContainerRequest(containerName, true);
+    _manager.initContainer(request);
     String expectedMessage = "Container 'container' already exists!";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo(expectedMessage));
-    _manager.initContainer("container", null);
+    _manager.initContainer(request);
   }
 
   @Test
   public void listEmptyQuestion() {
-    _manager.initContainer("container", null);
+    String containerName = "container";
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
     Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
+        Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions("container", "testrig");
+    SortedSet<String> questions = _manager.listQuestions(containerName, "testrig");
     assertThat(questions.isEmpty(), is(true));
   }
 
   @Test
   public void listQuestionNames() {
-    _manager.initContainer("container", null);
+    String containerName = "container";
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
     Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
+        Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
     Path questionsDir = testrigPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     assertThat(questionsDir.resolve("initinfo").toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions("container", "testrig");
+    SortedSet<String> questions = _manager.listQuestions(containerName, "testrig");
     assertThat(questions.size(), is(1));
     assertThat(questions.first(), equalTo("initinfo"));
   }
@@ -110,46 +111,50 @@ public class WorkMgrTest {
 
   @Test
   public void listQuestionWithNonExistTestrig() {
-    _manager.initContainer("container", null);
+    String containerName = "container";
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Testrig 'testrig' does not exist"));
-    _manager.listQuestions("container", "testrig");
+    _manager.listQuestions(containerName, "testrig");
   }
 
   @Test
   public void listSortedQuestionNames() {
-    _manager.initContainer("container", null);
+    String containerName = "container";
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
     Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
+        Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
     Path questionsDir = testrigPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     assertTrue(questionsDir.resolve("nodes").toFile().mkdirs());
     assertTrue(questionsDir.resolve("access").toFile().mkdirs());
     assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
-    SortedSet<String> questions = _manager.listQuestions("container", "testrig");
+    SortedSet<String> questions = _manager.listQuestions(containerName, "testrig");
     assertThat(questions.size(), is(3));
     assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
   }
 
   @Test
   public void getEmptyContainer() {
-    _manager.initContainer("container", null);
-    Container container = _manager.getContainer("container");
-    assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
+    String containerName = "container";
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
+    Container container = _manager.getContainer(containerName);
+    assertThat(container, equalTo(Container.of(containerName, new TreeSet<>())));
   }
 
   @Test
   public void getNonEmptyContainer() {
-    _manager.initContainer("container", null);
+    String containerName = "container";
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
     Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
+        Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
-    Container container = _manager.getContainer("container");
+    Container container = _manager.getContainer(containerName);
     assertThat(
         container,
-        equalTo(Container.of("container", Sets.newTreeSet(Collections.singleton("testrig")))));
+        equalTo(Container.of(containerName, Sets.newTreeSet(Collections.singleton("testrig")))));
   }
 
   @Test
@@ -204,7 +209,7 @@ public class WorkMgrTest {
   @Test
   public void testConfigureAnalysis() throws Exception {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    _manager.initContainer(new CreateContainerRequest(containerName, true));
     // test init and add questions to analysis
     Map<String, String> questionsToAdd =
         Maps.newHashMap(Collections.singletonMap("question1", "question1Content"));
