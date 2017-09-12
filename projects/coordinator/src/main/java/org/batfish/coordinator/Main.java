@@ -1,17 +1,32 @@
 package org.batfish.coordinator;
 
-// Include the following imports to use queue APIs.
-
 import static com.google.common.base.Preconditions.checkState;
+import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.UriBuilder;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.authorizer.DbAuthorizer;
@@ -19,6 +34,9 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.questions.Question;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -29,7 +47,8 @@ public class Main {
 
   // These are all @Nullable because they are static and may not be initialized if Main() has not
   // been called.
-  private static @Nullable Authorizer _authorizer;
+  private static @Nullable
+  Authorizer _authorizer;
   private static @Nullable BatfishLogger _logger;
   private static @Nullable PoolMgr _poolManager;
   private static @Nullable Settings _settings;
@@ -53,6 +72,73 @@ public class Main {
   public static PoolMgr getPoolMgr() {
     checkState(_poolManager != null, "Error: Pool Manager has not been configured");
     return _poolManager;
+  }
+
+  public static Map<String, String> getQuestionTemplates() {
+
+    List<Path> questionTemplateDir = _settings.getQuestionTemplateDirs();
+
+    if (questionTemplateDir == null || questionTemplateDir.size() == 0) {
+      return null;
+    }
+
+    Map<String, String> questionTemplates = new HashMap<>();
+    questionTemplateDir.forEach((dir) -> {
+      readQuestionTemplates(dir, questionTemplates);
+    });
+
+    return questionTemplates;
+  }
+
+  private static String readQuestionTemplate(Path file, Map<String, String> templates) {
+    String questionText = CommonUtil.readFile(file);
+    try {
+      JSONObject questionObj = new JSONObject(questionText);
+      if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
+        JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
+        String instanceDataStr = instanceDataObj.toString();
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Question.InstanceData instanceData =
+                mapper.<Question.InstanceData>readValue(instanceDataStr,
+                        Question.InstanceData.class);
+        String name = instanceData.getInstanceName();
+
+        if (templates.containsKey(name)) {
+          throw new BatfishException("Duplicate template name " + name);
+        }
+
+        templates.put(name.toLowerCase(), questionText);
+        return name;
+      } else {
+        throw new BatfishException("Question in file: '" + file + "' has no instance name");
+      }
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Failed to process question", e);
+    }
+  }
+
+  private static void readQuestionTemplates(Path questionsPath,
+                                               Map<String, String> templates) {
+    SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
+    try {
+      Files.walkFileTree(
+              questionsPath,
+              EnumSet.of(FOLLOW_LINKS),
+              1,
+              new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                  String filename = file.getFileName().toString();
+                  if (filename.endsWith(".json")) {
+                    readQuestionTemplate(file, templates);
+                  }
+                  return FileVisitResult.CONTINUE;
+                }
+              });
+    } catch (IOException e) {
+      throw new BatfishException("Failed to visit templates dir: " + questionsPath, e);
+    }
   }
 
   public static Settings getSettings() {

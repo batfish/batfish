@@ -71,6 +71,8 @@ public interface IBatfish extends IPluginConsumer {
 
   NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
 
+  Map<String, String> getQuestionTemplates();
+
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   Directory getTestrigFileTree();

@@ -87,6 +87,7 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
+  public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";
   public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
@@ -95,6 +96,7 @@ public class CoordConsts {
   public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
+  public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_POOL_GETSTATUS = "getstatus";
   public static final String SVC_RSC_POOL_UPDATE = "updatepool";
   public static final String SVC_RSC_PUT_OBJECT = "putobject";

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -34,6 +35,33 @@ public class PoolMgrService {
                 + Version.getVersion()
                 + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
   }
+
+  @GET
+  @Path(CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getQuestionTemplates() {
+    try {
+      _logger.info("PMS:getQuestionTemplates");
+
+      Map<String, String> questionTemplates = Main.getQuestionTemplates();
+
+      if (questionTemplates == null) {
+        return new JSONArray(
+                Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
+                        "Question templates dir is not configured"));
+      } else {
+        return new JSONArray(
+                Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+                        new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST,
+                                questionTemplates)));
+      }
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getQuestionTemplates exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
 
   @GET
   @Path(CoordConsts.SVC_RSC_POOL_GETSTATUS)

@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,7 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -1386,6 +1388,28 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean getQuestionTemplates(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.GET_QUESTION_TEMPLATES)) {
+      return false;
+    }
+
+    JSONObject templates = _workHelper.getQuestionTemplates();
+
+    if (templates == null) {
+      return false;
+    }
+
+    _logger.outputf("Found %d templates\n", templates.length());
+
+    try {
+      _logger.output(templates.toString(1));
+    } catch (JSONException e) {
+      throw new BatfishException("Failed to print templates", e);
+    }
+
+    return true;
+  }
+
   public Settings getSettings() {
     return _settings;
   }
@@ -1906,7 +1930,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       Files.walkFileTree(
           questionsPath,
-          Collections.emptySet(),
+              EnumSet.of(FOLLOW_LINKS),
           1,
           new SimpleFileVisitor<Path>() {
             @Override
@@ -2135,6 +2159,8 @@ public class Client extends AbstractClient implements IClient {
           return getAnswer(outWriter, options, parameters, false, true);
         case GET_QUESTION:
           return getQuestion(options, parameters);
+        case GET_QUESTION_TEMPLATES:
+          return getQuestionTemplates(options, parameters);
         case HELP:
           return help(options, parameters);
         case INIT_ANALYSIS:
