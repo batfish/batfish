@@ -67,18 +67,12 @@ public class WorkMgrServiceV2Test extends JerseyTest {
 
   @Test
   public void getContainers() {
-    Response response =
-        target(Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINERS).toString())
-            .request()
-            .get();
+    Response response = target(BASE_CONTAINER_PATH).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
     Main.getWorkMgr().initContainer("some Container", null);
-    response =
-        target(Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINERS).toString())
-            .request()
-            .get();
+    response = target(BASE_CONTAINER_PATH).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
   }
@@ -89,10 +83,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
         Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINER_NAME).toString();
     Response response = target(baseContainerPath).property(FOLLOW_REDIRECTS, false).request().get();
     assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
-    assertThat(
-        response.getLocation().getPath(),
-        equalTo(
-            Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINERS).toString()));
+    assertThat(response.getLocation().getPath(), equalTo(BASE_CONTAINER_PATH));
   }
 
   @Test
@@ -142,7 +133,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
             .request()
             .post(Entity.entity(String.class, MediaType.APPLICATION_JSON));
     assertThat(response.getStatus(), equalTo(INTERNAL_SERVER_ERROR.getStatusCode()));
-    String expectedMessage = "Container '" + containerName + "' already exists!";
+    String expectedMessage = String.format("Container '%s' already exists!", containerName);
     assertThat(response.readEntity(String.class), containsString(expectedMessage));
     // delete existing container
     response = target().path(BASE_CONTAINER_PATH).path(containerName).request().delete();

@@ -45,7 +45,7 @@ public class ContainerResource {
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
-    _logger.info("WMS: getContainer '" + _name + "'\n");
+    _logger.infof("WMS: getContainer '%s'\n", _name);
     validate();
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
@@ -54,7 +54,7 @@ public class ContainerResource {
   /** Create a new container with name: {@link #_name}. */
   @POST
   public Response createContainer() {
-    _logger.info("WMS: initContainer '" + _name + "'\n");
+    _logger.infof("WMS: initContainer '%s'\n", _name);
     String outputContainerName = Main.getWorkMgr().initContainer(_name, null);
     Main.getAuthorizer().authorizeContainer(_apiKey, outputContainerName);
     return Response.created(_uriInfo.getRequestUri()).build();
@@ -63,7 +63,7 @@ public class ContainerResource {
   /** Delete a specified container with name: {@link #_name}. */
   @DELETE
   public Response deleteContainer() {
-    _logger.info("WMS: delContainer '" + _name + "'\n");
+    _logger.infof("WMS: delContainer '%s'\n", _name);
     validate();
     if (Main.getWorkMgr().delContainer(_name)) {
       return Response.noContent().build();
@@ -98,12 +98,12 @@ public class ContainerResource {
   private void validate() {
     java.nio.file.Path containerDir = Main.getSettings().getContainersLocation().resolve(_name);
     if (!Files.exists(containerDir)) {
-      throw new NotFoundException("Container '" + _name + "' does not exist");
+      throw new NotFoundException(String.format("Container '%s' does not exist", _name));
     }
 
     if (!Main.getAuthorizer().isAccessibleContainer(_apiKey, _name, false)) {
       throw new ForbiddenException(
-          "container '" + _name + "' is not accessible by the api key: " + _apiKey);
+          String.format("container '%s' is not accessible by the api key: %s", _name, _apiKey));
     }
   }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -17,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
@@ -71,11 +71,11 @@ public class WorkMgrServiceV2 {
   public Response createContainer(String createRequest) {
     _logger.info("WMS:create container\n");
     BatfishObjectMapper mapper = new BatfishObjectMapper();
-    CreateContainerRequest request = null;
+    CreateContainerRequest request;
     try {
       request = mapper.readValue(createRequest, new TypeReference<CreateContainerRequest>() {});
     } catch (IOException e) {
-      throw new BatfishException("The input JSON is not property formatted", e);
+      throw new BadRequestException("The input JSON is not property formatted", e);
     }
     String outputContainerName;
     if (request.getSetName()) {
