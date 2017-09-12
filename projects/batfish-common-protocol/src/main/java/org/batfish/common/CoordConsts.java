@@ -6,7 +6,7 @@ package org.batfish.common;
 
 public class CoordConsts {
 
-  public enum WorkStatusCode {
+    public enum WorkStatusCode {
     ASSIGNED,
     ASSIGNMENTERROR,
     CHECKINGSTATUS,
@@ -41,6 +41,7 @@ public class CoordConsts {
   public static final String SVC_KEY_API_KEY = "apikey";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONTAINERS = "containers";
+  public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
   public static final String SVC_KEY_CONTAINER_PREFIX = "containerprefix";
@@ -53,11 +54,14 @@ public class CoordConsts {
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";
+  public static final String SVC_KEY_FORCE = "force";
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
+  public static final String SVC_KEY_PLUGIN_ID = "pluginid";
   public static final String SVC_KEY_PRETTY_ANSWER = "prettyanswer";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
+  public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
   public static final String SVC_KEY_TESTRIG = "testrig";
@@ -83,6 +87,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
+  public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
@@ -97,6 +102,8 @@ public class CoordConsts {
   public static final String SVC_RSC_POOL_UPDATE = "updatepool";
   public static final String SVC_RSC_PUT_OBJECT = "putobject";
   public static final String SVC_RSC_QUEUE_WORK = "queuework";
+  public static final String SVC_RSC_SYNC_TESTRIGS_SYNC_NOW = "synctestrigssyncnow";
+  public static final String SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS = "synctestrigsupdatesettings";
   public static final String SVC_RSC_UPLOAD_ENV = "uploadenvironment";
   public static final String SVC_RSC_UPLOAD_QUESTION = "uploadquestion";
   public static final String SVC_RSC_UPLOAD_TESTRIG = "uploadtestrig";

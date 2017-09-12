@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -223,8 +224,16 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
-    cl.loadClass(className);
-    Class<?> pluginClass = Class.forName(className, true, cl);
+    Class<?> pluginClass = null;
+    try {
+      cl.loadClass(className);
+      pluginClass = Class.forName(className, true, cl);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      // Ignoring this exception is a potentially dangerous hack
+      // but I don't quite know yet why some classes cannot be loaded and how to do things cleanly
+      getLogger().warn("Couldn't load class " + className + ". Skipping.");
+      return;
+    }
     if (!Plugin.class.isAssignableFrom(pluginClass)
         || Modifier.isAbstract(pluginClass.getModifiers())) {
       return;
@@ -291,20 +300,29 @@ public abstract class PluginConsumer implements IPluginConsumer {
     }
   }
 
+  /** Serializes the given object to a file with the given output name, using GZIP compression. */
   public void serializeObject(Serializable object, Path outputFile) {
     try {
-      byte[] data = toGzipData(object);
-      Files.write(outputFile, data);
+      try (OutputStream out = Files.newOutputStream(outputFile)) {
+        serializeToGzipData(object, out);
+      }
     } catch (IOException e) {
       throw new BatfishException(
           "Failed to serialize object to gzip output file: " + outputFile, e);
     }
   }
 
+  /** Serializes the given object to a GZIP-compressed byte[]. */
   protected byte[] toGzipData(Serializable object) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    serializeToGzipData(object, baos);
+    return baos.toByteArray();
+  }
+
+  /** Serializes the given object to the given stream, using GZIP compression. */
+  private void serializeToGzipData(Serializable object, OutputStream out) {
     try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      GZIPOutputStream gos = new GZIPOutputStream(baos);
+      GZIPOutputStream gos = new GZIPOutputStream(out);
       ObjectOutputStream oos;
       if (_serializeToText) {
         XStream xstream = new XStream(new DomDriver("UTF-8"));
@@ -313,9 +331,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
         oos = new ObjectOutputStream(gos);
       }
       oos.writeObject(object);
-      oos.close();
-      byte[] data = baos.toByteArray();
-      return data;
+      oos.flush();
+      gos.finish(); // close the GZIP file entry
     } catch (IOException e) {
       throw new BatfishException("Failed to convert object to gzip data", e);
     }

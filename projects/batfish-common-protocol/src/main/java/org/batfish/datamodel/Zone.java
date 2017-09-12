@@ -64,11 +64,13 @@ public final class Zone extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object object) {
-    if (this == object) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Zone)) {
+      return false;
     }
-    Zone other = (Zone) object;
+    Zone other = (Zone) o;
     if (!this._fromHostFilter.equals(other._fromHostFilter)) {
       return false;
     }

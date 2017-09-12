@@ -1316,6 +1316,26 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
+   * Get a string representation of the file content for configuration file {@code configName}.
+   *
+   * <p>Returns {@code true} if successfully get file content, {@code false} otherwise.
+   */
+  private boolean getConfiguration(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 3, 3, Command.GET_CONFIGURATION)) {
+      return false;
+    }
+    String containerName = parameters.get(0);
+    String testrigName = parameters.get(1);
+    String configName = parameters.get(2);
+    String configContent = _workHelper.getConFiguration(containerName, testrigName, configName);
+    if (configContent != null) {
+      _logger.output(configContent + "\n");
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get information of the container (first element in {@code parameters}).
    *
    * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
@@ -1492,7 +1512,6 @@ public class Client extends AbstractClient implements IClient {
     } else {
       throw new BatfishException("Invalid environment directory or zip: '" + paramsLocation + "'");
     }
-
     if (!uploadEnv(fileToSend, testrigName, newEnvName, baseEnvName)) {
       return false;
     }
@@ -2096,6 +2115,8 @@ public class Client extends AbstractClient implements IClient {
           return generateDeltaDataplane(outWriter, options, parameters);
         case GET:
           return get(words, outWriter, options, parameters, false);
+        case GET_CONFIGURATION:
+          return getConfiguration(options, parameters);
         case GET_CONTAINER:
           return getContainer(options, parameters);
         case GET_DELTA:
@@ -2186,6 +2207,10 @@ public class Client extends AbstractClient implements IClient {
           return showTestrig(options, parameters);
         case SHOW_VERSION:
           return showVersion(options, parameters);
+        case SYNC_TESTRIGS_SYNC_NOW:
+          return syncTestrigsSyncNow(options, parameters);
+        case SYNC_TESTRIGS_UPDATE_SETTINGS:
+          return syncTestrigsUpdateSettings(words, options, parameters);
         case TEST:
           return test(options, parameters);
         case UPLOAD_CUSTOM_OBJECT:
@@ -2604,6 +2629,66 @@ public class Client extends AbstractClient implements IClient {
     String version = map.get(CoordConsts.SVC_KEY_VERSION);
     _logger.outputf("Service version is %s\n", version);
     return true;
+  }
+
+  private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 1, 1, 1, Command.SYNC_TESTRIGS_SYNC_NOW)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    boolean force = false;
+
+    if (options.size() == 1) {
+      if (options.get(0).equals("-force")) {
+        force = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.SYNC_TESTRIGS_SYNC_NOW);
+        return false;
+      }
+    }
+
+    String pluginId = parameters.get(0);
+
+    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
+  }
+
+  private boolean syncTestrigsUpdateSettings(
+      String[] words, List<String> options, List<String> parameters) {
+    if (!isValidArgument(
+        options, parameters, 0, 1, Integer.MAX_VALUE, Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    String pluginId = parameters.get(0);
+
+    String settingsStr =
+        "{" + String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)) + "}";
+
+    Map<String, String> settings = null;
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      settings =
+          mapper.readValue(
+              new JSONObject(settingsStr).toString(), new TypeReference<Map<String, String>>() {});
+    } catch (JSONException | IOException e) {
+      _logger.errorf(
+          "Failed to parse parameters. "
+              + "(Are all key-value pairs separated by commas? Are all "
+              + "values strings?)\n"
+              + e
+              + "\n");
+      return false;
+    }
+
+    return _workHelper.syncTestrigsUpdateSettings(pluginId, _currContainerName, settings);
   }
 
   private boolean test(List<String> options, List<String> parameters) throws IOException {

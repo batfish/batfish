@@ -2228,7 +2228,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private IpAccessList toIpAccessList(ExtendedAccessList eaList) {
     String name = eaList.getName();
-    List<IpAccessListLine> lines = new ArrayList<>();
+    List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
       IpAccessListLine newLine = new IpAccessListLine();
       newLine.setName(fromLine.getName());
@@ -2562,7 +2562,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           public int compare(OspfNetwork lhs, OspfNetwork rhs) {
             int lhsPrefixLength = lhs.getPrefix().getPrefixLength();
             int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
-            int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
+            int result = Integer.compare(rhsPrefixLength, lhsPrefixLength); // intentionally swapped
             if (result == 0) {
               long lhsIp = lhs.getPrefix().getAddress().asLong();
               long rhsIp = rhs.getPrefix().getAddress().asLong();

@@ -26,11 +26,13 @@ public class OspfIntraAreaRoute extends OspfRoute {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof OspfIntraAreaRoute)) {
+      return false;
     }
-    OspfIntraAreaRoute other = (OspfIntraAreaRoute) obj;
+    OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
     if (_nextHopIp == null) {
       if (other._nextHopIp != null) {
         return false;

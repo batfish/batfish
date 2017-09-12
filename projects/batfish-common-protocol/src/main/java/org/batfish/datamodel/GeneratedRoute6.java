@@ -99,6 +99,11 @@ public final class GeneratedRoute6 extends AbstractRoute6 implements Comparable<
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof GeneratedRoute6)) {
+      return false;
+    }
     GeneratedRoute6 rhs = (GeneratedRoute6) o;
     return _network.equals(rhs._network);
   }

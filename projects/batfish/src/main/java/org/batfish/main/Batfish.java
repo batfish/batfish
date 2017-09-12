@@ -457,8 +457,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     _testrigSettings = settings.getActiveTestrigSettings();
     _baseTestrigSettings = settings.getBaseTestrigSettings();
-    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
     _logger = _settings.getLogger();
+    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
     _terminatedWithException = false;
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
@@ -2972,8 +2972,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new NodeSet(nodes);
   }
 
-  private SortedMap<String, SortedSet<String>> parseNodeRoles(
-      Path nodeRolesPath, Set<String> nodes) {
+  private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
     _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath() + "\"");
     String roleFileText = CommonUtil.readFile(nodeRolesPath);
     NodeRoleSpecifier specifier;
@@ -2985,7 +2984,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to parse node roles", e);
     }
-    return specifier.createNodeRolesMap(nodes);
+    return specifier;
   }
 
   private Question parseQuestion() {
@@ -3444,21 +3443,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
+     If inferred is true, it returns the inferred roles;
+     otherwise it prefers the user-specified roles if they exist.
+  */
+  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
+    NodeRoleSpecifier result;
+    boolean inferredRoles = false;
+    TestrigSettings settings = _settings.getActiveTestrigSettings();
+    Path nodeRolesPath = settings.getNodeRolesPath();
+    if (!Files.exists(nodeRolesPath) || inferred) {
+      inferredRoles = true;
+      nodeRolesPath = settings.getInferredNodeRolesPath();
+      if (!Files.exists(nodeRolesPath)) {
+        return new NodeRoleSpecifier();
+      }
+    }
+    result = parseNodeRoles(nodeRolesPath);
+    result.setInferred(inferredRoles);
+    return result;
+  }
+
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
     if one exists; otherwise use the results of our node-role inference.
   */
   private void processNodeRoles(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-    TestrigSettings settings = _settings.getActiveTestrigSettings();
-    Path nodeRolesPath = settings.getNodeRolesPath();
-    if (!Files.exists(nodeRolesPath)) {
-      nodeRolesPath = settings.getInferredNodeRolesPath();
-      if (!Files.exists(nodeRolesPath)) {
-        return;
-      }
-    }
-    SortedMap<String, SortedSet<String>> nodeRoles =
-        parseNodeRoles(nodeRolesPath, configurations.keySet());
+    NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
+    SortedMap<String, SortedSet<String>> nodeRoles = specifier.createNodeRolesMap(
+        configurations.keySet());
     for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
       String hostname = nodeRolesEntry.getKey();
       Configuration config = configurations.get(hostname);

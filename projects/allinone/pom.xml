@@ -36,6 +36,12 @@
             <forceCreation>true</forceCreation>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>findbugs-maven-plugin</artifactId>
+          <configuration><skip>true</skip></configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -94,6 +100,11 @@
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>coordinator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>

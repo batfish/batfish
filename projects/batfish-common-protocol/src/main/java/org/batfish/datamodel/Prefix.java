@@ -89,11 +89,13 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Prefix)) {
+      return false;
     }
-    Prefix rhs = (Prefix) obj;
+    Prefix rhs = (Prefix) o;
     return _address.equals(rhs._address) && _prefixLength == rhs._prefixLength;
   }
 

@@ -37,11 +37,13 @@ public class RouteFilterList extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof RouteFilterList)) {
+      return false;
     }
-    RouteFilterList other = (RouteFilterList) obj;
+    RouteFilterList other = (RouteFilterList) o;
     return other._lines.equals(_lines);
   }
 

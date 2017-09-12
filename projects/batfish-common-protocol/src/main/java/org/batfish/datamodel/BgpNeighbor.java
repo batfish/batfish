@@ -293,8 +293,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof BgpNeighbor)) {
+      return false;
     }
     BgpNeighbor other = (BgpNeighbor) o;
     if (this._advertiseExternal != other._advertiseExternal) {

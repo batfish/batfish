@@ -44,11 +44,13 @@ public final class AsPathAccessList extends ComparableStructure<String> implemen
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof AsPathAccessList)) {
+      return false;
     }
-    AsPathAccessList other = (AsPathAccessList) obj;
+    AsPathAccessList other = (AsPathAccessList) o;
     return other._lines.equals(_lines);
   }
 
