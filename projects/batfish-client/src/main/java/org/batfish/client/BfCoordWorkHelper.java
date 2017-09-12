@@ -1,6 +1,5 @@
 package org.batfish.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterators;
 import java.io.File;
 import java.nio.file.Files;
@@ -1074,8 +1073,8 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public boolean syncTestrigsUpdateSettings(String pluginId, String containerName,
-                                            Map<String, String> settings) {
+  public boolean syncTestrigsUpdateSettings(
+      String pluginId, String containerName, Map<String, String> settings) {
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String settingsStr = mapper.writeValueAsString(settings);

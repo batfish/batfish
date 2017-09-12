@@ -7,7 +7,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.RouteFilterLine;
 
 public class AclLinesAnswerElement implements AnswerElement {
 

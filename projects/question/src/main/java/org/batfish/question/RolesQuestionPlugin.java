@@ -1,8 +1,6 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -28,8 +26,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
     private List<String> _nodes;
 
-    public RolesAnswerElement() {
-    }
+    public RolesAnswerElement() {}
 
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public NodeRoleSpecifier getRoleSpecifier() {
@@ -40,11 +37,12 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
 
       StringBuilder sb;
-      sb = new StringBuilder(
-          "Results for roles\n");
+      sb = new StringBuilder("Results for roles\n");
 
-      sb.append("The following role specifier was "
-          + (_roleSpecifier.getInferred() ? "inferred" : "user-provided") + ":\n");
+      sb.append(
+          "The following role specifier was "
+              + (_roleSpecifier.getInferred() ? "inferred" : "user-provided")
+              + ":\n");
 
       sb.append("Role regexes: \n");
       for (String regex : _roleSpecifier.getRoleRegexes()) {
@@ -77,9 +75,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     public void setNodes(List<String> nodes) {
       _nodes = nodes;
     }
-
   }
-
 
   public static class RolesAnswerer extends Answerer {
 
@@ -93,11 +89,10 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       RolesQuestion question = (RolesQuestion) _question;
       RolesAnswerElement answerElement = new RolesAnswerElement();
 
-      Map<String,Configuration> configurations = _batfish.loadConfigurations();
+      Map<String, Configuration> configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
-      List<String> nodes = CommonUtil.getMatchingStrings(
-          question.getNodeRegex(),
-          configurations.keySet());
+      List<String> nodes =
+          CommonUtil.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
 
       answerElement.setNodes(nodes);
 
@@ -105,23 +100,19 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       answerElement.setRoleSpecifier(roleSpecifier);
 
       return answerElement;
-      }
     }
+  }
 
   // <question_page_comment>
   /**
    * List the roles of each node.
    *
    * @type Roles multifile
-   *
-   * @param nodeRegex
-   *           Regular expression for names of nodes to include. Default value
-   *           is '.*' (all nodes).
-   *
-   * @param inferred
-   *          Boolean indicating whether to show the roles that were automatically
-   *          inferred, even if an explicit NodeRoleSpecifier was provided when the
-   *          testrig was uploaded.  Default value is false.
+   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
+   *     nodes).
+   * @param inferred Boolean indicating whether to show the roles that were automatically inferred,
+   *     even if an explicit NodeRoleSpecifier was provided when the testrig was uploaded. Default
+   *     value is false.
    */
   public static final class RolesQuestion extends Question {
 
@@ -171,7 +162,6 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     public void setInferred(boolean inferred) {
       _inferred = inferred;
     }
-
   }
 
   @Override
@@ -183,5 +173,4 @@ public class RolesQuestionPlugin extends QuestionPlugin {
   protected Question createQuestion() {
     return new RolesQuestion();
   }
-
 }
