@@ -89,6 +89,11 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof Ip)) {
+      return false;
+    }
     Ip rhs = (Ip) o;
     return _ip == rhs._ip;
   }

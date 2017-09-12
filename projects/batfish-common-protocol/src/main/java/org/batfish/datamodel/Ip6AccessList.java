@@ -47,11 +47,13 @@ public class Ip6AccessList extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Ip6AccessList)) {
+      return false;
     }
-    Ip6AccessList other = (Ip6AccessList) obj;
+    Ip6AccessList other = (Ip6AccessList) o;
     return other._lines.equals(_lines);
   }
 

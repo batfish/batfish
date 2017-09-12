@@ -34,6 +34,7 @@ public enum Command {
   GET_ANSWER("get-answer"),
   GET_ANSWER_DELTA("get-answer-delta"),
   GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
+  GET_CONFIGURATION("get-configuration"),
   GET_CONTAINER("get-container"),
   GET_DELTA("get-delta"),
   GET_QUESTION("get-question"),
@@ -149,6 +150,10 @@ public enum Command {
     descs.put(
         GET_ANSWER,
         new Pair<>("<question-name>", "Get the answer for a previously answered question"));
+    descs.put(
+        GET_CONFIGURATION,
+        new Pair<>("<container-name> <testrig-name> <configuration-name>",
+            "Get the file content of the configuration file"));
     descs.put(
         GET_CONTAINER, new Pair<>("<container-name>", "Get the information of the container"));
     descs.put(

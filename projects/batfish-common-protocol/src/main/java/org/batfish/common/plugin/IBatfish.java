@@ -18,6 +18,7 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -67,6 +68,8 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
 
   Map<String, String> getQuestionTemplates();
 

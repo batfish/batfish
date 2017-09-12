@@ -26,6 +26,11 @@ public abstract class ComparableStructure<KeyT extends Comparable<KeyT>>
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof ComparableStructure)) {
+      return false;
+    }
     ComparableStructure<?> rhs = (ComparableStructure<?>) o;
     if (rhs._key.getClass().equals(_key.getClass())) {
       return _key.equals(rhs._key);
