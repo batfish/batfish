@@ -1,0 +1,81 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+      "answer" : [
+        "org.batfish.common.BatfishException: Failed to answer question",
+        "   at org.batfish.main.Batfish.answer(Batfish.java:542)",
+        "   at org.batfish.main.Batfish.run(Batfish.java:3968)",
+        "   at org.batfish.main.Driver$1.run(Driver.java:327)",
+        "Caused by: org.batfish.common.BatfishException: Could not convert '1500' to JsonPathResultEntry",
+        "   at org.batfish.question.jsonpath.JsonPathAssertion.evaluate(JsonPathAssertion.java:47)",
+        "   at org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerer.computeResult(JsonPathQuestionPlugin.java:236)",
+        "   at org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerer.lambda$answer$0(JsonPathQuestionPlugin.java:153)",
+        "   at java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)",
+        "   at java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1374)",
+        "   at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:481)",
+        "   at java.util.stream.ForEachOps$ForEachTask.compute(ForEachOps.java:291)",
+        "   at java.util.concurrent.CountedCompleter.exec(CountedCompleter.java:731)",
+        "   at java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:289)",
+        "   at java.util.concurrent.ForkJoinTask.doInvoke(ForkJoinTask.java:401)",
+        "   at java.util.concurrent.ForkJoinTask.invoke(ForkJoinTask.java:734)",
+        "   at java.util.stream.ForEachOps$ForEachOp.evaluateParallel(ForEachOps.java:160)",
+        "   at java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateParallel(ForEachOps.java:174)",
+        "   at java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:233)",
+        "   at java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:418)",
+        "   at java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:583)",
+        "   at org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerer.answer(JsonPathQuestionPlugin.java:151)",
+        "   at org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerer.answer(JsonPathQuestionPlugin.java:114)",
+        "   at org.batfish.main.Batfish.answer(Batfish.java:539)",
+        "   ... 2 more",
+        "Caused by: com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of `org.batfish.question.jsonpath.JsonPathResult$JsonPathResultEntry` (although at least one Creator exists): no int/Int-argument constructor/factory method to deserialize from Number value (1500)",
+        " at [Source: (String)\"1500\"; line: 1, column: 1]",
+        "   at com.fasterxml.jackson.databind.exc.MismatchedInputException.from(MismatchedInputException.java:63)",
+        "   at com.fasterxml.jackson.databind.DeserializationContext.reportInputMismatch(DeserializationContext.java:1329)",
+        "   at com.fasterxml.jackson.databind.DeserializationContext.handleMissingInstantiator(DeserializationContext.java:1031)",
+        "   at com.fasterxml.jackson.databind.deser.ValueInstantiator.createFromInt(ValueInstantiator.java:261)",
+        "   at com.fasterxml.jackson.databind.deser.std.StdValueInstantiator.createFromInt(StdValueInstantiator.java:347)",
+        "   at com.fasterxml.jackson.databind.deser.BeanDeserializerBase.deserializeFromNumber(BeanDeserializerBase.java:1302)",
+        "   at com.fasterxml.jackson.databind.deser.BeanDeserializer._deserializeOther(BeanDeserializer.java:172)",
+        "   at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:161)",
+        "   at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:4001)",
+        "   at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:2992)",
+        "   at org.batfish.question.jsonpath.JsonPathAssertion.evaluate(JsonPathAssertion.java:42)",
+        "   ... 20 more"
+      ]
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "differential" : false,
+    "innerQuestion" : {
+      "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+      "differential" : false,
+      "nodeRegex" : ".*",
+      "summary" : false
+    },
+    "paths" : [
+      {
+        "assertion" : {
+          "expect" : [
+            1500,
+            1800,
+            1600,
+            1700,
+            1500,
+            1500
+          ],
+          "type" : "equals"
+        },
+        "path" : "$.nodes['as2core2']..mtu",
+        "suffix" : false
+      }
+    ]
+  },
+  "status" : "FAILURE",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

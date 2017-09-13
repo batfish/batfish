@@ -38,6 +38,7 @@ public enum Command {
   GET_CONTAINER("get-container"),
   GET_DELTA("get-delta"),
   GET_QUESTION("get-question"),
+  GET_QUESTION_TEMPLATES("get-question-templates"),
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
@@ -161,6 +162,7 @@ public enum Command {
             "<question-file>  [param1=value1 [param2=value2] ...]",
             "Answer the question by type for the delta environment"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
+    descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));
     descs.put(
         INIT_ANALYSIS,

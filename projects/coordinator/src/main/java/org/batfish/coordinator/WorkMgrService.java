@@ -828,6 +828,35 @@ public class WorkMgrService {
     }
   }
 
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getQuestionTemplates(
+          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
+    try {
+      _logger.info("WMS:getQuestionTemplates " + apiKey + "\n");
+
+      checkStringParam(apiKey, "API key");
+
+      Map<String, String> questionTemplates = Main.getQuestionTemplates();
+
+      if (questionTemplates == null) {
+        return new JSONArray(
+                Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
+                        "Question templates dir is not configured"));
+      } else {
+        return new JSONArray(
+                Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
+                        new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST,
+                                questionTemplates)));
+      }
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getQuestionTemplates exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
   @GET
   @Path(CoordConsts.SVC_RSC_GETSTATUS)
   @Produces(MediaType.APPLICATION_JSON)

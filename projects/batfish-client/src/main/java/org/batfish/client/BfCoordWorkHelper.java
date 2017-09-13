@@ -1,6 +1,5 @@
 package org.batfish.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterators;
 import java.io.File;
 import java.nio.file.Files;
@@ -571,6 +570,35 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getObject from %s using (%s, %s)\n",
           _coordWorkMgr, testrigName, objectName);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
+  }
+
+  @Nullable
+  public JSONObject getQuestionTemplates() {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+        _logger.errorf("question list key not found in: %s\n", jObj.toString());
+        return null;
+      }
+
+      return jObj.getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
+    } catch (Exception e) {
+      _logger.errorf(
+              "Exception in getQuestionTemplates from %s\n", _coordWorkMgr);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return null;
     }
