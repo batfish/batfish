@@ -4,11 +4,12 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.collect.Lists;
 import java.net.URI;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
@@ -138,13 +139,14 @@ public class Main {
   }
 
   private static void startWorkManagerService(
-      Class<?> serviceClass, Class<? extends Feature> jsonFeature, int port) {
+      Class<?> serviceClass, List<Class<?>> features, int port) {
     ResourceConfig rcWork =
         new ResourceConfig(serviceClass)
             .register(ExceptionMapper.class)
-            .register(jsonFeature)
-            .register(MultiPartFeature.class)
             .register(CrossDomainFilter.class);
+    for (Class<?> feature : features) {
+      rcWork.register(feature);
+    }
 
     if (_settings.getSslWorkDisable()) {
       URI workMgrUri =
@@ -176,11 +178,18 @@ public class Main {
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(
-        WorkMgrService.class, JettisonFeature.class, _settings.getServiceWorkPort());
+        WorkMgrService.class,
+        Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
+        _settings.getServiceWorkPort());
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
-    startWorkManagerService(
-        WorkMgrServiceV2.class, JacksonFeature.class, _settings.getServiceWorkV2Port());
 
+    startWorkManagerService(
+        WorkMgrServiceV2.class,
+        Lists.newArrayList(
+            JacksonFeature.class,
+            ApiKeyAuthenticationFilter.class,
+            VersionCompatibilityFilter.class),
+        _settings.getServiceWorkV2Port());
   }
 
   public static void main(String[] args) {
