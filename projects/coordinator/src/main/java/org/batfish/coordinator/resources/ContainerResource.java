@@ -1,6 +1,5 @@
 package org.batfish.coordinator.resources;
 
-import java.nio.file.Files;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -17,7 +16,7 @@ import org.batfish.coordinator.Main;
  * The {@link ContainerResource} is a resource for servicing client API calls at container level.
  *
  * <p>The ContainerResource provides information about a specified container, and provides the
- * ability to create/delete a specified container for authenticated clients.
+ * ability to delete a specified container for authenticated clients.
  *
  * <p>The ContainerResource also provides the access entry for other subResources.
  */
@@ -39,8 +38,8 @@ public class ContainerResource {
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
-    _logger.infof("WMS: getContainer '%s'\n", _name);
-    validate();
+    _logger.infof("WMS2: getContainer '%s'\n", _name);
+    checkAccessToContainer();
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
   }
@@ -48,8 +47,8 @@ public class ContainerResource {
   /** Delete a specified container with name: {@link #_name}. */
   @DELETE
   public Response deleteContainer() {
-    _logger.infof("WMS: delContainer '%s'\n", _name);
-    validate();
+    _logger.infof("WMS2: delContainer '%s'\n", _name);
+    checkAccessToContainer();
     if (Main.getWorkMgr().delContainer(_name)) {
       return Response.noContent().build();
     } else {
@@ -57,10 +56,9 @@ public class ContainerResource {
     }
   }
 
-  /** Validates the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
-  private void validate() {
-    java.nio.file.Path containerDir = Main.getSettings().getContainersLocation().resolve(_name);
-    if (!Files.exists(containerDir)) {
+  /** Check the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
+  private void checkAccessToContainer() {
+    if (!Main.getWorkMgr().checkContainerExists(_name)) {
       throw new NotFoundException(String.format("Container '%s' does not exist", _name));
     }
 

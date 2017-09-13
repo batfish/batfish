@@ -1,11 +1,12 @@
 package org.batfish.client;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -156,8 +157,8 @@ public class BfCoordWorkHelper {
 
   public boolean delContainer(String containerName) {
     try {
-      String resource = Paths.get(CoordConsts.SVC_KEY_CONTAINERS, containerName).toString();
-      WebTarget webTarget = getTargetV2(resource);
+      WebTarget webTarget =
+          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
 
       Response response =
           webTarget
@@ -404,7 +405,6 @@ public class BfCoordWorkHelper {
   @Nullable
   public String getConFiguration(String containerName, String testrigName, String configName) {
     try {
-      Client client = getClientBuilder().build();
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONFIGURATION);
 
       MultiPart multiPart = new MultiPart();
@@ -448,8 +448,8 @@ public class BfCoordWorkHelper {
   @Nullable
   public Container getContainer(String containerName) {
     try {
-      String resource = Paths.get(CoordConsts.SVC_KEY_CONTAINERS, containerName).toString();
-      WebTarget webTarget = getTargetV2(resource);
+      WebTarget webTarget =
+          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
 
       Response response =
           webTarget
@@ -586,15 +586,18 @@ public class BfCoordWorkHelper {
   }
 
   /**
-   * Returns a {@link WebTarget webTarget} for BatFish service V2 by resolving {@code resource} to
-   * base url of service V2.
+   * Returns a {@link WebTarget webTarget} for BatFish service V2 by resolving each segment in
+   * {@code resources} to base url of service V2.
    */
-  private WebTarget getTargetV2(String resource) {
+  private WebTarget getTargetV2(List<String> resources) {
     String protocol = (_settings.getSslDisable()) ? "http" : "https";
     String urlString =
-        String.format(
-            "%s://%s%s/%s", protocol, _coordWorkMgrV2, CoordConsts.SVC_CFG_WORK_MGR2, resource);
-    return _client.target(urlString);
+        String.format("%s://%s%s", protocol, _coordWorkMgrV2, CoordConsts.SVC_CFG_WORK_MGR2);
+    WebTarget target = _client.target(urlString);
+    for (String resource : resources) {
+      target = target.path(resource);
+    }
+    return target;
   }
 
   public WorkItem getWorkItemAnswerQuestion(

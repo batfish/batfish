@@ -10,9 +10,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.TreeSet;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
@@ -21,7 +20,6 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.coordinator.config.Settings;
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
@@ -35,9 +33,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class WorkMgrServiceV2Test extends JerseyTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  private static final String BASE_CONTAINER_PATH =
-      Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINERS).toString();
 
   @Before
   public void initContainerEnvironment() throws Exception {
@@ -55,53 +50,58 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     return new ResourceConfig(WorkMgrServiceV2.class)
         .register(ExceptionMapper.class)
         .register(JacksonFeature.class)
-        .register(MultiPartFeature.class)
         .register(CrossDomainFilter.class);
+  }
+
+  private WebTarget getContainersTarget() {
+    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConsts.SVC_KEY_CONTAINERS);
   }
 
   @Test
   public void getContainers() {
-    Response response = target(BASE_CONTAINER_PATH).request().get();
+    Response response = getContainersTarget().request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
     Main.getWorkMgr().initContainer("someContainer", null);
-    response = target(BASE_CONTAINER_PATH).request().get();
+    response = getContainersTarget().request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
   }
 
   @Test
   public void redirectContainer() {
-    String baseContainerPath =
-        Paths.get(CoordConsts.SVC_CFG_WORK_MGR2, CoordConsts.SVC_KEY_CONTAINER_NAME).toString();
-    Response response = target(baseContainerPath).property(FOLLOW_REDIRECTS, false).request().get();
+    Response response =
+        target(CoordConsts.SVC_CFG_WORK_MGR2)
+            .path(CoordConsts.SVC_KEY_CONTAINER_NAME)
+            .property(FOLLOW_REDIRECTS, false)
+            .request()
+            .get();
     assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
-    assertThat(response.getLocation().getPath(), equalTo(BASE_CONTAINER_PATH));
+    assertThat(response.getLocation().getPath(), equalTo("/v2/containers"));
   }
 
   @Test
   public void testGetContainer() {
     String containerName = "someContainer";
-    Container expected = Container.of(containerName, new TreeSet<>());
     Main.getWorkMgr().initContainer(containerName, null);
-    Response response = target().path(BASE_CONTAINER_PATH).path(containerName).request().get();
+    Response response = getContainersTarget().path(containerName).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(new GenericType<Container>() {}), equalTo(expected));
+    assertThat(
+        response.readEntity(new GenericType<Container>() {}).getName(), equalTo(containerName));
   }
 
   @Test
   public void testDeleteContainer() {
     String containerName = "someContainer";
     Main.getWorkMgr().initContainer(containerName, null);
-    Response response = target().path(BASE_CONTAINER_PATH).path(containerName).request().delete();
+    Response response = getContainersTarget().path(containerName).request().delete();
     assertThat(response.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }
 
   @Test
   public void deleteNonExistingContainer() {
-    Response response =
-        target().path(BASE_CONTAINER_PATH).path("nonExistingContainer").request().delete();
+    Response response = getContainersTarget().path("nonExistingContainer").request().delete();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
 }

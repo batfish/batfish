@@ -41,7 +41,7 @@ public class WorkMgrServiceV2 {
   @GET
   @Path(CoordConsts.SVC_KEY_CONTAINERS)
   public Response getContainers() {
-    _logger.info("WMS:getContainers\n");
+    _logger.info("WMS2:getContainers\n");
     List<Container> containers = Main.getWorkMgr().getContainers(_apiKey);
     return Response.ok(containers).build();
   }
@@ -50,14 +50,14 @@ public class WorkMgrServiceV2 {
   @GET
   @Path(CoordConsts.SVC_KEY_CONTAINER_NAME)
   public Response redirectContainer() {
-    _logger.info("WMS:redirect container\n");
+    _logger.info("WMS2:redirect container\n");
     return Response.status(Status.MOVED_PERMANENTLY)
         .location(_uriInfo.getRequestUri().resolve(CoordConsts.SVC_KEY_CONTAINERS))
         .build();
   }
 
   /** Relocate the request to ContainerResource. */
-  @Path("/containers/{id}")
+  @Path("containers/{id}")
   public ContainerResource getResource(@PathParam("id") String id) {
     _logger.info("Relocate the request to ContainerResource\n");
     return new ContainerResource(_uriInfo, _apiKey, id);
