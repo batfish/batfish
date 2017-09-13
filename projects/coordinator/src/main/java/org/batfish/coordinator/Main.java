@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.Lists;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,7 +143,6 @@ public class Main {
     ResourceConfig rcWork =
         new ResourceConfig(serviceClass)
             .register(ExceptionMapper.class)
-            .register(MultiPartFeature.class)
             .register(CrossDomainFilter.class);
     for (Class<?> feature : features) {
       rcWork.register(feature);
@@ -181,15 +179,17 @@ public class Main {
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(
         WorkMgrService.class,
-        Lists.newArrayList(JettisonFeature.class),
+        Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
         _settings.getServiceWorkPort());
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
-    List<Class<?>> features = new ArrayList<>();
-    features.add(JacksonFeature.class);
-    features.add(ApiKeyAuthenticationFilter.class);
-    features.add(VersionCompatibilityFilter.class);
 
-    startWorkManagerService(WorkMgrServiceV2.class, features, _settings.getServiceWorkV2Port());
+    startWorkManagerService(
+        WorkMgrServiceV2.class,
+        Lists.newArrayList(
+            JacksonFeature.class,
+            ApiKeyAuthenticationFilter.class,
+            VersionCompatibilityFilter.class),
+        _settings.getServiceWorkV2Port());
   }
 
   public static void main(String[] args) {
