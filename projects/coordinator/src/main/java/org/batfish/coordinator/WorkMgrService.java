@@ -720,7 +720,7 @@ public class WorkMgrService {
 
       checkContainerAccessibility(apiKey, containerName);
 
-      Container container = Main.getWorkMgr().getContainer(containerDir);
+      Container container = Main.getWorkMgr().getContainer(containerName);
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String containerString = mapper.writeValueAsString(container);
 

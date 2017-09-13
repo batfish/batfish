@@ -9,7 +9,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
-import java.util.TreeSet;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
@@ -75,11 +74,11 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void getContainer() throws Exception {
     String containerName = "some container";
-    Container expected = Container.of(containerName, new TreeSet<>());
     Main.getWorkMgr().initContainer(containerName, null);
 
     Response response = target("/v2/container").path(containerName).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(new GenericType<Container>() {}), equalTo(expected));
+    assertThat(
+        response.readEntity(new GenericType<Container>() {}).getName(), equalTo(containerName));
   }
 }

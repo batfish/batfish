@@ -6,13 +6,11 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishLogger;
@@ -53,9 +51,11 @@ public class WorkMgrServiceTest {
   public void getEmptyContainer() throws Exception {
     initContainerEnvironment();
     Response response = _service.getContainer("100", "0.0.0", _containerName);
-    String containerJson = response.getEntity().toString();
-    String expected = "{\n  \"name\" : \"myContainer\"\n}";
-    assertThat(containerJson, equalTo(expected));
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    Container container = mapper.readValue(response.getEntity().toString(), Container.class);
+    assertThat(container.getName(), equalTo(_containerName));
+    assertThat(container.getTestrigsCount(), equalTo(0));
+    assertThat(container.getAnalysesCount(), equalTo(0));
   }
 
   @Test
@@ -86,9 +86,9 @@ public class WorkMgrServiceTest {
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Container container = mapper.readValue(response.getEntity().toString(), Container.class);
-    Container expected =
-        Container.of(_containerName, Sets.newTreeSet(Collections.singleton("testrig")));
-    assertThat(container, equalTo(expected));
+    assertThat(container.getName(), equalTo(_containerName));
+    assertThat(container.getTestrigsCount(), equalTo(1));
+    assertThat(container.getAnalysesCount(), equalTo(0));
   }
 
   @Test
