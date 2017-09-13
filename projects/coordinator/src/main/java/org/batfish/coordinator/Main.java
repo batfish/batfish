@@ -171,6 +171,42 @@ public class Main {
     }
   }
 
+  private static void startWorkManagerServiceV2(
+      Class<?> serviceClass, Class<? extends Feature> jsonFeature, int port) {
+    ResourceConfig rcWork =
+        new ResourceConfig(serviceClass)
+            .register(ExceptionMapper.class)
+            .register(jsonFeature)
+            .register(MultiPartFeature.class)
+            .register(CrossDomainFilter.class)
+            .register(ApiKeyAuthenticationFilter.class)
+            .register(VersionCompatibilityFilter.class);
+
+    if (_settings.getSslWorkDisable()) {
+      URI workMgrUri =
+          UriBuilder.fromUri("http://" + _settings.getWorkBindHost()).port(port).build();
+
+      _logger.info("Starting work manager " + serviceClass + " at " + workMgrUri + "\n");
+
+      GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
+    } else {
+      URI workMgrUri =
+          UriBuilder.fromUri("https://" + _settings.getWorkBindHost()).port(port).build();
+
+      _logger.info("Starting work manager at " + workMgrUri + "\n");
+      CommonUtil.startSslServer(
+          rcWork,
+          workMgrUri,
+          _settings.getSslWorkKeystoreFile(),
+          _settings.getSslWorkKeystorePassword(),
+          _settings.getSslWorkTrustAllCerts(),
+          _settings.getSslWorkTruststoreFile(),
+          _settings.getSslWorkTruststorePassword(),
+          ConfigurationLocator.class,
+          Main.class);
+    }
+  }
+
   private static void initWorkManager() {
     _workManager = new WorkMgr(_settings, _logger);
     _workManager.startWorkManager();
@@ -178,9 +214,8 @@ public class Main {
     startWorkManagerService(
         WorkMgrService.class, JettisonFeature.class, _settings.getServiceWorkPort());
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
-    startWorkManagerService(
+    startWorkManagerServiceV2(
         WorkMgrServiceV2.class, JacksonFeature.class, _settings.getServiceWorkV2Port());
-
   }
 
   public static void main(String[] args) {
