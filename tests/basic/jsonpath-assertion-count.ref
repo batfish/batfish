@@ -5,7 +5,7 @@
       "results" : {
         "0" : {
           "assertionResult" : false,
-          "numResults" : 4,
+          "numResults" : 3,
           "path" : {
             "assertion" : {
               "expect" : 5,
@@ -15,9 +15,6 @@
             "suffix" : false
           },
           "result" : {
-            "'nodes'->'as3border1'->'interfaces'->'Ethernet0/0'->'mtu'" : {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
-            },
             "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet0/0'->'mtu'" : {
               "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"
             },
@@ -33,7 +30,7 @@
       "summary" : {
         "numFailed" : 1,
         "numPassed" : 0,
-        "numResults" : 4
+        "numResults" : 3
       }
     }
   ],
@@ -61,6 +58,6 @@
   "summary" : {
     "numFailed" : 1,
     "numPassed" : 0,
-    "numResults" : 4
+    "numResults" : 3
   }
 }
