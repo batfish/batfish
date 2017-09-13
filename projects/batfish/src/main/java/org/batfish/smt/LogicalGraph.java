@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;

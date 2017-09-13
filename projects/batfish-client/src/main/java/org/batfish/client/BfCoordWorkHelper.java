@@ -1102,8 +1102,8 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public boolean syncTestrigsUpdateSettings(String pluginId, String containerName,
-                                            Map<String, String> settings) {
+  public boolean syncTestrigsUpdateSettings(
+      String pluginId, String containerName, Map<String, String> settings) {
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String settingsStr = mapper.writeValueAsString(settings);

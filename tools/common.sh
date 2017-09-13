@@ -111,6 +111,18 @@ _batfish_build_all() {
 }
 export -f _batfish_build_all
 
+batfish_test_all() {
+   bash -c '_batfish_test_all "$@"' _batfish_test_all "$@" || return 1
+}
+export -f batfish_test_all
+
+_batfish_test_all() {
+   _pre_build || return 1
+   cd "${PROJECTS_PATH}"
+   mvn clean install || return 1
+}
+export -f _batfish_test_all
+
 batfish_confirm() {
    # call with a prompt string or use a default
    read -r -p "${1:-Are you sure? [y/N]} " response < /dev/tty

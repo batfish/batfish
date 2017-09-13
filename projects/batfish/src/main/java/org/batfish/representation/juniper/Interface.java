@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
