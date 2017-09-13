@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.batfish.common.util.CommonUtil;
 
 public class JsonPathResult {
 
