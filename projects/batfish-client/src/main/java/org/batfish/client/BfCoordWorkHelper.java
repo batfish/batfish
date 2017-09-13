@@ -47,7 +47,7 @@ public class BfCoordWorkHelper {
     _logger = logger;
     _settings = settings;
     try {
-      _client = getClientBuilder().build();
+      _client = getClientBuilder().build().register(BfClientRequestFilter.class);
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
