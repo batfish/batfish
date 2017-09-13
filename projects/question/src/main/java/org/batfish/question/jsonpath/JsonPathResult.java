@@ -41,8 +41,8 @@ public class JsonPathResult {
       } else if (!(o instanceof JsonPathResultEntry)) {
         return false;
       }
-      return (CommonUtil.equalsWithNullCheck(_prefix, ((JsonPathResultEntry) o)._prefix)
-              && CommonUtil.equalsWithNullCheck(_suffix, ((JsonPathResultEntry) o)._suffix));
+      return (Objects.equal(_prefix, ((JsonPathResultEntry) o)._prefix)
+              && Objects.equal(_suffix, ((JsonPathResultEntry) o)._suffix));
     }
 
     @JsonIgnore

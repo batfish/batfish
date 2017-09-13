@@ -591,7 +591,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
-        _logger.errorf("question list key not found in: %s\n", jObj.toString());
+        _logger.errorf("question list key not found in: %s\n", jObj);
         return null;
       }
 
