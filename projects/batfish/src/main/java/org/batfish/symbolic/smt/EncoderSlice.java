@@ -51,6 +51,7 @@ import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.symbolic.AstVisitor;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -555,7 +556,7 @@ class EncoderSlice {
 
                 _logicalGraph.getRedistributedProtocols().put(router, proto, redistributed);
 
-                RoutingPolicy pol = getGraph().findCommonRoutingPolicy(router, proto);
+                RoutingPolicy pol = Graph.findCommonRoutingPolicy(conf, proto);
                 if (pol != null) {
                   Set<Protocol> ps = findRedistributedProtocols(conf, pol, proto);
                   for (Protocol p : ps) {
@@ -2481,53 +2482,19 @@ class EncoderSlice {
 
         acc = mkIf(usable, acc, val);
 
-        List<Long> areas = new ArrayList<>(getGraph().getAreaIds().get(router));
-        for (Prefix p : originations) {
-          BoolExpr notIbgpExport = mkNot(mkBool(isNonClientEdge));
-          BoolExpr ifaceUp = interfaceActive(iface, proto);
-          BoolExpr relevantPrefix = isRelevantFor(p, _symbolicPacket.getDstIp());
-          BoolExpr relevant = mkAnd(notIbgpExport, ifaceUp, relevantPrefix);
+        if (!proto.isBgp()) {
+          for (Prefix p : originations) {
 
-          int adminDistance = defaultAdminDistance(conf, proto);
-          int prefixLength = p.getPrefixLength();
+            BoolExpr notIbgpExport = mkNot(mkBool(isNonClientEdge));
+            BoolExpr ifaceUp = interfaceActive(iface, proto);
+            BoolExpr relevantPrefix = isRelevantFor(p, _symbolicPacket.getDstIp());
+            BoolExpr relevant = mkAnd(notIbgpExport, ifaceUp, relevantPrefix);
 
-          BoolExpr values;
+            int adminDistance = defaultAdminDistance(conf, proto);
+            int prefixLength = p.getPrefixLength();
 
-          if (proto.isBgp()) {
+            BoolExpr values;
 
-            // TODO: delete the unused values below
-            SymbolicRecord r = new SymbolicRecord();
-            r.setPermitted(mkTrue());
-            r.setLocalPref(mkInt(0));
-            r.setAdminDist(mkInt(adminDistance));
-            r.setMetric(mkInt(0));
-            r.setMed(mkInt(100));
-            r.setPrefixLength(mkInt(prefixLength));
-            r.setOspfType(new SymbolicOspfType(this, OspfType.O));
-            r.setOspfArea(
-                new SymbolicEnum<>(this, areas, iface.getOspfAreaName())); // TODO: NAMING BUG
-            r.setBgpInternal(mkFalse());
-            r.setIgpMetric(mkInt(0));
-
-            // send the client id for route reflector purposes
-            Integer x = getGraph().getOriginatorId().get(router);
-            int clientId = (!isClientEdge && !isNonClientEdge ? 0 : x);
-            r.setClientId(new SymbolicOriginatorId(this, clientId));
-
-            Map<CommunityVar, BoolExpr> comms = new HashMap<>();
-            vars.getCommunities()
-                .forEach(
-                    (cvar, b) -> {
-                      comms.put(cvar, mkFalse());
-                    });
-            r.setCommunities(comms);
-
-            TransferFunctionSSA origin =
-                new TransferFunctionSSA(
-                    this, conf, r, vars, proto, proto, statements, cost, ge, true);
-            values = origin.compute();
-
-          } else {
             // TODO: delete the unused values below
             BoolExpr per = vars.getPermitted();
             BoolExpr lp = safeEq(vars.getLocalPref(), mkInt(0));
@@ -2545,9 +2512,9 @@ class EncoderSlice {
             }
 
             values = mkAnd(per, lp, ad, met, med, len, type, area, internal, igpMet, comms);
-          }
 
-          acc = mkIf(relevant, values, acc);
+            acc = mkIf(relevant, values, acc);
+          }
         }
 
         add(acc);

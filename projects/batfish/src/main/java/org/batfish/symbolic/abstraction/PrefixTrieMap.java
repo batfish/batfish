@@ -82,10 +82,13 @@ public class PrefixTrieMap implements Serializable {
       int length = p.getPrefixLength();
       assert (length < 32);
       Ip ip = p.getAddress();
-      BitSet bits = ip.getAddressBits();
-      bits.set(length + 1, val);
-      long l = bits.toLongArray()[0];
-      return new Prefix(new Ip(l), length + 1);
+      long l = ip.asLong();
+      long lnew = l;
+      if (val) {
+        long delta = (long) Math.pow(2, 32 - length - 1);
+        lnew = l + delta;
+      }
+      return new Prefix(new Ip(lnew), length + 1);
     }
 
     private void addEntry(
@@ -94,6 +97,16 @@ public class PrefixTrieMap implements Serializable {
         List<Prefix> prefixes = map.computeIfAbsent(devices, k -> new ArrayList<>());
         prefixes.add(p);
       }
+    }
+
+    private boolean hasUniqueDevice(@Nullable Set<String> devices) {
+      if (devices == null) {
+        return true;
+      }
+
+      return _devices != null && !_devices.containsAll(devices)
+          || _left != null && _left.hasUniqueDevice(devices)
+          || (_right != null && _right.hasUniqueDevice(devices));
     }
 
     private void createDestinationMap(
@@ -105,17 +118,23 @@ public class PrefixTrieMap implements Serializable {
       if (_left == null && _right == null) {
         addEntry(map, devices, prefix);
       } else {
-        Prefix left = prefix == null ? null : extendPrefixWith(prefix, false);
-        Prefix right = prefix == null ? null : extendPrefixWith(prefix, true);
-        if (_left != null) {
-          _left.createDestinationMap(map, left, devices);
+        // Optimization to avoid creating huge numbers of prefixes:
+        // Check if at least one of the branches has a different device in the leaf
+        if (hasUniqueDevice(devices)) {
+          Prefix left = prefix == null ? null : extendPrefixWith(prefix, false);
+          Prefix right = prefix == null ? null : extendPrefixWith(prefix, true);
+          if (_left != null) {
+            _left.createDestinationMap(map, left, devices);
+          } else {
+            addEntry(map, devices, left);
+          }
+          if (_right != null) {
+            _right.createDestinationMap(map, right, _devices);
+          } else {
+            addEntry(map, devices, right);
+          }
         } else {
-          addEntry(map, devices, left);
-        }
-        if (_right != null) {
-          _right.createDestinationMap(map, right, _devices);
-        } else {
-          addEntry(map, devices, right);
+          addEntry(map, devices, prefix);
         }
       }
     }

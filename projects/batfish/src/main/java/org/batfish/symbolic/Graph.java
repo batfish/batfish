@@ -17,12 +17,20 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.symbolic.smt.collections.Table2;
 
 /**
@@ -37,8 +45,6 @@ import org.batfish.symbolic.smt.collections.Table2;
  * @author Ryan Beckett
  */
 public class Graph {
-
-  public static final String BGP_NETWORK_FILTER_LIST_NAME = "BGP_NETWORK_NETWORKS_FILTER";
 
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
 
@@ -498,8 +504,7 @@ public class Graph {
    * Find the common (default) routing policy for the protol.
    */
   @Nullable
-  public RoutingPolicy findCommonRoutingPolicy(String router, Protocol proto) {
-    Configuration conf = _configurations.get(router);
+  public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
     if (proto.isOspf()) {
       String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
       return conf.getRoutingPolicies().get(exp);
@@ -609,15 +614,40 @@ public class Graph {
     }
 
     if (proto.isBgp()) {
-      conf.getRouteFilterLists()
-          .forEach(
-              (name, list) -> {
-                for (RouteFilterLine line : list.getLines()) {
-                  if (name.contains(Graph.BGP_NETWORK_FILTER_LIST_NAME)) {
-                    acc.add(line.getPrefix());
+      RoutingPolicy defaultPol = findCommonRoutingPolicy(conf, Protocol.BGP);
+      if (defaultPol != null) {
+        AstVisitor v = new AstVisitor();
+        v.visit(
+            conf,
+            defaultPol.getStatements(),
+            stmt -> { },
+            expr -> {
+              if (expr instanceof Conjunction) {
+                Conjunction c = (Conjunction) expr;
+                if (c.getConjuncts().size() >= 2) {
+                  BooleanExpr be1 = c.getConjuncts().get(0);
+                  BooleanExpr be2 = c.getConjuncts().get(1);
+                  if (be1 instanceof MatchPrefixSet && be2 instanceof Not) {
+                    MatchPrefixSet mps = (MatchPrefixSet) be1;
+                    Not n = (Not) be2;
+                    if (n.getExpr() instanceof MatchProtocol) {
+                      MatchProtocol mp = (MatchProtocol) n.getExpr();
+                      if (mp.getProtocol() == RoutingProtocol.BGP) {
+                        PrefixSetExpr e = mps.getPrefixSet();
+                        if (e instanceof ExplicitPrefixSet) {
+                          ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
+                          Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
+                          for (PrefixRange r : ranges) {
+                            acc.add(r.getPrefix());
+                          }
+                        }
+                      }
+                    }
                   }
                 }
-              });
+              }
+            });
+      }
       return acc;
     }
 

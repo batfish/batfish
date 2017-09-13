@@ -1,4 +1,4 @@
-package org.batfish.symbolic.smt;
+package org.batfish.symbolic;
 
 import java.util.List;
 import java.util.function.Consumer;
