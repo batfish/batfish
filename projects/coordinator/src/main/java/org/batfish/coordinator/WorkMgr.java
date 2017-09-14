@@ -274,7 +274,7 @@ public class WorkMgr extends AbstractCoordinator {
         JSONArray array = new JSONArray(sobj);
         _logger.info(
             String.format(
-                "response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1)));
+                "response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
 
         if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
           _logger.error(
@@ -285,7 +285,7 @@ public class WorkMgr extends AbstractCoordinator {
           BatfishObjectMapper mapper = new BatfishObjectMapper();
           task = mapper.readValue(taskStr, Task.class);
           if (task.getStatus() == null) {
-            _logger.error(String.format("did not see status key in json response\n"));
+            _logger.error("did not see status key in json response\n");
           }
         }
       }

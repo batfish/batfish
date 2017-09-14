@@ -491,7 +491,7 @@ public class Driver {
 
       String sobj = response.readEntity(String.class);
       JSONArray array = new JSONArray(sobj);
-      logger.debugf("BF: response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1));
+      logger.debugf("BF: response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
         logger.errorf(

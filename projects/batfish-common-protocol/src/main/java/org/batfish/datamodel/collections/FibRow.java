@@ -87,6 +87,6 @@ public class FibRow implements Comparable<FibRow>, Serializable {
 
   @Override
   public String toString() {
-    return String.format("%-19s", _prefix.toString()) + _interface;
+    return String.format("%-19s", _prefix) + _interface;
   }
 }

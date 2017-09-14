@@ -4345,19 +4345,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
     if (!invalidTransitNodes.isEmpty()) {
       return new StringAnswerElement(
-          String.format("Unknown transit nodes %s", invalidTransitNodes.toString()));
+          String.format("Unknown transit nodes %s", invalidTransitNodes));
     }
     Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
     if (!invalidNotTransitNodes.isEmpty()) {
       return new StringAnswerElement(
-          String.format("Unknown notTransit nodes %s", invalidNotTransitNodes.toString()));
+          String.format("Unknown notTransit nodes %s", invalidNotTransitNodes));
     }
     Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
     if (!illegalTransitNodes.isEmpty()) {
       return new StringAnswerElement(
           String.format(
-              "Same node %s can not be in both transit and notTransit",
-              illegalTransitNodes.toString()));
+              "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
     }
 
     // build query jobs

@@ -315,7 +315,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ANSWERS)) {
-        _logger.errorf("answer key not found in: %s\n", jObj.toString());
+        _logger.errorf("answer key not found in: %s\n", jObj);
         return null;
       }
 
@@ -362,7 +362,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ANSWER)) {
-        _logger.errorf("answer key not found in: %s\n", jObj.toString());
+        _logger.errorf("answer key not found in: %s\n", jObj);
         return null;
       }
 
@@ -491,7 +491,7 @@ public class BfCoordWorkHelper {
 
       String sobj = response.readEntity(String.class);
       JSONArray array = new JSONArray(sobj);
-      _logger.debugf("response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1));
+      _logger.debugf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
         _logger.errorf("Error in PostData: %s %s\n", array.get(0), array.get(1));
@@ -733,7 +733,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_WORKSTATUS)) {
-        _logger.errorf("workstatus key not found in: %s\n", jObj.toString());
+        _logger.errorf("workstatus key not found in: %s\n", jObj);
         return null;
       }
 
@@ -741,7 +741,7 @@ public class BfCoordWorkHelper {
           WorkStatusCode.valueOf(jObj.getString(CoordConsts.SVC_KEY_WORKSTATUS));
 
       if (!jObj.has(CoordConsts.SVC_KEY_TASKSTATUS)) {
-        _logger.errorf("taskstatus key not found in: %s\n", jObj.toString());
+        _logger.errorf("taskstatus key not found in: %s\n", jObj);
       }
       String taskStr = jObj.getString(CoordConsts.SVC_KEY_TASKSTATUS);
 
@@ -774,7 +774,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_CONTAINER_NAME)) {
-        _logger.errorf("container name key not found in: %s\n", jObj.toString());
+        _logger.errorf("container name key not found in: %s\n", jObj);
         return null;
       }
 
@@ -806,8 +806,7 @@ public class BfCoordWorkHelper {
     } catch (ProcessingException e) {
       if (e.getMessage().contains("ConnectException")) {
         if (chatty) {
-          _logger.errorf(
-              "BF-Client: unable to connect to coordinator at %s\n", webTarget.getUri().toString());
+          _logger.errorf("BF-Client: unable to connect to coordinator at %s\n", webTarget.getUri());
         }
         return false;
       }
@@ -847,7 +846,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ANALYSIS_LIST)) {
-        _logger.errorf("analysis list key not found in: %s\n", jObj.toString());
+        _logger.errorf("analysis list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -876,7 +875,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_CONTAINER_LIST)) {
-        _logger.errorf("container list key not found in: %s\n", jObj.toString());
+        _logger.errorf("container list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -914,7 +913,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ENVIRONMENT_LIST)) {
-        _logger.errorf("environment list key not found in: %s\n", jObj.toString());
+        _logger.errorf("environment list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -952,7 +951,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
-        _logger.errorf("question list key not found in: %s\n", jObj.toString());
+        _logger.errorf("question list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -987,7 +986,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_TESTRIG_LIST)) {
-        _logger.errorf("testrig key not found in: %s\n", jObj.toString());
+        _logger.errorf("testrig key not found in: %s\n", jObj);
         return null;
       }
 
@@ -1030,7 +1029,7 @@ public class BfCoordWorkHelper {
 
       String sobj = response.readEntity(String.class);
       JSONArray array = new JSONArray(sobj);
-      _logger.debugf("response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1));
+      _logger.debugf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
         _logger.errorf("Error in PostData: %s %s\n", array.get(0), array.get(1));
