@@ -2646,14 +2646,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public Topology loadTopology() {
-    Path topologyPath = _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath();
-    _logger.info("Deserializing topology...");
-    Topology topology = deserializeObject(topologyPath, Topology.class);
-    _logger.info("OK\n");
-    return topology;
-  }
-
   private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
     return loadValidateEnvironmentAnswerElement(true);
   }
@@ -3148,9 +3140,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    pushDeltaEnvironment();
-    Topology diffTopology = loadTopology();
-    popEnvironment();
+    Topology diffTopology = computeTopology(diffConfigurations);
     EdgeSet diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -3178,9 +3168,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    pushBaseEnvironment();
-    Topology baseTopology = loadTopology();
-    popEnvironment();
+    Topology baseTopology = computeTopology(baseConfigurations);
     EdgeSet baseEdges = baseTopology.getEdges();
     EdgeSet missingEdges = new EdgeSet();
     missingEdges.addAll(baseEdges);
@@ -3188,9 +3176,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Edge missingEdge : missingEdges) {
       String ingressNode = missingEdge.getNode1();
       String outInterface = missingEdge.getInt1();
-      String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
-      if (diffConfigurations.containsKey(ingressNode)) {
+      if (diffConfigurations.containsKey(ingressNode)
+          &&  diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
+        String vrf = diffConfigurations.get(ingressNode).getInterfaces().get(outInterface)
+            .getVrf().getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(ingressNode, vrf, missingEdge, true, headerSpace);
         List<QuerySynthesizer> queries = new ArrayList<>();

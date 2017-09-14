@@ -48,6 +48,9 @@ test tests/basic/jsonpath-assertion-equals-with-suffix.ref get jsonpath innerQue
 test tests/basic/jsonpath-exception-with-suffix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']", "suffix": 1500}]}]
 test tests/basic/jsonpath-exception-assertion.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']", "suffix": 1500}], "assertion": {"type" : "count", "expect" : 3}}]
 
+#this test has non-deterministic output; commented for now
+#test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
+
 # example2 testrig
 test tests/basic/init-example2.ref init-testrig test_rigs/example2
 test tests/basic/inferRoles.ref get inferRoles
