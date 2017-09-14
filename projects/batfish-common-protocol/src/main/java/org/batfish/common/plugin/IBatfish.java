@@ -69,6 +69,8 @@ public interface IBatfish extends IPluginConsumer {
 
   FlowHistory getHistory();
 
+  Map<String, String> getQuestionTemplates();
+
   NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();

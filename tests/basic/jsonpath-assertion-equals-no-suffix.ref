@@ -8,8 +8,21 @@
           "numResults" : 3,
           "path" : {
             "assertion" : {
-              "expect" : 5,
-              "type" : "count"
+              "expect" : [
+                {
+                  "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
+                },
+                {
+                  "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"
+                },
+                {
+                  "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']"
+                },
+                {
+                  "prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']"
+                }
+              ],
+              "type" : "equals"
             },
             "path" : "$.nodes['as3border1']..mtu",
             "suffix" : false
@@ -46,8 +59,21 @@
     "paths" : [
       {
         "assertion" : {
-          "expect" : 5,
-          "type" : "count"
+          "expect" : [
+            {
+              "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
+            },
+            {
+              "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"
+            },
+            {
+              "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']"
+            },
+            {
+              "prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']"
+            }
+          ],
+          "type" : "equals"
         },
         "path" : "$.nodes['as3border1']..mtu",
         "suffix" : false

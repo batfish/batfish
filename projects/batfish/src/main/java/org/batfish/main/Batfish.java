@@ -39,6 +39,7 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang.SystemUtils;
@@ -52,6 +53,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -1790,6 +1792,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
     return blacklistNodes;
+  }
+
+  @Override
+  public Map<String, String> getQuestionTemplates() {
+    if (_settings.getCoordinatorHost() == null) {
+      throw new BatfishException("Cannot get question templates: coordinator host is not set");
+    }
+    String protocol = _settings.getSslDisable() ? "http" : "https";
+    String url = String.format(
+                    "%s://%s:%s%s/%s",
+                    protocol,
+                    _settings.getCoordinatorHost(),
+                    +_settings.getCoordinatorPoolPort(),
+                    CoordConsts.SVC_CFG_POOL_MGR,
+                    CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
+    Map<String, String> params = new HashMap<>();
+    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+
+    JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
+    if (response == null) {
+      throw new BatfishException("Could not get question templates: Got null response");
+    }
+    if (!response.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+      throw new BatfishException("Could not get question templates: Response lacks question list");
+    }
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, String> templates = mapper.readValue(
+          response.get(CoordConsts.SVC_KEY_QUESTION_LIST).toString(),
+          new TypeReference<Map<String, String>>() {});
+      return templates;
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Could not cast response to Map: ", e);
+    }
   }
 
   @Override
