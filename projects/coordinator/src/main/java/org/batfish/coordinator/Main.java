@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.google.common.collect.Lists;
-
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -22,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -48,8 +46,7 @@ public class Main {
 
   // These are all @Nullable because they are static and may not be initialized if Main() has not
   // been called.
-  private static @Nullable
-  Authorizer _authorizer;
+  private static @Nullable Authorizer _authorizer;
   private static @Nullable BatfishLogger _logger;
   private static @Nullable PoolMgr _poolManager;
   private static @Nullable Settings _settings;
@@ -84,9 +81,10 @@ public class Main {
     }
 
     Map<String, String> questionTemplates = new HashMap<>();
-    questionTemplateDir.forEach((dir) -> {
-      readQuestionTemplates(dir, questionTemplates);
-    });
+    questionTemplateDir.forEach(
+        (dir) -> {
+          readQuestionTemplates(dir, questionTemplates);
+        });
 
     return questionTemplates;
   }
@@ -100,8 +98,7 @@ public class Main {
         String instanceDataStr = instanceDataObj.toString();
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         Question.InstanceData instanceData =
-                mapper.<Question.InstanceData>readValue(instanceDataStr,
-                        Question.InstanceData.class);
+            mapper.<Question.InstanceData>readValue(instanceDataStr, Question.InstanceData.class);
         String name = instanceData.getInstanceName();
 
         if (templates.containsKey(name)) {
@@ -118,25 +115,24 @@ public class Main {
     }
   }
 
-  private static void readQuestionTemplates(Path questionsPath,
-                                               Map<String, String> templates) {
+  private static void readQuestionTemplates(Path questionsPath, Map<String, String> templates) {
     SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
     try {
       Files.walkFileTree(
-              questionsPath,
-              EnumSet.of(FOLLOW_LINKS),
-              1,
-              new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                        throws IOException {
-                  String filename = file.getFileName().toString();
-                  if (filename.endsWith(".json")) {
-                    readQuestionTemplate(file, templates);
-                  }
-                  return FileVisitResult.CONTINUE;
-                }
-              });
+          questionsPath,
+          EnumSet.of(FOLLOW_LINKS),
+          1,
+          new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                throws IOException {
+              String filename = file.getFileName().toString();
+              if (filename.endsWith(".json")) {
+                readQuestionTemplate(file, templates);
+              }
+              return FileVisitResult.CONTINUE;
+            }
+          });
     } catch (IOException e) {
       throw new BatfishException("Failed to visit templates dir: " + questionsPath, e);
     }

@@ -24,7 +24,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
@@ -166,9 +165,8 @@ public class WorkMgrService {
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         Map<String, Object> streamValue;
         try {
-          streamValue = mapper.readValue(addQuestionsStream,
-              new TypeReference<Map<String, Object>>() {
-              });
+          streamValue =
+              mapper.readValue(addQuestionsStream, new TypeReference<Map<String, Object>>() {});
           for (Entry<String, Object> entry : streamValue.entrySet()) {
             String textValue = mapper.writeValueAsString(entry.getValue());
             questionsToAdd.put(entry.getKey(), textValue);
@@ -831,8 +829,7 @@ public class WorkMgrService {
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getQuestionTemplates(
-          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
+  public JSONArray getQuestionTemplates(@FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
     try {
       _logger.info("WMS:getQuestionTemplates " + apiKey + "\n");
 
@@ -842,13 +839,12 @@ public class WorkMgrService {
 
       if (questionTemplates == null) {
         return new JSONArray(
-                Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
-                        "Question templates dir is not configured"));
+            Arrays.asList(CoordConsts.SVC_KEY_FAILURE, "Question templates dir is not configured"));
       } else {
         return new JSONArray(
-                Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-                        new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST,
-                                questionTemplates)));
+            Arrays.asList(
+                CoordConsts.SVC_KEY_SUCCESS,
+                new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates)));
       }
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -1374,14 +1370,14 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray syncTestrigsSyncNow(
-          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-          @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
-          @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+      @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
     try {
-      _logger.info("WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " "
-              + pluginId + "\n");
+      _logger.info(
+          "WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " " + pluginId + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1397,12 +1393,12 @@ public class WorkMgrService {
       int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
 
       return new JSONArray(
-              Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-                      (new JSONObject().put("numCommits", numCommits))));
+          Arrays.asList(
+              CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("numCommits", numCommits))));
     } catch (FileExistsException
-            | FileNotFoundException
-            | IllegalArgumentException
-            | AccessControlException e) {
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
       _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     } catch (Exception e) {
@@ -1426,14 +1422,22 @@ public class WorkMgrService {
   @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray syncTestrigsUpdateSettings(
-          @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-          @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-          @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-          @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
-          @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+      @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
     try {
-      _logger.info("WMS:syncTestrigsUpdateSettings " + apiKey + " " + containerName + " "
-              + pluginId + " " + settingsStr + "\n");
+      _logger.info(
+          "WMS:syncTestrigsUpdateSettings "
+              + apiKey
+              + " "
+              + containerName
+              + " "
+              + pluginId
+              + " "
+              + settingsStr
+              + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1446,18 +1450,18 @@ public class WorkMgrService {
       checkContainerAccessibility(apiKey, containerName);
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      Map<String, String> settings = mapper.readValue(settingsStr,
-              new TypeReference<Map<String, String>>() {});
+      Map<String, String> settings =
+          mapper.readValue(settingsStr, new TypeReference<Map<String, String>>() {});
 
-      boolean result = Main.getWorkMgr()
-              .syncTestrigsUpdateSettings(containerName, pluginId, settings);
+      boolean result =
+          Main.getWorkMgr().syncTestrigsUpdateSettings(containerName, pluginId, settings);
 
       return new JSONArray(
-              Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", result))));
+          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", result))));
     } catch (FileExistsException
-            | FileNotFoundException
-            | IllegalArgumentException
-            | AccessControlException e) {
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
       _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     } catch (Exception e) {

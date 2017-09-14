@@ -415,8 +415,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       try {
-        String retString =
-            String.format("reachability %sactions=%s", prettyPrintBase(), _actions.toString());
+        String retString = String.format("reachability %sactions=%s", prettyPrintBase(), _actions);
         // we only print "interesting" values
         if (_reachabilityType != ReachabilityType.STANDARD) {
           retString += String.format(" | %s=%s", PROP_REACHABILITY_TYPE, _reachabilityType);
@@ -449,11 +448,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           retString += String.format(" | %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
         }
         if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_IP_PROTOCOLS, getIpProtocols().toString());
+          retString += String.format(" | %s=%s", PROP_IP_PROTOCOLS, getIpProtocols());
         }
         if (getPacketLengths() != null && !getPacketLengths().isEmpty()) {
-          retString +=
-              String.format(" | %s=%s", PROP_PACKET_LENGTHS, getPacketLengths().toString());
+          retString += String.format(" | %s=%s", PROP_PACKET_LENGTHS, getPacketLengths());
         }
         if (getSrcIps() != null && !getSrcIps().isEmpty()) {
           retString += String.format(" | %s=%s", PROP_SRC_IPS, getSrcIps());
@@ -474,7 +472,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           retString += String.format(" | %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
         }
         if (_transitNodes != null && !_transitNodes.isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_TRANSIT_NODES, _transitNodes.toString());
+          retString += String.format(" | %s=%s", PROP_TRANSIT_NODES, _transitNodes);
         }
         if (getNotDstIps() != null && !getNotDstIps().isEmpty()) {
           retString += String.format(" | %s=%s", PROP_NOT_DST_IPS, getNotDstIps());
@@ -502,12 +500,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           retString += String.format(" | %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
         }
         if (getNotIpProtocols() != null && !getNotIpProtocols().isEmpty()) {
-          retString +=
-              String.format(" | %s=%s", PROP_NOT_IP_PROTOCOLS, getNotIpProtocols().toString());
+          retString += String.format(" | %s=%s", PROP_NOT_IP_PROTOCOLS, getNotIpProtocols());
         }
         if (getNotPacketLengths() != null && !getNotPacketLengths().isEmpty()) {
-          retString +=
-              String.format(" | %s=%s", PROP_NOT_PACKET_LENGTHS, getNotPacketLengths().toString());
+          retString += String.format(" | %s=%s", PROP_NOT_PACKET_LENGTHS, getNotPacketLengths());
         }
         if (getNotSrcIps() != null && !getNotSrcIps().isEmpty()) {
           retString += String.format(" | %s=%s", PROP_NOT_SRC_IPS, getNotSrcIps());

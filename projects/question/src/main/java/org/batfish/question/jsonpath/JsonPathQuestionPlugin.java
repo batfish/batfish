@@ -47,10 +47,9 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder("Results for JsonPath\n");
       for (Integer index : results.keySet()) {
         JsonPathResult result = results.get(index);
-        sb.append(String.format("  [%d]: %d results for %s\n",
-            index,
-            result.getNumResults(),
-            result.getPath().toString()));
+        sb.append(
+            String.format(
+                "  [%d]: %d results for %s\n", index, result.getNumResults(), result.getPath()));
         if (result.getAssertionResult() != null) {
           sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
         }
@@ -58,7 +57,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
           JsonNode suffix = resultEntry.getSuffix();
           String pathString = resultEntry.getMapKey();
           if (suffix != null) {
-            sb.append(String.format("    %s : %s\n", pathString, suffix.toString()));
+            sb.append(String.format("    %s : %s\n", pathString, suffix));
           } else {
             sb.append(String.format("    %s\n", pathString));
           }
@@ -129,9 +128,8 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
       Question innerQuestion = question._innerQuestion;
       String innerQuestionName = innerQuestion.getName();
-      Answerer innerAnswerer = _batfish.getAnswererCreators()
-          .get(innerQuestionName)
-          .apply(innerQuestion, _batfish);
+      Answerer innerAnswerer =
+          _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
       AnswerElement innerAnswer = innerAnswerer.answer();
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
@@ -148,13 +146,16 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         indices.add(i);
       }
       AtomicInteger completed = _batfish.newBatch("JsonPath queries", indices.size());
-      indices.parallelStream().forEach(i -> {
-        JsonPathQuery query = paths.get(i);
-        JsonPathResult jsonPathResult = computeResult(jsonObject, query);
+      indices
+          .parallelStream()
+          .forEach(
+              i -> {
+                JsonPathQuery query = paths.get(i);
+                JsonPathResult jsonPathResult = computeResult(jsonObject, query);
 
-        allResults.put(i, jsonPathResult);
-        completed.incrementAndGet();
-      });
+                allResults.put(i, jsonPathResult);
+                completed.incrementAndGet();
+              });
       JsonPathAnswerElement answerElement = new JsonPathAnswerElement();
       answerElement.getResults().putAll(allResults);
       answerElement.updateSummary();
@@ -227,8 +228,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
         if (!query.isException(resultEntry)) {
           resultEntries.add(resultEntry);
-          jsonPathResult.getResult().put(resultEntry.getMapKey(),
-              resultEntry);
+          jsonPathResult.getResult().put(resultEntry.getMapKey(), resultEntry);
         }
       }
 
@@ -260,17 +260,17 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
               if (removed.containsKey(key)) {
                 JsonNode removedNode = removed.get(key).getSuffix();
                 if (removedNode != null) {
-                  sb.append(String.format("-   %s : %s\n", key.toString(), removedNode.toString()));
+                  sb.append(String.format("-   %s : %s\n", key, removedNode));
                 } else {
-                  sb.append(String.format("-   %s\n", key.toString()));
+                  sb.append(String.format("-   %s\n", key));
                 }
               }
               if (added.containsKey(key)) {
                 JsonNode addedNode = added.get(key).getSuffix();
                 if (addedNode != null) {
-                  sb.append(String.format("+   %s : %s\n", key.toString(), addedNode.toString()));
+                  sb.append(String.format("+   %s : %s\n", key, addedNode));
                 } else {
-                  sb.append(String.format("+   %s\n", key.toString()));
+                  sb.append(String.format("+   %s\n", key));
                 }
               }
             }

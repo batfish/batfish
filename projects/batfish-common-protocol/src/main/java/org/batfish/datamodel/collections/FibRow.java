@@ -55,7 +55,7 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       return false;
     }
     FibRow rhs = (FibRow) o;
-    return (_prefix.equals(rhs._prefix) && _interface.equals(rhs._interface));
+    return _prefix.equals(rhs._prefix) && _interface.equals(rhs._interface);
   }
 
   public String getInterface() {
@@ -87,6 +87,6 @@ public class FibRow implements Comparable<FibRow>, Serializable {
 
   @Override
   public String toString() {
-    return String.format("%-19s", _prefix.toString()) + _interface;
+    return String.format("%-19s", _prefix) + _interface;
   }
 }

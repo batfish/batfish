@@ -24,8 +24,7 @@ public class JsonPathResult {
 
     @JsonCreator
     public JsonPathResultEntry(
-        @JsonProperty(PROP_PREFIX) JsonNode prefix,
-        @JsonProperty(PROP_SUFFIX) JsonNode suffix) {
+        @JsonProperty(PROP_PREFIX) JsonNode prefix, @JsonProperty(PROP_SUFFIX) JsonNode suffix) {
       _prefix = prefix;
       if (suffix != null && suffix.isNull()) {
         _suffix = null;
@@ -34,14 +33,15 @@ public class JsonPathResult {
       }
     }
 
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
       if (o == null) {
         return o == null;
       } else if (!(o instanceof JsonPathResultEntry)) {
         return false;
       }
-      return (Objects.equal(_prefix, ((JsonPathResultEntry) o)._prefix)
-              && Objects.equal(_suffix, ((JsonPathResultEntry) o)._suffix));
+      return Objects.equal(_prefix, ((JsonPathResultEntry) o)._prefix)
+          && Objects.equal(_suffix, ((JsonPathResultEntry) o)._suffix);
     }
 
     @JsonIgnore
