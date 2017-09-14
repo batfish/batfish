@@ -42,6 +42,7 @@ test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2bor
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
 test tests/basic/perRole.ref get perRole question={"class": "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"}
+test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
 # example2 testrig
 test tests/basic/init-example2.ref init-testrig test_rigs/example2
