@@ -1930,7 +1930,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       Files.walkFileTree(
           questionsPath,
-              EnumSet.of(FOLLOW_LINKS),
+          EnumSet.of(FOLLOW_LINKS),
           1,
           new SimpleFileVisitor<Path>() {
             @Override

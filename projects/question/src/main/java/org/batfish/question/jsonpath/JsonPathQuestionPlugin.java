@@ -47,10 +47,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder("Results for JsonPath\n");
       for (Integer index : results.keySet()) {
         JsonPathResult result = results.get(index);
-        sb.append(String.format("  [%d]: %d results for %s\n",
-            index,
-            result.getNumResults(),
-            result.getPath().toString()));
+        sb.append(
+            String.format(
+                "  [%d]: %d results for %s\n",
+                index, result.getNumResults(), result.getPath().toString()));
         if (result.getAssertionResult() != null) {
           sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
         }
@@ -129,9 +129,8 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
       Question innerQuestion = question._innerQuestion;
       String innerQuestionName = innerQuestion.getName();
-      Answerer innerAnswerer = _batfish.getAnswererCreators()
-          .get(innerQuestionName)
-          .apply(innerQuestion, _batfish);
+      Answerer innerAnswerer =
+          _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
       AnswerElement innerAnswer = innerAnswerer.answer();
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
@@ -148,13 +147,16 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         indices.add(i);
       }
       AtomicInteger completed = _batfish.newBatch("JsonPath queries", indices.size());
-      indices.parallelStream().forEach(i -> {
-        JsonPathQuery query = paths.get(i);
-        JsonPathResult jsonPathResult = computeResult(jsonObject, query);
+      indices
+          .parallelStream()
+          .forEach(
+              i -> {
+                JsonPathQuery query = paths.get(i);
+                JsonPathResult jsonPathResult = computeResult(jsonObject, query);
 
-        allResults.put(i, jsonPathResult);
-        completed.incrementAndGet();
-      });
+                allResults.put(i, jsonPathResult);
+                completed.incrementAndGet();
+              });
       JsonPathAnswerElement answerElement = new JsonPathAnswerElement();
       answerElement.getResults().putAll(allResults);
       answerElement.updateSummary();
@@ -227,8 +229,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
         if (!query.isException(resultEntry)) {
           resultEntries.add(resultEntry);
-          jsonPathResult.getResult().put(resultEntry.getMapKey(),
-              resultEntry);
+          jsonPathResult.getResult().put(resultEntry.getMapKey(), resultEntry);
         }
       }
 

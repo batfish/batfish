@@ -2,7 +2,6 @@ package org.batfish.coordinator.config;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import java.util.Collections;
 import java.util.List;
 import org.batfish.common.BaseSettings;
@@ -365,9 +364,8 @@ public class Settings extends BaseSettings {
 
     addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
 
-    addListOption(ARG_QUESTION_TEMPLATE_DIRS,
-            "paths to question template directories",
-            ARGNAME_PATHS);
+    addListOption(
+        ARG_QUESTION_TEMPLATE_DIRS, "paths to question template directories", ARGNAME_PATHS);
 
     addOption(ARG_QUEUE_TYPE, "queue type to use {azure, memory}", "qtype");
 

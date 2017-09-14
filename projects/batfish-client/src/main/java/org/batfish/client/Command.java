@@ -152,7 +152,8 @@ public enum Command {
         new Pair<>("<question-name>", "Get the answer for a previously answered question"));
     descs.put(
         GET_CONFIGURATION,
-        new Pair<>("<container-name> <testrig-name> <configuration-name>",
+        new Pair<>(
+            "<container-name> <testrig-name> <configuration-name>",
             "Get the file content of the configuration file"));
     descs.put(
         GET_CONTAINER, new Pair<>("<container-name>", "Get the information of the container"));
@@ -284,11 +285,15 @@ public enum Command {
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta testrig and environment"));
     descs.put(SHOW_TESTRIG, new Pair<>("", "Show base testrig and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
-    descs.put(SYNC_TESTRIGS_SYNC_NOW, new Pair<>("[-force] <plugin-id>",
+    descs.put(
+        SYNC_TESTRIGS_SYNC_NOW,
+        new Pair<>(
+            "[-force] <plugin-id>",
             "Sync testrigs now (settings must have been configured before)"));
     descs.put(
-            SYNC_TESTRIGS_UPDATE_SETTINGS,
-            new Pair<>("<plugin-id> [key1=value1, [key2=value2], ...], ",
+        SYNC_TESTRIGS_UPDATE_SETTINGS,
+        new Pair<>(
+            "<plugin-id> [key1=value1, [key2=value2], ...], ",
             "Update the settings for sync testrigs plugin"));
     descs.put(TEST, new Pair<>("<reference file> <command>", "Show base testrig and environment"));
     descs.put(

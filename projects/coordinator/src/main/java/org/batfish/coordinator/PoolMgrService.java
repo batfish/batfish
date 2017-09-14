@@ -47,13 +47,12 @@ public class PoolMgrService {
 
       if (questionTemplates == null) {
         return new JSONArray(
-                Arrays.asList(CoordConsts.SVC_KEY_FAILURE,
-                        "Question templates dir is not configured"));
+            Arrays.asList(CoordConsts.SVC_KEY_FAILURE, "Question templates dir is not configured"));
       } else {
         return new JSONArray(
-                Arrays.asList(CoordConsts.SVC_KEY_SUCCESS,
-                        new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST,
-                                questionTemplates)));
+            Arrays.asList(
+                CoordConsts.SVC_KEY_SUCCESS,
+                new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates)));
       }
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -61,7 +60,6 @@ public class PoolMgrService {
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
-
 
   @GET
   @Path(CoordConsts.SVC_RSC_POOL_GETSTATUS)

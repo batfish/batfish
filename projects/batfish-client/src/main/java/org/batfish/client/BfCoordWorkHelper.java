@@ -597,8 +597,7 @@ public class BfCoordWorkHelper {
 
       return jObj.getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
     } catch (Exception e) {
-      _logger.errorf(
-              "Exception in getQuestionTemplates from %s\n", _coordWorkMgr);
+      _logger.errorf("Exception in getQuestionTemplates from %s\n", _coordWorkMgr);
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return null;
     }
