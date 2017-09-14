@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javafx.util.Pair;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
@@ -29,15 +30,76 @@ import org.batfish.symbolic.Protocol;
  * want to check reachability between two concrete nodes, then these 2 nodes must remain distinct in
  * the compressed form.</p>
  */
+
+// TODO list
+// - Convert IR to a BDD representation (is the number of variables fixed?
+// - Quantify out the intermediate variables?
+// - Keep ACLs and static routes as separate BDDs?
+// - How does this interact with the following:
+//    + iBGP
+//    + Route Reflectors
+//    + Router ID stuff
+//    + Multipath routing
+//    + MEDs
+//    + Redistribution (Treat as local pref?)
+
 public class Abstractor {
 
   // TODO: take a parameter indicating the set of devices that must remain concrete.
 
+  private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
+
   private static final String EXTERNAL_NAME = "PEER";
+
+
+  /** TODO: This was copied from BdpDataPlanePlugin.java to initialize the OSPF inteface costs */
+  private static void initOspfInterfaceCosts(Configuration conf) {
+    if (conf.getDefaultVrf().getOspfProcess() != null) {
+      conf.getInterfaces()
+          .forEach(
+              (interfaceName, i) -> {
+                if (i.getActive()) {
+                  Integer ospfCost = i.getOspfCost();
+                  if (ospfCost == null) {
+                    if (interfaceName.startsWith("Vlan")) {
+                      // TODO: fix for non-cisco
+                      ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
+                    } else {
+                      if (i.getBandwidth() != null) {
+                        ospfCost =
+                            Math.max(
+                                (int)
+                                    (conf.getDefaultVrf().getOspfProcess().getReferenceBandwidth()
+                                        / i.getBandwidth()),
+                                1);
+                      } else {
+                        throw new BatfishException(
+                            "Expected non-null interface "
+                                + "bandwidth"
+                                + " for \""
+                                + conf.getHostname()
+                                + "\":\""
+                                + interfaceName
+                                + "\"");
+                      }
+                    }
+                  }
+                  i.setOspfCost(ospfCost);
+                }
+              });
+    }
+  }
+
 
   public static AnswerElement computeAbstraction(IBatfish batfish) {
 
+    long start = System.currentTimeMillis();
+
     Graph g = new Graph(batfish);
+
+    g.getConfigurations().forEach((router, conf) -> {
+      initOspfInterfaceCosts(conf);
+    });
 
     // Figure out which protocols are running on which devices
     Map<String, List<Protocol>> protocols = new HashMap<>();
@@ -102,7 +164,8 @@ public class Abstractor {
 
     for (Entry<Set<String>, List<Prefix>> entry : destMap.entrySet()) {
       Set<String> devices = entry.getKey();
-      List<Prefix> prefixes = entry.getValue();
+      // List<Prefix> prefixes = entry.getValue();
+
       UnionSplit<String> workset = new UnionSplit<>(allDevices);
 
       // System.out.println("Workset: " + workset);
@@ -113,6 +176,8 @@ public class Abstractor {
         ds.add(device);
         workset.split(ds);
       }
+
+      // System.out.println("Computing abstraction for: " + devices);
 
       // Repeatedly split the abstraction to a fixed point
       Set<Set<String>> todo;
@@ -131,14 +196,14 @@ public class Abstractor {
             continue;
           }
 
-          Map<String, Set<Pair<InterfacePolicy, Set<String>>>> groupMap = new HashMap<>();
+          Map<String, Set<Pair<InterfacePolicy, Integer>>> groupMap = new HashMap<>();
 
           for (String router : partition) {
 
             // System.out.println("  Looking at router: " + router);
 
-            Set<Pair<InterfacePolicy, Set<String>>> groups =
-                groupMap.computeIfAbsent(router, r -> new HashSet<>());
+            Set<Pair<InterfacePolicy, Integer>> groups = new HashSet<>();
+            groupMap.put(router, groups);
 
             // TODO: translate the configurations into BDDs
 
@@ -148,18 +213,19 @@ public class Abstractor {
             for (GraphEdge edge : edges) {
               if (!edge.isAbstract()) {
                 String peer = edge.getPeer();
+
                 InterfacePolicy pol = new InterfacePolicy(1);
 
                 // For external neighbors, we don't split a partition
-                Set<String> peerGroup;
+                Integer peerGroup;
                 if (peer != null) {
                   Configuration peerConf = g.getConfigurations().get(peer);
-                  peerGroup = workset.getPartition(peer);
+                  peerGroup = workset.getHandle(peer);
                   // else {
                   // peerGroup = new TreeSet<>();
                   // peerGroup.add(EXTERNAL_NAME);
 
-                  Pair<InterfacePolicy, Set<String>> pair = new Pair<>(pol, peerGroup);
+                  Pair<InterfacePolicy, Integer> pair = new Pair<>(pol, peerGroup);
                   groups.add(pair);
 
                   // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
@@ -168,12 +234,12 @@ public class Abstractor {
             }
           }
 
-          Map<Set<Pair<InterfacePolicy, Set<String>>>, Set<String>> inversePolicyMap =
+          Map<Set<Pair<InterfacePolicy, Integer>>, Set<String>> inversePolicyMap =
               new HashMap<>();
           groupMap.forEach(
               (router, groupPairs) -> {
                 Set<String> routers =
-                    inversePolicyMap.computeIfAbsent(groupPairs, grps -> new TreeSet<>());
+                    inversePolicyMap.computeIfAbsent(groupPairs, gs -> new TreeSet<>());
                 routers.add(router);
               });
 
@@ -194,7 +260,6 @@ public class Abstractor {
 
       } while (!todo.isEmpty());
 
-
       // Update the metrics
       int abstractSize = workset.partitions().size();
       min = (min < 0 ? abstractSize : Math.min(min, abstractSize));
@@ -202,7 +267,6 @@ public class Abstractor {
       totalAbstract = totalAbstract + abstractSize;
       count = count + 1;
       average = (double) totalAbstract / (double) count;
-
 
       // System.out.println("EC: " + prefixes);
       // System.out.println("Final abstraction: " + workset.partitions());
@@ -224,6 +288,11 @@ public class Abstractor {
     answer.setMin(min);
     answer.setNumClasses(count);
     answer.setOriginalSize(allDevices.size());
+
+    long end = System.currentTimeMillis();
+
+    System.out.println("Total time (sec): " + ((double) end - start) / 1000);
+
     return answer;
 
   }

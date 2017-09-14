@@ -46,6 +46,8 @@ import org.batfish.symbolic.smt.collections.Table2;
  */
 public class Graph {
 
+  static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
+
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
 
   private static final String NULL_INTERFACE_NAME = "null_interface";
@@ -113,6 +115,7 @@ public class Graph {
     }
 
     initGraph();
+    initOspfCosts();
     initStaticRoutes();
     initEbgpNeighbors();
     initIbgpNeighbors();
@@ -185,6 +188,56 @@ public class Graph {
         });
   }
 
+  /** TODO: This was copied from BdpDataPlanePlugin.java to initialize the OSPF inteface costs */
+  private void initOspfInterfaceCosts(Configuration conf) {
+    if (conf.getDefaultVrf().getOspfProcess() != null) {
+      conf.getInterfaces()
+          .forEach(
+              (interfaceName, i) -> {
+                if (i.getActive()) {
+                  Integer ospfCost = i.getOspfCost();
+                  if (ospfCost == null) {
+                    if (interfaceName.startsWith("Vlan")) {
+                      // TODO: fix for non-cisco
+                      ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
+                    } else {
+                      if (i.getBandwidth() != null) {
+                        ospfCost =
+                            Math.max(
+                                (int)
+                                    (conf.getDefaultVrf().getOspfProcess().getReferenceBandwidth()
+                                        / i.getBandwidth()),
+                                1);
+                      } else {
+                        throw new BatfishException(
+                            "Expected non-null interface "
+                                + "bandwidth"
+                                + " for \""
+                                + conf.getHostname()
+                                + "\":\""
+                                + interfaceName
+                                + "\"");
+                      }
+                    }
+                  }
+                  i.setOspfCost(ospfCost);
+                }
+              });
+    }
+  }
+
+  /*
+ * Initialize the ospf interface costs for each configuration
+ */
+  private void initOspfCosts() {
+    _configurations.forEach((router,conf) -> {
+      initOspfInterfaceCosts(conf);
+    });
+  }
+
+  /*
+   * Check if a static route is configured to drop packets
+   */
   public static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }

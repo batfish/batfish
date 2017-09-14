@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -59,8 +58,6 @@ public class Encoder {
   public static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
 
   public static final boolean MODEL_EXTERNAL_COMMUNITIES = true;
-
-  static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
   private int _encodingId;
 
@@ -184,59 +181,8 @@ public class Encoder {
 
     _unsatCore = new UnsatCore(ENABLE_UNSAT_CORE);
 
-    initConfigurations();
     initFailedLinkVariables();
     initSlices(_question.getHeaderSpace(), graph);
-  }
-
-  /*
-   * Initialize any interface costs in OSPF
-   */
-  private void initConfigurations() {
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              initOspfInterfaceCosts(conf);
-            });
-  }
-
-  /** TODO: This was copied from BdpDataPlanePlugin.java to initialize the OSPF inteface costs */
-  private void initOspfInterfaceCosts(Configuration conf) {
-    if (conf.getDefaultVrf().getOspfProcess() != null) {
-      conf.getInterfaces()
-          .forEach(
-              (interfaceName, i) -> {
-                if (i.getActive()) {
-                  Integer ospfCost = i.getOspfCost();
-                  if (ospfCost == null) {
-                    if (interfaceName.startsWith("Vlan")) {
-                      // TODO: fix for non-cisco
-                      ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
-                    } else {
-                      if (i.getBandwidth() != null) {
-                        ospfCost =
-                            Math.max(
-                                (int)
-                                    (conf.getDefaultVrf().getOspfProcess().getReferenceBandwidth()
-                                        / i.getBandwidth()),
-                                1);
-                      } else {
-                        throw new BatfishException(
-                            "Expected non-null interface "
-                                + "bandwidth"
-                                + " for \""
-                                + conf.getHostname()
-                                + "\":\""
-                                + interfaceName
-                                + "\"");
-                      }
-                    }
-                  }
-                  i.setOspfCost(ospfCost);
-                }
-              });
-    }
   }
 
   /*

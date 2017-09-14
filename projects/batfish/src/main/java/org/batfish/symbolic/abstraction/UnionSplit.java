@@ -1,9 +1,9 @@
 package org.batfish.symbolic.abstraction;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * A simple data structure that maintains a set of sets that partition
@@ -37,8 +37,8 @@ public class UnionSplit<T> {
 
   public UnionSplit(Set<T> values) {
     _nextCount = 1;
-    _partitionMap = new TreeMap<>();
-    _reverseMap = new TreeMap<>();
+    _partitionMap = new HashMap<>();
+    _reverseMap = new HashMap<>();
     createPartition(0, new HashSet<>(values));
   }
 
@@ -47,8 +47,11 @@ public class UnionSplit<T> {
     _nextCount++;
   }
 
-  public Set<T> getPartition(T element) {
-    int idx = _partitionMap.get(element);
+  public Integer getHandle(T element) {
+    return _partitionMap.get(element);
+  }
+
+  public Set<T> getPartition(int idx) {
     return _reverseMap.get(idx);
   }
 

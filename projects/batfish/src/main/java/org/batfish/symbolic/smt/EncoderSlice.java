@@ -66,7 +66,7 @@ import org.batfish.symbolic.smt.collections.Table2;
  */
 class EncoderSlice {
 
-  static final int BITS = 0;
+  private static final int BITS = 0;
 
   private Encoder _encoder;
 
@@ -169,11 +169,6 @@ class EncoderSlice {
   // Symbolic true value
   BoolExpr mkTrue() {
     return _encoder.mkTrue();
-  }
-
-  // Simplify a boolean expression
-  BoolExpr simplify(BoolExpr be) {
-    return (BoolExpr) (be.simplify());
   }
 
   // Create a symbolic boolean
@@ -2646,11 +2641,7 @@ class EncoderSlice {
       if (vars.getRouterId() != null) {
         add(mkImplies(notPermitted, mkEq(vars.getRouterId(), zero)));
       }
-      vars.getCommunities()
-          .forEach(
-              (cvar, e) -> {
-                add(mkImplies(notPermitted, mkNot(e)));
-              });
+      vars.getCommunities().forEach((cvar, e) -> add(mkImplies(notPermitted, mkNot(e))));
     }
   }
 
@@ -2911,11 +2902,7 @@ class EncoderSlice {
             (le, vars) -> {
               BgpNeighbor n = getGraph().getEbgpNeighbors().get(le.getEdge());
               if (!n.getSendCommunity()) {
-                vars.getCommunities()
-                    .forEach(
-                        (cvar, b) -> {
-                          add(mkNot(b));
-                        });
+                vars.getCommunities().forEach((cvar, b) -> add(mkNot(b)));
               }
             });
 
@@ -2929,19 +2916,6 @@ class EncoderSlice {
                 add(mkImplies(vars.getPermitted(), mkEq(vars.getMetric(), mkInt(0))));
               });
     }
-
-    /*
-    getLogicalGraph().getEnvironmentVars().forEach((lge, record) -> {
-        record.getCommunities().forEach((cvar, var) -> {
-            if (var.toString().contains("$") && var.toString()
-            .contains("[0-9]") && var.toString().contains("10.160.109.51")) {
-                System.out.println("ADDING: " + var);
-                add( var );
-            }
-        });
-    });
-    */
-
   }
 
   /*
