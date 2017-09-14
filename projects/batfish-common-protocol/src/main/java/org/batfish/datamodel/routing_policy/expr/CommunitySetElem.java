@@ -36,7 +36,7 @@ public class CommunitySetElem implements Serializable {
       LiteralCommunitySetElemHalf suffix = (LiteralCommunitySetElemHalf) _suffix;
       int prefixInt = prefix.getValue();
       int suffixInt = suffix.getValue();
-      return (((long) prefixInt) << 16) | (suffixInt);
+      return (((long) prefixInt) << 16) | suffixInt;
     } else {
       throw new BatfishException("Does not represent a single community");
     }

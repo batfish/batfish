@@ -55,7 +55,7 @@ public class FibRow implements Comparable<FibRow>, Serializable {
       return false;
     }
     FibRow rhs = (FibRow) o;
-    return (_prefix.equals(rhs._prefix) && _interface.equals(rhs._interface));
+    return _prefix.equals(rhs._prefix) && _interface.equals(rhs._interface);
   }
 
   public String getInterface() {

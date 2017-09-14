@@ -281,7 +281,7 @@ public class Driver {
     params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
 
     Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
-    return (response != null);
+    return response != null;
   }
 
   private static void registerWithCoordinatorPersistent() throws InterruptedException {

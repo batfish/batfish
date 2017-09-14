@@ -470,7 +470,7 @@ class SymbolicRecord {
 
     SymbolicRecord that = (SymbolicRecord) o;
 
-    return (this._name.equals(that._name));
+    return this._name.equals(that._name);
   }
 
   @Override

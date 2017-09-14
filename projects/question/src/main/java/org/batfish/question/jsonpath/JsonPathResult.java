@@ -40,8 +40,8 @@ public class JsonPathResult {
       } else if (!(o instanceof JsonPathResultEntry)) {
         return false;
       }
-      return (Objects.equal(_prefix, ((JsonPathResultEntry) o)._prefix)
-          && Objects.equal(_suffix, ((JsonPathResultEntry) o)._suffix));
+      return Objects.equal(_prefix, ((JsonPathResultEntry) o)._prefix)
+          && Objects.equal(_suffix, ((JsonPathResultEntry) o)._suffix);
     }
 
     @JsonIgnore

@@ -31,7 +31,7 @@ public class JsonPathAssertion {
                   + _expect.toString()
                   + ") is not an integer");
         }
-        return (resultEntries.size() == _expect.asInt());
+        return resultEntries.size() == _expect.asInt();
       case equals:
         if (!_expect.isArray()) {
           throw new BatfishException(

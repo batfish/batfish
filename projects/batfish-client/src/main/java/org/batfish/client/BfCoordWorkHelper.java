@@ -165,7 +165,7 @@ public class BfCoordWorkHelper {
       if (jObj != null && (status = jObj.getString("result")) != null) {
         return Boolean.parseBoolean(status);
       }
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -186,7 +186,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, envName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -207,7 +207,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION_NAME, questionName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -227,7 +227,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -1069,7 +1069,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -1092,7 +1092,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_FORCE, String.valueOf(force));
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -1119,7 +1119,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SETTINGS, settingsStr);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");

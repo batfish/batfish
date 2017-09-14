@@ -488,7 +488,7 @@ public class CommonUtil {
   }
 
   public static boolean isLoopback(String interfaceName) {
-    return (interfaceName.startsWith("Loopback") || interfaceName.startsWith("lo"));
+    return interfaceName.startsWith("Loopback") || interfaceName.startsWith("lo");
   }
 
   public static boolean isNullInterface(String ifaceName) {

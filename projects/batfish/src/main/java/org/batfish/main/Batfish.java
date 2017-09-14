@@ -1804,7 +1804,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             "%s://%s:%s%s/%s",
             protocol,
             _settings.getCoordinatorHost(),
-            +_settings.getCoordinatorPoolPort(),
+            _settings.getCoordinatorPoolPort(),
             CoordConsts.SVC_CFG_POOL_MGR,
             CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
     Map<String, String> params = new HashMap<>();
