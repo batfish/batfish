@@ -605,6 +605,21 @@ public class WorkMgr extends AbstractCoordinator {
     return _logger;
   }
 
+  @Override
+  public Set<String> getContainerNames() {
+    Path containersDir = Main.getSettings().getContainersLocation();
+    if (!Files.exists(containersDir)) {
+      containersDir.toFile().mkdirs();
+    }
+    SortedSet<String> authorizedContainers =
+            new TreeSet<>(
+                    CommonUtil.getSubdirectories(containersDir)
+                            .stream()
+                            .map(dir -> dir.getFileName().toString())
+                            .collect(Collectors.toSet()));
+    return authorizedContainers;
+  }
+
   private Path getdirContainer(String containerName, boolean errIfNotEixst) {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
