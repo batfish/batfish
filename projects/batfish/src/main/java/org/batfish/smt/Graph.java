@@ -481,7 +481,7 @@ public class Graph {
     if (proto.isBgp()) {
       BgpNeighbor n1 = _ebgpNeighbors.get(ge);
       BgpNeighbor n2 = _ibgpNeighbors.get(ge);
-      return (n1 != null || n2 != null);
+      return n1 != null || n2 != null;
     }
 
     return true;

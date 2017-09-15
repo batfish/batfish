@@ -39,7 +39,6 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 
-
 public interface IBatfish extends IPluginConsumer {
 
   AnswerElement answerAclReachability(

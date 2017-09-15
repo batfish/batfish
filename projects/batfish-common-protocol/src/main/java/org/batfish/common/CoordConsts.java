@@ -6,7 +6,7 @@ package org.batfish.common;
 
 public class CoordConsts {
 
-    public enum WorkStatusCode {
+  public enum WorkStatusCode {
     ASSIGNED,
     ASSIGNMENTERROR,
     CHECKINGSTATUS,

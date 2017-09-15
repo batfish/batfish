@@ -769,8 +769,7 @@ public class Client extends AbstractClient implements IClient {
     }
     File tempFile = tempFilePath.toFile();
     tempFile.deleteOnExit();
-    _logger.debugf(
-        "Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath().toString());
+    _logger.debugf("Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath());
     FileWriter writer;
     try {
       writer = new FileWriter(tempFile);
@@ -1781,7 +1780,7 @@ public class Client extends AbstractClient implements IClient {
     if (options.size() > maxNumOptions
         || (parameters.size() < minNumParas)
         || (parameters.size() > maxNumParas)) {
-      _logger.errorf("Invalid arguments: %s %s\n", options.toString(), parameters.toString());
+      _logger.errorf("Invalid arguments: %s %s\n", options, parameters);
       printUsage(command);
       return false;
     }
@@ -1930,7 +1929,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       Files.walkFileTree(
           questionsPath,
-              EnumSet.of(FOLLOW_LINKS),
+          EnumSet.of(FOLLOW_LINKS),
           1,
           new SimpleFileVisitor<Path>() {
             @Override
@@ -2060,14 +2059,14 @@ public class Client extends AbstractClient implements IClient {
         if (i == batches.size() - 1
             || status == WorkStatusCode.TERMINATEDNORMALLY
             || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-          _logger.infof(".... %s\n", batches.get(i).toString());
+          _logger.infof(".... %s\n", batches.get(i));
         } else {
-          _logger.debugf(".... %s\n", batches.get(i).toString());
+          _logger.debugf(".... %s\n", batches.get(i));
         }
       }
       if (status == WorkStatusCode.TERMINATEDNORMALLY
           || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-        _logger.infof(".... %s: %s\n", task.getTerminated().toString(), status);
+        _logger.infof(".... %s: %s\n", task.getTerminated(), status);
       }
     }
   }

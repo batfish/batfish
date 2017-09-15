@@ -35,7 +35,7 @@ public class NamedStructureEquivalenceSet<T>
 
   public boolean compareStructure(T s) {
     if (_namedStructure == null) {
-      return (s == null);
+      return s == null;
     } else {
       return (s != null) && CommonUtil.checkJsonEqual(_namedStructure, s);
     }

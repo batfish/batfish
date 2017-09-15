@@ -55,7 +55,7 @@ public class JsonPathQuery {
   }
 
   public boolean hasValidAssertion() {
-    return (_assertion != null && _assertion.getType() != JsonPathAssertionType.none);
+    return _assertion != null && _assertion.getType() != JsonPathAssertionType.none;
   }
 
   @JsonProperty(PROP_ASSERTION)
