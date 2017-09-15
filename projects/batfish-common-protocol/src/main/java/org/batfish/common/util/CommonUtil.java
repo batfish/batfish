@@ -2,11 +2,8 @@ package org.batfish.common.util;
 
 import com.google.common.hash.Hashing;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,6 +51,7 @@ import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
@@ -252,7 +250,9 @@ public class CommonUtil {
             throw new BatfishException("Truststore file supplied but truststore password missing");
           }
           char[] tsPass = truststorePassword.toCharArray();
-          ts.load(new FileInputStream(truststoreFile.toFile()), tsPass);
+          try (FileInputStream trustInputStream = new FileInputStream(truststoreFile.toFile())) {
+            ts.load(trustInputStream, tsPass);
+          }
           tmf.init(ts);
           trustManagers = tmf.getTrustManagers();
         } else {
@@ -266,7 +266,9 @@ public class CommonUtil {
             throw new BatfishException("Keystore file supplied but keystore password");
           }
           char[] ksPass = keystorePassword.toCharArray();
-          ks.load(new FileInputStream(keystoreFile.toFile()), ksPass);
+          try (FileInputStream keystoreStream = new FileInputStream(keystoreFile.toFile())) {
+            ks.load(keystoreStream, ksPass);
+          }
           kmf.init(ks, ksPass);
           keyManagers = kmf.getKeyManagers();
         } else {
@@ -299,19 +301,6 @@ public class CommonUtil {
     } catch (IOException e) {
       throw new BatfishException("Failed to create temporary file", e);
     }
-  }
-
-  public static Path createTempFileWithContent(String prefix, String content) throws IOException {
-    Path tempFilePath = Files.createTempFile(prefix, null);
-
-    File tempFile = tempFilePath.toFile();
-    tempFile.deleteOnExit();
-
-    FileWriter writer = new FileWriter(tempFile);
-    writer.write(content);
-    writer.close();
-
-    return tempFilePath;
   }
 
   public static void delete(Path path) {
@@ -355,13 +344,13 @@ public class CommonUtil {
   }
 
   public static String extractBits(long l, int start, int end) {
-    String s = "";
+    StringBuilder s = new StringBuilder();
     for (int pos = end; pos >= start; pos--) {
       long mask = 1L << pos;
       long bit = l & mask;
-      s += (bit != 0) ? 1 : 0;
+      s.append((bit != 0) ? '1' : '0');
     }
-    return s;
+    return s.toString();
   }
 
   public static Path getCanonicalPath(Path path) {
@@ -421,14 +410,7 @@ public class CommonUtil {
   }
 
   public static String getIndentString(int indentLevel) {
-
-    String retString = "";
-
-    for (int i = 0; i < indentLevel; i++) {
-      retString += "  ";
-    }
-
-    return retString;
+    return StringUtils.repeat("  ", indentLevel);
   }
 
   @Nullable
@@ -506,7 +488,7 @@ public class CommonUtil {
   }
 
   public static boolean isLoopback(String interfaceName) {
-    return (interfaceName.startsWith("Loopback") || interfaceName.startsWith("lo"));
+    return interfaceName.startsWith("Loopback") || interfaceName.startsWith("lo");
   }
 
   public static boolean isNullInterface(String ifaceName) {
@@ -555,7 +537,7 @@ public class CommonUtil {
   }
 
   public static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
-    try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile.toFile()))) {
+    try (BufferedReader br = Files.newBufferedReader(downloadedFile, StandardCharsets.UTF_8)) {
       String line = null;
       while ((line = br.readLine()) != null) {
         outputFunction.accept(line + "\n");
@@ -621,8 +603,8 @@ public class CommonUtil {
     if (!Files.exists(keystoreAbsolutePath)) {
       String callingClass = callerClass.getCanonicalName();
       System.err.printf(
-          "%s: keystore file not found at %s or %s\n",
-          callingClass, keystorePath, keystoreAbsolutePath.toString());
+          "%s: keystore file not found at %s or %s%n",
+          callingClass, keystorePath, keystoreAbsolutePath);
       System.exit(1);
     }
     SSLContextConfigurator sslCon = new SSLContextConfigurator();
@@ -673,7 +655,7 @@ public class CommonUtil {
 
   public static void writeFile(Path outputPath, String output) {
     try {
-      Files.write(outputPath, output.getBytes());
+      Files.write(outputPath, output.getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       throw new BatfishException("Failed to write file: " + outputPath, e);
     }
@@ -691,5 +673,4 @@ public class CommonUtil {
           "Failed to write input stream to output file: '" + outputFile + "'");
     }
   }
-
 }

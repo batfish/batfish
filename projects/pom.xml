@@ -129,6 +129,9 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
           <version>${maven-findbugs-plugin.version}</version>
+          <configuration>
+            <includeTests>false</includeTests>
+          </configuration>
         </plugin>
 
         <plugin>

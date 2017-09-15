@@ -3,7 +3,6 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class StaticRoute implements Serializable {
 

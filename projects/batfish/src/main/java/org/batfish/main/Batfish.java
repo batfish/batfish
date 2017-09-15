@@ -52,6 +52,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -504,7 +505,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Answer answer() {
     Question question = null;
 
-    //return right away if we cannot parse the question successfully
+    // return right away if we cannot parse the question successfully
     try {
       question = parseQuestion();
     } catch (Exception e) {
@@ -1793,6 +1794,43 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public Map<String, String> getQuestionTemplates() {
+    if (_settings.getCoordinatorHost() == null) {
+      throw new BatfishException("Cannot get question templates: coordinator host is not set");
+    }
+    String protocol = _settings.getSslDisable() ? "http" : "https";
+    String url =
+        String.format(
+            "%s://%s:%s%s/%s",
+            protocol,
+            _settings.getCoordinatorHost(),
+            _settings.getCoordinatorPoolPort(),
+            CoordConsts.SVC_CFG_POOL_MGR,
+            CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
+    Map<String, String> params = new HashMap<>();
+    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+
+    JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
+    if (response == null) {
+      throw new BatfishException("Could not get question templates: Got null response");
+    }
+    if (!response.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+      throw new BatfishException("Could not get question templates: Response lacks question list");
+    }
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, String> templates =
+          mapper.readValue(
+              response.get(CoordConsts.SVC_KEY_QUESTION_LIST).toString(),
+              new TypeReference<Map<String, String>>() {});
+      return templates;
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Could not cast response to Map: ", e);
+    }
+  }
+
+  @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
     return _dataPlanePlugin.getRoutes();
   }
@@ -2609,14 +2647,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public Topology loadTopology() {
-    Path topologyPath = _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath();
-    _logger.info("Deserializing topology...");
-    Topology topology = deserializeObject(topologyPath, Topology.class);
-    _logger.info("OK\n");
-    return topology;
-  }
-
   private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
     return loadValidateEnvironmentAnswerElement(true);
   }
@@ -3111,9 +3141,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    pushDeltaEnvironment();
-    Topology diffTopology = loadTopology();
-    popEnvironment();
+    Topology diffTopology = computeTopology(diffConfigurations);
     EdgeSet diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -3141,9 +3169,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    pushBaseEnvironment();
-    Topology baseTopology = loadTopology();
-    popEnvironment();
+    Topology baseTopology = computeTopology(baseConfigurations);
     EdgeSet baseEdges = baseTopology.getEdges();
     EdgeSet missingEdges = new EdgeSet();
     missingEdges.addAll(baseEdges);
@@ -3151,9 +3177,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Edge missingEdge : missingEdges) {
       String ingressNode = missingEdge.getNode1();
       String outInterface = missingEdge.getInt1();
-      String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
-      if (diffConfigurations.containsKey(ingressNode)) {
+      if (diffConfigurations.containsKey(ingressNode)
+          && diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
+        String vrf =
+            diffConfigurations
+                .get(ingressNode)
+                .getInterfaces()
+                .get(outInterface)
+                .getVrf()
+                .getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(ingressNode, vrf, missingEdge, true, headerSpace);
         List<QuerySynthesizer> queries = new ArrayList<>();
@@ -3456,7 +3488,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       inferredRoles = true;
       nodeRolesPath = settings.getInferredNodeRolesPath();
       if (!Files.exists(nodeRolesPath)) {
-        result = new NodeRoleSpecifier();
+        return new NodeRoleSpecifier();
       }
     }
     result = parseNodeRoles(nodeRolesPath);
@@ -3470,8 +3502,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void processNodeRoles(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
-    SortedMap<String, SortedSet<String>> nodeRoles = specifier.createNodeRolesMap(
-        configurations.keySet());
+    SortedMap<String, SortedSet<String>> nodeRoles =
+        specifier.createNodeRolesMap(configurations.keySet());
     for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
       String hostname = nodeRolesEntry.getKey();
       Configuration config = configurations.get(hostname);
@@ -3682,8 +3714,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
                 new HeaderSpace(),
-                Collections.<String>emptySet(), nodeVrfs,
-                Collections.<String>emptySet(), Collections.<String>emptySet());
+                Collections.<String>emptySet(),
+                nodeVrfs,
+                Collections.<String>emptySet(),
+                Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(node, vrf));
@@ -3946,7 +3980,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.append(validateEnvironment());
       action = true;
     }
-    
+
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
@@ -4306,23 +4340,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
               + "'");
     }
 
-    //check transit nodes
+    // check transit nodes
     Set<String> allNodes = configurations.keySet();
     Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
     if (!invalidTransitNodes.isEmpty()) {
-      return new StringAnswerElement(String.format("Unknown transit nodes %s",
-          invalidTransitNodes.toString()));
+      return new StringAnswerElement(
+          String.format("Unknown transit nodes %s", invalidTransitNodes));
     }
     Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
     if (!invalidNotTransitNodes.isEmpty()) {
-      return new StringAnswerElement(String.format("Unknown notTransit nodes %s",
-          invalidNotTransitNodes.toString()));
+      return new StringAnswerElement(
+          String.format("Unknown notTransit nodes %s", invalidNotTransitNodes));
     }
     Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
-    if (! illegalTransitNodes.isEmpty()) {
-          return new StringAnswerElement(
-              String.format("Same node %s can not be in both transit and notTransit",
-                  illegalTransitNodes.toString()));
+    if (!illegalTransitNodes.isEmpty()) {
+      return new StringAnswerElement(
+          String.format(
+              "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
     }
 
     // build query jobs
@@ -4332,8 +4366,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Map<String, Set<String>> nodeVrfs = new TreeMap<>();
         nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
         ReachabilityQuerySynthesizer query =
-            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes,
-                nodeVrfs, transitNodes, notTransitNodes);
+            new ReachabilityQuerySynthesizer(
+                actions, headerSpace, activeFinalNodes, nodeVrfs, transitNodes, notTransitNodes);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
@@ -4543,7 +4577,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         throw new BatfishException(
             String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
       }
-      //nodes are valid, now checking corresponding interfaces
+      // nodes are valid, now checking corresponding interfaces
       Configuration config1 = configurations.get(edge.getNode1());
       Configuration config2 = configurations.get(edge.getNode2());
       if (!config1.getInterfaces().containsKey(edge.getInt1())) {

@@ -274,7 +274,7 @@ public class WorkMgr extends AbstractCoordinator {
         JSONArray array = new JSONArray(sobj);
         _logger.info(
             String.format(
-                "response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1)));
+                "response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
 
         if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
           _logger.error(
@@ -285,7 +285,7 @@ public class WorkMgr extends AbstractCoordinator {
           BatfishObjectMapper mapper = new BatfishObjectMapper();
           task = mapper.readValue(taskStr, Task.class);
           if (task.getStatus() == null) {
-            _logger.error(String.format("did not see status key in json response\n"));
+            _logger.error("did not see status key in json response\n");
           }
         }
       }
@@ -603,6 +603,21 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public BatfishLogger getLogger() {
     return _logger;
+  }
+
+  @Override
+  public Set<String> getContainerNames() {
+    Path containersDir = Main.getSettings().getContainersLocation();
+    if (!Files.exists(containersDir)) {
+      containersDir.toFile().mkdirs();
+    }
+    SortedSet<String> containers =
+            new TreeSet<>(
+                    CommonUtil.getSubdirectories(containersDir)
+                            .stream()
+                            .map(dir -> dir.getFileName().toString())
+                            .collect(Collectors.toSet()));
+    return containers;
   }
 
   private Path getdirContainer(String containerName, boolean errIfNotEixst) {

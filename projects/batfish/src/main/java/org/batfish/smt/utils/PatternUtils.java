@@ -46,12 +46,14 @@ public class PatternUtils {
               Matcher m2 = p2.matcher(router);
               if (m1.matches() && !m2.matches()) {
                 for (GraphEdge edge : edges) {
-                  Interface i = edge.getStart();
-                  String ifaceName = i.getName();
-                  Matcher m3 = p3.matcher(ifaceName);
-                  Matcher m4 = p4.matcher(ifaceName);
-                  if (m3.matches() && !m4.matches()) {
-                    acc.add(edge);
+                  if (!edge.isAbstract()) {
+                    Interface i = edge.getStart();
+                    String ifaceName = i.getName();
+                    Matcher m3 = p3.matcher(ifaceName);
+                    Matcher m4 = p4.matcher(ifaceName);
+                    if (m3.matches() && !m4.matches()) {
+                      acc.add(edge);
+                    }
                   }
                 }
               }

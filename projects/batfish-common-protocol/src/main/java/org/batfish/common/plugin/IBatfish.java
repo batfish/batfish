@@ -39,7 +39,6 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 
-
 public interface IBatfish extends IPluginConsumer {
 
   AnswerElement answerAclReachability(
@@ -68,6 +67,8 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  Map<String, String> getQuestionTemplates();
 
   NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
 

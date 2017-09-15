@@ -10,6 +10,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -20,7 +22,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CompositeBatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -46,27 +47,28 @@ public class BatfishTest {
 
   @Test
   public void testAnswerBadQuestion() throws IOException {
-   // missing class field
-   String badQuestionStr = "{"
-         + "\"differential\": false,"
-         + "\"instance\": {"
-         + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) are"
-         +                    "referenced.\","
-         + "\"instanceName\": \"undefinedReferences\","
-         +     "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
-         +                            "serious consequences with some vendors.\","
-         +     "\"tags\": [\"default\"],"
-         +     "\"variables\": {\"nodeRegex\": {"
-         +        "\"description\": \"Only check nodes whose name matches this regex\","
-         +        "\"type\": \"javaRegex\","
-         +        "\"value\": \".*\""
-         +      "}}"
-         + "},"
-         + "\"nodeRegex\": \"${nodeRegex}\""
-         + "}";
+    // missing class field
+    String badQuestionStr =
+        "{"
+            + "\"differential\": false,"
+            + "\"instance\": {"
+            + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) "
+            + "are referenced.\","
+            + "\"instanceName\": \"undefinedReferences\","
+            + "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
+            + "serious consequences with some vendors.\","
+            + "\"tags\": [\"default\"],"
+            + "\"variables\": {\"nodeRegex\": {"
+            + "\"description\": \"Only check nodes whose name matches this regex\","
+            + "\"type\": \"javaRegex\","
+            + "\"value\": \".*\""
+            + "}}"
+            + "},"
+            + "\"nodeRegex\": \"${nodeRegex}\""
+            + "}";
 
-    Path questionPath =
-          CommonUtil.createTempFileWithContent("testAnswerBadQuestion", badQuestionStr);
+    Path questionPath = _folder.newFile("testAnswerBadQuestion").toPath();
+    Files.write(questionPath, badQuestionStr.getBytes(StandardCharsets.UTF_8));
     Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     batfish.getSettings().setQuestionPath(questionPath);
     Answer answer = batfish.answer();
@@ -87,7 +89,7 @@ public class BatfishTest {
 
   @Test
   public void testParseTopologyBadJson() throws IOException {
-    //missing node2interface
+    // missing node2interface
     String topologyBadJson =
         "["
             + "{ "
@@ -97,8 +99,8 @@ public class BatfishTest {
             + "},"
             + "]";
 
-    Path topologyFilePath =
-        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyBadJson);
+    Path topologyFilePath = _folder.newFile("testParseTopologyJson").toPath();
+    Files.write(topologyFilePath, topologyBadJson.getBytes(StandardCharsets.UTF_8));
     Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     String errorMessage = "Topology format error";
     _thrown.expect(BatfishException.class);
@@ -108,9 +110,8 @@ public class BatfishTest {
 
   @Test
   public void testParseTopologyEmpty() throws IOException {
-    String topologyEmpty = "";
-    Path topologyFilePath =
-        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyEmpty);
+    Path topologyFilePath = _folder.newFile("testParseTopologyJson").toPath();
+    Files.write(topologyFilePath, new byte[0]);
     Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     String errorMessage = "ERROR: empty topology\n";
     _thrown.expect(BatfishException.class);
@@ -136,8 +137,8 @@ public class BatfishTest {
             + "}"
             + "]";
 
-    Path topologyFilePath =
-        CommonUtil.createTempFileWithContent("testParseTopologyJson", topologyJson);
+    Path topologyFilePath = _folder.newFile("testParseTopologyJson").toPath();
+    Files.write(topologyFilePath, topologyJson.getBytes(StandardCharsets.UTF_8));
     Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), null);
     Topology topology = batfish.parseTopology(topologyFilePath);
     assertEquals(topology.getEdges().size(), 2);
@@ -153,7 +154,7 @@ public class BatfishTest {
     EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
-    //test that checkTopology does not throw
+    // test that checkTopology does not throw
     Batfish.checkTopology(configs, topology);
   }
 
@@ -301,5 +302,4 @@ public class BatfishTest {
     _thrown.expectMessage("Failed to walk path: " + nonExistPath);
     Batfish.listAllFiles(nonExistPath);
   }
-
 }

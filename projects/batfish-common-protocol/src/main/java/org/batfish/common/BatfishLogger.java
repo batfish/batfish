@@ -3,6 +3,7 @@ package org.batfish.common;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 public class BatfishLogger {
 
-  public class BatfishLoggerHistory extends ArrayList<HistoryItem> {
+  public static class BatfishLoggerHistory extends ArrayList<HistoryItem> {
     /** */
     private static final long serialVersionUID = 1L;
 
@@ -27,7 +28,7 @@ public class BatfishLogger {
     }
   }
 
-  private class HistoryItem extends Pair<Integer, String> {
+  private static class HistoryItem extends Pair<Integer, String> {
     /** */
     private static final long serialVersionUID = 1L;
 
@@ -97,17 +98,18 @@ public class BatfishLogger {
 
   private static String getRotatedLogFilename(String logFilename) {
     DateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss.SSS");
-    String rotatedLogFilename = logFilename + '-' + df.format(new Date());
-    File rotatedLogFile = new File(rotatedLogFilename);
+    String baseRotatedLogFilename = logFilename + '-' + df.format(new Date());
+    File rotatedLogFile = new File(baseRotatedLogFilename);
+    String returnFilename = baseRotatedLogFilename;
 
     int index = 0;
     while (rotatedLogFile.exists()) {
-      rotatedLogFilename += "." + index;
-      rotatedLogFile = new File(rotatedLogFilename);
+      returnFilename = baseRotatedLogFilename + "." + index;
+      rotatedLogFile = new File(returnFilename);
       index++;
     }
 
-    return rotatedLogFilename;
+    return returnFilename;
   }
 
   private static Map<String, Integer> initializeLogLevels() {
@@ -139,7 +141,7 @@ public class BatfishLogger {
   }
 
   public static boolean isValidLogLevel(String levelStr) {
-    return (LOG_LEVELS.containsKey(levelStr));
+    return LOG_LEVELS.containsKey(levelStr);
   }
 
   private final BatfishLoggerHistory _history;
@@ -183,14 +185,17 @@ public class BatfishLogger {
       File logFileFile = new File(_logFile);
       if (logFileFile.exists()) {
         String rotatedLog = getRotatedLogFilename(_logFile);
-        logFileFile.renameTo(new File(rotatedLog));
+        if (!logFileFile.renameTo(new File(rotatedLog))) {
+          throw new BatfishException(
+              String.format("Failed to rename %s to %s", _logFile, rotatedLog));
+        }
       }
 
       PrintStream filePrintStream = null;
       try {
-        filePrintStream = new PrintStream(_logFile);
+        filePrintStream = new PrintStream(_logFile, "UTF-8");
         _rotateLog = rotateLog;
-      } catch (FileNotFoundException e) {
+      } catch (FileNotFoundException | UnsupportedEncodingException e) {
         throw new BatfishException("Could not create logfile", e);
       }
       if (logTee) {
@@ -294,10 +299,13 @@ public class BatfishLogger {
       String rotatedLog = getRotatedLogFilename(_logFile);
 
       File logFile = new File(_logFile);
-      logFile.renameTo(new File(rotatedLog));
+      if (!logFile.renameTo(new File(rotatedLog))) {
+        throw new BatfishException(
+            String.format("Failed to rename %s to %s", _logFile, rotatedLog));
+      }
 
       try {
-        PrintStream filePrintStream = new PrintStream(_logFile);
+        PrintStream filePrintStream = new PrintStream(_logFile, "UTF-8");
 
         if (_ps instanceof CompositePrintStream) {
           _ps = new CompositePrintStream(System.out, filePrintStream);

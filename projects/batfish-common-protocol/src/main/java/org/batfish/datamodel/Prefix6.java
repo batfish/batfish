@@ -79,7 +79,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
     BigInteger start = getNetworkAddress().asBigInteger();
     BigInteger end = getEndAddress().asBigInteger();
     BigInteger ipAsLong = ip6.asBigInteger();
-    return (start.compareTo(ipAsLong) <= 0 && ipAsLong.compareTo(end) <= 0);
+    return start.compareTo(ipAsLong) <= 0 && ipAsLong.compareTo(end) <= 0;
   }
 
   @Override
