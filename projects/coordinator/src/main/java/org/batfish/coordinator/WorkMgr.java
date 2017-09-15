@@ -611,13 +611,13 @@ public class WorkMgr extends AbstractCoordinator {
     if (!Files.exists(containersDir)) {
       containersDir.toFile().mkdirs();
     }
-    SortedSet<String> authorizedContainers =
+    SortedSet<String> containers =
             new TreeSet<>(
                     CommonUtil.getSubdirectories(containersDir)
                             .stream()
                             .map(dir -> dir.getFileName().toString())
                             .collect(Collectors.toSet()));
-    return authorizedContainers;
+    return containers;
   }
 
   private Path getdirContainer(String containerName, boolean errIfNotEixst) {
