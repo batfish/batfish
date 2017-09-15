@@ -20,6 +20,9 @@ import java.util.Map;
  *   user request, and its concrete implementation should create testrigs in the usual place.
  *   The force flag is intended to overwrite any previous testrigs that conflict with those that
  *   will be newly installed.
+ *
+ * <p>If regular polling is needed to keep things in sync, the plugin should set things up properly
+ *   when initialized and when settings are updated.
  */
 public abstract class SyncTestrigsPlugin extends CoordinatorPlugin {
 
