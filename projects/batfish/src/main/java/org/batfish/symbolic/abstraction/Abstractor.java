@@ -196,13 +196,13 @@ public class Abstractor {
             continue;
           }
 
-          Map<String, Set<Pair<InterfacePolicy, Integer>>> groupMap = new HashMap<>();
+          Map<String, Set<Pair<Integer, InterfacePolicy>>> groupMap = new HashMap<>();
 
           for (String router : partition) {
 
             // System.out.println("  Looking at router: " + router);
 
-            Set<Pair<InterfacePolicy, Integer>> groups = new HashSet<>();
+            Set<Pair<Integer, InterfacePolicy>> groups = new HashSet<>();
             groupMap.put(router, groups);
 
             // TODO: translate the configurations into BDDs
@@ -219,13 +219,15 @@ public class Abstractor {
                 // For external neighbors, we don't split a partition
                 Integer peerGroup;
                 if (peer != null) {
+
                   Configuration peerConf = g.getConfigurations().get(peer);
+
                   peerGroup = workset.getHandle(peer);
                   // else {
                   // peerGroup = new TreeSet<>();
                   // peerGroup.add(EXTERNAL_NAME);
 
-                  Pair<InterfacePolicy, Integer> pair = new Pair<>(pol, peerGroup);
+                  Pair<Integer, InterfacePolicy> pair = new Pair<>(peerGroup, pol);
                   groups.add(pair);
 
                   // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
@@ -234,16 +236,16 @@ public class Abstractor {
             }
           }
 
-          Map<Set<Pair<InterfacePolicy, Integer>>, Set<String>> inversePolicyMap =
+          Map<Set<Pair<Integer, InterfacePolicy>>, Set<String>> inversePolicyMap =
               new HashMap<>();
           groupMap.forEach(
               (router, groupPairs) -> {
                 Set<String> routers =
-                    inversePolicyMap.computeIfAbsent(groupPairs, gs -> new TreeSet<>());
+                    inversePolicyMap.computeIfAbsent(groupPairs, gs -> new HashSet<>());
                 routers.add(router);
               });
 
-          // Only add changed to the todo list
+          // Only add changed to the list
           for (Set<String> collection : inversePolicyMap.values()) {
             if (!ps.contains(collection)) {
               todo.add(collection);
