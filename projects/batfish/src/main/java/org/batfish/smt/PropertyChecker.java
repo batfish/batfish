@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -27,6 +28,7 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.answers.SmtManyAnswerElement;
 import org.batfish.smt.answers.SmtOneAnswerElement;
+import org.batfish.smt.collections.Table2;
 import org.batfish.smt.utils.PathRegexes;
 import org.batfish.smt.utils.PatternUtils;
 
@@ -71,6 +73,15 @@ public class PropertyChecker {
   }
 
   /*
+   * Constraint that encodes if two symbolic records are equal
+   */
+  private static BoolExpr equal(
+      Encoder e, Configuration conf, SymbolicRecord r1, SymbolicRecord r2) {
+    EncoderSlice main = e.getMainSlice();
+    return main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
+  }
+
+  /*
    * Compute if a collection of source routers can reach a collection of destination
    * ports. This is broken up into multiple queries, one for each destination port.
    */
@@ -112,6 +123,12 @@ public class PropertyChecker {
       if (q.getEquivalence()) {
         assert (enc2 != null);
 
+        // create a map for enc2 to lookup a related environment variable from enc
+        Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
+        enc2.getMainSlice().getLogicalGraph().getEnvironmentVars().forEach((lge, r) -> {
+          relatedEnv.put(lge.getEdge(),lge.getEdgeType(),r);
+        });
+
         BoolExpr related = enc.mkTrue();
 
         // relate environments
@@ -122,8 +139,13 @@ public class PropertyChecker {
           SymbolicRecord r1 = entry.getValue();
           String router = le.getEdge().getRouter();
           Configuration conf = enc.getMainSlice().getGraph().getConfigurations().get(router);
-          SymbolicRecord r2 = enc2.getMainSlice().getLogicalGraph().getEnvironmentVars().get(le);
-          BoolExpr x = enc.getMainSlice().equal(conf, Protocol.BEST, r1, r2, le, true);
+
+          // Lookup the same environment variable in the other copy
+          // The copy will have a different name but the same edge and type
+          SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
+          assert r2 != null;
+
+          BoolExpr x = equal(enc, conf, r1, r2);
           related = enc.mkAnd(related, x);
         }
 
@@ -559,10 +581,10 @@ public class PropertyChecker {
                     if (!communities.contains(cvar.getValue())) {
                       communities.add(cvar.getValue());
                       /* String msg =
-                          String.format(
-                              "Warning: community %s found for router %s but not %s.",
-                              cvar.getValue(), conf1.getName(), conf2.getName());
-                         System.out.println(msg); */
+                       String.format(
+                           "Warning: community %s found for router %s but not %s.",
+                           cvar.getValue(), conf1.getName(), conf2.getName());
+                      System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce1));
                   }
@@ -577,10 +599,10 @@ public class PropertyChecker {
                     if (!communities.contains(cvar.getValue())) {
                       communities.add(cvar.getValue());
                       /* String msg =
-                          String.format(
-                              "Warning: community %s found for router %s but not %s.",
-                              cvar.getValue(), conf2.getName(), conf1.getName());
-                         System.out.println(msg); */
+                       String.format(
+                           "Warning: community %s found for router %s but not %s.",
+                           cvar.getValue(), conf2.getName(), conf1.getName());
+                      System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce2));
                   }
@@ -646,7 +668,7 @@ public class PropertyChecker {
         SymbolicRecord best2 =
             e2.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf2.getName());
         // Just pick some protocol for defaults, shouldn't matter for best choice
-        required = e2.getMainSlice().equal(conf2, Protocol.CONNECTED, best1, best2, null, true);
+        required = equal(e2, conf2, best1, best2);
       } else {
         // Forwarding decisions should be the sames
         Map<String, GraphEdge> geMap2 = interfaceMap(edges2);
