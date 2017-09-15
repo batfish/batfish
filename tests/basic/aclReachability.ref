@@ -425,6 +425,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -440,6 +441,7 @@
                 "ipProtocols" : [
                   "UDP"
                 ],
+                "name" : "-p udp --dport 53 -j ACCEPT",
                 "negate" : false
               },
               {
@@ -450,10 +452,12 @@
                 "ipProtocols" : [
                   "TCP"
                 ],
+                "name" : "-p tcp --dport 22 -j ACCEPT",
                 "negate" : false
               },
               {
                 "action" : "REJECT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -463,6 +467,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -472,6 +477,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -481,6 +487,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -490,6 +497,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -499,6 +507,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -508,6 +517,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -517,6 +527,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -526,6 +537,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -535,6 +547,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -552,10 +565,12 @@
                 "ipProtocols" : [
                   "TCP"
                 ],
+                "name" : "-p tcp --dport 22 -j ACCEPT",
                 "negate" : false
               },
               {
                 "action" : "REJECT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -568,10 +583,12 @@
                 "dstIps" : [
                   "2.128.0.101"
                 ],
+                "name" : "-d 2.128.0.101 -j DROP",
                 "negate" : false
               },
               {
                 "action" : "ACCEPT",
+                "name" : "default",
                 "negate" : false
               }
             ]
@@ -908,74 +925,87 @@
           "filter::FORWARD" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "filter::INPUT" : [
             {
               "index" : 0,
+              "name" : "-p udp --dport 53 -j ACCEPT",
               "differentAction" : false
             },
             {
               "index" : 1,
+              "name" : "-p tcp --dport 22 -j ACCEPT",
               "differentAction" : false
             },
             {
               "index" : 2,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "filter::OUTPUT" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "mangle::FORWARD" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "mangle::INPUT" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "mangle::OUTPUT" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "mangle::POSTROUTING" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "mangle::PREROUTING" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "nat::OUTPUT" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "nat::POSTROUTING" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "nat::PREROUTING" : [
             {
               "index" : 0,
+              "name" : "default",
               "differentAction" : false
             }
           ]
@@ -984,20 +1014,24 @@
           "filter::INPUT" : [
             {
               "index" : 0,
+              "name" : "-p tcp --dport 22 -j ACCEPT",
               "differentAction" : false
             },
             {
               "index" : 1,
+              "name" : "default",
               "differentAction" : false
             }
           ],
           "filter::OUTPUT" : [
             {
               "index" : 0,
+              "name" : "-d 2.128.0.101 -j DROP",
               "differentAction" : false
             },
             {
               "index" : 1,
+              "name" : "default",
               "differentAction" : false
             }
           ]
@@ -1033,5 +1067,10 @@
     "differential" : false,
     "nodeRegex" : ".*"
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }
