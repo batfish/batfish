@@ -412,7 +412,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
   private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
 
@@ -444,7 +444,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
-      Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
       Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
@@ -2444,7 +2444,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, Configuration> loadConfigurationsWithoutValidation() {
-    SortedMap<String, Configuration> configurations = _cachedConfigurations.get(_testrigSettings);
+    SortedMap<String, Configuration> configurations =
+        _cachedConfigurations.getIfPresent(_testrigSettings);
     if (configurations == null) {
       ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
       if (!Version.isCompatibleVersion(

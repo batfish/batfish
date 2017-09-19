@@ -27,8 +27,8 @@ import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
-  private static Map<TestrigSettings, SortedMap<String, Configuration>> makeTestrigCache() {
-    return Collections.synchronizedMap(new LRUMap<>(5));
+  private static Cache<TestrigSettings, SortedMap<String, Configuration>> makeTestrigCache() {
+    return CacheBuilder.newBuilder().maximumSize(5).weakValues().build();
   }
 
   private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -49,7 +49,7 @@ public class BatfishTestUtils {
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Map<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
     if (!configurations.isEmpty()) {
       Path containerDir = tempFolder.newFolder("container").toPath();
