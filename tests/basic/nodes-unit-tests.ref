@@ -7497,6 +7497,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "1.2.3.4"
@@ -7510,6 +7511,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "11.22.33.44"
@@ -7523,6 +7525,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "111.222.111.222"
@@ -7536,6 +7539,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "4.3.2.1"
@@ -7549,6 +7553,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "44.22.33.11"
@@ -7556,6 +7561,7 @@
                 },
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7565,6 +7571,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7574,6 +7581,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7583,6 +7591,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7592,6 +7601,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7601,6 +7611,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7610,6 +7621,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7619,6 +7631,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7628,6 +7641,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7637,6 +7651,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
