@@ -76,13 +76,11 @@ public class PropertyChecker {
       // it can be any prefix, so we leave it unconstrained
       if (g.getEbgpNeighbors().containsKey(ge)) {
         q.getHeaderSpace().getDstIps().clear();
-        System.out.println("Inferred destination ip: any");
         break;
       }
       // Otherwise, we add the destination IP range
       Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
       IpWildcard dst = new IpWildcard(pfx);
-      System.out.println("Inferred destination ip: " + dst);
       q.getHeaderSpace().getDstIps().add(dst);
     }
   }
