@@ -1,10 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -999,18 +995,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       throw new BatfishException("Cannot convert to community long");
     }
-  }
-
-  private static Date toDate(String utcTime) {
-    DateFormat utcFormat = new SimpleDateFormat("yyyy-MM-dd.HH:mm:ss");
-    Date date;
-    try {
-      date = utcFormat.parse(utcTime);
-    } catch (ParseException e) {
-      throw new BatfishException(
-          "Invalid start-time format, allowed format is 'yyyy-MM-dd.HH:mm:ss(.SSSZ)'", e);
-    }
-    return date;
   }
 
   private static EncryptionAlgorithm toEncryptionAlgorithm(Encryption_algorithmContext ctx) {
@@ -3360,7 +3344,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       } else if (ctx.sea_key().seak_secret() != null) {
         key.setSecret(ctx.sea_key().seak_secret().key.getText());
       } else if (ctx.sea_key().seak_start_time() != null) {
-        key.setStartTime(toDate(ctx.sea_key().seak_start_time().seaks_time().getText()));
+        key.setStartTime(ctx.sea_key().seak_start_time().seaks_time().getText());
       }
     } else if (ctx.sea_description() != null) {
       keyChain.setDescription(ctx.sea_description().description().text.getText());

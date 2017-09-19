@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Date;
 import org.batfish.common.util.ComparableStructure;
 
 public class AuthenticationKey extends ComparableStructure<String> {
@@ -27,8 +26,8 @@ public class AuthenticationKey extends ComparableStructure<String> {
   private AuthenticationKey.KeyOption _option;
 
   private String _secret;
-  
-  private Date _startTime;
+
+  private String _startTime;
 
   public AuthenticationKey(String name) {
     super(name);
@@ -42,7 +41,7 @@ public class AuthenticationKey extends ComparableStructure<String> {
       @JsonProperty(PROP_ALGORITHM) BgpAuthenticationAlgorithm algorithm,
       @JsonProperty(PROP_OPTION) AuthenticationKey.KeyOption option,
       @JsonProperty(PROP_SECRET) String secret,
-      @JsonProperty(PROP_START_TIME) Date startTime) {
+      @JsonProperty(PROP_START_TIME) String startTime) {
     super(name);
     _algorithm = algorithm;
     _option = option;
@@ -66,7 +65,7 @@ public class AuthenticationKey extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_START_TIME)
-  public Date getStartTime() {
+  public String getStartTime() {
     return _startTime;
   }
 
@@ -86,7 +85,7 @@ public class AuthenticationKey extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_START_TIME)
-  public void setStartTime(Date startTime) {
+  public void setStartTime(String startTime) {
     this._startTime = startTime;
   }
 }

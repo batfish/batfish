@@ -9758,14 +9758,14 @@
                   "name" : "0",
                   "option" : "ISIS_ENHANCED",
                   "secret" : "this-is-the-secret-password",
-                  "startTime" : 1308885573000
+                  "startTime" : "2011-6-23.20:19:33"
                 },
                 "1" : {
                   "algorithm" : "MD5",
                   "name" : "1",
                   "option" : "BASIC",
                   "secret" : "this-is-another-secret-password",
-                  "startTime" : 1340507973000
+                  "startTime" : "2012-6-23.20:19:33-0700"
                 }
               },
               "name" : "bgp-auth",
