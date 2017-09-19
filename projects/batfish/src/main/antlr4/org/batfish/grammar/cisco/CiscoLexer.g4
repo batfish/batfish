@@ -9717,6 +9717,11 @@ USE_IPV6_ACL
    'use-ipv6-acl'
 ;
 
+USE_LINK_ADDRESS
+:
+   'use-link-address'
+;
+
 USE_VRF
 :
    'use-vrf'

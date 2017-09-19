@@ -155,6 +155,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _cryptoAcls;
 
+  private final List<Ip> _dhcpRelayServers;
+
   private NavigableSet<String> _dnsServers;
 
   private String _dnsSourceInterface;
@@ -273,6 +275,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _classMapAccessGroups = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
+    _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
@@ -450,6 +453,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Vrf getDefaultVrf() {
     return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  public List<Ip> getDhcpRelayServers() {
+    return _dhcpRelayServers;
   }
 
   public NavigableSet<String> getDnsServers() {
@@ -2020,7 +2027,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());
-    newIface.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
+    if (iface.getDhcpRelayClient()) {
+      newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
+    } else {
+      newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
+    }
     newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());

@@ -1,0 +1,15 @@
+!
+hostname arista_dhcp_relay
+!
+ip dhcp relay server 1.2.3.4
+ip dhcp relay server 2.3.4.5
+!
+interface Ethernet0
+ ip dhcp relay client
+ no shutdown
+!
+interface Ethernet1
+ no shutdown
+!
+!
+
