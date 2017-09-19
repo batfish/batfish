@@ -265,6 +265,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
@@ -280,6 +281,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_expanded_tailCont
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_default_gateway_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_hostnameContext;
@@ -417,6 +419,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_ip_dhcpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domainContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_name_serverContext;
@@ -2914,6 +2917,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.getSecondaryPrefixes().add(prefix);
     }
+  }
+
+  @Override
+  public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
+    if (!_no) {
+      if (ctx.ip != null) {
+        Ip ip = toIp(ctx.ip);
+        _configuration.getDhcpRelayServers().add(ip);
+      }
+    }
+  }
+
+  @Override
+  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setDhcpRelayClient(true);
+    }
+  }
+
+  @Override
+  public void enterS_ip_dhcp(S_ip_dhcpContext ctx) {
+    _no = (ctx.NO() != null);
+  }
+
+  @Override
+  public void exitS_ip_dhcp(S_ip_dhcpContext ctx) {
+    _no = false;
   }
 
   @Override

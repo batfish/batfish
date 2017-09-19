@@ -503,6 +503,21 @@ ip_default_gateway_stanza
 
 ip_dhcp_null
 :
+   (
+      PACKET
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_dhcp_pool
+:
+   POOL name = variable NEWLINE
+   (
+      ip_dhcp_pool_null
+   )*
+;
+
+ip_dhcp_pool_null
+:
    NO?
    (
       BOOTFILE
@@ -518,6 +533,34 @@ ip_dhcp_null
       | NEXT_SERVER
       | OPTION
    ) ~NEWLINE* NEWLINE
+;
+
+ip_dhcp_relay
+:
+   RELAY
+   (
+      NEWLINE
+      | ip_dhcp_relay_null
+      | ip_dhcp_relay_server
+   )
+;
+
+ip_dhcp_relay_null
+:
+   (
+      OPTION
+      | SOURCE_INTERFACE
+      | USE_LINK_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_dhcp_relay_server
+:
+   SERVER
+   (
+      ip = IP_ADDRESS
+      | ip6 = IPV6_ADDRESS
+   ) NEWLINE
 ;
 
 ip_domain_lookup
@@ -1618,10 +1661,12 @@ s_ip_dhcp
    (
       IP
       | IPV6
-   ) DHCP ~NEWLINE* NEWLINE
+   ) DHCP
    (
       ip_dhcp_null
-   )*
+      | ip_dhcp_pool
+      | ip_dhcp_relay
+   )
 ;
 
 s_ip_domain

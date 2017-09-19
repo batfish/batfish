@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -270,7 +269,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private String _description;
 
-  private SortedSet<Ip> _dhcpRelayAddresses;
+  private List<Ip> _dhcpRelayAddresses;
 
   private IpAccessList _inboundFilter;
 
@@ -360,6 +359,7 @@ public final class Interface extends ComparableStructure<String> {
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _allPrefixes = new TreeSet<>();
+    _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
@@ -507,7 +507,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
-  public SortedSet<Ip> getDhcpRelayAddresses() {
+  public List<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
   }
 
@@ -833,7 +833,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
-  public void setDhcpRelayAddresses(SortedSet<Ip> dhcpRelayAddresses) {
+  public void setDhcpRelayAddresses(List<Ip> dhcpRelayAddresses) {
     _dhcpRelayAddresses = dhcpRelayAddresses;
   }
 
