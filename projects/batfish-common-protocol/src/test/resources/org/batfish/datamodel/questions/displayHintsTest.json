@@ -1,0 +1,14 @@
+{
+  "visualize": [
+    "node1"
+  ],
+  "extractionHints" : {
+    "node1": {
+      "type": "node",
+      "hints": {
+        "prefix": 1
+      }
+    }
+  },
+  "textDesc" : "${node1} has no accounting command"
+}
