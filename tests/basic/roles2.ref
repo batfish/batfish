@@ -3,10 +3,7 @@
     {
       "class" : "org.batfish.question.RolesQuestionPlugin$RolesAnswerElement",
       "roleSpecifier" : {
-        "inferred" : true,
-        "roleRegexes" : [
-          "(\\p{Alpha}+)\\p{Alnum}*"
-        ]
+        "inferred" : true
       }
     }
   ],

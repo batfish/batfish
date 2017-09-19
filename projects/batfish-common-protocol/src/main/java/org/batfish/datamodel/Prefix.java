@@ -81,7 +81,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     long start = getNetworkAddress().asLong();
     long end = getEndAddress().asLong();
     long ipAsLong = ip.asLong();
-    return (start <= ipAsLong && ipAsLong <= end);
+    return start <= ipAsLong && ipAsLong <= end;
   }
 
   public boolean containsPrefix(Prefix prefix) {

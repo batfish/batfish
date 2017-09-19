@@ -34,6 +34,6 @@ public class JsonPathQuestionPluginTest {
 
     assertThat(summary.getNumFailed(), equalTo(1));
     assertThat(summary.getNumPassed(), equalTo(1));
-    assertThat(summary.getNumResults(), equalTo(3));
+    assertThat(summary.getNumResults(), equalTo(10));
   }
 }

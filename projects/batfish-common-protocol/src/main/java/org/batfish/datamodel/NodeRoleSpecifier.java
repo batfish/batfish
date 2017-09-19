@@ -11,6 +11,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.batfish.common.BatfishException;
 
 public class NodeRoleSpecifier {
@@ -25,7 +27,8 @@ public class NodeRoleSpecifier {
   private SortedMap<String, SortedSet<String>> _roleMap;
 
   // an ordered list of regexes used to identify roles from node names.
-  // each regex in regexes has a single group in it that locates the role name within a node name.
+  // each regex in regexes has at least one group in it that locates the role name
+  // within a node name.
   // there are multiple regexes to handle node names that have different formats.
   private List<String> _roleRegexes;
 
@@ -56,9 +59,14 @@ public class NodeRoleSpecifier {
     for (String node : nodes) {
       for (Pattern pattern : patList) {
         Matcher matcher = pattern.matcher(node);
+        int numGroups = matcher.groupCount();
         if (matcher.matches()) {
           try {
-            String role = matcher.group(1);
+            List<String> roleParts = IntStream.range(1, numGroups + 1)
+                .mapToObj(matcher::group)
+                .collect(Collectors.toList());
+            String role = String.join("-", roleParts);
+
             SortedSet<String> currNodes = roleNodesMap.computeIfAbsent(role, k -> new TreeSet<>());
             currNodes.add(node);
           } catch (IndexOutOfBoundsException e) {

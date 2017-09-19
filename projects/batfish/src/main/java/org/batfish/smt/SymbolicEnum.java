@@ -80,7 +80,7 @@ class SymbolicEnum<T> {
     if (size == 0) {
       return 0;
     } else {
-      return ((int) Math.ceil(log / base));
+      return (int) Math.ceil(log / base);
     }
   }
 

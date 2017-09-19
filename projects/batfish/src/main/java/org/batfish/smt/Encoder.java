@@ -596,7 +596,7 @@ public class Encoder {
                   .getEnvironmentVars()
                   .forEach(
                       (lge, r) -> {
-                        if (valuation.get(r.getPermitted()).equals("true")) {
+                        if ("true".equals(valuation.get(r.getPermitted()))) {
                           SortedMap<String, String> recordMap = new TreeMap<>();
                           GraphEdge ge = lge.getEdge();
                           String nodeIface =

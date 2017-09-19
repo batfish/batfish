@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,7 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -767,8 +769,7 @@ public class Client extends AbstractClient implements IClient {
     }
     File tempFile = tempFilePath.toFile();
     tempFile.deleteOnExit();
-    _logger.debugf(
-        "Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath().toString());
+    _logger.debugf("Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath());
     FileWriter writer;
     try {
       writer = new FileWriter(tempFile);
@@ -1386,6 +1387,28 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean getQuestionTemplates(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.GET_QUESTION_TEMPLATES)) {
+      return false;
+    }
+
+    JSONObject templates = _workHelper.getQuestionTemplates();
+
+    if (templates == null) {
+      return false;
+    }
+
+    _logger.outputf("Found %d templates\n", templates.length());
+
+    try {
+      _logger.output(templates.toString(1));
+    } catch (JSONException e) {
+      throw new BatfishException("Failed to print templates", e);
+    }
+
+    return true;
+  }
+
   public Settings getSettings() {
     return _settings;
   }
@@ -1757,7 +1780,7 @@ public class Client extends AbstractClient implements IClient {
     if (options.size() > maxNumOptions
         || (parameters.size() < minNumParas)
         || (parameters.size() > maxNumParas)) {
-      _logger.errorf("Invalid arguments: %s %s\n", options.toString(), parameters.toString());
+      _logger.errorf("Invalid arguments: %s %s\n", options, parameters);
       printUsage(command);
       return false;
     }
@@ -1906,7 +1929,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       Files.walkFileTree(
           questionsPath,
-          Collections.emptySet(),
+          EnumSet.of(FOLLOW_LINKS),
           1,
           new SimpleFileVisitor<Path>() {
             @Override
@@ -2036,14 +2059,14 @@ public class Client extends AbstractClient implements IClient {
         if (i == batches.size() - 1
             || status == WorkStatusCode.TERMINATEDNORMALLY
             || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-          _logger.infof(".... %s\n", batches.get(i).toString());
+          _logger.infof(".... %s\n", batches.get(i));
         } else {
-          _logger.debugf(".... %s\n", batches.get(i).toString());
+          _logger.debugf(".... %s\n", batches.get(i));
         }
       }
       if (status == WorkStatusCode.TERMINATEDNORMALLY
           || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-        _logger.infof(".... %s: %s\n", task.getTerminated().toString(), status);
+        _logger.infof(".... %s: %s\n", task.getTerminated(), status);
       }
     }
   }
@@ -2135,6 +2158,8 @@ public class Client extends AbstractClient implements IClient {
           return getAnswer(outWriter, options, parameters, false, true);
         case GET_QUESTION:
           return getQuestion(options, parameters);
+        case GET_QUESTION_TEMPLATES:
+          return getQuestionTemplates(options, parameters);
         case HELP:
           return help(options, parameters);
         case INIT_ANALYSIS:
