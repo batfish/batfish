@@ -348,6 +348,11 @@ AUTHENTICATION_KEY_CHAIN
    'authentication-key-chain'
 ;
 
+AUTHENTICATION_KEY_CHAINS
+:
+   'authentication-key-chains'
+;
+
 AUTHENTICATION_METHOD
 :
    'authentication-method'
@@ -2629,7 +2634,7 @@ KEYS
 
 KEY_CHAIN
 :
-   'key_chain'
+   'key-chain'
 ;
 
 KLOGIN
@@ -4917,11 +4922,6 @@ VARIABLE
          )
       )
    )
-;
-
-NON_WHITE_SPACE_STRING
-:
-   F_NonWhitespaceChar+
 ;
 
 AMPERSAND

@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -16,6 +17,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -92,6 +94,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, BaseApplication> _applications;
 
+  private final NavigableMap<String, AuthenticationKeyChain> _authenticationKeyChains;
+
   private Configuration _c;
 
   private final Map<String, CommunityList> _communityLists;
@@ -163,6 +167,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
+    _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.ACCEPT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
@@ -199,6 +204,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String vrfName = routingInstance.getName();
     Vrf vrf = _c.getVrfs().get(vrfName);
     BgpProcess proc = new BgpProcess();
+    if (routingInstance.getMasterBgpGroup() != null) {
+      proc.setAuthAlgorithm(routingInstance.getMasterBgpGroup().getAuthAlgorithm());
+      proc.setAuthKey(routingInstance.getMasterBgpGroup().getAuthKey());
+      proc.setAuthKeyChainName(routingInstance.getMasterBgpGroup().getAuthKeyChainName());
+    }
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
       routerId = _defaultRoutingInstance.getRouterId();
@@ -247,6 +257,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
+      neighbor.setAuthAlgorithm(ig.getAuthAlgorithm());
+      neighbor.setAuthKey(ig.getAuthKey());
+      neighbor.setAuthKeyChainName(ig.getAuthKeyChainName());
       Boolean ebgpMultihop = ig.getEbgpMultihop();
       if (ebgpMultihop == null) {
         ebgpMultihop = false;
@@ -541,6 +554,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public Map<String, BaseApplication> getApplications() {
     return _applications;
+  }
+
+  public Map<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
+    return _authenticationKeyChains;
   }
 
   public final Map<String, CommunityList> getCommunityLists() {
@@ -1515,6 +1532,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setLoggingServers(_syslogHosts);
     _c.setNtpServers(_ntpServers);
     _c.setTacacsServers(_tacplusServers);
+    _c.setAuthenticationKeyChains(_authenticationKeyChains);
     _c.getVendorFamily().setJuniper(_jf);
     for (String riName : _routingInstances.keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));

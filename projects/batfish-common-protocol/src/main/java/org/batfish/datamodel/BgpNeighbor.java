@@ -20,6 +20,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   public static final class BgpNeighborSummary extends ComparableStructure<String> {
 
+    private static final String PROP_AUTH_ALGORITHM = "authAlgorithm";
+
+    private static final String PROP_AUTH_KEY = "authKey";
+
+    private static final String PROP_AUTH_KEY_CHAIN_NAME = "authKeyChainName";
+
     private static final String PROP_DESCRIPTION = "description";
 
     private static final String PROP_GROUP = "group";
@@ -38,6 +44,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private static final long serialVersionUID = 1L;
 
     private static final String PROP_VRF = "vrf";
+
+    private final BgpAuthenticationAlgorithm _authAlgorithm;
+
+    private final String _authKey;
+
+    private final String _authKeyChainName;
 
     private final String _description;
 
@@ -62,6 +74,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
               + (bgpNeighbor.getDynamic()
                   ? bgpNeighbor.getPrefix().toString()
                   : bgpNeighbor.getAddress().toString()));
+      _authAlgorithm = bgpNeighbor._authAlgorithm;
+      _authKey = bgpNeighbor._authKey;
+      _authKeyChainName = bgpNeighbor._authKeyChainName;
       _description = bgpNeighbor._description;
       _group = bgpNeighbor._group;
       _localAs = bgpNeighbor._localAs;
@@ -75,6 +90,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     @JsonCreator
     public BgpNeighborSummary(
         @JsonProperty(PROP_NAME) String name,
+        @JsonProperty(PROP_AUTH_ALGORITHM) BgpAuthenticationAlgorithm authAlgorithm,
+        @JsonProperty(PROP_AUTH_KEY) String authKey,
+        @JsonProperty(PROP_AUTH_KEY_CHAIN_NAME) String authKeyChainName,
         @JsonProperty(PROP_DESCRIPTION) String description,
         @JsonProperty(PROP_GROUP) String group,
         @JsonProperty(PROP_LOCAL_AS) int localAs,
@@ -84,14 +102,32 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
         @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
         @JsonProperty(PROP_VRF) String vrf) {
       super(name);
+      _authAlgorithm = authAlgorithm;
+      _authKey = authKey;
       _description = description;
       _group = group;
+      _authKeyChainName = authKeyChainName;
       _localAs = localAs;
       _localIp = localIp;
       _remoteAs = remoteAs;
       _remoteIp = remoteIp;
       _remotePrefix = remotePrefix;
       _vrf = vrf;
+    }
+
+    @JsonProperty(PROP_AUTH_ALGORITHM)
+    public BgpAuthenticationAlgorithm getAuthAlgorithm() {
+      return _authAlgorithm;
+    }
+
+    @JsonProperty(PROP_AUTH_KEY)
+    public String getAuthKey() {
+      return _authKey;
+    }
+
+    @JsonProperty(PROP_AUTH_KEY_CHAIN_NAME)
+    public String getAuthKeyChainName() {
+      return _authKeyChainName;
     }
 
     @JsonProperty(PROP_DESCRIPTION)
@@ -160,6 +196,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
 
+  private static final String PROP_AUTH_ALGORITHM = "authAlgorithm";
+
+  private static final String PROP_AUTH_KEY = "authKey";
+
+  private static final String PROP_AUTH_KEY_CHAIN_NAME = "authKeyChainName";
+
   private static final String PROP_CLUSTER_ID = "clusterId";
 
   private static final String PROP_DEFAULT_METRIC = "defaultMetric";
@@ -204,6 +246,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private boolean _allowLocalAsIn;
 
   private boolean _allowRemoteAsOut;
+
+  private BgpAuthenticationAlgorithm _authAlgorithm;
+
+  private String _authKey;
+
+  private String _authKeyChainName;
 
   private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
@@ -311,6 +359,15 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
       return false;
     }
+    if (Objects.equals(this._authAlgorithm, other._authAlgorithm)) {
+      return false;
+    }
+    if (Objects.equals(this._authKey, other._authKey)) {
+      return false;
+    }
+    if (Objects.equals(this._authKeyChainName, other._authKeyChainName)) {
+      return false;
+    }
     if (_clusterId == null) {
       if (other._clusterId != null) {
         return false;
@@ -408,6 +465,26 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       "Whether to allow sending of advertisements containing the remote AS number in the AS-path")
   public boolean getAllowRemoteAsOut() {
     return _allowRemoteAsOut;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_AUTH_ALGORITHM)
+  @JsonPropertyDescription("The authentication algorithm to be used for this neighbor")
+  public BgpAuthenticationAlgorithm getAuthAlgorithm() {
+    return _authAlgorithm;
+  }
+
+  @JsonProperty(PROP_AUTH_KEY)
+  @JsonPropertyDescription("The authentication secret key to be used for this neighbor")
+  public String getAuthKey() {
+    return _authKey;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_AUTH_KEY_CHAIN_NAME)
+  @JsonPropertyDescription("The name of the authentication key chain to be used for this neighbor")
+  public String getAuthKeyChainName() {
+    return _authKeyChainName;
   }
 
   @JsonIgnore
@@ -573,6 +650,21 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
   public void setAllowRemoteAsOut(boolean allowRemoteAsOut) {
     _allowRemoteAsOut = allowRemoteAsOut;
+  }
+
+  @JsonProperty(PROP_AUTH_ALGORITHM)
+  public void setAuthAlgorithm(BgpAuthenticationAlgorithm authAlgorithm) {
+    _authAlgorithm = authAlgorithm;
+  }
+
+  @JsonProperty(PROP_AUTH_KEY)
+  public void setAuthKey(String authKey) {
+    _authKey = authKey;
+  }
+
+  @JsonProperty(PROP_AUTH_KEY_CHAIN_NAME)
+  public void setAuthKeyChainName(String authKeyChainName) {
+    _authKeyChainName = authKeyChainName;
   }
 
   @JsonProperty(PROP_CLUSTER_ID)

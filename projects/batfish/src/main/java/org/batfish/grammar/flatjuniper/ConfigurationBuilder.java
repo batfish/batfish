@@ -1,6 +1,10 @@
 package org.batfish.grammar.flatjuniper;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -17,6 +21,9 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AuthenticationKey;
+import org.batfish.datamodel.AuthenticationKeyChain;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExtendedCommunity;
@@ -53,6 +60,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_inactiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_peer_asContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_auth_algorithmContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_auth_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_auth_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
@@ -222,6 +232,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_auth_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_policyContext;
@@ -352,6 +363,7 @@ import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
@@ -987,6 +999,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       throw new BatfishException("Cannot convert to community long");
     }
+  }
+
+  private static Date toDate(String utcTime) {
+    DateFormat utcFormat = new SimpleDateFormat("yyyy-MM-dd.HH:mm:ss");
+    Date date;
+    try {
+      date = utcFormat.parse(utcTime);
+    } catch (ParseException e) {
+      throw new BatfishException(
+          "Invalid start-time format, allowed format is 'yyyy-MM-dd.HH:mm:ss(.SSSZ)'", e);
+    }
+    return date;
   }
 
   private static EncryptionAlgorithm toEncryptionAlgorithm(Encryption_algorithmContext ctx) {
@@ -2246,6 +2270,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentBgpGroup.setAdvertisePeerAs(true);
   }
 
+  public void exitB_auth_algorithm(B_auth_algorithmContext ctx) {
+    if (ctx.AES_128_CMAC_96() != null) {
+      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.AES_128_CMAC_96);
+    } else if (ctx.HMAC_SHA_1_96() != null) {
+      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.HMAC_SHA_1_96);
+    } else if (ctx.MD5() != null) {
+      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.MD5);
+    } else {
+      throw new BatfishException("Invalid Bgp authentication algorithm: " + ctx.getText());
+    }
+  }
+
+  public void exitB_auth_key(B_auth_keyContext ctx) {
+    _currentBgpGroup.setAuthKey(ctx.key.getText());
+  }
+
+  public void exitB_auth_key_chain(B_auth_key_chainContext ctx) {
+    _currentBgpGroup.setAuthKeyChainName(ctx.name.getText());
+  }
+
   @Override
   public void exitB_description(B_descriptionContext ctx) {
     String description = ctx.description().text.getText();
@@ -3289,6 +3333,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitS_snmp(S_snmpContext ctx) {
     _currentSnmpServer = null;
+  }
+
+  @Override
+  public void exitSe_auth_key_chain(Se_auth_key_chainContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    AuthenticationKeyChain keyChain =
+        _configuration
+            .getAuthenticationKeyChains()
+            .computeIfAbsent(name, AuthenticationKeyChain::new);
+    _configuration.defineStructure(JuniperStructureType.AUTHENTICATION_KEY_CHAIN, name, line);
+    if (ctx.sea_key() != null) {
+      String keyName = ctx.sea_key().name.getText();
+      AuthenticationKey key = keyChain.getKeys().computeIfAbsent(keyName, AuthenticationKey::new);
+      if (ctx.sea_key().seak_algorithm() != null) {
+        key.setAlgorithm(
+            ctx.sea_key().seak_algorithm().HMAC_SHA1() != null
+                ? BgpAuthenticationAlgorithm.HMAC_SHA_1_96
+                : BgpAuthenticationAlgorithm.MD5);
+      } else if (ctx.sea_key().seak_options() != null) {
+        key.setOption(
+            ctx.sea_key().seak_options().ISIS_ENHANCED() != null
+                ? AuthenticationKey.KeyOption.ISIS_ENHANCED
+                : AuthenticationKey.KeyOption.BASIC);
+      } else if (ctx.sea_key().seak_secret() != null) {
+        key.setSecret(ctx.sea_key().seak_secret().key.getText());
+      } else if (ctx.sea_key().seak_start_time() != null) {
+        key.setStartTime(toDate(ctx.sea_key().seak_start_time().seaks_time().getText()));
+      }
+    } else if (ctx.sea_description() != null) {
+      keyChain.setDescription(ctx.sea_description().description().text.getText());
+    } else if (ctx.sea_tolerance() != null) {
+      keyChain.setTolerance(toInt(ctx.sea_tolerance().DEC()));
+    }
   }
 
   @Override

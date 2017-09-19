@@ -21,15 +21,6 @@ b_advertise_peer_as
    ADVERTISE_PEER_AS
 ;
 
-b_algorithm
-:
-   ALGORITHM
-   (
-      HMAC_SHA1
-      | MD5
-   )
-;
-
 b_auth
 :
    b_auth_algorithm
@@ -49,33 +40,17 @@ b_auth_algorithm
 
 b_auth_key
 :
-   AUTHENTICATION_KEY key = string_value
+   AUTHENTICATION_KEY key = string
 ;
 
 b_auth_key_chain
 :
-   AUTHENTICATION_KEY_CHAIN KEY_CHAIN name = string_value
-   (
-      b_description
-      | b_chain_key
-      | b_tolerance
-   )
+   AUTHENTICATION_KEY_CHAIN name = string
 ;
 
 b_as_override
 :
    AS_OVERRIDE
-;
-
-b_chain_key
-:
-   KEY name = string_value
-   (
-      b_algorithm
-      | b_options
-      | b_secret_key
-      | b_start_time
-   )
 ;
 
 b_cluster
@@ -90,6 +65,7 @@ b_common
    | b_advertise_inactive
    | b_advertise_peer_as
    | b_as_override
+   | b_auth
    | b_cluster
    | b_damping
    | b_description
@@ -458,15 +434,6 @@ bm_ttl
    TTL DEC
 ;
 
-b_options
-:
-   OPTIONS
-   (
-      BASIC
-      | ISIS_ENHANCED
-   )
-;
-
 bpa_as
 :
    as = DEC
@@ -482,39 +449,11 @@ bps_external_router_id
    EXTERNAL_ROUTER_ID
 ;
 
-b_secret_key
-:
-   SECRET key = string_value
-;
-
-b_start_time
-:
-   START_TIME time = variable
-;
-
-b_tolerance
-:
-   TOLERANCE value = DEC
-;
-
-string_value
-:
-   (
-      VARIABLE
-      | NON_WHITE_SPACE_STRING
-   )
-   |
-   (
-      DOUBLE_QUOTED_STRING
-   )
-;
-
 p_bgp
 :
    BGP
    (
-      b_auth
-      | b_common
+      b_common
       | b_enable
       | b_group
       | b_neighbor

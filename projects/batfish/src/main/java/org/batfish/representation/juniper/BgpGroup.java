@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.Ip;
 
 public class BgpGroup implements Serializable {
@@ -20,6 +21,12 @@ public class BgpGroup implements Serializable {
   private Boolean _advertiseInactive;
 
   private Boolean _advertisePeerAs;
+
+  private String _authKey;
+
+  private BgpAuthenticationAlgorithm _authAlgorithm;
+
+  private String _authKeyChainName;
 
   private String _description;
 
@@ -72,6 +79,15 @@ public class BgpGroup implements Serializable {
       if (_advertisePeerAs == null) {
         _advertisePeerAs = _parent._advertisePeerAs;
       }
+      if (_authAlgorithm == null) {
+        _authAlgorithm = _parent._authAlgorithm;
+      }
+      if (_authKey == null) {
+        _authKey = _parent._authKey;
+      }
+      if (_authKeyChainName == null) {
+        _authKeyChainName = _parent._authKeyChainName;
+      }
       if (_description == null) {
         _description = _parent._description;
       }
@@ -118,6 +134,18 @@ public class BgpGroup implements Serializable {
 
   public Boolean getAdvertisePeerAs() {
     return _advertisePeerAs;
+  }
+
+  public BgpAuthenticationAlgorithm getAuthAlgorithm() {
+    return _authAlgorithm;
+  }
+
+  public String getAuthKey() {
+    return _authKey;
+  }
+
+  public String getAuthKeyChainName() {
+    return _authKeyChainName;
   }
 
   public final String getDescription() {
@@ -186,6 +214,18 @@ public class BgpGroup implements Serializable {
 
   public void setAdvertisePeerAs(boolean advertisePeerAs) {
     _advertisePeerAs = advertisePeerAs;
+  }
+
+  public void setAuthAlgorithm(BgpAuthenticationAlgorithm authAlgorithm) {
+    _authAlgorithm = authAlgorithm;
+  }
+
+  public void setAuthKey(String authKey) {
+    _authKey = authKey;
+  }
+
+  public void setAuthKeyChainName(String authKeyChainName) {
+    _authKeyChainName = authKeyChainName;
   }
 
   public final void setDescription(String description) {

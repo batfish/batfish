@@ -145,6 +145,7 @@
         "juniper-tcpflags" : "juniper-tcpflags",
         "juniper_apply_macro" : "juniper_apply_macro",
         "juniper_bgp" : "juniper_bgp",
+        "juniper_bgp_authentication" : "juniper_bgp_authentication",
         "juniper_extended_community" : "juniper_extended_community",
         "juniper_firewall" : "juniper_firewall",
         "juniper_forwarding_options" : "juniper_forwarding_options",
@@ -347,6 +348,7 @@
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
+        "juniper_bgp_authentication" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",
@@ -1793,6 +1795,11 @@
             "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
           }
         },
+        "juniper_bgp_authentication" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1"
+          }
+        },
         "juniper_firewall" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: missing action in firewall filter: 'blah', term: 'blorp'"
@@ -1984,6 +1991,7 @@
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
+        "juniper_bgp_authentication" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",
