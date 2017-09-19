@@ -406,7 +406,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.30.1",
+      "version" : "0.31.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -1751,7 +1751,7 @@
           }
         }
       },
-      "version" : "0.30.1",
+      "version" : "0.31.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
