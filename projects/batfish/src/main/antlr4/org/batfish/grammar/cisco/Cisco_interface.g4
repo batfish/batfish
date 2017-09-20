@@ -878,6 +878,7 @@ ifdhcp_relay
    RELAY
    (
       ifdhcpr_address
+      | ifdhcpr_client
       | ifdhcpr_null
    )
 ;
@@ -887,11 +888,15 @@ ifdhcpr_address
    ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+ifdhcpr_client
+:
+   CLIENT NEWLINE
+;
+
 ifdhcpr_null
 :
    (
-      CLIENT
-      | INFORMATION
+      INFORMATION
    ) ~NEWLINE* NEWLINE
 ;
 
