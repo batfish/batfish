@@ -871,6 +871,20 @@
             }
           }
         },
+        "cisco_vrrp" : {
+          "interface" : {
+            "GigabitEthernet0/0/0/19" : {
+              "router vrrp interface" : [
+                15
+              ]
+            },
+            "ManagementEthernet0/RSP1/CPU0/0" : {
+              "router vrrp interface" : [
+                27
+              ]
+            }
+          }
+        },
         "colon_in_vrf" : {
           "route-map" : {
             "RMT_PBI" : {
