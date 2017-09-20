@@ -50,6 +50,16 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
   }
 
+  public HeaderLocationQuestion(HeaderLocationQuestion other) {
+    super(other);
+    this._finalNodeRegex = other._finalNodeRegex;
+    this._finalIfaceRegex = other._finalIfaceRegex;
+    this._ingressNodeRegex = other._ingressNodeRegex;
+    this._notFinalNodeRegex = other._notFinalNodeRegex;
+    this._notFinalIfaceRegex = other._notFinalIfaceRegex;
+    this._notIngressNodeRegex = other._notIngressNodeRegex;
+  }
+
   @JsonProperty(FINAL_NODE_REGEX_VAR)
   public String getFinalNodeRegex() {
     return _finalNodeRegex;
