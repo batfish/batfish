@@ -57,17 +57,17 @@ public class AuthenticationKeyChain extends ComparableStructure<String> {
 
   @JsonProperty(PROP_DESCRIPTION)
   public void setDescription(String description) {
-    this._description = description;
+    _description = description;
   }
 
   @JsonProperty(PROP_KEYS)
   public void setKeys(Map<String, AuthenticationKey> keys) {
-    this._keys = keys;
+    _keys = keys;
   }
 
   @JsonProperty(PROP_TOLERANCE)
   public void setTolerance(int tolerance) {
-    this._tolerance = tolerance;
+    _tolerance = tolerance;
   }
 
 }

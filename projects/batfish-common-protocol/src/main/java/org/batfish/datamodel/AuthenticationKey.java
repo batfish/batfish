@@ -31,8 +31,8 @@ public class AuthenticationKey extends ComparableStructure<String> {
 
   public AuthenticationKey(String name) {
     super(name);
-    this._algorithm = BgpAuthenticationAlgorithm.MD5;
-    this._option = AuthenticationKey.KeyOption.BASIC;
+    _algorithm = BgpAuthenticationAlgorithm.MD5;
+    _option = AuthenticationKey.KeyOption.BASIC;
   }
 
   @JsonCreator
@@ -71,21 +71,21 @@ public class AuthenticationKey extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ALGORITHM)
   public void setAlgorithm(BgpAuthenticationAlgorithm algorithm) {
-    this._algorithm = algorithm;
+    _algorithm = algorithm;
   }
 
   @JsonProperty(PROP_OPTION)
   public void setOption(AuthenticationKey.KeyOption option) {
-    this._option = option;
+    _option = option;
   }
 
   @JsonProperty(PROP_SECRET)
   public void setSecret(String secret) {
-    this._secret = secret;
+    _secret = secret;
   }
 
   @JsonProperty(PROP_START_TIME)
   public void setStartTime(String startTime) {
-    this._startTime = startTime;
+    _startTime = startTime;
   }
 }

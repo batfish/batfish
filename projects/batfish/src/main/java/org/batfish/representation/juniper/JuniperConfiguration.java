@@ -207,7 +207,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (routingInstance.getMasterBgpGroup() != null) {
       proc.setAuthAlgorithm(routingInstance.getMasterBgpGroup().getAuthAlgorithm());
       proc.setAuthKey(routingInstance.getMasterBgpGroup().getAuthKey());
-      proc.setAuthKeyChainName(routingInstance.getMasterBgpGroup().getAuthKeyChainName());
+      String authKeyChainName = routingInstance.getMasterBgpGroup().getAuthKeyChainName();
+      if (authKeyChainName != null) {
+        if (_c.getAuthenticationKeyChains().containsKey(authKeyChainName)) {
+          proc.setAuthKeyChainName(authKeyChainName);
+        } else {
+          throw new BatfishException(
+              String.format("Undefined authentication-key-chain '%s'", authKeyChainName));
+        }
+      }
     }
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
@@ -259,7 +267,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       neighbor.setVrf(vrfName);
       neighbor.setAuthAlgorithm(ig.getAuthAlgorithm());
       neighbor.setAuthKey(ig.getAuthKey());
-      neighbor.setAuthKeyChainName(ig.getAuthKeyChainName());
+      String authKeyChainName = ig.getAuthKeyChainName();
+      if (authKeyChainName != null) {
+        if (_c.getAuthenticationKeyChains().containsKey(authKeyChainName)) {
+          neighbor.setAuthKeyChainName(authKeyChainName);
+        } else {
+          throw new BatfishException(
+              String.format("Undefined authentication-key-chain '%s'", authKeyChainName));
+        }
+      }
       Boolean ebgpMultihop = ig.getEbgpMultihop();
       if (ebgpMultihop == null) {
         ebgpMultihop = false;
@@ -341,7 +357,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
       setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp.getFalseStatements()
+      setOriginForNonBgp
+          .getFalseStatements()
           .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
       peerExportPolicy.getStatements().add(setOriginForNonBgp);
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
@@ -1525,6 +1542,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname);
+    _c.setAuthenticationKeyChains(_authenticationKeyChains);
     _c.setConfigurationFormat(_vendor);
     _c.setRoles(_roles);
     _c.setDomainName(_defaultRoutingInstance.getDomainName());
@@ -1532,7 +1550,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setLoggingServers(_syslogHosts);
     _c.setNtpServers(_ntpServers);
     _c.setTacacsServers(_tacplusServers);
-    _c.setAuthenticationKeyChains(_authenticationKeyChains);
     _c.getVendorFamily().setJuniper(_jf);
     for (String riName : _routingInstances.keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));

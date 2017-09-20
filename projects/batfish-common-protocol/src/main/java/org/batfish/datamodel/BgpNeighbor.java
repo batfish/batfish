@@ -104,9 +104,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       super(name);
       _authAlgorithm = authAlgorithm;
       _authKey = authKey;
+      _authKeyChainName = authKeyChainName;
       _description = description;
       _group = group;
-      _authKeyChainName = authKeyChainName;
       _localAs = localAs;
       _localIp = localIp;
       _remoteAs = remoteAs;
