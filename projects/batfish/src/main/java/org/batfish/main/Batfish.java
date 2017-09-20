@@ -965,7 +965,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     + deterministicBestCandidate
                     + " for prefix/groupNumber: '"
                     + p.toString()
-                    + "' among multiple best candidates:"
+                    + "' among multiple best candidates: "
                     + bestCandidates);
           }
           Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());

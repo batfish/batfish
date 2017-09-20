@@ -98,11 +98,7 @@ public class BatfishTest {
     Batfish batfish = BatfishTestUtils.getBatfishFromConfigurationText(configurationsText, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    Set<String> actualVrrpAddressOwners = ipOwners.get(vrrpAddress);
-    int expectedVrrpAddressOwnersSize = 1;
-    int actualVrrpAddressOwnersSize = actualVrrpAddressOwners.size();
-    assertTrue(actualVrrpAddressOwners.contains("r1"));
-    assertThat(expectedVrrpAddressOwnersSize, equalTo(actualVrrpAddressOwnersSize));
+    assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r1")));
   }
 
   @Test
@@ -297,7 +293,7 @@ public class BatfishTest {
     Collections.sort(expected);
     assertThat(expected, equalTo(actual));
   }
-  
+
   @Test
   public void testReadValidIptableFile() throws IOException {
     HostConfiguration host1 = new HostConfiguration();
