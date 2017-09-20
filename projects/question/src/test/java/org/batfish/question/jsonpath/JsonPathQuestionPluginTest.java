@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.question.jsonpath;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;

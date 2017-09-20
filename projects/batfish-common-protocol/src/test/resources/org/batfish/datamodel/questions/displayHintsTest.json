@@ -1,14 +1,38 @@
 {
   "visualize": [
-    "node1"
+    "node1",
+    "interfaces1",
+    "nodes1"
   ],
   "extractionHints" : {
     "node1": {
-      "type": "node",
+      "type": "string",
       "hints": {
         "prefix": 1
+      }
+    },
+    "interfaces1": {
+      "type" : "string",
+      "isList" : true,
+      "hints" : {
+        "suffix": {
+          "filter": "$.*",
+          "use": "suffix"
+        }
+      }
+    },
+    "nodes1": {
+      "type": "int",
+      "isList": true,
+      "hints": {
+        "suffix": {
+          "filter": "$.*",
+          "use": "prefix",
+          "index": 1
+        }
       }
     }
   },
   "textDesc" : "${node1} has no accounting command"
 }
+

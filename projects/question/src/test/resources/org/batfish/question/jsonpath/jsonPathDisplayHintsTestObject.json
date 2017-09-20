@@ -1,0 +1,24 @@
+{
+  "nodes" : {
+    "node1": {
+      "interfaces": {
+        "interface1": {
+          "name": "interface1name",
+          "mtu": 1500
+        },
+        "interface2": {
+          "name": "interface2name",
+          "mtu": 1600
+        }
+      }
+    },
+    "node2": {
+      "interfaces": {
+        "interface1": {
+          "name": "interface1name",
+          "mtu": 1550
+        }
+      }
+    }
+  }
+}
