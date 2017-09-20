@@ -35,10 +35,11 @@ public class IptablesRule implements Serializable {
     }
   }
 
-  IptablesActionType _actionType;
-  List<IptablesMatch> _matchList;
+  private IptablesActionType _actionType;
+  private List<IptablesMatch> _matchList;
 
-  String _nextChain;
+  private String _name;
+  private String _nextChain;
 
   public IptablesRule() {
     _matchList = new LinkedList<>();
@@ -70,6 +71,14 @@ public class IptablesRule implements Serializable {
 
   public String getNextChain() {
     return _nextChain;
+  }
+
+  public String getName() {
+    return _name;
+  }
+
+  public void setName(String name) {
+    _name = name;
   }
 
   public void setAction(ChainPolicy policy) {

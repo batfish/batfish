@@ -186,8 +186,15 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     } else {
       todo(ctx, "Unknown rule action");
     }
-
+    rule.setName(getFullText(ctx));
     return rule;
+  }
+
+  private String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    String text = _text.substring(start, end + 1);
+    return text;
   }
 
   @Nullable
