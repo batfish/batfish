@@ -945,7 +945,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Ip ip = prefix.getAddress();
           int lowestPriority = Integer.MAX_VALUE;
           String bestCandidate = null;
-          Set<String> bestCandidates = new HashSet<>();
+          SortedSet<String> bestCandidates = new TreeSet<>();
           for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
@@ -959,7 +959,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
           }
           if (bestCandidates.size() != 1) {
-            throw new BatfishException("multiple best vrrp candidates:" + bestCandidates);
+            String deterministicBestCandidate = bestCandidates.first();
+            _logger.redflag(
+                "Arbitrarily choosing best vrrp candidate: '"
+                    + deterministicBestCandidate
+                    + " for prefix/groupNumber: '"
+                    + p.toString()
+                    + "' among multiple best candidates:"
+                    + bestCandidates);
           }
           Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
           owners.add(bestCandidate);

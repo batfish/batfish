@@ -5455,6 +5455,11 @@ MINIMAL
    'minimal'
 ;
 
+MINIMUM
+:
+   'minimum'
+;
+
 MINIMUM_INTERVAL
 :
    'minimum-interval'
