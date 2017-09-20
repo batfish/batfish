@@ -2701,6 +2701,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     getDataPlanePlugin().processFlows(flows);
 
     AnswerElement answerElement = getHistory();
+    _cachedConfigurations.clear();
     return answerElement;
   }
 
@@ -3211,6 +3212,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
+    _cachedConfigurations.clear();
     return answerElement;
   }
 
@@ -3742,6 +3744,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
+    _cachedConfigurations.clear();
     return answerElement;
   }
 
@@ -4383,6 +4386,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     getDataPlanePlugin().processFlows(flows);
 
     AnswerElement answerElement = getHistory();
+    _cachedConfigurations.clear();
     return answerElement;
   }
 
