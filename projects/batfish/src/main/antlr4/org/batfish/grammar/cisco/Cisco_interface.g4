@@ -681,8 +681,6 @@ if_null_block
       | VLT_PEER_LAG
       | VMTRACER
       | VPC
-      | VRRP
-      | VRRP_GROUP
       | VTP
       | VXLAN
       | WEIGHTING
@@ -866,6 +864,17 @@ if_vrf_member
    VRF MEMBER name = variable NEWLINE
 ;
 
+if_vrrp
+:
+   VRRP groupnum = DEC
+   (
+      ifvrrp_authentication
+      | ifvrrp_ip
+      | ifvrrp_preempt
+      | ifvrrp_priority
+   )
+;
+
 ifdhcp_null
 :
    (
@@ -878,6 +887,7 @@ ifdhcp_relay
    RELAY
    (
       ifdhcpr_address
+      | ifdhcpr_client
       | ifdhcpr_null
    )
 ;
@@ -887,11 +897,15 @@ ifdhcpr_address
    ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+ifdhcpr_client
+:
+   CLIENT NEWLINE
+;
+
 ifdhcpr_null
 :
    (
-      CLIENT
-      | INFORMATION
+      INFORMATION
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -937,6 +951,30 @@ ifigmpsg_null
       IP_ADDRESS
       | RANGE
    ) ~NEWLINE* NEWLINE
+;
+
+ifvrrp_authentication
+:
+   AUTHENTICATION TEXT text = variable_permissive NEWLINE
+;
+
+ifvrrp_ip
+:
+   IP ip = IP_ADDRESS NEWLINE
+;
+
+ifvrrp_preempt
+:
+   PREEMPT DELAY
+   (
+      MINIMUM
+      | RELOAD
+   ) DEC NEWLINE
+;
+
+ifvrrp_priority
+:
+   PRIORITY priority = DEC NEWLINE
 ;
 
 s_interface
@@ -1008,6 +1046,7 @@ s_interface
       | if_vrf
       | if_vrf_forwarding
       | if_vrf_member
+      | if_vrrp
       // do not rearrange items below
 
       | if_null_block

@@ -602,15 +602,6 @@ public class Graph {
               });
         });
 
-    sb.append("---------- Neighbors of each router ----------\n");
-    _neighbors.forEach(
-        (router, peers) -> {
-          sb.append("Router: ").append(router).append("\n");
-          for (String peer : peers) {
-            sb.append("  peer: ").append(peer).append("\n");
-          }
-        });
-
     sb.append("---------------- eBGP Neighbors ----------------\n");
     _ebgpNeighbors.forEach(
         (ge, n) -> {

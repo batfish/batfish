@@ -19,12 +19,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -78,6 +82,22 @@ public class BatfishTest {
     assertThat(
         answer.getAnswerElements().get(0).prettyPrint(),
         containsString("Could not parse question"));
+  }
+
+  @Test
+  public void testMultipleBestVrrpCandidates() throws IOException {
+    SortedMap<String, String> configurationsText = new TreeMap<>();
+    String[] configurationNames = new String[] {"r1", "r2"};
+    Ip vrrpAddress = new Ip("1.0.0.10");
+    String testConfigsPrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best/configs/";
+    for (String configurationName : configurationNames) {
+      String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);
+      configurationsText.put(configurationName, configurationText);
+    }
+    Batfish batfish = BatfishTestUtils.getBatfishFromConfigurationText(configurationsText, _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
+    assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r1")));
   }
 
   @Test
