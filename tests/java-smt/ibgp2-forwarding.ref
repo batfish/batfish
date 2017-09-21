@@ -4,8 +4,8 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R3,Serial0 --> R4,Serial0",
-          "R4,Loopback0 --> _,_"
+          "R3,Serial0 --> R4,Serial0 (STATIC)",
+          "R4,Loopback0 --> _,_ (CONNECTED)"
         ],
         "model" : {
           "|0_FAILED-EDGE_R1_Loopback0|" : "0",
@@ -129,8 +129,6 @@
           "|0_SLICE-MAIN_R3_STATIC_IMPORT_Serial0_choice|" : "true",
           "|0_SLICE-MAIN_R3_STATIC_IMPORT_Serial0_permitted|" : "true",
           "|0_SLICE-MAIN_R3_STATIC_IMPORT_Serial0_prefixLength|" : "32",
-          "|0_SLICE-MAIN_R3_STATIC_SINGLE-EXPORT__permitted|" : "false",
-          "|0_SLICE-MAIN_R3_STATIC_SINGLE-EXPORT__prefixLength|" : "0",
           "|0_SLICE-MAIN_R4_BGP_BEST_None_bgpInternal|" : "false",
           "|0_SLICE-MAIN_R4_BGP_BEST_None_igpMetric|" : "0",
           "|0_SLICE-MAIN_R4_BGP_BEST_None_metric|" : "0",
@@ -211,8 +209,6 @@
           "|0_SLICE-R1_R2_STATIC_IMPORT_Serial0_choice|" : "true",
           "|0_SLICE-R1_R2_STATIC_IMPORT_Serial0_permitted|" : "true",
           "|0_SLICE-R1_R2_STATIC_IMPORT_Serial0_prefixLength|" : "32",
-          "|0_SLICE-R1_R2_STATIC_SINGLE-EXPORT__permitted|" : "false",
-          "|0_SLICE-R1_R2_STATIC_SINGLE-EXPORT__prefixLength|" : "0",
           "|0_SLICE-R1_R3_OVERALL_BEST_None_bgpInternal|" : "false",
           "|0_SLICE-R1_R3_OVERALL_BEST_None_igpMetric|" : "0",
           "|0_SLICE-R1_R3_OVERALL_BEST_None_metric|" : "0",
@@ -274,8 +270,6 @@
           "|0_SLICE-R2_R1_STATIC_IMPORT_Serial0_choice|" : "true",
           "|0_SLICE-R2_R1_STATIC_IMPORT_Serial0_permitted|" : "true",
           "|0_SLICE-R2_R1_STATIC_IMPORT_Serial0_prefixLength|" : "32",
-          "|0_SLICE-R2_R1_STATIC_SINGLE-EXPORT__permitted|" : "false",
-          "|0_SLICE-R2_R1_STATIC_SINGLE-EXPORT__prefixLength|" : "0",
           "|0_SLICE-R2_R2_CONNECTED_IMPORT_Loopback0_choice|" : "true",
           "|0_SLICE-R2_R2_CONNECTED_IMPORT_Loopback0_permitted|" : "true",
           "|0_SLICE-R2_R2_CONNECTED_IMPORT_Loopback0_prefixLength|" : "32",
@@ -363,8 +357,6 @@
           "|0_SLICE-R3_R4_STATIC_IMPORT_Serial0_choice|" : "true",
           "|0_SLICE-R3_R4_STATIC_IMPORT_Serial0_permitted|" : "true",
           "|0_SLICE-R3_R4_STATIC_IMPORT_Serial0_prefixLength|" : "32",
-          "|0_SLICE-R3_R4_STATIC_SINGLE-EXPORT__permitted|" : "false",
-          "|0_SLICE-R3_R4_STATIC_SINGLE-EXPORT__prefixLength|" : "0",
           "|0_SLICE-R3__reachable-id_R1|" : "0",
           "|0_SLICE-R3__reachable-id_R2|" : "0",
           "|0_SLICE-R3__reachable-id_R3|" : "1",
@@ -426,8 +418,6 @@
           "|0_SLICE-R4_R3_STATIC_IMPORT_Serial0_choice|" : "true",
           "|0_SLICE-R4_R3_STATIC_IMPORT_Serial0_permitted|" : "true",
           "|0_SLICE-R4_R3_STATIC_IMPORT_Serial0_prefixLength|" : "32",
-          "|0_SLICE-R4_R3_STATIC_SINGLE-EXPORT__permitted|" : "false",
-          "|0_SLICE-R4_R3_STATIC_SINGLE-EXPORT__prefixLength|" : "0",
           "|0_SLICE-R4_R4_CONNECTED_IMPORT_Loopback0_choice|" : "true",
           "|0_SLICE-R4_R4_CONNECTED_IMPORT_Loopback0_permitted|" : "true",
           "|0_SLICE-R4_R4_CONNECTED_IMPORT_Loopback0_prefixLength|" : "32",

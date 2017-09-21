@@ -1,16 +1,19 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
+      "class" : "org.batfish.smt.answers.SmtReachabilityAnswerElement",
+      "diffReachability" : {
+        "R0" : false
+      },
       "result" : {
         "failuresModel" : [
           "link(R0,R1)",
           "link(R0,R2)"
         ],
         "forwardingModel" : [
-          "R1,Serial1 --> R3,Serial0",
-          "R2,Serial1 --> R3,Serial1",
-          "R3,Loopback0 --> _,_"
+          "R1,Serial1 --> R3,Serial0 (OSPF)",
+          "R2,Serial1 --> R3,Serial1 (OSPF)",
+          "R3,Loopback0 --> _,_ (CONNECTED)"
         ],
         "packetModel" : {
           "dstIp" : "70.70.70.0"

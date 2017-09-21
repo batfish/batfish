@@ -4,10 +4,10 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Serial0 --> R2,Serial0",
-          "R2,Serial1 --> R3,Serial1",
-          "R3,Serial0 --> R4,Serial0",
-          "R4,Loopback0 --> _,_"
+          "R1,Serial0 --> R2,Serial0 (BGP)",
+          "R2,Serial1 --> R3,Serial1 (BGP)",
+          "R3,Serial0 --> R4,Serial0 (BGP)",
+          "R4,Loopback0 --> _,_ (CONNECTED)"
         ],
         "model" : {
           "|0_FAILED-EDGE_R1_Loopback0|" : "0",
