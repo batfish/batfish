@@ -115,6 +115,17 @@ public class Encoder {
   }
 
   /**
+   * Create an encoder object from an existing encoder.
+   *
+   * @param e An existing encoder object
+   * @param g An existing network graph
+   * @param q A header question
+   */
+  Encoder(Encoder e, Graph g, HeaderQuestion q) {
+    this(e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
+  }
+
+  /**
    * Create an encoder object while possibly reusing the partial encoding of another encoder. mkIf
    * the context and solver are null, then a new encoder is created. Otherwise the old encoder is
    * used.
@@ -766,11 +777,11 @@ public class Encoder {
     VerificationStats stats =
         new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
 
-    if (ENABLE_DEBUGGING) {
-      System.out.println("Constraints: " + stats.getNumConstraints());
-      System.out.println("Variables: " + stats.getNumVariables());
-      System.out.println("Z3 Time: " + stats.getTime());
-    }
+    //if (ENABLE_DEBUGGING) {
+    System.out.println("Constraints: " + stats.getNumConstraints());
+    System.out.println("Variables: " + stats.getNumVariables());
+    System.out.println("Z3 Time: " + stats.getTime());
+    //}
 
     if (status == Status.UNSATISFIABLE) {
       return new VerificationResult(true, null, null, null, null, null);

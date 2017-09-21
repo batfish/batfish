@@ -472,11 +472,23 @@ public class Graph {
     if (ge.getStart().isLoopback(conf.getConfigurationFormat())) {
       return proto.isConnected();
     }
+
+    // Don't use ospf over edges between ASes
+    if (getEbgpNeighbors().get(ge) != null && proto.isOspf()) {
+      return false;
+    }
+
+    // Don't use ospf over edges to hosts / external
+    if (ge.getPeer() == null && proto.isOspf()) {
+      return false;
+    }
+
     // Only use specified edges from static routes
     if (proto.isStatic()) {
       List<StaticRoute> srs = getStaticRoutes().get(conf.getName()).get(iface.getName());
       return iface.getActive() && srs != null && srs.size() > 0;
     }
+
     // Only use an edge in BGP if there is an explicit peering
     if (proto.isBgp()) {
       BgpNeighbor n1 = _ebgpNeighbors.get(ge);

@@ -21,7 +21,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
-import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -196,7 +195,7 @@ class Optimizations {
 
   /*
    * Check if administrative distance needs to be kept for
-   * every single message. mkIf it is never set with a custom
+   * every single message. If it is never set with a custom
    * value, then it can be inferred for the best choice based
    * on the default protocol value.
    */
@@ -204,30 +203,8 @@ class Optimizations {
     if (!Optimizations.ENABLE_SLICING_OPTIMIZATION) {
       return true;
     }
-    AstVisitor v = new AstVisitor();
-    Boolean[] val = new Boolean[1];
-    val[0] = false;
-    _encoderSlice
-        .getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              conf.getRoutingPolicies()
-                  .forEach(
-                      (name, pol) -> {
-                        v.visit(
-                            conf,
-                            pol.getStatements(),
-                            stmt -> {
-                              // TODO: how is admin distance set?
-                              if (stmt instanceof SetMetric) {
-                                val[0] = true;
-                              }
-                            },
-                            expr -> { });
-                      });
-            });
-    return val[0];
+    // Currently I don't believe batfish models setting AD
+    return false;
   }
 
   // TODO: also check if med never set
@@ -433,11 +410,16 @@ class Optimizations {
     HeaderQuestion q = _encoderSlice.getEncoder().getQuestion();
     boolean noFailures = q.getFailures() == 0;
 
+    System.out.println("Slice: " + _encoderSlice.getSliceName());
+    System.out.println("Failures: " + q.getFailures());
+
     _encoderSlice
         .getGraph()
         .getConfigurations()
         .forEach(
             (router, conf) -> {
+              System.out.println("Router: " + router);
+
               HashMap<Protocol, Boolean> map = new HashMap<>();
               _sliceCanKeepSingleExportVar.put(router, map);
 
@@ -448,6 +430,7 @@ class Optimizations {
                   map.put(proto, noFailures && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isOspf()) {
+                  System.out.println(" is ospf");
                   // Ensure all interfaces are active
                   boolean allIfacesActive = true;
                   for (GraphEdge edge : g.getEdgeMap().get(router)) {
@@ -461,6 +444,9 @@ class Optimizations {
                   boolean singleArea =
                       _encoderSlice.getGraph().getAreaIds().get(router).size() <= 1;
 
+                  System.out.println("  has single area: " + singleArea);
+                  System.out.println("  all interfaces active: " + allIfacesActive);
+
                   map.put(
                       proto,
                       noFailures
@@ -469,8 +455,6 @@ class Optimizations {
                           && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isBgp()) {
-
-                  // TODO: make sure no ibgp
 
                   boolean acc = true;
                   BgpProcess p = conf.getDefaultVrf().getBgpProcess();

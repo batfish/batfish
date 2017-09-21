@@ -125,10 +125,9 @@ public class PropertyChecker {
     // If this is a equivalence query, we create a second copy of the network
     Encoder enc2 = null;
     if (q.getEquivalence()) {
-      enc2 = new Encoder(enc, graph);
       HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
       q2.setFailures(0);
-      enc2.setQuestion(q2);
+      enc2 = new Encoder(enc, graph, q2);
       enc2.computeEncoding();
     }
 
