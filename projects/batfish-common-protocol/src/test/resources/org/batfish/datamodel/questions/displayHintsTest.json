@@ -1,35 +1,27 @@
 {
-  "visualize": [
-    "node1",
-    "interfaces1",
-    "nodes1"
-  ],
   "extractionHints" : {
     "node1": {
       "type": "string",
       "hints": {
-        "prefix": 1
+        "use": "prefix",
+        "index" : 1
       }
     },
     "interfaces1": {
       "type" : "string",
       "isList" : true,
-      "hints" : {
-        "suffix": {
-          "filter": "$.*",
-          "use": "suffix"
-        }
+      "hints": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
       }
     },
     "nodes1": {
       "type": "int",
       "isList": true,
       "hints": {
-        "suffix": {
-          "filter": "$.*",
-          "use": "prefix",
-          "index": 1
-        }
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
       }
     }
   },

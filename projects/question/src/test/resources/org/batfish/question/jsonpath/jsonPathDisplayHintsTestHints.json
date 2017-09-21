@@ -1,9 +1,4 @@
 {
-  "visualize": [
-    "oneNode",
-    "interfaceList",
-    "mtuList"
-  ],
   "extractionHints" : {
     "nodeFromPrefix": {
       "type": "string",

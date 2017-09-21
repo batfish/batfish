@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import org.batfish.common.BatfishException;
 
 public class DisplayHints {
@@ -112,13 +111,9 @@ public class DisplayHints {
 
   private static final String PROP_TEXT_DESC = "textDesc";
 
-  private static final String PROP_VISUALIZE = "visualize";
-
   private Map<String, ExtractionHint> _extractionHints;
 
   private String _textDesc;
-
-  private Set<String> _visualize;
 
   @JsonProperty(PROP_EXTRACTION_HINTS)
   public Map<String, ExtractionHint> getExtractionHints() {
@@ -130,11 +125,6 @@ public class DisplayHints {
     return _textDesc;
   }
 
-  @JsonProperty(PROP_VISUALIZE)
-  public Set<String> getVisualize() {
-    return _visualize;
-  }
-
   @JsonProperty(PROP_EXTRACTION_HINTS)
   public void setExtractionHints(Map<String, ExtractionHint> extractionHints) {
     _extractionHints = extractionHints;
@@ -143,10 +133,5 @@ public class DisplayHints {
   @JsonProperty(PROP_TEXT_DESC)
   public void setTextDesc(String textDesc) {
     _textDesc = textDesc;
-  }
-
-  @JsonProperty(PROP_VISUALIZE)
-  public void setVisualize(Set<String> visualize) {
-    _visualize = visualize;
   }
 }

@@ -19,7 +19,6 @@ public class DisplayHintsTest {
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     DisplayHints displayHints = mapper.readValue(text, DisplayHints.class);
 
-    assertThat(displayHints.getVisualize().size(), equalTo(3));
     assertThat(displayHints.getTextDesc().equals("${node1} has no accounting command"),
         equalTo(true));
 
@@ -32,16 +31,16 @@ public class DisplayHintsTest {
     ExtractionHint hint0 = extractionHints.get("node1");
     assertThat(hint0.getIsList(), equalTo(false));
     assertThat(hint0.getType(), equalTo(ValueType.STRING));
-    assertThat(hint0.getHints().get("prefix").asInt(), equalTo(1));
+    assertThat(hint0.getHints().containsKey("use"), equalTo(true));
 
     ExtractionHint hint1 = extractionHints.get("interfaces1");
     assertThat(hint1.getIsList(), equalTo(true));
     assertThat(hint1.getType(), equalTo(ValueType.STRING));
-    assertThat(hint1.getHints().containsKey("suffix"), equalTo(true));
+    assertThat(hint1.getHints().containsKey("use"), equalTo(true));
 
     ExtractionHint hint2 = extractionHints.get("nodes1");
     assertThat(hint2.getIsList(), equalTo(true));
     assertThat(hint2.getType(), equalTo(ValueType.INT));
-    assertThat(hint2.getHints().containsKey("suffix"), equalTo(true));
+    assertThat(hint2.getHints().containsKey("use"), equalTo(true));
   }
 }

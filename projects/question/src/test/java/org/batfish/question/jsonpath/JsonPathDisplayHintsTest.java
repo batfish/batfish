@@ -9,9 +9,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -58,7 +56,6 @@ public class JsonPathDisplayHintsTest {
 
   private DisplayHints getDisplayHints(String displayVariable) {
     DisplayHints displayHints = new DisplayHints();
-    displayHints.setVisualize(new HashSet<>(Arrays.asList(displayVariable)));
     Map<String,ExtractionHint> extractionHints = new HashMap<>();
     extractionHints.put(displayVariable, _displayHints.getExtractionHints().get(displayVariable));
     displayHints.setExtractionHints(extractionHints);
