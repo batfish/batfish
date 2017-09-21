@@ -43,10 +43,11 @@ public class JsonPathAssertionTest {
 
   @Test
   public void testEvaluateCountFalse() {
-    Set<JsonPathResultEntry> results = computeResults(
-        "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
-        "$.nodes..interface1.mtu",
-        true);
+    Set<JsonPathResultEntry> results =
+        computeResults(
+            "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
+            "$.nodes..interface1.mtu",
+            true);
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
     jpAssertion.setType(JsonPathAssertionType.count);
     try {
@@ -62,10 +63,9 @@ public class JsonPathAssertionTest {
 
   @Test
   public void testEvaluateCountTrue() {
-    Set<JsonPathResultEntry> results = computeResults(
-        "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
-        "$.nodes..mtu",
-        true);
+    Set<JsonPathResultEntry> results =
+        computeResults(
+            "org/batfish/question/jsonpath/jsonPathAssertionTest.json", "$.nodes..mtu", true);
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
     jpAssertion.setType(JsonPathAssertionType.count);
     try {
@@ -81,10 +81,9 @@ public class JsonPathAssertionTest {
 
   @Test
   public void testEvaluateNone() {
-    Set<JsonPathResultEntry> results = computeResults(
-        "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
-        "$.nodes..mtu",
-        true);
+    Set<JsonPathResultEntry> results =
+        computeResults(
+            "org/batfish/question/jsonpath/jsonPathAssertionTest.json", "$.nodes..mtu", true);
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
     jpAssertion.setType(JsonPathAssertionType.none);
     String errorMessage = "Cannot evaluate assertion type none";
@@ -95,10 +94,11 @@ public class JsonPathAssertionTest {
 
   @Test
   public void testEvaluateEqualsFalse() {
-    Set<JsonPathResultEntry> results = computeResults(
-        "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
-        "$.nodes..interface1.mtu",
-        false);
+    Set<JsonPathResultEntry> results =
+        computeResults(
+            "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
+            "$.nodes..interface1.mtu",
+            false);
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
     jpAssertion.setType(JsonPathAssertionType.equals);
     try {
@@ -114,10 +114,9 @@ public class JsonPathAssertionTest {
 
   @Test
   public void testEvaluateEqualsTrueWithSuffix() {
-    Set<JsonPathResultEntry> results = computeResults(
-        "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
-        "$..ntpServers",
-        true);
+    Set<JsonPathResultEntry> results =
+        computeResults(
+            "org/batfish/question/jsonpath/jsonPathAssertionTest.json", "$..ntpServers", true);
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
     jpAssertion.setType(JsonPathAssertionType.equals);
     try {
@@ -139,10 +138,9 @@ public class JsonPathAssertionTest {
 
   @Test
   public void testEvaluateEqualsTrueWithoutSuffix() {
-    Set<JsonPathResultEntry> results = computeResults(
-        "org/batfish/question/jsonpath/jsonPathAssertionTest.json",
-        "$..node1",
-        false);
+    Set<JsonPathResultEntry> results =
+        computeResults(
+            "org/batfish/question/jsonpath/jsonPathAssertionTest.json", "$..node1", false);
     JsonPathAssertion jpAssertion = new JsonPathAssertion();
     jpAssertion.setType(JsonPathAssertionType.equals);
     try {
