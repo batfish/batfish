@@ -15,6 +15,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -429,6 +430,9 @@ class Optimizations {
   private void computeCanMergeExportVars() {
     Graph g = _encoderSlice.getGraph();
 
+    HeaderQuestion q = _encoderSlice.getEncoder().getQuestion();
+    boolean noFailures = q.getFailures() == 0;
+
     _encoderSlice
         .getGraph()
         .getConfigurations()
@@ -441,7 +445,7 @@ class Optimizations {
               // the neighbor already being the root of the tree.
               for (Protocol proto : getProtocols().get(router)) {
                 if (proto.isConnected() || proto.isStatic()) {
-                  map.put(proto, Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(proto, noFailures && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isOspf()) {
                   // Ensure all interfaces are active
@@ -457,7 +461,12 @@ class Optimizations {
                   boolean singleArea =
                       _encoderSlice.getGraph().getAreaIds().get(router).size() <= 1;
 
-                  map.put(proto, allIfacesActive && singleArea && ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(
+                      proto,
+                      noFailures
+                          && allIfacesActive
+                          && singleArea
+                          && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isBgp()) {
 
@@ -467,18 +476,18 @@ class Optimizations {
                   BgpProcess p = conf.getDefaultVrf().getBgpProcess();
                   for (Map.Entry<Prefix, BgpNeighbor> e : p.getNeighbors().entrySet()) {
                     BgpNeighbor n = e.getValue();
-                    // mkIf iBGP used, then don't merge
+                    // If iBGP used, then don't merge
                     if (n.getLocalAs().equals(n.getRemoteAs())) {
                       acc = false;
                       break;
                     }
-                    // mkIf not the default export policy, then don't merge
+                    // If not the default export policy, then don't merge
                     if (!isDefaultBgpExport(conf, n)) {
                       acc = false;
                       break;
                     }
                   }
-                  map.put(proto, acc && ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(proto, noFailures && acc && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else {
                   throw new BatfishException("Error: unkown protocol: " + proto.name());

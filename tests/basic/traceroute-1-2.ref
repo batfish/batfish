@@ -107,7 +107,7 @@
                   ]
                 }
               ],
-              "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+              "notes" : "DENIED_IN{filter::INPUT}{default}"
             },
             {
               "disposition" : "DENIED_IN",
@@ -180,7 +180,7 @@
                   ]
                 }
               ],
-              "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+              "notes" : "DENIED_IN{filter::INPUT}{default}"
             },
             {
               "disposition" : "DENIED_IN",
@@ -253,7 +253,7 @@
                   ]
                 }
               ],
-              "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+              "notes" : "DENIED_IN{filter::INPUT}{default}"
             },
             {
               "disposition" : "DENIED_IN",
@@ -326,7 +326,7 @@
                   ]
                 }
               ],
-              "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+              "notes" : "DENIED_IN{filter::INPUT}{default}"
             }
           ]
         }
@@ -339,5 +339,10 @@
     "dstIp" : "2.128.0.101",
     "ingressNode" : "as1core1"
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

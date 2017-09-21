@@ -11,7 +11,11 @@ import org.batfish.smt.GraphEdge;
 
 public class PatternUtils {
 
-  public static List<String> findMatchingNodes(Graph graph, PathRegexes p) {
+  public static List<String> findMatchingDestinationNodes(Graph graph, PathRegexes p) {
+    return findMatchingNodes(graph, p.getDstRegex(), p.getNotDstRegex());
+  }
+
+  public static List<String> findMatchingSourceNodes(Graph graph, PathRegexes p) {
     return findMatchingNodes(graph, p.getSrcRegex(), p.getNotSrcRegex());
   }
 

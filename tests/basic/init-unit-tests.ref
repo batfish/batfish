@@ -14,6 +14,7 @@
         "aggAddress" : "ios_bgp_aggregate_address",
         "arista-event-handler" : "arista-event-handler",
         "arista_bgp" : "arista_bgp",
+        "arista_dhcp_relay" : "arista_dhcp_relay",
         "arista_ip_route" : "arista_ip_route",
         "arista_logging" : "arista-logging",
         "arista_misc" : "arista_misc",
@@ -217,6 +218,7 @@
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
         "arista_bgp" : "PASSED",
+        "arista_dhcp_relay" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
@@ -408,7 +410,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.30.1",
+      "version" : "0.31.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -867,6 +869,20 @@
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
                 16
+              ]
+            }
+          }
+        },
+        "cisco_vrrp" : {
+          "interface" : {
+            "GigabitEthernet0/0/0/19" : {
+              "router vrrp interface" : [
+                15
+              ]
+            },
+            "ManagementEthernet0/RSP1/CPU0/0" : {
+              "router vrrp interface" : [
+                27
               ]
             }
           }
@@ -1753,7 +1769,7 @@
           }
         }
       },
-      "version" : "0.30.1",
+      "version" : "0.31.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1860,6 +1876,7 @@
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
         "arista_bgp" : "PASSED",
+        "arista_dhcp_relay" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",

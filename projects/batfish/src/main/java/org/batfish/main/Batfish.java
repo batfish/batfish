@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
@@ -411,9 +412,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
-  private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
+  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
 
   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
@@ -443,8 +444,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
-      Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
-      Map<TestrigSettings, DataPlane> cachedDataPlanes,
+      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
       Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
@@ -944,7 +945,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Ip ip = prefix.getAddress();
           int lowestPriority = Integer.MAX_VALUE;
           String bestCandidate = null;
-          Set<String> bestCandidates = new HashSet<>();
+          SortedSet<String> bestCandidates = new TreeSet<>();
           for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
@@ -958,7 +959,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
           }
           if (bestCandidates.size() != 1) {
-            throw new BatfishException("multiple best vrrp candidates:" + bestCandidates);
+            String deterministicBestCandidate = bestCandidates.first();
+            bestCandidate = deterministicBestCandidate;
+            _logger.redflag(
+                "Arbitrarily choosing best vrrp candidate: '"
+                    + deterministicBestCandidate
+                    + " for prefix/groupNumber: '"
+                    + p.toString()
+                    + "' among multiple best candidates: "
+                    + bestCandidates);
           }
           Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
           owners.add(bestCandidate);
@@ -2443,7 +2452,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, Configuration> loadConfigurationsWithoutValidation() {
-    SortedMap<String, Configuration> configurations = _cachedConfigurations.get(_testrigSettings);
+    SortedMap<String, Configuration> configurations =
+        _cachedConfigurations.getIfPresent(_testrigSettings);
     if (configurations == null) {
       ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
       if (!Version.isCompatibleVersion(
@@ -2483,7 +2493,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane() {
-    DataPlane dp = _cachedDataPlanes.get(_testrigSettings);
+    DataPlane dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
     if (dp == null) {
       /*
        * Data plane should exist after loading answer element, as it triggers
@@ -2491,7 +2501,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement();
-      dp = _cachedDataPlanes.get(_testrigSettings);
+      dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp =

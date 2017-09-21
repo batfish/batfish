@@ -503,6 +503,21 @@ ip_default_gateway_stanza
 
 ip_dhcp_null
 :
+   (
+      PACKET
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_dhcp_pool
+:
+   POOL name = variable NEWLINE
+   (
+      ip_dhcp_pool_null
+   )*
+;
+
+ip_dhcp_pool_null
+:
    NO?
    (
       BOOTFILE
@@ -518,6 +533,34 @@ ip_dhcp_null
       | NEXT_SERVER
       | OPTION
    ) ~NEWLINE* NEWLINE
+;
+
+ip_dhcp_relay
+:
+   RELAY
+   (
+      NEWLINE
+      | ip_dhcp_relay_null
+      | ip_dhcp_relay_server
+   )
+;
+
+ip_dhcp_relay_null
+:
+   (
+      OPTION
+      | SOURCE_INTERFACE
+      | USE_LINK_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_dhcp_relay_server
+:
+   SERVER
+   (
+      ip = IP_ADDRESS
+      | ip6 = IPV6_ADDRESS
+   ) NEWLINE
 ;
 
 ip_domain_lookup
@@ -1618,10 +1661,12 @@ s_ip_dhcp
    (
       IP
       | IPV6
-   ) DHCP ~NEWLINE* NEWLINE
+   ) DHCP
    (
       ip_dhcp_null
-   )*
+      | ip_dhcp_pool
+      | ip_dhcp_relay
+   )
 ;
 
 s_ip_domain
@@ -2678,7 +2723,7 @@ ts_null
 
 vi_address_family
 :
-   NO? ADDRESS_FAMILY ~NEWLINE* NEWLINE
+   NO? ADDRESS_FAMILY IPV4 NEWLINE
    (
       viaf_vrrp
    )*
@@ -2740,22 +2785,40 @@ vc_null
 
 viaf_vrrp
 :
-   NO? VRRP ~NEWLINE* NEWLINE
+   NO? VRRP groupnum = DEC NEWLINE
    (
-      viafv_null
+      viafv_address
+      | viafv_null
+      | viafv_preempt
+      | viafv_priority
    )*
+;
+
+viafv_address
+:
+   ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 viafv_null
 :
    NO?
    (
-      ADDRESS
-      | PREEMPT
-      | PRIORITY
-      | TIMERS
+      TIMERS
       | TRACK
    ) ~NEWLINE* NEWLINE
+;
+
+viafv_preempt
+:
+   PREEMPT
+   (
+      DELAY delay = DEC
+   ) NEWLINE
+;
+
+viafv_priority
+:
+   PRIORITY priority = DEC NEWLINE
 ;
 
 vlan_null
@@ -2926,7 +2989,7 @@ vrfd_null
 
 vrrp_interface
 :
-   NO? INTERFACE interface_name NEWLINE
+   NO? INTERFACE iface = interface_name NEWLINE
    (
       vi_address_family
    )* NEWLINE?

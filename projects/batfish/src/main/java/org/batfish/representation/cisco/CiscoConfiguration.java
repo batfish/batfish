@@ -107,6 +107,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
+  static final boolean DEFAULT_VRRP_PREEMPT = true;
+
+  static final int DEFAULT_VRRP_PRIORITY = 100;
+
   public static final String MANAGEMENT_VRF_NAME = "management";
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
@@ -154,6 +158,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
+
+  private final List<Ip> _dhcpRelayServers;
 
   private NavigableSet<String> _dnsServers;
 
@@ -263,6 +269,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, Vrf> _vrfs;
 
+  private final SortedMap<String, VrrpInterface> _vrrpGroups;
+
   private final Set<String> _wccpAcls;
 
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
@@ -273,6 +281,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _classMapAccessGroups = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
+    _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
@@ -311,7 +320,51 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _verifyAccessLists = new HashSet<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    _vrrpGroups = new TreeMap<>();
     _wccpAcls = new TreeSet<>();
+  }
+
+  private void applyVrrp(Configuration c) {
+    _vrrpGroups.forEach(
+        (ifaceName, vrrpInterface) -> {
+          org.batfish.datamodel.Interface iface = c.getInterfaces().get(ifaceName);
+          if (iface != null) {
+            vrrpInterface
+                .getVrrpGroups()
+                .forEach(
+                    (groupNum, vrrpGroup) -> {
+                      org.batfish.datamodel.VrrpGroup newGroup =
+                          new org.batfish.datamodel.VrrpGroup(groupNum);
+                      newGroup.setPreempt(vrrpGroup.getPreempt());
+                      newGroup.setPriority(vrrpGroup.getPriority());
+                      Prefix ifacePrefix = iface.getPrefix();
+                      if (ifacePrefix != null) {
+                        int prefixLength = ifacePrefix.getPrefixLength();
+                        Ip address = vrrpGroup.getVirtualAddress();
+                        if (address != null) {
+                          Prefix virtualAddress = new Prefix(address, prefixLength);
+                          newGroup.setVirtualAddress(virtualAddress);
+                        } else {
+                          _w.redFlag(
+                              "No virtual address set for VRRP on interface: '" + ifaceName + "'");
+                        }
+                      } else {
+                        _w.redFlag(
+                            "Could not determine prefix length of VRRP address on interface '"
+                                + ifaceName
+                                + "' due to missing prefix");
+                      }
+                      iface.getVrrpGroups().put(groupNum, newGroup);
+                    });
+          } else {
+            int line = vrrpInterface.getDefinitionLine();
+            undefined(
+                CiscoStructureType.INTERFACE,
+                ifaceName,
+                CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+                line);
+          }
+        });
   }
 
   private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -450,6 +503,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Vrf getDefaultVrf() {
     return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  public List<Ip> getDhcpRelayServers() {
+    return _dhcpRelayServers;
   }
 
   public NavigableSet<String> getDnsServers() {
@@ -778,6 +835,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
+  }
+
+  public SortedMap<String, VrrpInterface> getVrrpGroups() {
+    return _vrrpGroups;
   }
 
   public Set<String> getWccpAcls() {
@@ -2020,7 +2081,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());
-    newIface.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
+    if (iface.getDhcpRelayClient()) {
+      newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
+    } else {
+      newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
+    }
     newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
@@ -3486,6 +3551,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getInterfaces().put(ifaceName, newInterface);
           c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
         });
+
+    // apply vrrp settings to interfaces
+    applyVrrp(c);
 
     // convert routing processes
     _vrfs.forEach(

@@ -264,9 +264,15 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationCo
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
+import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_authenticationContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_ipContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_preemptContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_session_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Int_compContext;
@@ -280,6 +286,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_expanded_tailCont
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_default_gateway_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_hostnameContext;
@@ -417,6 +424,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_ip_dhcpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domainContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_name_serverContext;
@@ -509,8 +517,13 @@ import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
+import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
+import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_ip_routeContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
@@ -638,6 +651,8 @@ import org.batfish.representation.cisco.StandardIpv6AccessList;
 import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.Vrf;
+import org.batfish.representation.cisco.VrrpGroup;
+import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -953,6 +968,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private String _currentVrf;
 
+  private VrrpGroup _currentVrrpGroup;
+
+  private Integer _currentVrrpGroupNum;
+
+  private String _currentVrrpInterface;
+
   private BgpPeerGroup _dummyPeerGroup;
 
   private ConfigurationFormat _format;
@@ -1256,6 +1277,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIf_spanning_tree(If_spanning_treeContext ctx) {
     _no = ctx.NO() != null;
+  }
+
+  @Override
+  public void enterIf_vrrp(If_vrrpContext ctx) {
+    int groupNum = toInteger(ctx.groupnum);
+    _currentVrrpGroupNum = groupNum;
   }
 
   @Override
@@ -2015,6 +2042,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterViaf_vrrp(Viaf_vrrpContext ctx) {
+    int groupNum = toInteger(ctx.groupnum);
+    final int line = ctx.getStart().getLine();
+    _currentVrrpGroup =
+        _configuration
+            .getVrrpGroups()
+            .computeIfAbsent(_currentVrrpInterface, name -> new VrrpInterface(name, line))
+            .getVrrpGroups()
+            .computeIfAbsent(groupNum, VrrpGroup::new);
+  }
+
+  @Override
   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = ctx.name.getText();
     int procNum =
@@ -2024,6 +2063,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     pushPeer(proc.getMasterBgpPeerGroup());
     _currentBlockNeighborAddressFamilies.clear();
     _inBlockNeighbor = false;
+  }
+
+  @Override
+  public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+    _currentVrrpInterface = canonicalIfaceName;
   }
 
   @Override
@@ -2917,6 +2963,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
+    if (!_no) {
+      if (ctx.ip != null) {
+        Ip ip = toIp(ctx.ip);
+        _configuration.getDhcpRelayServers().add(ip);
+      }
+    }
+  }
+
+  @Override
+  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setDhcpRelayClient(true);
+    }
+  }
+
+  @Override
+  public void enterS_ip_dhcp(S_ip_dhcpContext ctx) {
+    _no = (ctx.NO() != null);
+  }
+
+  @Override
+  public void exitS_ip_dhcp(S_ip_dhcpContext ctx) {
+    _no = false;
+  }
+
+  @Override
   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip dhcpRelayAddress = toIp(ctx.address);
@@ -3231,6 +3304,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_vrrp(If_vrrpContext ctx) {
+    _currentVrrpGroupNum = null;
+  }
+
+  @Override
   public void exitIfdhcpr_address(Ifdhcpr_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip address = toIp(ctx.address);
@@ -3259,6 +3337,70 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         name,
         CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
         line);
+  }
+
+  @Override
+  public void exitIfvrrp_authentication(Ifvrrp_authenticationContext ctx) {
+    String hashedAuthenticationText =
+        CommonUtil.sha256Digest(ctx.text.getText() + CommonUtil.salt());
+    final int line = ctx.getStart().getLine();
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setAuthenticationTextHash(hashedAuthenticationText);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_ip(Ifvrrp_ipContext ctx) {
+    Ip ip = toIp(ctx.ip);
+    final int line = ctx.getStart().getLine();
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setVirtualAddress(ip);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_preempt(Ifvrrp_preemptContext ctx) {
+    final int line = ctx.getStart().getLine();
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setPreempt(true);
+    }
+  }
+
+  @Override
+  public void exitIfvrrp_priority(Ifvrrp_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    final int line = ctx.getStart().getLine();
+    for (Interface iface : _currentInterfaces) {
+      String ifaceName = iface.getName();
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface(ifaceName, line))
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      vrrpGroup.setPriority(priority);
+    }
   }
 
   @Override
@@ -5612,6 +5754,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitViaf_vrrp(Viaf_vrrpContext ctx) {
+    _currentVrrpGroup = null;
+  }
+
+  @Override
+  public void exitViafv_address(Viafv_addressContext ctx) {
+    Ip address = toIp(ctx.address);
+    _currentVrrpGroup.setVirtualAddress(address);
+  }
+
+  @Override
+  public void exitViafv_preempt(Viafv_preemptContext ctx) {
+    _currentVrrpGroup.setPreempt(true);
+  }
+
+  @Override
+  public void exitViafv_priority(Viafv_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    _currentVrrpGroup.setPriority(priority);
+  }
+
+  @Override
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
@@ -5620,6 +5784,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitVrfc_ip_route(Vrfc_ip_routeContext ctx) {
     todo(ctx, F_IP_ROUTE_VRF);
+  }
+
+  @Override
+  public void exitVrrp_interface(Vrrp_interfaceContext ctx) {
+    _currentVrrpInterface = null;
   }
 
   @Override
