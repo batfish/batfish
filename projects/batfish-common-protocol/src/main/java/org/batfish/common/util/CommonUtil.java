@@ -17,13 +17,17 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -672,5 +676,29 @@ public class CommonUtil {
       throw new BatfishException(
           "Failed to write input stream to output file: '" + outputFile + "'");
     }
+  }
+
+  /**
+   * Returns the creation time of the file {@code path}.
+   *
+   * @throws BatfishException if the file {@code path} does not exist or the file exists but failed
+   *     to get creation time of the file.
+   */
+  public static String getFileCreationTime(Path path) {
+    if (!Files.exists(path)) {
+      throw new BatfishException(String.format("File '%s' does not exist", path));
+    }
+    BasicFileAttributes view;
+    try {
+      view = Files.getFileAttributeView(path, BasicFileAttributeView.class).readAttributes();
+    } catch (IOException e) {
+      throw new BatfishException(String.format("Failed to get creation time of file %s", path), e);
+    }
+    return formatDate(new Date(view.creationTime().toMillis()));
+  }
+
+  /** Returns a string representation of the Date {@code date}. */
+  public static String formatDate(Date date) {
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
   }
 }

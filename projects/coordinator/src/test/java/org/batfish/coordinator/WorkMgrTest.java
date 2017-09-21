@@ -9,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -136,7 +134,9 @@ public class WorkMgrTest {
   public void getEmptyContainer() {
     _manager.initContainer("container", null);
     Container container = _manager.getContainer("container");
-    assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
+    assertThat(container.getName(), equalTo("container"));
+    assertThat(container.getTestrigsCount(), equalTo(0));
+    assertThat(container.getAnalysesCount(), equalTo(0));
   }
 
   @Test
@@ -147,9 +147,9 @@ public class WorkMgrTest {
     Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
     Container container = _manager.getContainer("container");
-    assertThat(
-        container,
-        equalTo(Container.of("container", Sets.newTreeSet(Collections.singleton("testrig")))));
+    assertThat(container.getName(), equalTo("container"));
+    assertThat(container.getTestrigsCount(), equalTo(1));
+    assertThat(container.getAnalysesCount(), equalTo(0));
   }
 
   @Test

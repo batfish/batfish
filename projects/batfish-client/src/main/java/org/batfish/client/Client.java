@@ -1348,7 +1348,7 @@ public class Client extends AbstractClient implements IClient {
     String containerName = parameters.get(0);
     Container container = _workHelper.getContainer(containerName);
     if (container != null) {
-      _logger.output(container.getTestrigs() + "\n");
+      _logger.output(container + "\n");
       return true;
     }
     return false;

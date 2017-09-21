@@ -25,7 +25,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -247,12 +246,12 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       client =
           CommonUtil.createHttpClientBuilder(
-              _settings.getSslPoolDisable(),
-              _settings.getSslPoolTrustAllCerts(),
-              _settings.getSslPoolKeystoreFile(),
-              _settings.getSslPoolKeystorePassword(),
-              _settings.getSslPoolTruststoreFile(),
-              _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
               .build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -347,9 +346,8 @@ public class WorkMgr extends AbstractCoordinator {
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
       Path qDir = questionsDir.resolve(entry.getKey());
       if (Files.exists(qDir)) {
-        throw new BatfishException(String.format("Question '%s' already exists for analysis '%s'",
-            entry.getKey(),
-            aName));
+        throw new BatfishException(
+            String.format("Question '%s' already exists for analysis '%s'", entry.getKey(), aName));
       }
       if (!qDir.toFile().mkdirs()) {
         throw new BatfishException(String.format("Failed to create question directory '%s'", qDir));
@@ -569,21 +567,15 @@ public class WorkMgr extends AbstractCoordinator {
     return configContent;
   }
 
-  /** Return a {@link Container container} contains all testrigs directories inside it. */
+  /** Return a {@link Container container} contains a summary of container {@code containerName} */
   public Container getContainer(String containerName) {
-    return getContainer(getdirContainer(containerName));
-  }
-
-  /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
-
-    return Container.of(containerDir.toFile().getName(), testrigs);
+    Path containerDir = getdirContainer(containerName);
+    String createdAt = CommonUtil.getFileCreationTime(containerDir);
+    int testrigsCount =
+        CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR)).size();
+    int analysesCount =
+        CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR)).size();
+    return new Container(containerName, createdAt, testrigsCount, analysesCount);
   }
 
   private Path getdirAnalysisQuestion(String containerName, String analysisName, String qName) {
@@ -957,17 +949,17 @@ public class WorkMgr extends AbstractCoordinator {
 
   public int syncTestrigsSyncNow(String containerName, String pluginId, boolean force) {
     if (!_testrigSyncers.containsKey(pluginId)) {
-      throw new BatfishException("PluginId " + pluginId + " not found."
-                + " (Are SyncTestrigs plugins loaded?)");
+      throw new BatfishException(
+          "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).syncNow(containerName, force);
   }
 
-  public boolean syncTestrigsUpdateSettings(String containerName, String pluginId,
-                                            Map<String, String> settings) {
+  public boolean syncTestrigsUpdateSettings(
+      String containerName, String pluginId, Map<String, String> settings) {
     if (!_testrigSyncers.containsKey(pluginId)) {
-      throw new BatfishException("PluginId " + pluginId + " not found."
-              + " (Are SyncTestrigs plugins loaded?)");
+      throw new BatfishException(
+          "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
   }
