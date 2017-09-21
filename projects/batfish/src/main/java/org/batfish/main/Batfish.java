@@ -960,6 +960,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           }
           if (bestCandidates.size() != 1) {
             String deterministicBestCandidate = bestCandidates.first();
+            bestCandidate = deterministicBestCandidate;
             _logger.redflag(
                 "Arbitrarily choosing best vrrp candidate: '"
                     + deterministicBestCandidate
