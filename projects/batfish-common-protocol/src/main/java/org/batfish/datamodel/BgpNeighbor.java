@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
 /**
@@ -293,8 +293,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof BgpNeighbor)) {
+      return false;
     }
     BgpNeighbor other = (BgpNeighbor) o;
     if (this._advertiseExternal != other._advertiseExternal) {
@@ -327,16 +329,16 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return false;
     }
     // we will skip generated routes.
-    if (!CommonUtil.bothNullOrEqual(this._group, other._group)) {
+    if (!Objects.equals(this._group, other._group)) {
       return false;
     }
-    if (!CommonUtil.bothNullOrEqual(this._importPolicy, other._importPolicy)) {
+    if (!Objects.equals(this._importPolicy, other._importPolicy)) {
       return false;
     }
     if (!this._localAs.equals(other._localAs)) {
       return false;
     }
-    if (!CommonUtil.bothNullOrEqual(this._localIp, other._localIp)) {
+    if (!Objects.equals(this._localIp, other._localIp)) {
       return false;
     }
     // we will skip owner.
@@ -636,7 +638,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _remoteAs = remoteAs;
   }
 
-  public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
+  public void setRemoteBgpNeighbor(@Nullable BgpNeighbor remoteBgpNeighbor) {
     _remoteBgpNeighbor = remoteBgpNeighbor;
   }
 

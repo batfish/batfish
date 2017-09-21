@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.BatfishObjectMapper;
 
@@ -79,10 +80,9 @@ public class Task {
     @Override
     public String toString() {
       if (_size > 0) {
-        return String.format(
-            "%s: %s: %s/%d", _startDate.toString(), _description, _completed.toString(), _size);
+        return String.format("%s: %s: %s/%d", _startDate, _description, _completed, _size);
       } else {
-        return String.format("%s: %s", _startDate.toString(), _description);
+        return String.format("%s: %s", _startDate, _description);
       }
     }
   }
@@ -110,7 +110,7 @@ public class Task {
   @JsonCreator
   public Task() {}
 
-  public Task(String[] args) {
+  public Task(@Nullable String[] args) {
     this._args = args;
     _batches = new ArrayList<>();
     _obtained = new Date();

@@ -25,6 +25,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
+  private static final String PROP_RIP_PROCESS = "ripProcess";
+
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -57,6 +59,8 @@ public class Vrf extends ComparableStructure<String> {
   private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
 
   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
+
+  private RipProcess _ripProcess;
 
   private transient NavigableSet<Route> _routes;
 
@@ -158,6 +162,11 @@ public class Vrf extends ComparableStructure<String> {
     return _receivedIbgpAdvertisements;
   }
 
+  @JsonProperty(PROP_RIP_PROCESS)
+  public RipProcess getRipProcess() {
+    return _ripProcess;
+  }
+
   @JsonIgnore
   public NavigableSet<Route> getRoutes() {
     return _routes;
@@ -245,6 +254,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_PROCESS)
   public void setOspfProcess(OspfProcess process) {
     _ospfProcess = process;
+  }
+
+  @JsonProperty(PROP_RIP_PROCESS)
+  public void setRipProcess(RipProcess ripProcess) {
+    _ripProcess = ripProcess;
   }
 
   public void setSnmpServer(SnmpServer snmpServer) {

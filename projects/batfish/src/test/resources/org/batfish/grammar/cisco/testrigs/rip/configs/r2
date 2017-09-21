@@ -1,0 +1,24 @@
+!
+hostname r2
+!
+interface Ethernet0
+ ip address 2.0.0.2/8
+ no shutdown
+!
+interface Ethernet1
+ ip address 3.0.0.1/8
+ no shutdown
+!
+router rip
+ network 2.0.0.0
+ network 3.0.0.0
+!
+router bgp 2
+ redistribute rip route-map addcomm
+ neighbor 3.0.0.2 remote-as 3
+ neighbor 3.0.0.2 activate
+!
+route-map addcom permit 1
+ set community 2:3
+!
+!

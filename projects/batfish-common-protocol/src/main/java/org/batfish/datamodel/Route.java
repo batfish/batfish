@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
+import javax.annotation.Nullable;
 
 @JsonPropertyOrder({Route.PROP_DIFF_SYMBOL})
 public class Route implements Comparable<Route>, Serializable {
@@ -49,7 +50,7 @@ public class Route implements Comparable<Route>, Serializable {
 
   private final int _administrativeCost;
 
-  private final int _metric;
+  private final long _metric;
 
   private final Prefix _network;
 
@@ -76,7 +77,7 @@ public class Route implements Comparable<Route>, Serializable {
       @JsonProperty(PROP_NEXT_HOP) String nextHop,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
-      @JsonProperty(PROP_METRIC) int metric,
+      @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @JsonProperty(PROP_TAG) int tag) {
     _network = network;
@@ -113,7 +114,7 @@ public class Route implements Comparable<Route>, Serializable {
     if (result != 0) {
       return result;
     }
-    result = Integer.compare(_metric, rhs._metric);
+    result = Long.compare(_metric, rhs._metric);
     if (result != 0) {
       return result;
     }
@@ -126,11 +127,13 @@ public class Route implements Comparable<Route>, Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Route)) {
+      return false;
     }
-    Route other = (Route) obj;
+    Route other = (Route) o;
     if (_administrativeCost != other._administrativeCost) {
       return false;
     }
@@ -164,7 +167,7 @@ public class Route implements Comparable<Route>, Serializable {
   }
 
   @JsonProperty(PROP_METRIC)
-  public int getMetric() {
+  public long getMetric() {
     return _metric;
   }
 
@@ -212,7 +215,7 @@ public class Route implements Comparable<Route>, Serializable {
     final int prime = 31;
     int result = 1;
     result = prime * result + _administrativeCost;
-    result = prime * result + _metric;
+    result = prime * result + Long.hashCode(_metric);
     result = prime * result + _nextHopIp.hashCode();
     result = prime * result + _node.hashCode();
     result = prime * result + _network.hashCode();
@@ -222,7 +225,7 @@ public class Route implements Comparable<Route>, Serializable {
     return result;
   }
 
-  public String prettyPrint(String diffSymbol) {
+  public String prettyPrint(@Nullable String diffSymbol) {
     String node = getNode();
     String nhnode = getNextHop();
     Ip nextHopIp = getNextHopIp();
@@ -246,7 +249,7 @@ public class Route implements Comparable<Route>, Serializable {
     String vrf = getVrf();
     String net = getNetwork().toString();
     String admin = Integer.toString(getAdministrativeCost());
-    String cost = Integer.toString(getMetric());
+    String cost = Long.toString(getMetric());
     String prot = getProtocol().protocolName();
     String diffStr = diffSymbol != null ? diffSymbol + " " : "";
     String routeStr =
@@ -258,17 +261,7 @@ public class Route implements Comparable<Route>, Serializable {
 
   @Override
   public String toString() {
-    String nextHop = _nextHop;
-    String nextHopIp = _nextHopIp.toString();
     String tag = Integer.toString(_tag);
-    // extra formatting
-    if (_nextHopInterface != null) {
-      // static interface
-      if (_nextHopIp.equals(null)) {
-        nextHop = "N/A";
-        nextHopIp = "N/A";
-      }
-    }
     if (_tag == UNSET_ROUTE_TAG) {
       tag = "none";
     }
@@ -277,9 +270,9 @@ public class Route implements Comparable<Route>, Serializable {
         + ", "
         + _network
         + ", "
-        + nextHopIp
+        + _nextHopIp
         + ", "
-        + nextHop
+        + _nextHop
         + ", "
         + _nextHopInterface
         + ", "

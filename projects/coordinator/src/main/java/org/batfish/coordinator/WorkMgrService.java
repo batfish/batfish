@@ -1,11 +1,18 @@
 package org.batfish.coordinator;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Strings;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.security.AccessControlException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.zip.ZipException;
@@ -101,7 +108,7 @@ public class WorkMgrService {
   }
 
   private void checkStringParam(String paramStr, String parameterName) {
-    if (paramStr == null || paramStr.equals("")) {
+    if (Strings.isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
     }
   }
@@ -153,11 +160,33 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      boolean newAnalysis = (newAnalysisStr == null || newAnalysisStr.equals("")) ? false : true;
+      Map<String, String> questionsToAdd = new HashMap<>();
+      if (addQuestionsStream != null) {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Map<String, Object> streamValue;
+        try {
+          streamValue =
+              mapper.readValue(addQuestionsStream, new TypeReference<Map<String, Object>>() {});
+          for (Entry<String, Object> entry : streamValue.entrySet()) {
+            String textValue = mapper.writeValueAsString(entry.getValue());
+            questionsToAdd.put(entry.getKey(), textValue);
+          }
+        } catch (IOException e) {
+          throw new BatfishException("Failed to read question JSON from input stream", e);
+        }
+      }
+      boolean newAnalysis = !Strings.isNullOrEmpty(newAnalysisStr);
+      List<String> questionsToDelete = new ArrayList<>();
+      if (!Strings.isNullOrEmpty(delQuestions)) {
+        JSONArray delQuestionsArray = new JSONArray(delQuestions);
+        for (int i = 0; i < delQuestionsArray.length(); i++) {
+          questionsToDelete.add(delQuestionsArray.getString(i));
+        }
+      }
 
       Main.getWorkMgr()
           .configureAnalysis(
-              containerName, newAnalysis, analysisName, addQuestionsStream, delQuestions);
+              containerName, newAnalysis, analysisName, questionsToAdd, questionsToDelete);
 
       return new JSONArray(
           Arrays.asList(
@@ -256,10 +285,10 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().delContainer(containerName);
+      boolean status = Main.getWorkMgr().delContainer(containerName);
 
       return new JSONArray(
-          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", "true"))));
+          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, new JSONObject().put("result", status)));
 
     } catch (FileExistsException
         | FileNotFoundException
@@ -585,6 +614,73 @@ public class WorkMgrService {
   }
 
   /**
+   * Get content of the configuration file
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the question was asked
+   * @param testrigName The name of the testrig in which the question was asked
+   * @param configName The name of the configuration file in which the question was asked
+   * @return A {@link Response Response} with an entity consists either a string of the file content
+   *     of the configuration file {@code configName} or an error message if: the configuration file
+   *     {@code configName} does not exist or the {@code apiKey} has no acess to the container
+   *     {@code containerName}
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_CONFIGURATION)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getConfiguration(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_CONFIGURATION_NAME) String configName) {
+    try {
+      _logger.info("WMS:getContainer " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      java.nio.file.Path containerDir =
+          Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
+      if (containerDir == null || !Files.exists(containerDir)) {
+        return Response.status(Response.Status.NOT_FOUND)
+            .entity("Container '" + containerName + "' not found")
+            .type(MediaType.TEXT_PLAIN)
+            .build();
+      }
+
+      checkContainerAccessibility(apiKey, containerName);
+
+      String configContent =
+          Main.getWorkMgr().getConfiguration(containerName, testrigName, configName);
+
+      return Response.ok(configContent).build();
+    } catch (AccessControlException e) {
+      return Response.status(Status.FORBIDDEN)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    } catch (BatfishException e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(e.getMessage())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getConfiguration exception: " + stackTrace);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity(e.getCause())
+          .type(MediaType.TEXT_PLAIN)
+          .build();
+    }
+  }
+
+  /**
    * Get information of the container
    *
    * @param apiKey The API key of the client
@@ -623,11 +719,10 @@ public class WorkMgrService {
       checkContainerAccessibility(apiKey, containerName);
 
       Container container = Main.getWorkMgr().getContainer(containerDir);
-      container.setName(containerName);
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String containerString = mapper.writeValueAsString(container);
 
-      return Response.ok(containerString, MediaType.APPLICATION_JSON).build();
+      return Response.ok(containerString).build();
     } catch (AccessControlException e) {
       return Response.status(Status.FORBIDDEN)
           .entity(e.getMessage())
@@ -728,6 +823,33 @@ public class WorkMgrService {
           .entity(e.getCause())
           .type(MediaType.TEXT_PLAIN)
           .build();
+    }
+  }
+
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getQuestionTemplates(@FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
+    try {
+      _logger.info("WMS:getQuestionTemplates " + apiKey + "\n");
+
+      checkStringParam(apiKey, "API key");
+
+      Map<String, String> questionTemplates = Main.getQuestionTemplates();
+
+      if (questionTemplates == null) {
+        return new JSONArray(
+            Arrays.asList(CoordConsts.SVC_KEY_FAILURE, "Question templates dir is not configured"));
+      } else {
+        return new JSONArray(
+            Arrays.asList(
+                CoordConsts.SVC_KEY_SUCCESS,
+                new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates)));
+      }
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getQuestionTemplates exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
 
@@ -1231,6 +1353,120 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:queueWork exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
+  /**
+   * Sync testrigs
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The container to sync testrigs for
+   * @param pluginId The plugin id to use for syncing
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray syncTestrigsSyncNow(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+      @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
+    try {
+      _logger.info(
+          "WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " " + pluginId + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(pluginId, "Plugin Id");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      boolean force = Strings.isNullOrEmpty(forceStr) ? false : Boolean.parseBoolean(forceStr);
+
+      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
+
+      return new JSONArray(
+          Arrays.asList(
+              CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("numCommits", numCommits))));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
+  /**
+   * Update settings for syncing testrigs
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The container to sync testrigs for
+   * @param pluginId The plugin id to use for syncing
+   * @param settingsStr The stringified version of settings
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray syncTestrigsUpdateSettings(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
+      @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
+    try {
+      _logger.info(
+          "WMS:syncTestrigsUpdateSettings "
+              + apiKey
+              + " "
+              + containerName
+              + " "
+              + pluginId
+              + " "
+              + settingsStr
+              + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(pluginId, "Plugin Id");
+      checkStringParam(settingsStr, "Settings");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, String> settings =
+          mapper.readValue(settingsStr, new TypeReference<Map<String, String>>() {});
+
+      boolean result =
+          Main.getWorkMgr().syncTestrigsUpdateSettings(containerName, pluginId, settings);
+
+      return new JSONArray(
+          Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, (new JSONObject().put("result", result))));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:syncTestrigsSyncNow exception: " + stackTrace);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }

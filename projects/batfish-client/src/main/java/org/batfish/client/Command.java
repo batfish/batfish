@@ -34,14 +34,16 @@ public enum Command {
   GET_ANSWER("get-answer"),
   GET_ANSWER_DELTA("get-answer-delta"),
   GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
+  GET_CONFIGURATION("get-configuration"),
   GET_CONTAINER("get-container"),
   GET_DELTA("get-delta"),
   GET_QUESTION("get-question"),
+  GET_QUESTION_TEMPLATES("get-question-templates"),
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
-  INIT_DELTA_ENV("init-delta-environment"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
+  INIT_ENVIRONMENT("init-environment"),
   INIT_TESTRIG("init-testrig"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
@@ -74,6 +76,8 @@ public enum Command {
   SHOW_LOGLEVEL("show-loglevel"),
   SHOW_TESTRIG("show-testrig"),
   SHOW_VERSION("show-version"),
+  SYNC_TESTRIGS_SYNC_NOW("sync-testrigs-sync-now"),
+  SYNC_TESTRIGS_UPDATE_SETTINGS("sync-testrigs-update-settings"),
   TEST("test"),
   UPLOAD_CUSTOM_OBJECT("upload-custom");
 
@@ -147,6 +151,11 @@ public enum Command {
         GET_ANSWER,
         new Pair<>("<question-name>", "Get the answer for a previously answered question"));
     descs.put(
+        GET_CONFIGURATION,
+        new Pair<>(
+            "<container-name> <testrig-name> <configuration-name>",
+            "Get the file content of the configuration file"));
+    descs.put(
         GET_CONTAINER, new Pair<>("<container-name>", "Get the information of the container"));
     descs.put(
         GET_DELTA,
@@ -154,6 +163,7 @@ public enum Command {
             "<question-file>  [param1=value1 [param2=value2] ...]",
             "Answer the question by type for the delta environment"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
+    descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));
     descs.put(
         INIT_ANALYSIS,
@@ -164,15 +174,65 @@ public enum Command {
         new Pair<>(
             "[-setname <container-name> | <container-name-prefix>]", "Initialize a new container"));
     descs.put(
-        INIT_DELTA_ENV,
-        new Pair<>(
-            "<environment zipfile or directory> [<environment-name>]",
-            "Initialize the delta environment"));
-    descs.put(
         INIT_DELTA_TESTRIG,
         new Pair<>(
             "<testrig zipfile or directory> [<testrig-name>]",
             "Initialize the delta testrig with default environment"));
+    descs.put(
+        INIT_ENVIRONMENT,
+        new Pair<>(
+            "[sourcePath=path], [newEnvironmentName=string], [newEnvironmentPrefix=string], "
+                + "[sourceEnvironmentName=string], [nodeBlacklist=string_set], "
+                + "[interfaceBlacklist=map_of_strings_to_string_sets], [edgeBlacklist=edge_set]",
+            "    Initialize a new delta environment\n"
+                + "\n"
+                + "    Arguments:\n"
+                + "\n"
+                + "    sourcePath\n"
+                + "        Either a directory or zip containing the environment to initialize.\n"
+                + "        These files override those in the environment identified by "
+                + "'sourceEnvironmentName',\n"
+                + "        and are overridden by values passed to node/interface/edgeBlacklist.\n"
+                + "\n"
+                + "    newEnvironmentName\n"
+                + "        The name to assign the new environment. If not specified, a name is "
+                + "generated.\n"
+                + "\n"
+                + "    sourceEnvironmentName\n"
+                + "        The name of an environment in the current testrig from which to clone "
+                + "a new environment.\n"
+                + "        Files in the source environment are overriden by those in envDirOrZip "
+                + "(if specified),\n"
+                + "        as well as by values passed to node/interface/edgeBlacklist.\n"
+                + "\n"
+                + "    nodeBlacklist\n"
+                + "        A list of nodes whose interfaces will be turned off in the new "
+                + "environment.\n"
+                + "\n"
+                + "    interfaceBlacklist\n"
+                + "        A list of interfaces that will be turned off in the new environment.\n"
+                + "\n"
+                + "    edgeBlacklist\n"
+                + "        For maximum granularity, a list of edges to be disabled in the new "
+                + "environment. This\n"
+                + "        option should rarely be used. The interfaces making up the edge will "
+                + "not necessarily\n"
+                + "        be disabled. This feature is experimental, and may not always yield "
+                + "expected results.\n"
+                + "\n"
+                + "    doDelta\n"
+                + "        Whether the sourceEnvironment and newEnvironment should be chosen "
+                + "from/created in the\n"
+                + "        current base(false) or delta(true) testrig. Defaults to false.\n"
+                + "\n"));
+    /*                + "    update\n"
+    + "        Whether to update the current base(doDelta=false)/delta(doDelta=true) "
+    + "environment\n"
+    + "        pointer after this action has completed. Regardless of the value of "
+    + "this option,\n"
+    + "        bf_session.scenarios appended with a new scenario corresponding to the "
+    + "newly-created\n"
+    + "        environment.\n"));*/
     descs.put(
         INIT_TESTRIG,
         new Pair<>(
@@ -225,6 +285,16 @@ public enum Command {
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta testrig and environment"));
     descs.put(SHOW_TESTRIG, new Pair<>("", "Show base testrig and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
+    descs.put(
+        SYNC_TESTRIGS_SYNC_NOW,
+        new Pair<>(
+            "[-force] <plugin-id>",
+            "Sync testrigs now (settings must have been configured before)"));
+    descs.put(
+        SYNC_TESTRIGS_UPDATE_SETTINGS,
+        new Pair<>(
+            "<plugin-id> [key1=value1, [key2=value2], ...], ",
+            "Update the settings for sync testrigs plugin"));
     descs.put(TEST, new Pair<>("<reference file> <command>", "Show base testrig and environment"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));

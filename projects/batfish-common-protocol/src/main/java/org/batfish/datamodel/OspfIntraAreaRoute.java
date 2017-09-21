@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class OspfIntraAreaRoute extends OspfRoute {
 
@@ -16,20 +17,22 @@ public class OspfIntraAreaRoute extends OspfRoute {
   @JsonCreator
   public OspfIntraAreaRoute(
       @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) int metric,
+      @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_AREA) long area) {
     super(network, nextHopIp, admin, metric);
     _area = area;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof OspfIntraAreaRoute)) {
+      return false;
     }
-    OspfIntraAreaRoute other = (OspfIntraAreaRoute) obj;
+    OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
     if (_nextHopIp == null) {
       if (other._nextHopIp != null) {
         return false;
@@ -54,7 +57,6 @@ public class OspfIntraAreaRoute extends OspfRoute {
     return _area;
   }
 
-  // TODO(http://github.com/batfish/batfish/issues/207)
   @Nonnull
   @Override
   public String getNextHopInterface() {
@@ -77,7 +79,7 @@ public class OspfIntraAreaRoute extends OspfRoute {
     int result = 1;
     result = prime * result + _admin;
     result = prime * result + (int) (_area ^ (_area >>> 32));
-    result = prime * result + _metric;
+    result = prime * result + Long.hashCode(_metric);
     result = prime * result + _network.hashCode();
     result = prime * result + (_nextHopIp == null ? 0 : _nextHopIp.hashCode());
     return result;

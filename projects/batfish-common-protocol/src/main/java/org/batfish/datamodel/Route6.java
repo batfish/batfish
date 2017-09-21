@@ -128,11 +128,13 @@ public class Route6 implements Comparable<Route6>, Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Route6)) {
+      return false;
     }
-    Route6 other = (Route6) obj;
+    Route6 other = (Route6) o;
     if (_administrativeCost != other._administrativeCost) {
       return false;
     }

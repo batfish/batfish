@@ -2,7 +2,8 @@ package org.batfish.coordinator.config;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.util.Collections;
+import java.util.List;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -31,10 +32,11 @@ public class Settings extends BaseSettings {
   private static final String ARG_PERIOD_CHECK_WORK_MS = "periodcheckworkms";
   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "periodworkerrefreshms";
   private static final String ARG_POOL_BIND_HOST = "poolbindhost";
+  private static final String ARG_QUESTION_TEMPLATE_DIRS = "templatedirs";
   private static final String ARG_QUEUE_COMPLETED_WORK = "qcompletedwork";
   private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
-
   private static final String ARG_QUEUE_TYPE = "qtype";
+
   private static final String ARG_SERVICE_POOL_PORT = "poolport";
   private static final String ARG_SERVICE_WORK_PORT = "workport";
   private static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
@@ -60,6 +62,8 @@ public class Settings extends BaseSettings {
 
   private static final String ARG_WORK_BIND_HOST = "workbindhost";
 
+  private static final String ARGNAME_PATHS = "path..";
+
   private static final String EXECUTABLE_NAME = "coordinator";
 
   private Authorizer.Type _authorizerType;
@@ -76,7 +80,9 @@ public class Settings extends BaseSettings {
   private long _periodAssignWorkMs;
   private long _periodCheckWorkMs;
   private long _periodWorkerStatusRefreshMs;
+  private List<Path> _pluginDirs;
   private String _poolBindHost;
+  private List<Path> _questionTemplateDirs;
   private String _queueCompletedWork;
   private WorkQueue.Type _queueType;
   private String _queuIncompleteWork;
@@ -169,6 +175,10 @@ public class Settings extends BaseSettings {
     return _periodWorkerStatusRefreshMs;
   }
 
+  public List<Path> getPluginDirs() {
+    return _pluginDirs;
+  }
+
   public String getPoolBindHost() {
     return _poolBindHost;
   }
@@ -219,6 +229,10 @@ public class Settings extends BaseSettings {
 
   public String getSslPoolTruststorePassword() {
     return _sslPoolTruststorePassword;
+  }
+
+  public List<Path> getQuestionTemplateDirs() {
+    return _questionTemplateDirs;
   }
 
   public boolean getSslWorkDisable() {
@@ -280,6 +294,8 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
+    setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
+    setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
     setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
     setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
@@ -346,6 +362,11 @@ public class Settings extends BaseSettings {
     addOption(
         ARG_PERIOD_CHECK_WORK_MS, "period with which to check work (ms)", "period_check_work_ms");
 
+    addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
+
+    addListOption(
+        ARG_QUESTION_TEMPLATE_DIRS, "paths to question template directories", ARGNAME_PATHS);
+
     addOption(ARG_QUEUE_TYPE, "queue type to use {azure, memory}", "qtype");
 
     addOption(
@@ -393,6 +414,8 @@ public class Settings extends BaseSettings {
     _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
+    _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
+    _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
     _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
     _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
     _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));

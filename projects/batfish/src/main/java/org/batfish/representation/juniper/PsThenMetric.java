@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -12,9 +12,9 @@ public final class PsThenMetric extends PsThen {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final int _metric;
+  private final long _metric;
 
-  public PsThenMetric(int metric) {
+  public PsThenMetric(long metric) {
     _metric = metric;
   }
 
@@ -24,10 +24,10 @@ public final class PsThenMetric extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings warnings) {
-    statements.add(new SetMetric(new LiteralInt(_metric)));
+    statements.add(new SetMetric(new LiteralLong(_metric)));
   }
 
-  public int getMetric() {
+  public long getMetric() {
     return _metric;
   }
 }

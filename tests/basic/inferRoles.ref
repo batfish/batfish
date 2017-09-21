@@ -3,6 +3,7 @@
     {
       "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
       "roleSpecifier" : {
+        "inferred" : true,
         "roleRegexes" : [
           "\\p{Alnum}+\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
         ]
@@ -14,5 +15,10 @@
     "differential" : false,
     "nodeRegex" : ".*"
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

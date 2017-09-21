@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
@@ -17,8 +18,8 @@ public class NodFirstUnsatResult<KeyT, ResultT>
 
   public NodFirstUnsatResult(
       KeyT key,
-      Integer firstUnsatQueryIndex,
-      ResultT result,
+      @Nullable Integer firstUnsatQueryIndex,
+      @Nullable ResultT result,
       BatfishLoggerHistory history,
       long elapsedTime) {
     super(elapsedTime, history);

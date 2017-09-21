@@ -76,7 +76,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   private IpAccessList toIpAccessList(String aclName, IptablesChain chain) {
-    IpAccessList acl = new IpAccessList(aclName, new LinkedList<IpAccessListLine>());
+    IpAccessList acl = new IpAccessList(aclName, new LinkedList<>());
 
     for (IptablesRule rule : chain.getRules()) {
       IpAccessListLine aclLine = new IpAccessListLine();
@@ -114,6 +114,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         }
       }
 
+      aclLine.setName(rule.getName());
       aclLine.setAction(rule.getIpAccessListLineAction());
       acl.getLines().add(aclLine);
     }
@@ -122,6 +123,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     LineAction chainAction = chain.getIpAccessListLineAction();
     IpAccessListLine defaultLine = new IpAccessListLine();
     defaultLine.setAction(chainAction);
+    defaultLine.setName("default");
     acl.getLines().add(defaultLine);
 
     return acl;

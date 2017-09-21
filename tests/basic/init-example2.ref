@@ -40,7 +40,7 @@
         "testrig/iptables/dc1-host-01-01.iptables" : "PASSED",
         "testrig/iptables/dc1-host-01-02.iptables" : "PASSED"
       },
-      "version" : "0.29.3"
+      "version" : "0.31.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -183,7 +183,7 @@
           }
         }
       },
-      "version" : "0.29.3",
+      "version" : "0.31.0",
       "warnings" : {
         "bb1-border-01" : {
           "Red flags" : {
@@ -216,5 +216,10 @@
       }
     }
   ],
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

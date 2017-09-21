@@ -6,13 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
@@ -74,11 +73,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_PREFIX = "prefix";
 
+  private static final String PROP_RIP_ENABLED = "ripEnabled";
+
+  private static final String PROP_RIP_PASSIVE = "ripPassive";
+
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
 
   private static final long serialVersionUID = 1L;
 
-  private static final String PROP_SOURCE_NAT = "sourceNat";
+  private static final String PROP_SOURCE_NATS = "sourceNats";
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
@@ -193,6 +196,7 @@ public final class Interface extends ComparableStructure<String> {
         return computeAwsInterfaceType(name);
 
       case ARISTA:
+      case CADANT:
       case CISCO_IOS:
       case CISCO_IOS_XR:
       case CISCO_NX:
@@ -265,7 +269,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private String _description;
 
-  private SortedSet<Ip> _dhcpRelayAddresses;
+  private List<Ip> _dhcpRelayAddresses;
 
   private IpAccessList _inboundFilter;
 
@@ -311,11 +315,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private Boolean _proxyArp;
 
+  private boolean _ripEnabled;
+
+  private boolean _ripPassive;
+
   private RoutingPolicy _routingPolicy;
 
   private transient String _routingPolicyName;
 
-  private SourceNat _sourceNat;
+  private List<SourceNat> _sourceNats;
 
   private boolean _spanningTreePortfast;
 
@@ -351,6 +359,7 @@ public final class Interface extends ComparableStructure<String> {
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _allPrefixes = new TreeSet<>();
+    _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
@@ -376,12 +385,13 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @Override
-  public boolean equals(Object object) {
-
-    if (this == object) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Interface)) {
+      return false;
     }
-    Interface other = (Interface) object;
+    Interface other = (Interface) o;
     if (this._accessVlan != other._accessVlan) {
       return false;
     }
@@ -427,19 +437,19 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._prefix, other._prefix)) {
+    if (!Objects.equals(this._prefix, other._prefix)) {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._routingPolicy, other._routingPolicy)) {
+    if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._switchportMode, other._switchportMode)) {
+    if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
 
-    if (!CommonUtil.bothNullOrEqual(this._zone, other._zone)) {
+    if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
     return true;
@@ -497,7 +507,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
-  public SortedSet<Ip> getDhcpRelayAddresses() {
+  public List<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
   }
 
@@ -655,6 +665,16 @@ public final class Interface extends ComparableStructure<String> {
     return _proxyArp;
   }
 
+  @JsonProperty(PROP_RIP_ENABLED)
+  public boolean getRipEnabled() {
+    return _ripEnabled;
+  }
+
+  @JsonProperty(PROP_RIP_PASSIVE)
+  public boolean getRipPassive() {
+    return _ripPassive;
+  }
+
   @JsonIgnore
   public RoutingPolicy getRoutingPolicy() {
     return _routingPolicy;
@@ -672,9 +692,9 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  @JsonProperty(PROP_SOURCE_NAT)
-  public SourceNat getSourceNat() {
-    return _sourceNat;
+  @JsonProperty(PROP_SOURCE_NATS)
+  public List<SourceNat> getSourceNats() {
+    return _sourceNats;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
@@ -813,7 +833,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_DHCP_RELAY_ADDRESSES)
-  public void setDhcpRelayAddresses(SortedSet<Ip> dhcpRelayAddresses) {
+  public void setDhcpRelayAddresses(List<Ip> dhcpRelayAddresses) {
     _dhcpRelayAddresses = dhcpRelayAddresses;
   }
 
@@ -926,6 +946,16 @@ public final class Interface extends ComparableStructure<String> {
     _proxyArp = proxyArp;
   }
 
+  @JsonProperty(PROP_RIP_ENABLED)
+  public void setRipEnabled(boolean ripEnabled) {
+    _ripEnabled = ripEnabled;
+  }
+
+  @JsonProperty(PROP_RIP_PASSIVE)
+  public void setRipPassive(boolean ripPassive) {
+    _ripPassive = ripPassive;
+  }
+
   @JsonIgnore
   public void setRoutingPolicy(RoutingPolicy routingPolicy) {
     _routingPolicy = routingPolicy;
@@ -936,9 +966,9 @@ public final class Interface extends ComparableStructure<String> {
     _routingPolicyName = routingPolicyName;
   }
 
-  @JsonProperty(PROP_SOURCE_NAT)
-  public void setSourceNat(SourceNat sourceNat) {
-    _sourceNat = sourceNat;
+  @JsonProperty(PROP_SOURCE_NATS)
+  public void setSourceNats(List<SourceNat> sourceNats) {
+    _sourceNats = sourceNats;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)

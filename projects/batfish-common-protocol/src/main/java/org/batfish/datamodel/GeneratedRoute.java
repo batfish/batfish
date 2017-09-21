@@ -95,7 +95,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
   private final String _generationPolicy;
 
-  private final Integer _metric;
+  private final Long _metric;
 
   private final String _nextHopInterface;
 
@@ -110,7 +110,7 @@ public final class GeneratedRoute extends AbstractRoute {
       @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
       @JsonProperty(PROP_DISCARD) boolean discard,
       @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
-      @JsonProperty(PROP_METRIC) Integer metric,
+      @JsonProperty(PROP_METRIC) Long metric,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
     super(network);
     _administrativeCost = administrativeCost;
@@ -125,6 +125,11 @@ public final class GeneratedRoute extends AbstractRoute {
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof GeneratedRoute)) {
+      return false;
+    }
     GeneratedRoute rhs = (GeneratedRoute) o;
     return _network.equals(rhs._network);
   }
@@ -164,7 +169,7 @@ public final class GeneratedRoute extends AbstractRoute {
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public Integer getMetric() {
+  public Long getMetric() {
     return _metric;
   }
 

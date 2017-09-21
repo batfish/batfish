@@ -1,12 +1,9 @@
 package org.batfish.common.util;
 
+import com.google.common.hash.Hashing;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,11 +20,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -40,9 +34,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
@@ -57,10 +51,9 @@ import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -83,6 +76,10 @@ public class CommonUtil {
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
+  public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
+    return collection == null || collection.isEmpty();
+  }
+
   public static String applyPrefix(String prefix, String msg) {
     String[] lines = msg.split("\n");
     StringBuilder sb = new StringBuilder();
@@ -90,16 +87,6 @@ public class CommonUtil {
       sb.append(prefix + line + "\n");
     }
     return sb.toString();
-  }
-
-  public static boolean bothNullOrEqual(Object a, Object b) {
-    if (a == null && b == null) {
-      return true;
-    } else if (a != null && b != null) {
-      return a.equals(b);
-    } else {
-      return false;
-    }
   }
 
   public static <T extends Throwable> boolean causedBy(Throwable e, Class<T> causeClass) {
@@ -156,8 +143,7 @@ public class CommonUtil {
       JSONAssert.assertEquals(aString, bString, false);
       return true;
     } catch (Exception e) {
-      throw new BatfishException(
-          "JSON equality check failed: " + e.getMessage() + e.getStackTrace());
+      throw new BatfishException("JSON equality check failed", e);
     } catch (AssertionError err) {
       return false;
     }
@@ -233,9 +219,9 @@ public class CommonUtil {
       String keystorePassword,
       Path truststoreFile,
       String truststorePassword) {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     try {
       if (!noSsl) {
-        ClientBuilder clientBuilder = ClientBuilder.newBuilder();
         SSLContext sslcontext = SSLContext.getInstance("TLS");
         TrustManager[] trustManagers;
         if (trustAllSslCerts) {
@@ -264,7 +250,9 @@ public class CommonUtil {
             throw new BatfishException("Truststore file supplied but truststore password missing");
           }
           char[] tsPass = truststorePassword.toCharArray();
-          ts.load(new FileInputStream(truststoreFile.toFile()), tsPass);
+          try (FileInputStream trustInputStream = new FileInputStream(truststoreFile.toFile())) {
+            ts.load(trustInputStream, tsPass);
+          }
           tmf.init(ts);
           trustManagers = tmf.getTrustManagers();
         } else {
@@ -278,20 +266,21 @@ public class CommonUtil {
             throw new BatfishException("Keystore file supplied but keystore password");
           }
           char[] ksPass = keystorePassword.toCharArray();
-          ks.load(new FileInputStream(keystoreFile.toFile()), ksPass);
+          try (FileInputStream keystoreStream = new FileInputStream(keystoreFile.toFile())) {
+            ks.load(keystoreStream, ksPass);
+          }
           kmf.init(ks, ksPass);
           keyManagers = kmf.getKeyManagers();
         } else {
           keyManagers = null;
         }
         sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
-        return clientBuilder.sslContext(sslcontext);
-      } else {
-        return ClientBuilder.newBuilder();
+        clientBuilder.sslContext(sslcontext);
       }
     } catch (Exception e) {
       throw new BatfishException("Error creating HTTP client builder", e);
     }
+    return clientBuilder;
   }
 
   public static Path createTempDirectory(String prefix, FileAttribute<?>... attrs) {
@@ -312,19 +301,6 @@ public class CommonUtil {
     } catch (IOException e) {
       throw new BatfishException("Failed to create temporary file", e);
     }
-  }
-
-  public static Path createTempFileWithContent(String prefix, String content) throws IOException {
-    Path tempFilePath = Files.createTempFile(prefix, null);
-
-    File tempFile = tempFilePath.toFile();
-    tempFile.deleteOnExit();
-
-    FileWriter writer = new FileWriter(tempFile);
-    writer.write(content);
-    writer.close();
-
-    return tempFilePath;
   }
 
   public static void delete(Path path) {
@@ -368,13 +344,13 @@ public class CommonUtil {
   }
 
   public static String extractBits(long l, int start, int end) {
-    String s = "";
+    StringBuilder s = new StringBuilder();
     for (int pos = end; pos >= start; pos--) {
       long mask = 1L << pos;
       long bit = l & mask;
-      s += (bit != 0) ? 1 : 0;
+      s.append((bit != 0) ? '1' : '0');
     }
-    return s;
+    return s.toString();
   }
 
   public static Path getCanonicalPath(Path path) {
@@ -434,14 +410,7 @@ public class CommonUtil {
   }
 
   public static String getIndentString(int indentLevel) {
-
-    String retString = "";
-
-    for (int i = 0; i < indentLevel; i++) {
-      retString += "  ";
-    }
-
-    return retString;
+    return StringUtils.repeat("  ", indentLevel);
   }
 
   @Nullable
@@ -467,24 +436,16 @@ public class CommonUtil {
   }
 
   public static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
-    List<String> matchingStrings = new ArrayList<>();
     Pattern pattern;
     try {
       pattern = Pattern.compile(regex);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid java regex: \"" + regex + "\"", e);
     }
-    if (pattern != null) {
-      for (String s : allStrings) {
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.matches()) {
-          matchingStrings.add(s);
-        }
-      }
-    } else {
-      matchingStrings.addAll(allStrings);
-    }
-    return matchingStrings;
+    return allStrings
+        .stream()
+        .filter(s -> pattern.matcher(s).matches())
+        .collect(Collectors.toList());
   }
 
   public static SortedSet<Path> getSubdirectories(Path directory) {
@@ -527,7 +488,7 @@ public class CommonUtil {
   }
 
   public static boolean isLoopback(String interfaceName) {
-    return (interfaceName.startsWith("Loopback") || interfaceName.startsWith("lo"));
+    return interfaceName.startsWith("Loopback") || interfaceName.startsWith("lo");
   }
 
   public static boolean isNullInterface(String ifaceName) {
@@ -549,26 +510,10 @@ public class CommonUtil {
     return upper + ":" + lower;
   }
 
+  /** Returns a hex {@link String} representation of the MD5 hash digest of the input string. */
+  @SuppressWarnings("deprecation") // md5 is deprecated, but used deliberately.
   public static String md5Digest(String saltedSecret) {
-    MessageDigest digest = null;
-    try {
-      digest = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      throw new BatfishException("Could not initialize md5 hasher", e);
-    }
-    byte[] plainTextBytes = null;
-    plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
-    byte[] digestBytes = digest.digest(plainTextBytes);
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < digestBytes.length; i++) {
-      int digestByteAsInt = 0xff & digestBytes[i];
-      if (digestByteAsInt < 0x10) {
-        sb.append('0');
-      }
-      sb.append(Integer.toHexString(digestByteAsInt));
-    }
-    String md5 = sb.toString();
-    return md5;
+    return Hashing.md5().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
   public static void moveByCopy(Path srcPath, Path dstPath) {
@@ -592,7 +537,7 @@ public class CommonUtil {
   }
 
   public static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
-    try (BufferedReader br = new BufferedReader(new FileReader(downloadedFile.toFile()))) {
+    try (BufferedReader br = Files.newBufferedReader(downloadedFile, StandardCharsets.UTF_8)) {
       String line = null;
       while ((line = br.readLine()) != null) {
         outputFunction.accept(line + "\n");
@@ -616,6 +561,9 @@ public class CommonUtil {
   public static String readResource(String resourcePath) {
     try (InputStream is =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
+      if (is == null) {
+        throw new BatfishException("Error opening resource: '" + resourcePath + "'");
+      }
       String output = IOUtils.toString(is);
       return output;
     } catch (IOException e) {
@@ -630,26 +578,9 @@ public class CommonUtil {
     return SALT;
   }
 
+  /** Returns a hex {@link String} representation of the SHA-256 hash digest of the input string. */
   public static String sha256Digest(String saltedSecret) {
-    MessageDigest digest = null;
-    try {
-      digest = MessageDigest.getInstance("SHA-256");
-    } catch (NoSuchAlgorithmException e) {
-      throw new BatfishException("Could not initialize sha256 hasher", e);
-    }
-    byte[] plainTextBytes = null;
-    plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
-    byte[] digestBytes = digest.digest(plainTextBytes);
-    StringBuffer sb = new StringBuffer();
-    for (int i = 0; i < digestBytes.length; i++) {
-      int digestByteAsInt = 0xff & digestBytes[i];
-      if (digestByteAsInt < 0x10) {
-        sb.append('0');
-      }
-      sb.append(Integer.toHexString(digestByteAsInt));
-    }
-    String sha256 = sb.toString();
-    return sha256;
+    return Hashing.sha256().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
   public static void startSslServer(
@@ -672,8 +603,8 @@ public class CommonUtil {
     if (!Files.exists(keystoreAbsolutePath)) {
       String callingClass = callerClass.getCanonicalName();
       System.err.printf(
-          "%s: keystore file not found at %s or %s\n",
-          callingClass, keystorePath, keystoreAbsolutePath.toString());
+          "%s: keystore file not found at %s or %s%n",
+          callingClass, keystorePath, keystoreAbsolutePath);
       System.exit(1);
     }
     SSLContextConfigurator sslCon = new SSLContextConfigurator();
@@ -724,7 +655,7 @@ public class CommonUtil {
 
   public static void writeFile(Path outputPath, String output) {
     try {
-      Files.write(outputPath, output.getBytes());
+      Files.write(outputPath, output.getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       throw new BatfishException("Failed to write file: " + outputPath, e);
     }
@@ -740,27 +671,6 @@ public class CommonUtil {
     } catch (IOException e) {
       throw new BatfishException(
           "Failed to write input stream to output file: '" + outputFile + "'");
-    }
-  }
-
-  public static JSONObject writeStreamToJSONObject(InputStream inputStream) {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      int read = 0;
-      final byte[] buffer = new byte[STREAMED_FILE_BUFFER_SIZE];
-      while (true) {
-        read = inputStream.read(buffer);
-
-        if (read == -1) {
-          break;
-        }
-        baos.write(buffer, 0, read);
-      }
-      JSONObject jObject;
-      jObject = new JSONObject(baos.toString("UTF-8"));
-      return jObject;
-    } catch (IOException | JSONException e) {
-      throw new BatfishException("Failed to convert input stream into JSON object", e);
     }
   }
 }

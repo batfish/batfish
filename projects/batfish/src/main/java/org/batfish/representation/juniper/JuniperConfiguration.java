@@ -317,14 +317,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
+
+      /*
+       * For new BGP advertisements, i.e. those that are created from non-BGP
+       * routes, an origin code must be set. By default, Juniper sets the origin
+       * code to IGP.
+       */
       If setOriginForNonBgp = new If();
       Disjunction isBgp = new Disjunction();
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
       setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp
-          .getTrueStatements()
+      setOriginForNonBgp.getFalseStatements()
           .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+      peerExportPolicy.getStatements().add(setOriginForNonBgp);
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(
@@ -1000,39 +1006,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Zone zone = _interfaceZones.get(iface);
     if (zone != null) {
       String zoneName = zone.getName();
-      if (zone != null) {
-        // filter for interface in zone
-        FirewallFilter zoneInboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
-        if (zoneInboundInterfaceFilter != null) {
-          String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
-          zoneInboundInterfaceFilter
-              .getReferers()
-              .put(
-                  iface,
-                  "Interface: '"
-                      + iface.getName()
-                      + "' refers to inbound filter for interface in zone : '"
-                      + zoneName
-                      + "'");
-          IpAccessList zoneInboundInterfaceFilterList =
-              _c.getIpAccessLists().get(zoneInboundInterfaceFilterName);
-          newIface.setInboundFilter(zoneInboundInterfaceFilterList);
-        } else {
-          // filter for zone
-          FirewallFilter zoneInboundFilter = zone.getInboundFilter();
-          String zoneInboundFilterName = zoneInboundFilter.getName();
-          zoneInboundFilter
-              .getReferers()
-              .put(
-                  iface,
-                  "Interface: '"
-                      + iface.getName()
-                      + "' refers to inbound filter for zone : '"
-                      + zoneName
-                      + "'");
-          IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(zoneInboundFilterName);
-          newIface.setInboundFilter(zoneInboundFilterList);
-        }
+      // filter for interface in zone
+      FirewallFilter zoneInboundInterfaceFilter = zone.getInboundInterfaceFilters().get(iface);
+      if (zoneInboundInterfaceFilter != null) {
+        String zoneInboundInterfaceFilterName = zoneInboundInterfaceFilter.getName();
+        zoneInboundInterfaceFilter
+            .getReferers()
+            .put(
+                iface,
+                "Interface: '"
+                    + iface.getName()
+                    + "' refers to inbound filter for interface in zone : '"
+                    + zoneName
+                    + "'");
+        IpAccessList zoneInboundInterfaceFilterList =
+            _c.getIpAccessLists().get(zoneInboundInterfaceFilterName);
+        newIface.setInboundFilter(zoneInboundInterfaceFilterList);
+      } else {
+        // filter for zone
+        FirewallFilter zoneInboundFilter = zone.getInboundFilter();
+        String zoneInboundFilterName = zoneInboundFilter.getName();
+        zoneInboundFilter
+            .getReferers()
+            .put(
+                iface,
+                "Interface: '"
+                    + iface.getName()
+                    + "' refers to inbound filter for zone : '"
+                    + zoneName
+                    + "'");
+        IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(zoneInboundFilterName);
+        newIface.setInboundFilter(zoneInboundFilterList);
       }
     }
     String inAclName = iface.getIncomingFilter();
@@ -1127,7 +1131,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
     Integer l2Metric = isisSettings.getLevel2Settings().getMetric();
-    if (l1Metric != l2Metric && l1Metric != null && l2Metric != null) {
+    if (l1Metric != null && l2Metric != null && (l1Metric.intValue() != l2Metric.intValue())) {
       _w.unimplemented("distinct metrics for is-is level1 and level2 on an interface");
     } else if (l1Metric != null) {
       newIface.setIsisCost(l1Metric);
@@ -1743,7 +1747,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 asgLine);
           } else {
             for (org.batfish.datamodel.Interface iface : interfaces) {
-              iface.setDhcpRelayAddresses(asg.getServers());
+              iface.getDhcpRelayAddresses().addAll(asg.getServers());
             }
           }
         }

@@ -35,7 +35,7 @@ public class NamedStructureEquivalenceSet<T>
 
   public boolean compareStructure(T s) {
     if (_namedStructure == null) {
-      return (s == null);
+      return s == null;
     } else {
       return (s != null) && CommonUtil.checkJsonEqual(_namedStructure, s);
     }
@@ -48,6 +48,11 @@ public class NamedStructureEquivalenceSet<T>
 
   @Override
   public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof NamedStructureEquivalenceSet)) {
+      return false;
+    }
     NamedStructureEquivalenceSet<?> rhs = (NamedStructureEquivalenceSet<?>) o;
     return _representativeElement.equals(rhs._representativeElement);
   }

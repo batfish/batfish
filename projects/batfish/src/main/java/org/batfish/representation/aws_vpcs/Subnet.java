@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
@@ -36,92 +38,75 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
+    List<NetworkAcl> matchingAcls =
+        networkAcls
+            .values()
+            .stream()
+            .filter((NetworkAcl acl) -> acl.getVpcId().equals(_vpcId))
+            .collect(Collectors.toList());
 
-    NetworkAcl myNetworkAcl = null;
-
-    for (String networkAclId : networkAcls.keySet()) {
-
-      NetworkAcl networkAcl = networkAcls.get(networkAclId);
-
-      // ignore if the route table is not for the same VPC
-      if (!networkAcl.getVpcId().equals(_vpcId)) {
-        continue;
-      }
-
-      List<NetworkAclAssociation> naAssocs = networkAcl.getAssociations();
-
-      for (NetworkAclAssociation naAssoc : naAssocs) {
-        if (_subnetId.equals(naAssoc.getSubnetId())) {
-          if (myNetworkAcl != null) {
-            throw new BatfishException(
-                "Found two associated network acls ("
-                    + networkAcl.getId()
-                    + ", "
-                    + myNetworkAcl.getId()
-                    + " for subnet "
-                    + _subnetId);
-          }
-
-          myNetworkAcl = networkAcl;
-        }
-      }
+    if (matchingAcls.isEmpty()) {
+      throw new BatfishException("Could not find a network ACL for subnet " + _subnetId);
     }
 
-    return myNetworkAcl;
+    if (matchingAcls.size() > 1) {
+      List<String> aclIds =
+          matchingAcls.stream().map(NetworkAcl::getId).collect(Collectors.toList());
+      throw new BatfishException(
+          String.format("Found multiple network ACLs %s for subnet %s", aclIds, _subnetId));
+    }
+
+    return matchingAcls.get(0);
   }
 
   private RouteTable findMyRouteTable(Map<String, RouteTable> routeTables) {
+    // All route tables for this VPC.
+    Stream<RouteTable> sameVpcTables =
+        routeTables.values().stream().filter((RouteTable rt) -> rt.getVpcId().equals(_vpcId));
 
-    RouteTable myRouteTable = null;
-    RouteTable mainRouteTable = null;
-
-    for (String routeTableId : routeTables.keySet()) {
-
-      RouteTable routeTable = routeTables.get(routeTableId);
-
-      // ignore if the route table is not for the same VPC
-      if (!routeTable.getVpcId().equals(_vpcId)) {
-        continue;
-      }
-
-      List<RouteTableAssociation> rtAssocs = routeTable.getAssociations();
-
-      for (RouteTableAssociation rtAssoc : rtAssocs) {
-        if (_subnetId.equals(rtAssoc.getSubnetId())) {
-          if (myRouteTable != null) {
-            throw new BatfishException(
-                "Found two associated route tables ("
-                    + routeTable.getId()
-                    + ", "
-                    + myRouteTable.getId()
-                    + " for subnet "
-                    + _subnetId);
-          }
-
-          myRouteTable = routeTable;
-        }
-
-        if (rtAssoc.isMain()) {
-          if (mainRouteTable != null) {
-            throw new BatfishException(
-                "Found two main route tables ("
-                    + routeTable.getId()
-                    + ", "
-                    + mainRouteTable.getId()
-                    + " for subnet "
-                    + _subnetId);
-          }
-
-          mainRouteTable = routeTable;
-        }
-      }
+    // First we look for the unique route table with an association for this subnet.
+    List<RouteTable> matchingRouteTables =
+        sameVpcTables
+            .filter(
+                (RouteTable rt) ->
+                    rt.getAssociations()
+                        .stream()
+                        .anyMatch(
+                            (RouteTableAssociation rtAssoc) ->
+                                _subnetId.equals(rtAssoc.getSubnetId())))
+            .collect(Collectors.toList());
+    if (matchingRouteTables.size() > 1) {
+      List<String> tableIds =
+          matchingRouteTables.stream().map(RouteTable::getId).collect(Collectors.toList());
+      throw new BatfishException(
+          String.format(
+              "Found multiple associated route tables %s for subnet %s", tableIds, _subnetId));
     }
 
-    if (myRouteTable == null) {
-      myRouteTable = mainRouteTable;
+    if (matchingRouteTables.size() == 1) {
+      return matchingRouteTables.get(0);
     }
 
-    return myRouteTable;
+    // If no route table has an association with this subnet, find the unique main routing table.
+    List<RouteTable> mainRouteTables =
+        sameVpcTables
+            .filter(
+                (RouteTable rt) ->
+                    rt.getAssociations().stream().anyMatch(RouteTableAssociation::isMain))
+            .collect(Collectors.toList());
+
+    if (mainRouteTables.isEmpty()) {
+      throw new BatfishException("Could not find a route table for subnet " + _subnetId);
+    }
+
+    if (mainRouteTables.size() > 1) {
+      List<String> tableIds =
+          mainRouteTables.stream().map(RouteTable::getId).collect(Collectors.toList());
+      throw new BatfishException(
+          String.format("Found multiple main route tables %s for subnet %s", tableIds, _subnetId));
+    }
+
+    return mainRouteTables.get(0);
   }
 
   public Prefix getCidrBlock() {
@@ -246,15 +231,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
       vgwSubnetIface.getAllPrefixes().add(vgwSubnetIfacePrefix);
       vgwConfigNode.getInterfaces().put(vgwSubnetIfaceName, vgwSubnetIface);
       vgwConfigNode.getDefaultVrf().getInterfaces().put(vgwSubnetIfaceName, vgwSubnetIface);
-      igwAddress = vgwSubnetIfacePrefix.getAddress();
+      vgwAddress = vgwSubnetIfacePrefix.getAddress();
     }
 
     // lets find the right route table for this subnet
     RouteTable myRouteTable = findMyRouteTable(awsVpcConfiguration.getRouteTables());
-
-    if (myRouteTable == null) {
-      throw new BatfishException("Could not find a route table for subnet " + _subnetId);
-    }
 
     for (Route route : myRouteTable.getRoutes()) {
       StaticRoute sRoute =
@@ -271,10 +252,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
 
     NetworkAcl myNetworkAcl = findMyNetworkAcl(awsVpcConfiguration.getNetworkAcls());
-
-    if (myNetworkAcl == null) {
-      throw new BatfishException("Could not find a network acl for subnet " + _subnetId);
-    }
 
     IpAccessList inAcl = myNetworkAcl.getIngressAcl();
     IpAccessList outAcl = myNetworkAcl.getEgressAcl();

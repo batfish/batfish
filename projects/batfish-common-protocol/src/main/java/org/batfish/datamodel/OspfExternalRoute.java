@@ -11,7 +11,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
     private String _advertiser;
 
-    private Integer _costToAdvertiser;
+    private Long _costToAdvertiser;
 
     private OspfMetricType _ospfMetricType;
 
@@ -50,7 +50,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return _advertiser;
     }
 
-    public Integer getCostToAdvertiser() {
+    public Long getCostToAdvertiser() {
       return _costToAdvertiser;
     }
 
@@ -62,7 +62,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
       _advertiser = advertiser;
     }
 
-    public void setCostToAdvertiser(int costToAdvertiser) {
+    public void setCostToAdvertiser(long costToAdvertiser) {
       _costToAdvertiser = costToAdvertiser;
     }
 
@@ -82,27 +82,29 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   private final String _advertiser;
 
-  private final int _costToAdvertiser;
+  private final long _costToAdvertiser;
 
   @JsonCreator
   public OspfExternalRoute(
       @JsonProperty(PROP_NETWORK) Prefix prefix,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      int metric,
+      @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_ADVERTISER) String advertiser,
-      @JsonProperty(PROP_COST_TO_ADVERTISER) int costToAdvertiser) {
+      @JsonProperty(PROP_COST_TO_ADVERTISER) long costToAdvertiser) {
     super(prefix, nextHopIp, admin, metric);
     _advertiser = advertiser;
     _costToAdvertiser = costToAdvertiser;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof OspfExternalRoute)) {
+      return false;
     }
-    OspfExternalRoute other = (OspfExternalRoute) obj;
+    OspfExternalRoute other = (OspfExternalRoute) o;
     if (!_network.equals(other._network)) {
       return false;
     }
@@ -131,11 +133,10 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @JsonProperty(PROP_COST_TO_ADVERTISER)
-  public int getCostToAdvertiser() {
+  public long getCostToAdvertiser() {
     return _costToAdvertiser;
   }
 
-  // TODO(http://github.com/batfish/batfish/issues/207)
   @Nonnull
   @Override
   public String getNextHopInterface() {
@@ -162,7 +163,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     result = prime * result + _network.hashCode();
     result = prime * result + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
     result = prime * result + _admin;
-    result = prime * result + _metric;
+    result = prime * result + Long.hashCode(_metric);
     result = prime * result + ((getOspfMetricType() == null) ? 0 : getOspfMetricType().ordinal());
     return result;
   }

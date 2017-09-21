@@ -1,5 +1,7 @@
 package org.batfish.smt;
 
+import javax.annotation.Nullable;
+
 /**
  * Representation of a community variable for the symbolic encoding. Configuration languages allow
  * users match community values using either <b>exact matches</b> or <b>regular expression</b>
@@ -29,7 +31,7 @@ class CommunityVar {
 
   private Long _long;
 
-  public CommunityVar(Type type, String value, Long l) {
+  public CommunityVar(Type type, String value, @Nullable Long l) {
     _type = type;
     _value = value;
     _long = l;

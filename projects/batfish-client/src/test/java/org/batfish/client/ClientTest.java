@@ -25,13 +25,14 @@ import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL;
 import static org.batfish.client.Command.GET_ANSWER;
 import static org.batfish.client.Command.GET_ANSWER_DELTA;
 import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
+import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.GET_DELTA;
 import static org.batfish.client.Command.GET_QUESTION;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_ANALYSIS;
 import static org.batfish.client.Command.INIT_CONTAINER;
-import static org.batfish.client.Command.INIT_DELTA_ENV;
 import static org.batfish.client.Command.INIT_DELTA_TESTRIG;
+import static org.batfish.client.Command.INIT_ENVIRONMENT;
 import static org.batfish.client.Command.INIT_TESTRIG;
 import static org.batfish.client.Command.LIST_ANALYSES;
 import static org.batfish.client.Command.LIST_CONTAINERS;
@@ -86,6 +87,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.apache.commons.lang.ArrayUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -520,14 +523,14 @@ public class ClientTest {
   }
 
   @Test
-  public void testInitDeltaEnvInvalidParas() throws Exception {
-    testInvalidInput(INIT_DELTA_ENV, new String[] {});
+  public void testInitEnvInvalidParas() throws Exception {
+    testInvalidInput(INIT_ENVIRONMENT, new String[] {});
   }
 
   @Test
-  public void testInitDeltaEnvValidParas() throws Exception {
+  public void testInitEnvValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(INIT_DELTA_ENV, parameters, TESTRIG_NOT_SET);
+    checkProcessCommandErrorMessage(INIT_ENVIRONMENT, parameters, TESTRIG_NOT_SET);
   }
 
   @Test
@@ -906,6 +909,13 @@ public class ClientTest {
   }
 
   @Test
+  public void testParseInitEnvironmentParamsInterfaceBlacklist() {
+    String paramsLine = "interfaceBlacklist="
+        + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
+    Client.parseInitEnvironmentParams(paramsLine);
+  }
+
+  @Test
   public void testPathRegexInvalidEnd() {
     String invalidEnd = "/pathRegex";
     _thrown.expect(BatfishException.class);
@@ -1252,6 +1262,12 @@ public class ClientTest {
   }
 
   @Test
+  public void testGetConfigurationInvalidParas() throws Exception {
+    String[] parameters = new String[] {"parameter1"};
+    testInvalidInput(GET_CONFIGURATION, parameters);
+  }
+
+  @Test
   public void testUnsatisfiedMinElementInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Question.InstanceData.Variable> variables = new HashMap<>();
@@ -1316,11 +1332,29 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidateNodeNotAllowedValue() throws IOException {
+    String parameterName = "boolean";
+    JsonNode invalidNode = _mapper.readTree("false");
+    Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
+    variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
+    SortedSet<String> allowedValues = new TreeSet<>();
+    allowedValues.add("true");
+    variable.setAllowedValues(allowedValues);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        String.format("Invalid value: false, allowed values are: %s", allowedValues));
+    Client.validateNode(invalidNode, variable, parameterName);
+  }
+
+  @Test
   public void testValidateValidNode() throws IOException {
     String parameterName = "boolean";
     JsonNode invalidNode = _mapper.readTree("false");
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(Question.InstanceData.Variable.Type.BOOLEAN);
+    SortedSet<String> allowedValues = new TreeSet<>();
+    allowedValues.add("false");
+    variable.setAllowedValues(allowedValues);
     Client.validateNode(invalidNode, variable, parameterName);
   }
 

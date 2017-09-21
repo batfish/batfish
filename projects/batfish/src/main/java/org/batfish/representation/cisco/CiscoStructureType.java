@@ -10,6 +10,10 @@ public enum CiscoStructureType implements StructureType {
   COMMUNITY_LIST("community-list"),
   COMMUNITY_LIST_EXPANDED("expanded community-list"),
   COMMUNITY_LIST_STANDARD("standard community-list"),
+  DEPI_CLASS("depi-class"),
+  DEPI_TUNNEL("depi-tunnel"),
+  DOCSIS_POLICY("docsis-policy"),
+  DOCSIS_POLICY_RULE("docsis-policy-rule"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
   IP_ACCESS_LIST_EXTENDED("extended ip access-list"),
@@ -18,12 +22,14 @@ public enum CiscoStructureType implements StructureType {
   IPV6_ACCESS_LIST("ipv6 acl"),
   IPV6_ACCESS_LIST_EXTENDED("extended ipv6 access-list"),
   IPV6_ACCESS_LIST_STANDARD("standard ipv6 access-list"),
+  L2TP_CLASS("l2tp-class"),
   MAC_ACCESS_LIST("mac acl"),
   NAT_POOL("nat pool"),
   PREFIX_LIST("ipv4 prefix-list"),
   PREFIX6_LIST("ipv6 prefix-list"),
   ROUTE_MAP("route-map"),
-  ROUTE_MAP_CLAUSE("route-map-clause");
+  ROUTE_MAP_CLAUSE("route-map-clause"),
+  SERVICE_CLASS("cable service-class");
 
   private final String _description;
 

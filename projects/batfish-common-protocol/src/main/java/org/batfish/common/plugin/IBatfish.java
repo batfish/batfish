@@ -13,12 +13,12 @@ import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -32,14 +32,12 @@ import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
-
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -60,13 +58,6 @@ public interface IBatfish extends IPluginConsumer {
 
   Topology computeTopology(Map<String, Configuration> configurations);
 
-  AnswerElement createEnvironment(
-      String environmentName,
-      SortedSet<String> nodeBlacklist,
-      SortedSet<NodeInterfacePair> interfaceBlacklist,
-      SortedSet<Edge> edgeBlacklist,
-      boolean dp);
-
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   String getDifferentialFlowTag();
@@ -76,6 +67,10 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  Map<String, String> getQuestionTemplates();
+
+  NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
@@ -93,6 +88,9 @@ public interface IBatfish extends IPluginConsumer {
   void initRemoteIpsecVpns(Map<String, Configuration> configurations);
 
   void initRemoteOspfNeighbors(
+      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
+
+  void initRemoteRipNeighbors(
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
 
   SortedMap<String, Configuration> loadConfigurations();
@@ -156,7 +154,9 @@ public interface IBatfish extends IPluginConsumer {
       String ingressNodeRegexStr,
       String notIngressNodeRegexStr,
       String finalNodeRegexStr,
-      String notFinalNodeRegexStr);
+      String notFinalNodeRegexStr,
+      Set<String> transitNodes,
+      Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 

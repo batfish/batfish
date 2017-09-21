@@ -3,6 +3,7 @@ package org.batfish.config;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -56,6 +57,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     private Path _serializeEnvironmentBgpTablesPath;
 
     private Path _serializeEnvironmentRoutingTablesPath;
+
+    private Path _validateEnvironmentAnswerPath;
 
     public Path getDataPlaneAnswerPath() {
       return _dataPlaneAnswerPath;
@@ -135,6 +138,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     public Path getSerializeEnvironmentRoutingTablesPath() {
       return _serializeEnvironmentRoutingTablesPath;
+    }
+
+    public Path getValidateEnvironmentAnswerPath() {
+      return _validateEnvironmentAnswerPath;
     }
 
     public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
@@ -218,6 +225,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         Path serializeEnvironmentRoutingTablesPath) {
       _serializeEnvironmentRoutingTablesPath = serializeEnvironmentRoutingTablesPath;
     }
+
+    public void setValidateEnvironmentAnswerPath(Path validateEnvironmentAnswerPath) {
+      _validateEnvironmentAnswerPath = validateEnvironmentAnswerPath;
+    }
   }
 
   public static final class TestrigSettings {
@@ -256,12 +267,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     public boolean equals(Object obj) {
       if (this == obj) {
         return true;
-      }
-      TestrigSettings other = (TestrigSettings) obj;
-      if (!_name.equals(other._name)) {
+      } else if (!(obj instanceof TestrigSettings)) {
         return false;
       }
-      return _environmentSettings._name.equals(other._environmentSettings._name);
+      TestrigSettings other = (TestrigSettings) obj;
+      return _name.equals(other._name)
+          && _environmentSettings._name.equals(other._environmentSettings._name);
     }
 
     public Path getBasePath() {
@@ -520,6 +531,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private boolean _diffQuestion;
 
+  private boolean _disableUnrecognized;
+
   private String _environmentName;
 
   private boolean _exitOnFirstError;
@@ -650,6 +663,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private boolean _unrecognizedAsRedFlag;
 
+  private boolean _validateEnvironment;
+
   private boolean _verboseParse;
 
   public Settings() {
@@ -715,6 +730,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public Path getContainerDir() {
     return _containerDir;
+  }
+
+  public void setContainerDir(Path containerDir) {
+    _containerDir = containerDir;
   }
 
   public String getCoordinatorHost() {
@@ -847,6 +866,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _maxParserContextTokens;
   }
 
+  @Override
+  public boolean getDisableUnrecognized() {
+    return _disableUnrecognized;
+  }
+
   public int getMaxRuntimeMs() {
     return _maxRuntimeMs;
   }
@@ -971,6 +995,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _testrig;
   }
 
+  public void setTestrig(String testrig) {
+    _testrig = testrig;
+  }
+
   @Override
   public boolean getThrowOnLexerError() {
     return _throwOnLexerError;
@@ -995,6 +1023,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean getUnrecognizedAsRedFlag() {
     return _unrecognizedAsRedFlag;
+  }
+
+  public boolean getValidateEnvironment() {
+    return _validateEnvironment;
   }
 
   public boolean getVerboseParse() {
@@ -1026,6 +1058,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
+    setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
@@ -1090,6 +1123,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
+    setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
   }
 
   private void initOptions() {
@@ -1128,6 +1162,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         BfConsts.ARG_DIFFERENTIAL,
         "force treatment of question as differential (to be used when not answering question)");
+
+    addBooleanOption(
+        BfConsts.ARG_DISABLE_UNRECOGNIZED, "disable parser recognition of unrecognized stanzas");
 
     addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
 
@@ -1323,6 +1360,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "serialize vendor configs");
 
     addBooleanOption(BfConsts.COMMAND_REPORT, "generate report based on answered questions");
+
+    addBooleanOption(
+        BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
   }
 
   private void parseCommandLine(String[] args) {
@@ -1358,6 +1398,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _deltaTestrig = getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     _differential = getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
+    _disableUnrecognized = getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
     _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     _flatten = getBooleanOptionValue(ARG_FLATTEN);
@@ -1416,6 +1457,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
+    _validateEnvironment = getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
     _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
   }
 
@@ -1426,6 +1468,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public boolean printParseTree() {
     return _printParseTree;
+  }
+
+  @Override
+  public void setDisableUnrecognized(boolean b) {
+    _disableUnrecognized = b;
   }
 
   public boolean runInServiceMode() {
@@ -1488,7 +1535,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _pluginDirs = pluginDirs;
   }
 
-  public void setQuestionPath(Path questionPath) {
+  public void setQuestionPath(@Nullable Path questionPath) {
     _questionPath = questionPath;
   }
 
@@ -1536,6 +1583,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setThrowOnParserError(boolean throwOnParserError) {
     _throwOnParserError = throwOnParserError;
+  }
+
+  public void setValidateEnvironment(boolean validateEnvironment) {
+    _validateEnvironment = validateEnvironment;
   }
 
   public void setVerboseParse(boolean verboseParse) {

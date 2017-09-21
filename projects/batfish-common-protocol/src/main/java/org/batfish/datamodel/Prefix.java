@@ -81,7 +81,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     long start = getNetworkAddress().asLong();
     long end = getEndAddress().asLong();
     long ipAsLong = ip.asLong();
-    return (start <= ipAsLong && ipAsLong <= end);
+    return start <= ipAsLong && ipAsLong <= end;
   }
 
   public boolean containsPrefix(Prefix prefix) {
@@ -89,11 +89,13 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Prefix)) {
+      return false;
     }
-    Prefix rhs = (Prefix) obj;
+    Prefix rhs = (Prefix) o;
     return _address.equals(rhs._address) && _prefixLength == rhs._prefixLength;
   }
 

@@ -6,6 +6,7 @@ import com.microsoft.z3.BoolExpr;
 
 import java.util.SortedMap;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 
 /**
  * The result of trying to verify properties of the network model built with an encoder. Either the
@@ -43,11 +44,11 @@ public class VerificationResult {
   @JsonCreator
   public VerificationResult(
       @JsonProperty(VERIFIED_VAR) boolean verified,
-      @JsonProperty(MODEL_VAR) SortedMap<String, String> model,
-      @JsonProperty(PACKET_MODEL_VAR) SortedMap<String, String> packetModel,
-      @JsonProperty(ENV_MODEL_VAR) SortedMap<String, SortedMap<String, String>> envModel,
-      @JsonProperty(FWD_MODEL_VAR) SortedSet<String> fwdModel,
-      @JsonProperty(FAILURE_MODEL_VAR) SortedSet<String> failures) {
+      @Nullable @JsonProperty(MODEL_VAR) SortedMap<String, String> model,
+      @Nullable @JsonProperty(PACKET_MODEL_VAR) SortedMap<String, String> packetModel,
+      @Nullable @JsonProperty(ENV_MODEL_VAR) SortedMap<String, SortedMap<String, String>> envModel,
+      @Nullable @JsonProperty(FWD_MODEL_VAR) SortedSet<String> fwdModel,
+      @Nullable @JsonProperty(FAILURE_MODEL_VAR) SortedSet<String> failures) {
     _verified = verified;
     _model = model;
     _packetModel = packetModel;
@@ -86,7 +87,7 @@ public class VerificationResult {
     return _failures;
   }
 
-  public String prettyPrint(String iface) {
+  public String prettyPrint(@Nullable String iface) {
     StringBuilder sb = new StringBuilder();
     if (_verified) {
       sb.append("\nVerified");
@@ -160,7 +161,7 @@ public class VerificationResult {
                       String expr = e.toString();
                       if (expr.contains("DATA-")) {
                         String result = _model.get(expr);
-                        if (result != null && result.equals("true")) {
+                        if ("true".equals(result)) {
                           System.out.println(edge);
                         }
                       }
@@ -179,7 +180,7 @@ public class VerificationResult {
       System.out.println("================= Unsat Core ================");
       for (BoolExpr be : enc.getSolver().getUnsatCore()) {
         BoolExpr constraint = enc.getUnsatCore().getTrackingVars().get(be.toString());
-        System.out.println("Var: " + be.toString());
+        System.out.println("Var: " + be);
         System.out.println(constraint);
         System.out.println("");
       }

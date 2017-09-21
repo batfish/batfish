@@ -93,7 +93,7 @@ public class Interface extends ComparableStructure<String> {
 
   @SuppressWarnings("unused")
   private Interface() {
-    this(null, -1);
+    this("", -1);
   }
 
   public Interface(String name, int definitionLine) {

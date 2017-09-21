@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import com.google.common.base.Throwables;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -38,7 +39,7 @@ public class BfCoordPoolHelper {
 
       String sobj = response.readEntity(String.class);
       JSONArray array = new JSONArray(sobj);
-      System.out.printf("response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1));
+      System.out.printf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
         System.err.printf(
@@ -49,7 +50,7 @@ public class BfCoordPoolHelper {
       return true;
     } catch (ProcessingException e) {
       System.err.printf(
-          "unable to connect to %s: %s\n", _coordPoolMgr, e.getStackTrace().toString());
+          "unable to connect to %s: %s\n", _coordPoolMgr, Throwables.getStackTraceAsString(e));
       return false;
     } catch (Exception e) {
       System.err.printf("exception: ");

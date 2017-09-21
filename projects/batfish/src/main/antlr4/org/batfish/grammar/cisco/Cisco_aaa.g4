@@ -10,8 +10,10 @@ aaa_accounting
 :
    ACCOUNTING
    (
-      aaa_accounting_commands
-      | aaa_accounting_connection
+      aaa_accounting_commands_line
+      | aaa_accounting_commands_stanza
+      | aaa_accounting_connection_line
+      | aaa_accounting_connection_stanza
       | aaa_accounting_default
       | aaa_accounting_delay_start
       | aaa_accounting_exec_line
@@ -19,12 +21,13 @@ aaa_accounting
       | aaa_accounting_nested
       | aaa_accounting_network
       | aaa_accounting_send
-      | aaa_accounting_system
+      | aaa_accounting_system_line
+      | aaa_accounting_system_stanza
       | aaa_accounting_update
    )
 ;
 
-aaa_accounting_commands
+aaa_accounting_commands_line
 :
    COMMANDS
    (
@@ -37,13 +40,41 @@ aaa_accounting_commands
    ) aaa_accounting_method NEWLINE
 ;
 
-aaa_accounting_connection
+aaa_accounting_commands_stanza
+:
+   COMMANDS
+   (
+      ALL
+      | levels = range
+   )?
+   (
+      DEFAULT
+      | list = variable
+   ) NEWLINE
+   (
+      aaaac_action_type
+      | aaaac_group
+   )*
+;
+
+aaa_accounting_connection_line
 :
    CONNECTION
    (
       DEFAULT
       | list = variable
    ) aaa_accounting_method NEWLINE
+;
+
+aaa_accounting_connection_stanza
+:
+   CONNECTION DEFAULT NEWLINE
+   (
+      (
+         ACTION_TYPE
+         | GROUP
+      ) ~NEWLINE* NEWLINE
+   )+
 ;
 
 aaa_accounting_default
@@ -132,7 +163,7 @@ aaa_accounting_method_target
 :
    BROADCAST?
    (
-      GROUP
+      GROUP?
       (
          RADIUS
          | TAC_PLUS
@@ -197,13 +228,26 @@ aaa_accounting_send_stop_record
    ) NEWLINE
 ;
 
-aaa_accounting_system
+aaa_accounting_system_line
 :
    SYSTEM
    (
       DEFAULT
       | list = variable
    ) aaa_accounting_method NEWLINE
+;
+
+aaa_accounting_system_stanza
+:
+   SYSTEM
+   (
+      DEFAULT
+      | list = variable
+   ) NEWLINE
+   (
+      aaaas_action_type
+      | aaaas_group
+   )
 ;
 
 aaa_accounting_update
@@ -287,6 +331,7 @@ aaa_authentication_list_method
       | aaa_authentication_list_method_line
       | aaa_authentication_list_method_local
       | aaa_authentication_list_method_none
+      | aaa_authentication_list_method_radius
       | aaa_authentication_list_method_tacacs_local
       | aaa_authentication_list_method_tacacs_plus
    )
@@ -329,6 +374,11 @@ aaa_authentication_list_method_local
 aaa_authentication_list_method_none
 :
    NONE
+;
+
+aaa_authentication_list_method_radius
+:
+   RADIUS
 ;
 
 aaa_authentication_list_method_tacacs_local
@@ -665,6 +715,46 @@ aaa_user
    USER DEFAULT_ROLE NEWLINE
 ;
 
+aaaac_action_type
+:
+   ACTION_TYPE
+   (
+      START_STOP
+      | STOP_ONLY
+      | WAIT_START
+   ) NEWLINE
+;
+
+aaaac_group
+:
+   GROUP
+   (
+      LDAP
+      | RADIUS
+      | TACACS_PLUS
+   ) NEWLINE
+;
+
+aaaas_action_type
+:
+   ACTION_TYPE
+   (
+      START_STOP
+      | STOP_ONLY
+      | WAIT_START
+   ) NEWLINE
+;
+
+aaaas_group
+:
+   GROUP
+   (
+      LDAP
+      | RADIUS
+      | TACACS_PLUS
+   ) NEWLINE
+;
+
 null_aaa_substanza
 :
    aaa_default_taskgroup
@@ -672,7 +762,7 @@ null_aaa_substanza
 
 s_aaa
 :
-   AAA
+   NO? AAA
    (
       aaa_accounting
       | aaa_authentication

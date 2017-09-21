@@ -3,6 +3,7 @@ package org.batfish.smt;
 import com.microsoft.z3.ArithExpr;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.smt.collections.Table2;
 
 /**
@@ -29,6 +30,7 @@ class SymbolicFailures {
     return _failedEdgeLinks;
   }
 
+  @Nullable
   ArithExpr getFailedVariable(GraphEdge ge) {
     if (ge.getPeer() == null) {
       return _failedEdgeLinks.get(ge);

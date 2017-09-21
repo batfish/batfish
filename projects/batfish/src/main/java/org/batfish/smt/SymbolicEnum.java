@@ -80,7 +80,7 @@ class SymbolicEnum<T> {
     if (size == 0) {
       return 0;
     } else {
-      return ((int) Math.ceil(log / base));
+      return (int) Math.ceil(log / base);
     }
   }
 
@@ -131,10 +131,6 @@ class SymbolicEnum<T> {
       return _enc.mkTrue();
     }
     return _enc.mkEq(_bitvec, _enc.getCtx().mkBV(0, _numBits));
-  }
-
-  public BitVecExpr defaultValue() {
-    return _enc.getCtx().mkBV(0, _numBits);
   }
 
   public T value(int i) {

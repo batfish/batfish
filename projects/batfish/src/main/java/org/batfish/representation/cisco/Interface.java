@@ -79,6 +79,8 @@ public class Interface extends ComparableStructure<String> {
 
   private SortedSet<Ip> _dhcpRelayAddresses;
 
+  private boolean _dhcpRelayClient;
+
   private String _incomingFilter;
 
   private int _incomingFilterLine;
@@ -117,15 +119,7 @@ public class Interface extends ComparableStructure<String> {
 
   private Set<Prefix> _secondaryPrefixes;
 
-  private boolean _sourceNat;
-
-  private String _sourceNatAcl;
-
-  private int _sourceNatAclLine;
-
-  private String _sourceNatPool;
-
-  private int _sourceNatPoolLine;
+  private List<CiscoSourceNat> _sourceNats;
 
   private boolean _spanningTreePortfast;
 
@@ -160,6 +154,7 @@ public class Interface extends ComparableStructure<String> {
 
         case ALCATEL_AOS:
         case AWS_VPC:
+        case CADANT:
         case CISCO_IOS:
         case CISCO_IOS_XR:
         case CISCO_NX:
@@ -218,6 +213,10 @@ public class Interface extends ComparableStructure<String> {
 
   public SortedSet<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
+  }
+
+  public boolean getDhcpRelayClient() {
+    return _dhcpRelayClient;
   }
 
   public String getIncomingFilter() {
@@ -296,24 +295,8 @@ public class Interface extends ComparableStructure<String> {
     return _secondaryPrefixes;
   }
 
-  public boolean getSourceNat() {
-    return _sourceNat;
-  }
-
-  public String getSourceNatAcl() {
-    return _sourceNatAcl;
-  }
-
-  public int getSourceNatAclLine() {
-    return _sourceNatAclLine;
-  }
-
-  public String getSourceNatPool() {
-    return _sourceNatPool;
-  }
-
-  public int getSourceNatPoolLine() {
-    return _sourceNatPoolLine;
+  public List<CiscoSourceNat> getSourceNats() {
+    return _sourceNats;
   }
 
   public boolean getSpanningTreePortfast() {
@@ -366,6 +349,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setDhcpRelayAddress(SortedSet<Ip> dhcpRelayAddress) {
     _dhcpRelayAddresses = dhcpRelayAddress;
+  }
+
+  public void setDhcpRelayClient(boolean dhcpRelayClient) {
+    _dhcpRelayClient = dhcpRelayClient;
   }
 
   public void setIncomingFilter(String accessListName) {
@@ -440,24 +427,8 @@ public class Interface extends ComparableStructure<String> {
     _routingPolicyLine = routingPolicyLine;
   }
 
-  public void setSourceNat(boolean sourceNat) {
-    _sourceNat = sourceNat;
-  }
-
-  public void setSourceNatAcl(String sourceNatAcl) {
-    _sourceNatAcl = sourceNatAcl;
-  }
-
-  public void setSourceNatAclLine(int sourceNatAclLine) {
-    _sourceNatAclLine = sourceNatAclLine;
-  }
-
-  public void setSourceNatPool(String sourceNatPool) {
-    _sourceNatPool = sourceNatPool;
-  }
-
-  public void setSourceNatPoolLine(int sourceNatPoolLine) {
-    _sourceNatPoolLine = sourceNatPoolLine;
+  public void setSourceNats(List<CiscoSourceNat> sourceNats) {
+    _sourceNats = sourceNats;
   }
 
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {

@@ -116,7 +116,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private final int _localPreference;
 
-  private final int _med;
+  private final long _med;
 
   private final Prefix _network;
 
@@ -152,7 +152,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @JsonProperty(PROP_LOCAL_PREFERENCE) int localPreference,
-      @JsonProperty(PROP_MED) int med,
+      @JsonProperty(PROP_MED) long med,
       @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
@@ -223,7 +223,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (ret != 0) {
       return ret;
     }
-    ret = Integer.compare(_med, rhs._med);
+    ret = Long.compare(_med, rhs._med);
     if (ret != 0) {
       return ret;
     }
@@ -263,11 +263,13 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof BgpAdvertisement)) {
+      return false;
     }
-    BgpAdvertisement other = (BgpAdvertisement) obj;
+    BgpAdvertisement other = (BgpAdvertisement) o;
     if (!_network.equals(other._network)) {
       return false;
     }
@@ -365,7 +367,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @JsonProperty(PROP_MED)
-  public int getMed() {
+  public long getMed() {
     return _med;
   }
 
@@ -430,7 +432,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     result = prime * result + _dstNode.hashCode();
     result = prime * result + (_dstVrf != null ? _dstVrf.hashCode() : 0);
     result = prime * result + _localPreference;
-    result = prime * result + _med;
+    result = prime * result + Long.hashCode(_med);
     result = prime * result + _network.hashCode();
     result = prime * result + _nextHopIp.hashCode();
     result = prime * result + _originType.ordinal();

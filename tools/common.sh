@@ -107,9 +107,21 @@ export -f batfish_build_all
 _batfish_build_all() {
    _pre_build || return 1
    cd "${PROJECTS_PATH}"
-   mvn install -DskipTest || return 1
+   mvn install -DskipTests || return 1
 }
 export -f _batfish_build_all
+
+batfish_test_all() {
+   bash -c '_batfish_test_all "$@"' _batfish_test_all "$@" || return 1
+}
+export -f batfish_test_all
+
+_batfish_test_all() {
+   _pre_build || return 1
+   cd "${PROJECTS_PATH}"
+   mvn clean install || return 1
+}
+export -f _batfish_test_all
 
 batfish_confirm() {
    # call with a prompt string or use a default
@@ -173,9 +185,9 @@ batfish_prepare_test_rig() {
    local TEST_RIG=$1
    local BASE=$2
    local NAME=$3
-   mkdir -p $BASE/$NAME/testrig || return 1
-   mkdir -p $BASE/$NAME/environments/default/env_default
-   cp -r $TEST_RIG/. $BASE/$NAME/testrig/.
+   mkdir -p $BASE/testrigs/$NAME/testrig || return 1
+   mkdir -p $BASE/testrigs/$NAME/environments/default/env_default
+   cp -r $TEST_RIG/. $BASE/testrigs/$NAME/testrig/.
    batfish_date
    echo ": END: Prepare test-rig"
 }

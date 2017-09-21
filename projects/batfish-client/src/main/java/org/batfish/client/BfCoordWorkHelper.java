@@ -40,11 +40,19 @@ public class BfCoordWorkHelper {
   private String _coordWorkMgr;
   private BatfishLogger _logger;
   private Settings _settings;
+  private Client _client;
 
   public BfCoordWorkHelper(String workMgr, BatfishLogger logger, Settings settings) {
     _coordWorkMgr = workMgr;
     _logger = logger;
     _settings = settings;
+    try {
+      _client = getClientBuilder().build();
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      throw new BatfishException("Failed to create HTTP client", e);
+    }
   }
 
   private void addFileMultiPart(MultiPart multiPart, String key, String filename) {
@@ -59,8 +67,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public String checkApiKey() {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_CHECK_API_KEY);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CHECK_API_KEY);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -83,12 +90,10 @@ public class BfCoordWorkHelper {
       String containerName,
       boolean newAnalysis,
       String analysisName,
-      String addQuestionsFileName,
-      String delQuestionsStr) {
+      @Nullable String addQuestionsFileName,
+      @Nullable String delQuestionsStr) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -127,9 +132,7 @@ public class BfCoordWorkHelper {
 
   public boolean delAnalysis(String containerName, String analysisName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_ANALYSIS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ANALYSIS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -149,8 +152,7 @@ public class BfCoordWorkHelper {
 
   public boolean delContainer(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_CONTAINER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -159,7 +161,11 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      String status = null;
+      if (jObj != null && (status = jObj.getString("result")) != null) {
+        return Boolean.parseBoolean(status);
+      }
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -169,8 +175,7 @@ public class BfCoordWorkHelper {
 
   public boolean delEnvironment(String containerName, String testrigName, String envName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_ENVIRONMENT);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ENVIRONMENT);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -181,7 +186,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ENV_NAME, envName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -191,8 +196,7 @@ public class BfCoordWorkHelper {
 
   public boolean delQuestion(String containerName, String testrigName, String questionName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_QUESTION);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_QUESTION);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -203,7 +207,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION_NAME, questionName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -213,8 +217,7 @@ public class BfCoordWorkHelper {
 
   public boolean delTestrig(String containerName, String testrigName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_DEL_TESTRIG);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_TESTRIG);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -224,7 +227,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -290,9 +293,7 @@ public class BfCoordWorkHelper {
       String deltaEnvironment,
       String analysisName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -314,7 +315,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ANSWERS)) {
-        _logger.errorf("answer key not found in: %s\n", jObj.toString());
+        _logger.errorf("answer key not found in: %s\n", jObj);
         return null;
       }
 
@@ -339,9 +340,7 @@ public class BfCoordWorkHelper {
       String deltaEnv,
       String questionName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_ANSWER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANSWER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -363,7 +362,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ANSWER)) {
-        _logger.errorf("answer key not found in: %s\n", jObj.toString());
+        _logger.errorf("answer key not found in: %s\n", jObj);
         return null;
       }
 
@@ -392,6 +391,50 @@ public class BfCoordWorkHelper {
   }
 
   /**
+   * Returns a string contains the content of the configuration file {@code configName}, returns
+   * null if configuration file {@code configName} does not exist or the api key that is using has
+   * no access to the container {@code containerName}
+   */
+  @Nullable
+  public String getConFiguration(String containerName, String testrigName, String configName) {
+    try {
+      Client client = getClientBuilder().build();
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONFIGURATION);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONFIGURATION_NAME, configName);
+
+      Response response =
+          webTarget
+              .request(MediaType.APPLICATION_JSON)
+              .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+      _logger.debugf("%s %s %s\n", response.getStatus(), response.getStatusInfo(), response);
+
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        _logger.error("GetConfiguration: Did not get an OK response\n");
+        _logger.error(response.readEntity(String.class) + "\n");
+        return null;
+      }
+
+      String configContent = response.readEntity(String.class);
+      return configContent;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Exception in getConfiguration from %s for container %s, testrig %s, configuration %s\n",
+          _coordWorkMgr, containerName, testrigName, configName);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
+  }
+
+  /**
    * Returns a {@link Container Container} that contains information of '{@code containerName}',
    * returns null if container '{@code containerName}' does not exist or the api key that is using
    * has no access to the container
@@ -399,8 +442,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Container getContainer(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_CONTAINER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -436,9 +478,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Map<String, String> getInfo() {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, "");
+      WebTarget webTarget = getTarget("");
 
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
@@ -451,7 +491,7 @@ public class BfCoordWorkHelper {
 
       String sobj = response.readEntity(String.class);
       JSONArray array = new JSONArray(sobj);
-      _logger.debugf("response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1));
+      _logger.debugf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
         _logger.errorf("Error in PostData: %s %s\n", array.get(0), array.get(1));
@@ -480,9 +520,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public String getObject(String containerName, String testrigName, String objectName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_OBJECT);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_OBJECT);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -537,12 +575,40 @@ public class BfCoordWorkHelper {
     }
   }
 
-  private WebTarget getTarget(Client client, String resource) {
+  @Nullable
+  public JSONObject getQuestionTemplates() {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+        _logger.errorf("question list key not found in: %s\n", jObj);
+        return null;
+      }
+
+      return jObj.getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
+    } catch (Exception e) {
+      _logger.errorf("Exception in getQuestionTemplates from %s\n", _coordWorkMgr);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
+  }
+
+  private WebTarget getTarget(String resource) {
     String protocol = (_settings.getSslDisable()) ? "http" : "https";
     String urlString =
         String.format(
             "%s://%s%s/%s", protocol, _coordWorkMgr, CoordConsts.SVC_CFG_WORK_MGR, resource);
-    return client.target(urlString);
+    return _client.target(urlString);
   }
 
   public WorkItem getWorkItemAnswerQuestion(
@@ -641,11 +707,19 @@ public class BfCoordWorkHelper {
     return wItem;
   }
 
+  public WorkItem getWorkItemValidateEnvironment(
+      String containerName, String testrigName, String envName) {
+    WorkItem wItem = new WorkItem(containerName, testrigName);
+    wItem.addRequestParam(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "");
+    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
+    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    return wItem;
+  }
+
   @Nullable
   public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_GET_WORKSTATUS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -659,7 +733,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_WORKSTATUS)) {
-        _logger.errorf("workstatus key not found in: %s\n", jObj.toString());
+        _logger.errorf("workstatus key not found in: %s\n", jObj);
         return null;
       }
 
@@ -667,7 +741,7 @@ public class BfCoordWorkHelper {
           WorkStatusCode.valueOf(jObj.getString(CoordConsts.SVC_KEY_WORKSTATUS));
 
       if (!jObj.has(CoordConsts.SVC_KEY_TASKSTATUS)) {
-        _logger.errorf("taskstatus key not found in: %s\n", jObj.toString());
+        _logger.errorf("taskstatus key not found in: %s\n", jObj);
       }
       String taskStr = jObj.getString(CoordConsts.SVC_KEY_TASKSTATUS);
 
@@ -680,10 +754,9 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public String initContainer(String containerName, String containerPrefix) {
+  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_INIT_CONTAINER);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_INIT_CONTAINER);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -701,7 +774,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_CONTAINER_NAME)) {
-        _logger.errorf("container name key not found in: %s\n", jObj.toString());
+        _logger.errorf("container name key not found in: %s\n", jObj);
         return null;
       }
 
@@ -718,8 +791,7 @@ public class BfCoordWorkHelper {
     WebTarget webTarget = null;
 
     try {
-      Client client = getClientBuilder().build();
-      webTarget = getTarget(client, "");
+      webTarget = getTarget("");
 
       Response response = webTarget.request().get();
 
@@ -734,8 +806,7 @@ public class BfCoordWorkHelper {
     } catch (ProcessingException e) {
       if (e.getMessage().contains("ConnectException")) {
         if (chatty) {
-          _logger.errorf(
-              "BF-Client: unable to connect to coordinator at %s\n", webTarget.getUri().toString());
+          _logger.errorf("BF-Client: unable to connect to coordinator at %s\n", webTarget.getUri());
         }
         return false;
       }
@@ -761,8 +832,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public JSONObject listAnalyses(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_ANALYSES);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ANALYSES);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -776,7 +846,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ANALYSIS_LIST)) {
-        _logger.errorf("analysis list key not found in: %s\n", jObj.toString());
+        _logger.errorf("analysis list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -791,8 +861,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public String[] listContainers() {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_CONTAINERS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_CONTAINERS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -806,7 +875,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_CONTAINER_LIST)) {
-        _logger.errorf("container list key not found in: %s\n", jObj.toString());
+        _logger.errorf("container list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -826,10 +895,10 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listEnvironments(String containerName, String testrigName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_ENVIRONMENTS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ENVIRONMENTS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -844,7 +913,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_ENVIRONMENT_LIST)) {
-        _logger.errorf("environment list key not found in: %s\n", jObj.toString());
+        _logger.errorf("environment list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -864,10 +933,10 @@ public class BfCoordWorkHelper {
     }
   }
 
+  @Nullable
   public String[] listQuestions(String containerName, String testrigName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_QUESTIONS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_QUESTIONS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -882,7 +951,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
-        _logger.errorf("question list key not found in: %s\n", jObj.toString());
+        _logger.errorf("question list key not found in: %s\n", jObj);
         return null;
       }
 
@@ -901,8 +970,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Map<String, String> listTestrigs(String containerName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_LIST_TESTRIGS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_TESTRIGS);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -918,7 +986,7 @@ public class BfCoordWorkHelper {
       }
 
       if (!jObj.has(CoordConsts.SVC_KEY_TESTRIG_LIST)) {
-        _logger.errorf("testrig key not found in: %s\n", jObj.toString());
+        _logger.errorf("testrig key not found in: %s\n", jObj);
         return null;
       }
 
@@ -961,7 +1029,7 @@ public class BfCoordWorkHelper {
 
       String sobj = response.readEntity(String.class);
       JSONArray array = new JSONArray(sobj);
-      _logger.debugf("response: %s [%s] [%s]\n", array.toString(), array.get(0), array.get(1));
+      _logger.debugf("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
         _logger.errorf("Error in PostData: %s %s\n", array.get(0), array.get(1));
@@ -991,8 +1059,7 @@ public class BfCoordWorkHelper {
   public boolean queueWork(WorkItem wItem) {
 
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_QUEUE_WORK);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_QUEUE_WORK);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -1001,7 +1068,57 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
 
       JSONObject jObj = postData(webTarget, multiPart);
-      return (jObj != null);
+      return jObj != null;
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return false;
+    }
+  }
+
+  @Nullable
+  public boolean syncTestrigsSyncNow(String pluginId, String containerName, boolean force) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_TESTRIGS_SYNC_NOW);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_FORCE, String.valueOf(force));
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      return jObj != null;
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return false;
+    }
+  }
+
+  @Nullable
+  public boolean syncTestrigsUpdateSettings(
+      String pluginId, String containerName, Map<String, String> settings) {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String settingsStr = mapper.writeValueAsString(settings);
+
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_TESTRIGS_UPDATE_SETTINGS);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SETTINGS, settingsStr);
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -1012,9 +1129,7 @@ public class BfCoordWorkHelper {
   public boolean uploadCustomObject(
       String containerName, String testrigName, String objName, String objFileName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_PUT_OBJECT);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_PUT_OBJECT);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -1045,8 +1160,7 @@ public class BfCoordWorkHelper {
       String envName,
       String zipfileName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_UPLOAD_ENV);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_ENV);
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
@@ -1071,9 +1185,7 @@ public class BfCoordWorkHelper {
   public boolean uploadQuestion(
       String containerName, String testrigName, String qName, String qFileName) {
     try {
-
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_UPLOAD_QUESTION);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -1099,8 +1211,7 @@ public class BfCoordWorkHelper {
 
   public boolean uploadTestrig(String containerName, String testrigName, String zipfileName) {
     try {
-      Client client = getClientBuilder().build();
-      WebTarget webTarget = getTarget(client, CoordConsts.SVC_RSC_UPLOAD_TESTRIG);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_TESTRIG);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);

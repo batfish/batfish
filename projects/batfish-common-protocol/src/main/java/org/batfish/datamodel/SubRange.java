@@ -69,11 +69,13 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof SubRange)) {
+      return false;
     }
-    SubRange other = (SubRange) obj;
+    SubRange other = (SubRange) o;
     if (_end != other._end) {
       return false;
     }

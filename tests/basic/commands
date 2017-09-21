@@ -24,6 +24,8 @@ test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 test tests/basic/ospfLoopbacks.ref get ospfLoopbacks
 test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
+test tests/basic/roles.ref get roles
+test tests/basic/roles2.ref get roles inferred=true
 test tests/basic/routes.ref get routes
 test tests/basic/routes-diff.ref get routes differential=true
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
@@ -36,6 +38,18 @@ test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
 test tests/basic/unusedStructures.ref get unusedStructures
 test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
 test tests/basic/outliers.ref get outliers
+test tests/basic/outliers2.ref get outliers hypothesis="sameName"
+test tests/basic/perRole.ref get perRole question={"class": "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"}
+
+# jsonpath assertion exception tests
+test tests/basic/jsonpath-assertion-count.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "count", "expect": 5}}]
+test tests/basic/jsonpath-assertion-equals-no-suffix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "equals", "expect": [{"prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"}, {"prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"}, {"prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']"}, {"prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']"}]}}]
+test tests/basic/jsonpath-assertion-equals-with-suffix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "assertion": {"type" : "equals", "expect": [{"prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']", "suffix": 1500}, {"prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']", "suffix": 1500}, {"prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']", "suffix": 1500}, {"prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']", "suffix": 1500}]}}]
+test tests/basic/jsonpath-exception-with-suffix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']", "suffix": 1500}]}]
+test tests/basic/jsonpath-exception-assertion.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']", "suffix": 1500}], "assertion": {"type" : "count", "expect" : 3}}]
+
+#this test has non-deterministic output; commented for now
+#test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
 # example2 testrig
 test tests/basic/init-example2.ref init-testrig test_rigs/example2

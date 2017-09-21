@@ -15,6 +15,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -47,8 +48,6 @@ class Optimizations {
 
   private EncoderSlice _encoderSlice;
 
-  private boolean _hasEnvironment;
-
   private boolean _hasExternalCommunity;
 
   private Map<String, List<Protocol>> _protocols;
@@ -75,13 +74,10 @@ class Optimizations {
 
   private boolean _keepOspfType;
 
-  private boolean _needIPv6;
-
   private boolean _needOriginatorIds;
 
   Optimizations(EncoderSlice encoderSlice) {
     _encoderSlice = encoderSlice;
-    _hasEnvironment = false;
     _hasExternalCommunity = false;
     _protocols = new HashMap<>();
     _relevantAggregates = new HashMap<>();
@@ -95,12 +91,10 @@ class Optimizations {
     _keepAdminDist = true;
     _keepMed = true;
     _keepOspfType = true;
-    _needIPv6 = true;
     _needOriginatorIds = true;
   }
 
   void computeOptimizations() {
-    _hasEnvironment = computeHasEnvironment();
     _hasExternalCommunity = computeHasExternalCommunity();
     _keepLocalPref = computeKeepLocalPref();
     _keepAdminDist = computeKeepAdminDistance();
@@ -149,7 +143,7 @@ class Optimizations {
   /*
    * Check if there is any environmental variable
    */
-  private boolean computeHasEnvironment() {
+  /* private boolean computeHasEnvironment() {
     Boolean[] val = new Boolean[1];
     val[0] = false;
     _encoderSlice
@@ -165,7 +159,7 @@ class Optimizations {
               }
             });
     return val[0];
-  }
+  } */
 
   /*
    * Check if the BGP local preference is needed. mkIf it is never set,
@@ -436,6 +430,9 @@ class Optimizations {
   private void computeCanMergeExportVars() {
     Graph g = _encoderSlice.getGraph();
 
+    HeaderQuestion q = _encoderSlice.getEncoder().getQuestion();
+    boolean noFailures = q.getFailures() == 0;
+
     _encoderSlice
         .getGraph()
         .getConfigurations()
@@ -448,7 +445,7 @@ class Optimizations {
               // the neighbor already being the root of the tree.
               for (Protocol proto : getProtocols().get(router)) {
                 if (proto.isConnected() || proto.isStatic()) {
-                  map.put(proto, Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(proto, noFailures && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isOspf()) {
                   // Ensure all interfaces are active
@@ -466,9 +463,10 @@ class Optimizations {
 
                   map.put(
                       proto,
-                      allIfacesActive
+                      noFailures
+                          && allIfacesActive
                           && singleArea
-                          && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                          && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isBgp()) {
 
@@ -478,18 +476,18 @@ class Optimizations {
                   BgpProcess p = conf.getDefaultVrf().getBgpProcess();
                   for (Map.Entry<Prefix, BgpNeighbor> e : p.getNeighbors().entrySet()) {
                     BgpNeighbor n = e.getValue();
-                    // mkIf iBGP used, then don't merge
+                    // If iBGP used, then don't merge
                     if (n.getLocalAs().equals(n.getRemoteAs())) {
                       acc = false;
                       break;
                     }
-                    // mkIf not the default export policy, then don't merge
+                    // If not the default export policy, then don't merge
                     if (!isDefaultBgpExport(conf, n)) {
                       acc = false;
                       break;
                     }
                   }
-                  map.put(proto, acc && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(proto, noFailures && acc && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else {
                   throw new BatfishException("Error: unkown protocol: " + proto.name());
@@ -518,8 +516,6 @@ class Optimizations {
 
                   if (!proto.isConnected() && !proto.isStatic()) {
 
-                    boolean isNotRoot = !hasRelevantOriginatedRoute(conf, proto);
-                    //if (isNotRoot) {
                     for (GraphEdge ge : _encoderSlice.getGraph().getEdgeMap().get(router)) {
 
                       // Don't merge when an abstract edge is used.
@@ -546,7 +542,6 @@ class Optimizations {
                         }
                       }
                     }
-                    //}
                   }
                 }
                 map.put(proto, edges);

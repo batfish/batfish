@@ -30,7 +30,9 @@ mpls ldp
  !
  nsr
  router-id 1.2.3.4
+ session protection
 !
+mpls ldp session protection
 mpls traffic-eng
  affinity-map bippety bit-position 1
  attribute-set auto-backup boo

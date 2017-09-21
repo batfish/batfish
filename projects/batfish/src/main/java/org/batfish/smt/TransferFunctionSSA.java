@@ -44,6 +44,8 @@ import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -118,7 +120,7 @@ class TransferFunctionSSA {
 
   private static int id = 0;
 
-  private static int INLINE_HEURISTIC = 3000;
+  private static final int INLINE_HEURISTIC = 3000;
 
   private EncoderSlice _enc;
 
@@ -360,7 +362,7 @@ class TransferFunctionSSA {
               p.setDefaultPolicy(null)
                   .setChainContext(TransferFunctionParam.ChainContext.CONJUNCTION);
           TransferFunctionResult r = compute(conjunct, param);
-          result.addChangedVariables(r);
+          result = result.addChangedVariables(r);
           acc = _enc.mkIf(r.getFallthroughValue(), acc, r.getReturnValue());
         }
         p.debug("ConjunctionChain Result: " + acc);
@@ -491,11 +493,11 @@ class TransferFunctionSSA {
   }
 
   /*
-   * Apply the effect of modifying an integer value (e.g., to set the local pref)
+   * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private ArithExpr applyIntExprModification(ArithExpr x, IntExpr e) {
-    if (e instanceof LiteralInt) {
-      LiteralInt z = (LiteralInt) e;
+  private ArithExpr applyLongExprModification(ArithExpr x, LongExpr e) {
+    if (e instanceof LiteralLong) {
+      LiteralLong z = (LiteralLong) e;
       return _enc.mkInt(z.getValue());
     }
     if (e instanceof DecrementMetric) {
@@ -505,6 +507,17 @@ class TransferFunctionSSA {
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
       return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
+    }
+    throw new BatfishException("TODO: int expr transfer function: " + e);
+  }
+
+  /*
+   * Apply the effect of modifying an integer value (e.g., to set the local pref)
+   */
+  private ArithExpr applyIntExprModification(ArithExpr x, IntExpr e) {
+    if (e instanceof LiteralInt) {
+      LiteralInt z = (LiteralInt) e;
+      return _enc.mkInt(z.getValue());
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
@@ -713,7 +726,6 @@ class TransferFunctionSSA {
     BoolExpr cid = _enc.mkTrue();
     if (_isExport && _to.isBgp() && p.getOther().getClientId() != null) {
       cid = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
-      ;
     }
     if (!_isExport && _to.isBgp()) {
       if (p.getOther().getClientId() != null) {
@@ -1003,8 +1015,8 @@ class TransferFunctionSSA {
       } else if (stmt instanceof SetMetric) {
         p.debug("SetMetric");
         SetMetric sm = (SetMetric) stmt;
-        IntExpr ie = sm.getMetric();
-        ArithExpr newValue = applyIntExprModification(p.getOther().getMetric(), ie);
+        LongExpr ie = sm.getMetric();
+        ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
         newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
         ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
         p.getOther().setMetric(x);
@@ -1119,13 +1131,12 @@ class TransferFunctionSSA {
    * check for mkTrue and mkFalse values because z3 seems to have some issue with
    * identifying the AST expression kind (e.g., e.isTrue() throws an exception).
    */
-  private boolean canInline(TransferFunctionParam p, Expr e) {
+  private boolean canInline(Expr e) {
     // TODO: such a huge hack
     String s = e.toString();
     // p.debug("[STRING]: " + s);
-    boolean b = s.length() <= INLINE_HEURISTIC;
     // p.debug("Can Inline: " + b);
-    return b;
+    return s.length() <= INLINE_HEURISTIC;
   }
 
   /*
@@ -1134,7 +1145,7 @@ class TransferFunctionSSA {
    */
   private ArithExpr createArithVariableWith(TransferFunctionParam p, String name, ArithExpr e) {
     e = (ArithExpr) e.simplify();
-    if (canInline(p, e)) {
+    if (canInline(e)) {
       p.debug(name + "=" + e);
       return e;
     }
@@ -1149,7 +1160,7 @@ class TransferFunctionSSA {
 
   private BoolExpr createBoolVariableWith(TransferFunctionParam p, String name, BoolExpr e) {
     e = (BoolExpr) e.simplify();
-    if (canInline(p, e)) {
+    if (canInline(e)) {
       p.debug(name + "=" + e);
       return e;
     }
@@ -1159,14 +1170,13 @@ class TransferFunctionSSA {
     BoolExpr eq = _enc.mkEq(x, e);
     _enc.add(eq);
     p.debug(eq.toString());
-    ;
     return x;
   }
 
   private BitVecExpr createBitVecVariableWith(
       TransferFunctionParam p, String name, int size, BitVecExpr e) {
     e = (BitVecExpr) e.simplify();
-    if (canInline(p, e)) {
+    if (canInline(e)) {
       p.debug(name + "=" + e);
       return e;
     }

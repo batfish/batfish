@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
@@ -34,6 +35,8 @@ import org.batfish.smt.collections.Table2;
  * @author Ryan Beckett
  */
 public class Graph {
+
+  private static final String NULL_INTERFACE_NAME = "null_interface";
 
   private IBatfish _batfish;
 
@@ -69,7 +72,7 @@ public class Graph {
   /*
    * Create a graph, while selecting the subset of routers to use.
    */
-  public Graph(IBatfish batfish, Set<String> routers) {
+  public Graph(IBatfish batfish, @Nullable Set<String> routers) {
     _batfish = batfish;
     _configurations = new HashMap<>(_batfish.loadConfigurations());
     _edgeMap = new HashMap<>();
@@ -171,7 +174,7 @@ public class Graph {
   }
 
   public static boolean isNullRouted(StaticRoute sr) {
-    return sr.getNextHopInterface() != null && sr.getNextHopInterface().equals("null_interface");
+    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 
   /*
@@ -204,8 +207,7 @@ public class Graph {
               // Check if next-hop ip corresponds to direct interface
               Ip nhIp = sr.getNextHopIp();
               boolean isNextHop =
-                  nhIp != null
-                      && there != null
+                  there != null
                       && there.getPrefix() != null
                       && there.getPrefix().getAddress().equals(nhIp);
 
@@ -479,7 +481,7 @@ public class Graph {
     if (proto.isBgp()) {
       BgpNeighbor n1 = _ebgpNeighbors.get(ge);
       BgpNeighbor n2 = _ibgpNeighbors.get(ge);
-      return (n1 != null || n2 != null);
+      return n1 != null || n2 != null;
     }
 
     return true;
@@ -488,6 +490,7 @@ public class Graph {
   /*
    * Find the common (default) routing policy for the protol.
    */
+  @Nullable
   public RoutingPolicy findCommonRoutingPolicy(String router, Protocol proto) {
     Configuration conf = _configurations.get(router);
     if (proto.isOspf()) {
@@ -526,6 +529,7 @@ public class Graph {
   /* TODO: move this to Logical Graph
    * Find the import routing policy for a given edge
    */
+  @Nullable
   public RoutingPolicy findImportRoutingPolicy(String router, Protocol proto, GraphEdge ge) {
     Configuration conf = _configurations.get(router);
     if (proto.isConnected()) {
@@ -550,6 +554,7 @@ public class Graph {
   /* TODO: move this to logical graph
    * Find the export routing policy for a given edge
    */
+  @Nullable
   public RoutingPolicy findExportRoutingPolicy(String router, Protocol proto, LogicalEdge e) {
     Configuration conf = _configurations.get(router);
     if (proto.isConnected()) {
@@ -597,15 +602,6 @@ public class Graph {
               });
         });
 
-    sb.append("---------- Neighbors of each router ----------\n");
-    _neighbors.forEach(
-        (router, peers) -> {
-          sb.append("Router: ").append(router).append("\n");
-          for (String peer : peers) {
-            sb.append("  peer: ").append(peer).append("\n");
-          }
-        });
-
     sb.append("---------------- eBGP Neighbors ----------------\n");
     _ebgpNeighbors.forEach(
         (ge, n) -> {
@@ -629,7 +625,7 @@ public class Graph {
                       .append(", Interface: ")
                       .append(iface)
                       .append(" --> ")
-                      .append(sr.getNetwork().toString())
+                      .append(sr.getNetwork())
                       .append("\n");
                 }
               });
