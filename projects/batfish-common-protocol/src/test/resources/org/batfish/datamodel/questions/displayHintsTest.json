@@ -1,0 +1,30 @@
+{
+  "extractionHints" : {
+    "node1": {
+      "type": "string",
+      "hints": {
+        "use": "prefix",
+        "index" : 1
+      }
+    },
+    "interfaces1": {
+      "type" : "string",
+      "isList" : true,
+      "hints": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
+      }
+    },
+    "nodes1": {
+      "type": "int",
+      "isList": true,
+      "hints": {
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
+      }
+    }
+  },
+  "textDesc" : "${node1} has no accounting command"
+}
+

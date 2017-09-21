@@ -1,0 +1,29 @@
+{
+  "extractionHints" : {
+    "nodeFromPrefix": {
+      "type": "string",
+      "hints": {
+        "use": "prefix",
+        "index" : 1
+      }
+    },
+    "mtuFromSuffixOfSuffix": {
+      "type": "int",
+      "isList": false,
+      "hints": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
+      }
+    },
+    "interfaceListFromPrefixOfSuffix": {
+      "type": "string",
+      "isList": true,
+      "hints": {
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
+      }
+    }
+  },
+  "textDesc" : "${oneNode} has no accounting command"
+}
