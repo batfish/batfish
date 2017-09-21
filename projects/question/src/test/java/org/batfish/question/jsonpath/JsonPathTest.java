@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.question.jsonpath;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -35,11 +35,12 @@ public class JsonPathTest {
     Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
     ConfigurationBuilder b = new ConfigurationBuilder();
     _baseConfiguration = b.build();
-    _oneNtpServerNodesAnswerStr = CommonUtil.readResource("org/batfish/question/oneNtpServer.json");
+    _oneNtpServerNodesAnswerStr =
+        CommonUtil.readResource("org/batfish/question/jsonpath/oneNtpServer.json");
     _oneNtpServerNodesAnswerJsonObject =
         JsonPath.parse(_oneNtpServerNodesAnswerStr, _baseConfiguration).json();
     _twoNtpServersNodesAnswerStr =
-        CommonUtil.readResource("org/batfish/question/twoNtpServers.json");
+        CommonUtil.readResource("org/batfish/question/jsonpath/twoNtpServers.json");
     _twoNtpServersNodesAnswerJsonObject =
         JsonPath.parse(_twoNtpServersNodesAnswerStr, _baseConfiguration).json();
     ConfigurationBuilder prefixCb = new ConfigurationBuilder();

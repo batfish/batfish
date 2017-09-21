@@ -43,29 +43,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_RESULTS = "results";
 
-    static String prettyPrint(SortedMap<Integer, JsonPathResult> results) {
-      StringBuilder sb = new StringBuilder("Results for JsonPath\n");
-      for (Integer index : results.keySet()) {
-        JsonPathResult result = results.get(index);
-        sb.append(
-            String.format(
-                "  [%d]: %d results for %s\n", index, result.getNumResults(), result.getPath()));
-        if (result.getAssertionResult() != null) {
-          sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
-        }
-        for (JsonPathResultEntry resultEntry : result.getResult().values()) {
-          JsonNode suffix = resultEntry.getSuffix();
-          String pathString = resultEntry.getMapKey();
-          if (suffix != null) {
-            sb.append(String.format("    %s : %s\n", pathString, suffix));
-          } else {
-            sb.append(String.format("    %s\n", pathString));
-          }
-        }
-      }
-      return sb.toString();
-    }
-
     private SortedMap<Integer, JsonPathResult> _results;
 
     private AnswerSummary _summary;
@@ -88,6 +65,29 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       return prettyPrint(_results);
+    }
+
+    static String prettyPrint(SortedMap<Integer, JsonPathResult> results) {
+      StringBuilder sb = new StringBuilder("Results for JsonPath\n");
+      for (Integer index : results.keySet()) {
+        JsonPathResult result = results.get(index);
+        sb.append(
+            String.format(
+                "  [%d]: %d results for %s\n", index, result.getNumResults(), result.getPath()));
+        if (result.getAssertionResult() != null) {
+          sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
+        }
+        for (JsonPathResultEntry resultEntry : result.getResult().values()) {
+          JsonNode suffix = resultEntry.getSuffix();
+          String pathString = resultEntry.getMapKey();
+          if (suffix != null) {
+            sb.append(String.format("    %s : %s\n", pathString, suffix));
+          } else {
+            sb.append(String.format("    %s\n", pathString));
+          }
+        }
+      }
+      return sb.toString();
     }
 
     @JsonProperty(PROP_RESULTS)
@@ -152,6 +152,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
               i -> {
                 JsonPathQuery query = paths.get(i);
                 JsonPathResult jsonPathResult = computeResult(jsonObject, query);
+
+                if (query.getDisplayHints() != null) {
+                  jsonPathResult.computeDisplayValues(query.getDisplayHints());
+                }
 
                 allResults.put(i, jsonPathResult);
                 completed.incrementAndGet();
