@@ -2723,7 +2723,7 @@ ts_null
 
 vi_address_family
 :
-   NO? ADDRESS_FAMILY ~NEWLINE* NEWLINE
+   NO? ADDRESS_FAMILY IPV4 NEWLINE
    (
       viaf_vrrp
    )*
@@ -2785,22 +2785,40 @@ vc_null
 
 viaf_vrrp
 :
-   NO? VRRP ~NEWLINE* NEWLINE
+   NO? VRRP groupnum = DEC NEWLINE
    (
-      viafv_null
+      viafv_address
+      | viafv_null
+      | viafv_preempt
+      | viafv_priority
    )*
+;
+
+viafv_address
+:
+   ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 viafv_null
 :
    NO?
    (
-      ADDRESS
-      | PREEMPT
-      | PRIORITY
-      | TIMERS
+      TIMERS
       | TRACK
    ) ~NEWLINE* NEWLINE
+;
+
+viafv_preempt
+:
+   PREEMPT
+   (
+      DELAY delay = DEC
+   ) NEWLINE
+;
+
+viafv_priority
+:
+   PRIORITY priority = DEC NEWLINE
 ;
 
 vlan_null
@@ -2971,7 +2989,7 @@ vrfd_null
 
 vrrp_interface
 :
-   NO? INTERFACE interface_name NEWLINE
+   NO? INTERFACE iface = interface_name NEWLINE
    (
       vi_address_family
    )* NEWLINE?
