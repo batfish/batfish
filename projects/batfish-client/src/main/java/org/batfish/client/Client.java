@@ -2768,6 +2768,7 @@ public class Client extends AbstractClient implements IClient {
           // not all outputs of process command are of Answer.class type
           // in that case, we use the exact string as initialized above for
           // comparison
+          testAnswerString = testAnswerString.trim();
         }
 
         if (!missingReferenceFile) {
@@ -2781,13 +2782,10 @@ public class Client extends AbstractClient implements IClient {
             referenceAnswer = mapper.readValue(referenceOutput, Answer.class);
             referenceAnswerString = mapper.writeValueAsString(referenceAnswer);
           } catch (JsonParseException | UnrecognizedPropertyException e) {
-            // throw new BatfishException(
-            // "Error reading reference output using current schema
-            // (reference output is likely obsolete)",
-            // e);
             // not all outputs of process command are of Answer.class type
             // in that case, we use the exact string as initialized above
             // for comparison
+            referenceAnswerString = referenceAnswerString.trim();
           }
 
           // due to options chosen in BatfishObjectMapper, if json
