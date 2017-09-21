@@ -8,6 +8,7 @@ import com.microsoft.z3.Solver;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Instruments the network model with additional information that is useful for checking other
@@ -44,14 +45,12 @@ public class PropertyAdder {
    * the destination. A router is reachable if it has some neighbor that
    * is also reachable.
    */
-  public Map<String, BoolExpr> instrumentReachability(GraphEdge ge) {
+  public Map<String, BoolExpr> instrumentReachability(Set<GraphEdge> ges) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
 
-    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-    assert (fwdIface != null);
-
+    // Initialize reachability variables
     Map<String, BoolExpr> reachableVars = new HashMap<>();
     _encoderSlice
         .getGraph()
@@ -69,36 +68,36 @@ public class PropertyAdder {
               _encoderSlice.getAllVariables().put(var.toString(), var);
             });
 
-    BoolExpr baseRouterReachable = reachableVars.get(ge.getRouter());
-    solver.add(ctx.mkEq(fwdIface, baseRouterReachable));
-
     _encoderSlice
         .getGraph()
         .getEdgeMap()
         .forEach(
             (router, edges) -> {
-              if (!router.equals(ge.getRouter())) {
-                BoolExpr var = reachableVars.get(router);
-                BoolExpr acc = ctx.mkBool(false);
-                for (GraphEdge edge : edges) {
-                  if (!edge.isAbstract()) {
-                    BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
-                    if (edge.getPeer() != null) {
-                      BoolExpr peerReachable = reachableVars.get(edge.getPeer());
-                      acc = ctx.mkOr(acc, ctx.mkAnd(fwd, peerReachable));
-                    }
+              // Add the base case, reachable if we forward to a directly connected interface
+              BoolExpr hasDirectRoute = ctx.mkFalse();
+              for (GraphEdge ge : edges) {
+                if (!ge.isAbstract() && ges.contains(ge)) {
+                  BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+                  assert (fwdIface != null);
+                  hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+                }
+              }
+              // Now we add the recursive case, reachable if fwd to a reachable neighbor
+              BoolExpr hasRecursiveRoute = ctx.mkFalse();
+              for (GraphEdge edge : edges) {
+                if (!edge.isAbstract()) {
+                  BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
+                  if (edge.getPeer() != null) {
+                    BoolExpr peerReachable = reachableVars.get(edge.getPeer());
+                    hasRecursiveRoute = ctx.mkOr(hasRecursiveRoute, ctx.mkAnd(fwd, peerReachable));
                   }
                 }
-                solver.add(ctx.mkEq(var, acc));
               }
+              // Reachable if either holds true
+              BoolExpr reach = reachableVars.get(router);
+              BoolExpr canReach = ctx.mkOr(hasDirectRoute, hasRecursiveRoute);
+              solver.add(ctx.mkEq(reach, canReach));
             });
-
-    // Reachable implies permitted
-    /* enc.getGraph().getConfigurations().forEach((router, conf) -> {
-        BoolExpr reach = reachableVars.get(router);
-        BoolExpr permit = enc.getBestNeighbor().get(router).getPermitted();
-        solver.add(ctx.mkImplies(reach, permit));
-    }); */
 
     return reachableVars;
   }
@@ -158,15 +157,12 @@ public class PropertyAdder {
    * A router has a path of length n if some neighbor has a path
    * with length n-1.
    */
-  public Map<String, ArithExpr> instrumentPathLength(GraphEdge ge) {
+  public Map<String, ArithExpr> instrumentPathLength(Set<GraphEdge> ges) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
-
-    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-    assert (fwdIface != null);
-
     String sliceName = _encoderSlice.getSliceName();
 
+    // Initialize path length variables
     Map<String, ArithExpr> lenVars = new HashMap<>();
     _encoderSlice
         .getGraph()
@@ -181,44 +177,50 @@ public class PropertyAdder {
             });
 
     // Lower bound for all lengths
-    lenVars.forEach(
-        (name, var) -> {
-          solver.add(ctx.mkGe(var, ctx.mkInt(-1)));
-        });
+    lenVars.forEach((name, var) -> solver.add(ctx.mkGe(var, ctx.mkInt(-1))));
 
-    // Root router has length 0 if it uses the interface
     ArithExpr zero = ctx.mkInt(0);
-    ArithExpr baseRouterLen = lenVars.get(ge.getRouter());
-    solver.add(ctx.mkImplies(fwdIface, ctx.mkEq(baseRouterLen, zero)));
+    ArithExpr minusOne = ctx.mkInt(-1);
 
-    // mkIf no peer has a path, then I don't have a path
+    // If no peer has a path, then I don't have a path
     // Otherwise I choose 1 + somePeer value to capture all possible lengths
     _encoderSlice
         .getGraph()
         .getEdgeMap()
         .forEach(
             (router, edges) -> {
-              BoolExpr accNone = ctx.mkBool(true);
-              BoolExpr accSome = ctx.mkBool(false);
-              ArithExpr x = lenVars.get(router);
-              if (!router.equals(ge.getRouter())) {
-                for (GraphEdge edge : edges) {
-                  if (!edge.isAbstract()) {
-                    if (edge.getPeer() != null) {
-                      BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
-                      assert (dataFwd != null);
+              ArithExpr length = lenVars.get(router);
 
-                      ArithExpr y = lenVars.get(edge.getPeer());
-                      accNone = ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(y, zero), ctx.mkNot(dataFwd)));
+              // If there is a direct route, then we have length 0
+              BoolExpr acc = ctx.mkFalse();
+              for (GraphEdge ge : edges) {
+                if (!ge.isAbstract() && ges.contains(ge)) {
+                  BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+                  assert (fwdIface != null);
+                  acc = ctx.mkOr(acc, fwdIface);
+                }
+              }
 
-                      ArithExpr newVal = ctx.mkAdd(y, ctx.mkInt(1));
-                      BoolExpr fwd = ctx.mkAnd(ctx.mkGe(y, zero), dataFwd, ctx.mkEq(x, newVal));
-                      accSome = ctx.mkOr(accSome, fwd);
-                    }
+              // Otherwise, we find length recursively
+              BoolExpr accNone = ctx.mkTrue();
+              BoolExpr accSome = ctx.mkFalse();
+              for (GraphEdge edge : edges) {
+                if (!edge.isAbstract()) {
+                  if (edge.getPeer() != null) {
+                    BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
+                    assert (dataFwd != null);
+                    ArithExpr peerLen = lenVars.get(edge.getPeer());
+                    accNone =
+                        ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(peerLen, zero), ctx.mkNot(dataFwd)));
+                    ArithExpr newVal = ctx.mkAdd(peerLen, ctx.mkInt(1));
+                    BoolExpr fwd =
+                        ctx.mkAnd(ctx.mkGe(peerLen, zero), dataFwd, ctx.mkEq(length, newVal));
+                    accSome = ctx.mkOr(accSome, fwd);
                   }
                 }
-                solver.add(ctx.mkImplies(accNone, ctx.mkEq(x, ctx.mkInt(-1))));
-                solver.add(ctx.mkImplies(ctx.mkNot(accNone), accSome));
+                BoolExpr cond1 = _encoderSlice.mkIf(accNone, ctx.mkEq(length, minusOne), accSome);
+                BoolExpr cond2 = _encoderSlice.mkIf(acc, ctx.mkEq(length, zero), cond1);
+                solver.add(cond2);
               }
             });
 
