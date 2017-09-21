@@ -82,6 +82,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   ROUTE_POLICY_AS_PATH_IN("route-policy as-path in"),
   ROUTE_POLICY_PREFIX_SET("route-policy prefix-set"),
   ROUTER_ISIS_DISTRIBUTE_LIST_ACL("router isis distribute-list acl"),
+  ROUTER_VRRP_INTERFACE("router vrrp interface"),
   SNMP_SERVER_COMMUNITY_ACL("snmp server community acl"),
   SNMP_SERVER_COMMUNITY_ACL4("snmp server community ipv4 acl"),
   SNMP_SERVER_COMMUNITY_ACL6("snmp server community ipv6 acl"),
