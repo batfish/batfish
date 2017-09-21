@@ -106,8 +106,7 @@ public class JsonPathDisplayHintsTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(errorMessage);
 
-    Map<String, Map<String, JsonNode>> displayValues =
-        result.computeDisplayValues(getDisplayHints(displayVariable));
+    result.computeDisplayValues(getDisplayHints(displayVariable));
   }
 
   @Test
