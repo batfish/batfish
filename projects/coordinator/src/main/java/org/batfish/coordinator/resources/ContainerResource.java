@@ -25,12 +25,10 @@ public class ContainerResource {
 
   private BatfishLogger _logger = Main.getLogger();
 
-  private UriInfo _uriInfo;
   private String _name;
   private String _apiKey;
 
   public ContainerResource(UriInfo uriInfo, String apiKey, String name) {
-    _uriInfo = uriInfo;
     _apiKey = apiKey;
     _name = name;
   }
