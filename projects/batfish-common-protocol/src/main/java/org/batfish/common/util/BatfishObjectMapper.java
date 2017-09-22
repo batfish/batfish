@@ -48,6 +48,7 @@ public class BatfishObjectMapper extends ObjectMapper {
     if (indent) {
       enable(SerializationFeature.INDENT_OUTPUT);
     }
+    enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
     // See https://groups.google.com/forum/#!topic/jackson-user/WfZzlt5C2Ww
     //  This fixes issues in which non-empty maps with keys with empty values would get omitted

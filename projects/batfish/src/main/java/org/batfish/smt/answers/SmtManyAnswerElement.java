@@ -21,7 +21,7 @@ public class SmtManyAnswerElement implements AnswerElement {
     if (_result != null) {
       for (Map.Entry<String, VerificationResult> e : _result.entrySet()) {
         VerificationResult r = e.getValue();
-        if (!r.getVerified()) {
+        if (!r.isVerified()) {
           return r.prettyPrint(e.getKey());
         }
       }

@@ -4,19 +4,22 @@ import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
+import com.microsoft.z3.Model;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -28,9 +31,11 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.answers.SmtManyAnswerElement;
 import org.batfish.smt.answers.SmtOneAnswerElement;
+import org.batfish.smt.answers.SmtReachabilityAnswerElement;
 import org.batfish.smt.collections.Table2;
 import org.batfish.smt.utils.PathRegexes;
 import org.batfish.smt.utils.PatternUtils;
+import org.batfish.smt.utils.Tuple;
 
 /**
  * A collection of functions to checks if various properties hold in the network. The general flow
@@ -48,28 +53,51 @@ public class PropertyChecker {
    * and data plane packet.
    */
   public static AnswerElement computeForwarding(IBatfish batfish, HeaderQuestion q) {
-    // long start = System.currentTimeMillis();
     Encoder encoder = new Encoder(batfish, q);
     encoder.computeEncoding();
-    // long end = System.currentTimeMillis() - start;
-    // System.out.println("Encoding took: " + end);
-    VerificationResult result = encoder.verify();
-    // result.debug(encoder.getMainSlice(), true, null);
+    VerificationResult result = encoder.verify().getFirst();
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;
   }
 
-  private static BoolExpr allReachable(Encoder enc, GraphEdge ge, List<String> sourceRouters) {
-    EncoderSlice slice = enc.getMainSlice();
-    PropertyAdder pa = new PropertyAdder(slice);
-    Map<String, BoolExpr> reachableVars = pa.instrumentReachability(ge);
-    BoolExpr allReach = enc.mkTrue();
-    for (String router : sourceRouters) {
-      BoolExpr reach = reachableVars.get(router);
-      allReach = enc.mkAnd(allReach, reach);
+  private static Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
+    Set<GraphEdge> edges = new HashSet<>();
+    for (GraphEdge ge : PatternUtils.findMatchingEdges(g, p)) {
+      if (ge.getPeer() == null) {
+        edges.add(ge);
+      }
     }
-    return allReach;
+    return edges;
+  }
+
+  private static void inferDestinationHeaderSpace(
+      Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
+    // Infer relevant destination IP headerspace from interfaces
+    for (GraphEdge ge : destPorts) {
+      // If there is an external interface, then
+      // it can be any prefix, so we leave it unconstrained
+      if (g.getEbgpNeighbors().containsKey(ge)) {
+        q.getHeaderSpace().getDstIps().clear();
+        break;
+      }
+      // Otherwise, we add the destination IP range
+      Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
+      IpWildcard dst = new IpWildcard(pfx);
+      q.getHeaderSpace().getDstIps().add(dst);
+    }
+  }
+
+  /*
+   * Lookup the value of a variable from a z3 model
+   */
+  @Nullable
+  private static String evaluate(Model m, Expr e) {
+    Expr val = m.evaluate(e, false);
+    if (!val.equals(e)) {
+      return val.toString();
+    }
+    return null;
   }
 
   /*
@@ -88,94 +116,133 @@ public class PropertyChecker {
   public static AnswerElement computeReachability(IBatfish batfish, HeaderLocationQuestion q) {
 
     PathRegexes p = new PathRegexes(q);
-
     Graph graph = new Graph(batfish);
-    List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
-    List<String> sourceRouters = PatternUtils.findMatchingNodes(graph, p);
-    Map<String, VerificationResult> result = new HashMap<>();
+    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
+    List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
+    inferDestinationHeaderSpace(graph, destPorts, q);
 
-    for (GraphEdge ge : destinationPorts) {
-      // Add the interface destination
-      boolean addedDestination = false;
-      if (q.getHeaderSpace().getDstIps().isEmpty()) {
-        addedDestination = true;
-        Prefix destination = ge.getStart().getPrefix();
-        IpWildcard dst = new IpWildcard(destination);
-        q.getHeaderSpace().getDstIps().add(dst);
+    Encoder enc = new Encoder(graph, q);
+    enc.computeEncoding();
+
+    // Add reachability variables
+    PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+    Map<String, BoolExpr> reach = pa.instrumentReachability(destPorts);
+
+    // If this is a equivalence query, we create a second copy of the network
+    Encoder enc2 = null;
+    Map<String, BoolExpr> reach2 = null;
+
+    if (q.getEquivalence()) {
+      enc2 = new Encoder(enc, graph);
+      HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
+      q2.setFailures(0);
+      enc2.setQuestion(q2);
+      enc2.computeEncoding();
+    }
+
+    // TODO: Should equivalence be factored out separately?
+    if (q.getEquivalence()) {
+      assert (enc2 != null);
+
+      // create a map for enc2 to lookup a related environment variable from enc
+      Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
+      enc2.getMainSlice()
+          .getLogicalGraph()
+          .getEnvironmentVars()
+          .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
+
+      BoolExpr related = enc.mkTrue();
+
+      // relate environments
+      Map<LogicalEdge, SymbolicRecord> map =
+          enc.getMainSlice().getLogicalGraph().getEnvironmentVars();
+      for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
+        LogicalEdge le = entry.getKey();
+        SymbolicRecord r1 = entry.getValue();
+        String router = le.getEdge().getRouter();
+        Configuration conf = enc.getMainSlice().getGraph().getConfigurations().get(router);
+
+        // Lookup the same environment variable in the other copy
+        // The copy will have a different name but the same edge and type
+        SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
+        assert r2 != null;
+        BoolExpr x = equal(enc, conf, r1, r2);
+        related = enc.mkAnd(related, x);
       }
 
-      Encoder enc = new Encoder(graph, q);
-      enc.computeEncoding();
+      PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
+      reach2 = pa2.instrumentReachability(destPorts);
 
-      // If this is a equivalence query
-      Encoder enc2 = null;
-      if (q.getEquivalence()) {
-        enc2 = new Encoder(enc, graph);
-        HeaderQuestion q2 = new HeaderQuestion(enc.getQuestion());
-        q2.setFailures(0);
-        enc2.setQuestion(q2);
-        enc2.computeEncoding();
+      BoolExpr required = enc.mkTrue();
+      for (String source : sourceRouters) {
+        BoolExpr sourceReachable1 = reach.get(source);
+        BoolExpr sourceReachable2 = reach2.get(source);
+        required = enc.mkAnd(required, enc.mkEq(sourceReachable1, sourceReachable2));
       }
 
-      BoolExpr allReach = allReachable(enc, ge, sourceRouters);
+      // Ensure packets are equal
+      SymbolicPacket p1 = enc.getMainSlice().getSymbolicPacket();
+      SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
+      BoolExpr equalPackets = p1.mkEqual(p2);
+      related = enc.mkAnd(related, equalPackets);
 
-      // TODO: refactor into separate function
-      if (q.getEquivalence()) {
-        assert (enc2 != null);
+      // Assuming equal packets and environments, is reachability the same
+      enc.add(related);
+      enc.add(enc.mkNot(required));
 
-        // create a map for enc2 to lookup a related environment variable from enc
-        Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
-        enc2.getMainSlice().getLogicalGraph().getEnvironmentVars().forEach((lge, r) -> {
-          relatedEnv.put(lge.getEdge(),lge.getEdgeType(),r);
-        });
-
-        BoolExpr related = enc.mkTrue();
-
-        // relate environments
-        Map<LogicalEdge, SymbolicRecord> map =
-            enc.getMainSlice().getLogicalGraph().getEnvironmentVars();
-        for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
-          LogicalEdge le = entry.getKey();
-          SymbolicRecord r1 = entry.getValue();
-          String router = le.getEdge().getRouter();
-          Configuration conf = enc.getMainSlice().getGraph().getConfigurations().get(router);
-
-          // Lookup the same environment variable in the other copy
-          // The copy will have a different name but the same edge and type
-          SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
-          assert r2 != null;
-
-          BoolExpr x = equal(enc, conf, r1, r2);
-          related = enc.mkAnd(related, x);
-        }
-
-        BoolExpr allReach2 = allReachable(enc2, ge, sourceRouters);
-
-        enc.add(related);
-        enc.add(enc.mkNot(enc.mkEq(allReach, allReach2)));
-
-      } else {
-        enc.add(enc.mkNot(allReach));
+    } else {
+      BoolExpr allReach = enc.mkTrue();
+      for (String router : sourceRouters) {
+        BoolExpr r = reach.get(router);
+        allReach = enc.mkAnd(allReach, r);
       }
+      enc.add(enc.mkNot(allReach));
+    }
 
-      // We don't really care about the case where the interface is directly failed
+    // We don't really care about the case where the interface is directly failed
+    for (GraphEdge ge : destPorts) {
       ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
+      assert (f != null);
       enc.add(enc.mkEq(f, enc.mkInt(0)));
+    }
 
-      VerificationResult res = enc.verify();
+    Tuple<VerificationResult, Model> result = enc.verify();
+    VerificationResult res = result.getFirst();
+    Model model = result.getSecond();
+    // res.debug(enc.getMainSlice(), true, null);
 
-      // res.debug(enc.getMainSlice(), true, null);
-
-      result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
-
-      // Remove the interface
-      if (addedDestination) {
-        q.getHeaderSpace().getDstIps().clear();
+    // Analyze the result to see if we can figure out what went wrong
+    Set<String> unreachableSources = new HashSet<>();
+    Map<String, Boolean> diffReachable = new HashMap<>();
+    if (!res.isVerified()) {
+      if (q.getEquivalence()) {
+        assert (reach2 != null);
+        for (String source : sourceRouters) {
+          BoolExpr sourceVar1 = reach.get(source);
+          BoolExpr sourceVar2 = reach2.get(source);
+          String val1 = evaluate(model, sourceVar1);
+          String val2 = evaluate(model, sourceVar2);
+          if (!Objects.equals(val1, val2)) {
+            boolean isTrue = "true".equals(val1);
+            diffReachable.put(source, isTrue);
+          }
+        }
+      } else {
+        for (String source : sourceRouters) {
+          BoolExpr sourceVar = reach.get(source);
+          String val = res.getModel().get(sourceVar.toString());
+          if ("false".equals(val)) {
+            unreachableSources.add(source);
+          }
+        }
       }
     }
 
-    SmtManyAnswerElement answer = new SmtManyAnswerElement();
-    answer.setResult(result);
+    SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
+    answer.setResult(res);
+    answer.setUnreachableSources(unreachableSources);
+    answer.setDiffReachability(diffReachable);
+
     return answer;
   }
 
@@ -185,12 +252,9 @@ public class PropertyChecker {
    */
   public static AnswerElement computeBlackHole(IBatfish batfish, HeaderQuestion q) {
     Graph graph = new Graph(batfish);
-
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
-
     Context ctx = enc.getCtx();
-
     EncoderSlice slice = enc.getMainSlice();
 
     // Collect routers that have no host/environment edge
@@ -240,7 +304,7 @@ public class PropertyChecker {
 
     enc.add(someBlackHole);
 
-    VerificationResult result = enc.verify();
+    VerificationResult result = enc.verify().getFirst();
 
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
@@ -255,52 +319,31 @@ public class PropertyChecker {
       IBatfish batfish, HeaderLocationQuestion q, int k) {
 
     PathRegexes p = new PathRegexes(q);
-
     Graph graph = new Graph(batfish);
-    List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
-    List<String> sourceRouters = PatternUtils.findMatchingNodes(graph, p);
-    Map<String, VerificationResult> result = new HashMap<>();
+    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
+    List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
+    inferDestinationHeaderSpace(graph, destPorts, q);
 
-    for (GraphEdge ge : destinationPorts) {
-      // Add the interface destination
-      boolean addedDestination = false;
-      if (q.getHeaderSpace().getDstIps().isEmpty()) {
-        addedDestination = true;
-        Prefix destination = ge.getStart().getPrefix();
-        IpWildcard dst = new IpWildcard(destination);
-        q.getHeaderSpace().getDstIps().add(dst);
-      }
+    Encoder enc = new Encoder(graph, q);
+    enc.computeEncoding();
+    EncoderSlice slice = enc.getMainSlice();
 
-      Encoder enc = new Encoder(graph, q);
-      enc.computeEncoding();
+    PropertyAdder pa = new PropertyAdder(slice);
+    Map<String, ArithExpr> lenVars = pa.instrumentPathLength(destPorts);
+    Context ctx = enc.getCtx();
 
-      EncoderSlice slice = enc.getMainSlice();
-
-      PropertyAdder pa = new PropertyAdder(slice);
-      Map<String, ArithExpr> lenVars = pa.instrumentPathLength(ge);
-
-      Context ctx = enc.getCtx();
-
-      // All routers bounded by a particular length
-      BoolExpr allBounded = ctx.mkBool(false);
-      for (String router : sourceRouters) {
-        ArithExpr len = lenVars.get(router);
-        ArithExpr bound = ctx.mkInt(k);
-        allBounded = ctx.mkOr(allBounded, ctx.mkGt(len, bound));
-      }
-      enc.add(allBounded);
-
-      VerificationResult res = enc.verify();
-      result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
-
-      // Remove the interface destination
-      if (addedDestination) {
-        q.getHeaderSpace().getDstIps().clear();
-      }
+    // All routers bounded by a particular length
+    BoolExpr allBounded = ctx.mkFalse();
+    for (String router : sourceRouters) {
+      ArithExpr len = lenVars.get(router);
+      ArithExpr bound = ctx.mkInt(k);
+      allBounded = ctx.mkOr(allBounded, ctx.mkGt(len, bound));
     }
+    enc.add(allBounded);
 
-    SmtManyAnswerElement answer = new SmtManyAnswerElement();
-    answer.setResult(result);
+    VerificationResult res = enc.verify().getFirst();
+    SmtOneAnswerElement answer = new SmtOneAnswerElement();
+    answer.setResult(res);
     return answer;
   }
 
@@ -309,53 +352,31 @@ public class PropertyChecker {
    * equal path length to destination port(s).
    */
   public static AnswerElement computeEqualLength(IBatfish batfish, HeaderLocationQuestion q) {
-
     PathRegexes p = new PathRegexes(q);
-
     Graph graph = new Graph(batfish);
-    List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
-    List<String> sourceRouters = PatternUtils.findMatchingNodes(graph, p);
-    Map<String, VerificationResult> result = new HashMap<>();
+    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
+    List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
+    inferDestinationHeaderSpace(graph, destPorts, q);
 
-    for (GraphEdge ge : destinationPorts) {
-      // Add the interface destination
-      boolean addedDestination = false;
-      if (q.getHeaderSpace().getDstIps().isEmpty()) {
-        addedDestination = true;
-        Prefix destination = ge.getStart().getPrefix();
-        IpWildcard dst = new IpWildcard(destination);
-        q.getHeaderSpace().getDstIps().add(dst);
-      }
+    Encoder enc = new Encoder(graph, q);
+    enc.computeEncoding();
+    EncoderSlice slice = enc.getMainSlice();
 
-      Encoder enc = new Encoder(graph, q);
-      enc.computeEncoding();
+    PropertyAdder pa = new PropertyAdder(slice);
+    Map<String, ArithExpr> lenVars = pa.instrumentPathLength(destPorts);
+    Context ctx = enc.getCtx();
 
-      EncoderSlice slice = enc.getMainSlice();
-
-      PropertyAdder pa = new PropertyAdder(slice);
-      Map<String, ArithExpr> lenVars = pa.instrumentPathLength(ge);
-
-      Context ctx = enc.getCtx();
-
-      // All routers have the same length through transitivity
-      List<Expr> lens = new ArrayList<>();
-      for (String router : sourceRouters) {
-        lens.add(lenVars.get(router));
-      }
-      BoolExpr allEqual = PropertyAdder.allEqual(ctx, lens);
-
-      enc.add(ctx.mkNot(allEqual));
-
-      VerificationResult res = enc.verify();
-      result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
-
-      if (addedDestination) {
-        q.getHeaderSpace().getDstIps().clear();
-      }
+    // All routers have the same length through transitivity
+    List<Expr> lens = new ArrayList<>();
+    for (String router : sourceRouters) {
+      lens.add(lenVars.get(router));
     }
+    BoolExpr allEqual = PropertyAdder.allEqual(ctx, lens);
+    enc.add(ctx.mkNot(allEqual));
 
-    SmtManyAnswerElement answer = new SmtManyAnswerElement();
-    answer.setResult(result);
+    VerificationResult res = enc.verify().getFirst();
+    SmtOneAnswerElement answer = new SmtOneAnswerElement();
+    answer.setResult(res);
     return answer;
   }
 
@@ -370,11 +391,11 @@ public class PropertyChecker {
 
     Graph graph = new Graph(batfish);
     List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
-    List<String> sourceRouters = PatternUtils.findMatchingNodes(graph, p);
+    List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     Map<String, List<String>> peerRouters = new HashMap<>();
     Map<String, VerificationResult> result = new HashMap<>();
 
-    List<String> pRouters = PatternUtils.findMatchingNodes(graph, p);
+    List<String> pRouters = PatternUtils.findMatchingSourceNodes(graph, p);
 
     // TODO: refactor this out separately
     for (String router : sourceRouters) {
@@ -421,7 +442,7 @@ public class PropertyChecker {
       BoolExpr evenLoads = PropertyAdder.allEqual(ctx, peerLoads);
       enc.add(ctx.mkNot(evenLoads));
 
-      VerificationResult res = enc.verify();
+      VerificationResult res = enc.verify().getFirst();
       result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
 
       if (addedDestination) {
@@ -696,7 +717,7 @@ public class PropertyChecker {
       e2.add(assumptions);
       e2.add(ctx.mkNot(required));
 
-      VerificationResult res = e2.verify();
+      VerificationResult res = e2.verify().getFirst();
 
       // res.debug(e1.getMainSlice(), false, null);
 
@@ -789,65 +810,46 @@ public class PropertyChecker {
    */
   public static AnswerElement computeMultipathConsistency(
       IBatfish batfish, HeaderLocationQuestion q) {
-
     PathRegexes p = new PathRegexes(q);
-
     Graph graph = new Graph(batfish);
-    List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
-    Map<String, VerificationResult> result = new HashMap<>();
+    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
+    inferDestinationHeaderSpace(graph, destPorts, q);
 
-    for (GraphEdge ge : destinationPorts) {
-      // Add the interface destination
-      boolean addedDestination = false;
-      if (q.getHeaderSpace().getDstIps().isEmpty()) {
-        addedDestination = true;
-        Prefix destination = ge.getStart().getPrefix();
-        IpWildcard dst = new IpWildcard(destination);
-        q.getHeaderSpace().getDstIps().add(dst);
-      }
+    Encoder enc = new Encoder(graph, q);
+    enc.computeEncoding();
+    EncoderSlice slice = enc.getMainSlice();
 
-      Encoder enc = new Encoder(graph, q);
-      enc.computeEncoding();
+    PropertyAdder pa = new PropertyAdder(slice);
+    Map<String, BoolExpr> reachableVars = pa.instrumentReachability(destPorts);
 
-      EncoderSlice slice = enc.getMainSlice();
+    BoolExpr acc = enc.mkFalse();
+    for (Map.Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      BoolExpr reach = reachableVars.get(router);
 
-      PropertyAdder pa = new PropertyAdder(slice);
-      Map<String, BoolExpr> reachableVars = pa.instrumentReachability(ge);
-
-      BoolExpr acc = enc.mkFalse();
-      for (Map.Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
-        String router = entry.getKey();
-        BoolExpr reach = reachableVars.get(router);
-
-        BoolExpr all = enc.mkTrue();
-        for (GraphEdge edge : graph.getEdgeMap().get(router)) {
-          BoolExpr dataFwd = slice.getForwardsAcross().get(router, edge);
-          BoolExpr ctrFwd = slice.getSymbolicDecisions().getControlForwarding().get(router, edge);
-          assert (ctrFwd != null);
-          BoolExpr peerReach = enc.mkTrue();
-          if (edge.getPeer() != null) {
-            peerReach = reachableVars.get(edge.getPeer());
-          }
-          BoolExpr imp = enc.mkImplies(ctrFwd, enc.mkAnd(dataFwd, peerReach));
-
-          all = enc.mkAnd(all, imp);
+      BoolExpr all = enc.mkTrue();
+      for (GraphEdge edge : graph.getEdgeMap().get(router)) {
+        BoolExpr dataFwd = slice.getForwardsAcross().get(router, edge);
+        BoolExpr ctrFwd = slice.getSymbolicDecisions().getControlForwarding().get(router, edge);
+        assert (ctrFwd != null);
+        BoolExpr peerReach = enc.mkTrue();
+        if (edge.getPeer() != null) {
+          peerReach = reachableVars.get(edge.getPeer());
         }
+        BoolExpr imp = enc.mkImplies(ctrFwd, enc.mkAnd(dataFwd, peerReach));
 
-        acc = enc.mkOr(acc, enc.mkNot(enc.mkImplies(reach, all)));
+        all = enc.mkAnd(all, imp);
       }
 
-      enc.add(acc);
-
-      VerificationResult res = enc.verify();
-      result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
-
-      if (addedDestination) {
-        q.getHeaderSpace().getDstIps().clear();
-      }
+      acc = enc.mkOr(acc, enc.mkNot(enc.mkImplies(reach, all)));
     }
 
-    SmtManyAnswerElement answer = new SmtManyAnswerElement();
-    answer.setResult(result);
+    enc.add(acc);
+
+    VerificationResult res = enc.verify().getFirst();
+
+    SmtOneAnswerElement answer = new SmtOneAnswerElement();
+    answer.setResult(res);
     return answer;
   }
 
@@ -906,7 +908,7 @@ public class PropertyChecker {
     }
     enc.add(someLoop);
 
-    VerificationResult result = enc.verify();
+    VerificationResult result = enc.verify().getFirst();
 
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);

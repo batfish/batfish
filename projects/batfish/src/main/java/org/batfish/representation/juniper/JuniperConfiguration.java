@@ -1747,7 +1747,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 asgLine);
           } else {
             for (org.batfish.datamodel.Interface iface : interfaces) {
-              iface.setDhcpRelayAddresses(asg.getServers());
+              iface.getDhcpRelayAddresses().addAll(asg.getServers());
             }
           }
         }
