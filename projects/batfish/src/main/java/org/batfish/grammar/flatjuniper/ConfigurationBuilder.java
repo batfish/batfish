@@ -18,6 +18,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AuthenticationKey;
+import org.batfish.datamodel.AuthenticationKey.IsisOption;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -2257,12 +2259,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitB_auth_algorithm(B_auth_algorithmContext ctx) {
     if (ctx.AES_128_CMAC_96() != null) {
       _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.AES_128_CMAC_96);
-    } else if (ctx.HMAC_SHA_1_96() != null) {
-      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.HMAC_SHA_1_96);
     } else if (ctx.MD5() != null) {
-      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.MD5);
+      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.TCP_ENHANCED_MD5);
     } else {
-      throw new BatfishException("Invalid Bgp authentication algorithm: " + ctx.getText());
+      _currentBgpGroup.setAuthAlgorithm(BgpAuthenticationAlgorithm.HMAC_SHA_1_96);
     }
   }
 
@@ -2276,8 +2276,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitB_description(B_descriptionContext ctx) {
-    String description = ctx.description().text.getText();
-    _currentBgpGroup.setDescription(description);
+    _currentBgpGroup.setDescription(ctx.description().text.getText());
   }
 
   @Override
@@ -3332,15 +3331,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String keyName = ctx.sea_key().name.getText();
       AuthenticationKey key = keyChain.getKeys().computeIfAbsent(keyName, AuthenticationKey::new);
       if (ctx.sea_key().seak_algorithm() != null) {
-        key.setAlgorithm(
+        key.setIsisAlgorithm(
             ctx.sea_key().seak_algorithm().HMAC_SHA1() != null
-                ? BgpAuthenticationAlgorithm.HMAC_SHA_1_96
-                : BgpAuthenticationAlgorithm.MD5);
+                ? IsisAuthenticationAlgorithm.HMAC_SHA_1
+                : IsisAuthenticationAlgorithm.MD5);
       } else if (ctx.sea_key().seak_options() != null) {
-        key.setOption(
+        key.setIsisOption(
             ctx.sea_key().seak_options().ISIS_ENHANCED() != null
-                ? AuthenticationKey.KeyOption.ISIS_ENHANCED
-                : AuthenticationKey.KeyOption.BASIC);
+                ? IsisOption.ISIS_ENHANCED
+                : IsisOption.BASIC);
       } else if (ctx.sea_key().seak_secret() != null) {
         key.setSecret(ctx.sea_key().seak_secret().key.getText());
       } else if (ctx.sea_key().seak_start_time() != null) {

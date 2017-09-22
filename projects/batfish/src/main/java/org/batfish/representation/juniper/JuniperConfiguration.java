@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AuthenticationKeyChain;
+import org.batfish.datamodel.AuthenticationSettings;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -204,19 +206,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String vrfName = routingInstance.getName();
     Vrf vrf = _c.getVrfs().get(vrfName);
     BgpProcess proc = new BgpProcess();
-    if (routingInstance.getMasterBgpGroup() != null) {
-      proc.setAuthAlgorithm(routingInstance.getMasterBgpGroup().getAuthAlgorithm());
-      proc.setAuthKey(routingInstance.getMasterBgpGroup().getAuthKey());
-      String authKeyChainName = routingInstance.getMasterBgpGroup().getAuthKeyChainName();
-      if (authKeyChainName != null) {
-        if (_c.getAuthenticationKeyChains().containsKey(authKeyChainName)) {
-          proc.setAuthKeyChainName(authKeyChainName);
-        } else {
-          throw new BatfishException(
-              String.format("Undefined authentication-key-chain '%s'", authKeyChainName));
-        }
-      }
-    }
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
       routerId = _defaultRoutingInstance.getRouterId();
@@ -265,17 +254,39 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
-      neighbor.setAuthAlgorithm(ig.getAuthAlgorithm());
-      neighbor.setAuthKey(ig.getAuthKey());
       String authKeyChainName = ig.getAuthKeyChainName();
       if (authKeyChainName != null) {
-        if (_c.getAuthenticationKeyChains().containsKey(authKeyChainName)) {
-          neighbor.setAuthKeyChainName(authKeyChainName);
-        } else {
-          throw new BatfishException(
-              String.format("Undefined authentication-key-chain '%s'", authKeyChainName));
+        if (!_c.getAuthenticationKeyChains().containsKey(authKeyChainName)) {
+          _w.redFlag(
+              "Undefined authentication-key-chain "
+                  + authKeyChainName
+                  + "for neighbor "
+                  + ig.getRemoteAddress());
+        } else if (ig.getAuthKey() != null) {
+          _w.redFlag(
+              "Both authentication-key and authentication-key-chain specified for neighbor "
+                  + ig.getRemoteAddress());
+        } else if (ig.getAuthAlgorithm() == null) {
+          _w.redFlag(
+              "Must configure an authentication algorithm for Bgp when using an "
+                  + "authentication-key-chain for neighbor "
+                  + ig.getRemoteAddress());
         }
       }
+      BgpAuthenticationAlgorithm authAlgorithm = ig.getAuthAlgorithm();
+      if (authAlgorithm != null) {
+        if (ig.getAuthKey() != null) {
+          _w.redFlag(
+              "Both authentication-key and authentication-algorithm specified for neighbor "
+                  + ig.getRemoteAddress());
+        } else if (ig.getAuthKeyChainName() == null) {
+          _w.redFlag(
+              "Specified authentication-algorithm without authentication-key-chain for neighbor "
+                  + ig.getRemoteAddress());
+        }
+      }
+      neighbor.setAuthSettings(
+          new AuthenticationSettings(authAlgorithm, ig.getAuthKey(), authKeyChainName));
       Boolean ebgpMultihop = ig.getEbgpMultihop();
       if (ebgpMultihop == null) {
         ebgpMultihop = false;

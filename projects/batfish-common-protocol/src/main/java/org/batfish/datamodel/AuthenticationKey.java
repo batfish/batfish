@@ -6,14 +6,16 @@ import org.batfish.common.util.ComparableStructure;
 
 public class AuthenticationKey extends ComparableStructure<String> {
 
-  public enum KeyOption {
+  public enum IsisOption {
     BASIC,
     ISIS_ENHANCED
   }
 
-  private static final String PROP_ALGORITHM = "algorithm";
+  private static final String PROP_BGP_ALGORITHM = "bgpAlgorithm";
 
-  private static final String PROP_OPTION = "option";
+  private static final String PROP_ISIS_ALGORITHM = "isisAlgorithm";
+
+  private static final String PROP_ISIS_OPTION = "isisOption";
 
   private static final String PROP_SECRET = "secret";
 
@@ -21,9 +23,11 @@ public class AuthenticationKey extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private BgpAuthenticationAlgorithm _algorithm;
+  private BgpAuthenticationAlgorithm _bgpAlgorithm;
 
-  private AuthenticationKey.KeyOption _option;
+  private IsisAuthenticationAlgorithm _isisAlgorithm;
+
+  private IsisOption _isisOption;
 
   private String _secret;
 
@@ -31,32 +35,37 @@ public class AuthenticationKey extends ComparableStructure<String> {
 
   public AuthenticationKey(String name) {
     super(name);
-    _algorithm = BgpAuthenticationAlgorithm.MD5;
-    _option = AuthenticationKey.KeyOption.BASIC;
   }
 
   @JsonCreator
   public AuthenticationKey(
       @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_ALGORITHM) BgpAuthenticationAlgorithm algorithm,
-      @JsonProperty(PROP_OPTION) AuthenticationKey.KeyOption option,
+      @JsonProperty(PROP_BGP_ALGORITHM) BgpAuthenticationAlgorithm bgpAlgorithm,
+      @JsonProperty(PROP_ISIS_ALGORITHM) IsisAuthenticationAlgorithm isisAlgorithm,
+      @JsonProperty(PROP_ISIS_OPTION) IsisOption isisOption,
       @JsonProperty(PROP_SECRET) String secret,
       @JsonProperty(PROP_START_TIME) String startTime) {
     super(name);
-    _algorithm = algorithm;
-    _option = option;
+    _bgpAlgorithm = bgpAlgorithm;
+    _isisAlgorithm = isisAlgorithm;
+    _isisOption = isisOption;
     _secret = secret;
     _startTime = startTime;
   }
 
-  @JsonProperty(PROP_ALGORITHM)
-  public BgpAuthenticationAlgorithm getAlgorithm() {
-    return _algorithm;
+  @JsonProperty(PROP_BGP_ALGORITHM)
+  public BgpAuthenticationAlgorithm getBgpAlgorithm() {
+    return _bgpAlgorithm;
   }
 
-  @JsonProperty(PROP_OPTION)
-  public AuthenticationKey.KeyOption getOption() {
-    return _option;
+  @JsonProperty(PROP_ISIS_ALGORITHM)
+  public IsisAuthenticationAlgorithm getIsisAlgorithm() {
+    return _isisAlgorithm;
+  }
+
+  @JsonProperty(PROP_ISIS_OPTION)
+  public IsisOption getIsisOption() {
+    return _isisOption;
   }
 
   @JsonProperty(PROP_SECRET)
@@ -69,14 +78,19 @@ public class AuthenticationKey extends ComparableStructure<String> {
     return _startTime;
   }
 
-  @JsonProperty(PROP_ALGORITHM)
-  public void setAlgorithm(BgpAuthenticationAlgorithm algorithm) {
-    _algorithm = algorithm;
+  @JsonProperty(PROP_BGP_ALGORITHM)
+  public void setBgpAlgorithm(BgpAuthenticationAlgorithm bgpAlgorithm) {
+    _bgpAlgorithm = bgpAlgorithm;
   }
 
-  @JsonProperty(PROP_OPTION)
-  public void setOption(AuthenticationKey.KeyOption option) {
-    _option = option;
+  @JsonProperty(PROP_ISIS_ALGORITHM)
+  public void setIsisAlgorithm(IsisAuthenticationAlgorithm isisAlgorithm) {
+    _isisAlgorithm = isisAlgorithm;
+  }
+
+  @JsonProperty(PROP_ISIS_OPTION)
+  public void setIsisOption(IsisOption isisOption) {
+    _isisOption = isisOption;
   }
 
   @JsonProperty(PROP_SECRET)

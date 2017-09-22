@@ -24,7 +24,6 @@ public class AuthenticationKeyChain extends ComparableStructure<String> {
 
   public AuthenticationKeyChain(String name) {
     super(name);
-    _description = "";
     _keys = new TreeMap<>();
     _tolerance = 0;
   }

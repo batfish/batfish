@@ -1,7 +1,8 @@
 package org.batfish.datamodel;
 
 public enum BgpAuthenticationAlgorithm {
-  MD5,
+  AES_128_CMAC_96,
   HMAC_SHA_1_96,
-  AES_128_CMAC_96
+  TCP_ENHANCED_MD5,
+  TCP_SIGNATURE_MD5
 }

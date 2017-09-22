@@ -9617,16 +9617,14 @@
             "bgp-auth" : {
               "keys" : {
                 "0" : {
-                  "algorithm" : "HMAC_SHA_1_96",
+                  "isisAlgorithm" : "HMAC_SHA_1",
+                  "isisOption" : "ISIS_ENHANCED",
                   "name" : "0",
-                  "option" : "ISIS_ENHANCED",
                   "secret" : "this-is-the-secret-password",
                   "startTime" : "2011-6-23.20:19:33"
                 },
                 "1" : {
-                  "algorithm" : "MD5",
                   "name" : "1",
-                  "option" : "BASIC",
                   "secret" : "this-is-another-secret-password",
                   "startTime" : "2012-6-23.20:19:33-0700"
                 }
@@ -9817,8 +9815,6 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
-                "authAlgorithm" : "AES_128_CMAC_96",
-                "authKey" : "this-is-key",
                 "multipathEbgp" : true,
                 "multipathIbgp" : false,
                 "neighbors" : {
@@ -9832,9 +9828,11 @@
                     "advertiseInactive" : false,
                     "allowLocalAsIn" : false,
                     "allowRemoteAsOut" : false,
-                    "authAlgorithm" : "MD5",
-                    "authKey" : "this-is-key",
-                    "authKeyChainName" : "bgp-auth",
+                    "authSettings" : {
+                      "authAlgorithm" : "TCP_ENHANCED_MD5",
+                      "authKey" : "this-is-key",
+                      "authKeyChainName" : "bgp-auth"
+                    },
                     "defaultMetric" : 0,
                     "dynamic" : false,
                     "ebgpMultihop" : false,
