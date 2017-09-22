@@ -35,6 +35,8 @@ public class AuthenticationKey extends ComparableStructure<String> {
 
   public AuthenticationKey(String name) {
     super(name);
+    _isisAlgorithm = IsisAuthenticationAlgorithm.MD5;
+    _isisOption = IsisOption.BASIC;
   }
 
   @JsonCreator

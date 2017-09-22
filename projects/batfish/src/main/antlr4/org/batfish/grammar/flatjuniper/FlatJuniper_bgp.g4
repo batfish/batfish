@@ -35,7 +35,7 @@ b_auth_algorithm
       AES_128_CMAC_96
       | HMAC_SHA_1_96
       | MD5
-   )?
+   )
 ;
 
 b_auth_key

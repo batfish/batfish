@@ -622,7 +622,7 @@ seak_algorithm
    (
       HMAC_SHA1
       | MD5
-   )?
+   )
 ;
 
 seak_options
@@ -631,7 +631,7 @@ seak_options
    (
       BASIC
       | ISIS_ENHANCED
-   )?
+   )
 ;
 
 seak_secret

@@ -231,6 +231,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         mg.setLocalAs(routingInstanceAs);
       }
     }
+    // Set default authentication algorithm if missing
+    if (mg.getAuthAlgorithm() == null) {
+      mg.setAuthAlgorithm(BgpAuthenticationAlgorithm.HMAC_SHA_1_96);
+    }
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
     }
@@ -255,38 +259,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
       String authKeyChainName = ig.getAuthKeyChainName();
-      if (authKeyChainName != null) {
+      if (ig.getAuthKeyChainName() != null) {
         if (!_c.getAuthenticationKeyChains().containsKey(authKeyChainName)) {
           _w.redFlag(
               "Undefined authentication-key-chain "
                   + authKeyChainName
                   + "for neighbor "
                   + ig.getRemoteAddress());
+          authKeyChainName = null;
         } else if (ig.getAuthKey() != null) {
           _w.redFlag(
               "Both authentication-key and authentication-key-chain specified for neighbor "
                   + ig.getRemoteAddress());
-        } else if (ig.getAuthAlgorithm() == null) {
-          _w.redFlag(
-              "Must configure an authentication algorithm for Bgp when using an "
-                  + "authentication-key-chain for neighbor "
-                  + ig.getRemoteAddress());
         }
       }
-      BgpAuthenticationAlgorithm authAlgorithm = ig.getAuthAlgorithm();
-      if (authAlgorithm != null) {
-        if (ig.getAuthKey() != null) {
+      if (ig.getAuthAlgorithm() != null && ig.getAuthKey() != null) {
           _w.redFlag(
               "Both authentication-key and authentication-algorithm specified for neighbor "
                   + ig.getRemoteAddress());
-        } else if (ig.getAuthKeyChainName() == null) {
-          _w.redFlag(
-              "Specified authentication-algorithm without authentication-key-chain for neighbor "
-                  + ig.getRemoteAddress());
-        }
       }
       neighbor.setAuthSettings(
-          new AuthenticationSettings(authAlgorithm, ig.getAuthKey(), authKeyChainName));
+          new AuthenticationSettings(ig.getAuthAlgorithm(), ig.getAuthKey(), authKeyChainName));
       Boolean ebgpMultihop = ig.getEbgpMultihop();
       if (ebgpMultihop == null) {
         ebgpMultihop = false;

@@ -9624,6 +9624,8 @@
                   "startTime" : "2011-6-23.20:19:33"
                 },
                 "1" : {
+                  "isisAlgorithm" : "MD5",
+                  "isisOption" : "BASIC",
                   "name" : "1",
                   "secret" : "this-is-another-secret-password",
                   "startTime" : "2012-6-23.20:19:33-0700"
