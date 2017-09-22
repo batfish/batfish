@@ -329,7 +329,6 @@ public class Encoder {
                   hs.setIpProtocols(protocols);
 
                   String sliceName = "SLICE-" + router + "_";
-
                   EncoderSlice slice = new EncoderSlice(this, hs, g, sliceName);
                   _slices.put(sliceName, slice);
 

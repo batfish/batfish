@@ -1,10 +1,12 @@
 package org.batfish.smt;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -175,6 +177,28 @@ public class Graph {
 
   public static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
+  }
+
+  /*
+   * Determines the collection of routers within the same AS
+   * as the router provided as a parameter
+   */
+  public Set<String> findDomain(String router) {
+    Set<String> sameDomain = new HashSet<>();
+    Queue<String> todo = new ArrayDeque<>();
+    todo.add(router);
+    while (!todo.isEmpty()) {
+      router = todo.remove();
+      sameDomain.add(router);
+      for (GraphEdge ge : getEdgeMap().get(router)) {
+        String peer = ge.getPeer();
+        BgpNeighbor n = _ebgpNeighbors.get(ge);
+        if (peer != null && n == null && !sameDomain.contains(peer)) {
+          todo.add(peer);
+        }
+      }
+    }
+    return sameDomain;
   }
 
   /*
@@ -500,7 +524,23 @@ public class Graph {
   }
 
   /*
-   * Find the common (default) routing policy for the protol.
+   * Determine if an edge is potentially attached to a host
+   */
+  public boolean isEdgeHostConnected(GraphEdge ge) {
+    boolean isBgpPeering = getEbgpNeighbors().get(ge) != null;
+    if (isBgpPeering) {
+      return false;
+    }
+    if (ge.getPeer() == null) {
+      return true;
+    }
+    Configuration peerConf = _configurations.get(ge.getPeer());
+    String vendor = peerConf.getConfigurationFormat().getVendorString();
+    return "host".equals(vendor);
+  }
+
+  /*
+   * Find the common (default) routing policy for the protocol.
    */
   @Nullable
   public RoutingPolicy findCommonRoutingPolicy(String router, Protocol proto) {
@@ -693,5 +733,9 @@ public class Graph {
 
   public Map<GraphEdge, GraphEdge> getOtherEnd() {
     return _otherEnd;
+  }
+
+  public IBatfish getBatfish() {
+    return _batfish;
   }
 }

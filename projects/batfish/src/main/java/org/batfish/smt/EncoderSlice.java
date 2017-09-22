@@ -1945,13 +1945,19 @@ class EncoderSlice {
                   // TODO: do we need this equality check?
                   BoolExpr isBest = mkAnd(choice, equal(conf, proto, best, vars, e, false));
 
+                  // Connected routes should only forward if there is a host through arp
+                  BoolExpr connectedWillSend = mkBool(getGraph().isEdgeHostConnected(e.getEdge()));
+                  BoolExpr canSend = (proto.isConnected() ? connectedWillSend : mkTrue());
+
+                  BoolExpr sends = mkAnd(canSend, isBest);
+
                   GraphEdge ge = e.getEdge();
                   BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
                   assert (cForward != null);
-                  add(mkImplies(isBest, cForward));
+                  add(mkImplies(sends, cForward));
 
                   // record the negation as well
-                  cfExprs.merge(ge, isBest, (a, b) -> mkOr(a, b));
+                  cfExprs.merge(ge, sends, (a, b) -> mkOr(a, b));
                 }
               }
 
@@ -1972,6 +1978,7 @@ class EncoderSlice {
                   add(mkNot(cForward));
                 }
               } else {
+                // If no best route, then no forwarding
                 _logicalGraph
                     .getLogicalEdges()
                     .get(router)
@@ -2254,7 +2261,7 @@ class EncoderSlice {
                       BoolExpr ctrlFwd =
                           getSymbolicDecisions().getControlForwarding().get(router, ge2);
                       Graph.BgpSendType st = getGraph().peerType(ge2);
-                      // mkIf Route reflectors, then next hop based on ID
+                      // If Route reflectors, then next hop based on ID
                       if (st == Graph.BgpSendType.TO_RR) {
                         SymbolicRecord record =
                             getSymbolicDecisions().getBestNeighbor().get(router);

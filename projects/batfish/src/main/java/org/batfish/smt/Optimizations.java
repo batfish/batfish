@@ -410,15 +410,11 @@ class Optimizations {
     HeaderQuestion q = _encoderSlice.getEncoder().getQuestion();
     boolean noFailures = q.getFailures() == 0;
 
-    System.out.println("Slice: " + _encoderSlice.getSliceName());
-    System.out.println("Failures: " + q.getFailures());
-
     _encoderSlice
         .getGraph()
         .getConfigurations()
         .forEach(
             (router, conf) -> {
-              System.out.println("Router: " + router);
 
               HashMap<Protocol, Boolean> map = new HashMap<>();
               _sliceCanKeepSingleExportVar.put(router, map);
@@ -430,7 +426,6 @@ class Optimizations {
                   map.put(proto, noFailures && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isOspf()) {
-                  System.out.println(" is ospf");
                   // Ensure all interfaces are active
                   boolean allIfacesActive = true;
                   for (GraphEdge edge : g.getEdgeMap().get(router)) {
@@ -441,11 +436,8 @@ class Optimizations {
                   }
 
                   // Ensure single area for this router
-                  boolean singleArea =
-                      _encoderSlice.getGraph().getAreaIds().get(router).size() <= 1;
-
-                  System.out.println("  has single area: " + singleArea);
-                  System.out.println("  all interfaces active: " + allIfacesActive);
+                  Set<Long> areas = _encoderSlice.getGraph().getAreaIds().get(router);
+                  boolean singleArea = areas.size() <= 1;
 
                   map.put(
                       proto,

@@ -64,7 +64,7 @@ public class PropertyChecker {
   private static Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
     Set<GraphEdge> edges = new HashSet<>();
     for (GraphEdge ge : PatternUtils.findMatchingEdges(g, p)) {
-      if (ge.getPeer() == null) {
+      if (ge.getPeer() == null || g.isEdgeHostConnected(ge)) {
         edges.add(ge);
       }
     }

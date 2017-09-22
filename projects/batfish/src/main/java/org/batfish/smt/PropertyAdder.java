@@ -171,6 +171,104 @@ public class PropertyAdder {
     return reachableVars;
   }
 
+
+  // Potentially useful in the future to optimize reachability when we know
+  // that there can't be routing loops e.g., due to a preliminary static analysis
+
+  /* public Map<String, BoolExpr> instrumentReachabilityFast(String router) {
+    Context ctx = _encoderSlice.getCtx();
+    Solver solver = _encoderSlice.getSolver();
+    Map<String, BoolExpr> reachableVars = new HashMap<>();
+    String sliceName = _encoderSlice.getSliceName();
+    _encoderSlice
+        .getGraph()
+        .getConfigurations()
+        .forEach(
+            (r, conf) -> {
+              int id = _encoderSlice.getEncoder().getId();
+              String s2 = id + "_" + sliceName + "_reachable_" + r;
+              BoolExpr var = ctx.mkBoolConst(s2);
+              reachableVars.put(r, var);
+              _encoderSlice.getAllVariables().put(var.toString(), var);
+            });
+
+    BoolExpr baseReach = reachableVars.get(router);
+    _encoderSlice.add(baseReach);
+    _encoderSlice
+        .getGraph()
+        .getEdgeMap()
+        .forEach(
+            (r, edges) -> {
+              if (!r.equals(router)) {
+                BoolExpr reach = reachableVars.get(r);
+                BoolExpr hasRecursiveRoute = ctx.mkFalse();
+                for (GraphEdge edge : edges) {
+                  if (!edge.isAbstract()) {
+                    BoolExpr fwd = _encoderSlice.getForwardsAcross().get(r, edge);
+                    if (edge.getPeer() != null) {
+                      BoolExpr peerReachable = reachableVars.get(edge.getPeer());
+                      BoolExpr sendToReachable = ctx.mkAnd(fwd, peerReachable);
+                      hasRecursiveRoute = ctx.mkOr(hasRecursiveRoute, sendToReachable);
+                    }
+                  }
+                }
+                solver.add(ctx.mkEq(reach, hasRecursiveRoute));
+              }
+            });
+
+    return reachableVars;
+  }
+
+  public Map<String, BoolExpr> instrumentReachabilityFast(Set<GraphEdge> ges) {
+    Context ctx = _encoderSlice.getCtx();
+    Solver solver = _encoderSlice.getSolver();
+    String sliceName = _encoderSlice.getSliceName();
+    Map<String, BoolExpr> reachableVars = new HashMap<>();
+    _encoderSlice
+        .getGraph()
+        .getConfigurations()
+        .forEach(
+            (r, conf) -> {
+              int id = _encoderSlice.getEncoder().getId();
+              String s2 = id + "_" + sliceName + "_reachable_" + r;
+              BoolExpr var = ctx.mkBoolConst(s2);
+              reachableVars.put(r, var);
+              _encoderSlice.getAllVariables().put(var.toString(), var);
+            });
+
+    _encoderSlice
+        .getGraph()
+        .getEdgeMap()
+        .forEach(
+            (router, edges) -> {
+              BoolExpr reach = reachableVars.get(router);
+              // Add the base case, reachable if we forward to a directly connected interface
+              BoolExpr hasDirectRoute = ctx.mkFalse();
+              for (GraphEdge ge : edges) {
+                if (!ge.isAbstract() && ges.contains(ge)) {
+                  BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+                  assert (fwdIface != null);
+                  hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+                }
+              }
+              // Add the recursive case, where it is reachable through a neighbor
+              BoolExpr hasRecursiveRoute = ctx.mkFalse();
+              for (GraphEdge edge : edges) {
+                if (!edge.isAbstract()) {
+                  BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
+                  if (edge.getPeer() != null) {
+                    BoolExpr peerReachable = reachableVars.get(edge.getPeer());
+                    BoolExpr sendToReachable = ctx.mkAnd(fwd, peerReachable);
+                    hasRecursiveRoute = ctx.mkOr(hasRecursiveRoute, sendToReachable);
+                  }
+                }
+              }
+              solver.add(ctx.mkEq(reach, ctx.mkOr(hasDirectRoute, hasRecursiveRoute)));
+            });
+
+    return reachableVars;
+  } */
+
   /*
    * Instruments the network with path length information to a
    * destination port corresponding to a graph edge ge.
