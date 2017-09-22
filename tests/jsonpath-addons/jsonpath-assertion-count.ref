@@ -5,29 +5,19 @@
       "results" : {
         "0" : {
           "assertionResult" : false,
-          "numResults" : 3,
+          "numResults" : 4,
           "path" : {
             "assertion" : {
-              "expect" : [
-                {
-                  "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
-                },
-                {
-                  "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"
-                },
-                {
-                  "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']"
-                },
-                {
-                  "prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']"
-                }
-              ],
-              "type" : "equals"
+              "expect" : 5,
+              "type" : "count"
             },
             "path" : "$.nodes['as3border1']..mtu",
             "suffix" : false
           },
           "result" : {
+            "'nodes'->'as3border1'->'interfaces'->'Ethernet0/0'->'mtu'" : {
+              "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
+            },
             "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet0/0'->'mtu'" : {
               "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"
             },
@@ -43,7 +33,7 @@
       "summary" : {
         "numFailed" : 1,
         "numPassed" : 0,
-        "numResults" : 3
+        "numResults" : 4
       }
     }
   ],
@@ -59,21 +49,8 @@
     "paths" : [
       {
         "assertion" : {
-          "expect" : [
-            {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
-            },
-            {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']"
-            },
-            {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']"
-            },
-            {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']"
-            }
-          ],
-          "type" : "equals"
+          "expect" : 5,
+          "type" : "count"
         },
         "path" : "$.nodes['as3border1']..mtu",
         "suffix" : false
@@ -84,6 +61,6 @@
   "summary" : {
     "numFailed" : 1,
     "numPassed" : 0,
-    "numResults" : 3
+    "numResults" : 4
   }
 }
