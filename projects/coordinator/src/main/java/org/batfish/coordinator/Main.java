@@ -15,8 +15,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -116,7 +114,6 @@ public class Main {
   }
 
   private static void readQuestionTemplates(Path questionsPath, Map<String, String> templates) {
-    SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
     try {
       Files.walkFileTree(
           questionsPath,

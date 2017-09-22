@@ -53,7 +53,7 @@ public class Encoder {
 
   public static final boolean ENABLE_UNSAT_CORE = false;
 
-  public static final boolean ENABLE_DEBUGGING = false;
+  public static final Boolean ENABLE_DEBUGGING = false;
 
   public static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
 

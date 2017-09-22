@@ -72,9 +72,6 @@ public class BatfishTestUtils {
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
-        Collections.synchronizedMap(
-            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(5));
     Path containerDir = tempFolder.newFolder("container").toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
