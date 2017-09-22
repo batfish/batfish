@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
 public class JsonPathQuery {
@@ -12,6 +13,8 @@ public class JsonPathQuery {
   private static final String PROP_ASSERTION = "assertion";
 
   private static final String PROP_DESCRIPTION = "description";
+
+  private static final String PROP_DISPLAY_HINTS = "displayHints";
 
   private static final String PROP_EXCEPTIONS = "exceptions";
 
@@ -22,6 +25,8 @@ public class JsonPathQuery {
   private JsonPathAssertion _assertion;
 
   private String _description;
+
+  private DisplayHints  _displayHints;
 
   private Set<JsonPathResultEntry> _exceptions;
 
@@ -37,6 +42,11 @@ public class JsonPathQuery {
   @JsonProperty(PROP_DESCRIPTION)
   public String getDescription() {
     return _description;
+  }
+
+  @JsonProperty(PROP_DISPLAY_HINTS)
+  public DisplayHints getDisplayHints() {
+    return _displayHints;
   }
 
   @JsonProperty(PROP_EXCEPTIONS)
@@ -66,6 +76,11 @@ public class JsonPathQuery {
   @JsonProperty(PROP_DESCRIPTION)
   public void setDescription(String description) {
     _description = description;
+  }
+
+  @JsonProperty(PROP_DISPLAY_HINTS)
+  public void setDisplayHints(DisplayHints displayHints) {
+    _displayHints = displayHints;
   }
 
   @JsonProperty(PROP_EXCEPTIONS)
