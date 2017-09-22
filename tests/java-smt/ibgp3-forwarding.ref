@@ -4,10 +4,10 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Serial0 --> R2,Serial0",
-          "R2,Serial1 --> R3,Serial1",
-          "R3,Serial0 --> R4,Serial0",
-          "R4,Loopback0 --> _,_"
+          "R1,Serial0 --> R2,Serial0 (BGP)",
+          "R2,Serial1 --> R3,Serial1 (BGP)",
+          "R3,Serial0 --> R4,Serial0 (BGP)",
+          "R4,Loopback0 --> _,_ (CONNECTED)"
         ],
         "model" : {
           "|0_FAILED-EDGE_R1_Loopback0|" : "0",
@@ -337,6 +337,10 @@
           "|0_SLICE-R1_R4_OVERALL_BEST_None_metric|" : "0",
           "|0_SLICE-R1_R4_OVERALL_BEST_None_permitted|" : "false",
           "|0_SLICE-R1_R4_OVERALL_BEST_None_prefixLength|" : "0",
+          "|0_SLICE-R1__reachable-id_R1|" : "1",
+          "|0_SLICE-R1__reachable-id_R2|" : "2",
+          "|0_SLICE-R1__reachable-id_R3|" : "0",
+          "|0_SLICE-R1__reachable-id_R4|" : "0",
           "|0_SLICE-R1__reachable_R1|" : "true",
           "|0_SLICE-R1__reachable_R2|" : "true",
           "|0_SLICE-R1__reachable_R3|" : "false",
@@ -444,6 +448,10 @@
           "|0_SLICE-R2_R4_OVERALL_BEST_None_metric|" : "0",
           "|0_SLICE-R2_R4_OVERALL_BEST_None_permitted|" : "false",
           "|0_SLICE-R2_R4_OVERALL_BEST_None_prefixLength|" : "0",
+          "|0_SLICE-R2__reachable-id_R1|" : "2",
+          "|0_SLICE-R2__reachable-id_R2|" : "1",
+          "|0_SLICE-R2__reachable-id_R3|" : "0",
+          "|0_SLICE-R2__reachable-id_R4|" : "0",
           "|0_SLICE-R2__reachable_R1|" : "true",
           "|0_SLICE-R2__reachable_R2|" : "true",
           "|0_SLICE-R2__reachable_R3|" : "false",
@@ -551,6 +559,10 @@
           "|0_SLICE-R3_R4_OVERALL_BEST_None_metric|" : "1",
           "|0_SLICE-R3_R4_OVERALL_BEST_None_permitted|" : "true",
           "|0_SLICE-R3_R4_OVERALL_BEST_None_prefixLength|" : "32",
+          "|0_SLICE-R3__reachable-id_R1|" : "0",
+          "|0_SLICE-R3__reachable-id_R2|" : "0",
+          "|0_SLICE-R3__reachable-id_R3|" : "1",
+          "|0_SLICE-R3__reachable-id_R4|" : "2",
           "|0_SLICE-R3__reachable_R1|" : "false",
           "|0_SLICE-R3__reachable_R2|" : "false",
           "|0_SLICE-R3__reachable_R3|" : "true",
@@ -658,6 +670,10 @@
           "|0_SLICE-R4_R4_OVERALL_BEST_None_metric|" : "0",
           "|0_SLICE-R4_R4_OVERALL_BEST_None_permitted|" : "true",
           "|0_SLICE-R4_R4_OVERALL_BEST_None_prefixLength|" : "24",
+          "|0_SLICE-R4__reachable-id_R1|" : "0",
+          "|0_SLICE-R4__reachable-id_R2|" : "0",
+          "|0_SLICE-R4__reachable-id_R3|" : "2",
+          "|0_SLICE-R4__reachable-id_R4|" : "1",
           "|0_SLICE-R4__reachable_R1|" : "false",
           "|0_SLICE-R4__reachable_R2|" : "false",
           "|0_SLICE-R4__reachable_R3|" : "true",
@@ -689,5 +705,10 @@
     "minimize" : false,
     "noEnvironment" : true
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }
