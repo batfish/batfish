@@ -1,6 +1,6 @@
 package org.batfish.smt.utils;
 
-import java.util.Objects;
+import com.google.common.base.Objects;
 import javax.annotation.Nullable;
 
 public class Tuple<T1, T2> {
