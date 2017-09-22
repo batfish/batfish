@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -221,9 +222,7 @@ public class PropertyChecker {
           BoolExpr sourceVar2 = reach2.get(source);
           String val1 = evaluate(model, sourceVar1);
           String val2 = evaluate(model, sourceVar2);
-          boolean notEqual =
-              ((val1 == null && val2 != null) || (val1 != null && !val1.equals(val2)));
-          if (notEqual) {
+          if (!Objects.equals(val1, val2)) {
             boolean isTrue = "true".equals(val1);
             diffReachable.put(source, isTrue);
           }

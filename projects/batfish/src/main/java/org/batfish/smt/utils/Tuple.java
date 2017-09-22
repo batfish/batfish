@@ -1,5 +1,6 @@
 package org.batfish.smt.utils;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 public class Tuple<T1, T2> {
@@ -38,8 +39,6 @@ public class Tuple<T1, T2> {
   }
 
   @Override public int hashCode() {
-    int result = _first != null ? _first.hashCode() : 0;
-    result = 31 * result + (_second != null ? _second.hashCode() : 0);
-    return result;
+    return 31 * Objects.hashCode(_first) + Objects.hashCode(_second);
   }
 }
