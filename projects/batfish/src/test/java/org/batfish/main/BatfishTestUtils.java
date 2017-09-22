@@ -68,7 +68,10 @@ public class BatfishTestUtils {
   }
 
   private static Batfish initBatfishFromConfigurationText(
-      SortedMap<String, String> configurationText, @Nullable TemporaryFolder tempFolder)
+      SortedMap<String, String> configurationText,
+      SortedMap<String, String> hostsText,
+      SortedMap<String, String> iptablesFilesText,
+      @Nullable TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
@@ -81,12 +84,25 @@ public class BatfishTestUtils {
     testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile().mkdirs();
     testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR).toFile().mkdirs();
     testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR).toFile().mkdirs();
+    testrigPath.resolve("iptables").toFile().mkdirs();
     settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     configurationText.forEach(
         (filename, content) -> {
           Path filePath =
               testrigPath.resolve(Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, filename));
+          CommonUtil.writeFile(filePath, content);
+        });
+    hostsText.forEach(
+        (filename, content) -> {
+          Path filePath =
+              testrigPath.resolve(Paths.get(BfConsts.RELPATH_HOST_CONFIGS_DIR, filename));
+          CommonUtil.writeFile(filePath, content);
+        });
+    iptablesFilesText.forEach(
+        (filename, content) -> {
+          Path filePath =
+              testrigPath.resolve(Paths.get("iptables", filename));
           CommonUtil.writeFile(filePath, content);
         });
 
@@ -132,12 +148,15 @@ public class BatfishTestUtils {
    * @return New Batfish instance
    */
   public static Batfish getBatfishFromConfigurationText(
-      SortedMap<String, String> configurationText, @Nullable TemporaryFolder tempFolder)
+      SortedMap<String, String> configurationText,
+      SortedMap<String, String> hostText,
+      SortedMap<String, String> iptablesText,
+      @Nullable TemporaryFolder tempFolder)
       throws IOException {
     if (!configurationText.isEmpty() && tempFolder == null) {
       throw new BatfishException("tempFolder must be set for non-empty configurations");
     }
-    return initBatfishFromConfigurationText(configurationText, tempFolder);
+    return initBatfishFromConfigurationText(configurationText, hostText, iptablesText, tempFolder);
   }
 
   /**

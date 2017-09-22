@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.util.CommonUtil;
@@ -27,14 +28,16 @@ public class CiscoGrammarTest {
   public void testAaaNewmodel() throws IOException {
     SortedMap<String, String> configurationText = new TreeMap<>();
     String configurationName = "aaaNoNewmodel";
-    String aaaNoNewmodelConfigurationText = CommonUtil.readResource(
-        TESTCONFIGS_PREFIX + configurationName);
+    String aaaNoNewmodelConfigurationText =
+        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
     configurationText.put(configurationName, aaaNoNewmodelConfigurationText);
     configurationName = "aaaNewmodel";
-    String aaaNewmodelConfigurationText = CommonUtil.readResource(
-        TESTCONFIGS_PREFIX + configurationName);
+    String aaaNewmodelConfigurationText =
+        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
     configurationText.put(configurationName, aaaNewmodelConfigurationText);
-    Batfish batfish = BatfishTestUtils.getBatfishFromConfigurationText(configurationText, _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configurationText, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Configuration newModelConfiguration = configurations.get("aaaNewmodel");
     boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
@@ -43,5 +46,4 @@ public class CiscoGrammarTest {
     aaaNewmodel = noNewModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
     assertFalse(aaaNewmodel);
   }
-
 }
