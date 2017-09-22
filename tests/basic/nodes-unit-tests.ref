@@ -4234,6 +4234,34 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.0.1/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfCost" : 60,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "192.168.0.1/24",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
             "Loopback0" : {
               "name" : "Loopback0",
               "accessVlan" : 0,
@@ -4594,6 +4622,7 @@
                 "Ethernet0",
                 "Ethernet1/11",
                 "Ethernet1/12",
+                "GigabitEthernet0/0",
                 "Loopback0",
                 "Modular-Cable1/2/3:4",
                 "Null0",

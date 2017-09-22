@@ -325,7 +325,7 @@ enable_null
 
 enable_password
 :
-   PASSWORD DEC? pass = variable ENCRYPTED? NEWLINE
+   PASSWORD DEC? pass = variable_password (seed = variable)? ENCRYPTED? NEWLINE
 ;
 
 enable_secret

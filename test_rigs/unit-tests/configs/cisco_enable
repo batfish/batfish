@@ -6,5 +6,6 @@ enable secret 5 $1$aaaaaaaaaaaaaaaaaaaaaaaaaaa
 enable super-user-password aaaaaaaaaaaaaaaaaaaaa
 enable telnet authentication
 enable telnet password aaaaaaaaaaaaaaaaaaaaaaaaa
+enable password $sha512$5000$98pqLCa2lpNvN6gnQl3zyQ==$QvdeF/4EqAATT2/e64ujg== woldj4
 !
 
