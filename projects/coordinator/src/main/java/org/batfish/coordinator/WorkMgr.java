@@ -1122,4 +1122,12 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(unzipSubdir);
     CommonUtil.delete(zipFile);
   }
+
+  /**
+   * Returns true if the container {@code containerName} exists, false otherwise.
+   */
+  public boolean checkContainerExists(String containerName) {
+    Path containerDir = getdirContainer(containerName, false);
+    return Files.exists(containerDir);
+  }
 }
