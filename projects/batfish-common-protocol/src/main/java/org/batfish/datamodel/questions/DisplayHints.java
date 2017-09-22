@@ -76,14 +76,14 @@ public class DisplayHints {
       _valueType = type;
     }
 
-    @JsonProperty(PROP_IS_LIST)
-    public boolean getIsList() {
-      return _isList;
-    }
-
     @JsonProperty(PROP_HINTS)
     public Map<String, JsonNode> getHints() {
       return _hints;
+    }
+
+    @JsonProperty(PROP_IS_LIST)
+    public boolean getIsList() {
+      return _isList;
     }
 
     @JsonProperty(PROP_VALUE_TYPE)
@@ -107,13 +107,22 @@ public class DisplayHints {
     }
   }
 
+  private static final String PROP_ENTITIES = "entities";
+
   private static final String PROP_EXTRACTION_HINTS = "extractionHints";
 
   private static final String PROP_TEXT_DESC = "textDesc";
 
+  private Map<String, JsonNode> _entities;
+
   private Map<String, ExtractionHint> _extractionHints;
 
   private String _textDesc;
+
+  @JsonProperty(PROP_ENTITIES)
+  public Map<String, JsonNode> getEntities() {
+    return _entities;
+  }
 
   @JsonProperty(PROP_EXTRACTION_HINTS)
   public Map<String, ExtractionHint> getExtractionHints() {
@@ -123,6 +132,11 @@ public class DisplayHints {
   @JsonProperty(PROP_TEXT_DESC)
   public String getTextDesc() {
     return _textDesc;
+  }
+
+  @JsonProperty(PROP_ENTITIES)
+  public void setEntities(Map<String, JsonNode> entities) {
+    _entities = entities;
   }
 
   @JsonProperty(PROP_EXTRACTION_HINTS)

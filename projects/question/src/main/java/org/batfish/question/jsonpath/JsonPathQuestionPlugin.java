@@ -73,7 +73,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         JsonPathResult result = results.get(index);
         sb.append(
             String.format(
-                "  [%d]: %d results for %s\n", index, result.getNumResults(), result.getPath()));
+                "  [%d]: %d results\n", index, result.getNumResults()));
         if (result.getAssertionResult() != null) {
           sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
         }
@@ -206,7 +206,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       }
 
       JsonPathResult jsonPathResult = new JsonPathResult();
-      jsonPathResult.setPath(query);
 
       try {
         prefixes = jsonPath.read(jsonObject, prefixC);
@@ -256,8 +255,8 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
             SortedMap<String, JsonPathResultEntry> removed = diff.getRemoved();
             sb.append(
                 String.format(
-                    "  [%d]: %d added and %d removed for %s\n",
-                    index, added.size(), removed.size(), diff.getPath().toString()));
+                    "  [%d]: %d added and %d removed \n",
+                    index, added.size(), removed.size()));
             SortedSet<String> allKeys =
                 CommonUtil.union(added.keySet(), removed.keySet(), TreeSet::new);
             for (String key : allKeys) {
