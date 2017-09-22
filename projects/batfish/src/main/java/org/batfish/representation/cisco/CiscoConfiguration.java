@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -122,6 +125,90 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
+
+  public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+
+  private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
+
+  private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
+    Map<String, String> prefixes = new LinkedHashMap<>();
+    prefixes.put("Async", "Async");
+    prefixes.put("ATM", "ATM");
+    prefixes.put("BDI", "BDI");
+    prefixes.put("BRI", "BRI");
+    prefixes.put("Bundle-Ether", "Bundle-Ethernet");
+    prefixes.put("BVI", "BVI");
+    prefixes.put("Cable", "Cable");
+    prefixes.put("cable-downstream", "cable-downstream");
+    prefixes.put("cable-mac", "cable-mac");
+    prefixes.put("cable-upstream", "cable-upstream");
+    prefixes.put("Crypto-Engine", "Crypto-Engine");
+    prefixes.put("cmp-mgmt", "cmp-mgmt");
+    prefixes.put("Dialer", "Dialer");
+    prefixes.put("Dot11Radio", "Dot11Radio");
+    prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
+    prefixes.put("Ethernet", "Ethernet");
+    prefixes.put("FastEthernet", "FastEthernet");
+    prefixes.put("fc", "fc");
+    prefixes.put("fe", "FastEthernet");
+    prefixes.put("fortyGigE", "FortyGigabitEthernet");
+    prefixes.put("FortyGigabitEthernet", "FortyGigabitEthernet");
+    prefixes.put("GigabitEthernet", "GigabitEthernet");
+    prefixes.put("ge", "GigabitEthernet");
+    prefixes.put("GMPLS", "GMPLS");
+    prefixes.put("HundredGigE", "HundredGigabitEthernet");
+    prefixes.put("ip", "ip");
+    prefixes.put("Group-Async", "Group-Async");
+    prefixes.put("LongReachEthernet", "LongReachEthernet");
+    prefixes.put("Loopback", "Loopback");
+    prefixes.put("Management", "Management");
+    prefixes.put("ManagementEthernet", "ManagementEthernet");
+    prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
+    prefixes.put("MgmtEth", "ManagementEthernet");
+    prefixes.put("Modular-Cable", "Modular-Cable");
+    prefixes.put("Null", "Null");
+    prefixes.put("Port-channel", "Port-Channel");
+    prefixes.put("POS", "POS");
+    prefixes.put("PTP", "PTP");
+    prefixes.put("Serial", "Serial");
+    prefixes.put("Service-Engine", "Service-Engine");
+    prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
+    prefixes.put("TenGigE", "TenGigabitEthernet");
+    prefixes.put("te", "TenGigabitEthernet");
+    prefixes.put("trunk", "trunk");
+    prefixes.put("Tunnel", "Tunnel");
+    prefixes.put("tunnel-ip", "tunnel-ip");
+    prefixes.put("tunnel-te", "tunnel-te");
+    prefixes.put("ve", "VirtualEthernet");
+    prefixes.put("Virtual-Template", "Virtual-Template");
+    prefixes.put("Vlan", "Vlan");
+    prefixes.put("Vxlan", "Vxlan");
+    prefixes.put("Wideband-Cable", "Wideband-Cable");
+    return prefixes;
+  }
+
+  @Override
+  public String canonicalizeInterfaceName(String ifaceName) {
+    Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
+    if (matcher.find()) {
+      String ifacePrefix = matcher.group();
+      String canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
+      String suffix = ifaceName.substring(ifacePrefix.length());
+      return canonicalPrefix + suffix;
+    }
+    throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
+  }
+
+  public static String getCanonicalInterfaceNamePrefix(String prefix) {
+    for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
+      String matchPrefix = e.getKey();
+      String canonicalPrefix = e.getValue();
+      if (matchPrefix.toLowerCase().startsWith(prefix.toLowerCase())) {
+        return canonicalPrefix;
+      }
+    }
+    throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
+  }
 
   private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
     String mapName = map.getName();

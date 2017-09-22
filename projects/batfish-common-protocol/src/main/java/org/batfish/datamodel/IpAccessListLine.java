@@ -1,9 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.base.Strings;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.util.Objects;
 
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine extends HeaderSpace {
@@ -13,10 +11,6 @@ public final class IpAccessListLine extends HeaderSpace {
   private LineAction _action;
 
   private String _name;
-
-  private String _inInterfaceName;
-
-  private String _outInterfaceName;
 
   @Override
   public boolean equals(Object obj) {
@@ -30,12 +24,6 @@ public final class IpAccessListLine extends HeaderSpace {
     if (_action != other._action) {
       return false;
     }
-    if (!Objects.equals(_inInterfaceName, other._inInterfaceName)) {
-      return false;
-    }
-    if (!Objects.equals(_outInterfaceName, other._outInterfaceName)) {
-      return false;
-    }
     return true;
   }
 
@@ -45,19 +33,9 @@ public final class IpAccessListLine extends HeaderSpace {
     return _action;
   }
 
-  @JsonSchemaDescription("The input interface this rule is associated with")
-  public String getInInterfaceName() {
-    return _inInterfaceName;
-  }
-
   @JsonSchemaDescription("The name of this line in the list")
   public String getName() {
     return _name;
-  }
-
-  @JsonSchemaDescription("The output interface this rule is associated with")
-  public String getOutInterfaceName() {
-    return _outInterfaceName;
   }
 
   @Override
@@ -70,16 +48,8 @@ public final class IpAccessListLine extends HeaderSpace {
     _action = action;
   }
 
-  public void setInInterfaceName(String inInterfaceName) {
-    _inInterfaceName = inInterfaceName;
-  }
-
   public void setName(String name) {
     _name = name;
-  }
-
-  public void setOutInterfaceName(String outInterfaceName) {
-    _outInterfaceName = outInterfaceName;
   }
 
   @Override

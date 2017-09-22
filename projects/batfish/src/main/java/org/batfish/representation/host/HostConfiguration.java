@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -33,15 +34,9 @@ public class HostConfiguration extends VendorConfiguration {
 
   private static final String FILTER_FORWARD = "filter::FORWARD";
 
-  private static final Object FILTER_INPUT = "filter::INPUT";
+  private static final String FILTER_INPUT = "filter::INPUT";
 
-  private static final Object FILTER_OUTPUT = "filter::OUTPUT";
-
-  private static final String PROP_HOST_INTERFACES = "hostInterfaces";
-
-  private static final String PROP_HOSTNAME = "hostname";
-
-  private static final String PROP_IPTABLES_FILE = "iptablesFile";
+  private static final String FILTER_OUTPUT = "filter::OUTPUT";
 
   private static final String MANGLE_FORWARD = "mangle::FORWARD";
 
@@ -56,6 +51,14 @@ public class HostConfiguration extends VendorConfiguration {
   private static final String NAT_OUTPUT = "nat::OUTPUT";
 
   private static final String NAT_PREROUTING = "nat::PREROUTING";
+
+  private static final String PROP_HOST_INTERFACES = "hostInterfaces";
+
+  private static final String PROP_HOSTNAME = "hostname";
+
+  private static final String PROP_IPTABLES_FILE = "iptablesFile";
+
+  private static final String PROP_OVERLAY = "overlay";
 
   private static final String RAW_OUTPUT = "raw::OUTPUT";
 
@@ -74,7 +77,7 @@ public class HostConfiguration extends VendorConfiguration {
 
   private Configuration _c;
 
-  protected final Map<String, HostInterface> _hostInterfaces;
+  protected final SortedMap<String, HostInterface> _hostInterfaces;
 
   private String _hostname;
 
@@ -82,9 +85,9 @@ public class HostConfiguration extends VendorConfiguration {
 
   private IptablesVendorConfiguration _iptablesVendorConfig;
 
-  protected final SortedSet<String> _roles = new TreeSet<>();
+  private boolean _overlay;
 
-  private final Set<HostStaticRoute> _staticRoutes;
+  protected final SortedSet<String> _roles = new TreeSet<>();
 
   // @JsonCreator
   // public HostConfiguration(@JsonProperty(PROP_HOSTNAME) String name) {
@@ -92,6 +95,10 @@ public class HostConfiguration extends VendorConfiguration {
   // _interfaces = new HashMap<String, Interface>();
   // _roles = new RoleSet();
   // }
+
+  private final Set<HostStaticRoute> _staticRoutes;
+
+  private transient VendorConfiguration _underlayConfiguration;
 
   private transient Set<String> _unimplementedFeatures;
 
@@ -111,13 +118,18 @@ public class HostConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  public Map<String, Interface> getInterfaces() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
   @JsonProperty(PROP_IPTABLES_FILE)
   public String getIptablesFile() {
     return _iptablesFile;
+  }
+
+  public IptablesVendorConfiguration getIptablesVendorConfig() {
+    return _iptablesVendorConfig;
+  }
+
+  @JsonProperty(PROP_OVERLAY)
+  public boolean getOverlay() {
+    return _overlay;
   }
 
   @JsonIgnore
@@ -137,12 +149,17 @@ public class HostConfiguration extends VendorConfiguration {
     _hostname = hostname;
   }
 
-  public void setIptablesConfig(IptablesVendorConfiguration config) {
+  public void setIptablesFile(String file) {
+    _iptablesFile = file;
+  }
+
+  public void setIptablesVendorConfig(IptablesVendorConfiguration config) {
     _iptablesVendorConfig = config;
   }
 
-  public void setIptablesFile(String file) {
-    _iptablesFile = file;
+  @JsonProperty(PROP_OVERLAY)
+  public void setOverlay(boolean overlay) {
+    _overlay = overlay;
   }
 
   @Override
@@ -188,6 +205,13 @@ public class HostConfiguration extends VendorConfiguration {
 
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
+    if (_underlayConfiguration != null) {
+      _hostInterfaces.forEach(
+          (name, iface) ->
+              iface.setCanonicalName(_underlayConfiguration.canonicalizeInterfaceName(name)));
+    } else {
+      _hostInterfaces.forEach((name, iface) -> iface.setCanonicalName(name));
+    }
     String hostname = getHostname();
     _c = new Configuration(hostname);
     _c.setConfigurationFormat(ConfigurationFormat.HOST);
@@ -197,16 +221,19 @@ public class HostConfiguration extends VendorConfiguration {
     _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
 
     // add interfaces
-    _hostInterfaces.forEach(
-        (iname, hostInterface) -> {
-          org.batfish.datamodel.Interface newIface = hostInterface.toInterface(_c, _w);
-          _c.getInterfaces().put(iname, newIface);
-          _c.getDefaultVrf().getInterfaces().put(iname, newIface);
-        });
+    _hostInterfaces
+        .values()
+        .forEach(
+            hostInterface -> {
+              String canonicalName = hostInterface.getCanonicalName();
+              org.batfish.datamodel.Interface newIface = hostInterface.toInterface(_c, _w);
+              _c.getInterfaces().put(canonicalName, newIface);
+              _c.getDefaultVrf().getInterfaces().put(canonicalName, newIface);
+            });
 
     // add iptables
     if (_iptablesVendorConfig != null) {
-      _iptablesVendorConfig.addAsIpAccessLists(_c, _w);
+      _iptablesVendorConfig.addAsIpAccessLists(_c, this, _w);
     }
 
     // apply acls to interfaces
@@ -250,5 +277,10 @@ public class HostConfiguration extends VendorConfiguration {
                   .build());
     }
     return _c;
+  }
+
+  public Configuration toVendorIndependentConfiguration(VendorConfiguration underlayConfiguration) {
+    _underlayConfiguration = underlayConfiguration;
+    return toVendorIndependentConfiguration();
   }
 }
