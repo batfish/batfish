@@ -4,6 +4,7 @@ import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
+import com.microsoft.z3.Model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,11 +13,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -28,9 +31,11 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.answers.SmtManyAnswerElement;
 import org.batfish.smt.answers.SmtOneAnswerElement;
+import org.batfish.smt.answers.SmtReachabilityAnswerElement;
 import org.batfish.smt.collections.Table2;
 import org.batfish.smt.utils.PathRegexes;
 import org.batfish.smt.utils.PatternUtils;
+import org.batfish.smt.utils.Tuple;
 
 /**
  * A collection of functions to checks if various properties hold in the network. The general flow
@@ -50,9 +55,7 @@ public class PropertyChecker {
   public static AnswerElement computeForwarding(IBatfish batfish, HeaderQuestion q) {
     Encoder encoder = new Encoder(batfish, q);
     encoder.computeEncoding();
-    VerificationResult result = encoder.verify();
-    //result.debug(
-    //    encoder.getMainSlice(), true, "0_SLICE-MAIN_as2core1_OSPF_SINGLE-EXPORT__permitted");
+    VerificationResult result = encoder.verify().getFirst();
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;
@@ -85,17 +88,16 @@ public class PropertyChecker {
     }
   }
 
-  private static BoolExpr allReachable(
-      Encoder enc, Set<GraphEdge> destPorts, List<String> sourceRouters) {
-    EncoderSlice slice = enc.getMainSlice();
-    PropertyAdder pa = new PropertyAdder(slice);
-    Map<String, BoolExpr> reachableVars = pa.instrumentReachability(destPorts);
-    BoolExpr allReach = enc.mkTrue();
-    for (String router : sourceRouters) {
-      BoolExpr reach = reachableVars.get(router);
-      allReach = enc.mkAnd(allReach, reach);
+  /*
+   * Lookup the value of a variable from a z3 model
+   */
+  @Nullable
+  private static String evaluate(Model m, Expr e) {
+    Expr val = m.evaluate(e, false);
+    if (!val.equals(e)) {
+      return val.toString();
     }
-    return allReach;
+    return null;
   }
 
   /*
@@ -122,8 +124,14 @@ public class PropertyChecker {
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
 
+    // Add reachability variables
+    PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+    Map<String, BoolExpr> reach = pa.instrumentReachability(destPorts);
+
     // If this is a equivalence query, we create a second copy of the network
     Encoder enc2 = null;
+    Map<String, BoolExpr> reach2 = null;
+
     if (q.getEquivalence()) {
       HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
       q2.setFailures(0);
@@ -134,9 +142,6 @@ public class PropertyChecker {
     // TODO: Should equivalence be factored out separately?
     if (q.getEquivalence()) {
       assert (enc2 != null);
-
-      PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
-      Map<String, BoolExpr> reach = pa.instrumentReachability(destPorts);
 
       // create a map for enc2 to lookup a related environment variable from enc
       Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
@@ -165,7 +170,7 @@ public class PropertyChecker {
       }
 
       PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
-      Map<String, BoolExpr> reach2 = pa2.instrumentReachability(destPorts);
+      reach2 = pa2.instrumentReachability(destPorts);
 
       BoolExpr required = enc.mkTrue();
       for (String source : sourceRouters) {
@@ -185,7 +190,11 @@ public class PropertyChecker {
       enc.add(enc.mkNot(required));
 
     } else {
-      BoolExpr allReach = allReachable(enc, destPorts, sourceRouters);
+      BoolExpr allReach = enc.mkTrue();
+      for (String router : sourceRouters) {
+        BoolExpr r = reach.get(router);
+        allReach = enc.mkAnd(allReach, r);
+      }
       enc.add(enc.mkNot(allReach));
     }
 
@@ -196,10 +205,43 @@ public class PropertyChecker {
       enc.add(enc.mkEq(f, enc.mkInt(0)));
     }
 
-    VerificationResult res = enc.verify();
+    Tuple<VerificationResult, Model> result = enc.verify();
+    VerificationResult res = result.getFirst();
+    Model model = result.getSecond();
     // res.debug(enc.getMainSlice(), true, null);
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
+
+    // Analyze the result to see if we can figure out what went wrong
+    Set<String> unreachableSources = new HashSet<>();
+    Map<String, Boolean> diffReachable = new HashMap<>();
+    if (!res.isVerified()) {
+      if (q.getEquivalence()) {
+        assert (reach2 != null);
+        for (String source : sourceRouters) {
+          BoolExpr sourceVar1 = reach.get(source);
+          BoolExpr sourceVar2 = reach2.get(source);
+          String val1 = evaluate(model, sourceVar1);
+          String val2 = evaluate(model, sourceVar2);
+          if (!Objects.equals(val1, val2)) {
+            boolean isTrue = "true".equals(val1);
+            diffReachable.put(source, isTrue);
+          }
+        }
+      } else {
+        for (String source : sourceRouters) {
+          BoolExpr sourceVar = reach.get(source);
+          String val = res.getModel().get(sourceVar.toString());
+          if ("false".equals(val)) {
+            unreachableSources.add(source);
+          }
+        }
+      }
+    }
+
+    SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
     answer.setResult(res);
+    answer.setUnreachableSources(unreachableSources);
+    answer.setDiffReachability(diffReachable);
+
     return answer;
   }
 
@@ -261,7 +303,7 @@ public class PropertyChecker {
 
     enc.add(someBlackHole);
 
-    VerificationResult result = enc.verify();
+    VerificationResult result = enc.verify().getFirst();
 
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
@@ -298,7 +340,7 @@ public class PropertyChecker {
     }
     enc.add(allBounded);
 
-    VerificationResult res = enc.verify();
+    VerificationResult res = enc.verify().getFirst();
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(res);
     return answer;
@@ -331,7 +373,7 @@ public class PropertyChecker {
     BoolExpr allEqual = PropertyAdder.allEqual(ctx, lens);
     enc.add(ctx.mkNot(allEqual));
 
-    VerificationResult res = enc.verify();
+    VerificationResult res = enc.verify().getFirst();
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(res);
     return answer;
@@ -399,7 +441,7 @@ public class PropertyChecker {
       BoolExpr evenLoads = PropertyAdder.allEqual(ctx, peerLoads);
       enc.add(ctx.mkNot(evenLoads));
 
-      VerificationResult res = enc.verify();
+      VerificationResult res = enc.verify().getFirst();
       result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
 
       if (addedDestination) {
@@ -674,7 +716,7 @@ public class PropertyChecker {
       e2.add(assumptions);
       e2.add(ctx.mkNot(required));
 
-      VerificationResult res = e2.verify();
+      VerificationResult res = e2.verify().getFirst();
 
       // res.debug(e1.getMainSlice(), false, null);
 
@@ -803,7 +845,7 @@ public class PropertyChecker {
 
     enc.add(acc);
 
-    VerificationResult res = enc.verify();
+    VerificationResult res = enc.verify().getFirst();
 
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(res);
@@ -865,7 +907,7 @@ public class PropertyChecker {
     }
     enc.add(someLoop);
 
-    VerificationResult result = enc.verify();
+    VerificationResult result = enc.verify().getFirst();
 
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);

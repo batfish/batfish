@@ -4,9 +4,9 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Loopback0 --> _,_",
-          "R2,Serial0 --> R1,Serial0",
-          "R3,Serial0 --> R2,Serial1"
+          "R1,Loopback0 --> _,_ (CONNECTED)",
+          "R2,Serial0 --> R1,Serial0 (BGP)",
+          "R3,Serial0 --> R2,Serial1 (BGP)"
         ],
         "model" : {
           "|0_CONTROL-FORWARDING_R1_Loopback0|" : "true",
@@ -94,5 +94,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

@@ -4,9 +4,9 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Loopback0 --> _,_",
-          "R2,Serial1 --> R3,Serial0",
-          "R3,Serial1 --> R1,Serial1"
+          "R1,Loopback0 --> _,_ (CONNECTED)",
+          "R2,Serial1 --> R3,Serial0 (BGP)",
+          "R3,Serial1 --> R1,Serial1 (BGP)"
         ],
         "packetModel" : {
           "dstIp" : "42.42.42.0"
@@ -27,5 +27,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

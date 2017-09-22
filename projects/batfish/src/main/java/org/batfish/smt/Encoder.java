@@ -33,6 +33,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.smt.utils.Tuple;
 
 /**
  * A class responsible for building a symbolic encoding of the entire network. The encoder does this
@@ -518,7 +519,7 @@ public class Encoder {
       SortedSet<String> failures) {
     SortedMap<Expr, String> valuation = new TreeMap<>();
 
-    // mkIf user asks for the full model
+    // If user asks for the full model
     _allVariables.forEach(
         (name, e) -> {
           Expr val = m.evaluate(e, false);
@@ -689,7 +690,22 @@ public class Encoder {
             (router, edge, e) -> {
               String s = valuation.get(e);
               if ("true".equals(s)) {
-                fwdModel.add(edge.toString());
+                SymbolicRecord r =
+                    enc.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(router);
+                if (r.getProtocolHistory() != null) {
+                  Protocol proto;
+                  List<Protocol> allProtocols = enc.getMainSlice().getProtocols().get(router);
+                  if (allProtocols.size() == 1) {
+                    proto = allProtocols.get(0);
+                  } else {
+                    s = valuation.get(r.getProtocolHistory().getBitVec());
+                    int i = Integer.parseInt(s);
+                    proto = r.getProtocolHistory().value(i);
+                  }
+                  fwdModel.add(edge + " (" + proto.name() + ")");
+                } else {
+                  fwdModel.add(edge.toString());
+                }
               }
             });
 
@@ -758,7 +774,7 @@ public class Encoder {
    *
    * @return A VerificationResult indicating the status of the check.
    */
-  public VerificationResult verify() {
+  public Tuple<VerificationResult, Model> verify() {
 
     EncoderSlice mainSlice = _slices.get(MAIN_SLICE_NAME);
 
@@ -784,14 +800,16 @@ public class Encoder {
     //}
 
     if (status == Status.UNSATISFIABLE) {
-      return new VerificationResult(true, null, null, null, null, null);
+      VerificationResult res = new VerificationResult(true, null, null, null, null, null);
+      return new Tuple<>(res, null);
     } else if (status == Status.UNKNOWN) {
       throw new BatfishException("ERROR: satisfiability unknown");
     } else {
       VerificationResult result;
 
+      Model m;
       while (true) {
-        Model m = _solver.getModel();
+        m = _solver.getModel();
         SortedMap<String, String> model = new TreeMap<>();
         SortedMap<String, String> packetModel = new TreeMap<>();
         SortedSet<String> fwdModel = new TreeSet<>();
@@ -821,7 +839,7 @@ public class Encoder {
         }
       }
 
-      return result;
+      return new Tuple<>(result, m);
     }
   }
 

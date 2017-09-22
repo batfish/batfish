@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
+      "class" : "org.batfish.smt.answers.SmtReachabilityAnswerElement",
       "result" : {
         "verified" : true
       }
