@@ -104,7 +104,7 @@ public class JsonPathResult {
 
   private static final String PROP_ASSERTION_RESULT = "assertionResult";
 
-  private static final String PROP_DISPLAY_VALUES = "displayValues";
+  private static final String PROP_EXTRACTED_VALUES = "extractedValues";
 
   private static final String PROP_NUM_RESULTS = "numResults";
 
@@ -114,7 +114,7 @@ public class JsonPathResult {
 
   private Boolean _assertionResult;
 
-  private Map<String, Map<String, JsonNode>> _displayValues;
+  private Map<String, Map<String, JsonNode>> _extractedValues;
 
   private Integer _numResults;
 
@@ -126,9 +126,9 @@ public class JsonPathResult {
     _result = new TreeMap<>();
   }
 
-  public Map<String, Map<String, JsonNode>> computeDisplayValues(DisplayHints displayHints) {
+  public Map<String, Map<String, JsonNode>> extractDisplayValues(DisplayHints displayHints) {
     // this will reset anything we've done in the past
-    _displayValues = new HashMap<>();
+    _extractedValues = new HashMap<>();
     for (Entry<String, ExtractionHint> entry : displayHints.getExtractionHints().entrySet()) {
       JsonPathExtractionHint jpeHint = null;
       try {
@@ -138,38 +138,38 @@ public class JsonPathResult {
       }
       switch (jpeHint.getUse()) {
       case PREFIX:
-        computeDisplayValuesPrefix(entry.getKey(), entry.getValue(), jpeHint);
+        extractDisplayValuesPrefix(entry.getKey(), entry.getValue(), jpeHint);
         break;
       case PREFIXOFSUFFIX:
       case SUFFIXOFSUFFIX:
-        computeDisplayValuesSuffix(entry.getKey(), entry.getValue(), jpeHint);
+        extractDisplayValuesSuffix(entry.getKey(), entry.getValue(), jpeHint);
         break;
       default:
         throw new BatfishException("Unknown use type " + jpeHint.getUse());
       }
     }
-    return _displayValues;
+    return _extractedValues;
   }
 
-  private void computeDisplayValuesPrefix(String displayVar,
+  private void extractDisplayValuesPrefix(String displayVar,
       ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
     if (extractionHint.getIsList()) {
       throw new BatfishException("Prefix-based hints are incompatible with list types");
     }
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
-      if (!_displayValues.containsKey(entry.getKey())) {
-        _displayValues.put(entry.getKey(), new HashMap<>());
+      if (!_extractedValues.containsKey(entry.getKey())) {
+        _extractedValues.put(entry.getKey(), new HashMap<>());
       }
       String prefixPart = entry.getValue().getPrefixPart(jpeHint.getIndex());
-      _displayValues.get(entry.getKey()).put(displayVar, new TextNode(prefixPart));
+      _extractedValues.get(entry.getKey()).put(displayVar, new TextNode(prefixPart));
     }
   }
 
-  private void computeDisplayValuesSuffix(String displayVar,
+  private void extractDisplayValuesSuffix(String displayVar,
       ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
-      if (!_displayValues.containsKey(entry.getKey())) {
-        _displayValues.put(entry.getKey(), new HashMap<>());
+      if (!_extractedValues.containsKey(entry.getKey())) {
+        _extractedValues.put(entry.getKey(), new HashMap<>());
       }
       // can happen when the original query was not pulling suffixes at all
       if (entry.getValue().getSuffix() == null) {
@@ -205,13 +205,13 @@ public class JsonPathResult {
       if (extractionHint.getIsList()) {
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         ArrayNode arrayNode = mapper.valueToTree(extractedList);
-        _displayValues.get(entry.getKey()).put(displayVar, arrayNode);
+        _extractedValues.get(entry.getKey()).put(displayVar, arrayNode);
       } else {
         if (filterResult.getNumResults() > 1) {
           throw new BatfishException("Got multiple results after filtering suffix values "
               + " of the answer, but the display type is non-list");
         }
-        _displayValues.get(entry.getKey()).put(displayVar, extractedList.get(0));
+        _extractedValues.get(entry.getKey()).put(displayVar, extractedList.get(0));
       }
     }
   }
@@ -243,9 +243,9 @@ public class JsonPathResult {
     return _assertionResult;
   }
 
-  @JsonProperty(PROP_DISPLAY_VALUES)
-  public Map<String, Map<String, JsonNode>> getDisplayValues() {
-    return _displayValues;
+  @JsonProperty(PROP_EXTRACTED_VALUES)
+  public Map<String, Map<String, JsonNode>> getExtractedValues() {
+    return _extractedValues;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)
@@ -268,9 +268,9 @@ public class JsonPathResult {
     _assertionResult = assertionResult;
   }
 
-  @JsonProperty(PROP_DISPLAY_VALUES)
-  public void getDisplayValues(Map<String, Map<String, JsonNode>> displayValues) {
-    _displayValues = displayValues;
+  @JsonProperty(PROP_EXTRACTED_VALUES)
+  public void setExtractedValues(Map<String, Map<String, JsonNode>> extractedValues) {
+    _extractedValues = extractedValues;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)

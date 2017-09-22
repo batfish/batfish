@@ -54,18 +54,18 @@ public class DisplayHints {
 
     private static final String PROP_IS_LIST = "isList";
 
-    private static final String PROP_TYPE = "type";
+    private static final String PROP_VALUE_TYPE = "valuetype";
 
     private Map<String, JsonNode> _hints;
 
     private boolean _isList;
 
-    private ValueType _type;
+    private ValueType _valueType;
 
     @JsonCreator public ExtractionHint(
         @JsonProperty(PROP_HINTS) Map<String, JsonNode> hints,
         @JsonProperty(PROP_IS_LIST) Boolean isList,
-        @JsonProperty(PROP_TYPE) ValueType type
+        @JsonProperty(PROP_VALUE_TYPE) ValueType type
         ) {
       _hints = hints;
       if (isList == null) {
@@ -73,7 +73,7 @@ public class DisplayHints {
       } else {
         _isList = isList.booleanValue();
       }
-      _type = type;
+      _valueType = type;
     }
 
     @JsonProperty(PROP_IS_LIST)
@@ -86,9 +86,9 @@ public class DisplayHints {
       return _hints;
     }
 
-    @JsonProperty(PROP_TYPE)
-    public ValueType getType() {
-      return _type;
+    @JsonProperty(PROP_VALUE_TYPE)
+    public ValueType getValueType() {
+      return _valueType;
     }
 
     @JsonProperty(PROP_HINTS)
@@ -101,9 +101,9 @@ public class DisplayHints {
       _isList = isList;
     }
 
-    @JsonProperty(PROP_TYPE)
-    public void setType(ValueType type) {
-      _type = type;
+    @JsonProperty(PROP_VALUE_TYPE)
+    public void setValueType(ValueType valueType) {
+      _valueType = valueType;
     }
   }
 
