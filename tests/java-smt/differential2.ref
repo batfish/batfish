@@ -1,29 +1,33 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "class" : "org.batfish.smt.answers.SmtReachabilityAnswerElement",
+      "diffReachability" : {
+        "R0" : false
+      },
       "result" : {
-        "R3,Loopback0" : {
-          "failuresModel" : [
-            "link(R1,R3)",
-            "link(R2,R3)"
-          ],
-          "forwardingModel" : [
-            "R1,Serial1 --> R3,Serial0",
-            "R2,Serial1 --> R3,Serial1",
-            "R3,Loopback0 --> _,_"
-          ],
-          "packetModel" : {
-            "dstIp" : "70.70.70.70"
-          },
-          "verified" : false
-        }
+        "failuresModel" : [
+          "link(R0,R1)",
+          "link(R0,R2)"
+        ],
+        "forwardingModel" : [
+          "R1,Serial1 --> R3,Serial0 (OSPF)",
+          "R2,Serial1 --> R3,Serial1 (OSPF)",
+          "R3,Loopback0 --> _,_ (CONNECTED)"
+        ],
+        "packetModel" : {
+          "dstIp" : "70.70.70.0"
+        },
+        "verified" : false
       }
     }
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
     "differential" : false,
+    "dstIps" : [
+      "70.70.70.0/24"
+    ],
     "equivalence" : true,
     "failures" : 2,
     "finalIfaceRegex" : "Loopback.*",
@@ -33,5 +37,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

@@ -676,6 +676,78 @@
             }
           }
         },
+        "arista_dhcp_relay" : {
+          "name" : "arista_dhcp_relay",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "dhcpRelayAddresses" : [
+                "1.2.3.4",
+                "2.3.4.5"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet1" : {
+              "name" : "Ethernet1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_dhcp_relay"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0",
+                "Ethernet1"
+              ]
+            }
+          }
+        },
         "arista_ip_route" : {
           "name" : "arista_ip_route",
           "configurationFormat" : "CISCO_NX",
@@ -6731,6 +6803,43 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "1.0.0.0/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.0.0.0/24",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default",
+              "vrrpGroups" : {
+                "123" : {
+                  "name" : 123,
+                  "preempt" : true,
+                  "priority" : 234,
+                  "virtualAddress" : "1.0.0.1/24"
+                }
+              }
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vrrp"
@@ -6738,7 +6847,10 @@
           },
           "vrfs" : {
             "default" : {
-              "name" : "default"
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0"
+              ]
             }
           }
         },
@@ -7497,6 +7609,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "1.2.3.4"
@@ -7510,6 +7623,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "11.22.33.44"
@@ -7523,6 +7637,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "111.222.111.222"
@@ -7536,6 +7651,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "4.3.2.1"
@@ -7549,6 +7665,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "44.22.33.11"
@@ -7556,6 +7673,7 @@
                 },
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7565,6 +7683,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7574,6 +7693,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7583,6 +7703,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7592,6 +7713,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7601,6 +7723,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7610,6 +7733,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7619,6 +7743,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7628,6 +7753,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7637,6 +7763,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]

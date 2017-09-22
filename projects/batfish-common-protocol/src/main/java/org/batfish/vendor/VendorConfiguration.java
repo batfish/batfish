@@ -23,6 +23,8 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   protected String _filename;
 
+  private VendorConfiguration _overlayConfiguration;
+
   protected final SortedMap<StructureType, SortedMap<String, SortedSet<Integer>>>
       _structureDefinitions;
 
@@ -39,6 +41,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     _structureReferences = new TreeMap<>();
   }
 
+  public String canonicalizeInterfaceName(String name) {
+    return name;
+  }
+
   public void defineStructure(StructureType type, String name, int line) {
     SortedMap<String, SortedSet<Integer>> byName =
         _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
@@ -52,6 +58,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   public abstract String getHostname();
+
+  public VendorConfiguration getOverlayConfiguration() {
+    return _overlayConfiguration;
+  }
 
   public abstract SortedSet<String> getRoles();
 
@@ -84,6 +94,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   public abstract void setHostname(String hostname);
+
+  public void setOverlayConfiguration(VendorConfiguration overlayConfiguration) {
+    _overlayConfiguration = overlayConfiguration;
+  }
 
   public abstract void setRoles(SortedSet<String> roles);
 

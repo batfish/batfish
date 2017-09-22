@@ -58,7 +58,7 @@ public class VerificationResult {
   }
 
   @JsonProperty(VERIFIED_VAR)
-  public boolean getVerified() {
+  public boolean isVerified() {
     return _verified;
   }
 

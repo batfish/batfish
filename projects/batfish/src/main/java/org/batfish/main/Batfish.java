@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
@@ -411,9 +412,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
-  private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
+  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
 
   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
@@ -443,8 +444,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
-      Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
-      Map<TestrigSettings, DataPlane> cachedDataPlanes,
+      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
       Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
@@ -944,7 +945,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Ip ip = prefix.getAddress();
           int lowestPriority = Integer.MAX_VALUE;
           String bestCandidate = null;
-          Set<String> bestCandidates = new HashSet<>();
+          SortedSet<String> bestCandidates = new TreeSet<>();
           for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
@@ -958,7 +959,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
           }
           if (bestCandidates.size() != 1) {
-            throw new BatfishException("multiple best vrrp candidates:" + bestCandidates);
+            String deterministicBestCandidate = bestCandidates.first();
+            bestCandidate = deterministicBestCandidate;
+            _logger.redflag(
+                "Arbitrarily choosing best vrrp candidate: '"
+                    + deterministicBestCandidate
+                    + " for prefix/groupNumber: '"
+                    + p.toString()
+                    + "' among multiple best candidates: "
+                    + bestCandidates);
           }
           Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
           owners.add(bestCandidate);
@@ -1173,7 +1182,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   + " '"
                   + name
                   + "' from '"
-                  + inputPath
+                  + inputPath.toString()
                   + "'");
           byte[] data = fromGzipFile(inputPath);
           logger.debug(" ...OK\n");
@@ -1635,6 +1644,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         deserializeVendorConfigurations(serializedVendorConfigPath);
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, answerElement);
+
     postProcessConfigurations(configurations.values());
     return configurations;
   }
@@ -2443,7 +2453,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, Configuration> loadConfigurationsWithoutValidation() {
-    SortedMap<String, Configuration> configurations = _cachedConfigurations.get(_testrigSettings);
+    SortedMap<String, Configuration> configurations =
+        _cachedConfigurations.getIfPresent(_testrigSettings);
     if (configurations == null) {
       ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
       if (!Version.isCompatibleVersion(
@@ -2483,7 +2494,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane() {
-    DataPlane dp = _cachedDataPlanes.get(_testrigSettings);
+    DataPlane dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
     if (dp == null) {
       /*
        * Data plane should exist after loading answer element, as it triggers
@@ -2491,7 +2502,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement();
-      dp = _cachedDataPlanes.get(_testrigSettings);
+      dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp =
@@ -3062,13 +3073,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return topology;
   }
 
-  private Map<String, VendorConfiguration> parseVendorConfigurations(
+  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
       Map<Path, String> configurationData,
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat configurationFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
     resetTimer();
-    Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
+    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>();
     for (Entry<Path, String> vendorFile : configurationData.entrySet()) {
       Path currentFile = vendorFile.getKey();
@@ -3534,10 +3545,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettings = _deltaTestrigSettings;
   }
 
-  private Map<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
+  private SortedMap<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
     _logger.infof("\n*** READING %s FILES ***\n", configsType);
     resetTimer();
-    Map<Path, String> configurationData = new TreeMap<>();
+    SortedMap<Path, String> configurationData = new TreeMap<>();
     Path configsPath = testRigPath.resolve(configsType);
     List<Path> configFilePaths = listAllFiles(configsPath);
     AtomicInteger completed =
@@ -3602,8 +3613,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   void readIptableFiles(
       Path testRigPath,
-      Map<String, VendorConfiguration> hostConfigurations,
-      Map<Path, String> iptablesData,
+      SortedMap<String, VendorConfiguration> hostConfigurations,
+      SortedMap<Path, String> iptablesData,
       ParseVendorConfigurationAnswerElement answerElement) {
     List<BatfishException> failureCauses = new ArrayList<>();
     for (VendorConfiguration vc : hostConfigurations.values()) {
@@ -4080,30 +4091,47 @@ public class Batfish extends PluginConsumer implements IBatfish {
     printElapsedTime();
   }
 
-  private void serializeHostConfigs(
-      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
-    Map<Path, String> configurationData =
+  private SortedMap<String, VendorConfiguration> serializeHostConfigs(
+      Path testRigPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement
+      ) {
+    SortedMap<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
-    Map<String, VendorConfiguration> hostConfigurations =
+    SortedMap<String, VendorConfiguration> allHostConfigurations =
         parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
-    if (hostConfigurations == null) {
+    if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
 
-    // read and associate iptables files for specified hosts
-    Map<Path, String> iptablesData = new TreeMap<>();
-    readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+    // split into hostConfigurations and overlayConfigurations
+    SortedMap<String, VendorConfiguration> overlayConfigurations =
+        allHostConfigurations
+            .entrySet()
+            .stream()
+            .filter(e -> ((HostConfiguration) e.getValue()).getOverlay())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
+    SortedMap<String, VendorConfiguration> nonOverlayHostConfigurations =
+        allHostConfigurations
+            .entrySet()
+            .stream()
+            .filter(e -> !((HostConfiguration) e.getValue()).getOverlay())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
 
-    Map<String, VendorConfiguration> iptablesConfigurations =
+    // read and associate iptables files for specified hosts
+    SortedMap<Path, String> iptablesData = new TreeMap<>();
+    readIptableFiles(testRigPath, allHostConfigurations, iptablesData, answerElement);
+
+    SortedMap<String, VendorConfiguration> iptablesConfigurations =
         parseVendorConfigurations(iptablesData, answerElement, ConfigurationFormat.IPTABLES);
-    for (VendorConfiguration vc : hostConfigurations.values()) {
+    for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
         String relativePathStr = _testrigSettings.getBasePath().relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
-          hostConfig.setIptablesConfig(
+          hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
         }
       }
@@ -4115,7 +4143,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     CommonUtil.createDirectories(outputPath);
 
     Map<Path, VendorConfiguration> output = new TreeMap<>();
-    hostConfigurations.forEach(
+    nonOverlayHostConfigurations.forEach(
         (name, vc) -> {
           Path currentOutputPath = outputPath.resolve(name);
           output.put(currentOutputPath, vc);
@@ -4124,6 +4152,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // serialize warnings
     serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
     printElapsedTime();
+    return overlayConfigurations;
   }
 
   private void serializeIndependentConfigs(
@@ -4164,7 +4193,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void serializeNetworkConfigs(
-      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
+      Path testRigPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement,
+      SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<String, VendorConfiguration> vendorConfigurations =
@@ -4188,10 +4220,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
                     "MISCELLANEOUS"));
           } else {
+            // apply overlay if it exists
+            VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
+            if (overlayConfig != null) {
+              vc.setOverlayConfiguration(overlayConfig);
+              overlayHostConfigurations.remove(name);
+            }
+
             Path currentOutputPath = outputPath.resolve(name);
             output.put(currentOutputPath, vc);
           }
         });
+
+    // warn about unused overlays
+    overlayHostConfigurations.forEach(
+        (name, overlay) -> {
+          answerElement.getParseStatus().put(name, ParseStatus.ORPHANED);
+        });
+
     serializeObjects(output);
     printElapsedTime();
   }
@@ -4242,8 +4288,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);
     }
+
+    // look for host configs and overlay configs
+    SortedMap<String, VendorConfiguration> overlayHostConfigurations = new TreeMap<>();
+    Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
+    if (Files.exists(hostConfigsPath)) {
+      overlayHostConfigurations = serializeHostConfigs(testRigPath, outputPath, answerElement);
+      configsFound = true;
+    }
+
     if (Files.exists(networkConfigsPath)) {
-      serializeNetworkConfigs(testRigPath, outputPath, answerElement);
+      serializeNetworkConfigs(testRigPath, outputPath, answerElement, overlayHostConfigurations);
       configsFound = true;
     }
 
@@ -4251,13 +4306,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
     if (Files.exists(awsVpcConfigsPath)) {
       answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
-      configsFound = true;
-    }
-
-    // look for host configs
-    Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    if (Files.exists(hostConfigsPath)) {
-      serializeHostConfigs(testRigPath, outputPath, answerElement);
       configsFound = true;
     }
 

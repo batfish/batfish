@@ -5455,6 +5455,11 @@ MINIMAL
    'minimal'
 ;
 
+MINIMUM
+:
+   'minimum'
+;
+
 MINIMUM_INTERVAL
 :
    'minimum-interval'
@@ -9715,6 +9720,11 @@ USE_IPV4_ACL
 USE_IPV6_ACL
 :
    'use-ipv6-acl'
+;
+
+USE_LINK_ADDRESS
+:
+   'use-link-address'
 ;
 
 USE_VRF
