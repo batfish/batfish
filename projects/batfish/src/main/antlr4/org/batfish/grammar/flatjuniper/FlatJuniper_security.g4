@@ -502,7 +502,7 @@ s_security
 :
    SECURITY
    (
-      se_auth_key_chain
+      se_authentication_key_chain
       | se_certificates
       | se_ike
       | se_ipsec
@@ -513,7 +513,7 @@ s_security
    )
 ;
 
-se_auth_key_chain
+se_authentication_key_chain
 :
    AUTHENTICATION_KEY_CHAINS KEY_CHAIN name = string
    (
@@ -641,7 +641,7 @@ seak_secret
 
 seak_start_time
 :
-   START_TIME seaks_time
+   START_TIME time = variable_permissive
 ;
 
 seik_gateway
@@ -684,11 +684,6 @@ seik_proposal
       | seikpr_encryption_algorithm
       | seikpr_lifetime_seconds
    )
-;
-
-seaks_time
-:
-   DEC DASH DEC DASH DEC PERIOD variable (DASH DEC)?
 ;
 
 seikg_address

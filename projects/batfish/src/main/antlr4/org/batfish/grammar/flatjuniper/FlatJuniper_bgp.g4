@@ -21,14 +21,7 @@ b_advertise_peer_as
    ADVERTISE_PEER_AS
 ;
 
-b_auth
-:
-   b_auth_algorithm
-   | b_auth_key
-   | b_auth_key_chain
-;
-
-b_auth_algorithm
+b_authentication_algorithm
 :
    AUTHENTICATION_ALGORITHM
    (
@@ -38,12 +31,12 @@ b_auth_algorithm
    )
 ;
 
-b_auth_key
+b_authentication_key
 :
    AUTHENTICATION_KEY key = string
 ;
 
-b_auth_key_chain
+b_authentication_key_chain
 :
    AUTHENTICATION_KEY_CHAIN name = string
 ;
@@ -65,7 +58,9 @@ b_common
    | b_advertise_inactive
    | b_advertise_peer_as
    | b_as_override
-   | b_auth
+   | b_authentication_algorithm
+   | b_authentication_key
+   | b_authentication_key_chain
    | b_cluster
    | b_damping
    | b_description

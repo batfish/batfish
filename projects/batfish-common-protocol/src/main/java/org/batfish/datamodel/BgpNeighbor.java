@@ -20,8 +20,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   public static final class BgpNeighborSummary extends ComparableStructure<String> {
 
-    private static final String PROP_AUTH_SETTINGS = "authSettings";
-
     private static final String PROP_DESCRIPTION = "description";
 
     private static final String PROP_GROUP = "group";
@@ -40,8 +38,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private static final long serialVersionUID = 1L;
 
     private static final String PROP_VRF = "vrf";
-
-    private final AuthenticationSettings _authSettings;
 
     private final String _description;
 
@@ -66,7 +62,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
               + (bgpNeighbor.getDynamic()
                   ? bgpNeighbor.getPrefix().toString()
                   : bgpNeighbor.getAddress().toString()));
-      _authSettings = bgpNeighbor._authSettings;
       _description = bgpNeighbor._description;
       _group = bgpNeighbor._group;
       _localAs = bgpNeighbor._localAs;
@@ -80,7 +75,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     @JsonCreator
     public BgpNeighborSummary(
         @JsonProperty(PROP_NAME) String name,
-        @JsonProperty(PROP_AUTH_SETTINGS) AuthenticationSettings authSettings,
         @JsonProperty(PROP_DESCRIPTION) String description,
         @JsonProperty(PROP_GROUP) String group,
         @JsonProperty(PROP_LOCAL_AS) int localAs,
@@ -90,7 +84,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
         @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
         @JsonProperty(PROP_VRF) String vrf) {
       super(name);
-      _authSettings = authSettings;
       _description = description;
       _group = group;
       _localAs = localAs;
@@ -99,11 +92,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       _remoteIp = remoteIp;
       _remotePrefix = remotePrefix;
       _vrf = vrf;
-    }
-
-    @JsonProperty(PROP_AUTH_SETTINGS)
-    public AuthenticationSettings getAuthSettings() {
-      return _authSettings;
     }
 
     @JsonProperty(PROP_DESCRIPTION)
@@ -172,7 +160,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
 
-  private static final String PROP_AUTH_SETTINGS = "authSettings";
+  private static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
 
   private static final String PROP_CLUSTER_ID = "clusterId";
 
@@ -219,7 +207,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private boolean _allowRemoteAsOut;
 
-  private AuthenticationSettings _authSettings;
+  private BgpAuthenticationSettings _authenticationSettings;
 
   private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
@@ -327,7 +315,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
       return false;
     }
-    if (Objects.equals(this._authSettings, other._authSettings)) {
+    if (Objects.equals(this._authenticationSettings, other._authenticationSettings)) {
       return false;
     }
     if (_clusterId == null) {
@@ -430,10 +418,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   @Nullable
-  @JsonProperty(PROP_AUTH_SETTINGS)
+  @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
   @JsonPropertyDescription("The authentication setting to be used for this neighbor")
-  public AuthenticationSettings getAuthSettings() {
-    return _authSettings;
+  public BgpAuthenticationSettings getAuthenticationSettings() {
+    return _authenticationSettings;
   }
 
   @JsonIgnore
@@ -601,9 +589,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _allowRemoteAsOut = allowRemoteAsOut;
   }
 
-  @JsonProperty(PROP_AUTH_SETTINGS)
-  public void setAuthSettings(AuthenticationSettings authSettings) {
-    _authSettings = authSettings;
+  @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
+  public void setAuthenticationSettings(BgpAuthenticationSettings authenticationSettings) {
+    _authenticationSettings = authenticationSettings;
   }
 
   @JsonProperty(PROP_CLUSTER_ID)

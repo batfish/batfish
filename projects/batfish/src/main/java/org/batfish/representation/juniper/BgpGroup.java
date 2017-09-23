@@ -22,11 +22,11 @@ public class BgpGroup implements Serializable {
 
   private Boolean _advertisePeerAs;
 
-  private String _authKey;
+  private String _authenticationKey;
 
-  private BgpAuthenticationAlgorithm _authAlgorithm;
+  private BgpAuthenticationAlgorithm _authenticationAlgorithm;
 
-  private String _authKeyChainName;
+  private String _authenticationKeyChainName;
 
   private String _description;
 
@@ -79,14 +79,14 @@ public class BgpGroup implements Serializable {
       if (_advertisePeerAs == null) {
         _advertisePeerAs = _parent._advertisePeerAs;
       }
-      if (_authAlgorithm == null) {
-        _authAlgorithm = _parent._authAlgorithm;
+      if (_authenticationAlgorithm == null) {
+        _authenticationAlgorithm = _parent._authenticationAlgorithm;
       }
-      if (_authKey == null) {
-        _authKey = _parent._authKey;
+      if (_authenticationKey == null) {
+        _authenticationKey = _parent._authenticationKey;
       }
-      if (_authKeyChainName == null) {
-        _authKeyChainName = _parent._authKeyChainName;
+      if (_authenticationKeyChainName == null) {
+        _authenticationKeyChainName = _parent._authenticationKeyChainName;
       }
       if (_description == null) {
         _description = _parent._description;
@@ -136,16 +136,16 @@ public class BgpGroup implements Serializable {
     return _advertisePeerAs;
   }
 
-  public BgpAuthenticationAlgorithm getAuthAlgorithm() {
-    return _authAlgorithm;
+  public BgpAuthenticationAlgorithm getAuthenticationAlgorithm() {
+    return _authenticationAlgorithm;
   }
 
-  public String getAuthKey() {
-    return _authKey;
+  public String getAuthenticationKey() {
+    return _authenticationKey;
   }
 
-  public String getAuthKeyChainName() {
-    return _authKeyChainName;
+  public String getAuthenticationKeyChainName() {
+    return _authenticationKeyChainName;
   }
 
   public final String getDescription() {
@@ -216,16 +216,16 @@ public class BgpGroup implements Serializable {
     _advertisePeerAs = advertisePeerAs;
   }
 
-  public void setAuthAlgorithm(BgpAuthenticationAlgorithm authAlgorithm) {
-    _authAlgorithm = authAlgorithm;
+  public void setAuthenticationAlgorithm(BgpAuthenticationAlgorithm authenticationAlgorithm) {
+    _authenticationAlgorithm = authenticationAlgorithm;
   }
 
-  public void setAuthKey(String authKey) {
-    _authKey = authKey;
+  public void setAuthenticationKey(String authenticationKey) {
+    _authenticationKey = authenticationKey;
   }
 
-  public void setAuthKeyChainName(String authKeyChainName) {
-    _authKeyChainName = authKeyChainName;
+  public void setAuthenticationKeyChainName(String authenticationKeyChainName) {
+    _authenticationKeyChainName = authenticationKeyChainName;
   }
 
   public final void setDescription(String description) {

@@ -22,21 +22,10 @@ public class AuthenticationKeyChain extends ComparableStructure<String> {
 
   private int _tolerance;
 
-  public AuthenticationKeyChain(String name) {
+  @JsonCreator
+  public AuthenticationKeyChain(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _keys = new TreeMap<>();
-    _tolerance = 0;
-  }
-
-  @JsonCreator
-  public AuthenticationKeyChain(@JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_DESCRIPTION) String description,
-      @JsonProperty(PROP_KEYS) Map<String, AuthenticationKey> keys,
-      @JsonProperty(PROP_TOLERANCE) int tolerance) {
-    super(name);
-    _description = description;
-    _keys = keys;
-    _tolerance = tolerance;
   }
 
   @JsonProperty(PROP_DESCRIPTION)

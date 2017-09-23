@@ -992,6 +992,15 @@
             }
           }
         },
+        "juniper_bgp_authentication" : {
+          "authentication-key-chain" : {
+            "bgp-auth1" : {
+              "authentication-key-chains policy" : [
+                23
+              ]
+            }
+          }
+        },
         "juniper_forwarding_options" : {
           "dhcp-relay server-group" : {
             "site-dhcp" : {
@@ -1814,8 +1823,8 @@
         "juniper_bgp_authentication" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1",
-            "2" : "MISCELLANEOUS: Both authentication-key and authentication-algorithm specified for neighbor 172.16.2.1",
-            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1"
+            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1",
+            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
           }
         },
         "juniper_firewall" : {
