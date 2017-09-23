@@ -9,6 +9,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
+import org.batfish.representation.host.HostConfiguration;
+import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
@@ -53,6 +55,24 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                   + configuration.getHostname()
                   + "'");
         }
+
+        // get iptables if applicable
+        IptablesVendorConfiguration iptablesConfig = null;
+        VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
+        if (ov != null) {
+          // apply overlay
+          HostConfiguration oh = (HostConfiguration) ov;
+          iptablesConfig = oh.getIptablesVendorConfig();
+        } else if (vendorConfiguration instanceof HostConfiguration) {
+          // TODO: To enable below, we need to reconcile overlay and non-overlay iptables semantics.
+          // HostConfiguration oh = (HostConfiguration)vendorConfiguration;
+          // iptablesConfig = oh.getIptablesVendorConfig();
+        }
+        if (iptablesConfig != null) {
+          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, _warnings);
+          iptablesConfig.applyAsOverlay(configuration, _warnings);
+        }
+
         configurations.put(_name, configuration);
       } else {
         configurations = ((AwsVpcConfiguration) _configObject).toConfigurations(_warnings);

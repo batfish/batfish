@@ -1,6 +1,7 @@
 package org.batfish.representation.host;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Set;
@@ -24,12 +25,14 @@ public class HostInterface implements Serializable {
 
   private static final String PROP_PREFIX = "prefix";
 
+  private static final String PROP_VRF = "vrf";
+
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String PROP_VRF = "vrf";
-
   private Double _bandwidth = 1000 * 1000 * 1000.0; // default is 1 Gbps
+
+  private transient String _canonicalName;
 
   private Ip _gateway;
 
@@ -50,6 +53,11 @@ public class HostInterface implements Serializable {
   @JsonProperty(PROP_BANDWIDTH)
   public Double getBandwidth() {
     return _bandwidth;
+  }
+
+  @JsonIgnore
+  public String getCanonicalName() {
+    return _canonicalName;
   }
 
   @JsonProperty(PROP_GATEWAY)
@@ -82,6 +90,11 @@ public class HostInterface implements Serializable {
     _bandwidth = bandwidth;
   }
 
+  @JsonIgnore
+  public void setCanonicalName(String canonicalName) {
+    _canonicalName = canonicalName;
+  }
+
   @JsonProperty(PROP_GATEWAY)
   public void setGateway(Ip gateway) {
     _gateway = gateway;
@@ -103,7 +116,7 @@ public class HostInterface implements Serializable {
   }
 
   public Interface toInterface(Configuration configuration, Warnings warnings) {
-    Interface iface = new Interface(_name, configuration);
+    Interface iface = new Interface(_canonicalName, configuration);
     iface.setBandwidth(_bandwidth);
     iface.setPrefix(_prefix);
     iface.getAllPrefixes().add(_prefix);

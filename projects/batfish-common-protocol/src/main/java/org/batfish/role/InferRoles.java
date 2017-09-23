@@ -250,7 +250,6 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
     // produce a role-level topology and the list of nodes in each edge's source role
     // that have an edge to some node in the edge's target role
     SortedMap<RoleEdge, SortedSet<String>> roleEdges = new TreeMap<>();
-    Pattern p = Pattern.compile(regex);
     for (Edge e : topology.getEdges()) {
       String n1 = e.getNode1();
       String n2 = e.getNode2();

@@ -5,19 +5,15 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -658,8 +654,6 @@ import org.batfish.vendor.VendorConfiguration;
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     implements ControlPlaneExtractor {
 
-  private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
-
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   private static final String DUPLICATE = "DUPLICATE";
@@ -703,85 +697,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_TTL = "acl ttl eq number";
 
-  private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
-
-  private static String getCanonicalInterfaceName(String ifaceName) {
-    Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
-    if (matcher.find()) {
-      String ifacePrefix = matcher.group();
-      String canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
-      String suffix = ifaceName.substring(ifacePrefix.length());
-      return canonicalPrefix + suffix;
-    }
-    throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
-  }
-
-  private static String getCanonicalInterfaceNamePrefix(String prefix) {
-    for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
-      String matchPrefix = e.getKey();
-      String canonicalPrefix = e.getValue();
-      if (matchPrefix.toLowerCase().startsWith(prefix.toLowerCase())) {
-        return canonicalPrefix;
-      }
-    }
-    throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
-  }
-
-  private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
-    Map<String, String> prefixes = new LinkedHashMap<>();
-    prefixes.put("Async", "Async");
-    prefixes.put("ATM", "ATM");
-    prefixes.put("BDI", "BDI");
-    prefixes.put("BRI", "BRI");
-    prefixes.put("Bundle-Ether", "Bundle-Ethernet");
-    prefixes.put("BVI", "BVI");
-    prefixes.put("Cable", "Cable");
-    prefixes.put("cable-downstream", "cable-downstream");
-    prefixes.put("cable-mac", "cable-mac");
-    prefixes.put("cable-upstream", "cable-upstream");
-    prefixes.put("Crypto-Engine", "Crypto-Engine");
-    prefixes.put("cmp-mgmt", "cmp-mgmt");
-    prefixes.put("Dialer", "Dialer");
-    prefixes.put("Dot11Radio", "Dot11Radio");
-    prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
-    prefixes.put("Ethernet", "Ethernet");
-    prefixes.put("FastEthernet", "FastEthernet");
-    prefixes.put("fc", "fc");
-    prefixes.put("fe", "FastEthernet");
-    prefixes.put("fortyGigE", "FortyGigabitEthernet");
-    prefixes.put("FortyGigabitEthernet", "FortyGigabitEthernet");
-    prefixes.put("GigabitEthernet", "GigabitEthernet");
-    prefixes.put("ge", "GigabitEthernet");
-    prefixes.put("GMPLS", "GMPLS");
-    prefixes.put("HundredGigE", "HundredGigabitEthernet");
-    prefixes.put("ip", "ip");
-    prefixes.put("Group-Async", "Group-Async");
-    prefixes.put("LongReachEthernet", "LongReachEthernet");
-    prefixes.put("Loopback", "Loopback");
-    prefixes.put("Management", "Management");
-    prefixes.put("ManagementEthernet", "ManagementEthernet");
-    prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
-    prefixes.put("MgmtEth", "ManagementEthernet");
-    prefixes.put("Modular-Cable", "Modular-Cable");
-    prefixes.put("Null", "Null");
-    prefixes.put("Port-channel", "Port-Channel");
-    prefixes.put("POS", "POS");
-    prefixes.put("PTP", "PTP");
-    prefixes.put("Serial", "Serial");
-    prefixes.put("Service-Engine", "Service-Engine");
-    prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
-    prefixes.put("TenGigE", "TenGigabitEthernet");
-    prefixes.put("te", "TenGigabitEthernet");
-    prefixes.put("trunk", "trunk");
-    prefixes.put("Tunnel", "Tunnel");
-    prefixes.put("tunnel-ip", "tunnel-ip");
-    prefixes.put("tunnel-te", "tunnel-te");
-    prefixes.put("ve", "VirtualEthernet");
-    prefixes.put("Virtual-Template", "Virtual-Template");
-    prefixes.put("Vlan", "Vlan");
-    prefixes.put("Vxlan", "Vxlan");
-    prefixes.put("Wideband-Cable", "Wideband-Cable");
-    return prefixes;
+  private String getCanonicalInterfaceName(String ifaceName) {
+    return _configuration.canonicalizeInterfaceName(ifaceName);
   }
 
   private static Ip getIp(Access_list_ip_rangeContext ctx) {
@@ -813,7 +730,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
-    String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha.getText());
+    String canonicalNamePrefix =
+        CiscoConfiguration.getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha.getText());
     String name = canonicalNamePrefix;
     for (Token part : ctx.name_middle_parts) {
       name += part.getText();
@@ -1690,7 +1608,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
     String canonicalNamePrefix;
     try {
-      canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
+      canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     } catch (BatfishException e) {
       throw new BatfishException(
           "Error fetching interface name at: " + getLocation(ctx) + getFullText(ctx), e);
@@ -5932,9 +5850,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {
     String nameAlpha = ctx.name_prefix_alpha.getText();
-    String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
+    String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     String vrf =
-        canonicalNamePrefix.equals(NXOS_MANAGEMENT_INTERFACE_PREFIX)
+        canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
     double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
