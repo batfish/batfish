@@ -71,7 +71,7 @@ public class JsonPathDisplayHintsTest {
             "$.nodes[*].interfaces", true);
 
     Map<String, Map<String, JsonNode>> displayValues =
-        result.computeDisplayValues(getDisplayHints(displayVariable));
+        result.extractDisplayValues(getDisplayHints(displayVariable));
 
     String key1 = "'nodes'->'node1'->'interfaces'";
     String key2 = "'nodes'->'node2'->'interfaces'";
@@ -106,7 +106,7 @@ public class JsonPathDisplayHintsTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(errorMessage);
 
-    result.computeDisplayValues(getDisplayHints(displayVariable));
+    result.extractDisplayValues(getDisplayHints(displayVariable));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class JsonPathDisplayHintsTest {
             "$.nodes[*].interfaces[*][?(@.mtu < 1600)].mtu", true);
 
     Map<String, Map<String, JsonNode>> displayValues =
-        result.computeDisplayValues(getDisplayHints(displayVariable));
+        result.extractDisplayValues(getDisplayHints(displayVariable));
 
     String key1 = "'nodes'->'node1'->'interfaces'->'interface1'->'mtu'";
     String key2 = "'nodes'->'node2'->'interfaces'->'interface1'->'mtu'";
@@ -140,7 +140,7 @@ public class JsonPathDisplayHintsTest {
             "$.nodes[*].interfaces[*][?(@.mtu < 1600)].mtu", false);
 
     Map<String, Map<String, JsonNode>> displayValues =
-        result.computeDisplayValues(getDisplayHints(displayVariable));
+        result.extractDisplayValues(getDisplayHints(displayVariable));
 
     String key1 = "'nodes'->'node1'->'interfaces'->'interface1'->'mtu'";
     String key2 = "'nodes'->'node2'->'interfaces'->'interface1'->'mtu'";

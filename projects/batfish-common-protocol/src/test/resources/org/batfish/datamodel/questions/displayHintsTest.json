@@ -1,14 +1,14 @@
 {
   "extractionHints" : {
     "node1": {
-      "type": "string",
+      "valuetype": "string",
       "hints": {
         "use": "prefix",
         "index" : 1
       }
     },
     "interfaces1": {
-      "type" : "string",
+      "valuetype" : "string",
       "isList" : true,
       "hints": {
         "use": "suffixOfsuffix",
@@ -16,7 +16,7 @@
       }
     },
     "nodes1": {
-      "type": "int",
+      "valuetype": "int",
       "isList": true,
       "hints": {
         "use": "prefixOfSuffix",
