@@ -5,10 +5,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -332,6 +335,30 @@ public class BatfishTest {
     List<Path> actual = Batfish.listAllFiles(unNestedFolder);
     Collections.sort(expected);
     assertThat(expected, equalTo(actual));
+  }
+
+  @Test
+  public void testUnusableVrrpHandledCorrectly() throws Exception {
+    String configurationText =
+        String.join(
+            "\n",
+            new String[] {
+              "hostname host1", "!", "interface Vlan65", "   vrrp 1 ip 1.2.3.4", "!",
+            });
+    SortedMap<String, String> configMap = ImmutableSortedMap.of("host1", configurationText);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configMap, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
+    SortedMap<String, Configuration> configs = batfish.loadConfigurations();
+
+    // Assert that the config parsed successfully
+    assertThat(configs, hasKey("host1"));
+    assertThat(configs.get("host1").getInterfaces(), hasKey("Vlan65"));
+    assertThat(
+        configs.get("host1").getInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
+
+    // Tests that computing IP owners with such a bad interface does not crash.
+    batfish.computeIpOwners(configs, false);
   }
 
   @Test
