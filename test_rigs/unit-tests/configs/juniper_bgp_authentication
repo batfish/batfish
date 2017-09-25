@@ -1,0 +1,23 @@
+#
+set system host-name juniper_bgp_authentication
+#
+set protocols bgp authentication-key this-is-key
+set protocols bgp authentication-algorithm aes-128-cmac-96
+set protocols bgp group ext type external
+set protocols bgp group ext peer-as 65530
+set protocols bgp group ext neighbor 172.16.2.1
+set routing-options autonomous-system 65533
+set protocols bgp group ext authentication-key-chain bgp-auth
+set protocols bgp group ext authentication-algorithm md5
+set security authentication-key-chains key-chain bgp-auth tolerance 30
+set security authentication-key-chains key-chain bgp-auth key 0 secret this-is-the-secret-password
+set security authentication-key-chains key-chain bgp-auth key 0 start-time 2011-6-23.20:19:33
+set security authentication-key-chains key-chain bgp-auth key 1 secret this-is-another-secret-password
+set security authentication-key-chains key-chain bgp-auth key 1 start-time 2012-6-23.20:19:33-0700
+set security authentication-key-chains key-chain bgp-auth key 0 algorithm hmac-sha-1
+set security authentication-key-chains key-chain bgp-auth key 0 options isis-enhanced
+
+set protocols bgp group ext1 type external
+set protocols bgp group ext1 peer-as 65530
+set protocols bgp group ext1 neighbor 172.16.2.2
+set protocols bgp group ext1 authentication-key-chain bgp-auth1

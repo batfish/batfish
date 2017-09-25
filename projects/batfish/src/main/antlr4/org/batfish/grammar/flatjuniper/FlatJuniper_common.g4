@@ -336,3 +336,8 @@ variable
    text = ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | NEWLINE |
    OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )
 ;
+
+variable_permissive
+:
+   ~NEWLINE+
+;

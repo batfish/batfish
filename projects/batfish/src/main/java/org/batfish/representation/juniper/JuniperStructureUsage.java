@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.vendor.StructureUsage;
 
 public enum JuniperStructureUsage implements StructureUsage {
+  AUTHENTICATION_KEY_CHAINS_POLICY("authentication-key-chains policy"),
   BGP_EXPORT_POLICY("bgp export policy-statement"),
   BGP_IMPORT_POLICY("bgp import policy-statement"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
