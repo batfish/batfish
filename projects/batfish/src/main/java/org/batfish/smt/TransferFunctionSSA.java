@@ -468,10 +468,10 @@ class TransferFunctionSSA {
           return fromExpr(
               _enc.mkBool(p.getCallContext() == TransferFunctionParam.CallContext.STMT_CALL));
         case True:
-          p.debug("mkTrue");
+          p.debug("True");
           return fromExpr(_enc.mkTrue());
         case False:
-          p.debug("mkFalse");
+          p.debug("False");
           return fromExpr(_enc.mkFalse());
         default:
           throw new BatfishException(
@@ -508,7 +508,7 @@ class TransferFunctionSSA {
       IncrementMetric z = (IncrementMetric) e;
       return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
     }
-    throw new BatfishException("TODO: int expr transfer function: " + e);
+    throw new BatfishException("int expr transfer function: " + e);
   }
 
   /*
@@ -728,7 +728,6 @@ class TransferFunctionSSA {
     if (_isExport && _to.isBgp() && p.getOther().getClientId() != null) {
       if (isEbgpEdge) {
         cid = _current.getClientId().checkIfValue(0);
-        System.out.println("Making: " + cid);
       } else {
         cid = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
       }
@@ -990,8 +989,6 @@ class TransferFunctionSSA {
               pairs = pairs.plus(pairs.size(), ret);
             }
 
-            // TODO: same for fallthrough
-
             for (Pair<String, Pair<Expr, Expr>> pair : pairs) {
               String s = pair.getFirst();
               p.debug("CHANGED: " + s);
@@ -1020,13 +1017,16 @@ class TransferFunctionSSA {
 
       } else if (stmt instanceof SetMetric) {
         p.debug("SetMetric");
-        SetMetric sm = (SetMetric) stmt;
-        LongExpr ie = sm.getMetric();
-        ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
-        newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
-        ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
-        p.getOther().setMetric(x);
-        result = result.addChangedVariable("METRIC", x);
+        // TODO: what is the semantics for BGP? Is this MED?
+        if (!_current.getProto().isBgp()) {
+          SetMetric sm = (SetMetric) stmt;
+          LongExpr ie = sm.getMetric();
+          ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
+          newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
+          ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
+          p.getOther().setMetric(x);
+          result = result.addChangedVariable("METRIC", x);
+        }
 
       } else if (stmt instanceof SetOspfMetricType) {
         p.debug("SetOspfMetricType");
@@ -1234,7 +1234,6 @@ class TransferFunctionSSA {
     }
   }
 
-  // TODO use better data structure to merge join points on if statements
   public BoolExpr compute() {
     SymbolicRecord o = new SymbolicRecord(_other);
     TransferFunctionParam p = new TransferFunctionParam(o);

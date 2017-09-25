@@ -121,7 +121,7 @@ public class PropertyChecker {
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
 
-    System.out.println(graph);
+    // System.out.println(graph);
 
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();

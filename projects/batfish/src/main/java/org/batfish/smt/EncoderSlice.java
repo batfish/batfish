@@ -2324,12 +2324,6 @@ class EncoderSlice {
                   }
                   BoolExpr notBlocked = mkAnd(fwd, acl);
                   add(mkEq(notBlocked, dForward));
-
-
-                  if (router.contains("as3border2") && isMainSlice()) {
-                    System.out.println("Dataforwarding:\n" + mkEq(notBlocked, dForward));
-                  }
-
                 }
               }
             });
