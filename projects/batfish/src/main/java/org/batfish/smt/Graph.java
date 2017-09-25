@@ -64,6 +64,10 @@ public class Graph {
 
   private Map<String, Integer> _originatorId;
 
+  private Map<String, Integer> _domainMap;
+
+  private Map<Integer, Set<String>> _domainMapInverse;
+
   /*
    * Create a graph from a Batfish object
    */
@@ -87,6 +91,8 @@ public class Graph {
     _routeReflectorParent = new HashMap<>();
     _routeReflectorClients = new HashMap<>();
     _originatorId = new HashMap<>();
+    _domainMap = new HashMap<>();
+    _domainMapInverse = new HashMap<>();
 
     // Remove the routers we don't want to model
     if (routers != null) {
@@ -107,6 +113,7 @@ public class Graph {
     initEbgpNeighbors();
     initIbgpNeighbors();
     initAreaIds();
+    initDomains();
   }
 
   /*
@@ -179,27 +186,6 @@ public class Graph {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 
-  /*
-   * Determines the collection of routers within the same AS
-   * as the router provided as a parameter
-   */
-  public Set<String> findDomain(String router) {
-    Set<String> sameDomain = new HashSet<>();
-    Queue<String> todo = new ArrayDeque<>();
-    todo.add(router);
-    while (!todo.isEmpty()) {
-      router = todo.remove();
-      sameDomain.add(router);
-      for (GraphEdge ge : getEdgeMap().get(router)) {
-        String peer = ge.getPeer();
-        BgpNeighbor n = _ebgpNeighbors.get(ge);
-        if (peer != null && n == null && !sameDomain.contains(peer)) {
-          todo.add(peer);
-        }
-      }
-    }
-    return sameDomain;
-  }
 
   /*
    * Collect all static routes after inferring which interface they indicate
@@ -470,6 +456,57 @@ public class Graph {
           }
           _areaIds.put(router, areaIds);
         });
+  }
+
+  /*
+ * Determines the collection of routers within the same AS
+ * as the router provided as a parameter
+ */
+  private Set<String> findDomain(String router) {
+    Set<String> sameDomain = new HashSet<>();
+    Queue<String> todo = new ArrayDeque<>();
+    todo.add(router);
+    while (!todo.isEmpty()) {
+      router = todo.remove();
+      sameDomain.add(router);
+      for (GraphEdge ge : getEdgeMap().get(router)) {
+        String peer = ge.getPeer();
+        BgpNeighbor n = _ebgpNeighbors.get(ge);
+        if (peer != null && n == null && !sameDomain.contains(peer)) {
+          todo.add(peer);
+        }
+      }
+    }
+    return sameDomain;
+  }
+
+  /*
+   * Breaks the network up into a collection of devices that
+   * are in the same autonomous system. This is useful when
+   * modeling iBGP since we can restrict
+   */
+  private void initDomains() {
+    int i = 0;
+    Set<String> routers =  new HashSet<>(_configurations.keySet());
+    while (!routers.isEmpty()) {
+      String router = routers.iterator().next();
+      Set<String> domain = findDomain(router);
+      _domainMapInverse.put(i, domain);
+      for (String r : domain) {
+        _domainMap.put(r, i);
+        routers.remove(r);
+      }
+      i++;
+    }
+  }
+
+  /*
+   * Get all the routers in the same AS as the
+   * router provided to the function.
+   */
+  public Set<String> getDomain(String router) {
+    int idx = _domainMap.get(router);
+    return _domainMapInverse.get(idx);
   }
 
   /*

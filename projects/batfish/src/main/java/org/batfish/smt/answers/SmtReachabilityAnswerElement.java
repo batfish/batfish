@@ -41,7 +41,7 @@ public class SmtReachabilityAnswerElement extends SmtOneAnswerElement {
           (source, reachable) -> {
             if (reachable) {
               s.append(source)
-                  .append(" can reach the destination with failures but can without")
+                  .append(" can reach the destination with failures but can not without")
                   .append("\n");
             } else {
               s.append(source)

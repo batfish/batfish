@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
+import org.batfish.smt.CommunityVar.Type;
 
 /**
  * A symbolic record of control plane message attributes. Attributes are specialized based on the
@@ -253,7 +255,14 @@ class SymbolicRecord {
     _communities = new HashMap<>();
     boolean usesBgp = (proto.isBgp() || (hasBgp && proto.isBest()));
     if (usesBgp) {
-      for (CommunityVar cvar : slice.getAllCommunities()) {
+      Set<CommunityVar> allComms = slice.getAllCommunities();
+      for (CommunityVar cvar : allComms) {
+        // TODO: if neighbor doesn't need regex match, then don't keep it on export
+        if (cvar.getType() == Type.REGEX) {
+          if (!_isExport) {
+            continue;
+          }
+        }
         String s = cvar.getValue();
         if (cvar.getType() == CommunityVar.Type.OTHER) {
           s = s + "_OTHER";
