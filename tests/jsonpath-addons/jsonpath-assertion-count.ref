@@ -6,14 +6,6 @@
         "0" : {
           "assertionResult" : false,
           "numResults" : 4,
-          "path" : {
-            "assertion" : {
-              "expect" : 5,
-              "type" : "count"
-            },
-            "path" : "$.nodes['as3border1']..mtu",
-            "suffix" : false
-          },
           "result" : {
             "'nodes'->'as3border1'->'interfaces'->'Ethernet0/0'->'mtu'" : {
               "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']"
