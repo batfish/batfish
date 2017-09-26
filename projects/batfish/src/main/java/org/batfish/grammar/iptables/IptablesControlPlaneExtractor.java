@@ -156,15 +156,13 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       } else if (mCtx.OPTION_DESTINATION_PORT() != null) {
         rule.addMatch(inverted, MatchType.DESTINATION_PORT, toInteger(mCtx.port));
       } else if (mCtx.OPTION_IN_INTERFACE() != null) {
-        // rule.addMatch(inverted, MatchType.IN_INTERFACE,
-        // mCtx.interface_name.getText());
-        todo(mCtx, "matching in input interface");
+        rule.addMatch(inverted, MatchType.IN_INTERFACE,
+          mCtx.interface_name.getText());
       } else if (mCtx.OPTION_PROTOCOL() != null) {
         rule.addMatch(inverted, MatchType.PROTOCOL, toProtocol(mCtx.protocol()));
       } else if (mCtx.OPTION_OUT_INTERFACE() != null) {
-        // rule.addMatch(inverted, MatchType.OUT_INTERFACE,
-        // mCtx.interface_name.getText());
-        todo(mCtx, "matching on outgoing interface");
+        rule.addMatch(inverted, MatchType.OUT_INTERFACE,
+          mCtx.interface_name.getText());
       } else if (mCtx.OPTION_SOURCE() != null) {
         rule.addMatch(inverted, MatchType.SOURCE, getEndpoint(mCtx.endpoint()));
       } else if (mCtx.OPTION_SOURCE_PORT() != null) {

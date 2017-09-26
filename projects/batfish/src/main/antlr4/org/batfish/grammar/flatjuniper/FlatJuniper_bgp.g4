@@ -21,6 +21,26 @@ b_advertise_peer_as
    ADVERTISE_PEER_AS
 ;
 
+b_authentication_algorithm
+:
+   AUTHENTICATION_ALGORITHM
+   (
+      AES_128_CMAC_96
+      | HMAC_SHA_1_96
+      | MD5
+   )
+;
+
+b_authentication_key
+:
+   AUTHENTICATION_KEY key = string
+;
+
+b_authentication_key_chain
+:
+   AUTHENTICATION_KEY_CHAIN name = string
+;
+
 b_as_override
 :
    AS_OVERRIDE
@@ -38,6 +58,9 @@ b_common
    | b_advertise_inactive
    | b_advertise_peer_as
    | b_as_override
+   | b_authentication_algorithm
+   | b_authentication_key
+   | b_authentication_key_chain
    | b_cluster
    | b_damping
    | b_description

@@ -4,8 +4,8 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Serial0 --> R2,Serial0",
-          "R2,Serial1 --> _,_"
+          "R1,Serial0 --> R2,Serial0 (OSPF)",
+          "R2,Serial1 --> _,_ (CONNECTED)"
         ],
         "model" : {
           "|0_CONTROL-FORWARDING_R1_Loopback0|" : "false",
@@ -93,5 +93,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

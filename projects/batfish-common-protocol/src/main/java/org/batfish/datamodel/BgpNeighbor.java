@@ -160,6 +160,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private static final String PROP_ALLOW_REMOTE_AS_OUT = "allowRemoteAsOut";
 
+  private static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
+
   private static final String PROP_CLUSTER_ID = "clusterId";
 
   private static final String PROP_DEFAULT_METRIC = "defaultMetric";
@@ -204,6 +206,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private boolean _allowLocalAsIn;
 
   private boolean _allowRemoteAsOut;
+
+  private BgpAuthenticationSettings _authenticationSettings;
 
   private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
@@ -311,6 +315,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
       return false;
     }
+    if (Objects.equals(this._authenticationSettings, other._authenticationSettings)) {
+      return false;
+    }
     if (_clusterId == null) {
       if (other._clusterId != null) {
         return false;
@@ -408,6 +415,13 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       "Whether to allow sending of advertisements containing the remote AS number in the AS-path")
   public boolean getAllowRemoteAsOut() {
     return _allowRemoteAsOut;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
+  @JsonPropertyDescription("The authentication setting to be used for this neighbor")
+  public BgpAuthenticationSettings getAuthenticationSettings() {
+    return _authenticationSettings;
   }
 
   @JsonIgnore
@@ -573,6 +587,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
   public void setAllowRemoteAsOut(boolean allowRemoteAsOut) {
     _allowRemoteAsOut = allowRemoteAsOut;
+  }
+
+  @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
+  public void setAuthenticationSettings(BgpAuthenticationSettings authenticationSettings) {
+    _authenticationSettings = authenticationSettings;
   }
 
   @JsonProperty(PROP_CLUSTER_ID)

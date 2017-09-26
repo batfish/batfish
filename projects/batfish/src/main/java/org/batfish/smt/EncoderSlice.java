@@ -990,8 +990,8 @@ class EncoderSlice {
 
                       String ifaceName = e.getStart().getName();
 
-                      if (!proto.isConnected()) {
-                        // mkIf we use a single set of export variables, then make sure
+                      if (!proto.isConnected() && !proto.isStatic()) {
+                        // If we use a single set of export variables, then make sure
                         // to reuse the existing variables instead of creating new ones
                         if (useSingleExport) {
                           SymbolicRecord singleVars = singleExportMap.get(router).get(proto);

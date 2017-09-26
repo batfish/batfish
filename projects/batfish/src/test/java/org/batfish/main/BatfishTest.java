@@ -2,12 +2,16 @@ package org.batfish.main;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -85,6 +89,41 @@ public class BatfishTest {
   }
 
   @Test
+  public void testOverlayIptables() throws IOException {
+    SortedMap<String, String> configurationsText = new TreeMap<>();
+    String[] configurationNames = new String[] {"host1.cfg"};
+    String testConfigsPrefix = "org/batfish/grammar/hosts/testrigs/router-iptables/configs/";
+
+    SortedMap<String, String> hostsText = new TreeMap<>();
+    String[] hostNames = new String[] {"host1.json"};
+    String testHostsPrefix = "org/batfish/grammar/hosts/testrigs/router-iptables/hosts/";
+
+    SortedMap<String, String> iptablesFilesText = new TreeMap<>();
+    String[] iptablesNames = new String[] {"host1.iptables"};
+    String testIptablesPrefix = "org/batfish/grammar/hosts/testrigs/router-iptables/iptables/";
+
+    for (String configurationName : configurationNames) {
+      String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);
+      configurationsText.put(configurationName, configurationText);
+    }
+    for (String hostName : hostNames) {
+      String hostText = CommonUtil.readResource(testHostsPrefix + hostName);
+      hostsText.put(hostName, hostText);
+    }
+    for (String iptablesName : iptablesNames) {
+      String iptablesText = CommonUtil.readResource(testIptablesPrefix + iptablesName);
+      iptablesFilesText.put(iptablesName, iptablesText);
+    }
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configurationsText, hostsText, iptablesFilesText, _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+    assertThat(
+        configurations.get("host1").getInterfaces().get("Ethernet0").getIncomingFilterName(),
+        is(notNullValue()));
+  }
+
+  @Test
   public void testMultipleBestVrrpCandidates() throws IOException {
     SortedMap<String, String> configurationsText = new TreeMap<>();
     String[] configurationNames = new String[] {"r1", "r2"};
@@ -94,7 +133,12 @@ public class BatfishTest {
       String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);
       configurationsText.put(configurationName, configurationText);
     }
-    Batfish batfish = BatfishTestUtils.getBatfishFromConfigurationText(configurationsText, _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configurationsText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r1")));
@@ -210,9 +254,9 @@ public class BatfishTest {
     HostConfiguration host1 = new HostConfiguration();
     host1.setHostname("host1");
     host1.setIptablesFile(Paths.get("iptables").resolve("host1.iptables").toString());
-    Map<String, VendorConfiguration> hostConfigurations = new HashMap<>();
+    SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
     hostConfigurations.put("host1", host1);
-    Map<Path, String> iptablesData = new TreeMap<>();
+    SortedMap<Path, String> iptablesData = new TreeMap<>();
     Path testRigPath = _folder.newFolder("testrig").toPath();
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
@@ -294,14 +338,38 @@ public class BatfishTest {
   }
 
   @Test
+  public void testUnusableVrrpHandledCorrectly() throws Exception {
+    String configurationText =
+        String.join(
+            "\n",
+            new String[] {
+              "hostname host1", "!", "interface Vlan65", "   vrrp 1 ip 1.2.3.4", "!",
+            });
+    SortedMap<String, String> configMap = ImmutableSortedMap.of("host1", configurationText);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configMap, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
+    SortedMap<String, Configuration> configs = batfish.loadConfigurations();
+
+    // Assert that the config parsed successfully
+    assertThat(configs, hasKey("host1"));
+    assertThat(configs.get("host1").getInterfaces(), hasKey("Vlan65"));
+    assertThat(
+        configs.get("host1").getInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
+
+    // Tests that computing IP owners with such a bad interface does not crash.
+    batfish.computeIpOwners(configs, false);
+  }
+
+  @Test
   public void testReadValidIptableFile() throws IOException {
     HostConfiguration host1 = new HostConfiguration();
     host1.setHostname("host1");
     Path iptablePath = Paths.get("iptables").resolve("host1.iptables");
     host1.setIptablesFile(iptablePath.toString());
-    Map<String, VendorConfiguration> hostConfigurations = new HashMap<>();
+    SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
     hostConfigurations.put("host1", host1);
-    Map<Path, String> iptablesData = new TreeMap<>();
+    SortedMap<Path, String> iptablesData = new TreeMap<>();
     Path testRigPath = _folder.newFolder("testrig").toPath();
     File iptableFile = Paths.get(testRigPath.toString(), iptablePath.toString()).toFile();
     iptableFile.getParentFile().mkdir();
