@@ -61,4 +61,28 @@ public class EnvironmentTest {
                 + "nodeBlacklist=[], bgpTables={}, routingTables={}, "
                 + "externalBgpAnnouncements=announcement}"));
   }
+
+  @Test
+  public void testBuilder() {
+    List<String> nodeBlacklist = Lists.newArrayList("node1");
+    Map<String, String> bgpTables = Collections.singletonMap("bgpTable1", "table1Content");
+    Map<String, String> routingTables = Collections.singletonMap("routingTable1", "table1Content");
+    Environment e =
+        Environment.builder()
+            .setName("environment")
+            .setEdgeBlacklist(Lists.newArrayList())
+            .setInterfaceBlacklist(Lists.newArrayList())
+            .setNodeBlacklist(nodeBlacklist)
+            .setBgpTables(bgpTables)
+            .setRoutingTables(routingTables)
+            .setExternalBgpAnnouncements("announcement")
+            .build();
+    assertThat(e.getName(), equalTo("environment"));
+    assertThat(e.getEdgeBlacklist(), equalTo(Lists.newArrayList()));
+    assertThat(e.getInterfaceBlacklist(), equalTo(Lists.newArrayList()));
+    assertThat(e.getNodeBlacklist(), equalTo(nodeBlacklist));
+    assertThat(e.getBgpTables(), equalTo(bgpTables));
+    assertThat(e.getRoutingTables(), equalTo(routingTables));
+    assertThat(e.getExternalBgpAnnouncements(), equalTo("announcement"));
+  }
 }
