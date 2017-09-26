@@ -1,29 +1,27 @@
 {
   "entities": {
     "oneNode" : {
-      "entitytype": "node",
+      "entityType": "node",
       "hostname": "nodeFromPrefix"
     }
   },
   "extractionHints" : {
     "nodeFromPrefix": {
-      "valuetype": "string",
+      "valueType": "string",
       "hints": {
         "use": "prefix",
         "index" : 1
       }
     },
     "mtuFromSuffixOfSuffix": {
-      "valuetype": "int",
-      "isList": false,
+      "valueType": "int",
       "hints": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "interfaceListFromPrefixOfSuffix": {
-      "valuetype": "string",
-      "isList": true,
+      "valueType": "stringList",
       "hints": {
         "use": "prefixOfSuffix",
         "filter": "$.*",

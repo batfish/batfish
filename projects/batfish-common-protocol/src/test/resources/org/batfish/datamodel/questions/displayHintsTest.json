@@ -8,16 +8,14 @@
       }
     },
     "interfaces1": {
-      "valuetype" : "string",
-      "isList" : true,
+      "valuetype" : "stringList",
       "hints": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "nodes1": {
-      "valuetype": "int",
-      "isList": true,
+      "valuetype": "intList",
       "hints": {
         "use": "prefixOfSuffix",
         "filter": "$.*",
