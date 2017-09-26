@@ -126,8 +126,7 @@
                 "use" : "prefix",
                 "index" : 1
               },
-              "isList" : false,
-              "valuetype" : "string"
+              "valueType" : "STRING"
             }
           }
         },

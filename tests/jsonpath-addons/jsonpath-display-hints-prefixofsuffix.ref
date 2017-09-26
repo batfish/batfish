@@ -1185,8 +1185,7 @@
                 "filter" : "$.interfaces.*",
                 "index" : 1
               },
-              "isList" : true,
-              "valuetype" : "string"
+              "valueType" : "STRINGLIST"
             }
           }
         },

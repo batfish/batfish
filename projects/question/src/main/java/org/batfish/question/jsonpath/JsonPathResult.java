@@ -153,7 +153,7 @@ public class JsonPathResult {
 
   private void extractDisplayValuesPrefix(
       String displayVar, ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
-    if (extractionHint.getIsList()) {
+    if (extractionHint.getValueType().isListType()) {
       throw new BatfishException("Prefix-based hints are incompatible with list types");
     }
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
@@ -203,7 +203,7 @@ public class JsonPathResult {
         extractedList.add(value);
       }
 
-      if (extractionHint.getIsList()) {
+      if (extractionHint.getValueType().isListType()) {
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         ArrayNode arrayNode = mapper.valueToTree(extractedList);
         _extractedValues.get(entry.getKey()).put(displayVar, arrayNode);
@@ -220,11 +220,11 @@ public class JsonPathResult {
 
   private static void confirmValueType(JsonNode value, DisplayHints.ValueType type) {
     // type check what we got
-    switch (type) {
+    switch (type.getBaseType()) {
       case INT:
         if (!value.isInt()) {
           throw new BatfishException(
-              "Mismatch in extracted vs expected type.\n"
+              "Mismatch in extracted vs expected valuetype.\n"
                   + "Expected  "
                   + type
                   + "\n"
@@ -235,7 +235,7 @@ public class JsonPathResult {
       case STRING:
         if (!value.isTextual()) {
           throw new BatfishException(
-              "Mismatch in extracted vs expected type.\n"
+              "Mismatch in extracted vs expected valuetype.\n"
                   + "Expected  "
                   + type
                   + "\n"
@@ -244,7 +244,7 @@ public class JsonPathResult {
         }
         break;
       default:
-        throw new BatfishException("Unknown expected type " + type);
+        throw new BatfishException("Unknown valuetype " + type);
     }
   }
 
