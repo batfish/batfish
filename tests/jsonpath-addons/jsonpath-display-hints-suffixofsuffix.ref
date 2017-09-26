@@ -1184,8 +1184,7 @@
                 "use" : "suffixofsuffix",
                 "filter" : "$.interfaces.*.mtu"
               },
-              "isList" : true,
-              "valuetype" : "int"
+              "valueType" : "INTLIST"
             }
           }
         },
