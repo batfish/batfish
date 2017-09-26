@@ -1,21 +1,21 @@
 {
   "extractionHints" : {
     "node1": {
-      "valuetype": "string",
+      "valueType": "string",
       "hints": {
         "use": "prefix",
         "index" : 1
       }
     },
     "interfaces1": {
-      "valuetype" : "stringList",
+      "valueType" : "stringList",
       "hints": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "nodes1": {
-      "valuetype": "intList",
+      "valueType": "intList",
       "hints": {
         "use": "prefixOfSuffix",
         "filter": "$.*",
