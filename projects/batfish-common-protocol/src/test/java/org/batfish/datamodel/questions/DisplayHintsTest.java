@@ -19,14 +19,14 @@ public class DisplayHintsTest {
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     DisplayHints displayHints = mapper.readValue(text, DisplayHints.class);
 
-    assertThat(displayHints.getTextDesc().equals("${node1} has no accounting command"),
+    // here, we only test for ExtractionHint level concepts
+    // tests that sit with jsonpath question validate if prefix/suffix filters are parsed correctly
+
+    assertThat(displayHints.getTextDesc().equals("${mynode} has nothing on ${myinterface}"),
         equalTo(true));
 
     Map<String, ExtractionHint> extractionHints = displayHints.getExtractionHints();
     assertThat(extractionHints.size(), equalTo(3));
-
-    // here, we only test for ExtractionHint level concepts
-    // tests that sit with jsonpath question validate if prefix/suffix filters are parsed correctly
 
     ExtractionHint hint0 = extractionHints.get("node1");
     assertThat(hint0.getValueType().isListType(), equalTo(false));

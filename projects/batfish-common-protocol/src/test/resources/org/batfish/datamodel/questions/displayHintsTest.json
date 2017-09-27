@@ -1,4 +1,15 @@
 {
+  "entities": {
+    "mynode": {
+      "entityType": "node",
+      "hostname": "node1"
+    },
+    "myinterface": {
+      "entityType": "interfaceList",
+      "hostname": "nodes1",
+      "interface": "interfaces1"
+    }
+  },
   "extractionHints" : {
     "node1": {
       "valueType": "string",
@@ -23,6 +34,6 @@
       }
     }
   },
-  "textDesc" : "${node1} has no accounting command"
+  "textDesc" : "${mynode} has nothing on ${myinterface}"
 }
 
