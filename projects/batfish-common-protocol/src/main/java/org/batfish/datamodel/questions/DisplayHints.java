@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -282,36 +283,49 @@ public class DisplayHints {
       @JsonProperty(PROP_EXTRACTION_HINTS) Map<String, ExtractionHint> extractionHints,
       @JsonProperty(PROP_TEXT_DESC) String textDesc) {
 
+    if (entities == null) {
+      entities = new HashMap<>();
+    }
+    if (extractionHints == null) {
+      extractionHints = new HashMap<>();
+    }
+    if (textDesc == null) {
+      textDesc = "";
+    }
+
     Set<String> varsInEntities = new HashSet<>();
     for (Entry<String, EntityConfiguration> entry : entities.entrySet()) {
       entry.getValue().validate(entry.getKey());
       varsInEntities.addAll(entry.getValue().getVars());
     }
+
     for (Entry<String, ExtractionHint> entry : extractionHints.entrySet()) {
       entry.getValue().validate(entry.getKey());
     }
+
     Set<String> varsInExtractionHints = extractionHints.keySet();
-    SetView<String> extraVarsInEntities = Sets.difference(varsInEntities, varsInExtractionHints);
-    if (!extraVarsInEntities.isEmpty()) {
+    SetView<String> missingExtractionVars = Sets.difference(varsInEntities, varsInExtractionHints);
+    if (!missingExtractionVars.isEmpty()) {
       throw new BatfishException(
-          "entities refer to variables that are not in extraction hints: " + extraVarsInEntities);
+          "entities refer to variables that are not in extraction hints: " + missingExtractionVars);
     }
-    SetView<String> extraVarsInExtractions = Sets.difference(varsInExtractionHints, varsInEntities);
-    if (!extraVarsInExtractions.isEmpty()) {
-      throw new BatfishException(
-          "extraction hints have variables that are not in entities: " + extraVarsInExtractions);
-    }
+    // at least for now, allow for extra vars in extractions
+    //    SetView<String> extraVarsInExtractions = Sets.difference(varsInExtractionHints,
+    // varsInEntities);
+    //    if (!extraVarsInExtractions.isEmpty()) {
+    //      throw new BatfishException(
+    //          "extraction hints have variables that are not in entities: " +
+    // extraVarsInExtractions);
+    //    }
 
     Set<String> entitiesInTextDesc = new HashSet<>();
     Matcher matcher = Pattern.compile("\\$\\{([^\\}]+)\\}").matcher(textDesc);
     while (matcher.find()) {
       entitiesInTextDesc.add(matcher.group(1));
     }
-    SetView<String> extraEntitiesInTextDesc =
-        Sets.difference(entitiesInTextDesc, entities.keySet());
-    if (!extraEntitiesInTextDesc.isEmpty()) {
-      throw new BatfishException(
-          "textDesc has names that are not in entities: " + extraEntitiesInTextDesc);
+    SetView<String> missingEntities = Sets.difference(entitiesInTextDesc, entities.keySet());
+    if (!missingEntities.isEmpty()) {
+      throw new BatfishException("textDesc has names that are not in entities: " + missingEntities);
     }
 
     _entities = entities;
