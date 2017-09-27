@@ -1,8 +1,17 @@
 {
   "entities": {
-    "oneNode" : {
+    "oneNode": {
       "entityType": "node",
       "hostname": "nodeFromPrefix"
+    },
+    "oneInterface": {
+      "entityType": "interfaceList",
+      "hostname": "nodeFromPrefix",
+      "interface": "interfaceListFromPrefixOfSuffix"
+    },
+    "oneMtu": {
+      "entityType" : "int",
+      "value" : "mtuFromSuffixOfSuffix"
     }
   },
   "extractionHints" : {
