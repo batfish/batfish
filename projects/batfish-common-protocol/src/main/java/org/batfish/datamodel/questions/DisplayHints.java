@@ -51,6 +51,8 @@ public class DisplayHints {
   }
 
   public enum EntityType {
+    INT,
+    INTLIST,
     INTERFACE,
     INTERFACELIST,
     IPADDRESS,
@@ -67,6 +69,8 @@ public class DisplayHints {
 
     private static final String PROP_INTERFACE = "interface";
 
+    private static final String PROP_VALUE = "value";
+
     private String _address;
 
     private EntityType _entityType;
@@ -74,6 +78,8 @@ public class DisplayHints {
     private String _hostname;
 
     private String _interface;
+
+    private String _value;
 
     @JsonProperty(PROP_ADDRESS)
     public String getAddress() {
@@ -95,6 +101,11 @@ public class DisplayHints {
       return _interface;
     }
 
+    @JsonProperty(PROP_VALUE)
+    public String getValue() {
+      return _value;
+    }
+
     @JsonIgnore
     public Set<String> getVars() {
       Set<String> retSet = new HashSet<>();
@@ -106,6 +117,9 @@ public class DisplayHints {
       }
       if (!Strings.isNullOrEmpty(_interface)) {
         retSet.add(_interface);
+      }
+      if (!Strings.isNullOrEmpty(_value)) {
+        retSet.add(_value);
       }
       return retSet;
     }
@@ -130,12 +144,24 @@ public class DisplayHints {
       _interface = interface1;
     }
 
+    @JsonProperty(PROP_VALUE)
+    public void setValue(String value) {
+      _value = value;
+    }
+
     public void validate(String entityName) {
       if (_entityType == null) {
         throw new BatfishException("entityType not specified for entity " + entityName);
       }
       // 1. check if all necessary fields are defined for a type
       switch (_entityType) {
+        case INT:
+        case INTLIST:
+          if (Strings.isNullOrEmpty(_value)) {
+            throw new BatfishException(
+                "hostname not specified for entity of type INTERFACE[LIST]: " + entityName);
+          }
+          break;
         case INTERFACE:
         case INTERFACELIST:
           if (Strings.isNullOrEmpty(_hostname)) {
@@ -178,6 +204,11 @@ public class DisplayHints {
       }
       if (!Strings.isNullOrEmpty(_interface)) {
         if (_entityType != EntityType.INTERFACE && _entityType != EntityType.INTERFACELIST) {
+          throw new BatfishException("interface specified for entity of type " + _entityType);
+        }
+      }
+      if (!Strings.isNullOrEmpty(_value)) {
+        if (_entityType != EntityType.INT && _entityType != EntityType.INTLIST) {
           throw new BatfishException("interface specified for entity of type " + _entityType);
         }
       }
@@ -242,6 +273,8 @@ public class DisplayHints {
   private Map<String, ExtractionHint> _extractionHints;
 
   private String _textDesc;
+
+  public DisplayHints() {}
 
   @JsonCreator
   public DisplayHints(
