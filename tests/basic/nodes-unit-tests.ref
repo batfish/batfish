@@ -963,6 +963,25 @@
             }
           }
         },
+        "asa_banner" : {
+          "name" : "asa_banner",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : {
+                "login" : "**************************************************\n\nYou are connected to HOSTNAME If you are\n\nexperiencing any problems, please contact XXX at\n\nsomeone@somewhere.com or XXX-XXX-XXX\n\n**************************************************\n"
+              },
+              "hostname" : "asa_banner"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "asa_ssh" : {
           "name" : "asa_ssh",
           "configurationFormat" : "CISCO_NX",
@@ -987,8 +1006,8 @@
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
-                "login" : "^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
-                "motd" : "^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n\n\n"
+                "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n\n^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
+                "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n\n^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n\n\n"
               },
               "hostname" : "banner",
               "logging" : {
@@ -1015,7 +1034,7 @@
             "cisco" : {
               "banners" : {
                 "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n",
-                "motd" : "^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n"
+                "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n"
               },
               "hostname" : "banner_dos"
             }
