@@ -331,7 +331,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
         oos = new ObjectOutputStream(gos);
       }
       oos.writeObject(object);
-      oos.flush();
+      oos.close();
       gos.finish(); // close the GZIP file entry
     } catch (IOException e) {
       throw new BatfishException("Failed to convert object to gzip data", e);
