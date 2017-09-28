@@ -761,7 +761,7 @@ public class Encoder {
       }
     }
 
-    return mkOr(acc1, acc2);
+    return mkAnd(acc1, acc2);
   }
 
   /**
@@ -790,9 +790,9 @@ public class Encoder {
         new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
 
     if (ENABLE_DEBUGGING) {
-     System.out.println("Constraints: " + stats.getNumConstraints());
-     System.out.println("Variables: " + stats.getNumVariables());
-     System.out.println("Z3 Time: " + stats.getTime());
+      System.out.println("Constraints: " + stats.getNumConstraints());
+      System.out.println("Variables: " + stats.getNumVariables());
+      System.out.println("Z3 Time: " + stats.getTime());
     }
     // System.out.println("Stats:\n" + _solver.getStatistics());
 

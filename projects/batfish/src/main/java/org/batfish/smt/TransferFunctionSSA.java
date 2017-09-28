@@ -789,7 +789,7 @@ class TransferFunctionSSA {
       Expr t =
           (trueBranch == null
               ? _enc.mkFalse()
-              : trueBranch); // can use mkFalse because the value has not been assigned
+              : trueBranch); // can use False because the value has not been assigned
       Expr f = (falseBranch == null ? _enc.mkFalse() : falseBranch);
       Expr tass = (trueBranch == null ? r.getReturnAssignedValue() : _enc.mkTrue());
       Expr fass = (falseBranch == null ? r.getReturnAssignedValue() : _enc.mkTrue());
@@ -1110,7 +1110,7 @@ class TransferFunctionSSA {
       }
     }
 
-    // mkIf this is the outermost call, then we relate the variables
+    // If this is the outermost call, then we relate the variables
     if (p.getInitialCall()) {
       p.debug("InitialCall finalizing");
 

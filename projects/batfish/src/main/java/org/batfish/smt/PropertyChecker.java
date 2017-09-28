@@ -13,16 +13,29 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
+import org.apache.commons.lang.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.FilterResult;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.FlowHistory;
+import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.FlowTraceHop;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -91,13 +104,25 @@ public class PropertyChecker {
   /*
    * Lookup the value of a variable from a z3 model
    */
-  @Nullable
   private static String evaluate(Model m, Expr e) {
-    Expr val = m.evaluate(e, false);
-    if (!val.equals(e)) {
-      return val.toString();
-    }
-    return null;
+    Expr val = m.evaluate(e, true);
+    return val.toString();
+  }
+
+  private static boolean isTrue(Model m, Expr e) {
+    return "true".equals(evaluate(m, e));
+  }
+
+  private static boolean isFalse(Model m, Expr e) {
+    return "false".equals(evaluate(m, e));
+  }
+
+  private static int intVal(Model m, Expr e) {
+    return Integer.parseInt(evaluate(m, e));
+  }
+
+  private static Ip ipVal(Model m, Expr e) {
+    return new Ip(intVal(m,e));
   }
 
   /*
@@ -107,6 +132,203 @@ public class PropertyChecker {
       Encoder e, Configuration conf, SymbolicRecord r1, SymbolicRecord r2) {
     EncoderSlice main = e.getMainSlice();
     return main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
+  }
+
+  /*
+   * A collection of helper functions to create counter examples in
+   * the form of the Batfish Flow data type from z3's model
+   */
+
+  private static Flow buildFlow(Model m, SymbolicPacket pkt, String router) {
+    Ip srcIp = ipVal(m, pkt.getSrcIp());
+    Ip dstIp = ipVal(m, pkt.getDstIp());
+    Integer srcPort = intVal(m, pkt.getSrcPort());
+    Integer dstPort = intVal(m, pkt.getDstPort());
+    IpProtocol ipProtocol = IpProtocol.fromNumber(intVal(m, pkt.getIpProtocol()));
+    Integer icmpType = intVal(m, pkt.getIcmpType());
+    Integer icmpCode = intVal(m, pkt.getIcmpCode());
+    Integer tcpFlagsCwr = isTrue(m, pkt.getTcpCwr()) ? 0 : 1;
+    Integer tcpFlagsEce = isTrue(m, pkt.getTcpEce()) ? 0 : 1;
+    Integer tcpFlagsUrg = isTrue(m, pkt.getTcpUrg()) ? 0 : 1;
+    Integer tcpFlagsAck = isTrue(m, pkt.getTcpAck()) ? 0 : 1;
+    Integer tcpFlagsPsh = isTrue(m, pkt.getTcpPsh()) ? 0 : 1;
+    Integer tcpFlagsRst = isTrue(m, pkt.getTcpRst()) ? 0 : 1;
+    Integer tcpFlagsSyn = isTrue(m, pkt.getTcpSyn()) ? 0 : 1;
+    Integer tcpFlagsFin = isTrue(m, pkt.getTcpFin()) ? 0 : 1;
+
+    Flow.Builder b = new Flow.Builder();
+    b.setIngressNode(router);
+    b.setSrcIp(srcIp);
+    b.setDstIp(dstIp);
+    b.setSrcPort(srcPort);
+    b.setDstPort(dstPort);
+    b.setIpProtocol(ipProtocol);
+    b.setIcmpType(icmpType);
+    b.setIcmpCode(icmpCode);
+    b.setTcpFlagsCwr(tcpFlagsCwr);
+    b.setTcpFlagsEce(tcpFlagsEce);
+    b.setTcpFlagsUrg(tcpFlagsUrg);
+    b.setTcpFlagsAck(tcpFlagsAck);
+    b.setTcpFlagsPsh(tcpFlagsPsh);
+    b.setTcpFlagsRst(tcpFlagsRst);
+    b.setTcpFlagsSyn(tcpFlagsSyn);
+    b.setTcpFlagsFin(tcpFlagsFin);
+    b.setTag("SMT");
+    return b.build();
+  }
+
+  private static FlowTraceHop buildFlowTraceHop(Flow f, GraphEdge ge, String route) {
+    String node1 = ge.getRouter();
+    String int1 = ge.getStart().getName();
+    String node2 = ge.getPeer() == null ? "(none)" : ge.getPeer();
+    String int2 = ge.getEnd() == null ? "null_interface" : ge.getEnd().getName();
+    Edge edge = new Edge(node1, int1, node2, int2);
+    SortedSet<String> routes = new TreeSet<>();
+    routes.add(route);
+    return new FlowTraceHop(edge, routes, null);
+  }
+
+  private static String buildRoute(Prefix pfx, Protocol proto, GraphEdge ge) {
+    String type;
+    String nhip;
+    String nhint;
+    if (proto.isConnected()) {
+      type = "ConnectedRoute";
+      nhip = "AUTO/NONE(-1l)";
+      nhint = ge.getStart().getName();
+    } else {
+      type = StringUtils.capitalize(proto.name().toLowerCase()) + "Route";
+      nhip = ge.getStart().getPrefix().toString();
+      nhint = "dynamic";
+    }
+    return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx.toString(), nhip, nhint);
+  }
+
+  private static Tuple<Flow, FlowTrace> buildFlowTrace(Encoder enc, Model m, String router) {
+    EncoderSlice slice = enc.getMainSlice();
+    SymbolicPacket pkt = slice.getSymbolicPacket();
+    SymbolicDecisions decisions = slice.getSymbolicDecisions();
+    Flow f = buildFlow(m, pkt, router);
+
+    SortedSet<String> visited = new TreeSet<>();
+    List<FlowTraceHop> hops = new ArrayList<>();
+
+    String current = router;
+    while (true) {
+      visited.add(current);
+      // Get the forwarding variables
+      Map<GraphEdge, BoolExpr> dfwd = decisions.getDataForwarding().get(current);
+      Map<GraphEdge, BoolExpr> cfwd = decisions.getControlForwarding().get(current);
+      Map<GraphEdge, BoolExpr> across = enc.getMainSlice().getForwardsAcross().get(current);
+      // Find the route used
+      SymbolicRecord r = decisions.getBestNeighbor().get(current);
+      Protocol proto;
+      if (r.getProtocolHistory().getBitVec() == null) {
+        proto = slice.getProtocols().get(current).get(0);
+      } else {
+        Integer idx = intVal(m, r.getProtocolHistory().getBitVec());
+        proto = r.getProtocolHistory().value(idx);
+      }
+      Integer pfxLen = intVal(m, r.getPrefixLength());
+      Prefix pfx = new Prefix(f.getDstIp(), pfxLen);
+      // pick the next router
+      boolean found = false;
+      for (Entry<GraphEdge, BoolExpr> entry : dfwd.entrySet()) {
+        GraphEdge ge = entry.getKey();
+        BoolExpr dexpr = entry.getValue();
+        BoolExpr cexpr = cfwd.get(ge);
+        BoolExpr aexpr = across.get(ge);
+        String route = buildRoute(pfx, proto, ge);
+        if (isTrue(m, dexpr)) {
+          hops.add(buildFlowTraceHop(f, ge, route));
+          if (isFalse(m, aexpr)) {
+            Interface i = ge.getStart();
+            IpAccessList acl = i.getInboundFilter();
+            FilterResult fr = acl.filter(f);
+            IpAccessListLine line = acl.getLines().get(fr.getMatchLine());
+            String note = String.format("DENIED_IN{%s}{%s}", acl.getName(), line.getName());
+            FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
+            return new Tuple<>(f, ft);
+          }
+          if (slice.getGraph().isEdgeHostConnected(ge)) {
+            FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
+            return new Tuple<>(f, ft);
+          } else if (ge.getPeer() == null) {
+            FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "EXITS_NETWORK");
+            return new Tuple<>(f, ft);
+          } else {
+            current = ge.getPeer();
+            found = true;
+            if (visited.contains(current)) {
+              FlowTrace ft = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
+              return new Tuple<>(f, ft);
+            }
+            break;
+          }
+        } else if (isTrue(m, cexpr)) {
+          hops.add(buildFlowTraceHop(f, ge, route));
+          Interface i = ge.getStart();
+          IpAccessList acl = i.getOutgoingFilter();
+          FilterResult fr = acl.filter(f);
+          IpAccessListLine line = acl.getLines().get(fr.getMatchLine());
+          String note = String.format("DENIED_OUT{%s}{%s}", acl.getName(), line.getName());
+          FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_OUT, hops, note);
+          return new Tuple<>(f, ft);
+        }
+      }
+      if (!found) {
+        FlowTrace ft = new FlowTrace(FlowDisposition.NO_ROUTE, hops, "NO_ROUTE");
+        return new Tuple<>(f, ft);
+      }
+    }
+  }
+
+  private static FlowHistory buildFlowCounterExample(
+      VerificationResult res,
+      List<String> sourceRouters,
+      Model model,
+      Encoder enc,
+      Map<String, BoolExpr> reach) {
+
+    FlowHistory fh = new FlowHistory();
+    if (!res.isVerified()) {
+      for (String source : sourceRouters) {
+        BoolExpr sourceVar = reach.get(source);
+        if (isFalse(model, sourceVar)) {
+          Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
+          fh.addFlowTrace(tup.getFirst(), "BASE", tup.getSecond());
+        }
+      }
+    }
+    return fh;
+  }
+
+  private static FlowHistory buildFlowDiffCounterExample(
+      VerificationResult res,
+      List<String> sourceRouters,
+      Model model,
+      Encoder enc,
+      Encoder enc2,
+      Map<String, BoolExpr> reach,
+      Map<String, BoolExpr> reach2) {
+
+    FlowHistory fh = new FlowHistory();
+    if (!res.isVerified()) {
+      assert (reach2 != null);
+      for (String source : sourceRouters) {
+        BoolExpr sourceVar1 = reach.get(source);
+        BoolExpr sourceVar2 = reach2.get(source);
+        String val1 = evaluate(model, sourceVar1);
+        String val2 = evaluate(model, sourceVar2);
+        if (!Objects.equals(val1, val2)) {
+          Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, model, source);
+          Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
+          fh.addFlowTrace(base.getFirst(), "BASE", base.getSecond());
+          fh.addFlowTrace(diff.getFirst(), "FAILED", diff.getSecond());
+        }
+      }
+    }
+    return fh;
   }
 
   /*
@@ -120,8 +342,6 @@ public class PropertyChecker {
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
-
-    // System.out.println(graph);
 
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
@@ -212,38 +432,16 @@ public class PropertyChecker {
     Model model = result.getSecond();
     // res.debug(enc.getMainSlice(), true, null);
 
-    // Analyze the result to see if we can figure out what went wrong
-    Set<String> unreachableSources = new HashSet<>();
-    Map<String, Boolean> diffReachable = new HashMap<>();
-    if (!res.isVerified()) {
-      if (q.getEquivalence()) {
-        assert (reach2 != null);
-        for (String source : sourceRouters) {
-          BoolExpr sourceVar1 = reach.get(source);
-          BoolExpr sourceVar2 = reach2.get(source);
-          String val1 = evaluate(model, sourceVar1);
-          String val2 = evaluate(model, sourceVar2);
-          if (!Objects.equals(val1, val2)) {
-            boolean isTrue = "true".equals(val1);
-            diffReachable.put(source, isTrue);
-          }
-        }
-      } else {
-        for (String source : sourceRouters) {
-          BoolExpr sourceVar = reach.get(source);
-          String val = res.getModel().get(sourceVar.toString());
-          if ("false".equals(val)) {
-            unreachableSources.add(source);
-          }
-        }
-      }
+    FlowHistory fh;
+    if (q.getEquivalence()) {
+      fh = buildFlowDiffCounterExample(res, sourceRouters, model, enc, enc2, reach, reach2);
+    } else {
+      fh = buildFlowCounterExample(res, sourceRouters, model, enc, reach);
     }
 
     SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
     answer.setResult(res);
-    answer.setUnreachableSources(unreachableSources);
-    answer.setDiffReachability(diffReachable);
-
+    answer.setFlowHistory(fh);
     return answer;
   }
 
