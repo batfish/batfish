@@ -58,6 +58,7 @@ tokens {
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
+   ASA_BANNER_LINE,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
@@ -11227,6 +11228,11 @@ M_BannerText_ESCAPE_C
 M_BannerText_HASH
 :
    '#' {!_cadant}? -> type ( POUND ) , mode ( M_MOTD_HASH )
+;
+
+M_BannerText_ASA_BANNER_LINE
+:
+   ~[#^\r\n \t\u000C] F_NonNewline* -> type ( ASA_BANNER_LINE ) , popMode
 ;
 
 M_BannerText_NEWLINE
