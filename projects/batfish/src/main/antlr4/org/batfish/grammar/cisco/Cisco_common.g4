@@ -491,11 +491,6 @@ variable_interface_name
    NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
-variable_password
-:
-   (~NEWLINE)+
-;
-
 variable_permissive
 :
    (
