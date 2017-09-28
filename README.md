@@ -1,8 +1,6 @@
 
 ## What is Batfish?
 
-[![Join the chat at https://gitter.im/batfishgitter/Lobby](https://badges.gitter.im/batfishgitter/Lobby.svg)](https://gitter.im/batfishgitter/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
 
 **Batfish does not require access to network devices.** It only needs offline configuration files, e.g., pulled from RANCID or template authoring tools.
