@@ -8343,7 +8343,7 @@ SHA1
 
 SHA512_PASSWORD
 :
-   '$sha512$' [0-9]+ '$' ~'$'+ '$' F_NonWhitespace+ -> pushMode ( M_Seed )
+   '$sha512$' [0-9]+ '$' F_Base64String '$' F_Base64String -> pushMode ( M_SeedWhitespace )
 ;
 
 SHAPE
@@ -10718,6 +10718,28 @@ WS
 ; // Fragments
 
 fragment
+F_Base64Char
+:
+   [0-9A-Za-z/+]
+;
+
+fragment
+F_Base64Quadruple
+:
+   F_Base64Char F_Base64Char F_Base64Char F_Base64Char
+;
+fragment
+F_Base64String
+:
+   F_Base64Quadruple*
+   (
+      F_Base64Quadruple
+      | F_Base64Char F_Base64Char '=='
+      | F_Base64Char F_Base64Char F_Base64Char '='
+   )
+;
+
+fragment
 F_Dec16
 :
    (
@@ -11893,9 +11915,11 @@ M_Seed_PASSWORD_SEED
    F_NonWhitespace+ -> type ( PASSWORD_SEED ) , popMode
 ;
 
+mode M_SeedWhitespace;
+
 M_Seed_WS
 :
-   F_Whitespace+ -> channel ( HIDDEN )
+   F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
 ;
 
 mode M_SHA1;

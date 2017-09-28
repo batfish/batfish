@@ -13226,7 +13226,7 @@
             "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
             "      (enable_password",
             "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
-            "        SHA512_PASSWORD:'$sha512$5000$98pqLCa2lpNvN6gnQl3zyQ==$QvdeF/4EqAATT2/e64ujg=='  <== mode:DEFAULT_MODE",
+            "        SHA512_PASSWORD:'$sha512$5000$98pqLCa2lpNvN6gnQl3zyQ==$QvdeF/4E4qAATT2/e64ujg=='  <== mode:DEFAULT_MODE",
             "        PASSWORD_SEED:'woldj4'  <== mode:M_Seed",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
