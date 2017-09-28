@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.vendor.StructureType;
 
 public enum JuniperStructureType implements StructureType {
+  AUTHENTICATION_KEY_CHAIN("authentication-key-chain"),
   BGP_GROUP("bgp group"),
   DHCP_RELAY_SERVER_GROUP("dhcp-relay server-group"),
   FIREWALL_FILTER("firewall filter"),

@@ -6,20 +6,6 @@
         "0" : {
           "assertionResult" : true,
           "numResults" : 3,
-          "path" : {
-            "assertion" : {
-              "expect" : 3,
-              "type" : "count"
-            },
-            "exceptions" : [
-              {
-                "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']",
-                "suffix" : 1500
-              }
-            ],
-            "path" : "$.nodes['as3border1']..mtu",
-            "suffix" : true
-          },
           "result" : {
             "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet0/0'->'mtu'" : {
               "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']",

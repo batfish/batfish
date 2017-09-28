@@ -27,6 +27,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
 
+  private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
+
   private static final String PROP_COMMUNITY_LISTS = "communityLists";
 
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
@@ -78,6 +80,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_ZONES = "zones";
 
   private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
+
+  private NavigableMap<String, AuthenticationKeyChain> _authenticationKeyChains;
 
   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
@@ -172,6 +176,7 @@ public final class Configuration extends ComparableStructure<String> {
   public Configuration(@JsonProperty(PROP_NAME) String hostname) {
     super(hostname);
     _asPathAccessLists = new TreeMap<>();
+    _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
     _dnsServers = new TreeSet<>();
     _ikeGateways = new TreeMap<>();
@@ -201,6 +206,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all AS-path access-lists for this node.")
   public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
+  }
+
+  @JsonProperty(PROP_AUTHENTICATION_KEY_CHAINS)
+  @JsonPropertyDescription("Dictionary of all authentication key chains for this node.")
+  public NavigableMap<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
+    return _authenticationKeyChains;
   }
 
   @JsonIgnore
@@ -506,6 +517,12 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
   public void setAsPathAccessLists(NavigableMap<String, AsPathAccessList> asPathAccessLists) {
     _asPathAccessLists = asPathAccessLists;
+  }
+
+  @JsonProperty(PROP_AUTHENTICATION_KEY_CHAINS)
+  public void setAuthenticationKeyChains(
+      NavigableMap<String, AuthenticationKeyChain> authenticationKeyChains) {
+    _authenticationKeyChains = authenticationKeyChains;
   }
 
   @JsonProperty(PROP_COMMUNITY_LISTS)

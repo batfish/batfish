@@ -19,14 +19,14 @@ public class JsonPathDiffResult {
 
   private SortedMap<String, JsonPathResultEntry> _added;
 
-  private JsonPathQuery _path;
+  // private JsonPathQuery _path;
 
   private SortedMap<String, JsonPathResultEntry> _removed;
 
   public JsonPathDiffResult(JsonPathResult before, JsonPathResult after) {
     _added = new TreeMap<>();
     _removed = new TreeMap<>();
-    _path = before.getPath();
+    // _path = before.getPath();
     SortedMap<String, JsonPathResultEntry> beforeResult = before.getResult();
     SortedMap<String, JsonPathResultEntry> afterResult = after.getResult();
     Set<String> beforeKeys = beforeResult.keySet();
@@ -57,10 +57,10 @@ public class JsonPathDiffResult {
     return _added;
   }
 
-  @JsonProperty(PROP_PATH)
-  public JsonPathQuery getPath() {
-    return _path;
-  }
+  //  @JsonProperty(PROP_PATH)
+  //  public JsonPathQuery getPath() {
+  //    return _path;
+  //  }
 
   @JsonProperty(PROP_REMOVED)
   public SortedMap<String, JsonPathResultEntry> getRemoved() {
@@ -72,10 +72,10 @@ public class JsonPathDiffResult {
     _added = added;
   }
 
-  @JsonProperty(PROP_PATH)
-  public void setPath(JsonPathQuery path) {
-    _path = path;
-  }
+  //  @JsonProperty(PROP_PATH)
+  //  public void setPath(JsonPathQuery path) {
+  //    _path = path;
+  //  }
 
   @JsonProperty(PROP_REMOVED)
   public void setRemoved(SortedMap<String, JsonPathResultEntry> removed) {

@@ -502,13 +502,24 @@ s_security
 :
    SECURITY
    (
-      se_certificates
+      se_authentication_key_chain
+      | se_certificates
       | se_ike
       | se_ipsec
       | se_nat
       | se_null
       | se_policies
       | se_zones
+   )
+;
+
+se_authentication_key_chain
+:
+   AUTHENTICATION_KEY_CHAINS KEY_CHAIN name = string
+   (
+      sea_key
+      | sea_description
+      | sea_tolerance
    )
 ;
 
@@ -579,9 +590,58 @@ se_zones
    )
 ;
 
+sea_description
+:
+   description
+;
+
+sea_key
+:
+   KEY name = string
+   (
+      seak_algorithm
+      | seak_options
+      | seak_secret
+      | seak_start_time
+   )
+;
+
+sea_tolerance
+:
+  TOLERANCE DEC
+;
+
 sec_local
 :
    LOCAL name = variable cert = DOUBLE_QUOTED_STRING
+;
+
+seak_algorithm
+:
+   ALGORITHM
+   (
+      HMAC_SHA1
+      | MD5
+   )
+;
+
+seak_options
+:
+   OPTIONS
+   (
+      BASIC
+      | ISIS_ENHANCED
+   )
+;
+
+seak_secret
+:
+   SECRET key = string
+;
+
+seak_start_time
+:
+   START_TIME time = variable_permissive
 ;
 
 seik_gateway

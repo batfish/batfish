@@ -4,7 +4,7 @@
       "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
       "results" : {
         "0" : {
-          "displayValues" : {
+          "extractedValues" : {
             "'nodes'->'as2border1'" : {
               "interfaces" : [
                 "Ethernet0/0",
@@ -16,23 +16,6 @@
             }
           },
           "numResults" : 1,
-          "path" : {
-            "displayHints" : {
-              "extractionHints" : {
-                "interfaces" : {
-                  "hints" : {
-                    "use" : "prefixofsuffix",
-                    "filter" : "$.interfaces.*",
-                    "index" : 1
-                  },
-                  "isList" : true,
-                  "type" : "string"
-                }
-              }
-            },
-            "path" : "$.nodes.as2border1",
-            "suffix" : true
-          },
           "result" : {
             "'nodes'->'as2border1'" : {
               "prefix" : "$['nodes']['as2border1']",
@@ -1202,8 +1185,7 @@
                 "filter" : "$.interfaces.*",
                 "index" : 1
               },
-              "isList" : true,
-              "type" : "string"
+              "valueType" : "STRINGLIST"
             }
           }
         },

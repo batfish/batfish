@@ -1,0 +1,10 @@
+!
+hostname asa_banner
+!
+banner login **************************************************
+banner login You are connected to HOSTNAME If you are
+banner login experiencing any problems, please contact XXX at
+banner login someone@somewhere.com or XXX-XXX-XXX
+banner login **************************************************
+!
+

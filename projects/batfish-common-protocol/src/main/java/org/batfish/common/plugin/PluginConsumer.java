@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -70,7 +71,6 @@ public abstract class PluginConsumer implements IPluginConsumer {
         _pluginDirs.add(0, questionPluginDir);
       }
     }
-    return;
   }
 
   protected <S extends Serializable> S deserializeObject(byte[] data, Class<S> outputClass) {
@@ -319,20 +319,34 @@ public abstract class PluginConsumer implements IPluginConsumer {
     return baos.toByteArray();
   }
 
+  private static class CloseIgnoringOutputStream extends FilterOutputStream {
+
+    protected CloseIgnoringOutputStream(OutputStream out) {
+      super(out);
+    }
+
+    /** Does nothing, deliberately. */
+    @Override
+    public void close() {}
+  }
+
   /** Serializes the given object to the given stream, using GZIP compression. */
   private void serializeToGzipData(Serializable object, OutputStream out) {
-    try {
-      GZIPOutputStream gos = new GZIPOutputStream(out);
+    // This is a hack:
+    //   XStream requires that its streams be closed to properly finish serialization,
+    //   but we do not actually want to close the passed-in output stream.
+    out = new CloseIgnoringOutputStream(out);
+
+    try (Closer closer = Closer.create()) {
+      GZIPOutputStream gos = closer.register(new GZIPOutputStream(out));
       ObjectOutputStream oos;
       if (_serializeToText) {
         XStream xstream = new XStream(new DomDriver("UTF-8"));
-        oos = xstream.createObjectOutputStream(gos);
+        oos = closer.register(xstream.createObjectOutputStream(gos));
       } else {
-        oos = new ObjectOutputStream(gos);
+        oos = closer.register(new ObjectOutputStream(gos));
       }
       oos.writeObject(object);
-      oos.flush();
-      gos.finish(); // close the GZIP file entry
     } catch (IOException e) {
       throw new BatfishException("Failed to convert object to gzip data", e);
     }
