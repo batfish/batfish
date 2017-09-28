@@ -39,6 +39,10 @@ banner
          (
             NEWLINE LINE_CADANT* END_CADANT
          )
+         |
+         (
+            ASA_BANNER_LINE
+         )
       )
    ) NEWLINE?
 ;

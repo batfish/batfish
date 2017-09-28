@@ -1,23 +1,32 @@
 {
+  "entities": {
+    "mynode": {
+      "entityType": "node",
+      "hostname": "node1"
+    },
+    "myinterface": {
+      "entityType": "interfaceList",
+      "hostname": "nodes1",
+      "interface": "interfaces1"
+    }
+  },
   "extractionHints" : {
     "node1": {
-      "type": "string",
+      "valueType": "string",
       "hints": {
         "use": "prefix",
         "index" : 1
       }
     },
     "interfaces1": {
-      "type" : "string",
-      "isList" : true,
+      "valueType" : "stringList",
       "hints": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "nodes1": {
-      "type": "int",
-      "isList": true,
+      "valueType": "intList",
       "hints": {
         "use": "prefixOfSuffix",
         "filter": "$.*",
@@ -25,6 +34,6 @@
       }
     }
   },
-  "textDesc" : "${node1} has no accounting command"
+  "textDesc" : "${mynode} has nothing on ${myinterface}"
 }
 

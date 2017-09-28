@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.base.Objects;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
@@ -17,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
@@ -56,8 +56,8 @@ public class JsonPathResult {
       } else if (!(o instanceof JsonPathResultEntry)) {
         return false;
       }
-      return Objects.equal(_prefix, ((JsonPathResultEntry) o)._prefix)
-          && Objects.equal(_suffix, ((JsonPathResultEntry) o)._suffix);
+      return Objects.equals(_prefix, ((JsonPathResultEntry) o)._prefix)
+          && Objects.equals(_suffix, ((JsonPathResultEntry) o)._suffix);
     }
 
     @JsonIgnore
@@ -98,13 +98,13 @@ public class JsonPathResult {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(_prefix, _suffix);
+      return Objects.hash(_prefix, _suffix);
     }
   }
 
   private static final String PROP_ASSERTION_RESULT = "assertionResult";
 
-  private static final String PROP_DISPLAY_VALUES = "displayValues";
+  private static final String PROP_EXTRACTED_VALUES = "extractedValues";
 
   private static final String PROP_NUM_RESULTS = "numResults";
 
@@ -114,11 +114,11 @@ public class JsonPathResult {
 
   private Boolean _assertionResult;
 
-  private Map<String, Map<String, JsonNode>> _displayValues;
+  private Map<String, Map<String, JsonNode>> _extractedValues;
 
   private Integer _numResults;
 
-  private JsonPathQuery _path;
+  // private JsonPathQuery _path;
 
   private SortedMap<String, JsonPathResultEntry> _result;
 
@@ -126,9 +126,9 @@ public class JsonPathResult {
     _result = new TreeMap<>();
   }
 
-  public Map<String, Map<String, JsonNode>> computeDisplayValues(DisplayHints displayHints) {
+  public Map<String, Map<String, JsonNode>> extractDisplayValues(DisplayHints displayHints) {
     // this will reset anything we've done in the past
-    _displayValues = new HashMap<>();
+    _extractedValues = new HashMap<>();
     for (Entry<String, ExtractionHint> entry : displayHints.getExtractionHints().entrySet()) {
       JsonPathExtractionHint jpeHint = null;
       try {
@@ -137,44 +137,45 @@ public class JsonPathResult {
         throw new BatfishException("Could not extract JsonPathExtractionHint from ExtractionHint");
       }
       switch (jpeHint.getUse()) {
-      case PREFIX:
-        computeDisplayValuesPrefix(entry.getKey(), entry.getValue(), jpeHint);
-        break;
-      case PREFIXOFSUFFIX:
-      case SUFFIXOFSUFFIX:
-        computeDisplayValuesSuffix(entry.getKey(), entry.getValue(), jpeHint);
-        break;
-      default:
-        throw new BatfishException("Unknown use type " + jpeHint.getUse());
+        case PREFIX:
+          extractDisplayValuesPrefix(entry.getKey(), entry.getValue(), jpeHint);
+          break;
+        case PREFIXOFSUFFIX:
+        case SUFFIXOFSUFFIX:
+          extractDisplayValuesSuffix(entry.getKey(), entry.getValue(), jpeHint);
+          break;
+        default:
+          throw new BatfishException("Unknown use type " + jpeHint.getUse());
       }
     }
-    return _displayValues;
+    return _extractedValues;
   }
 
-  private void computeDisplayValuesPrefix(String displayVar,
-      ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
-    if (extractionHint.getIsList()) {
+  private void extractDisplayValuesPrefix(
+      String displayVar, ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
+    if (extractionHint.getValueType().isListType()) {
       throw new BatfishException("Prefix-based hints are incompatible with list types");
     }
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
-      if (!_displayValues.containsKey(entry.getKey())) {
-        _displayValues.put(entry.getKey(), new HashMap<>());
+      if (!_extractedValues.containsKey(entry.getKey())) {
+        _extractedValues.put(entry.getKey(), new HashMap<>());
       }
       String prefixPart = entry.getValue().getPrefixPart(jpeHint.getIndex());
-      _displayValues.get(entry.getKey()).put(displayVar, new TextNode(prefixPart));
+      _extractedValues.get(entry.getKey()).put(displayVar, new TextNode(prefixPart));
     }
   }
 
-  private void computeDisplayValuesSuffix(String displayVar,
-      ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
+  private void extractDisplayValuesSuffix(
+      String displayVar, ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
-      if (!_displayValues.containsKey(entry.getKey())) {
-        _displayValues.put(entry.getKey(), new HashMap<>());
+      if (!_extractedValues.containsKey(entry.getKey())) {
+        _extractedValues.put(entry.getKey(), new HashMap<>());
       }
       // can happen when the original query was not pulling suffixes at all
       if (entry.getValue().getSuffix() == null) {
-        throw new BatfishException("Cannot compute suffix-based display values with null suffix. "
-            + "(Was suffix set to True in the original JsonPath Query?)");
+        throw new BatfishException(
+            "Cannot compute suffix-based display values with null suffix. "
+                + "(Was suffix set to True in the original JsonPath Query?)");
       }
       Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
       Configuration c = (new ConfigurationBuilder()).build();
@@ -198,43 +199,52 @@ public class JsonPathResult {
         } else {
           value = resultEntry.getValue().getSuffix();
         }
-        confirmValueType(value, extractionHint.getType());
+        confirmValueType(value, extractionHint.getValueType());
         extractedList.add(value);
       }
 
-      if (extractionHint.getIsList()) {
+      if (extractionHint.getValueType().isListType()) {
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         ArrayNode arrayNode = mapper.valueToTree(extractedList);
-        _displayValues.get(entry.getKey()).put(displayVar, arrayNode);
+        _extractedValues.get(entry.getKey()).put(displayVar, arrayNode);
       } else {
         if (filterResult.getNumResults() > 1) {
-          throw new BatfishException("Got multiple results after filtering suffix values "
-              + " of the answer, but the display type is non-list");
+          throw new BatfishException(
+              "Got multiple results after filtering suffix values "
+                  + " of the answer, but the display type is non-list");
         }
-        _displayValues.get(entry.getKey()).put(displayVar, extractedList.get(0));
+        _extractedValues.get(entry.getKey()).put(displayVar, extractedList.get(0));
       }
     }
   }
 
   private static void confirmValueType(JsonNode value, DisplayHints.ValueType type) {
     // type check what we got
-    switch (type) {
-    case INT:
-      if (!value.isInt()) {
-          throw new BatfishException("Mismatch in extracted vs expected type.\n"
-              + "Expected  " + type + "\n"
-              + "Extracted " + value);
+    switch (type.getBaseType()) {
+      case INT:
+        if (!value.isInt()) {
+          throw new BatfishException(
+              "Mismatch in extracted vs expected valuetype.\n"
+                  + "Expected  "
+                  + type
+                  + "\n"
+                  + "Extracted "
+                  + value);
         }
-      break;
-    case STRING:
-      if (!value.isTextual()) {
-        throw new BatfishException("Mismatch in extracted vs expected type.\n"
-            + "Expected  " + type + "\n"
-            + "Extracted " + value);
-      }
-      break;
-    default:
-      throw new BatfishException("Unknown expected type " + type);
+        break;
+      case STRING:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              "Mismatch in extracted vs expected valuetype.\n"
+                  + "Expected  "
+                  + type
+                  + "\n"
+                  + "Extracted "
+                  + value);
+        }
+        break;
+      default:
+        throw new BatfishException("Unknown valuetype " + type);
     }
   }
 
@@ -243,9 +253,9 @@ public class JsonPathResult {
     return _assertionResult;
   }
 
-  @JsonProperty(PROP_DISPLAY_VALUES)
-  public Map<String, Map<String, JsonNode>> getDisplayValues() {
-    return _displayValues;
+  @JsonProperty(PROP_EXTRACTED_VALUES)
+  public Map<String, Map<String, JsonNode>> getExtractedValues() {
+    return _extractedValues;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)
@@ -253,10 +263,10 @@ public class JsonPathResult {
     return _numResults;
   }
 
-  @JsonProperty(PROP_PATH)
-  public JsonPathQuery getPath() {
-    return _path;
-  }
+  //  @JsonProperty(PROP_PATH)
+  //  public JsonPathQuery getPath() {
+  //    return _path;
+  //  }
 
   @JsonProperty(PROP_RESULT)
   public SortedMap<String, JsonPathResultEntry> getResult() {
@@ -268,9 +278,9 @@ public class JsonPathResult {
     _assertionResult = assertionResult;
   }
 
-  @JsonProperty(PROP_DISPLAY_VALUES)
-  public void getDisplayValues(Map<String, Map<String, JsonNode>> displayValues) {
-    _displayValues = displayValues;
+  @JsonProperty(PROP_EXTRACTED_VALUES)
+  public void setExtractedValues(Map<String, Map<String, JsonNode>> extractedValues) {
+    _extractedValues = extractedValues;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)
@@ -278,10 +288,10 @@ public class JsonPathResult {
     _numResults = numResults;
   }
 
-  @JsonProperty(PROP_PATH)
-  public void setPath(JsonPathQuery path) {
-    _path = path;
-  }
+  //  @JsonProperty(PROP_PATH)
+  //  public void setPath(JsonPathQuery path) {
+  //    _path = path;
+  //  }
 
   @JsonProperty(PROP_RESULT)
   public void setResult(SortedMap<String, JsonPathResultEntry> result) {
