@@ -315,7 +315,7 @@ public class DisplayHints {
     Set<String> commonNames = Sets.intersection(varsInExtractionHints, entities.keySet());
     if (!commonNames.isEmpty()) {
       throw new BatfishException(
-          "entities and extraction vars should have common names: " + commonNames);
+          "entities and extraction vars should not have common names: " + commonNames);
     }
 
     // names in text description should correspond to those of entities or extraction vars
