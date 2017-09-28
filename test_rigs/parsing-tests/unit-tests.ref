@@ -13226,14 +13226,8 @@
             "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
             "      (enable_password",
             "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
-            "        (variable_password",
-            "          RP_VARIABLE:'$sha512'  <== mode:DEFAULT_MODE",
-            "          DOLLAR:'$'  <== mode:DEFAULT_MODE",
-            "          DEC:'5000'  <== mode:DEFAULT_MODE",
-            "          DOLLAR:'$'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'98pqLCa2lpNvN6gnQl3zyQ=='  <== mode:DEFAULT_MODE",
-            "          RP_VARIABLE:'$QvdeF/4EqAATT2/e64ujg=='  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'woldj4'  <== mode:DEFAULT_MODE)",
+            "        SHA512_PASSWORD:'$sha512$5000$98pqLCa2lpNvN6gnQl3zyQ==$QvdeF/4EqAATT2/e64ujg=='  <== mode:DEFAULT_MODE",
+            "        PASSWORD_SEED:'woldj4'  <== mode:M_Seed",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]

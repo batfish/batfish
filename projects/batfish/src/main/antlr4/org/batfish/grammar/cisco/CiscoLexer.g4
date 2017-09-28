@@ -69,6 +69,7 @@ tokens {
    LINE_CADANT,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
+   PASSWORD_SEED,
    PIPE,
    PROMPT_TIMEOUT,
    QUOTED_TEXT,
@@ -8340,6 +8341,11 @@ SHA1
    'sha1' -> pushMode ( M_SHA1 )
 ;
 
+SHA512_PASSWORD
+:
+   '$sha512$' [0-9]+ '$' ~'$'+ '$' F_NonWhitespace+ -> pushMode ( M_Seed )
+;
+
 SHAPE
 :
    'shape'
@@ -11876,6 +11882,18 @@ M_RouteMap_VARIABLE
 ;
 
 M_RouteMap_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Seed;
+
+M_Seed_PASSWORD_SEED
+:
+   F_NonWhitespace+ -> type ( PASSWORD_SEED ) , popMode
+;
+
+M_Seed_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
