@@ -52,11 +52,11 @@ public class DisplayHints {
   }
 
   public enum EntityType {
-    INT,
-    INTLIST,
     INTERFACE,
     INTERFACELIST,
     IPADDRESS,
+    FILELINE,
+    FILELINELIST,
     NODE
   }
 
@@ -70,7 +70,7 @@ public class DisplayHints {
 
     private static final String PROP_INTERFACE = "interface";
 
-    private static final String PROP_VALUE = "value";
+    private static final String PROP_LINE_NUMBER = "lineNumber";
 
     private String _address;
 
@@ -80,7 +80,7 @@ public class DisplayHints {
 
     private String _interface;
 
-    private String _value;
+    private String _lineNumber;
 
     @JsonProperty(PROP_ADDRESS)
     public String getAddress() {
@@ -102,9 +102,9 @@ public class DisplayHints {
       return _interface;
     }
 
-    @JsonProperty(PROP_VALUE)
-    public String getValue() {
-      return _value;
+    @JsonProperty(PROP_LINE_NUMBER)
+    public String getLineNumber() {
+      return _lineNumber;
     }
 
     @JsonIgnore
@@ -119,8 +119,8 @@ public class DisplayHints {
       if (!Strings.isNullOrEmpty(_interface)) {
         retSet.add(_interface);
       }
-      if (!Strings.isNullOrEmpty(_value)) {
-        retSet.add(_value);
+      if (!Strings.isNullOrEmpty(_lineNumber)) {
+        retSet.add(_lineNumber);
       }
       return retSet;
     }
@@ -145,9 +145,9 @@ public class DisplayHints {
       _interface = interface1;
     }
 
-    @JsonProperty(PROP_VALUE)
-    public void setValue(String value) {
-      _value = value;
+    @JsonProperty(PROP_LINE_NUMBER)
+    public void setLineNumber(String lineNumber) {
+      _lineNumber = lineNumber;
     }
 
     public void validate(String entityName) {
@@ -156,13 +156,6 @@ public class DisplayHints {
       }
       // 1. check if all necessary fields are defined for a type
       switch (_entityType) {
-        case INT:
-        case INTLIST:
-          if (Strings.isNullOrEmpty(_value)) {
-            throw new BatfishException(
-                "hostname not specified for entity of type INTERFACE[LIST]: " + entityName);
-          }
-          break;
         case INTERFACE:
         case INTERFACELIST:
           if (Strings.isNullOrEmpty(_hostname)) {
@@ -178,6 +171,13 @@ public class DisplayHints {
           if (Strings.isNullOrEmpty(_address)) {
             throw new BatfishException(
                 "address not specified for entity of type IPADDRESS: " + entityName);
+          }
+          break;
+        case FILELINE:
+        case FILELINELIST:
+          if (Strings.isNullOrEmpty(_lineNumber)) {
+            throw new BatfishException(
+                "lineNumber not specified for entity of type FILELINE[LIST]: " + entityName);
           }
           break;
         case NODE:
@@ -208,9 +208,9 @@ public class DisplayHints {
           throw new BatfishException("interface specified for entity of type " + _entityType);
         }
       }
-      if (!Strings.isNullOrEmpty(_value)) {
-        if (_entityType != EntityType.INT && _entityType != EntityType.INTLIST) {
-          throw new BatfishException("interface specified for entity of type " + _entityType);
+      if (!Strings.isNullOrEmpty(_lineNumber)) {
+        if (_entityType != EntityType.FILELINE && _entityType != EntityType.FILELINELIST) {
+          throw new BatfishException("lineNumber specified for entity of type " + _entityType);
         }
       }
     }
@@ -303,29 +303,33 @@ public class DisplayHints {
       entry.getValue().validate(entry.getKey());
     }
 
+    // all extraction vars mentioned in entity configuration should have extraction hints
     Set<String> varsInExtractionHints = extractionHints.keySet();
     SetView<String> missingExtractionVars = Sets.difference(varsInEntities, varsInExtractionHints);
     if (!missingExtractionVars.isEmpty()) {
       throw new BatfishException(
           "entities refer to variables that are not in extraction hints: " + missingExtractionVars);
     }
-    // at least for now, allow for extra vars in extractions
-    //    SetView<String> extraVarsInExtractions = Sets.difference(varsInExtractionHints,
-    // varsInEntities);
-    //    if (!extraVarsInExtractions.isEmpty()) {
-    //      throw new BatfishException(
-    //          "extraction hints have variables that are not in entities: " +
-    // extraVarsInExtractions);
-    //    }
 
-    Set<String> entitiesInTextDesc = new HashSet<>();
+    // the names of entities and extraction vars should have no overlap
+    Set<String> commonNames = Sets.intersection(varsInExtractionHints, entities.keySet());
+    if (!commonNames.isEmpty()) {
+      throw new BatfishException(
+          "entities and extraction vars should have common names: " + commonNames);
+    }
+
+    // names in text description should correspond to those of entities or extraction vars
+    Set<String> namesInTextDesc = new HashSet<>();
     Matcher matcher = Pattern.compile("\\$\\{([^\\}]+)\\}").matcher(textDesc);
     while (matcher.find()) {
-      entitiesInTextDesc.add(matcher.group(1));
+      namesInTextDesc.add(matcher.group(1));
     }
-    SetView<String> missingEntities = Sets.difference(entitiesInTextDesc, entities.keySet());
+    SetView<String> missingEntities =
+        Sets.difference(
+            namesInTextDesc, Sets.union(entities.keySet(), extractionHints.keySet()));
     if (!missingEntities.isEmpty()) {
-      throw new BatfishException("textDesc has names that are not in entities: " + missingEntities);
+      throw new BatfishException(
+          "textDesc has names that are neither entities nor extractions: " + missingEntities);
     }
 
     _entities = entities;
