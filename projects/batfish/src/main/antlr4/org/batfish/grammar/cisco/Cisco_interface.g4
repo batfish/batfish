@@ -186,7 +186,7 @@ if_ip_ospf_area
 
 if_ip_ospf_cost
 :
-   IP OSPF COST cost = DEC NEWLINE
+   IP? OSPF COST cost = DEC NEWLINE
 ;
 
 if_ip_ospf_dead_interval

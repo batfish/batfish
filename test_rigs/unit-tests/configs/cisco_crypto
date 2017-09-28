@@ -90,6 +90,8 @@ crypto dynamic-map mydefaultcryptomap 65535 set security-association lifetime ki
 crypto dynamic-map mydynamicmap 1
  set transform-set ESP-3DES-MD5 ESP-3DES-SHA
 crypto engine large-mod-accel
+crypto ca trustpool policy
+ auto-import
 crypto ikev1 am-disable
 crypto ikev1 enable outside
 crypto ikev1 enable inside

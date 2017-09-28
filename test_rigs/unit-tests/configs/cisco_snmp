@@ -97,5 +97,7 @@ snmp-server vrf Management
 no snmp-server aaa exclusive-behavior enable 
 no snmp-server enable traps callhome event-notify
 no snmp-server globalEnforcePriv
+no snmp-server location
+no snmp-server contact
 !
 

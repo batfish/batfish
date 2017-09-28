@@ -814,8 +814,10 @@ null_single
                SNMP_SERVER
                (
                   AAA
+                  | CONTACT
                   | ENABLE
                   | GLOBALENFORCEPRIV
+                  | LOCATION
                )
             )
             | SSH

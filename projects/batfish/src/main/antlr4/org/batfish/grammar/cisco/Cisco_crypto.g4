@@ -35,6 +35,9 @@ cc_trustpoint
 cc_trustpool
 :
    TRUSTPOOL name = variable NEWLINE
+   (
+      cctpool_null
+   )*
 ;
 
 cccc_certificate
@@ -67,6 +70,14 @@ cctpoint_null
       | KEYPAIR
       | SUBJECT_NAME
       | VALIDATION_USAGE
+   ) ~NEWLINE* NEWLINE
+;
+
+cctpool_null
+:
+   NO?
+   (
+      AUTO_IMPORT
    ) ~NEWLINE* NEWLINE
 ;
 

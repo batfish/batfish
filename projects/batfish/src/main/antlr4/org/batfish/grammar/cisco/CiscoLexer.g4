@@ -70,6 +70,7 @@ tokens {
    LINE_CADANT,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
+   PASSWORD_SEED,
    PIPE,
    PROMPT_TIMEOUT,
    QUOTED_TEXT,
@@ -8341,6 +8342,11 @@ SHA1
    'sha1' -> pushMode ( M_SHA1 )
 ;
 
+SHA512_PASSWORD
+:
+   '$sha512$' [0-9]+ '$' F_Base64String '$' F_Base64String -> pushMode ( M_SeedWhitespace )
+;
+
 SHAPE
 :
    'shape'
@@ -10713,6 +10719,28 @@ WS
 ; // Fragments
 
 fragment
+F_Base64Char
+:
+   [0-9A-Za-z/+]
+;
+
+fragment
+F_Base64Quadruple
+:
+   F_Base64Char F_Base64Char F_Base64Char F_Base64Char
+;
+fragment
+F_Base64String
+:
+   F_Base64Quadruple*
+   (
+      F_Base64Quadruple
+      | F_Base64Char F_Base64Char '=='
+      | F_Base64Char F_Base64Char F_Base64Char '='
+   )
+;
+
+fragment
 F_Dec16
 :
    (
@@ -11884,6 +11912,20 @@ M_RouteMap_VARIABLE
 M_RouteMap_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Seed;
+
+M_Seed_PASSWORD_SEED
+:
+   F_NonWhitespace+ -> type ( PASSWORD_SEED ) , popMode
+;
+
+mode M_SeedWhitespace;
+
+M_Seed_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
 ;
 
 mode M_SHA1;
