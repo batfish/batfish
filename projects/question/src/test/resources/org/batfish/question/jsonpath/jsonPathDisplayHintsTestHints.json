@@ -8,10 +8,6 @@
       "entityType": "interfaceList",
       "hostname": "nodeFromPrefix",
       "interface": "interfaceListFromPrefixOfSuffix"
-    },
-    "oneMtu": {
-      "entityType" : "int",
-      "value" : "mtuFromSuffixOfSuffix"
     }
   },
   "extractionHints" : {
@@ -38,5 +34,5 @@
       }
     }
   },
-  "textDesc" : "${oneNode} has no accounting command"
+  "textDesc" : "${oneNode} has ${oneInterface} with MTU ${mtuFromSuffixOfSuffix}"
 }
