@@ -6,11 +6,9 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Model;
-import com.microsoft.z3.Params;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Tactic;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,8 +75,6 @@ public class Encoder {
 
   private Map<String, Expr> _allVariables;
 
-  private List<SymbolicRecord> _allSymbolicRecords;
-
   private Graph _graph;
 
   private Context _ctx;
@@ -113,6 +109,17 @@ public class Encoder {
    */
   Encoder(Encoder e, Graph g) {
     this(e, g, e._question, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
+  }
+
+  /**
+   * Create an encoder object from an existing encoder.
+   *
+   * @param e An existing encoder object
+   * @param g An existing network graph
+   * @param q A header question
+   */
+  Encoder(Encoder e, Graph g, HeaderQuestion q) {
+    this(e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
   }
 
   /**
@@ -163,13 +170,11 @@ public class Encoder {
     }
 
     // Set parameters
-    Params p = _ctx.mkParams();
-    p.add("ite_extra_rules", true);
-    p.add("pull_cheap_ite", true);
-    _solver.setParameters(p);
+    //Params p = _ctx.mkParams();
+    //p.add("print_stats", true);
+    //_solver.setParameters(p);
 
     _symbolicFailures = new SymbolicFailures();
-    _allSymbolicRecords = new ArrayList<>();
 
     if (vars == null) {
       _allVariables = new HashMap<>();
@@ -317,9 +322,11 @@ public class Encoder {
                   protocols.add(IpProtocol.TCP);
                   hs.setIpProtocols(protocols);
 
-                  String sliceName = "SLICE-" + router + "_";
+                  // TODO: create domains once
+                  Graph gNew = new Graph(g.getBatfish(), g.getDomain(router));
 
-                  EncoderSlice slice = new EncoderSlice(this, hs, g, sliceName);
+                  String sliceName = "SLICE-" + router + "_";
+                  EncoderSlice slice = new EncoderSlice(this, hs, gNew, sliceName);
                   _slices.put(sliceName, slice);
 
                   PropertyAdder pa = new PropertyAdder(slice);
@@ -426,7 +433,7 @@ public class Encoder {
     if (e1 instanceof BitVecExpr && e2 instanceof BitVecExpr) {
       return getCtx().mkBVUGE((BitVecExpr) e1, (BitVecExpr) e2);
     }
-    throw new BatfishException("Invalid call the mkLe while encoding control plane");
+    throw new BatfishException("Invalid call to mkGe while encoding control plane");
   }
 
   // Symbolic less than or equal to
@@ -437,7 +444,7 @@ public class Encoder {
     if (e1 instanceof BitVecExpr && e2 instanceof BitVecExpr) {
       return getCtx().mkBVULE((BitVecExpr) e1, (BitVecExpr) e2);
     }
-    throw new BatfishException("Invalid call the mkLe while encoding control plane");
+    throw new BatfishException("Invalid call to mkLe while encoding control plane");
   }
 
   // Symblic equality of expressions
@@ -787,6 +794,7 @@ public class Encoder {
       System.out.println("Variables: " + stats.getNumVariables());
       System.out.println("Z3 Time: " + stats.getTime());
     }
+    // System.out.println("Stats:\n" + _solver.getStatistics());
 
     if (status == Status.UNSATISFIABLE) {
       VerificationResult res = new VerificationResult(true, null, null, null, null, null);
@@ -890,10 +898,6 @@ public class Encoder {
 
   public Map<String, Map<String, BoolExpr>> getSliceReachability() {
     return _sliceReachability;
-  }
-
-  public List<SymbolicRecord> getAllSymbolicRecords() {
-    return _allSymbolicRecords;
   }
 
   public UnsatCore getUnsatCore() {

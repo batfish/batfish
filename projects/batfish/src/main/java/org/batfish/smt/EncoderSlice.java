@@ -105,6 +105,9 @@ class EncoderSlice {
 
   private Map<CommunityVar, List<CommunityVar>> _communityDependencies;
 
+  private List<SymbolicRecord> _allSymbolicRecords;
+
+
   /**
    * Create a new encoding slice
    *
@@ -129,6 +132,7 @@ class EncoderSlice {
     _encoder = enc;
     _sliceName = sliceName;
     _headerSpace = h;
+    _allSymbolicRecords = new ArrayList<>();
     _optimizations = new Optimizations(this);
     _logicalGraph = new LogicalGraph(graph);
     _symbolicDecisions = new SymbolicDecisions();
@@ -413,39 +417,46 @@ class EncoderSlice {
         .getConfigurations()
         .forEach(
             (router, conf) -> {
-              conf.getRoutingPolicies()
-                  .forEach(
-                      (name, pol) -> {
-                        AstVisitor v = new AstVisitor();
-                        v.visit(
-                            conf,
-                            pol.getStatements(),
-                            stmt -> {
-                              if (stmt instanceof SetCommunity) {
-                                SetCommunity sc = (SetCommunity) stmt;
-                                comms.addAll(findAllCommunities(conf, sc.getExpr()));
-                              }
-                              if (stmt instanceof AddCommunity) {
-                                AddCommunity ac = (AddCommunity) stmt;
-                                comms.addAll(findAllCommunities(conf, ac.getExpr()));
-                              }
-                              if (stmt instanceof DeleteCommunity) {
-                                DeleteCommunity dc = (DeleteCommunity) stmt;
-                                comms.addAll(findAllCommunities(conf, dc.getExpr()));
-                              }
-                              if (stmt instanceof RetainCommunity) {
-                                RetainCommunity rc = (RetainCommunity) stmt;
-                                comms.addAll(findAllCommunities(conf, rc.getExpr()));
-                              }
-                            },
-                            expr -> {
-                              if (expr instanceof MatchCommunitySet) {
-                                MatchCommunitySet m = (MatchCommunitySet) expr;
-                                CommunitySetExpr ce = m.getExpr();
-                                comms.addAll(findAllCommunities(conf, ce));
-                              }
-                            });
-                      });
+              comms.addAll(findAllCommunities(router));
+            });
+    return comms;
+  }
+
+  Set<CommunityVar> findAllCommunities(String router) {
+    Set<CommunityVar> comms = new HashSet<>();
+    Configuration conf = getGraph().getConfigurations().get(router);
+    conf.getRoutingPolicies()
+        .forEach(
+            (name, pol) -> {
+              AstVisitor v = new AstVisitor();
+              v.visit(
+                  conf,
+                  pol.getStatements(),
+                  stmt -> {
+                    if (stmt instanceof SetCommunity) {
+                      SetCommunity sc = (SetCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, sc.getExpr()));
+                    }
+                    if (stmt instanceof AddCommunity) {
+                      AddCommunity ac = (AddCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, ac.getExpr()));
+                    }
+                    if (stmt instanceof DeleteCommunity) {
+                      DeleteCommunity dc = (DeleteCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, dc.getExpr()));
+                    }
+                    if (stmt instanceof RetainCommunity) {
+                      RetainCommunity rc = (RetainCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, rc.getExpr()));
+                    }
+                  },
+                  expr -> {
+                    if (expr instanceof MatchCommunitySet) {
+                      MatchCommunitySet m = (MatchCommunitySet) expr;
+                      CommunitySetExpr ce = m.getExpr();
+                      comms.addAll(findAllCommunities(conf, ce));
+                    }
+                  });
             });
     return comms;
   }
@@ -1132,7 +1143,9 @@ class EncoderSlice {
                       if (m != null) {
                         GraphEdge otherEdge = getGraph().getOtherEnd().get(edge);
                         ArrayList<LogicalEdge> list = m.get(otherEdge);
-                        if (list.size() > 0) {
+                        if (list == null) {
+                          m.put(otherEdge, new ArrayList<>());
+                        } else if (list.size() > 0) {
                           LogicalEdge other = list.get(0);
                           _logicalGraph.getOtherEnd().put(e, other);
                         }
@@ -1945,13 +1958,19 @@ class EncoderSlice {
                   // TODO: do we need this equality check?
                   BoolExpr isBest = mkAnd(choice, equal(conf, proto, best, vars, e, false));
 
+                  // Connected routes should only forward if there is a host through arp
+                  BoolExpr connectedWillSend = mkBool(getGraph().isEdgeHostConnected(e.getEdge()));
+                  BoolExpr canSend = (proto.isConnected() ? connectedWillSend : mkTrue());
+
+                  BoolExpr sends = mkAnd(canSend, isBest);
+
                   GraphEdge ge = e.getEdge();
                   BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
                   assert (cForward != null);
-                  add(mkImplies(isBest, cForward));
+                  add(mkImplies(sends, cForward));
 
                   // record the negation as well
-                  cfExprs.merge(ge, isBest, (a, b) -> mkOr(a, b));
+                  cfExprs.merge(ge, sends, (a, b) -> mkOr(a, b));
                 }
               }
 
@@ -1972,6 +1991,7 @@ class EncoderSlice {
                   add(mkNot(cForward));
                 }
               } else {
+                // If no best route, then no forwarding
                 _logicalGraph
                     .getLogicalEdges()
                     .get(router)
@@ -2221,6 +2241,12 @@ class EncoderSlice {
     return acc;
   }
 
+  private boolean otherSliceHasEdge(EncoderSlice slice, String r, GraphEdge ge) {
+    Map<String, List<GraphEdge>> edgeMap = slice.getGraph().getEdgeMap();
+    List<GraphEdge> edges = edgeMap.get(r);
+    return edges != null  && edges.contains(ge);
+  }
+
   /*
    * Constraints for the final data plane forwarding behavior.
    * Forwarding occurs in the data plane if the control plane decides
@@ -2254,7 +2280,7 @@ class EncoderSlice {
                       BoolExpr ctrlFwd =
                           getSymbolicDecisions().getControlForwarding().get(router, ge2);
                       Graph.BgpSendType st = getGraph().peerType(ge2);
-                      // mkIf Route reflectors, then next hop based on ID
+                      // If Route reflectors, then next hop based on ID
                       if (st == Graph.BgpSendType.TO_RR) {
                         SymbolicRecord record =
                             getSymbolicDecisions().getBestNeighbor().get(router);
@@ -2267,9 +2293,13 @@ class EncoderSlice {
                             String r = entry.getKey();
                             Integer id = entry.getValue();
                             EncoderSlice s = _encoder.getSlice(r);
-                            BoolExpr outEdge =
-                                s.getSymbolicDecisions().getDataForwarding().get(router, ge);
-                            acc = mkOr(acc, mkAnd(record.getClientId().checkIfValue(id), outEdge));
+                            // Make sure
+                            if (otherSliceHasEdge(s, router, ge)) {
+                              BoolExpr outEdge =
+                                  s.getSymbolicDecisions().getDataForwarding().get(router, ge);
+                              acc =
+                                  mkOr(acc, mkAnd(record.getClientId().checkIfValue(id), outEdge));
+                            }
                           }
                         }
 
@@ -2279,25 +2309,23 @@ class EncoderSlice {
                         // adjust for iBGP in main slice
                         if (isMainSlice()) {
                           EncoderSlice s = _encoder.getSlice(ge2.getPeer());
-                          BoolExpr outEdge =
-                              s.getSymbolicDecisions().getDataForwarding().get(router, ge);
-                          fwd = mkOr(fwd, mkAnd(ctrlFwd, outEdge));
+                          if (otherSliceHasEdge(s, router, ge)) {
+                            BoolExpr outEdge =
+                                s.getSymbolicDecisions().getDataForwarding().get(router, ge);
+                            fwd = mkOr(fwd, mkAnd(ctrlFwd, outEdge));
+                          }
                         }
                       }
                     }
                   }
 
                   fwd = mkOr(fwd, cForward);
-
                   BoolExpr acl = _outboundAcls.get(ge);
                   if (acl == null) {
                     acl = mkTrue();
                   }
                   BoolExpr notBlocked = mkAnd(fwd, acl);
                   add(mkEq(notBlocked, dForward));
-
-                  // System.out.println("FORWARDING FOR: " + ge);
-                  // System.out.println(mkEq(notBlocked,dForward).simplify());
                 }
               }
             });
@@ -2386,6 +2414,23 @@ class EncoderSlice {
           if (_encoder.getModelIgp() && isNonClient) {
             // Lookup reachabilty based on peer next-hop
             receiveMessage = _encoder.getSliceReachability().get(currentRouter).get(peerRouter);
+            /* EncoderSlice peerSlice = _encoder.getSlice(peerRouter);
+            BoolExpr srcPort = mkEq(peerSlice.getSymbolicPacket().getSrcPort(), mkInt(179));
+            BoolExpr srcIp = mkEq(peerSlice.getSymbolicPacket().getSrcIp(), mkInt(0));
+            BoolExpr tcpAck = mkEq(peerSlice.getSymbolicPacket().getTcpAck(), mkFalse());
+            BoolExpr tcpCwr = mkEq(peerSlice.getSymbolicPacket().getTcpCwr(), mkFalse());
+            BoolExpr tcpEce = mkEq(peerSlice.getSymbolicPacket().getTcpEce(), mkFalse());
+            BoolExpr tcpFin = mkEq(peerSlice.getSymbolicPacket().getTcpFin(), mkFalse());
+            BoolExpr tcpPsh = mkEq(peerSlice.getSymbolicPacket().getTcpPsh(), mkFalse());
+            BoolExpr tcpRst = mkEq(peerSlice.getSymbolicPacket().getTcpRst(), mkFalse());
+            BoolExpr tcpSyn = mkEq(peerSlice.getSymbolicPacket().getTcpSyn(), mkFalse());
+            BoolExpr tcpUrg = mkEq(peerSlice.getSymbolicPacket().getTcpUrg(), mkFalse());
+            BoolExpr icmpCode = mkEq(peerSlice.getSymbolicPacket().getIcmpCode(), mkInt(0));
+            BoolExpr icmpType = mkEq(peerSlice.getSymbolicPacket().getIcmpType(), mkInt(0));
+            BoolExpr all =
+                mkAnd(srcPort, srcIp, tcpAck,
+                    tcpCwr, tcpEce, tcpFin, tcpPsh, tcpRst, tcpSyn, tcpUrg, icmpCode, icmpType);
+            receiveMessage = mkImplies(all, receiveMessage); */
           } else if (_encoder.getModelIgp() && isClient) {
             // Lookup reachability based on client id tag to find next hop
             BoolExpr acc = mkTrue();
@@ -2394,6 +2439,23 @@ class EncoderSlice {
               Integer id = entry.getValue();
               if (!r.equals(currentRouter)) {
                 BoolExpr reach = _encoder.getSliceReachability().get(currentRouter).get(r);
+                /* EncoderSlice peerSlice = _encoder.getSlice(r);
+                BoolExpr srcPort = mkEq(peerSlice.getSymbolicPacket().getSrcPort(), mkInt(179));
+                BoolExpr srcIp = mkEq(peerSlice.getSymbolicPacket().getSrcIp(), mkInt(0));
+                BoolExpr tcpAck = mkEq(peerSlice.getSymbolicPacket().getTcpAck(), mkFalse());
+                BoolExpr tcpCwr = mkEq(peerSlice.getSymbolicPacket().getTcpCwr(), mkFalse());
+                BoolExpr tcpEce = mkEq(peerSlice.getSymbolicPacket().getTcpEce(), mkFalse());
+                BoolExpr tcpFin = mkEq(peerSlice.getSymbolicPacket().getTcpFin(), mkFalse());
+                BoolExpr tcpPsh = mkEq(peerSlice.getSymbolicPacket().getTcpPsh(), mkFalse());
+                BoolExpr tcpRst = mkEq(peerSlice.getSymbolicPacket().getTcpRst(), mkFalse());
+                BoolExpr tcpSyn = mkEq(peerSlice.getSymbolicPacket().getTcpSyn(), mkFalse());
+                BoolExpr tcpUrg = mkEq(peerSlice.getSymbolicPacket().getTcpUrg(), mkFalse());
+                BoolExpr icmpCode = mkEq(peerSlice.getSymbolicPacket().getIcmpCode(), mkInt(0));
+                BoolExpr icmpType = mkEq(peerSlice.getSymbolicPacket().getIcmpType(), mkInt(0));
+                BoolExpr all =
+                    mkAnd(srcPort, srcIp, tcpAck,
+                        tcpCwr, tcpEce, tcpFin, tcpPsh, tcpRst, tcpSyn, tcpUrg, icmpCode, icmpType);
+                reach = mkImplies(all, reach); */
                 acc = mkAnd(acc, mkImplies(varsOther.getClientId().checkIfValue(id), reach));
               }
             }
@@ -2648,6 +2710,7 @@ class EncoderSlice {
             (router, conf) -> {
               for (Protocol proto : getProtocols().get(router)) {
                 Boolean usedExport = false;
+                boolean hasEdge = false;
 
                 List<ArrayList<LogicalEdge>> les =
                     _logicalGraph.getLogicalEdges().get(router, proto);
@@ -2658,6 +2721,7 @@ class EncoderSlice {
                     GraphEdge ge = e.getEdge();
 
                     if (getGraph().isEdgeUsed(conf, proto, ge)) {
+                      hasEdge = true;
                       SymbolicRecord varsOther;
                       switch (e.getEdgeType()) {
                         case IMPORT:
@@ -2678,6 +2742,16 @@ class EncoderSlice {
                       }
                     }
                   }
+                }
+                // If no edge used, then just set the best record to be false for that protocol
+                if (!hasEdge) {
+                  SymbolicRecord protoBest;
+                  if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
+                    protoBest = _symbolicDecisions.getBestNeighbor().get(router);
+                  } else {
+                    protoBest = _symbolicDecisions.getBestNeighborPerProtocol().get(router, proto);
+                  }
+                  add(mkNot(protoBest.getPermitted()));
                 }
               }
             });
@@ -3024,7 +3098,7 @@ class EncoderSlice {
               }
             });
 
-    // mkIf they don't want the environment modeled
+    // If they don't want the environment modeled
     if (_encoder.getNoEnvironment()) {
       getLogicalGraph()
           .getEnvironmentVars()
@@ -3034,18 +3108,6 @@ class EncoderSlice {
                 add(mkImplies(vars.getPermitted(), mkEq(vars.getMetric(), mkInt(0))));
               });
     }
-
-    /*
-    getLogicalGraph().getEnvironmentVars().forEach((lge, record) -> {
-        record.getCommunities().forEach((cvar, var) -> {
-            if (var.toString().contains("$") && var.toString()
-            .contains("[0-9]") && var.toString().contains("10.160.109.51")) {
-                System.out.println("ADDING: " + var);
-                add( var );
-            }
-        });
-    });
-    */
 
   }
 
@@ -3064,9 +3126,11 @@ class EncoderSlice {
     addControlForwardingConstraints();
     addDataForwardingConstraints();
     addUnusedDefaultValueConstraints();
-    addInactiveLinkConstraints();
+    // addInactiveLinkConstraints();
     addHeaderSpaceConstraint();
-    addEnvironmentConstraints();
+    if (isMainSlice()) {
+      addEnvironmentConstraints();
+    }
   }
 
   /*
@@ -3138,7 +3202,7 @@ class EncoderSlice {
   }
 
   List<SymbolicRecord> getAllSymbolicRecords() {
-    return _encoder.getAllSymbolicRecords();
+    return _allSymbolicRecords;
   }
 
   SymbolicFailures getSymbolicFailures() {

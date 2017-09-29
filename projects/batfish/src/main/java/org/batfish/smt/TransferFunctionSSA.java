@@ -84,14 +84,14 @@ import org.batfish.smt.collections.PList;
  * <p>The TransferFunctionSSA class makes policies stateless by converting the vendor-independent
  * format to a Static Single Assignment (SSA) form where all updates are reflected in new variables.
  * Rather than create a full control flow graph (CFG) as is typically done in SSA, we use a simple
- * conversion based on adding join points for every variable modified in an mkIf statement.
+ * conversion based on adding join points for every variable modified in an If statement.
  *
  * <p>The joint point defined as the [phi] function from SSA merges variables that may differ across
- * different branches of an mkIf statement. For example, if there is the following filter:
+ * different branches of an If statement. For example, if there is the following filter:
  *
- * <p>mkIf match(c1) then add community c2 else prepend path 2
+ * <p>If match(c1) then add community c2 else prepend path 2
  *
- * <p>Then this function will introduce a new variable at the end of the mkIf statement that updates
+ * <p>Then this function will introduce a new variable at the end of the If statement that updates
  * the value of each variable modified based on the branch taken. For example:
  *
  * <p>c2' = (c1 ? true : c2) metric' = (c1 ? metric : metric + 2)
@@ -468,10 +468,10 @@ class TransferFunctionSSA {
           return fromExpr(
               _enc.mkBool(p.getCallContext() == TransferFunctionParam.CallContext.STMT_CALL));
         case True:
-          p.debug("mkTrue");
+          p.debug("True");
           return fromExpr(_enc.mkTrue());
         case False:
-          p.debug("mkFalse");
+          p.debug("False");
           return fromExpr(_enc.mkFalse());
         default:
           throw new BatfishException(
@@ -508,7 +508,7 @@ class TransferFunctionSSA {
       IncrementMetric z = (IncrementMetric) e;
       return _enc.mkSum(x, _enc.mkInt(z.getAddend()));
     }
-    throw new BatfishException("TODO: int expr transfer function: " + e);
+    throw new BatfishException("int expr transfer function: " + e);
   }
 
   /*
@@ -722,10 +722,15 @@ class TransferFunctionSSA {
     BoolExpr met = _enc.safeEq(_current.getMetric(), otherMet);
     BoolExpr lp = _enc.safeEq(_current.getLocalPref(), otherLp);
 
-    // mkIf this was an external route, then we need to add the correct next-hop tag
+    // If this was an external route, then we need to add the correct next-hop tag
+    boolean isEbgpEdge = _enc.getGraph().getEbgpNeighbors().get(_graphEdge) != null;
     BoolExpr cid = _enc.mkTrue();
     if (_isExport && _to.isBgp() && p.getOther().getClientId() != null) {
-      cid = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
+      if (isEbgpEdge) {
+        cid = _current.getClientId().checkIfValue(0);
+      } else {
+        cid = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
+      }
     }
     if (!_isExport && _to.isBgp()) {
       if (p.getOther().getClientId() != null) {
@@ -784,7 +789,7 @@ class TransferFunctionSSA {
       Expr t =
           (trueBranch == null
               ? _enc.mkFalse()
-              : trueBranch); // can use mkFalse because the value has not been assigned
+              : trueBranch); // can use False because the value has not been assigned
       Expr f = (falseBranch == null ? _enc.mkFalse() : falseBranch);
       Expr tass = (trueBranch == null ? r.getReturnAssignedValue() : _enc.mkTrue());
       Expr fass = (falseBranch == null ? r.getReturnAssignedValue() : _enc.mkTrue());
@@ -946,7 +951,7 @@ class TransferFunctionSSA {
         }
 
       } else if (stmt instanceof If) {
-        p.debug("mkIf");
+        p.debug("If");
         If i = (If) stmt;
         TransferFunctionResult r = compute(i.getGuard(), p);
         result = result.addChangedVariables(r);
@@ -956,19 +961,19 @@ class TransferFunctionSSA {
         // mkIf we know the branch ahead of time, then specialize
         switch (str) {
           case "true":
-            p.debug("mkTrue Branch");
+            p.debug("True Branch");
             result = compute(i.getTrueStatements(), p.indent(), result);
             break;
           case "false":
-            p.debug("mkFalse Branch");
+            p.debug("False Branch");
             compute(i.getFalseStatements(), p.indent(), result);
             break;
           default:
-            p.debug("mkTrue Branch");
+            p.debug("True Branch");
             // clear changed variables before proceeding
             TransferFunctionResult trueBranch =
                 compute(i.getTrueStatements(), p.indent().copyRecord(), initialResult());
-            p.debug("mkFalse Branch");
+            p.debug("False Branch");
             TransferFunctionResult falseBranch =
                 compute(i.getFalseStatements(), p.indent().copyRecord(), initialResult());
             p.debug("JOIN");
@@ -983,8 +988,6 @@ class TransferFunctionSSA {
               pairs = pairs.minus(idx);
               pairs = pairs.plus(pairs.size(), ret);
             }
-
-            // TODO: same for fallthrough
 
             for (Pair<String, Pair<Expr, Expr>> pair : pairs) {
               String s = pair.getFirst();
@@ -1014,13 +1017,16 @@ class TransferFunctionSSA {
 
       } else if (stmt instanceof SetMetric) {
         p.debug("SetMetric");
-        SetMetric sm = (SetMetric) stmt;
-        LongExpr ie = sm.getMetric();
-        ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
-        newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
-        ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
-        p.getOther().setMetric(x);
-        result = result.addChangedVariable("METRIC", x);
+        // TODO: what is the semantics for BGP? Is this MED?
+        if (!_current.getProto().isBgp()) {
+          SetMetric sm = (SetMetric) stmt;
+          LongExpr ie = sm.getMetric();
+          ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
+          newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
+          ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
+          p.getOther().setMetric(x);
+          result = result.addChangedVariable("METRIC", x);
+        }
 
       } else if (stmt instanceof SetOspfMetricType) {
         p.debug("SetOspfMetricType");
@@ -1104,7 +1110,7 @@ class TransferFunctionSSA {
       }
     }
 
-    // mkIf this is the outermost call, then we relate the variables
+    // If this is the outermost call, then we relate the variables
     if (p.getInitialCall()) {
       p.debug("InitialCall finalizing");
 
@@ -1128,7 +1134,7 @@ class TransferFunctionSSA {
   /*
    * Check if we can inline a new SSA variable. We can simply conservatively check
    * if the size of the term will get no larger after inlining. Right now we only
-   * check for mkTrue and mkFalse values because z3 seems to have some issue with
+   * check for True and False values because z3 seems to have some issue with
    * identifying the AST expression kind (e.g., e.isTrue() throws an exception).
    */
   private boolean canInline(Expr e) {
@@ -1228,7 +1234,6 @@ class TransferFunctionSSA {
     }
   }
 
-  // TODO use better data structure to merge join points on if statements
   public BoolExpr compute() {
     SymbolicRecord o = new SymbolicRecord(_other);
     TransferFunctionParam p = new TransferFunctionParam(o);

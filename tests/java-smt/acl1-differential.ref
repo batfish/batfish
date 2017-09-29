@@ -8,7 +8,7 @@
           {
             "@id" : 1,
             "dscp" : 0,
-            "dstIp" : "70.70.70.0",
+            "dstIp" : "70.70.70.70",
             "dstPort" : 0,
             "ecn" : 0,
             "fragmentOffset" : 0,
@@ -33,10 +33,10 @@
           }
         ],
         "flowsByText" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : 1
+          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : 1
         },
         "traces" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
             "BASE" : [
               {
                 "disposition" : "ACCEPTED",
@@ -49,7 +49,7 @@
                       "node2interface" : "Serial0"
                     },
                     "routes" : [
-                      "OspfRoute<70.70.70.0/24,nhip:192.3.64.1/24,nhint:dynamic>"
+                      "OspfRoute<70.70.70.70/32,nhip:192.3.64.1/24,nhint:dynamic>"
                     ]
                   },
                   {
@@ -60,7 +60,7 @@
                       "node2interface" : "Serial0"
                     },
                     "routes" : [
-                      "OspfRoute<70.70.70.0/24,nhip:192.1.64.1/24,nhint:dynamic>"
+                      "OspfRoute<70.70.70.70/32,nhip:192.1.64.1/24,nhint:dynamic>"
                     ]
                   },
                   {
@@ -71,7 +71,7 @@
                       "node2interface" : "null_interface"
                     },
                     "routes" : [
-                      "ConnectedRoute<70.70.70.0/24,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
+                      "ConnectedRoute<70.70.70.70/32,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
                     ]
                   }
                 ],
@@ -80,8 +80,32 @@
             ],
             "FAILED" : [
               {
-                "disposition" : "NO_ROUTE",
-                "notes" : "NO_ROUTE"
+                "disposition" : "DENIED_OUT",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "R0",
+                      "node1interface" : "Serial1",
+                      "node2" : "R2",
+                      "node2interface" : "Serial0"
+                    },
+                    "routes" : [
+                      "OspfRoute<70.70.70.70/32,nhip:192.4.64.1/24,nhint:dynamic>"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "R2",
+                      "node1interface" : "Serial1",
+                      "node2" : "R3",
+                      "node2interface" : "Serial1"
+                    },
+                    "routes" : [
+                      "OspfRoute<70.70.70.70/32,nhip:192.2.64.1/24,nhint:dynamic>"
+                    ]
+                  }
+                ],
+                "notes" : "DENIED_OUT{101}{deny ip any 70.70.70.70  0.0.0.255}"
               }
             ]
           }
@@ -89,16 +113,15 @@
       },
       "result" : {
         "failuresModel" : [
-          "link(R0,R1)",
-          "link(R0,R2)"
+          "link(R0,R1)"
         ],
         "forwardingModel" : [
+          "R0,Serial1 --> R2,Serial0 (OSPF)",
           "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R2,Serial1 --> R3,Serial1 (OSPF)",
           "R3,Loopback0 --> _,_ (CONNECTED)"
         ],
         "packetModel" : {
-          "dstIp" : "70.70.70.0"
+          "dstIp" : "70.70.70.70"
         },
         "verified" : false
       }
@@ -108,12 +131,12 @@
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
     "differential" : false,
     "dstIps" : [
-      "70.70.70.0/24"
+      "70.70.70.70"
     ],
     "equivalence" : true,
-    "failures" : 2,
-    "finalIfaceRegex" : "Loopback.*",
-    "finalNodeRegex" : "R3",
+    "failures" : 1,
+    "finalIfaceRegex" : ".*",
+    "finalNodeRegex" : ".*",
     "fullModel" : false,
     "ingressNodeRegex" : ".*",
     "minimize" : false,
