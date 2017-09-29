@@ -1143,7 +1143,9 @@ class EncoderSlice {
                       if (m != null) {
                         GraphEdge otherEdge = getGraph().getOtherEnd().get(edge);
                         ArrayList<LogicalEdge> list = m.get(otherEdge);
-                        if (list.size() > 0) {
+                        if (list == null) {
+                          m.put(otherEdge, new ArrayList<>());
+                        } else if (list.size() > 0) {
                           LogicalEdge other = list.get(0);
                           _logicalGraph.getOtherEnd().put(e, other);
                         }
@@ -2708,6 +2710,7 @@ class EncoderSlice {
             (router, conf) -> {
               for (Protocol proto : getProtocols().get(router)) {
                 Boolean usedExport = false;
+                boolean hasEdge = false;
 
                 List<ArrayList<LogicalEdge>> les =
                     _logicalGraph.getLogicalEdges().get(router, proto);
@@ -2718,6 +2721,7 @@ class EncoderSlice {
                     GraphEdge ge = e.getEdge();
 
                     if (getGraph().isEdgeUsed(conf, proto, ge)) {
+                      hasEdge = true;
                       SymbolicRecord varsOther;
                       switch (e.getEdgeType()) {
                         case IMPORT:
@@ -2738,6 +2742,16 @@ class EncoderSlice {
                       }
                     }
                   }
+                }
+                // If no edge used, then just set the best record to be false for that protocol
+                if (!hasEdge) {
+                  SymbolicRecord protoBest;
+                  if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
+                    protoBest = _symbolicDecisions.getBestNeighbor().get(router);
+                  } else {
+                    protoBest = _symbolicDecisions.getBestNeighborPerProtocol().get(router, proto);
+                  }
+                  add(mkNot(protoBest.getPermitted()));
                 }
               }
             });
@@ -3112,7 +3126,7 @@ class EncoderSlice {
     addControlForwardingConstraints();
     addDataForwardingConstraints();
     addUnusedDefaultValueConstraints();
-    addInactiveLinkConstraints();
+    // addInactiveLinkConstraints();
     addHeaderSpaceConstraint();
     if (isMainSlice()) {
       addEnvironmentConstraints();

@@ -520,10 +520,15 @@ public class Graph {
   }
 
   /*
-   * Check if an topology edge is used in a particular protocol.
+   * Check if a topology edge is used in a particular protocol.
    */
   public boolean isEdgeUsed(Configuration conf, Protocol proto, GraphEdge ge) {
     Interface iface = ge.getStart();
+
+    // Don't use if interface is not active
+    if (!isInterfaceActive(proto, iface)) {
+      return false;
+    }
 
     // Exclude abstract iBGP edges from all protocols except BGP
     if (iface.getName().startsWith("iBGP-")) {
@@ -532,11 +537,6 @@ public class Graph {
     // Never use Loopbacks for any protocol except connected
     if (ge.getStart().isLoopback(conf.getConfigurationFormat())) {
       return proto.isConnected();
-    }
-
-    // Don't use ospf over edges between ASes
-    if (getEbgpNeighbors().get(ge) != null && proto.isOspf()) {
-      return false;
     }
 
     // Don't use ospf over edges to hosts / external
