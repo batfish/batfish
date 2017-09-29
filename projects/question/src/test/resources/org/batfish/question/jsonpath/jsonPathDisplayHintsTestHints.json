@@ -1,23 +1,32 @@
 {
+  "entities": {
+    "oneNode": {
+      "entityType": "node",
+      "hostname": "nodeFromPrefix"
+    },
+    "oneInterface": {
+      "entityType": "interfaceList",
+      "hostname": "nodeFromPrefix",
+      "interface": "interfaceListFromPrefixOfSuffix"
+    }
+  },
   "extractionHints" : {
     "nodeFromPrefix": {
-      "type": "string",
+      "valueType": "string",
       "hints": {
         "use": "prefix",
         "index" : 1
       }
     },
     "mtuFromSuffixOfSuffix": {
-      "type": "int",
-      "isList": false,
+      "valueType": "int",
       "hints": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "interfaceListFromPrefixOfSuffix": {
-      "type": "string",
-      "isList": true,
+      "valueType": "stringList",
       "hints": {
         "use": "prefixOfSuffix",
         "filter": "$.*",
@@ -25,5 +34,5 @@
       }
     }
   },
-  "textDesc" : "${oneNode} has no accounting command"
+  "textDesc" : "${oneNode} has ${oneInterface} with MTU ${mtuFromSuffixOfSuffix}"
 }

@@ -2159,7 +2159,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitBanner_stanza(Banner_stanzaContext ctx) {
     String bannerType = ctx.banner_type().getText();
     String message = ctx.banner().getText();
-    _configuration.getCf().getBanners().put(bannerType, message);
+    _configuration
+        .getCf()
+        .getBanners()
+        .compute(bannerType, (k, v) -> v == null ? message : v + "\n" + message);
   }
 
   @Override

@@ -41,4 +41,8 @@ public class Tuple<T1, T2> {
   @Override public int hashCode() {
     return Objects.hash(_first, _second);
   }
+
+  @Override public String toString() {
+    return "<" + _first + "," + _second + ">";
+  }
 }

@@ -920,6 +920,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .forEach(
                       (groupNum, vrrpGroup) -> {
                         Prefix prefix = vrrpGroup.getVirtualAddress();
+                        if (prefix == null) {
+                          // This Vlan Interface has invalid configuration. The VRRP has no source
+                          // IP address that would be used for VRRP election. This interface could
+                          // never win the election, so is not a candidate.
+                          return;
+                        }
                         Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
                         Set<Interface> candidates =
                             vrrpGroups.computeIfAbsent(

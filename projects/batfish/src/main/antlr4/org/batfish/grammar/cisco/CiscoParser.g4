@@ -325,7 +325,18 @@ enable_null
 
 enable_password
 :
-   PASSWORD DEC? pass = variable ENCRYPTED? NEWLINE
+   PASSWORD
+   (
+      (
+         (
+            sha512pass = SHA512_PASSWORD
+         ) seed = PASSWORD_SEED?
+      )
+      |
+      (
+         DEC pass = variable
+      )
+   ) NEWLINE
 ;
 
 enable_secret

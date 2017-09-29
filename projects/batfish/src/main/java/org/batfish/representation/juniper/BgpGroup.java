@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.Ip;
 
 public class BgpGroup implements Serializable {
@@ -20,6 +21,12 @@ public class BgpGroup implements Serializable {
   private Boolean _advertiseInactive;
 
   private Boolean _advertisePeerAs;
+
+  private String _authenticationKey;
+
+  private BgpAuthenticationAlgorithm _authenticationAlgorithm;
+
+  private String _authenticationKeyChainName;
 
   private String _description;
 
@@ -72,6 +79,15 @@ public class BgpGroup implements Serializable {
       if (_advertisePeerAs == null) {
         _advertisePeerAs = _parent._advertisePeerAs;
       }
+      if (_authenticationAlgorithm == null) {
+        _authenticationAlgorithm = _parent._authenticationAlgorithm;
+      }
+      if (_authenticationKey == null) {
+        _authenticationKey = _parent._authenticationKey;
+      }
+      if (_authenticationKeyChainName == null) {
+        _authenticationKeyChainName = _parent._authenticationKeyChainName;
+      }
       if (_description == null) {
         _description = _parent._description;
       }
@@ -118,6 +134,18 @@ public class BgpGroup implements Serializable {
 
   public Boolean getAdvertisePeerAs() {
     return _advertisePeerAs;
+  }
+
+  public BgpAuthenticationAlgorithm getAuthenticationAlgorithm() {
+    return _authenticationAlgorithm;
+  }
+
+  public String getAuthenticationKey() {
+    return _authenticationKey;
+  }
+
+  public String getAuthenticationKeyChainName() {
+    return _authenticationKeyChainName;
   }
 
   public final String getDescription() {
@@ -186,6 +214,18 @@ public class BgpGroup implements Serializable {
 
   public void setAdvertisePeerAs(boolean advertisePeerAs) {
     _advertisePeerAs = advertisePeerAs;
+  }
+
+  public void setAuthenticationAlgorithm(BgpAuthenticationAlgorithm authenticationAlgorithm) {
+    _authenticationAlgorithm = authenticationAlgorithm;
+  }
+
+  public void setAuthenticationKey(String authenticationKey) {
+    _authenticationKey = authenticationKey;
+  }
+
+  public void setAuthenticationKeyChainName(String authenticationKeyChainName) {
+    _authenticationKeyChainName = authenticationKeyChainName;
   }
 
   public final void setDescription(String description) {

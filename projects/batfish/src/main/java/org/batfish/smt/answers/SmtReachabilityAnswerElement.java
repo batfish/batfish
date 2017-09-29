@@ -1,56 +1,29 @@
 package org.batfish.smt.answers;
 
-import java.util.Map;
-import java.util.Set;
+import org.batfish.datamodel.FlowHistory;
 
 public class SmtReachabilityAnswerElement extends SmtOneAnswerElement {
 
-  private Set<String> _unreachableSources;
+  private FlowHistory _flowHistory;
 
-  private Map<String, Boolean> _diffReachability;
-
-  public Map<String, Boolean> getDiffReachability() {
-    return _diffReachability;
+  public FlowHistory getFlowHistory() {
+    return _flowHistory;
   }
 
-  public Set<String> getUnreachableSources() {
-    return _unreachableSources;
-  }
-
-  public void setDiffReachability(Map<String, Boolean> diffReachability) {
-    this._diffReachability = diffReachability;
-  }
-
-  public void setUnreachableSources(Set<String> unreachableSources) {
-    this._unreachableSources = unreachableSources;
+  public void setFlowHistory(FlowHistory flowHistory) {
+    this._flowHistory = flowHistory;
   }
 
   @Override
   public String prettyPrint() {
-    StringBuilder s = new StringBuilder();
-    s.append(_result.prettyPrint(null));
-    if (_unreachableSources != null) {
-      s.append("\n");
-      for (String source : _unreachableSources) {
-        s.append("Unreachable source: ").append(source).append("\n");
-      }
-    }
-    if (_diffReachability != null) {
-      s.append("\n");
-      _diffReachability.forEach(
-          (source, reachable) -> {
-            if (reachable) {
-              s.append(source)
-                  .append(" can reach the destination with failures but can without")
-                  .append("\n");
-            } else {
-              s.append(source)
-                  .append(" can't reach the destination with failures but can without")
-                  .append("\n");
-            }
-          });
-    }
 
-    return s.toString();
+    StringBuilder sb = new StringBuilder();
+    if (_result.isVerified()) {
+      sb.append("\nVerified");
+    } else {
+      sb.append(_result.prettyPrintEnv());
+      sb.append(_result.prettyPrintFailures());
+    }
+    return sb + _flowHistory.prettyPrint();
   }
 }

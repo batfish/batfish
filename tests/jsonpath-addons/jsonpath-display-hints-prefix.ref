@@ -4,7 +4,7 @@
       "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
       "results" : {
         "0" : {
-          "displayValues" : {
+          "extractedValues" : {
             "'nodes'->'as2dist1'" : {
               "node" : "as2dist1"
             },
@@ -52,22 +52,6 @@
             }
           },
           "numResults" : 15,
-          "path" : {
-            "displayHints" : {
-              "extractionHints" : {
-                "node" : {
-                  "hints" : {
-                    "use" : "prefix",
-                    "index" : 1
-                  },
-                  "isList" : false,
-                  "type" : "string"
-                }
-              }
-            },
-            "path" : "$.nodes.*",
-            "suffix" : false
-          },
           "result" : {
             "'nodes'->'as1border1'" : {
               "prefix" : "$['nodes']['as1border1']"
@@ -142,8 +126,7 @@
                 "use" : "prefix",
                 "index" : 1
               },
-              "isList" : false,
-              "type" : "string"
+              "valueType" : "STRING"
             }
           }
         },

@@ -21,6 +21,7 @@
         "arista_username" : "arista_username",
         "as_path_prepend" : "as_path_prepend",
         "asa_acl" : "asa_acl",
+        "asa_banner" : "asa_banner",
         "asa_ssh" : "asa_ssh",
         "banner" : "banner",
         "banner_dos" : "banner_dos",
@@ -146,6 +147,7 @@
         "juniper-tcpflags" : "juniper-tcpflags",
         "juniper_apply_macro" : "juniper_apply_macro",
         "juniper_bgp" : "juniper_bgp",
+        "juniper_bgp_authentication" : "juniper_bgp_authentication",
         "juniper_extended_community" : "juniper_extended_community",
         "juniper_firewall" : "juniper_firewall",
         "juniper_forwarding_options" : "juniper_forwarding_options",
@@ -224,6 +226,7 @@
         "arista_username" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
+        "asa_banner" : "PASSED",
         "asa_ssh" : "PASSED",
         "banner" : "PASSED",
         "banner_dos" : "PASSED",
@@ -349,6 +352,7 @@
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
+        "juniper_bgp_authentication" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",
@@ -651,7 +655,7 @@
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                192
+                194
               ]
             }
           }
@@ -986,6 +990,15 @@
               "bgp import policy-statement" : [
                 10,
                 24
+              ]
+            }
+          }
+        },
+        "juniper_bgp_authentication" : {
+          "authentication-key-chain" : {
+            "bgp-auth1" : {
+              "authentication-key-chains policy" : [
+                23
               ]
             }
           }
@@ -1809,6 +1822,13 @@
             "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
           }
         },
+        "juniper_bgp_authentication" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1",
+            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1",
+            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
+          }
+        },
         "juniper_firewall" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: missing action in firewall filter: 'blah', term: 'blorp'"
@@ -1876,6 +1896,7 @@
         "arista_username" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
+        "asa_banner" : "PASSED",
         "asa_ssh" : "PASSED",
         "banner" : "PASSED",
         "banner_dos" : "PASSED",
@@ -2001,6 +2022,7 @@
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
+        "juniper_bgp_authentication" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",

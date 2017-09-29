@@ -4,7 +4,7 @@
       "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
       "results" : {
         "0" : {
-          "displayValues" : {
+          "extractedValues" : {
             "'nodes'->'as2border1'" : {
               "mtus" : [
                 1500,
@@ -16,22 +16,6 @@
             }
           },
           "numResults" : 1,
-          "path" : {
-            "displayHints" : {
-              "extractionHints" : {
-                "mtus" : {
-                  "hints" : {
-                    "use" : "suffixofsuffix",
-                    "filter" : "$.interfaces.*.mtu"
-                  },
-                  "isList" : true,
-                  "type" : "int"
-                }
-              }
-            },
-            "path" : "$.nodes.as2border1",
-            "suffix" : true
-          },
           "result" : {
             "'nodes'->'as2border1'" : {
               "prefix" : "$['nodes']['as2border1']",
@@ -1200,8 +1184,7 @@
                 "use" : "suffixofsuffix",
                 "filter" : "$.interfaces.*.mtu"
               },
-              "isList" : true,
-              "type" : "int"
+              "valueType" : "INTLIST"
             }
           }
         },

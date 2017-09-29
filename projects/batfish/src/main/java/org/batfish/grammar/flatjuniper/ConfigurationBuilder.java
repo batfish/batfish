@@ -17,6 +17,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExtendedCommunity;
@@ -30,6 +31,8 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IsisAuthenticationAlgorithm;
+import org.batfish.datamodel.IsisOption;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -53,6 +56,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_inactiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_peer_asContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_algorithmContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
@@ -222,7 +228,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_authentication_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_keyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_toleranceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_algorithmContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_optionsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_secretContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_start_timeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seik_proposalContext;
@@ -351,7 +364,11 @@ import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
+import org.batfish.representation.juniper.JuniperAuthenticationKey;
+import org.batfish.representation.juniper.JuniperAuthenticationKeyChain;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureType;
+import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
@@ -1361,6 +1378,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private OspfArea _currentArea;
 
+  private JuniperAuthenticationKey _currentAuthenticationKey;
+
+  private JuniperAuthenticationKeyChain _currentAuthenticationKeyChain;
+
   private BgpGroup _currentBgpGroup;
 
   private CommunityList _currentCommunityList;
@@ -1994,6 +2015,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterSe_authentication_key_chain(Se_authentication_key_chainContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    JuniperAuthenticationKeyChain authenticationkeyChain =
+        _configuration
+            .getAuthenticationKeyChains()
+            .computeIfAbsent(name, n -> new JuniperAuthenticationKeyChain(n, line));
+    _currentAuthenticationKeyChain = authenticationkeyChain;
+  }
+
+  @Override
+  public void enterSea_key(Sea_keyContext ctx) {
+    String name = ctx.name.getText();
+    JuniperAuthenticationKey authenticationkey =
+        _currentAuthenticationKeyChain
+            .getKeys()
+            .computeIfAbsent(name, JuniperAuthenticationKey::new);
+    _currentAuthenticationKey = authenticationkey;
+  }
+
+  @Override
   public void enterSeik_gateway(Seik_gatewayContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
@@ -2246,10 +2288,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentBgpGroup.setAdvertisePeerAs(true);
   }
 
+  public void exitB_authentication_algorithm(B_authentication_algorithmContext ctx) {
+    if (ctx.AES_128_CMAC_96() != null) {
+      _currentBgpGroup.setAuthenticationAlgorithm(BgpAuthenticationAlgorithm.AES_128_CMAC_96);
+    } else if (ctx.MD5() != null) {
+      _currentBgpGroup.setAuthenticationAlgorithm(BgpAuthenticationAlgorithm.TCP_ENHANCED_MD5);
+    } else {
+      _currentBgpGroup.setAuthenticationAlgorithm(BgpAuthenticationAlgorithm.HMAC_SHA_1_96);
+    }
+  }
+
+  public void exitB_authentication_key(B_authentication_keyContext ctx) {
+    _currentBgpGroup.setAuthenticationKey(ctx.key.getText());
+  }
+
+  public void exitB_authentication_key_chain(B_authentication_key_chainContext ctx) {
+    _currentBgpGroup.setAuthenticationKeyChainName(ctx.name.getText());
+    int line = ctx.getStart().getLine();
+    _configuration.referenceStructure(
+        JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
+        ctx.name.getText(),
+        JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY,
+        line);
+  }
+
   @Override
   public void exitB_description(B_descriptionContext ctx) {
-    String description = ctx.description().text.getText();
-    _currentBgpGroup.setDescription(description);
+    _currentBgpGroup.setDescription(ctx.description().text.getText());
   }
 
   @Override
@@ -3294,6 +3359,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSe_zones(Se_zonesContext ctx) {
     _hasZones = true;
+  }
+
+  @Override
+  public void exitSea_tolerance(Sea_toleranceContext ctx) {
+    _currentAuthenticationKeyChain.setTolerance(toInt(ctx.DEC()));
+  }
+
+  @Override
+  public void exitSeak_algorithm(Seak_algorithmContext ctx) {
+    _currentAuthenticationKey.setIsisAuthenticationAlgorithm(
+        ctx.HMAC_SHA1() != null
+            ? IsisAuthenticationAlgorithm.HMAC_SHA_1
+            : IsisAuthenticationAlgorithm.MD5);
+  }
+
+  @Override
+  public void exitSeak_options(Seak_optionsContext ctx) {
+    _currentAuthenticationKey.setIsisOption(
+        ctx.ISIS_ENHANCED() != null ? IsisOption.ISIS_ENHANCED : IsisOption.BASIC);
+  }
+
+  @Override
+  public void exitSeak_secret(Seak_secretContext ctx) {
+    _currentAuthenticationKey.setSecret(ctx.key.getText());
+  }
+
+  @Override
+  public void exitSeak_start_time(Seak_start_timeContext ctx) {
+    _currentAuthenticationKey.setStartTime(ctx.time.getText());
   }
 
   @Override

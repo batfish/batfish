@@ -78,12 +78,13 @@ test tests/java-smt/aggregation2-forwarding.ref get smt-forwarding dstIps=["42.4
 
 # Proper handling of import prefix-list and route-map
 init-testrig test_rigs/smt-examples/ENV3
-test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True 
+test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, minimize=True 
 
 # Ensure ACLs are applied to data forwarding
 init-testrig test_rigs/smt-examples/ACL1
 test tests/java-smt/acl1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
 test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/acl1-differential.ref get smt-reachability equivalence=True, failures=1
 
 # Check correctness of iBGP encoding
 init-testrig test_rigs/smt-examples/IBGP1
