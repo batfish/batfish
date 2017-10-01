@@ -32,6 +32,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_PERIOD_CHECK_WORK_MS = "periodcheckworkms";
   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "periodworkerrefreshms";
   private static final String ARG_POOL_BIND_HOST = "poolbindhost";
+  private static final String ARG_QUESTIONS_DIR = "questionsdir";
   private static final String ARG_QUESTION_TEMPLATE_DIRS = "templatedirs";
   private static final String ARG_QUEUE_COMPLETED_WORK = "qcompletedwork";
   private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
@@ -82,6 +83,7 @@ public class Settings extends BaseSettings {
   private long _periodWorkerStatusRefreshMs;
   private List<Path> _pluginDirs;
   private String _poolBindHost;
+  private Path _questionsDir;
   private List<Path> _questionTemplateDirs;
   private String _queueCompletedWork;
   private WorkQueue.Type _queueType;
@@ -181,6 +183,10 @@ public class Settings extends BaseSettings {
 
   public String getPoolBindHost() {
     return _poolBindHost;
+  }
+
+  public Path getQuestionsDir() {
+    return _questionsDir;
   }
 
   public String getQueueCompletedWork() {
@@ -295,6 +301,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
     setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
+    setDefaultProperty(ARG_QUESTIONS_DIR, "questions");
     setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
     setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
@@ -364,6 +371,8 @@ public class Settings extends BaseSettings {
 
     addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
 
+    addOption(ARG_QUESTIONS_DIR, "directory containing the questions jsons", "questions_dir");
+
     addListOption(
         ARG_QUESTION_TEMPLATE_DIRS, "paths to question template directories", ARGNAME_PATHS);
 
@@ -415,6 +424,7 @@ public class Settings extends BaseSettings {
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
     _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
+    _questionsDir = Paths.get(getStringOptionValue(ARG_QUESTIONS_DIR));
     _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
     _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
     _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
