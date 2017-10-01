@@ -826,6 +826,31 @@ public class WorkMgrService {
     }
   }
 
+  /**
+   * Fetches the questions in the provided questions directory
+   *
+   * @return Questions in configured questions directory(Empty if not provided)
+   */
+  @GET
+  @Path(CoordConsts.SVC_RSC_GET_QUESTIONS)
+  @Produces(MediaType.APPLICATION_JSON)
+
+  public JSONArray getQuestions() {
+    Map<String, String> questions = Main.getWorkMgr().getQuestions();
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String questionsStr = mapper.writeValueAsString(questions);
+      return new JSONArray(
+          Arrays.asList(
+              CoordConsts.SVC_KEY_SUCCESS,
+              new JSONObject().put(CoordConsts.SVC_KEY_QUESTIONS, questionsStr)));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getQuestions exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)

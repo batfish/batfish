@@ -5,7 +5,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Map;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishLogger;
@@ -23,7 +27,11 @@ import org.batfish.common.Version;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Question.InstanceData;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -31,7 +39,9 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link WorkMgrService}. */
 public class WorkMgrServiceTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public TemporaryFolder _containersFolder = new TemporaryFolder();
+  @Rule public TemporaryFolder _questionsFolder = new TemporaryFolder();
+
 
   private WorkMgrService _service;
 
@@ -40,7 +50,13 @@ public class WorkMgrServiceTest {
   private void initContainerEnvironment() throws Exception {
     Settings settings = new Settings(new String[] {});
     BatfishLogger logger = new BatfishLogger("debug", false);
-    Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
+    Main.mainInit(
+        new String[] {
+          "-containerslocation",
+          _containersFolder.getRoot().toString(),
+          "-questionsdir",
+          _questionsFolder.getRoot().toString()
+        });
     Main.initAuthorizer();
     Main.setLogger(logger);
     WorkMgr manager = new WorkMgr(settings, logger);
@@ -80,7 +96,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getNonEmptyContainer() throws Exception {
     initContainerEnvironment();
-    Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
+    Path containerPath = _containersFolder.getRoot().toPath().resolve(_containerName);
     Path testrigPath = containerPath.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
     assertThat(testrigPath.toFile().mkdirs(), is(true));
     Response response = _service.getContainer("100", "0.0.0", _containerName);
@@ -96,7 +112,7 @@ public class WorkMgrServiceTest {
     initContainerEnvironment();
     // test init and add questions to analysis
     String analysisJsonString = "{\"question\":{\"question\":\"questionContent\"}}";
-    File analysisFile = _folder.newFile("analysis");
+    File analysisFile = _containersFolder.newFile("analysis");
     FileUtils.writeStringToFile(analysisFile, analysisJsonString);
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
@@ -107,7 +123,7 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "");
     Path questionPath =
-        _folder
+        _containersFolder
             .getRoot()
             .toPath()
             .resolve(
@@ -158,7 +174,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getNonExistConfig() throws Exception {
     initContainerEnvironment();
-    Path containerDir = _folder.getRoot().toPath().resolve(_containerName);
+    Path containerDir = _containersFolder.getRoot().toPath().resolve(_containerName);
     Path testrigPath =
         containerDir.resolve(
             Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, "testrig", BfConsts.RELPATH_TEST_RIG_DIR));
@@ -179,7 +195,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getConfigContent() throws Exception {
     initContainerEnvironment();
-    Path containerPath = _folder.getRoot().toPath().resolve(_containerName);
+    Path containerPath = _containersFolder.getRoot().toPath().resolve(_containerName);
     Path configPath =
         containerPath.resolve(
             Paths.get(
@@ -198,5 +214,77 @@ public class WorkMgrServiceTest {
             "config.cfg");
     String actualMessage = response.getEntity().toString();
     assertThat(actualMessage, equalTo("config content"));
+  }
+
+  @Test
+  public void getQuestions() throws Exception {
+    initContainerEnvironment();
+    Question testQuestion = createTestQuestion("testquestion", "test description");
+    BatfishObjectMapper objectMapper = new BatfishObjectMapper();
+    //serializing the question in the temp questions folder
+    String questionJsonString = objectMapper.writeValueAsString(testQuestion);
+    CommonUtil.writeFile(
+        _questionsFolder.newFile("testQuestion.json").toPath(), questionJsonString);
+    JSONArray questionsResponse = _service.getQuestions();
+    if (questionsResponse.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
+      JSONObject questionsJsonObject = (JSONObject) questionsResponse.get(1);
+      String questionsJsonString = (String) questionsJsonObject.get(CoordConsts.SVC_KEY_QUESTIONS);
+      Map<String, String> questionsMap =
+          objectMapper.readValue(questionsJsonString, new TypeReference<Map<String, String>>() {});
+      if (questionsMap.containsKey("testquestion")) {
+        assertThat(questionsMap.get("testquestion"), is(equalTo(questionJsonString)));
+      } else {
+        fail("Question not found in the response");
+      }
+    } else {
+      fail("Service call was not successful");
+    }
+  }
+
+  private Question createTestQuestion(String name, String description) throws JSONException {
+    InstanceData instanceData = new InstanceData();
+    instanceData.setDescription(description);
+    instanceData.setInstanceName(name);
+    Question testQuestion =
+        new Question() {
+          @Override
+          public String getName() {
+            return "test";
+          }
+
+          @Override
+          public boolean getDataPlane() {
+            return false;
+          }
+
+          @Override
+          public boolean getTraffic() {
+            return false;
+          }
+
+          @Override
+          public boolean equals(Object obj) {
+            if (obj == null) {
+              return false;
+            }
+            if (getClass() != obj.getClass()) {
+              return false;
+            }
+            final Question other = (Question) obj;
+            return Objects.equal(
+                    getInstance().getInstanceName(), other.getInstance().getInstanceName())
+                && Objects.equal(
+                    getInstance().getDescription(), other.getInstance().getDescription());
+          }
+
+          @Override
+          public int hashCode() {
+            return java.util.Objects.hash(
+                getInstance().getInstanceName(), getInstance().getDescription());
+          }
+        };
+
+    testQuestion.setInstance(instanceData);
+    return testQuestion;
   }
 }
