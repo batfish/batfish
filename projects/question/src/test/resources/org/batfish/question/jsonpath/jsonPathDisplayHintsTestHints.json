@@ -25,6 +25,13 @@
         "filter": "$"
       }
     },
+    "addressCountFromFuncOfSuffix": {
+      "valueType": "int",
+      "hints": {
+        "use": "funcOfsuffix",
+        "filter": "$.addresses.length()"
+      }
+    },
     "interfaceListFromPrefixOfSuffix": {
       "valueType": "stringList",
       "hints": {

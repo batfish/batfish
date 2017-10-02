@@ -14,6 +14,7 @@ import com.jayway.jsonpath.PathNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,15 +42,35 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
   public static class JsonPathAnswerElement implements AnswerElement {
 
+    private static final String PROP_DEBUG = "debug";
+
     private static final String PROP_RESULTS = "results";
+
+    private Map<String, Object> _debug;
 
     private SortedMap<Integer, JsonPathResult> _results;
 
     private AnswerSummary _summary;
 
     public JsonPathAnswerElement() {
+      // don't initialize _debug, so we won't serialize when its null (common case)
       _results = new TreeMap<>();
       _summary = new AnswerSummary();
+    }
+
+    public void addDebugInfo(String key, Object value) {
+      if (_debug == null) {
+        _debug = new HashMap<>();
+      }
+      if (_debug.containsKey(key)) {
+        throw new BatfishException("Duplicate debug key");
+      }
+      _debug.put(key, value);
+    }
+
+    @JsonProperty(PROP_DEBUG)
+    public Map<String, Object> getDebug() {
+      return _debug;
     }
 
     @JsonProperty(PROP_RESULTS)
@@ -71,9 +92,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder("Results for JsonPath\n");
       for (Integer index : results.keySet()) {
         JsonPathResult result = results.get(index);
-        sb.append(
-            String.format(
-                "  [%d]: %d results\n", index, result.getNumResults()));
+        sb.append(String.format("  [%d]: %d results\n", index, result.getNumResults()));
         if (result.getAssertionResult() != null) {
           sb.append(String.format("    Assertion : %s\n", result.getAssertionResult()));
         }
@@ -88,6 +107,11 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         }
       }
       return sb.toString();
+    }
+
+    @JsonProperty(PROP_DEBUG)
+    private void setDebug(Map<String, Object> debug) {
+      _debug = debug;
     }
 
     @JsonProperty(PROP_RESULTS)
@@ -130,7 +154,8 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       String innerQuestionName = innerQuestion.getName();
       Answerer innerAnswerer =
           _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
-      AnswerElement innerAnswer = innerAnswerer.answer();
+      AnswerElement innerAnswer =
+          (innerQuestion.getDifferential()) ? innerAnswerer.answerDiff() : innerAnswerer.answer();
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String innerAnswerStr = null;
@@ -164,11 +189,22 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       answerElement.getResults().putAll(allResults);
       answerElement.updateSummary();
 
+      if (question.getDebug()) {
+        answerElement.addDebugInfo("innerAnswer", innerAnswer);
+      }
+
       return answerElement;
     }
 
     @Override
-    public JsonPathDiffAnswerElement answerDiff() {
+    public AnswerElement answerDiff() {
+      //if the inner question is differential, use answer() (so we are not taking diff of diff)
+      JsonPathQuestion question = (JsonPathQuestion) _question;
+      Question innerQuestion = question._innerQuestion;
+      if (innerQuestion.getDifferential()) {
+        return answer();
+      }
+
       _batfish.pushBaseEnvironment();
       _batfish.checkEnvironmentExists();
       _batfish.popEnvironment();
@@ -184,6 +220,26 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       JsonPathAnswerElement after = afterAnswerer.answer();
       _batfish.popEnvironment();
       return new JsonPathDiffAnswerElement(before, after);
+    }
+
+    public static Object computePathFunction(Object jsonObject, JsonPathQuery query) {
+      ConfigurationBuilder cb = new ConfigurationBuilder();
+      Configuration configuration = cb.build();
+
+      JsonPath jsonPath;
+      try {
+        jsonPath = JsonPath.compile(query.getPath());
+      } catch (InvalidPathException e) {
+        throw new BatfishException("Invalid JsonPath: " + query.getPath(), e);
+      }
+
+      try {
+        return jsonPath.read(jsonObject, configuration);
+      } catch (PathNotFoundException e) {
+        return null;
+      } catch (Exception e) {
+        throw new BatfishException("Error reading JSON path: " + jsonPath, e);
+      }
     }
 
     public static JsonPathResult computeResult(Object jsonObject, JsonPathQuery query) {
@@ -255,8 +311,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
             SortedMap<String, JsonPathResultEntry> removed = diff.getRemoved();
             sb.append(
                 String.format(
-                    "  [%d]: %d added and %d removed \n",
-                    index, added.size(), removed.size()));
+                    "  [%d]: %d added and %d removed \n", index, added.size(), removed.size()));
             SortedSet<String> allKeys =
                 CommonUtil.union(added.keySet(), removed.keySet(), TreeSet::new);
             for (String key : allKeys) {
@@ -337,7 +392,11 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
    */
   public static class JsonPathQuestion extends Question {
 
+    private static final String PROP_DEBUG = "debug";
+
     private static final String PROP_PATHS = "paths";
+
+    private Boolean _debug;
 
     private Question _innerQuestion;
 
@@ -350,6 +409,14 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @Override
     public boolean getDataPlane() {
       return false;
+    }
+
+    @JsonProperty(PROP_DEBUG)
+    public boolean getDebug() {
+      if (_debug == null) {
+        return false;
+      }
+      return _debug;
     }
 
     @JsonProperty(BfConsts.PROP_INNER_QUESTION)
@@ -384,6 +451,11 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
               BfConsts.PROP_INNER_QUESTION,
               _innerQuestion.prettyPrint());
       return retString;
+    }
+
+    @JsonProperty(PROP_DEBUG)
+    public void setDebug(Boolean debug) {
+      _debug = debug;
     }
 
     @JsonProperty(BfConsts.PROP_INNER_QUESTION)
