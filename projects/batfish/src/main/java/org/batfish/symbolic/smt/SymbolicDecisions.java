@@ -6,8 +6,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.collections.Table2;
-import org.batfish.symbolic.smt.collections.Table3;
+import org.batfish.symbolic.collections.Table2;
+import org.batfish.symbolic.collections.Table3;
 
 /**
  * Class for the symbolic variables used to represent the final forwarding decision in the network.

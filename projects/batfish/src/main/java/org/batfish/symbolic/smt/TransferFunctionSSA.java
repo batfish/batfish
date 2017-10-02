@@ -73,7 +73,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.collections.PList;
+import org.batfish.symbolic.collections.PList;
 
 /**
  * Class that computes a symbolic transfer function between two symbolic control plane records. The

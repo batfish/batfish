@@ -17,6 +17,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.answers.AbstractionAnswerElement;
 
 /**
  * <p>Creates an abstraction(s) of the network by splitting the network into a collection of

@@ -1,4 +1,4 @@
-package org.batfish.symbolic.smt.utils;
+package org.batfish.symbolic.utils;
 
 import java.util.ArrayList;
 import java.util.List;

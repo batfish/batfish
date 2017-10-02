@@ -1,4 +1,4 @@
-package org.batfish.symbolic.smt.answers;
+package org.batfish.symbolic.answers;
 
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;

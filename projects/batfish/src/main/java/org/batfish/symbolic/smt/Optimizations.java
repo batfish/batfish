@@ -28,7 +28,7 @@ import org.batfish.symbolic.AstVisitor;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.collections.Table2;
+import org.batfish.symbolic.collections.Table2;
 
 /**
  * A class containing all the information pertinent for optimizations of the network encoding.

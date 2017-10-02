@@ -45,13 +45,13 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.answers.SmtManyAnswerElement;
-import org.batfish.symbolic.smt.answers.SmtOneAnswerElement;
-import org.batfish.symbolic.smt.answers.SmtReachabilityAnswerElement;
-import org.batfish.symbolic.smt.collections.Table2;
-import org.batfish.symbolic.smt.utils.PathRegexes;
-import org.batfish.symbolic.smt.utils.PatternUtils;
-import org.batfish.symbolic.smt.utils.Tuple;
+import org.batfish.symbolic.answers.SmtManyAnswerElement;
+import org.batfish.symbolic.answers.SmtOneAnswerElement;
+import org.batfish.symbolic.answers.SmtReachabilityAnswerElement;
+import org.batfish.symbolic.collections.Table2;
+import org.batfish.symbolic.utils.PathRegexes;
+import org.batfish.symbolic.utils.PatternUtils;
+import org.batfish.symbolic.utils.Tuple;
 
 /**
  * A collection of functions to checks if various properties hold in the network. The general flow

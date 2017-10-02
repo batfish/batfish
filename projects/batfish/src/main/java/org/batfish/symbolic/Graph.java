@@ -33,7 +33,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.symbolic.smt.collections.Table2;
+import org.batfish.symbolic.collections.Table2;
 
 /**
  * A graph object representing the structure of the network. The graph is built potentially by

@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.GraphEdge;
-import org.batfish.symbolic.smt.collections.Table2;
+import org.batfish.symbolic.collections.Table2;
 
 /**
  * A collection of symbolic variables representing the possible link failures in the network.

@@ -1,4 +1,4 @@
-package org.batfish.symbolic.smt.collections;
+package org.batfish.symbolic.collections;
 
 import java.util.AbstractSequentialList;
 import java.util.Collection;

@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.Pair;
-import org.batfish.symbolic.smt.collections.PList;
+import org.batfish.symbolic.collections.PList;
 
 public class TransferFunctionResult {
 

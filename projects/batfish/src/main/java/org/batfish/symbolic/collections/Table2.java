@@ -1,11 +1,11 @@
-package org.batfish.symbolic.smt.collections;
+package org.batfish.symbolic.collections;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
-import org.batfish.symbolic.smt.utils.TriConsumer;
+import org.batfish.symbolic.utils.TriConsumer;
 
 public class Table2<K1, K2, V> {
 

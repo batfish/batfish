@@ -11,7 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.collections.Table2;
+import org.batfish.symbolic.collections.Table2;
 
 
 /**

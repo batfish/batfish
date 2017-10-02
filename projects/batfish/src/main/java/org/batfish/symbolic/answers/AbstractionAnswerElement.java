@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.answers;
 
 import org.batfish.datamodel.answers.AnswerElement;
 

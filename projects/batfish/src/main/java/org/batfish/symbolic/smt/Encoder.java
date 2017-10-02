@@ -33,7 +33,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.utils.Tuple;
+import org.batfish.symbolic.utils.Tuple;
 
 /**
  * A class responsible for building a symbolic encoding of the entire network. The encoder does this
