@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.NodeType;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.batfish.question.QuestionPlugin;
@@ -39,7 +40,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public JsonPathDiffAnswerElement answerDiff() {
+    public AnswerElement answerDiff() {
       NodesPathQuestion question = (NodesPathQuestion) _question;
       NodesQuestion nq = new NodesQuestion();
       nq.setNodeRegex(question.getNodeRegex());
