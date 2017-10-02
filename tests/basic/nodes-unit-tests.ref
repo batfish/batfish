@@ -7837,6 +7837,147 @@
             }
           }
         },
+        "host2" : {
+          "name" : "host2",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.130.0.1/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "incomingFilter" : "iptables_Ethernet0_ingress",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 0,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.130.0.1/24",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet1" : {
+              "name" : "Ethernet1",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "2.131.0.1/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "incomingFilter" : "iptables_Ethernet1_ingress",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 0,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "2.131.0.1/24",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "ipAccessLists" : {
+            "iptables_Ethernet0_ingress" : {
+              "name" : "iptables_Ethernet0_ingress",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "name" : "-s 2.128.0.101/32 -i eth0 -j ACCEPT",
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.128.0.101"
+                  ]
+                },
+                {
+                  "action" : "REJECT",
+                  "name" : "-j DROP",
+                  "negate" : false
+                },
+                {
+                  "action" : "ACCEPT",
+                  "name" : "default",
+                  "negate" : false
+                }
+              ]
+            },
+            "iptables_Ethernet1_ingress" : {
+              "name" : "iptables_Ethernet1_ingress",
+              "lines" : [
+                {
+                  "action" : "REJECT",
+                  "name" : "-j DROP",
+                  "negate" : false
+                },
+                {
+                  "action" : "ACCEPT",
+                  "name" : "default",
+                  "negate" : false
+                }
+              ]
+            }
+          },
+          "routingPolicies" : {
+            "~OSPF_EXPORT_POLICY:default~" : {
+              "name" : "~OSPF_EXPORT_POLICY:default~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "host2"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0",
+                "Ethernet1"
+              ],
+              "ospfProcess" : {
+                "areas" : {
+                  "0" : {
+                    "name" : 0,
+                    "interfaces" : [
+                      "Ethernet0",
+                      "Ethernet1"
+                    ]
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "2.130.0.1"
+              }
+            }
+          }
+        },
         "if_tag_is" : {
           "name" : "if_tag_is",
           "configurationFormat" : "CISCO_NX",
