@@ -10,7 +10,7 @@ iptables_configuration
    command+
    |
    (
-      declaration_table declaration_chain_policy+ command* COMMIT NEWLINE
+      declaration_table declaration_chain_policy* command* COMMIT NEWLINE
    )+
 ;
 
