@@ -377,8 +377,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-
-
   public void delAnalysis(String containerName, String aName) {
     Path aDir = getdirContainerAnalysis(containerName, aName);
     CommonUtil.deleteDirectory(aDir);

@@ -831,13 +831,22 @@ public class WorkMgrService {
    *
    * @return Questions in configured questions directory(Empty if not provided)
    */
-  @GET
+  @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTIONS)
   @Produces(MediaType.APPLICATION_JSON)
-
-  public JSONArray getQuestions() {
-    Map<String, String> questions = Main.getWorkMgr().getQuestions();
+  public JSONArray getQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
     try {
+      _logger.info("WMS:getQuestions " + apiKey + " " + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      Map<String, String> questions = Main.getWorkMgr().getQuestions();
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String questionsStr = mapper.writeValueAsString(questions);
       return new JSONArray(

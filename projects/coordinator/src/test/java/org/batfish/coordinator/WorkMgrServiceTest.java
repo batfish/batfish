@@ -225,7 +225,8 @@ public class WorkMgrServiceTest {
     String questionJsonString = objectMapper.writeValueAsString(testQuestion);
     CommonUtil.writeFile(
         _questionsFolder.newFile("testQuestion.json").toPath(), questionJsonString);
-    JSONArray questionsResponse = _service.getQuestions();
+    JSONArray questionsResponse =
+        _service.getQuestions(CoordConsts.DEFAULT_API_KEY, Version.getVersion());
     if (questionsResponse.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
       JSONObject questionsJsonObject = (JSONObject) questionsResponse.get(1);
       String questionsJsonString = (String) questionsJsonObject.get(CoordConsts.SVC_KEY_QUESTIONS);
