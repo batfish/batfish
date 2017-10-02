@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
@@ -21,8 +22,11 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.DisplayHints.ExtractionHint;
+import org.batfish.datamodel.questions.DisplayHints.ValueType;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerer;
 
@@ -108,8 +112,6 @@ public class JsonPathResult {
 
   private static final String PROP_NUM_RESULTS = "numResults";
 
-  private static final String PROP_PATH = "path";
-
   private static final String PROP_RESULT = "result";
 
   private Boolean _assertionResult;
@@ -117,8 +119,6 @@ public class JsonPathResult {
   private Map<String, Map<String, JsonNode>> _extractedValues;
 
   private Integer _numResults;
-
-  // private JsonPathQuery _path;
 
   private SortedMap<String, JsonPathResultEntry> _result;
 
@@ -140,6 +140,7 @@ public class JsonPathResult {
         case PREFIX:
           extractDisplayValuesPrefix(entry.getKey(), entry.getValue(), jpeHint);
           break;
+        case FUNCOFSUFFIX:
         case PREFIXOFSUFFIX:
         case SUFFIXOFSUFFIX:
           extractDisplayValuesSuffix(entry.getKey(), entry.getValue(), jpeHint);
@@ -171,7 +172,6 @@ public class JsonPathResult {
       if (!_extractedValues.containsKey(entry.getKey())) {
         _extractedValues.put(entry.getKey(), new HashMap<>());
       }
-      // can happen when the original query was not pulling suffixes at all
       if (entry.getValue().getSuffix() == null) {
         throw new BatfishException(
             "Cannot compute suffix-based display values with null suffix. "
@@ -185,22 +185,59 @@ public class JsonPathResult {
       query.setPath(jpeHint.getFilter());
       query.setSuffix(true);
 
-      JsonPathResult filterResult = JsonPathAnswerer.computeResult(jsonObject, query);
-      Map<String, JsonPathResultEntry> filterResultEntries = filterResult.getResult();
-      if (filterResult.getNumResults() == 0) {
-        throw new BatfishException("Got no results after filtering suffix values of the answer");
-      }
       List<JsonNode> extractedList = new LinkedList<>();
-      for (Entry<String, JsonPathResultEntry> resultEntry : filterResultEntries.entrySet()) {
-        JsonNode value;
-        // only two values possible: PREFIXOFSUFFIX, SUFFIXOFSUFFIX
-        if (jpeHint.getUse() == UseType.PREFIXOFSUFFIX) {
-          value = new TextNode(resultEntry.getValue().getPrefixPart(jpeHint.getIndex()));
-        } else {
-          value = resultEntry.getValue().getSuffix();
-        }
-        confirmValueType(value, extractionHint.getValueType());
-        extractedList.add(value);
+      switch (jpeHint.getUse()) {
+        case FUNCOFSUFFIX:
+          {
+            if (extractionHint.getValueType() != ValueType.INT
+                && extractionHint.getValueType() != ValueType.INTLIST) {
+              throw new BatfishException(
+                  "valueType must be INT(LIST) with funcofsuffix-based extraction hint");
+            }
+            Object result = JsonPathAnswerer.computePathFunction(jsonObject, query);
+            if (result != null) {
+              if (result instanceof Integer) {
+                extractedList.add(new IntNode((Integer) result));
+              } else if (result instanceof ArrayNode) {
+                for (JsonNode node : (ArrayNode) result) {
+                  if (!(node instanceof IntNode)) {
+                    throw new BatfishException(
+                        "Got non-integer result from path function after filter "
+                            + query.getPath());
+                  }
+                  extractedList.add(node);
+                }
+              } else {
+                throw new BatfishException("Unknown result type from computePathFunction");
+              }
+            }
+          }
+          break;
+        case PREFIXOFSUFFIX:
+        case SUFFIXOFSUFFIX:
+          {
+            JsonPathResult filterResult = JsonPathAnswerer.computeResult(jsonObject, query);
+            Map<String, JsonPathResultEntry> filterResultEntries = filterResult.getResult();
+            for (Entry<String, JsonPathResultEntry> resultEntry : filterResultEntries.entrySet()) {
+              JsonNode value =
+                  (jpeHint.getUse() == UseType.PREFIXOFSUFFIX)
+                      ? new TextNode(resultEntry.getValue().getPrefixPart(jpeHint.getIndex()))
+                      : resultEntry.getValue().getSuffix();
+              confirmValueType(value, extractionHint.getValueType());
+              extractedList.add(value);
+            }
+          }
+          break;
+        default:
+          throw new BatfishException("Unknown UseType " + jpeHint.getUse());
+      }
+      if (extractedList.size() == 0) {
+        throw new BatfishException(
+            "Got no results after filtering suffix values of the answer"
+                + "\nFilter: "
+                + jpeHint.getFilter()
+                + "\nJson: "
+                + jsonObject);
       }
 
       if (extractionHint.getValueType().isListType()) {
@@ -208,7 +245,7 @@ public class JsonPathResult {
         ArrayNode arrayNode = mapper.valueToTree(extractedList);
         _extractedValues.get(entry.getKey()).put(displayVar, arrayNode);
       } else {
-        if (filterResult.getNumResults() > 1) {
+        if (extractedList.size() > 1) {
           throw new BatfishException(
               "Got multiple results after filtering suffix values "
                   + " of the answer, but the display type is non-list");
@@ -230,6 +267,24 @@ public class JsonPathResult {
                   + "\n"
                   + "Extracted "
                   + value);
+        }
+        break;
+      case FLOW:
+        try {
+          BatfishObjectMapper mapper = new BatfishObjectMapper();
+          mapper.readValue(value.toString(), Flow.class);
+        } catch (IOException e) {
+          throw new BatfishException(
+              "Could not recover an object of type FLOW from " + value.toString(), e);
+        }
+        break;
+      case FLOWTRACE:
+        try {
+          BatfishObjectMapper mapper = new BatfishObjectMapper();
+          mapper.readValue(value.toString(), FlowTrace.class);
+        } catch (IOException e) {
+          throw new BatfishException(
+              "Could not recover an object of type FLOWTRACE from " + value.toString(), e);
         }
         break;
       case STRING:

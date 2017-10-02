@@ -21,32 +21,46 @@ public class DisplayHints {
   public enum ValueType {
     INT,
     INTLIST,
+    FLOW,
+    FLOWLIST,
+    FLOWTRACE,
+    FLOWTRACELIST,
     STRING,
     STRINGLIST;
 
     public ValueType getBaseType() {
       switch (this) {
-        case INT:
-        case INTLIST:
-          return INT;
-        case STRING:
-        case STRINGLIST:
-          return STRING;
-        default:
-          throw new BatfishException("Unknown ValueType " + this);
+      case INT:
+      case INTLIST:
+        return INT;
+      case FLOW:
+      case FLOWLIST:
+        return FLOW;
+      case FLOWTRACE:
+      case FLOWTRACELIST:
+        return FLOWTRACE;
+      case STRING:
+      case STRINGLIST:
+        return STRING;
+      default:
+        throw new BatfishException("Unknown ValueType " + this);
       }
     }
 
     public boolean isListType() {
       switch (this) {
-        case INT:
-        case STRING:
-          return false;
-        case INTLIST:
-        case STRINGLIST:
-          return true;
-        default:
-          throw new BatfishException("Unknown ValueType " + this);
+      case INT:
+      case STRING:
+      case FLOW:
+      case FLOWTRACE:
+        return false;
+      case INTLIST:
+      case FLOWLIST:
+      case FLOWTRACELIST:
+      case STRINGLIST:
+        return true;
+      default:
+        throw new BatfishException("Unknown ValueType " + this);
       }
     }
   }
@@ -325,8 +339,7 @@ public class DisplayHints {
       namesInTextDesc.add(matcher.group(1));
     }
     SetView<String> missingEntities =
-        Sets.difference(
-            namesInTextDesc, Sets.union(entities.keySet(), extractionHints.keySet()));
+        Sets.difference(namesInTextDesc, Sets.union(entities.keySet(), extractionHints.keySet()));
     if (!missingEntities.isEmpty()) {
       throw new BatfishException(
           "textDesc has names that are neither entities nor extractions: " + missingEntities);

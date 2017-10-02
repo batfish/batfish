@@ -132,6 +132,28 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
+  public void jsonPathDisplayHintAddressCountFromFuncOfSuffixTest() throws IOException {
+    String displayVariable = "addressCountFromFuncOfSuffix";
+    JsonPathResult result =
+        computeJsonPathResult(
+            "org/batfish/question/jsonpath/jsonPathDisplayHintsTestObject.json",
+            "$.nodes[*].interfaces[*][?(@.mtu < 1600)]", true);
+
+    Map<String, Map<String, JsonNode>> displayValues =
+        result.extractDisplayValues(getDisplayHints(displayVariable));
+
+    String key1 = "'nodes'->'node1'->'interfaces'->'interface1'";
+    String key2 = "'nodes'->'node2'->'interfaces'->'interface1'";
+
+    assertThat(displayValues.size(), equalTo(2));
+    assertThat(displayValues.containsKey(key1), equalTo(true));
+    assertThat(displayValues.containsKey(key2), equalTo(true));
+
+    assertThat(displayValues.get(key1).get(displayVariable).asInt(), equalTo(3));
+    assertThat(displayValues.get(key2).get(displayVariable).asInt(), equalTo(2));
+  }
+
+  @Test
   public void jsonPathDisplayHintNodeFromPrefixTest() throws IOException {
     String displayVariable = "nodeFromPrefix";
     JsonPathResult result =

@@ -1,6 +1,7 @@
 package org.batfish.question.jsonpath;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jayway.jsonpath.internal.path.PathCompiler;
 import java.io.IOException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -10,6 +11,7 @@ public class JsonPathExtractionHint {
 
   public enum UseType {
     PREFIX,
+    FUNCOFSUFFIX,
     PREFIXOFSUFFIX,
     SUFFIXOFSUFFIX,
   }
@@ -44,6 +46,20 @@ public class JsonPathExtractionHint {
         }
         if (jpExtractionHint.getFilter() != null) {
           throw new BatfishException("Filter should not specified in prefix-based extraction hint");
+        }
+        break;
+      case FUNCOFSUFFIX:
+        if (jpExtractionHint.getIndex() != null) {
+          throw new BatfishException(
+              "Index should not be specified in funcofsuffix-based extraction hint");
+        }
+        if (jpExtractionHint.getFilter() == null) {
+          throw new BatfishException(
+              "Filter should be specified in funcofsuffix-based extraction hint");
+        }
+        if (!PathCompiler.compile(jpExtractionHint.getFilter()).isFunctionPath()) {
+          throw new BatfishException(
+              "Filter should be a path function in funcofsuffix-based extraction hint");
         }
         break;
       case PREFIXOFSUFFIX:
