@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "mynode": {
+      "entityType": "node",
+      "hostname": "node1"
+    },
+    "myinterface": {
+      "entityType": "interfaceList",
+      "hostname": "nodes1",
+      "interface": "interfaces1"
+    }
+  },
+  "extractionHints" : {
+    "node1": {
+      "valueType": "string",
+      "hints": {
+        "use": "prefix",
+        "index" : 1
+      }
+    },
+    "interfaces1": {
+      "valueType" : "stringList",
+      "hints": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
+      }
+    },
+    "nodes1": {
+      "valueType": "intList",
+      "hints": {
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
+      }
+    }
+  },
+  "textDesc" : "${mynode} has nothing on ${myinterface}"
+}
+

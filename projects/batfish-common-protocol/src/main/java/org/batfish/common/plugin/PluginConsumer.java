@@ -8,10 +8,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -69,7 +71,6 @@ public abstract class PluginConsumer implements IPluginConsumer {
         _pluginDirs.add(0, questionPluginDir);
       }
     }
-    return;
   }
 
   protected <S extends Serializable> S deserializeObject(byte[] data, Class<S> outputClass) {
@@ -223,8 +224,16 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
-    cl.loadClass(className);
-    Class<?> pluginClass = Class.forName(className, true, cl);
+    Class<?> pluginClass = null;
+    try {
+      cl.loadClass(className);
+      pluginClass = Class.forName(className, true, cl);
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      // Ignoring this exception is a potentially dangerous hack
+      // but I don't quite know yet why some classes cannot be loaded and how to do things cleanly
+      getLogger().warn("Couldn't load class " + className + ". Skipping.\n");
+      return;
+    }
     if (!Plugin.class.isAssignableFrom(pluginClass)
         || Modifier.isAbstract(pluginClass.getModifiers())) {
       return;
@@ -291,31 +300,53 @@ public abstract class PluginConsumer implements IPluginConsumer {
     }
   }
 
+  /** Serializes the given object to a file with the given output name, using GZIP compression. */
   public void serializeObject(Serializable object, Path outputFile) {
     try {
-      byte[] data = toGzipData(object);
-      Files.write(outputFile, data);
+      try (OutputStream out = Files.newOutputStream(outputFile)) {
+        serializeToGzipData(object, out);
+      }
     } catch (IOException e) {
       throw new BatfishException(
           "Failed to serialize object to gzip output file: " + outputFile, e);
     }
   }
 
+  /** Serializes the given object to a GZIP-compressed byte[]. */
   protected byte[] toGzipData(Serializable object) {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      GZIPOutputStream gos = new GZIPOutputStream(baos);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    serializeToGzipData(object, baos);
+    return baos.toByteArray();
+  }
+
+  private static class CloseIgnoringOutputStream extends FilterOutputStream {
+
+    protected CloseIgnoringOutputStream(OutputStream out) {
+      super(out);
+    }
+
+    /** Does nothing, deliberately. */
+    @Override
+    public void close() {}
+  }
+
+  /** Serializes the given object to the given stream, using GZIP compression. */
+  private void serializeToGzipData(Serializable object, OutputStream out) {
+    // This is a hack:
+    //   XStream requires that its streams be closed to properly finish serialization,
+    //   but we do not actually want to close the passed-in output stream.
+    out = new CloseIgnoringOutputStream(out);
+
+    try (Closer closer = Closer.create()) {
+      GZIPOutputStream gos = closer.register(new GZIPOutputStream(out));
       ObjectOutputStream oos;
       if (_serializeToText) {
         XStream xstream = new XStream(new DomDriver("UTF-8"));
-        oos = xstream.createObjectOutputStream(gos);
+        oos = closer.register(xstream.createObjectOutputStream(gos));
       } else {
-        oos = new ObjectOutputStream(gos);
+        oos = closer.register(new ObjectOutputStream(gos));
       }
       oos.writeObject(object);
-      oos.close();
-      byte[] data = baos.toByteArray();
-      return data;
     } catch (IOException e) {
       throw new BatfishException("Failed to convert object to gzip data", e);
     }

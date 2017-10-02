@@ -34,9 +34,11 @@ public enum Command {
   GET_ANSWER("get-answer"),
   GET_ANSWER_DELTA("get-answer-delta"),
   GET_ANSWER_DIFFERENTIAL("get-answer-differential"),
+  GET_CONFIGURATION("get-configuration"),
   GET_CONTAINER("get-container"),
   GET_DELTA("get-delta"),
   GET_QUESTION("get-question"),
+  GET_QUESTION_TEMPLATES("get-question-templates"),
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
@@ -74,6 +76,8 @@ public enum Command {
   SHOW_LOGLEVEL("show-loglevel"),
   SHOW_TESTRIG("show-testrig"),
   SHOW_VERSION("show-version"),
+  SYNC_TESTRIGS_SYNC_NOW("sync-testrigs-sync-now"),
+  SYNC_TESTRIGS_UPDATE_SETTINGS("sync-testrigs-update-settings"),
   TEST("test"),
   UPLOAD_CUSTOM_OBJECT("upload-custom");
 
@@ -147,6 +151,11 @@ public enum Command {
         GET_ANSWER,
         new Pair<>("<question-name>", "Get the answer for a previously answered question"));
     descs.put(
+        GET_CONFIGURATION,
+        new Pair<>(
+            "<container-name> <testrig-name> <configuration-name>",
+            "Get the file content of the configuration file"));
+    descs.put(
         GET_CONTAINER, new Pair<>("<container-name>", "Get the information of the container"));
     descs.put(
         GET_DELTA,
@@ -154,6 +163,7 @@ public enum Command {
             "<question-file>  [param1=value1 [param2=value2] ...]",
             "Answer the question by type for the delta environment"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
+    descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));
     descs.put(
         INIT_ANALYSIS,
@@ -275,6 +285,16 @@ public enum Command {
     descs.put(SHOW_DELTA_TESTRIG, new Pair<>("", "Show delta testrig and environment"));
     descs.put(SHOW_TESTRIG, new Pair<>("", "Show base testrig and environment"));
     descs.put(SHOW_VERSION, new Pair<>("", "Show the version of Client and Service"));
+    descs.put(
+        SYNC_TESTRIGS_SYNC_NOW,
+        new Pair<>(
+            "[-force] <plugin-id>",
+            "Sync testrigs now (settings must have been configured before)"));
+    descs.put(
+        SYNC_TESTRIGS_UPDATE_SETTINGS,
+        new Pair<>(
+            "<plugin-id> [key1=value1, [key2=value2], ...], ",
+            "Update the settings for sync testrigs plugin"));
     descs.put(TEST, new Pair<>("<reference file> <command>", "Show base testrig and environment"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));

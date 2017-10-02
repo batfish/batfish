@@ -1,10 +1,12 @@
 package org.batfish.symbolic;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -76,6 +78,10 @@ public class Graph {
 
   private Map<String, Integer> _originatorId;
 
+  private Map<String, Integer> _domainMap;
+
+  private Map<Integer, Set<String>> _domainMapInverse;
+
   /*
    * Create a graph from a Batfish object
    */
@@ -99,6 +105,8 @@ public class Graph {
     _routeReflectorParent = new HashMap<>();
     _routeReflectorClients = new HashMap<>();
     _originatorId = new HashMap<>();
+    _domainMap = new HashMap<>();
+    _domainMapInverse = new HashMap<>();
 
     // Remove the routers we don't want to model
     if (routers != null) {
@@ -120,6 +128,7 @@ public class Graph {
     initEbgpNeighbors();
     initIbgpNeighbors();
     initAreaIds();
+    initDomains();
   }
 
   /*
@@ -241,6 +250,7 @@ public class Graph {
   public static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
+
 
   /*
    * Collect all static routes after inferring which interface they indicate
@@ -515,6 +525,57 @@ public class Graph {
   }
 
   /*
+ * Determines the collection of routers within the same AS
+ * as the router provided as a parameter
+ */
+  private Set<String> findDomain(String router) {
+    Set<String> sameDomain = new HashSet<>();
+    Queue<String> todo = new ArrayDeque<>();
+    todo.add(router);
+    while (!todo.isEmpty()) {
+      router = todo.remove();
+      sameDomain.add(router);
+      for (GraphEdge ge : getEdgeMap().get(router)) {
+        String peer = ge.getPeer();
+        BgpNeighbor n = _ebgpNeighbors.get(ge);
+        if (peer != null && n == null && !sameDomain.contains(peer)) {
+          todo.add(peer);
+        }
+      }
+    }
+    return sameDomain;
+  }
+
+  /*
+   * Breaks the network up into a collection of devices that
+   * are in the same autonomous system. This is useful when
+   * modeling iBGP since we can restrict
+   */
+  private void initDomains() {
+    int i = 0;
+    Set<String> routers =  new HashSet<>(_configurations.keySet());
+    while (!routers.isEmpty()) {
+      String router = routers.iterator().next();
+      Set<String> domain = findDomain(router);
+      _domainMapInverse.put(i, domain);
+      for (String r : domain) {
+        _domainMap.put(r, i);
+        routers.remove(r);
+      }
+      i++;
+    }
+  }
+
+  /*
+   * Get all the routers in the same AS as the
+   * router provided to the function.
+   */
+  public Set<String> getDomain(String router) {
+    int idx = _domainMap.get(router);
+    return _domainMapInverse.get(idx);
+  }
+
+  /*
    * Check if an interface is active for a particular protocol.
    */
   public boolean isInterfaceActive(Protocol proto, Interface iface) {
@@ -525,10 +586,15 @@ public class Graph {
   }
 
   /*
-   * Check if an topology edge is used in a particular protocol.
+   * Check if a topology edge is used in a particular protocol.
    */
   public boolean isEdgeUsed(Configuration conf, Protocol proto, GraphEdge ge) {
     Interface iface = ge.getStart();
+
+    // Don't use if interface is not active
+    if (!isInterfaceActive(proto, iface)) {
+      return false;
+    }
 
     // Exclude abstract iBGP edges from all protocols except BGP
     if (iface.getName().startsWith("iBGP-")) {
@@ -538,23 +604,46 @@ public class Graph {
     if (ge.getStart().isLoopback(conf.getConfigurationFormat())) {
       return proto.isConnected();
     }
+
+    // Don't use ospf over edges to hosts / external
+    if (ge.getPeer() == null && proto.isOspf()) {
+      return false;
+    }
+
     // Only use specified edges from static routes
     if (proto.isStatic()) {
       List<StaticRoute> srs = getStaticRoutes().get(conf.getName()).get(iface.getName());
       return iface.getActive() && srs != null && srs.size() > 0;
     }
+
     // Only use an edge in BGP if there is an explicit peering
     if (proto.isBgp()) {
       BgpNeighbor n1 = _ebgpNeighbors.get(ge);
       BgpNeighbor n2 = _ibgpNeighbors.get(ge);
-      return (n1 != null || n2 != null);
+      return n1 != null || n2 != null;
     }
 
     return true;
   }
 
   /*
-   * Find the common (default) routing policy for the protol.
+   * Determine if an edge is potentially attached to a host
+   */
+  public boolean isEdgeHostConnected(GraphEdge ge) {
+    boolean isBgpPeering = getEbgpNeighbors().get(ge) != null;
+    if (isBgpPeering) {
+      return false;
+    }
+    if (ge.getPeer() == null) {
+      return true;
+    }
+    Configuration peerConf = _configurations.get(ge.getPeer());
+    String vendor = peerConf.getConfigurationFormat().getVendorString();
+    return "host".equals(vendor);
+  }
+
+  /*
+   * Find the common (default) routing policy for the protocol.
    */
   @Nullable
   public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
@@ -751,15 +840,6 @@ public class Graph {
               });
         });
 
-    sb.append("---------- Neighbors of each router ----------\n");
-    _neighbors.forEach(
-        (router, peers) -> {
-          sb.append("Router: ").append(router).append("\n");
-          for (String peer : peers) {
-            sb.append("  peer: ").append(peer).append("\n");
-          }
-        });
-
     sb.append("---------------- eBGP Neighbors ----------------\n");
     _ebgpNeighbors.forEach(
         (ge, n) -> {
@@ -839,5 +919,9 @@ public class Graph {
 
   public Map<GraphEdge, GraphEdge> getOtherEnd() {
     return _otherEnd;
+  }
+
+  public IBatfish getBatfish() {
+    return _batfish;
   }
 }

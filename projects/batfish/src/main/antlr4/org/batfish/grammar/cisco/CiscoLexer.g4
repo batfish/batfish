@@ -58,6 +58,7 @@ tokens {
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
+   ASA_BANNER_LINE,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
@@ -69,6 +70,7 @@ tokens {
    LINE_CADANT,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
+   PASSWORD_SEED,
    PIPE,
    PROMPT_TIMEOUT,
    QUOTED_TEXT,
@@ -5455,6 +5457,11 @@ MINIMAL
    'minimal'
 ;
 
+MINIMUM
+:
+   'minimum'
+;
+
 MINIMUM_INTERVAL
 :
    'minimum-interval'
@@ -8335,6 +8342,11 @@ SHA1
    'sha1' -> pushMode ( M_SHA1 )
 ;
 
+SHA512_PASSWORD
+:
+   '$sha512$' [0-9]+ '$' F_Base64String '$' F_Base64String -> pushMode ( M_SeedWhitespace )
+;
+
 SHAPE
 :
    'shape'
@@ -9717,6 +9729,11 @@ USE_IPV6_ACL
    'use-ipv6-acl'
 ;
 
+USE_LINK_ADDRESS
+:
+   'use-link-address'
+;
+
 USE_VRF
 :
    'use-vrf'
@@ -10702,6 +10719,28 @@ WS
 ; // Fragments
 
 fragment
+F_Base64Char
+:
+   [0-9A-Za-z/+]
+;
+
+fragment
+F_Base64Quadruple
+:
+   F_Base64Char F_Base64Char F_Base64Char F_Base64Char
+;
+fragment
+F_Base64String
+:
+   F_Base64Quadruple*
+   (
+      F_Base64Quadruple
+      | F_Base64Char F_Base64Char '=='
+      | F_Base64Char F_Base64Char F_Base64Char '='
+   )
+;
+
+fragment
 F_Dec16
 :
    (
@@ -11217,6 +11256,11 @@ M_BannerText_ESCAPE_C
 M_BannerText_HASH
 :
    '#' {!_cadant}? -> type ( POUND ) , mode ( M_MOTD_HASH )
+;
+
+M_BannerText_ASA_BANNER_LINE
+:
+   ~[#^\r\n \t\u000C] F_NonNewline* -> type ( ASA_BANNER_LINE ) , popMode
 ;
 
 M_BannerText_NEWLINE
@@ -11868,6 +11912,20 @@ M_RouteMap_VARIABLE
 M_RouteMap_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Seed;
+
+M_Seed_PASSWORD_SEED
+:
+   F_NonWhitespace+ -> type ( PASSWORD_SEED ) , popMode
+;
+
+mode M_SeedWhitespace;
+
+M_Seed_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
 ;
 
 mode M_SHA1;

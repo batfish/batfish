@@ -18,6 +18,7 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -37,7 +38,6 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
-
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -67,6 +67,10 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  Map<String, String> getQuestionTemplates();
+
+  NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 

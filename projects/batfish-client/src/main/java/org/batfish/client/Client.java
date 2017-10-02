@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,7 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -767,8 +769,7 @@ public class Client extends AbstractClient implements IClient {
     }
     File tempFile = tempFilePath.toFile();
     tempFile.deleteOnExit();
-    _logger.debugf(
-        "Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath().toString());
+    _logger.debugf("Creating temporary %s file: %s\n", filePrefix, tempFilePath.toAbsolutePath());
     FileWriter writer;
     try {
       writer = new FileWriter(tempFile);
@@ -1316,6 +1317,26 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
+   * Get a string representation of the file content for configuration file {@code configName}.
+   *
+   * <p>Returns {@code true} if successfully get file content, {@code false} otherwise.
+   */
+  private boolean getConfiguration(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 3, 3, Command.GET_CONFIGURATION)) {
+      return false;
+    }
+    String containerName = parameters.get(0);
+    String testrigName = parameters.get(1);
+    String configName = parameters.get(2);
+    String configContent = _workHelper.getConFiguration(containerName, testrigName, configName);
+    if (configContent != null) {
+      _logger.output(configContent + "\n");
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get information of the container (first element in {@code parameters}).
    *
    * <p>Returns {@code true} if successfully get container information, {@code false} otherwise
@@ -1362,6 +1383,28 @@ public class Client extends AbstractClient implements IClient {
 
     String questionString = CommonUtil.readFile(Paths.get(downloadedQuestionFile));
     _logger.outputf("Question:\n%s\n", questionString);
+
+    return true;
+  }
+
+  private boolean getQuestionTemplates(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.GET_QUESTION_TEMPLATES)) {
+      return false;
+    }
+
+    JSONObject templates = _workHelper.getQuestionTemplates();
+
+    if (templates == null) {
+      return false;
+    }
+
+    _logger.outputf("Found %d templates\n", templates.length());
+
+    try {
+      _logger.output(templates.toString(1));
+    } catch (JSONException e) {
+      throw new BatfishException("Failed to print templates", e);
+    }
 
     return true;
   }
@@ -1492,7 +1535,6 @@ public class Client extends AbstractClient implements IClient {
     } else {
       throw new BatfishException("Invalid environment directory or zip: '" + paramsLocation + "'");
     }
-
     if (!uploadEnv(fileToSend, testrigName, newEnvName, baseEnvName)) {
       return false;
     }
@@ -1738,7 +1780,7 @@ public class Client extends AbstractClient implements IClient {
     if (options.size() > maxNumOptions
         || (parameters.size() < minNumParas)
         || (parameters.size() > maxNumParas)) {
-      _logger.errorf("Invalid arguments: %s %s\n", options.toString(), parameters.toString());
+      _logger.errorf("Invalid arguments: %s %s\n", options, parameters);
       printUsage(command);
       return false;
     }
@@ -1887,7 +1929,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       Files.walkFileTree(
           questionsPath,
-          Collections.emptySet(),
+          EnumSet.of(FOLLOW_LINKS),
           1,
           new SimpleFileVisitor<Path>() {
             @Override
@@ -2017,14 +2059,14 @@ public class Client extends AbstractClient implements IClient {
         if (i == batches.size() - 1
             || status == WorkStatusCode.TERMINATEDNORMALLY
             || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-          _logger.infof(".... %s\n", batches.get(i).toString());
+          _logger.infof(".... %s\n", batches.get(i));
         } else {
-          _logger.debugf(".... %s\n", batches.get(i).toString());
+          _logger.debugf(".... %s\n", batches.get(i));
         }
       }
       if (status == WorkStatusCode.TERMINATEDNORMALLY
           || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-        _logger.infof(".... %s: %s\n", task.getTerminated().toString(), status);
+        _logger.infof(".... %s: %s\n", task.getTerminated(), status);
       }
     }
   }
@@ -2096,6 +2138,8 @@ public class Client extends AbstractClient implements IClient {
           return generateDeltaDataplane(outWriter, options, parameters);
         case GET:
           return get(words, outWriter, options, parameters, false);
+        case GET_CONFIGURATION:
+          return getConfiguration(options, parameters);
         case GET_CONTAINER:
           return getContainer(options, parameters);
         case GET_DELTA:
@@ -2114,6 +2158,8 @@ public class Client extends AbstractClient implements IClient {
           return getAnswer(outWriter, options, parameters, false, true);
         case GET_QUESTION:
           return getQuestion(options, parameters);
+        case GET_QUESTION_TEMPLATES:
+          return getQuestionTemplates(options, parameters);
         case HELP:
           return help(options, parameters);
         case INIT_ANALYSIS:
@@ -2186,6 +2232,10 @@ public class Client extends AbstractClient implements IClient {
           return showTestrig(options, parameters);
         case SHOW_VERSION:
           return showVersion(options, parameters);
+        case SYNC_TESTRIGS_SYNC_NOW:
+          return syncTestrigsSyncNow(options, parameters);
+        case SYNC_TESTRIGS_UPDATE_SETTINGS:
+          return syncTestrigsUpdateSettings(words, options, parameters);
         case TEST:
           return test(options, parameters);
         case UPLOAD_CUSTOM_OBJECT:
@@ -2606,6 +2656,66 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean syncTestrigsSyncNow(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 1, 1, 1, Command.SYNC_TESTRIGS_SYNC_NOW)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    boolean force = false;
+
+    if (options.size() == 1) {
+      if (options.get(0).equals("-force")) {
+        force = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.SYNC_TESTRIGS_SYNC_NOW);
+        return false;
+      }
+    }
+
+    String pluginId = parameters.get(0);
+
+    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
+  }
+
+  private boolean syncTestrigsUpdateSettings(
+      String[] words, List<String> options, List<String> parameters) {
+    if (!isValidArgument(
+        options, parameters, 0, 1, Integer.MAX_VALUE, Command.SYNC_TESTRIGS_UPDATE_SETTINGS)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+
+    String pluginId = parameters.get(0);
+
+    String settingsStr =
+        "{" + String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)) + "}";
+
+    Map<String, String> settings = null;
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      settings =
+          mapper.readValue(
+              new JSONObject(settingsStr).toString(), new TypeReference<Map<String, String>>() {});
+    } catch (JSONException | IOException e) {
+      _logger.errorf(
+          "Failed to parse parameters. "
+              + "(Are all key-value pairs separated by commas? Are all "
+              + "values strings?)\n"
+              + e
+              + "\n");
+      return false;
+    }
+
+    return _workHelper.syncTestrigsUpdateSettings(pluginId, _currContainerName, settings);
+  }
+
   private boolean test(List<String> options, List<String> parameters) throws IOException {
     boolean failingTest = false;
     boolean missingReferenceFile = false;
@@ -2658,6 +2768,7 @@ public class Client extends AbstractClient implements IClient {
           // not all outputs of process command are of Answer.class type
           // in that case, we use the exact string as initialized above for
           // comparison
+          testAnswerString = testAnswerString.trim();
         }
 
         if (!missingReferenceFile) {
@@ -2671,13 +2782,10 @@ public class Client extends AbstractClient implements IClient {
             referenceAnswer = mapper.readValue(referenceOutput, Answer.class);
             referenceAnswerString = mapper.writeValueAsString(referenceAnswer);
           } catch (JsonParseException | UnrecognizedPropertyException e) {
-            // throw new BatfishException(
-            // "Error reading reference output using current schema
-            // (reference output is likely obsolete)",
-            // e);
             // not all outputs of process command are of Answer.class type
             // in that case, we use the exact string as initialized above
             // for comparison
+            referenceAnswerString = referenceAnswerString.trim();
           }
 
           // due to options chosen in BatfishObjectMapper, if json

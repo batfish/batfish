@@ -79,6 +79,8 @@ public class Interface extends ComparableStructure<String> {
 
   private SortedSet<Ip> _dhcpRelayAddresses;
 
+  private boolean _dhcpRelayClient;
+
   private String _incomingFilter;
 
   private int _incomingFilterLine;
@@ -213,6 +215,10 @@ public class Interface extends ComparableStructure<String> {
     return _dhcpRelayAddresses;
   }
 
+  public boolean getDhcpRelayClient() {
+    return _dhcpRelayClient;
+  }
+
   public String getIncomingFilter() {
     return _incomingFilter;
   }
@@ -343,6 +349,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setDhcpRelayAddress(SortedSet<Ip> dhcpRelayAddress) {
     _dhcpRelayAddresses = dhcpRelayAddress;
+  }
+
+  public void setDhcpRelayClient(boolean dhcpRelayClient) {
+    _dhcpRelayClient = dhcpRelayClient;
   }
 
   public void setIncomingFilter(String accessListName) {

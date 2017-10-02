@@ -6,11 +6,9 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Model;
-import com.microsoft.z3.Params;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Tactic;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +32,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
+import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.smt.utils.Tuple;
 
 /**
  * A class responsible for building a symbolic encoding of the entire network. The encoder does this
@@ -53,7 +53,7 @@ public class Encoder {
 
   public static final boolean ENABLE_UNSAT_CORE = false;
 
-  public static final boolean ENABLE_DEBUGGING = false;
+  public static final Boolean ENABLE_DEBUGGING = false;
 
   public static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
 
@@ -74,8 +74,6 @@ public class Encoder {
   private SymbolicFailures _symbolicFailures;
 
   private Map<String, Expr> _allVariables;
-
-  private List<SymbolicRecord> _allSymbolicRecords;
 
   private Graph _graph;
 
@@ -111,6 +109,17 @@ public class Encoder {
    */
   Encoder(Encoder e, Graph g) {
     this(e, g, e._question, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
+  }
+
+  /**
+   * Create an encoder object from an existing encoder.
+   *
+   * @param e An existing encoder object
+   * @param g An existing network graph
+   * @param q A header question
+   */
+  Encoder(Encoder e, Graph g, HeaderQuestion q) {
+    this(e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
   }
 
   /**
@@ -161,13 +170,11 @@ public class Encoder {
     }
 
     // Set parameters
-    Params p = _ctx.mkParams();
-    p.add("ite_extra_rules", true);
-    p.add("pull_cheap_ite", true);
-    _solver.setParameters(p);
+    //Params p = _ctx.mkParams();
+    //p.add("print_stats", true);
+    //_solver.setParameters(p);
 
     _symbolicFailures = new SymbolicFailures();
-    _allSymbolicRecords = new ArrayList<>();
 
     if (vars == null) {
       _allVariables = new HashMap<>();
@@ -264,9 +271,11 @@ public class Encoder {
                   protocols.add(IpProtocol.TCP);
                   hs.setIpProtocols(protocols);
 
-                  String sliceName = "SLICE-" + router + "_";
+                  // TODO: create domains once
+                  Graph gNew = new Graph(g.getBatfish(), g.getDomain(router));
 
-                  EncoderSlice slice = new EncoderSlice(this, hs, g, sliceName);
+                  String sliceName = "SLICE-" + router + "_";
+                  EncoderSlice slice = new EncoderSlice(this, hs, gNew, sliceName);
                   _slices.put(sliceName, slice);
 
                   PropertyAdder pa = new PropertyAdder(slice);
@@ -373,7 +382,7 @@ public class Encoder {
     if (e1 instanceof BitVecExpr && e2 instanceof BitVecExpr) {
       return getCtx().mkBVUGE((BitVecExpr) e1, (BitVecExpr) e2);
     }
-    throw new BatfishException("Invalid call the mkLe while encoding control plane");
+    throw new BatfishException("Invalid call to mkGe while encoding control plane");
   }
 
   // Symbolic less than or equal to
@@ -384,7 +393,7 @@ public class Encoder {
     if (e1 instanceof BitVecExpr && e2 instanceof BitVecExpr) {
       return getCtx().mkBVULE((BitVecExpr) e1, (BitVecExpr) e2);
     }
-    throw new BatfishException("Invalid call the mkLe while encoding control plane");
+    throw new BatfishException("Invalid call to mkLe while encoding control plane");
   }
 
   // Symblic equality of expressions
@@ -455,7 +464,7 @@ public class Encoder {
       SortedSet<String> failures) {
     SortedMap<Expr, String> valuation = new TreeMap<>();
 
-    // mkIf user asks for the full model
+    // If user asks for the full model
     _allVariables.forEach(
         (name, e) -> {
           Expr val = m.evaluate(e, false);
@@ -544,7 +553,7 @@ public class Encoder {
                   .getEnvironmentVars()
                   .forEach(
                       (lge, r) -> {
-                        if (valuation.get(r.getPermitted()).equals("true")) {
+                        if ("true".equals(valuation.get(r.getPermitted()))) {
                           SortedMap<String, String> recordMap = new TreeMap<>();
                           GraphEdge ge = lge.getEdge();
                           String nodeIface =
@@ -626,7 +635,22 @@ public class Encoder {
             (router, edge, e) -> {
               String s = valuation.get(e);
               if ("true".equals(s)) {
-                fwdModel.add(edge.toString());
+                SymbolicRecord r =
+                    enc.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(router);
+                if (r.getProtocolHistory() != null) {
+                  Protocol proto;
+                  List<Protocol> allProtocols = enc.getMainSlice().getProtocols().get(router);
+                  if (allProtocols.size() == 1) {
+                    proto = allProtocols.get(0);
+                  } else {
+                    s = valuation.get(r.getProtocolHistory().getBitVec());
+                    int i = Integer.parseInt(s);
+                    proto = r.getProtocolHistory().value(i);
+                  }
+                  fwdModel.add(edge + " (" + proto.name() + ")");
+                } else {
+                  fwdModel.add(edge.toString());
+                }
               }
             });
 
@@ -695,7 +719,7 @@ public class Encoder {
    *
    * @return A VerificationResult indicating the status of the check.
    */
-  public VerificationResult verify() {
+  public Tuple<VerificationResult, Model> verify() {
 
     EncoderSlice mainSlice = _slices.get(MAIN_SLICE_NAME);
 
@@ -719,16 +743,19 @@ public class Encoder {
       System.out.println("Variables: " + stats.getNumVariables());
       System.out.println("Z3 Time: " + stats.getTime());
     }
+    // System.out.println("Stats:\n" + _solver.getStatistics());
 
     if (status == Status.UNSATISFIABLE) {
-      return new VerificationResult(true, null, null, null, null, null);
+      VerificationResult res = new VerificationResult(true, null, null, null, null, null);
+      return new Tuple<>(res, null);
     } else if (status == Status.UNKNOWN) {
       throw new BatfishException("ERROR: satisfiability unknown");
     } else {
       VerificationResult result;
 
+      Model m;
       while (true) {
-        Model m = _solver.getModel();
+        m = _solver.getModel();
         SortedMap<String, String> model = new TreeMap<>();
         SortedMap<String, String> packetModel = new TreeMap<>();
         SortedSet<String> fwdModel = new TreeSet<>();
@@ -758,7 +785,7 @@ public class Encoder {
         }
       }
 
-      return result;
+      return new Tuple<>(result, m);
     }
   }
 
@@ -820,10 +847,6 @@ public class Encoder {
 
   public Map<String, Map<String, BoolExpr>> getSliceReachability() {
     return _sliceReachability;
-  }
-
-  public List<SymbolicRecord> getAllSymbolicRecords() {
-    return _allSymbolicRecords;
   }
 
   public UnsatCore getUnsatCore() {

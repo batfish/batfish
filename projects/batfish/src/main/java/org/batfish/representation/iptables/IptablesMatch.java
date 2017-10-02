@@ -98,4 +98,12 @@ public class IptablesMatch implements Serializable {
 
     return subRanges;
   }
+
+  public String toInterfaceName() {
+    if (_inverted) {
+      // _warnings.redFlag("Inversion of interface matching is not supported.");
+      throw new BatfishException("Unknown matchdata type");
+    }
+    return (String)_matchData;
+  }
 }

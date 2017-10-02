@@ -1,35 +1,44 @@
 package org.batfish.representation.iptables;
 
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
+import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Configuration _c;
-
   private String _hostname;
+
+  private transient Map<IpAccessListLine, String> _lineInInterfaces;
+
+  private transient Map<IpAccessListLine, String> _lineOutInterfaces;
 
   private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
-  public void addAsIpAccessLists(Configuration config, Warnings warnings) {
+  public void addAsIpAccessLists(Configuration config, VendorConfiguration vc, Warnings warnings) {
+    _lineInInterfaces = new IdentityHashMap<>();
+    _lineOutInterfaces = new IdentityHashMap<>();
     for (Entry<String, IptablesTable> e : _tables.entrySet()) {
       String tableName = e.getKey();
       IptablesTable table = e.getValue();
@@ -38,9 +47,80 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         IptablesChain chain = ec.getValue();
 
         String aclName = toIpAccessListName(tableName, chainName);
-        IpAccessList list = toIpAccessList(aclName, chain);
+        IpAccessList list = toIpAccessList(aclName, chain, vc);
 
         config.getIpAccessLists().put(aclName, list);
+      }
+    }
+  }
+
+  public void applyAsOverlay(Configuration configuration, Warnings warnings) {
+
+    IpAccessList prerouting = configuration.getIpAccessLists().remove("mangle::PREROUTING");
+    IpAccessList postrouting = configuration.getIpAccessLists().remove("mangle::POSTROUTING");
+
+    if (!configuration.getIpAccessLists().isEmpty()) {
+      throw new BatfishException(
+          "Merging iptables rules for "
+              + configuration.getName()
+              + ": only mangle tables are supported");
+    }
+
+    if (prerouting != null) {
+      for (Interface i : configuration.getInterfaces().values()) {
+
+        String dbgName = configuration.getHostname() + ":" + i.getName();
+
+        List<IpAccessListLine> newRules =
+            prerouting
+                .getLines()
+                .stream()
+                .filter(l -> i.getName().equals(_lineInInterfaces.get(l)))
+                .collect(Collectors.toList());
+
+        // TODO: ipv6
+
+        if (i.getIncomingFilter() != null) {
+          throw new BatfishException(
+              dbgName + " already has a filter," + " cannot combine with iptables rules!");
+        }
+
+        String aclName = "iptables_" + i.getName() + "_ingress";
+        IpAccessList acl = new IpAccessList(aclName, newRules);
+        if (configuration.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
+          throw new BatfishException(dbgName + " acl " + aclName + " already exists");
+        }
+
+        i.setIncomingFilter(acl);
+      }
+    }
+
+    if (postrouting != null) {
+      for (Interface i : configuration.getInterfaces().values()) {
+
+        String dbgName = configuration.getHostname() + ":" + i.getName();
+
+        List<IpAccessListLine> newRules =
+            postrouting
+                .getLines()
+                .stream()
+                .filter(l -> i.getName().equals(_lineOutInterfaces.get(l)))
+                .collect(Collectors.toList());
+
+        // TODO: ipv6
+
+        if (i.getOutgoingFilter() != null) {
+          throw new BatfishException(
+              dbgName + " already has a filter," + " cannot combine with iptables rules!");
+        }
+
+        String aclName = "iptables_" + i.getName() + "_egress";
+        IpAccessList acl = new IpAccessList(aclName, newRules);
+        if (configuration.getIpAccessLists().putIfAbsent(aclName, acl) != null) {
+          throw new BatfishException(dbgName + " acl " + aclName + " already exists");
+        }
+
+        i.setOutgoingFilter(acl);
       }
     }
   }
@@ -60,6 +140,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     return _unimplementedFeatures;
   }
 
+  public ConfigurationFormat getVendor() {
+    return _vendor;
+  }
+
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname;
@@ -75,8 +159,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     _vendor = format;
   }
 
-  private IpAccessList toIpAccessList(String aclName, IptablesChain chain) {
-    IpAccessList acl = new IpAccessList(aclName, new LinkedList<IpAccessListLine>());
+  private IpAccessList toIpAccessList(String aclName, IptablesChain chain, VendorConfiguration vc) {
+    IpAccessList acl = new IpAccessList(aclName, new LinkedList<>());
 
     for (IptablesRule rule : chain.getRules()) {
       IpAccessListLine aclLine = new IpAccessListLine();
@@ -92,11 +176,12 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             List<SubRange> dstPortRanges = match.toPortRanges();
             aclLine.getDstPorts().addAll(dstPortRanges);
             break;
-            // case IN_INTERFACE:
-            // case OUT_INTERFACE:
-            // _warnings.unimplemented("Matching on incoming and outgoing
-            // interface not supported");
-            // break;
+          case IN_INTERFACE:
+            _lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
+            break;
+          case OUT_INTERFACE:
+            _lineOutInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
+            break;
           case PROTOCOL:
             aclLine.getIpProtocols().add(match.toIpProtocol());
             break;
@@ -108,13 +193,12 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             List<SubRange> srcPortRanges = match.toPortRanges();
             aclLine.getSrcPorts().addAll(srcPortRanges);
             break;
-          case IN_INTERFACE:
-          case OUT_INTERFACE:
           default:
             throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
 
+      aclLine.setName(rule.getName());
       aclLine.setAction(rule.getIpAccessListLineAction());
       acl.getLines().add(aclLine);
     }
@@ -123,6 +207,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     LineAction chainAction = chain.getIpAccessListLineAction();
     IpAccessListLine defaultLine = new IpAccessListLine();
     defaultLine.setAction(chainAction);
+    defaultLine.setName("default");
     acl.getLines().add(defaultLine);
 
     return acl;
@@ -134,13 +219,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
-    String hostname = getHostname();
-    _c = new Configuration(hostname);
-    _c.setConfigurationFormat(_vendor);
-    _c.setRoles(_roles);
-
-    addAsIpAccessLists(_c, _w);
-
-    return _c;
+    throw new BatfishException("Not meant to be converted to vendor-independent format");
   }
 }

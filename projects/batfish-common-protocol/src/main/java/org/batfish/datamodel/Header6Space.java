@@ -110,11 +110,13 @@ public class Header6Space implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Header6Space)) {
+      return false;
     }
-    Header6Space other = (Header6Space) obj;
+    Header6Space other = (Header6Space) o;
     if (!_dscps.equals(other._dscps)) {
       return false;
     }

@@ -15,12 +15,12 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
-import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -199,7 +199,7 @@ class Optimizations {
 
   /*
    * Check if administrative distance needs to be kept for
-   * every single message. mkIf it is never set with a custom
+   * every single message. If it is never set with a custom
    * value, then it can be inferred for the best choice based
    * on the default protocol value.
    */
@@ -207,30 +207,8 @@ class Optimizations {
     if (!Optimizations.ENABLE_SLICING_OPTIMIZATION) {
       return true;
     }
-    AstVisitor v = new AstVisitor();
-    Boolean[] val = new Boolean[1];
-    val[0] = false;
-    _encoderSlice
-        .getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              conf.getRoutingPolicies()
-                  .forEach(
-                      (name, pol) -> {
-                        v.visit(
-                            conf,
-                            pol.getStatements(),
-                            stmt -> {
-                              // TODO: how is admin distance set?
-                              if (stmt instanceof SetMetric) {
-                                val[0] = true;
-                              }
-                            },
-                            expr -> { });
-                      });
-            });
-    return val[0];
+    // Currently I don't believe batfish models setting AD
+    return false;
   }
 
   // TODO: also check if med never set
@@ -433,11 +411,15 @@ class Optimizations {
   private void computeCanMergeExportVars() {
     Graph g = _encoderSlice.getGraph();
 
+    HeaderQuestion q = _encoderSlice.getEncoder().getQuestion();
+    boolean noFailures = q.getFailures() == 0;
+
     _encoderSlice
         .getGraph()
         .getConfigurations()
         .forEach(
             (router, conf) -> {
+
               HashMap<Protocol, Boolean> map = new HashMap<>();
               _sliceCanKeepSingleExportVar.put(router, map);
 
@@ -445,7 +427,7 @@ class Optimizations {
               // the neighbor already being the root of the tree.
               for (Protocol proto : getProtocols().get(router)) {
                 if (proto.isConnected() || proto.isStatic()) {
-                  map.put(proto, Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(proto, noFailures && Optimizations.ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isOspf()) {
                   // Ensure all interfaces are active
@@ -458,31 +440,34 @@ class Optimizations {
                   }
 
                   // Ensure single area for this router
-                  boolean singleArea =
-                      _encoderSlice.getGraph().getAreaIds().get(router).size() <= 1;
+                  Set<Long> areas = _encoderSlice.getGraph().getAreaIds().get(router);
+                  boolean singleArea = areas.size() <= 1;
 
-                  map.put(proto, allIfacesActive && singleArea && ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(
+                      proto,
+                      noFailures
+                          && allIfacesActive
+                          && singleArea
+                          && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else if (proto.isBgp()) {
-
-                  // TODO: make sure no ibgp
 
                   boolean acc = true;
                   BgpProcess p = conf.getDefaultVrf().getBgpProcess();
                   for (Map.Entry<Prefix, BgpNeighbor> e : p.getNeighbors().entrySet()) {
                     BgpNeighbor n = e.getValue();
-                    // mkIf iBGP used, then don't merge
+                    // If iBGP used, then don't merge
                     if (n.getLocalAs().equals(n.getRemoteAs())) {
                       acc = false;
                       break;
                     }
-                    // mkIf not the default export policy, then don't merge
+                    // If not the default export policy, then don't merge
                     if (!isDefaultBgpExport(conf, n)) {
                       acc = false;
                       break;
                     }
                   }
-                  map.put(proto, acc && ENABLE_EXPORT_MERGE_OPTIMIZATION);
+                  map.put(proto, noFailures && acc && ENABLE_EXPORT_MERGE_OPTIMIZATION);
 
                 } else {
                   throw new BatfishException("Error: unkown protocol: " + proto.name());

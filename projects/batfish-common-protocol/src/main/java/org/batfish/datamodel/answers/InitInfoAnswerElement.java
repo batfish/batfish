@@ -45,6 +45,7 @@ public class InitInfoAnswerElement implements AnswerElement {
     int emptyCount = 0;
     int failedCount = 0;
     int ignoredCount = 0;
+    int orphanedCount = 0;
     int passedCount = 0;
     int unknownCount = 0;
     int unrecognizedCount = 0;
@@ -94,6 +95,11 @@ public class InitInfoAnswerElement implements AnswerElement {
         case IGNORED:
           sb.append("  " + hostname + ": explicitly ignored by user\n");
           ignoredCount++;
+          break;
+
+        case ORPHANED:
+          sb.append("  " + hostname + ": is an orphaned overlay configuration\n");
+          orphanedCount++;
           break;
 
         case UNKNOWN:
@@ -146,6 +152,9 @@ public class InitInfoAnswerElement implements AnswerElement {
     }
     if (ignoredCount > 0) {
       sb.append("    Explicitly ignored by user: " + ignoredCount + "\n");
+    }
+    if (orphanedCount > 0) {
+      sb.append("    Is an orphaned overlay configuration: " + orphanedCount + "\n");
     }
     if (failedCount > 0) {
       sb.append("    Failed to parse: " + failedCount + "\n");

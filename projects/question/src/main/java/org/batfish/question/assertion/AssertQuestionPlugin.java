@@ -167,8 +167,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       String retString =
-          String.format(
-              "assert %s%s=\"%s\"", prettyPrintBase(), PROP_ASSERTIONS, _assertions.toString());
+          String.format("assert %s%s=\"%s\"", prettyPrintBase(), PROP_ASSERTIONS, _assertions);
       return retString;
     }
 

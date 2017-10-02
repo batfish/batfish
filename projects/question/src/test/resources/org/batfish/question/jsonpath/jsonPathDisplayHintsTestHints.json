@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "oneNode": {
+      "entityType": "node",
+      "hostname": "nodeFromPrefix"
+    },
+    "oneInterface": {
+      "entityType": "interfaceList",
+      "hostname": "nodeFromPrefix",
+      "interface": "interfaceListFromPrefixOfSuffix"
+    }
+  },
+  "extractionHints" : {
+    "nodeFromPrefix": {
+      "valueType": "string",
+      "hints": {
+        "use": "prefix",
+        "index" : 1
+      }
+    },
+    "mtuFromSuffixOfSuffix": {
+      "valueType": "int",
+      "hints": {
+        "use": "suffixOfsuffix",
+        "filter": "$"
+      }
+    },
+    "interfaceListFromPrefixOfSuffix": {
+      "valueType": "stringList",
+      "hints": {
+        "use": "prefixOfSuffix",
+        "filter": "$.*",
+        "index": 0
+      }
+    }
+  },
+  "textDesc" : "${oneNode} has ${oneInterface} with MTU ${mtuFromSuffixOfSuffix}"
+}

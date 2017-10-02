@@ -14,12 +14,14 @@
         "aggAddress" : "ios_bgp_aggregate_address",
         "arista-event-handler" : "arista-event-handler",
         "arista_bgp" : "arista_bgp",
+        "arista_dhcp_relay" : "arista_dhcp_relay",
         "arista_ip_route" : "arista_ip_route",
         "arista_logging" : "arista-logging",
         "arista_misc" : "arista_misc",
         "arista_username" : "arista_username",
         "as_path_prepend" : "as_path_prepend",
         "asa_acl" : "asa_acl",
+        "asa_banner" : "asa_banner",
         "asa_ssh" : "asa_ssh",
         "banner" : "banner",
         "banner_dos" : "banner_dos",
@@ -145,6 +147,7 @@
         "juniper-tcpflags" : "juniper-tcpflags",
         "juniper_apply_macro" : "juniper_apply_macro",
         "juniper_bgp" : "juniper_bgp",
+        "juniper_bgp_authentication" : "juniper_bgp_authentication",
         "juniper_extended_community" : "juniper_extended_community",
         "juniper_firewall" : "juniper_firewall",
         "juniper_forwarding_options" : "juniper_forwarding_options",
@@ -216,12 +219,14 @@
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
         "arista_bgp" : "PASSED",
+        "arista_dhcp_relay" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
         "arista_username" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
+        "asa_banner" : "PASSED",
         "asa_ssh" : "PASSED",
         "banner" : "PASSED",
         "banner_dos" : "PASSED",
@@ -347,6 +352,7 @@
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
+        "juniper_bgp_authentication" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",
@@ -406,7 +412,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.30.1",
+      "version" : "0.31.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -649,7 +655,7 @@
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                192
+                194
               ]
             }
           }
@@ -869,6 +875,20 @@
             }
           }
         },
+        "cisco_vrrp" : {
+          "interface" : {
+            "GigabitEthernet0/0/0/19" : {
+              "router vrrp interface" : [
+                15
+              ]
+            },
+            "ManagementEthernet0/RSP1/CPU0/0" : {
+              "router vrrp interface" : [
+                27
+              ]
+            }
+          }
+        },
         "colon_in_vrf" : {
           "route-map" : {
             "RMT_PBI" : {
@@ -970,6 +990,15 @@
               "bgp import policy-statement" : [
                 10,
                 24
+              ]
+            }
+          }
+        },
+        "juniper_bgp_authentication" : {
+          "authentication-key-chain" : {
+            "bgp-auth1" : {
+              "authentication-key-chains policy" : [
+                23
               ]
             }
           }
@@ -1751,7 +1780,7 @@
           }
         }
       },
-      "version" : "0.30.1",
+      "version" : "0.31.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1791,6 +1820,13 @@
             "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system",
             "2" : "MISCELLANEOUS: Missing local-as for neighbor: 1.2.3.5",
             "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
+          }
+        },
+        "juniper_bgp_authentication" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1",
+            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1",
+            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
           }
         },
         "juniper_firewall" : {
@@ -1853,12 +1889,14 @@
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
         "arista_bgp" : "PASSED",
+        "arista_dhcp_relay" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
         "arista_username" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
+        "asa_banner" : "PASSED",
         "asa_ssh" : "PASSED",
         "banner" : "PASSED",
         "banner_dos" : "PASSED",
@@ -1984,6 +2022,7 @@
         "juniper-tcpflags" : "PASSED",
         "juniper_apply_macro" : "PASSED",
         "juniper_bgp" : "PASSED",
+        "juniper_bgp_authentication" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "PASSED",
         "juniper_forwarding_options" : "PASSED",

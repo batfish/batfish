@@ -56,9 +56,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "aaa"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -129,9 +126,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "access"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "access_list"
@@ -148,9 +142,6 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "address"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -631,9 +622,6 @@
           "configurationFormat" : "ARISTA",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "arista"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -688,6 +676,78 @@
             }
           }
         },
+        "arista_dhcp_relay" : {
+          "name" : "arista_dhcp_relay",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "dhcpRelayAddresses" : [
+                "1.2.3.4",
+                "2.3.4.5"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet1" : {
+              "name" : "Ethernet1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_dhcp_relay"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0",
+                "Ethernet1"
+              ]
+            }
+          }
+        },
         "arista_ip_route" : {
           "name" : "arista_ip_route",
           "configurationFormat" : "CISCO_NX",
@@ -727,9 +787,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "arista"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "arista_logging",
@@ -749,9 +806,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "arista"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "defaultSwitchportMode" : "NONE",
@@ -769,9 +823,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "arista"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "enableSecret" : "a450caf35b93cba6024429006d971e68a18697468c1999449b1240b07fb26a04",
@@ -901,12 +952,28 @@
               ]
             }
           },
-          "roles" : [
-            "asa"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "asa_acl"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "asa_banner" : {
+          "name" : "asa_banner",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : {
+                "login" : "**************************************************\n\nYou are connected to HOSTNAME If you are\n\nexperiencing any problems, please contact XXX at\n\nsomeone@somewhere.com or XXX-XXX-XXX\n\n**************************************************\n"
+              },
+              "hostname" : "asa_banner"
             }
           },
           "vrfs" : {
@@ -920,9 +987,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "asa"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "asa_ssh"
@@ -942,8 +1006,8 @@
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
-                "login" : "^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
-                "motd" : "^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n\n\n"
+                "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n\n^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
+                "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n\n^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n\n\n"
               },
               "hostname" : "banner",
               "logging" : {
@@ -966,14 +1030,11 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "banner"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
                 "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n",
-                "motd" : "^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n"
+                "motd" : "^C\nTHIS BANNER IS DELIMITED BY HASHES (nexus)\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n\nUnauthorized access and/or use prohibited.\nAll access and/or use subject to monitoring.\n\nNOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE   NOTICE\n^C\n\n^C\nTHIS BANNER's ESCAPE_C DOES NOT START ON A NEWLINE\nIt has a has (#) character in it\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized a^C\n\n^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n"
               },
               "hostname" : "banner_dos"
             }
@@ -1345,9 +1406,6 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "bgp"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -1477,9 +1535,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "bgp"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -1907,9 +1962,6 @@
               ]
             }
           },
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_acl"
@@ -1926,9 +1978,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
@@ -1948,9 +1997,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2010,9 +2056,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "cable" : {
@@ -2417,9 +2460,6 @@
               "vrf" : "management"
             }
           },
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_interface"
@@ -2542,9 +2582,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_isis"
@@ -2565,9 +2602,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_line"
@@ -2588,9 +2622,6 @@
             "1.2.3.4"
           ],
           "loggingSourceInterface" : "Loopback0",
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_logging",
@@ -2621,9 +2652,6 @@
             "5.6.7.8"
           ],
           "ntpSourceInterface" : "Loopback0",
-          "roles" : [
-            "cadant"
-          ],
           "tacacsSourceInterface" : "Loopback0",
           "vendorFamily" : {
             "cisco" : {
@@ -2717,9 +2745,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_qos"
@@ -2736,9 +2761,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "routingPolicies" : {
             "~RIP_EXPORT_POLICY:default~" : {
               "name" : "~RIP_EXPORT_POLICY:default~"
@@ -2799,9 +2821,6 @@
           "configurationFormat" : "CADANT",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cadant"
-          ],
           "snmpSourceInterface" : "Loopback0",
           "snmpTrapServers" : [
             "1.2.3.4"
@@ -2838,9 +2857,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -3177,9 +3193,6 @@
               "name" : "standard"
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_acl"
@@ -3255,9 +3268,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_authentication"
@@ -3274,9 +3284,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -3546,9 +3553,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "cable" : {
@@ -3610,9 +3614,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_callhome",
@@ -3646,9 +3647,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_controller"
@@ -3665,9 +3663,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_crypto"
@@ -3684,9 +3679,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dhcp"
@@ -3757,9 +3749,6 @@
           ],
           "dnsSourceInterface" : "Loopback666",
           "domainName" : "my.domain.name",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_domain"
@@ -3776,9 +3765,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dot11"
@@ -3795,9 +3781,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dot1x"
@@ -3814,9 +3797,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dspfarm"
@@ -3963,9 +3943,6 @@
               ]
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_eigrp"
@@ -3982,9 +3959,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "enableSecret" : "41fb440a375eb13f1ca17ea2d14b0d4c73c37c32d764f9a34584a62fe8837ca8",
@@ -4027,9 +4001,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_flow"
@@ -4049,9 +4020,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_hardware"
@@ -4093,9 +4061,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_hsrp"
@@ -4284,6 +4249,34 @@
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "ACCESS",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "GigabitEthernet0/0" : {
+              "name" : "GigabitEthernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.0.1/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfCost" : 60,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "192.168.0.1/24",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
@@ -4632,9 +4625,6 @@
               ]
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_interface"
@@ -4651,6 +4641,7 @@
                 "Ethernet0",
                 "Ethernet1/11",
                 "Ethernet1/12",
+                "GigabitEthernet0/0",
                 "Loopback0",
                 "Modular-Cable1/2/3:4",
                 "Null0",
@@ -4674,9 +4665,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ip",
@@ -4831,9 +4819,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ipsla"
@@ -4850,9 +4835,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ipv6"
@@ -5243,9 +5225,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_isis"
@@ -5273,9 +5252,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_l2tp",
@@ -5297,9 +5273,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_line",
@@ -5814,9 +5787,6 @@
             "dead:beef::1"
           ],
           "loggingSourceInterface" : "Management0",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_logging",
@@ -5879,9 +5849,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -5923,9 +5890,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_monitor"
@@ -5942,9 +5906,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_mpls"
@@ -5961,9 +5922,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_multicast"
@@ -5985,9 +5943,6 @@
             "2.3.4.5"
           ],
           "ntpSourceInterface" : "Loopback0",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ntp",
@@ -6077,9 +6032,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "cisco"
-          ],
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
               "name" : "~OSPF_EXPORT_POLICY:default~",
@@ -6145,9 +6097,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_pim"
@@ -6164,9 +6113,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_platform"
@@ -6183,9 +6129,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_privilege"
@@ -6202,9 +6145,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_qos"
@@ -6237,9 +6177,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_redundancy"
@@ -6256,9 +6193,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "routingPolicies" : {
             "~RIP_EXPORT_POLICY:default~" : {
               "name" : "~RIP_EXPORT_POLICY:default~"
@@ -6283,9 +6217,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_role"
@@ -6413,9 +6344,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_sccp"
@@ -6432,9 +6360,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "snmpSourceInterface" : "Loopback0",
           "snmpTrapServers" : [
             "10.1.2.3"
@@ -6597,9 +6522,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ssh",
@@ -6619,9 +6541,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_stcapp"
@@ -6702,9 +6621,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "defaultSwitchportMode" : "NONE",
@@ -6722,9 +6638,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "tacacsServers" : [
             "1.2.3.4",
             "1.example.com",
@@ -6758,9 +6671,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_track"
@@ -6777,9 +6687,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_username",
@@ -6835,9 +6742,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vdc"
@@ -6854,9 +6758,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vlan"
@@ -6889,9 +6790,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vpdn"
@@ -6908,9 +6806,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vpn"
@@ -6927,9 +6822,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vrf"
@@ -6959,9 +6851,43 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
+          "interfaces" : {
+            "Ethernet0" : {
+              "name" : "Ethernet0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "1.0.0.0/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.0.0.0/24",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default",
+              "vrrpGroups" : {
+                "123" : {
+                  "name" : 123,
+                  "preempt" : true,
+                  "priority" : 234,
+                  "virtualAddress" : "1.0.0.1/24"
+                }
+              }
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vrrp"
@@ -6969,7 +6895,10 @@
           },
           "vrfs" : {
             "default" : {
-              "name" : "default"
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0"
+              ]
             }
           }
         },
@@ -6978,9 +6907,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_webvpn"
@@ -6997,9 +6923,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "cisco"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_wsma"
@@ -7376,9 +7299,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "community"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "community_set"
@@ -7544,9 +7464,6 @@
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "foundry"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -7631,9 +7548,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "foundry"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "foundry_interface"
@@ -7653,9 +7567,6 @@
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "foundry"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "foundry_misc",
@@ -7746,6 +7657,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "1.2.3.4"
@@ -7759,6 +7671,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "11.22.33.44"
@@ -7772,6 +7685,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "111.222.111.222"
@@ -7785,6 +7699,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "4.3.2.1"
@@ -7798,6 +7713,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
                   "negate" : false,
                   "srcIps" : [
                     "44.22.33.11"
@@ -7805,6 +7721,7 @@
                 },
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7814,6 +7731,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7823,6 +7741,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7832,6 +7751,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7841,6 +7761,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7850,6 +7771,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7859,6 +7781,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7868,6 +7791,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7877,6 +7801,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -7886,6 +7811,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "default",
                   "negate" : false
                 }
               ]
@@ -8243,9 +8169,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "interface"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "interface_exit"
@@ -8360,9 +8283,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "interface"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "interface_name"
@@ -8415,9 +8335,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "interface"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "interface_sdr"
@@ -8437,9 +8354,6 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "ios"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -9476,9 +9390,6 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "juniper"
-          ],
           "routingPolicies" : {
             "~DEFAULT_BGP_EXPORT_POLICY~" : {
               "name" : "~DEFAULT_BGP_EXPORT_POLICY~",
@@ -9748,6 +9659,359 @@
             }
           }
         },
+        "juniper_bgp_authentication" : {
+          "name" : "juniper_bgp_authentication",
+          "authenticationKeyChains" : {
+            "bgp-auth" : {
+              "name" : "bgp-auth",
+              "keys" : {
+                "0" : {
+                  "name" : "0",
+                  "isisAuthenticationAlgorithm" : "HMAC_SHA_1",
+                  "isisOption" : "ISIS_ENHANCED",
+                  "secret" : "this-is-the-secret-password",
+                  "startTime" : "2011-6-23.20:19:33"
+                },
+                "1" : {
+                  "name" : "1",
+                  "isisAuthenticationAlgorithm" : "MD5",
+                  "isisOption" : "BASIC",
+                  "secret" : "this-is-another-secret-password",
+                  "startTime" : "2012-6-23.20:19:33-0700"
+                }
+              },
+              "tolerance" : 30
+            }
+          },
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "routingPolicies" : {
+            "~DEFAULT_BGP_EXPORT_POLICY~" : {
+              "name" : "~DEFAULT_BGP_EXPORT_POLICY~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                      "falseStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ExitReject"
+                        }
+                      ],
+                      "guard" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "CallExprContext"
+                      },
+                      "trueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ReturnFalse"
+                        }
+                      ]
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                      "falseStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ExitAccept"
+                        }
+                      ],
+                      "guard" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "CallExprContext"
+                      },
+                      "trueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "ReturnTrue"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "~DEFAULT_BGP_IMPORT_POLICY~" : {
+              "name" : "~DEFAULT_BGP_IMPORT_POLICY~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                    "type" : "CallExprContext"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_EXPORT_POLICY:172.16.2.1~" : {
+              "name" : "~PEER_EXPORT_POLICY:172.16.2.1~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_EXPORT_POLICY:172.16.2.2~" : {
+              "name" : "~PEER_EXPORT_POLICY:172.16.2.2~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_IMPORT_POLICY:172.16.2.1~" : {
+              "name" : "~PEER_IMPORT_POLICY:172.16.2.1~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_IMPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~PEER_IMPORT_POLICY:172.16.2.2~" : {
+              "name" : "~PEER_IMPORT_POLICY:172.16.2.2~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                  "defaultPolicy" : "~DEFAULT_BGP_IMPORT_POLICY~"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "multipathEbgp" : true,
+                "multipathIbgp" : false,
+                "neighbors" : {
+                  "172.16.2.1/32" : {
+                    "name" : "172.16.2.1/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
+                    "address" : "172.16.2.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "authenticationSettings" : {
+                      "authenticationAlgorithm" : "TCP_ENHANCED_MD5",
+                      "authenticationKey" : "this-is-key",
+                      "authenticationKeyChainName" : "bgp-auth"
+                    },
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.1~",
+                    "group" : "ext",
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1~",
+                    "localAs" : 65533,
+                    "remoteAs" : 65530,
+                    "remotePrefix" : "172.16.2.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
+                  "172.16.2.2/32" : {
+                    "name" : "172.16.2.2/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
+                    "address" : "172.16.2.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "authenticationSettings" : {
+                      "authenticationAlgorithm" : "AES_128_CMAC_96",
+                      "authenticationKey" : "this-is-key"
+                    },
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.2~",
+                    "group" : "ext1",
+                    "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2~",
+                    "localAs" : 65533,
+                    "remoteAs" : 65530,
+                    "remotePrefix" : "172.16.2.2/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  }
+                },
+                "routerId" : "0.0.0.0"
+              }
+            }
+          }
+        },
         "juniper_extended_community" : {
           "name" : "juniper_extended_community",
           "communityLists" : {
@@ -9811,9 +10075,6 @@
               ]
             }
           },
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10020,9 +10281,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10044,9 +10302,6 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "domainName" : "my.domain.name",
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10065,9 +10320,6 @@
             "1.2.3.4",
             "2.3.4.5"
           ],
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10082,9 +10334,6 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "juniper"
-          ],
           "tacacsServers" : [
             "1.2.3.4",
             "1.2.3.5"
@@ -10169,9 +10418,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10204,9 +10450,6 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10244,9 +10487,6 @@
           "loggingServers" : [
             "1.2.3.4"
           ],
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10261,9 +10501,6 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "juniper"
-          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -10278,9 +10515,6 @@
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "juniper"
-          ],
           "tacacsServers" : [
             "1.2.3.4",
             "5.6.7.8"
@@ -10646,9 +10880,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "neighbor"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -10807,9 +11038,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "neighbor"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -11085,9 +11313,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "neighbor"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -11313,9 +11538,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "nexus"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
@@ -11498,9 +11720,6 @@
             "1.2.3.4",
             "10.1.2.3"
           ],
-          "roles" : [
-            "nexus"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nexus_ntp",
@@ -11531,9 +11750,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "nexus"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nexus_ssh"
@@ -11768,9 +11984,6 @@
               "name" : "standard"
             }
           },
-          "roles" : [
-            "nxos"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nxos_acl"
@@ -11803,9 +12016,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "peer"
-          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -12292,9 +12502,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "pim"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "pim_snooping"
@@ -15562,9 +15769,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "router"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "router_msdp"
@@ -15691,9 +15895,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "switchport"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "switchport_range"
@@ -16080,9 +16281,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "underscore"
-          ],
           "routingPolicies" : {
             "JKL_MNO_PQR" : {
               "name" : "JKL_MNO_PQR",
@@ -16179,9 +16377,6 @@
               "vrf" : "default"
             }
           },
-          "roles" : [
-            "variables"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "variables_dos"
@@ -16324,9 +16519,6 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "roles" : [
-            "vrf"
-          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "vrf_context"

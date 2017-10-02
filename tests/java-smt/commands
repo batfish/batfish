@@ -78,12 +78,13 @@ test tests/java-smt/aggregation2-forwarding.ref get smt-forwarding dstIps=["42.4
 
 # Proper handling of import prefix-list and route-map
 init-testrig test_rigs/smt-examples/ENV3
-test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True 
+test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, minimize=True 
 
 # Ensure ACLs are applied to data forwarding
 init-testrig test_rigs/smt-examples/ACL1
 test tests/java-smt/acl1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
 test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/acl1-differential.ref get smt-reachability equivalence=True, failures=1
 
 # Check correctness of iBGP encoding
 init-testrig test_rigs/smt-examples/IBGP1
@@ -111,6 +112,6 @@ test tests/java-smt/campus2-reachability2.ref get smt-reachability ingressNodeRe
 #test tests/java-smt/campus2-reachability3.ref get smt-reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", finalIfaceRegex="FastEthernet1/0" , failures=2, noEnvironment=True
 
 # Test differential reachabililty 
-init-testrig test_rigs/smt-examples/OSPF3
+init-testrig test_rigs/smt-examples/OSPF5
 test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, equivalence=True
 test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, equivalence=True

@@ -4,7 +4,7 @@
       "class" : "org.batfish.symbolic.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Serial2 --> _,_"
+          "R1,Serial2 --> _,_ (CONNECTED)"
         ],
         "model" : {
           "|0_CONTROL-FORWARDING_R1_Serial0|" : "false",
@@ -28,23 +28,15 @@
           "|0_R1_OSPF_BEST_None_metric|" : "0",
           "|0_R1_OSPF_BEST_None_permitted|" : "false",
           "|0_R1_OSPF_BEST_None_prefixLength|" : "0",
-          "|0_R1_OSPF_EXPORT_Serial0_metric|" : "0",
-          "|0_R1_OSPF_EXPORT_Serial0_permitted|" : "false",
-          "|0_R1_OSPF_EXPORT_Serial0_prefixLength|" : "0",
-          "|0_R1_OSPF_EXPORT_Serial2_metric|" : "1",
-          "|0_R1_OSPF_EXPORT_Serial2_permitted|" : "true",
-          "|0_R1_OSPF_EXPORT_Serial2_prefixLength|" : "32",
-          "|0_R1_OSPF_IMPORT_Serial0_choice|" : "false",
-          "|0_R1_OSPF_IMPORT_Serial2_choice|" : "false",
-          "|0_R1_OSPF_IMPORT_Serial2_metric|" : "0",
-          "|0_R1_OSPF_IMPORT_Serial2_permitted|" : "false",
-          "|0_R1_OSPF_IMPORT_Serial2_prefixLength|" : "0",
           "|0_R1_OVERALL_BEST_None_adminDist|" : "0",
           "|0_R1_OVERALL_BEST_None_history|" : "1",
           "|0_R1_OVERALL_BEST_None_metric|" : "0",
           "|0_R1_OVERALL_BEST_None_permitted|" : "true",
           "|0_R1_OVERALL_BEST_None_prefixLength|" : "32",
           "|0_R2_OSPF_IMPORT_Serial0_choice|" : "false",
+          "|0_R2_OSPF_IMPORT_Serial0_metric|" : "0",
+          "|0_R2_OSPF_IMPORT_Serial0_permitted|" : "false",
+          "|0_R2_OSPF_IMPORT_Serial0_prefixLength|" : "0",
           "|0_R2_OSPF_IMPORT_Serial1_choice|" : "false",
           "|0_R2_OSPF_SINGLE-EXPORT__metric|" : "0",
           "|0_R2_OSPF_SINGLE-EXPORT__permitted|" : "false",
@@ -86,5 +78,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

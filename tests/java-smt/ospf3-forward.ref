@@ -4,11 +4,11 @@
       "class" : "org.batfish.symbolic.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R0,Serial0 --> R1,Serial0",
-          "R0,Serial1 --> R2,Serial0",
-          "R1,Serial1 --> R3,Serial0",
-          "R2,Serial1 --> R3,Serial1",
-          "R3,Loopback0 --> _,_"
+          "R0,Serial0 --> R1,Serial0 (OSPF)",
+          "R0,Serial1 --> R2,Serial0 (OSPF)",
+          "R1,Serial1 --> R3,Serial0 (OSPF)",
+          "R2,Serial1 --> R3,Serial1 (OSPF)",
+          "R3,Loopback0 --> _,_ (CONNECTED)"
         ],
         "model" : {
           "|0_CONTROL-FORWARDING_R0_Serial0|" : "true",
@@ -103,5 +103,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

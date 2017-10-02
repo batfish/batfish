@@ -39,8 +39,13 @@ public class AclLinesAnswerElement implements AnswerElement {
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return _index == ((AclReachabilityEntry) obj)._index;
+    public boolean equals(Object o) {
+      if (o == this) {
+        return true;
+      } else if (!(o instanceof AclReachabilityEntry)) {
+        return false;
+      }
+      return _index == ((AclReachabilityEntry) o)._index;
     }
 
     public boolean getDifferentAction() {

@@ -58,8 +58,10 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof RoutingPolicy)) {
+      return false;
     }
     RoutingPolicy other = (RoutingPolicy) o;
     return _statements.equals(other._statements);

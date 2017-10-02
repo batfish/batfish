@@ -148,6 +148,11 @@ AES_128_CBC
    'aes-128-cbc'
 ;
 
+AES_128_CMAC_96
+:
+   'aes-128-cmac-96'
+;
+
 AES_192_CBC
 :
    'aes-192-cbc'
@@ -166,6 +171,11 @@ AH
 ALG
 :
    'alg'
+;
+
+ALGORITHM
+:
+   'algorithm'
 ;
 
 ALIAS
@@ -331,6 +341,16 @@ AUTHENTICATION_ALGORITHM
 AUTHENTICATION_KEY
 :
    'authentication-key'
+;
+
+AUTHENTICATION_KEY_CHAIN
+:
+   'authentication-key-chain'
+;
+
+AUTHENTICATION_KEY_CHAINS
+:
+   'authentication-key-chains'
 ;
 
 AUTHENTICATION_METHOD
@@ -1217,9 +1237,19 @@ HMAC_MD5_96
    'hmac-md5-96'
 ;
 
+HMAC_SHA1
+:
+   'hmac-sha-1'
+;
+
 HMAC_SHA1_96
 :
    'hmac-sha1-96'
+;
+
+HMAC_SHA_1_96
+:
+   'hmac-sha-1-96'
 ;
 
 HOLD_TIME
@@ -1605,6 +1635,11 @@ IS_FRAGMENT
 ISIS
 :
    'isis'
+;
+
+ISIS_ENHANCED
+:
+   'isis-enhanced'
 ;
 
 ISO
@@ -2587,9 +2622,19 @@ KERNEL
    'kernel'
 ;
 
+KEY
+:
+   'key'
+;
+
 KEYS
 :
    'keys'
+;
+
+KEY_CHAIN
+:
+   'key-chain'
 ;
 
 KLOGIN
@@ -4212,6 +4257,11 @@ SRLG_VALUE
    'srlg-value'
 ;
 
+START_TIME
+:
+   'start-time'
+;
+
 SMTP
 :
    'smtp'
@@ -4537,6 +4587,10 @@ TO
    'to'
 ;
 
+TOLERANCE
+:
+   'tolerance'
+;
 TO_ZONE
 :
    'to-zone'

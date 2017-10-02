@@ -9,7 +9,7 @@ import org.batfish.common.BatfishException;
 
 public enum JsonPathAssertionType {
   count("count"),
-  suffixEquals("suffixequals"),
+  equals("equals"),
   none("none");
 
   private static final Map<String, JsonPathAssertionType> _map = buildMap();

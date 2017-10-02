@@ -1,5 +1,7 @@
 package org.batfish.main;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,14 +27,30 @@ import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
+  private static Cache<TestrigSettings, SortedMap<String, Configuration>> makeTestrigCache() {
+    return CacheBuilder.newBuilder().maximumSize(5).weakValues().build();
+  }
+
+  private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+      makeEnvBgpCache() {
+    return Collections.synchronizedMap(new LRUMap<>(4));
+  }
+
+  private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> makeEnvRouteCache() {
+    return Collections.synchronizedMap(new LRUMap<>(4));
+  }
+
+  private static Cache<TestrigSettings, DataPlane> makeDataPlaneCache() {
+    return CacheBuilder.newBuilder().maximumSize(2).weakValues().build();
+  }
+
   private static Batfish initBatfish(
       SortedMap<String, Configuration> configurations, @Nullable TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
-        Collections.synchronizedMap(
-            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(5));
+    final Cache<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+
     if (!configurations.isEmpty()) {
       Path containerDir = tempFolder.newFolder("container").toPath();
       settings.setContainerDir(containerDir);
@@ -41,38 +59,22 @@ public class BatfishTestUtils {
       Batfish.initTestrigSettings(settings);
       settings.getBaseTestrigSettings().getSerializeIndependentPath().toFile().mkdirs();
       settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
-      CACHED_TESTRIGS.put(settings.getBaseTestrigSettings(), configurations);
+      testrigs.put(settings.getBaseTestrigSettings(), configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
 
-    final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
-        Collections.synchronizedMap(new LRUMap<TestrigSettings, DataPlane>(2));
-    final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-        CACHED_ENVIRONMENT_BGP_TABLES =
-            Collections.synchronizedMap(
-                new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(4));
-    final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
-        CACHED_ENVIRONMENT_ROUTING_TABLES =
-            Collections.synchronizedMap(
-                new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(4));
-    Batfish batfish =
-        new Batfish(
-            settings,
-            CACHED_TESTRIGS,
-            CACHED_DATA_PLANES,
-            CACHED_ENVIRONMENT_BGP_TABLES,
-            CACHED_ENVIRONMENT_ROUTING_TABLES);
-    return batfish;
+    return new Batfish(
+        settings, testrigs, makeDataPlaneCache(), makeEnvBgpCache(), makeEnvRouteCache());
   }
 
   private static Batfish initBatfishFromConfigurationText(
-      SortedMap<String, String> configurationText, @Nullable TemporaryFolder tempFolder)
+      SortedMap<String, String> configurationText,
+      SortedMap<String, String> hostsText,
+      SortedMap<String, String> iptablesFilesText,
+      @Nullable TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Map<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
-        Collections.synchronizedMap(
-            new LRUMap<TestrigSettings, SortedMap<String, Configuration>>(5));
     Path containerDir = tempFolder.newFolder("container").toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
@@ -82,6 +84,7 @@ public class BatfishTestUtils {
     testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile().mkdirs();
     testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR).toFile().mkdirs();
     testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR).toFile().mkdirs();
+    testrigPath.resolve("iptables").toFile().mkdirs();
     settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     configurationText.forEach(
@@ -90,24 +93,26 @@ public class BatfishTestUtils {
               testrigPath.resolve(Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, filename));
           CommonUtil.writeFile(filePath, content);
         });
+    hostsText.forEach(
+        (filename, content) -> {
+          Path filePath =
+              testrigPath.resolve(Paths.get(BfConsts.RELPATH_HOST_CONFIGS_DIR, filename));
+          CommonUtil.writeFile(filePath, content);
+        });
+    iptablesFilesText.forEach(
+        (filename, content) -> {
+          Path filePath =
+              testrigPath.resolve(Paths.get("iptables", filename));
+          CommonUtil.writeFile(filePath, content);
+        });
 
-    final Map<TestrigSettings, DataPlane> CACHED_DATA_PLANES =
-        Collections.synchronizedMap(new LRUMap<TestrigSettings, DataPlane>(2));
-    final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-        CACHED_ENVIRONMENT_BGP_TABLES =
-            Collections.synchronizedMap(
-                new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(4));
-    final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
-        CACHED_ENVIRONMENT_ROUTING_TABLES =
-            Collections.synchronizedMap(
-                new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(4));
     Batfish batfish =
         new Batfish(
             settings,
-            CACHED_TESTRIGS,
-            CACHED_DATA_PLANES,
-            CACHED_ENVIRONMENT_BGP_TABLES,
-            CACHED_ENVIRONMENT_ROUTING_TABLES);
+            makeTestrigCache(),
+            makeDataPlaneCache(),
+            makeEnvBgpCache(),
+            makeEnvRouteCache());
     batfish.serializeVendorConfigs(
         testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
     batfish.serializeIndependentConfigs(
@@ -143,12 +148,15 @@ public class BatfishTestUtils {
    * @return New Batfish instance
    */
   public static Batfish getBatfishFromConfigurationText(
-      SortedMap<String, String> configurationText, @Nullable TemporaryFolder tempFolder)
+      SortedMap<String, String> configurationText,
+      SortedMap<String, String> hostText,
+      SortedMap<String, String> iptablesText,
+      @Nullable TemporaryFolder tempFolder)
       throws IOException {
     if (!configurationText.isEmpty() && tempFolder == null) {
       throw new BatfishException("tempFolder must be set for non-empty configurations");
     }
-    return initBatfishFromConfigurationText(configurationText, tempFolder);
+    return initBatfishFromConfigurationText(configurationText, hostText, iptablesText, tempFolder);
   }
 
   /**

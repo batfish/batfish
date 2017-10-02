@@ -9,7 +9,7 @@ fi
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
 . tools/batfish_functions.sh
-batfish_build_all || exit 1
+batfish_test_all || exit 1
 
 echo -e "\n  ..... Running parsing tests"
 allinone -cmdfile test_rigs/parsing-tests/commands || exit 1
@@ -19,6 +19,9 @@ allinone -cmdfile test_rigs/parsing-errors-tests/commands || exit 1
 
 echo -e "\n  ..... Running basic client tests"
 allinone -cmdfile tests/basic/commands || exit 1
+
+echo -e "\n  ..... Running jsonpath-addons tests"
+allinone -cmdfile tests/jsonpath-addons/commands || exit 1
 
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit 1

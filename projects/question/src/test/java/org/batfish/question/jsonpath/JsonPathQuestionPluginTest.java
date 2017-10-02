@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.question.jsonpath;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -34,6 +34,6 @@ public class JsonPathQuestionPluginTest {
 
     assertThat(summary.getNumFailed(), equalTo(1));
     assertThat(summary.getNumPassed(), equalTo(1));
-    assertThat(summary.getNumResults(), equalTo(3));
+    assertThat(summary.getNumResults(), equalTo(10));
   }
 }

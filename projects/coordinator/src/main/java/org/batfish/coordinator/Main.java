@@ -1,17 +1,29 @@
 package org.batfish.coordinator;
 
-// Include the following imports to use queue APIs.
-
 import static com.google.common.base.Preconditions.checkState;
+import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
+import com.google.common.collect.Lists;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.authorizer.DbAuthorizer;
@@ -19,6 +31,9 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.questions.Question;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -53,6 +68,71 @@ public class Main {
   public static PoolMgr getPoolMgr() {
     checkState(_poolManager != null, "Error: Pool Manager has not been configured");
     return _poolManager;
+  }
+
+  public static Map<String, String> getQuestionTemplates() {
+
+    List<Path> questionTemplateDir = _settings.getQuestionTemplateDirs();
+
+    if (questionTemplateDir == null || questionTemplateDir.size() == 0) {
+      return null;
+    }
+
+    Map<String, String> questionTemplates = new HashMap<>();
+    questionTemplateDir.forEach(
+        (dir) -> {
+          readQuestionTemplates(dir, questionTemplates);
+        });
+
+    return questionTemplates;
+  }
+
+  private static String readQuestionTemplate(Path file, Map<String, String> templates) {
+    String questionText = CommonUtil.readFile(file);
+    try {
+      JSONObject questionObj = new JSONObject(questionText);
+      if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
+        JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
+        String instanceDataStr = instanceDataObj.toString();
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Question.InstanceData instanceData =
+            mapper.<Question.InstanceData>readValue(instanceDataStr, Question.InstanceData.class);
+        String name = instanceData.getInstanceName();
+
+        if (templates.containsKey(name)) {
+          throw new BatfishException("Duplicate template name " + name);
+        }
+
+        templates.put(name.toLowerCase(), questionText);
+        return name;
+      } else {
+        throw new BatfishException("Question in file: '" + file + "' has no instance name");
+      }
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Failed to process question", e);
+    }
+  }
+
+  private static void readQuestionTemplates(Path questionsPath, Map<String, String> templates) {
+    try {
+      Files.walkFileTree(
+          questionsPath,
+          EnumSet.of(FOLLOW_LINKS),
+          1,
+          new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                throws IOException {
+              String filename = file.getFileName().toString();
+              if (filename.endsWith(".json")) {
+                readQuestionTemplate(file, templates);
+              }
+              return FileVisitResult.CONTINUE;
+            }
+          });
+    } catch (IOException e) {
+      throw new BatfishException("Failed to visit templates dir: " + questionsPath, e);
+    }
   }
 
   public static Settings getSettings() {
@@ -138,13 +218,14 @@ public class Main {
   }
 
   private static void startWorkManagerService(
-      Class<?> serviceClass, Class<? extends Feature> jsonFeature, int port) {
+      Class<?> serviceClass, List<Class<?>> features, int port) {
     ResourceConfig rcWork =
         new ResourceConfig(serviceClass)
             .register(ExceptionMapper.class)
-            .register(jsonFeature)
-            .register(MultiPartFeature.class)
             .register(CrossDomainFilter.class);
+    for (Class<?> feature : features) {
+      rcWork.register(feature);
+    }
 
     if (_settings.getSslWorkDisable()) {
       URI workMgrUri =
@@ -176,11 +257,18 @@ public class Main {
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(
-        WorkMgrService.class, JettisonFeature.class, _settings.getServiceWorkPort());
+        WorkMgrService.class,
+        Lists.newArrayList(JettisonFeature.class, MultiPartFeature.class),
+        _settings.getServiceWorkPort());
     // Initialize and start the work manager service using the v2 RESTful API and Jackson.
-    startWorkManagerService(
-        WorkMgrServiceV2.class, JacksonFeature.class, _settings.getServiceWorkV2Port());
 
+    startWorkManagerService(
+        WorkMgrServiceV2.class,
+        Lists.newArrayList(
+            JacksonFeature.class,
+            ApiKeyAuthenticationFilter.class,
+            VersionCompatibilityFilter.class),
+        _settings.getServiceWorkV2Port());
   }
 
   public static void main(String[] args) {

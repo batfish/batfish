@@ -3,6 +3,7 @@ package org.batfish.bdp;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -34,7 +35,12 @@ public class RipAndBgpTest {
       String configurationText = CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
       configurationsText.put(configurationName, configurationText);
     }
-    Batfish batfish = BatfishTestUtils.getBatfishFromConfigurationText(configurationsText, _folder);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configurationsText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);

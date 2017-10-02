@@ -84,11 +84,13 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(Object o) {
+    if (o == this) {
       return true;
+    } else if (!(o instanceof Ip6Wildcard)) {
+      return false;
     }
-    Ip6Wildcard other = (Ip6Wildcard) obj;
+    Ip6Wildcard other = (Ip6Wildcard) o;
     if (other.getFirst().equals(this.getFirst()) && other.getSecond().equals(this.getSecond())) {
       return true;
     } else {

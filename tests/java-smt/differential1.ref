@@ -1,17 +1,21 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.symbolic.smt.answers.SmtManyAnswerElement",
+      "class" : "org.batfish.symbolic.smt.answers.SmtReachabilityAnswerElement",
+      "flowHistory" : {
+        "class" : "org.batfish.datamodel.FlowHistory"
+      },
       "result" : {
-        "R3,Loopback0" : {
-          "verified" : true
-        }
+        "verified" : true
       }
     }
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
     "differential" : false,
+    "dstIps" : [
+      "70.70.70.0/24"
+    ],
     "equivalence" : true,
     "failures" : 1,
     "finalIfaceRegex" : "Loopback.*",
@@ -21,5 +25,10 @@
     "minimize" : false,
     "noEnvironment" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

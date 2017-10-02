@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -107,6 +110,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
+  static final boolean DEFAULT_VRRP_PREEMPT = true;
+
+  static final int DEFAULT_VRRP_PRIORITY = 100;
+
   public static final String MANAGEMENT_VRF_NAME = "management";
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
@@ -118,6 +125,90 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
+
+  public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+
+  private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
+
+  private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
+    Map<String, String> prefixes = new LinkedHashMap<>();
+    prefixes.put("Async", "Async");
+    prefixes.put("ATM", "ATM");
+    prefixes.put("BDI", "BDI");
+    prefixes.put("BRI", "BRI");
+    prefixes.put("Bundle-Ether", "Bundle-Ethernet");
+    prefixes.put("BVI", "BVI");
+    prefixes.put("Cable", "Cable");
+    prefixes.put("cable-downstream", "cable-downstream");
+    prefixes.put("cable-mac", "cable-mac");
+    prefixes.put("cable-upstream", "cable-upstream");
+    prefixes.put("Crypto-Engine", "Crypto-Engine");
+    prefixes.put("cmp-mgmt", "cmp-mgmt");
+    prefixes.put("Dialer", "Dialer");
+    prefixes.put("Dot11Radio", "Dot11Radio");
+    prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
+    prefixes.put("Ethernet", "Ethernet");
+    prefixes.put("FastEthernet", "FastEthernet");
+    prefixes.put("fc", "fc");
+    prefixes.put("fe", "FastEthernet");
+    prefixes.put("fortyGigE", "FortyGigabitEthernet");
+    prefixes.put("FortyGigabitEthernet", "FortyGigabitEthernet");
+    prefixes.put("GigabitEthernet", "GigabitEthernet");
+    prefixes.put("ge", "GigabitEthernet");
+    prefixes.put("GMPLS", "GMPLS");
+    prefixes.put("HundredGigE", "HundredGigabitEthernet");
+    prefixes.put("ip", "ip");
+    prefixes.put("Group-Async", "Group-Async");
+    prefixes.put("LongReachEthernet", "LongReachEthernet");
+    prefixes.put("Loopback", "Loopback");
+    prefixes.put("Management", "Management");
+    prefixes.put("ManagementEthernet", "ManagementEthernet");
+    prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
+    prefixes.put("MgmtEth", "ManagementEthernet");
+    prefixes.put("Modular-Cable", "Modular-Cable");
+    prefixes.put("Null", "Null");
+    prefixes.put("Port-channel", "Port-Channel");
+    prefixes.put("POS", "POS");
+    prefixes.put("PTP", "PTP");
+    prefixes.put("Serial", "Serial");
+    prefixes.put("Service-Engine", "Service-Engine");
+    prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
+    prefixes.put("TenGigE", "TenGigabitEthernet");
+    prefixes.put("te", "TenGigabitEthernet");
+    prefixes.put("trunk", "trunk");
+    prefixes.put("Tunnel", "Tunnel");
+    prefixes.put("tunnel-ip", "tunnel-ip");
+    prefixes.put("tunnel-te", "tunnel-te");
+    prefixes.put("ve", "VirtualEthernet");
+    prefixes.put("Virtual-Template", "Virtual-Template");
+    prefixes.put("Vlan", "Vlan");
+    prefixes.put("Vxlan", "Vxlan");
+    prefixes.put("Wideband-Cable", "Wideband-Cable");
+    return prefixes;
+  }
+
+  @Override
+  public String canonicalizeInterfaceName(String ifaceName) {
+    Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
+    if (matcher.find()) {
+      String ifacePrefix = matcher.group();
+      String canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
+      String suffix = ifaceName.substring(ifacePrefix.length());
+      return canonicalPrefix + suffix;
+    }
+    throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
+  }
+
+  public static String getCanonicalInterfaceNamePrefix(String prefix) {
+    for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
+      String matchPrefix = e.getKey();
+      String canonicalPrefix = e.getValue();
+      if (matchPrefix.toLowerCase().startsWith(prefix.toLowerCase())) {
+        return canonicalPrefix;
+      }
+    }
+    throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
+  }
 
   private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
     String mapName = map.getName();
@@ -154,6 +245,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
+
+  private final List<Ip> _dhcpRelayServers;
 
   private NavigableSet<String> _dnsServers;
 
@@ -263,6 +356,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, Vrf> _vrfs;
 
+  private final SortedMap<String, VrrpInterface> _vrrpGroups;
+
   private final Set<String> _wccpAcls;
 
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
@@ -273,6 +368,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _classMapAccessGroups = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
+    _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
@@ -311,7 +407,51 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _verifyAccessLists = new HashSet<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    _vrrpGroups = new TreeMap<>();
     _wccpAcls = new TreeSet<>();
+  }
+
+  private void applyVrrp(Configuration c) {
+    _vrrpGroups.forEach(
+        (ifaceName, vrrpInterface) -> {
+          org.batfish.datamodel.Interface iface = c.getInterfaces().get(ifaceName);
+          if (iface != null) {
+            vrrpInterface
+                .getVrrpGroups()
+                .forEach(
+                    (groupNum, vrrpGroup) -> {
+                      org.batfish.datamodel.VrrpGroup newGroup =
+                          new org.batfish.datamodel.VrrpGroup(groupNum);
+                      newGroup.setPreempt(vrrpGroup.getPreempt());
+                      newGroup.setPriority(vrrpGroup.getPriority());
+                      Prefix ifacePrefix = iface.getPrefix();
+                      if (ifacePrefix != null) {
+                        int prefixLength = ifacePrefix.getPrefixLength();
+                        Ip address = vrrpGroup.getVirtualAddress();
+                        if (address != null) {
+                          Prefix virtualAddress = new Prefix(address, prefixLength);
+                          newGroup.setVirtualAddress(virtualAddress);
+                        } else {
+                          _w.redFlag(
+                              "No virtual address set for VRRP on interface: '" + ifaceName + "'");
+                        }
+                      } else {
+                        _w.redFlag(
+                            "Could not determine prefix length of VRRP address on interface '"
+                                + ifaceName
+                                + "' due to missing prefix");
+                      }
+                      iface.getVrrpGroups().put(groupNum, newGroup);
+                    });
+          } else {
+            int line = vrrpInterface.getDefinitionLine();
+            undefined(
+                CiscoStructureType.INTERFACE,
+                ifaceName,
+                CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+                line);
+          }
+        });
   }
 
   private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -450,6 +590,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Vrf getDefaultVrf() {
     return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  public List<Ip> getDhcpRelayServers() {
+    return _dhcpRelayServers;
   }
 
   public NavigableSet<String> getDnsServers() {
@@ -778,6 +922,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
+  }
+
+  public SortedMap<String, VrrpInterface> getVrrpGroups() {
+    return _vrrpGroups;
   }
 
   public Set<String> getWccpAcls() {
@@ -2020,7 +2168,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());
-    newIface.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
+    if (iface.getDhcpRelayClient()) {
+      newIface.getDhcpRelayAddresses().addAll(_dhcpRelayServers);
+    } else {
+      newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
+    }
     newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
@@ -2228,7 +2380,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private IpAccessList toIpAccessList(ExtendedAccessList eaList) {
     String name = eaList.getName();
-    List<IpAccessListLine> lines = new ArrayList<>();
+    List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
       IpAccessListLine newLine = new IpAccessListLine();
       newLine.setName(fromLine.getName());
@@ -2562,7 +2714,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           public int compare(OspfNetwork lhs, OspfNetwork rhs) {
             int lhsPrefixLength = lhs.getPrefix().getPrefixLength();
             int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
-            int result = -Integer.compare(lhsPrefixLength, rhsPrefixLength);
+            int result = Integer.compare(rhsPrefixLength, lhsPrefixLength); // intentionally swapped
             if (result == 0) {
               long lhsIp = lhs.getPrefix().getAddress().asLong();
               long rhsIp = rhs.getPrefix().getAddress().asLong();
@@ -3486,6 +3638,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getInterfaces().put(ifaceName, newInterface);
           c.getVrfs().get(vrfName).getInterfaces().put(ifaceName, newInterface);
         });
+
+    // apply vrrp settings to interfaces
+    applyVrrp(c);
 
     // convert routing processes
     _vrfs.forEach(

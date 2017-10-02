@@ -8,14 +8,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AuthenticationKey;
+import org.batfish.datamodel.AuthenticationKeyChain;
+import org.batfish.datamodel.BgpAuthenticationAlgorithm;
+import org.batfish.datamodel.BgpAuthenticationSettings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -64,6 +70,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
+import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -71,6 +78,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
 
   private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
+
+  private static final BgpAuthenticationAlgorithm DEFAULT_BGP_AUTHENTICATION_ALGORITHM =
+      BgpAuthenticationAlgorithm.HMAC_SHA_1_96;
 
   private static final String DEFAULT_BGP_EXPORT_POLICY_NAME = "~DEFAULT_BGP_EXPORT_POLICY~";
 
@@ -91,6 +101,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private final Set<Long> _allStandardCommunities;
 
   private final Map<String, BaseApplication> _applications;
+
+  private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
   private Configuration _c;
 
@@ -163,6 +175,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
+    _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.ACCEPT;
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
@@ -191,6 +204,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _tacplusServers = new TreeSet<>();
     _unimplementedFeatures = unimplementedFeatures;
     _zones = new TreeMap<>();
+  }
+
+  private NavigableMap<String, AuthenticationKeyChain> convertAuthenticationKeyChains(
+      Map<String, JuniperAuthenticationKeyChain> juniperAuthenticationKeyChains) {
+    NavigableMap<String, AuthenticationKeyChain> authenticationKeyChains = new TreeMap<>();
+    for (Entry<String, JuniperAuthenticationKeyChain> keyChainEntry :
+        juniperAuthenticationKeyChains.entrySet()) {
+      JuniperAuthenticationKeyChain juniperAuthenticationKeyChain = keyChainEntry.getValue();
+      AuthenticationKeyChain authenticationKeyChain =
+          new AuthenticationKeyChain(juniperAuthenticationKeyChain.getName());
+      authenticationKeyChain.setDescription(juniperAuthenticationKeyChain.getDescription());
+      authenticationKeyChain.setTolerance(juniperAuthenticationKeyChain.getTolerance());
+      for (Entry<String, JuniperAuthenticationKey> keyEntry :
+          juniperAuthenticationKeyChain.getKeys().entrySet()) {
+        JuniperAuthenticationKey juniperAuthenticationKey = keyEntry.getValue();
+        AuthenticationKey authenticationKey =
+            new AuthenticationKey(juniperAuthenticationKey.getName());
+        authenticationKey.setIsisAuthenticationAlgorithm(
+            juniperAuthenticationKey.getIsisAuthenticationAlgorithm());
+        authenticationKey.setIsisOption(juniperAuthenticationKey.getIsisOption());
+        authenticationKey.setSecret(juniperAuthenticationKey.getSecret());
+        authenticationKey.setStartTime(juniperAuthenticationKey.getStartTime());
+        authenticationKeyChain.getKeys().put(keyEntry.getKey(), authenticationKey);
+      }
+      authenticationKeyChains.put(keyChainEntry.getKey(), authenticationKeyChain);
+    }
+    return authenticationKeyChains;
   }
 
   private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
@@ -224,6 +264,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         mg.setLocalAs(routingInstanceAs);
       }
     }
+    // Set default authentication algorithm if missing
+    if (mg.getAuthenticationAlgorithm() == null) {
+      mg.setAuthenticationAlgorithm(DEFAULT_BGP_AUTHENTICATION_ALGORITHM);
+    }
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
     }
@@ -247,6 +291,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
+      String authenticationKeyChainName = ig.getAuthenticationKeyChainName();
+      if (ig.getAuthenticationKeyChainName() != null) {
+        if (!_c.getAuthenticationKeyChains().containsKey(authenticationKeyChainName)) {
+          authenticationKeyChainName = null;
+        } else if (ig.getAuthenticationKey() != null) {
+          _w.redFlag(
+              "Both authentication-key and authentication-key-chain specified for neighbor "
+                  + ig.getRemoteAddress());
+        }
+      }
+      BgpAuthenticationSettings bgpAuthenticationSettings = new BgpAuthenticationSettings();
+      bgpAuthenticationSettings.setAuthenticationAlgorithm(ig.getAuthenticationAlgorithm());
+      bgpAuthenticationSettings.setAuthenticationKey(ig.getAuthenticationKey());
+      bgpAuthenticationSettings.setAuthenticationKeyChainName(authenticationKeyChainName);
+      neighbor.setAuthenticationSettings(bgpAuthenticationSettings);
       Boolean ebgpMultihop = ig.getEbgpMultihop();
       if (ebgpMultihop == null) {
         ebgpMultihop = false;
@@ -328,7 +387,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
       setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp.getFalseStatements()
+      setOriginForNonBgp
+          .getFalseStatements()
           .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
       peerExportPolicy.getStatements().add(setOriginForNonBgp);
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
@@ -543,6 +603,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _applications;
   }
 
+  public Map<String, JuniperAuthenticationKeyChain> getAuthenticationKeyChains() {
+    return _authenticationKeyChains;
+  }
+
   public final Map<String, CommunityList> getCommunityLists() {
     return _communityLists;
   }
@@ -719,6 +783,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
           }
         }
       }
+    }
+  }
+
+  private void markAuthenticationKeyChains(JuniperStructureUsage usage, Configuration c) {
+    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+        _structureReferences.get(JuniperStructureType.AUTHENTICATION_KEY_CHAIN);
+    if (byName != null) {
+      byName.forEach(
+          (keyChainName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              JuniperAuthenticationKeyChain keyChain = _authenticationKeyChains.get(keyChainName);
+              if (keyChain != null) {
+                String msg = usage.getDescription();
+                keyChain.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(
+                      JuniperStructureType.AUTHENTICATION_KEY_CHAIN, keyChainName, usage, line);
+                }
+              }
+            }
+          });
     }
   }
 
@@ -1508,6 +1595,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname);
+    _c.setAuthenticationKeyChains(convertAuthenticationKeyChains(_authenticationKeyChains));
     _c.setConfigurationFormat(_vendor);
     _c.setRoles(_roles);
     _c.setDomainName(_defaultRoutingInstance.getDomainName());
@@ -1747,7 +1835,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 asgLine);
           } else {
             for (org.batfish.datamodel.Interface iface : interfaces) {
-              iface.setDhcpRelayAddresses(asg.getServers());
+              iface.getDhcpRelayAddresses().addAll(asg.getServers());
             }
           }
         }
@@ -1861,7 +1949,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
+    // mark references to authentication key chain that may not appear in data model
+    markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
+
     // warn about unreferenced data structures
+    warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
     warnUnreferencedDhcpRelayServerGroups();
     warnUnreferencedPolicyStatements();
@@ -1987,6 +2079,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
       PrefixList prefixList = e.getValue();
       if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
         _w.redFlag("Empty prefix-list: '" + name + "'");
+      }
+    }
+  }
+
+  private void warnUnreferencedAuthenticationKeyChains() {
+    for (Entry<String, JuniperAuthenticationKeyChain> e : _authenticationKeyChains.entrySet()) {
+      String name = e.getKey();
+      JuniperAuthenticationKeyChain keyChain = e.getValue();
+      if (keyChain.isUnused()) {
+        unused(JuniperStructureType.AUTHENTICATION_KEY_CHAIN, name, keyChain.getDefinitionLine());
       }
     }
   }

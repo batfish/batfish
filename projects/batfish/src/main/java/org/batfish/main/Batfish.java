@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.Cache;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +53,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -411,9 +413,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  private final Map<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
-  private final Map<TestrigSettings, DataPlane> _cachedDataPlanes;
+  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
 
   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
@@ -443,8 +445,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
-      Map<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
-      Map<TestrigSettings, DataPlane> cachedDataPlanes,
+      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
       Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
@@ -458,8 +460,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     _testrigSettings = settings.getActiveTestrigSettings();
     _baseTestrigSettings = settings.getBaseTestrigSettings();
-    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
     _logger = _settings.getLogger();
+    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
     _terminatedWithException = false;
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
@@ -505,7 +507,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Answer answer() {
     Question question = null;
 
-    //return right away if we cannot parse the question successfully
+    // return right away if we cannot parse the question successfully
     try {
       question = parseQuestion();
     } catch (Exception e) {
@@ -919,6 +921,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .forEach(
                       (groupNum, vrrpGroup) -> {
                         Prefix prefix = vrrpGroup.getVirtualAddress();
+                        if (prefix == null) {
+                          // This Vlan Interface has invalid configuration. The VRRP has no source
+                          // IP address that would be used for VRRP election. This interface could
+                          // never win the election, so is not a candidate.
+                          return;
+                        }
                         Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
                         Set<Interface> candidates =
                             vrrpGroups.computeIfAbsent(
@@ -944,7 +952,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Ip ip = prefix.getAddress();
           int lowestPriority = Integer.MAX_VALUE;
           String bestCandidate = null;
-          Set<String> bestCandidates = new HashSet<>();
+          SortedSet<String> bestCandidates = new TreeSet<>();
           for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
@@ -958,7 +966,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
           }
           if (bestCandidates.size() != 1) {
-            throw new BatfishException("multiple best vrrp candidates:" + bestCandidates);
+            String deterministicBestCandidate = bestCandidates.first();
+            bestCandidate = deterministicBestCandidate;
+            _logger.redflag(
+                "Arbitrarily choosing best vrrp candidate: '"
+                    + deterministicBestCandidate
+                    + " for prefix/groupNumber: '"
+                    + p.toString()
+                    + "' among multiple best candidates: "
+                    + bestCandidates);
           }
           Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
           owners.add(bestCandidate);
@@ -1173,7 +1189,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   + " '"
                   + name
                   + "' from '"
-                  + inputPath
+                  + inputPath.toString()
                   + "'");
           byte[] data = fromGzipFile(inputPath);
           logger.debug(" ...OK\n");
@@ -1635,6 +1651,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         deserializeVendorConfigurations(serializedVendorConfigPath);
     Map<String, Configuration> configurations =
         convertConfigurations(vendorConfigurations, answerElement);
+
     postProcessConfigurations(configurations.values());
     return configurations;
   }
@@ -1791,6 +1808,43 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
     return blacklistNodes;
+  }
+
+  @Override
+  public Map<String, String> getQuestionTemplates() {
+    if (_settings.getCoordinatorHost() == null) {
+      throw new BatfishException("Cannot get question templates: coordinator host is not set");
+    }
+    String protocol = _settings.getSslDisable() ? "http" : "https";
+    String url =
+        String.format(
+            "%s://%s:%s%s/%s",
+            protocol,
+            _settings.getCoordinatorHost(),
+            _settings.getCoordinatorPoolPort(),
+            CoordConsts.SVC_CFG_POOL_MGR,
+            CoordConsts.SVC_RSC_POOL_GET_QUESTION_TEMPLATES);
+    Map<String, String> params = new HashMap<>();
+    params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
+
+    JSONObject response = (JSONObject) Driver.talkToCoordinator(url, params, _logger);
+    if (response == null) {
+      throw new BatfishException("Could not get question templates: Got null response");
+    }
+    if (!response.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+      throw new BatfishException("Could not get question templates: Response lacks question list");
+    }
+
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Map<String, String> templates =
+          mapper.readValue(
+              response.get(CoordConsts.SVC_KEY_QUESTION_LIST).toString(),
+              new TypeReference<Map<String, String>>() {});
+      return templates;
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Could not cast response to Map: ", e);
+    }
   }
 
   @Override
@@ -2406,7 +2460,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, Configuration> loadConfigurationsWithoutValidation() {
-    SortedMap<String, Configuration> configurations = _cachedConfigurations.get(_testrigSettings);
+    SortedMap<String, Configuration> configurations =
+        _cachedConfigurations.getIfPresent(_testrigSettings);
     if (configurations == null) {
       ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
       if (!Version.isCompatibleVersion(
@@ -2446,7 +2501,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane() {
-    DataPlane dp = _cachedDataPlanes.get(_testrigSettings);
+    DataPlane dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
     if (dp == null) {
       /*
        * Data plane should exist after loading answer element, as it triggers
@@ -2454,7 +2509,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
        * repaired, so we still might need to load it from disk.
        */
       loadDataPlaneAnswerElement();
-      dp = _cachedDataPlanes.get(_testrigSettings);
+      dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp =
@@ -2608,14 +2663,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException(
           "Version error repairing vendor configurations for parse configuration answer element");
     }
-  }
-
-  public Topology loadTopology() {
-    Path topologyPath = _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath();
-    _logger.info("Deserializing topology...");
-    Topology topology = deserializeObject(topologyPath, Topology.class);
-    _logger.info("OK\n");
-    return topology;
   }
 
   private ValidateEnvironmentAnswerElement loadValidateEnvironmentAnswerElement() {
@@ -2973,8 +3020,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return new NodeSet(nodes);
   }
 
-  private SortedMap<String, SortedSet<String>> parseNodeRoles(
-      Path nodeRolesPath, Set<String> nodes) {
+  private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
     _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath() + "\"");
     String roleFileText = CommonUtil.readFile(nodeRolesPath);
     NodeRoleSpecifier specifier;
@@ -2986,7 +3032,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to parse node roles", e);
     }
-    return specifier.createNodeRolesMap(nodes);
+    return specifier;
   }
 
   private Question parseQuestion() {
@@ -3034,13 +3080,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return topology;
   }
 
-  private Map<String, VendorConfiguration> parseVendorConfigurations(
+  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
       Map<Path, String> configurationData,
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat configurationFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
     resetTimer();
-    Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
+    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>();
     for (Entry<Path, String> vendorFile : configurationData.entrySet()) {
       Path currentFile = vendorFile.getKey();
@@ -3113,9 +3159,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    pushDeltaEnvironment();
-    Topology diffTopology = loadTopology();
-    popEnvironment();
+    Topology diffTopology = computeTopology(diffConfigurations);
     EdgeSet diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -3143,9 +3187,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    pushBaseEnvironment();
-    Topology baseTopology = loadTopology();
-    popEnvironment();
+    Topology baseTopology = computeTopology(baseConfigurations);
     EdgeSet baseEdges = baseTopology.getEdges();
     EdgeSet missingEdges = new EdgeSet();
     missingEdges.addAll(baseEdges);
@@ -3153,9 +3195,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Edge missingEdge : missingEdges) {
       String ingressNode = missingEdge.getNode1();
       String outInterface = missingEdge.getInt1();
-      String vrf =
-          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
-      if (diffConfigurations.containsKey(ingressNode)) {
+      if (diffConfigurations.containsKey(ingressNode)
+          && diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
+        String vrf =
+            diffConfigurations
+                .get(ingressNode)
+                .getInterfaces()
+                .get(outInterface)
+                .getVrf()
+                .getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(ingressNode, vrf, missingEdge, true, headerSpace);
         List<QuerySynthesizer> queries = new ArrayList<>();
@@ -3445,21 +3493,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
+     If inferred is true, it returns the inferred roles;
+     otherwise it prefers the user-specified roles if they exist.
+  */
+  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
+    NodeRoleSpecifier result;
+    boolean inferredRoles = false;
+    TestrigSettings settings = _settings.getActiveTestrigSettings();
+    Path nodeRolesPath = settings.getNodeRolesPath();
+    if (!Files.exists(nodeRolesPath) || inferred) {
+      inferredRoles = true;
+      nodeRolesPath = settings.getInferredNodeRolesPath();
+      if (!Files.exists(nodeRolesPath)) {
+        return new NodeRoleSpecifier();
+      }
+    }
+    result = parseNodeRoles(nodeRolesPath);
+    result.setInferred(inferredRoles);
+    return result;
+  }
+
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
     if one exists; otherwise use the results of our node-role inference.
   */
   private void processNodeRoles(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-    TestrigSettings settings = _settings.getActiveTestrigSettings();
-    Path nodeRolesPath = settings.getNodeRolesPath();
-    if (!Files.exists(nodeRolesPath)) {
-      nodeRolesPath = settings.getInferredNodeRolesPath();
-      if (!Files.exists(nodeRolesPath)) {
-        return;
-      }
-    }
+    NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
     SortedMap<String, SortedSet<String>> nodeRoles =
-        parseNodeRoles(nodeRolesPath, configurations.keySet());
+        specifier.createNodeRolesMap(configurations.keySet());
     for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
       String hostname = nodeRolesEntry.getKey();
       Configuration config = configurations.get(hostname);
@@ -3490,10 +3552,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettings = _deltaTestrigSettings;
   }
 
-  private Map<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
+  private SortedMap<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
     _logger.infof("\n*** READING %s FILES ***\n", configsType);
     resetTimer();
-    Map<Path, String> configurationData = new TreeMap<>();
+    SortedMap<Path, String> configurationData = new TreeMap<>();
     Path configsPath = testRigPath.resolve(configsType);
     List<Path> configFilePaths = listAllFiles(configsPath);
     AtomicInteger completed =
@@ -3558,8 +3620,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   void readIptableFiles(
       Path testRigPath,
-      Map<String, VendorConfiguration> hostConfigurations,
-      Map<Path, String> iptablesData,
+      SortedMap<String, VendorConfiguration> hostConfigurations,
+      SortedMap<Path, String> iptablesData,
       ParseVendorConfigurationAnswerElement answerElement) {
     List<BatfishException> failureCauses = new ArrayList<>();
     for (VendorConfiguration vc : hostConfigurations.values()) {
@@ -3670,8 +3732,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachabilityQuerySynthesizer(
                 Collections.singleton(ForwardingAction.ACCEPT),
                 new HeaderSpace(),
-                Collections.<String>emptySet(), nodeVrfs,
-                Collections.<String>emptySet(), Collections.<String>emptySet());
+                Collections.<String>emptySet(),
+                nodeVrfs,
+                Collections.<String>emptySet(),
+                Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(node, vrf));
@@ -3934,7 +3998,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.append(validateEnvironment());
       action = true;
     }
-    
+
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
@@ -4034,30 +4098,47 @@ public class Batfish extends PluginConsumer implements IBatfish {
     printElapsedTime();
   }
 
-  private void serializeHostConfigs(
-      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
-    Map<Path, String> configurationData =
+  private SortedMap<String, VendorConfiguration> serializeHostConfigs(
+      Path testRigPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement
+      ) {
+    SortedMap<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
-    Map<String, VendorConfiguration> hostConfigurations =
+    SortedMap<String, VendorConfiguration> allHostConfigurations =
         parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
-    if (hostConfigurations == null) {
+    if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
 
-    // read and associate iptables files for specified hosts
-    Map<Path, String> iptablesData = new TreeMap<>();
-    readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+    // split into hostConfigurations and overlayConfigurations
+    SortedMap<String, VendorConfiguration> overlayConfigurations =
+        allHostConfigurations
+            .entrySet()
+            .stream()
+            .filter(e -> ((HostConfiguration) e.getValue()).getOverlay())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
+    SortedMap<String, VendorConfiguration> nonOverlayHostConfigurations =
+        allHostConfigurations
+            .entrySet()
+            .stream()
+            .filter(e -> !((HostConfiguration) e.getValue()).getOverlay())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
 
-    Map<String, VendorConfiguration> iptablesConfigurations =
+    // read and associate iptables files for specified hosts
+    SortedMap<Path, String> iptablesData = new TreeMap<>();
+    readIptableFiles(testRigPath, allHostConfigurations, iptablesData, answerElement);
+
+    SortedMap<String, VendorConfiguration> iptablesConfigurations =
         parseVendorConfigurations(iptablesData, answerElement, ConfigurationFormat.IPTABLES);
-    for (VendorConfiguration vc : hostConfigurations.values()) {
+    for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
         String relativePathStr = _testrigSettings.getBasePath().relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
-          hostConfig.setIptablesConfig(
+          hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
         }
       }
@@ -4069,7 +4150,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     CommonUtil.createDirectories(outputPath);
 
     Map<Path, VendorConfiguration> output = new TreeMap<>();
-    hostConfigurations.forEach(
+    nonOverlayHostConfigurations.forEach(
         (name, vc) -> {
           Path currentOutputPath = outputPath.resolve(name);
           output.put(currentOutputPath, vc);
@@ -4078,6 +4159,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // serialize warnings
     serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
     printElapsedTime();
+    return overlayConfigurations;
   }
 
   private void serializeIndependentConfigs(
@@ -4118,7 +4200,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void serializeNetworkConfigs(
-      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
+      Path testRigPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement,
+      SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<String, VendorConfiguration> vendorConfigurations =
@@ -4142,10 +4227,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
                     "MISCELLANEOUS"));
           } else {
+            // apply overlay if it exists
+            VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
+            if (overlayConfig != null) {
+              vc.setOverlayConfiguration(overlayConfig);
+              overlayHostConfigurations.remove(name);
+            }
+
             Path currentOutputPath = outputPath.resolve(name);
             output.put(currentOutputPath, vc);
           }
         });
+
+    // warn about unused overlays
+    overlayHostConfigurations.forEach(
+        (name, overlay) -> {
+          answerElement.getParseStatus().put(name, ParseStatus.ORPHANED);
+        });
+
     serializeObjects(output);
     printElapsedTime();
   }
@@ -4196,8 +4295,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);
     }
+
+    // look for host configs and overlay configs
+    SortedMap<String, VendorConfiguration> overlayHostConfigurations = new TreeMap<>();
+    Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
+    if (Files.exists(hostConfigsPath)) {
+      overlayHostConfigurations = serializeHostConfigs(testRigPath, outputPath, answerElement);
+      configsFound = true;
+    }
+
     if (Files.exists(networkConfigsPath)) {
-      serializeNetworkConfigs(testRigPath, outputPath, answerElement);
+      serializeNetworkConfigs(testRigPath, outputPath, answerElement, overlayHostConfigurations);
       configsFound = true;
     }
 
@@ -4205,13 +4313,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
     if (Files.exists(awsVpcConfigsPath)) {
       answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
-      configsFound = true;
-    }
-
-    // look for host configs
-    Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    if (Files.exists(hostConfigsPath)) {
-      serializeHostConfigs(testRigPath, outputPath, answerElement);
       configsFound = true;
     }
 
@@ -4294,23 +4395,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
               + "'");
     }
 
-    //check transit nodes
+    // check transit nodes
     Set<String> allNodes = configurations.keySet();
     Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
     if (!invalidTransitNodes.isEmpty()) {
-      return new StringAnswerElement(String.format("Unknown transit nodes %s",
-          invalidTransitNodes.toString()));
+      return new StringAnswerElement(
+          String.format("Unknown transit nodes %s", invalidTransitNodes));
     }
     Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
     if (!invalidNotTransitNodes.isEmpty()) {
-      return new StringAnswerElement(String.format("Unknown notTransit nodes %s",
-          invalidNotTransitNodes.toString()));
+      return new StringAnswerElement(
+          String.format("Unknown notTransit nodes %s", invalidNotTransitNodes));
     }
     Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
-    if (! illegalTransitNodes.isEmpty()) {
-          return new StringAnswerElement(
-              String.format("Same node %s can not be in both transit and notTransit",
-                  illegalTransitNodes.toString()));
+    if (!illegalTransitNodes.isEmpty()) {
+      return new StringAnswerElement(
+          String.format(
+              "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
     }
 
     // build query jobs
@@ -4320,8 +4421,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Map<String, Set<String>> nodeVrfs = new TreeMap<>();
         nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
         ReachabilityQuerySynthesizer query =
-            new ReachabilityQuerySynthesizer(actions, headerSpace, activeFinalNodes,
-                nodeVrfs, transitNodes, notTransitNodes);
+            new ReachabilityQuerySynthesizer(
+                actions, headerSpace, activeFinalNodes, nodeVrfs, transitNodes, notTransitNodes);
         NodeVrfSet nodes = new NodeVrfSet();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
@@ -4531,7 +4632,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         throw new BatfishException(
             String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
       }
-      //nodes are valid, now checking corresponding interfaces
+      // nodes are valid, now checking corresponding interfaces
       Configuration config1 = configurations.get(edge.getNode1());
       Configuration config2 = configurations.get(edge.getNode2());
       if (!config1.getInterfaces().containsKey(edge.getInt1())) {

@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.smt.CommunityVar.Type;
 
 /**
  * A symbolic record of control plane message attributes. Attributes are specialized based on the
@@ -142,7 +144,7 @@ class SymbolicRecord {
   }
 
   SymbolicRecord(
-      EncoderSlice enc,
+      EncoderSlice slice,
       String name,
       String router,
       Protocol proto,
@@ -152,21 +154,25 @@ class SymbolicRecord {
 
     _name = name;
     _proto = proto;
-    _enc = enc;
+    _enc = slice;
     _isUsed = true;
     _isExport = _name.contains("EXPORT");
     _isEnv = _name.contains("_ENV-");
     _isBest = _name.contains("_BEST");
     _isBestOverall = (_isBest && _name.contains("_OVERALL"));
 
-    Context ctx = enc.getCtx();
+    Context ctx = slice.getCtx();
 
-    boolean hasOspf = enc.getProtocols().get(router).contains(Protocol.OSPF);
-    boolean hasBgp = enc.getProtocols().get(router).contains(Protocol.BGP);
-    boolean multipleProtos = enc.getProtocols().get(router).size() > 1;
+    boolean hasOspf = slice.getProtocols().get(router).contains(Protocol.OSPF);
+    boolean hasBgp = slice.getProtocols().get(router).contains(Protocol.BGP);
+    boolean multipleProtos = slice.getProtocols().get(router).size() > 1;
     boolean modelAd = !_isEnv && ((_isBestOverall && multipleProtos) || opts.getKeepAdminDist());
-    boolean modelLp = !_isEnv && opts.getKeepLocalPref() && (proto.isBgp() || _isBestOverall);
-    boolean modelIbgp = (opts.getNeedBgpInternal().contains(router));
+    boolean modelIbgp = slice.isMainSlice() && opts.getNeedBgpInternal().contains(router);
+    boolean modelLp =
+        slice.isMainSlice()
+            && !_isEnv
+            && opts.getKeepLocalPref()
+            && (proto.isBgp() || _isBestOverall);
 
     _protocolHistory = h;
     _ospfArea = null;
@@ -182,14 +188,14 @@ class SymbolicRecord {
       _igpMetric = (modelIbgp ? ctx.mkIntConst(_name + "_igpMetric") : null);
 
       if (hasOspf && opts.getKeepOspfType()) {
-        _ospfType = new SymbolicOspfType(enc, _name + "_ospfType");
+        _ospfType = new SymbolicOspfType(slice, _name + "_ospfType");
       }
 
       // Set OSPF area only for best OSPF or OVERALL choice
       if (hasOspf && (_isBestOverall || _name.contains("_OSPF_"))) {
-        List<Long> areaIds = new ArrayList<>(enc.getGraph().getAreaIds().get(router));
+        List<Long> areaIds = new ArrayList<>(slice.getGraph().getAreaIds().get(router));
         if (areaIds.size() > 1) {
-          _ospfArea = new SymbolicEnum<>(enc, areaIds, _name + "_ospfArea");
+          _ospfArea = new SymbolicEnum<>(slice, areaIds, _name + "_ospfArea");
         }
       }
 
@@ -232,7 +238,7 @@ class SymbolicRecord {
       _bgpInternal = null;
 
       if (opts.getKeepOspfType()) {
-        _ospfType = new SymbolicOspfType(enc, _name + "_ospfType");
+        _ospfType = new SymbolicOspfType(slice, _name + "_ospfType");
       }
     }
 
@@ -250,7 +256,14 @@ class SymbolicRecord {
     _communities = new HashMap<>();
     boolean usesBgp = (proto.isBgp() || (hasBgp && proto.isBest()));
     if (usesBgp) {
-      for (CommunityVar cvar : enc.getAllCommunities()) {
+      Set<CommunityVar> allComms = slice.getAllCommunities();
+      for (CommunityVar cvar : allComms) {
+        // TODO: if neighbor doesn't need regex match, then don't keep it on export
+        if (cvar.getType() == Type.REGEX) {
+          if (!_isExport) {
+            continue;
+          }
+        }
         String s = cvar.getValue();
         if (cvar.getType() == CommunityVar.Type.OTHER) {
           s = s + "_OTHER";
@@ -262,10 +275,10 @@ class SymbolicRecord {
 
     // client id
     if (usesBgp && opts.getNeedOriginatorIds()) {
-      _clientId = new SymbolicOriginatorId(enc, _name + "_clientId");
+      _clientId = new SymbolicOriginatorId(slice, _name + "_clientId");
     }
 
-    addExprs(enc);
+    addExprs(slice);
   }
 
   // TODO: depends on configuration
@@ -471,7 +484,7 @@ class SymbolicRecord {
 
     SymbolicRecord that = (SymbolicRecord) o;
 
-    return (this._name.equals(that._name));
+    return this._name.equals(that._name);
   }
 
   @Override
