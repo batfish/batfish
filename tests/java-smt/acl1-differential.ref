@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtReachabilityAnswerElement",
+      "class" : "org.batfish.symbolic.smt.answers.SmtReachabilityAnswerElement",
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "flows" : [
