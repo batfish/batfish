@@ -1,0 +1,12 @@
+# custom node firewall roles for service (security.py)
+# .. This is in iptables-save format
+#    @see http://www.faqs.org/docs/iptables/iptables-save.html
+*mangle
+:PREROUTING DROP [0:0]
+# allow OSPF input/output
+-A PREROUTING  -s 10.0.2.1 -p 89 -j ACCEPT
+# allow traffic forwarding from 10.0.4 subset
+-A PREROUTING -s 10.0.4.0/24 -i eth0 -j ACCEPT
+-A PREROUTING -s 10.0.3.0/24 -i eth1 -j ACCEPT
+COMMIT
+
