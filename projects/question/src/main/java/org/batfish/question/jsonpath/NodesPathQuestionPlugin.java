@@ -14,7 +14,6 @@ import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.batfish.question.QuestionPlugin;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerElement;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerer;
-import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathDiffAnswerElement;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathQuestion;
 
 public class NodesPathQuestionPlugin extends QuestionPlugin {
