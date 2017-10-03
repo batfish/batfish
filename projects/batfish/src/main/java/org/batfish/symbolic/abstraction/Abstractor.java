@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javafx.util.Pair;
+import net.sf.javabdd.BDD;
+import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -93,6 +95,10 @@ public class Abstractor {
 
 
   public static AnswerElement computeAbstraction(IBatfish batfish) {
+
+    BDDInteger i = new BDDInteger(JFactory.init(200,1000), 32);
+    BDD x = i.value(4);
+    x.printDot();
 
     long start = System.currentTimeMillis();
 

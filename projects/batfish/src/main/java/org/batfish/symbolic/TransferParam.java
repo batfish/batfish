@@ -1,10 +1,11 @@
-package org.batfish.symbolic.smt;
+package org.batfish.symbolic;
 
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.symbolic.collections.PList;
+import org.batfish.symbolic.smt.Encoder;
 
-public class TransferFunctionParam {
+public class TransferParam<T extends ICopy<T>> {
 
   public enum CallContext {
     EXPR_CALL,
@@ -18,7 +19,7 @@ public class TransferFunctionParam {
     NONE
   }
 
-  private SymbolicRecord _other;
+  private T _other;
 
   private int _indent;
 
@@ -34,7 +35,7 @@ public class TransferFunctionParam {
 
   private SetDefaultPolicy _defaultPolicy;
 
-  public TransferFunctionParam(SymbolicRecord other) {
+  public TransferParam(T other) {
     _other = other;
     _callContext = CallContext.NONE;
     _chainContext = ChainContext.NONE;
@@ -45,7 +46,7 @@ public class TransferFunctionParam {
     _defaultPolicy = null;
   }
 
-  private TransferFunctionParam(TransferFunctionParam p) {
+  private TransferParam(TransferParam<T> p) {
     _other = p._other;
     _callContext = p._callContext;
     _chainContext = p._chainContext;
@@ -56,7 +57,7 @@ public class TransferFunctionParam {
     _defaultPolicy = p._defaultPolicy;
   }
 
-  public SymbolicRecord getOther() {
+  public T getOther() {
     return _other;
   }
 
@@ -88,50 +89,56 @@ public class TransferFunctionParam {
     return _scopes.get(0);
   }
 
-  public TransferFunctionParam setCallContext(CallContext cc) {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> setOther(T other) {
+    TransferParam<T> ret = new TransferParam<>(this);
+    ret._other = other;
+    return ret;
+  }
+
+  public TransferParam<T> setCallContext(CallContext cc) {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._callContext = cc;
     return ret;
   }
 
-  public TransferFunctionParam setChainContext(ChainContext cc) {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> setChainContext(ChainContext cc) {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._chainContext = cc;
     return ret;
   }
 
-  public TransferFunctionParam copyRecord() {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
-    ret._other = new SymbolicRecord(this._other);
+  public TransferParam<T> copyRecord() {
+    TransferParam<T> ret = new TransferParam<>(this);
+    ret._other = this._other.copy();
     return ret;
   }
 
-  public TransferFunctionParam setDefaultAccept(boolean defaultAccept) {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> setDefaultAccept(boolean defaultAccept) {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._defaultAccept = defaultAccept;
     return ret;
   }
 
-  public TransferFunctionParam setDefaultPolicy(@Nullable SetDefaultPolicy defaultPolicy) {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> setDefaultPolicy(@Nullable SetDefaultPolicy defaultPolicy) {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._defaultPolicy = defaultPolicy;
     return ret;
   }
 
-  public TransferFunctionParam setDefaultAcceptLocal(boolean defaultAcceptLocal) {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> setDefaultAcceptLocal(boolean defaultAcceptLocal) {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._defaultAcceptLocal = defaultAcceptLocal;
     return ret;
   }
 
-  public TransferFunctionParam enterScope(String name) {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> enterScope(String name) {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._scopes = ret._scopes.plus(name);
     return ret;
   }
 
-  public TransferFunctionParam indent() {
-    TransferFunctionParam ret = new TransferFunctionParam(this);
+  public TransferParam<T> indent() {
+    TransferParam<T> ret = new TransferParam<>(this);
     ret._indent = this._indent + 1;
     return ret;
   }

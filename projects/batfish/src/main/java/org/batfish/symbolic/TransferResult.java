@@ -1,6 +1,5 @@
-package org.batfish.symbolic.smt;
+package org.batfish.symbolic;
 
-import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,24 +7,24 @@ import javax.annotation.Nullable;
 import org.batfish.common.Pair;
 import org.batfish.symbolic.collections.PList;
 
-public class TransferFunctionResult {
+public class TransferResult<U,T> {
 
   private PList<Pair<String, Expr>> _changedVariables; // should be a map
 
-  private BoolExpr _returnValue;
+  private U _returnValue;
 
-  private BoolExpr _fallthroughValue;
+  private T _fallthroughValue;
 
-  private BoolExpr _returnAssignedValue;
+  private T _returnAssignedValue;
 
-  public TransferFunctionResult() {
+  public TransferResult() {
     this._changedVariables = PList.empty();
     this._returnValue = null;
     this._fallthroughValue = null;
     this._returnAssignedValue = null;
   }
 
-  public TransferFunctionResult(TransferFunctionResult other) {
+  public TransferResult(TransferResult<U,T> other) {
     this._changedVariables = other._changedVariables;
     this._returnValue = other._returnValue;
     this._fallthroughValue = other._fallthroughValue;
@@ -43,7 +42,8 @@ public class TransferFunctionResult {
   }
 
   // TODO: this really needs to use persistent set data types
-  public PList<Pair<String, Pair<Expr, Expr>>> mergeChangedVariables(TransferFunctionResult other) {
+  public PList<Pair<String, Pair<Expr, Expr>>> mergeChangedVariables(
+      TransferResult<U,T> other) {
     Set<String> seen = new HashSet<>();
     PList<Pair<String, Pair<Expr, Expr>>> vars = PList.empty();
 
@@ -77,26 +77,26 @@ public class TransferFunctionResult {
     return _changedVariables;
   }
 
-  public BoolExpr getReturnValue() {
+  public U getReturnValue() {
     return _returnValue;
   }
 
-  public BoolExpr getFallthroughValue() {
+  public T getFallthroughValue() {
     return _fallthroughValue;
   }
 
-  public BoolExpr getReturnAssignedValue() {
+  public T getReturnAssignedValue() {
     return _returnAssignedValue;
   }
 
-  public TransferFunctionResult addChangedVariable(String s, Expr x) {
-    TransferFunctionResult ret = new TransferFunctionResult(this);
+  public TransferResult<U,T> addChangedVariable(String s, Expr x) {
+    TransferResult<U,T> ret = new TransferResult<>(this);
     ret._changedVariables = ret._changedVariables.plus(new Pair<>(s, x));
     return ret;
   }
 
-  public TransferFunctionResult addChangedVariables(TransferFunctionResult other) {
-    TransferFunctionResult ret = new TransferFunctionResult(this);
+  public TransferResult<U,T> addChangedVariables(TransferResult<U,T> other) {
+    TransferResult<U,T> ret = new TransferResult<>(this);
     ret._changedVariables = ret._changedVariables.plusAll(other._changedVariables);
     return ret;
   }
@@ -110,26 +110,26 @@ public class TransferFunctionResult {
     return false;
   }
 
-  public TransferFunctionResult clearChanged() {
-    TransferFunctionResult ret = new TransferFunctionResult(this);
+  public TransferResult<U,T> clearChanged() {
+    TransferResult<U,T> ret = new TransferResult<>(this);
     ret._changedVariables = PList.empty();
     return ret;
   }
 
-  public TransferFunctionResult setReturnValue(BoolExpr x) {
-    TransferFunctionResult ret = new TransferFunctionResult(this);
+  public TransferResult<U,T> setReturnValue(U x) {
+    TransferResult<U,T> ret = new TransferResult<>(this);
     ret._returnValue = x;
     return ret;
   }
 
-  public TransferFunctionResult setFallthroughValue(BoolExpr x) {
-    TransferFunctionResult ret = new TransferFunctionResult(this);
+  public TransferResult<U,T> setFallthroughValue(T x) {
+    TransferResult<U,T> ret = new TransferResult<>(this);
     ret._fallthroughValue = x;
     return ret;
   }
 
-  public TransferFunctionResult setReturnAssignedValue(BoolExpr x) {
-    TransferFunctionResult ret = new TransferFunctionResult(this);
+  public TransferResult<U,T> setReturnAssignedValue(T x) {
+    TransferResult<U,T> ret = new TransferResult<>(this);
     ret._returnAssignedValue = x;
     return ret;
   }

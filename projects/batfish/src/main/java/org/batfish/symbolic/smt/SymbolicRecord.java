@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.CommunityVar.Type;
+import org.batfish.symbolic.ICopy;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.smt.CommunityVar.Type;
 
 /**
  * A symbolic record of control plane message attributes. Attributes are specialized based on the
@@ -19,7 +21,7 @@ import org.batfish.symbolic.smt.CommunityVar.Type;
  *
  * @author Ryan Beckett
  */
-class SymbolicRecord {
+class SymbolicRecord implements ICopy<SymbolicRecord> {
 
   private String _name;
 
@@ -490,5 +492,9 @@ class SymbolicRecord {
   @Override
   public int hashCode() {
     return _name.hashCode();
+  }
+
+  @Override public SymbolicRecord copy() {
+    return new SymbolicRecord(this);
   }
 }

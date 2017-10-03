@@ -19,8 +19,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -37,21 +35,11 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
-import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.symbolic.AstVisitor;
+import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -339,8 +327,8 @@ class EncoderSlice {
    * to the collection of exact matches that it subsumes
    */
   private void initCommunities() {
-    _allCommunities = findAllCommunities();
-    _namedCommunities = findNamedCommunities();
+    _allCommunities = getGraph().findAllCommunities();
+    _namedCommunities = getGraph().findNamedCommunities();
 
     // Add an other variable for each regex community
     // Don't do this by default
@@ -392,162 +380,6 @@ class EncoderSlice {
   }
 
   /*
-   * Finds all uniquely mentioned community matches
-   * in the network by walking over every configuration.
-   */
-  private Set<CommunityVar> findAllCommunities() {
-    Set<CommunityVar> comms = new HashSet<>();
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              comms.addAll(findAllCommunities(router));
-            });
-    return comms;
-  }
-
-  Set<CommunityVar> findAllCommunities(String router) {
-    Set<CommunityVar> comms = new HashSet<>();
-    Configuration conf = getGraph().getConfigurations().get(router);
-    conf.getRoutingPolicies()
-        .forEach(
-            (name, pol) -> {
-              AstVisitor v = new AstVisitor();
-              v.visit(
-                  conf,
-                  pol.getStatements(),
-                  stmt -> {
-                    if (stmt instanceof SetCommunity) {
-                      SetCommunity sc = (SetCommunity) stmt;
-                      comms.addAll(findAllCommunities(conf, sc.getExpr()));
-                    }
-                    if (stmt instanceof AddCommunity) {
-                      AddCommunity ac = (AddCommunity) stmt;
-                      comms.addAll(findAllCommunities(conf, ac.getExpr()));
-                    }
-                    if (stmt instanceof DeleteCommunity) {
-                      DeleteCommunity dc = (DeleteCommunity) stmt;
-                      comms.addAll(findAllCommunities(conf, dc.getExpr()));
-                    }
-                    if (stmt instanceof RetainCommunity) {
-                      RetainCommunity rc = (RetainCommunity) stmt;
-                      comms.addAll(findAllCommunities(conf, rc.getExpr()));
-                    }
-                  },
-                  expr -> {
-                    if (expr instanceof MatchCommunitySet) {
-                      MatchCommunitySet m = (MatchCommunitySet) expr;
-                      CommunitySetExpr ce = m.getExpr();
-                      comms.addAll(findAllCommunities(conf, ce));
-                    }
-                  });
-            });
-    return comms;
-  }
-
-  /*
-   * Final all uniquely mentioned community values for a particular
-   * router configuration and community set expression.
-   */
-  Set<CommunityVar> findAllCommunities(Configuration conf, CommunitySetExpr ce) {
-    Set<CommunityVar> comms = new HashSet<>();
-    if (ce instanceof InlineCommunitySet) {
-      InlineCommunitySet c = (InlineCommunitySet) ce;
-      for (CommunitySetElem cse : c.getCommunities()) {
-        if (cse.getPrefix() instanceof LiteralCommunitySetElemHalf
-            && cse.getSuffix() instanceof LiteralCommunitySetElemHalf) {
-          LiteralCommunitySetElemHalf x = (LiteralCommunitySetElemHalf) cse.getPrefix();
-          LiteralCommunitySetElemHalf y = (LiteralCommunitySetElemHalf) cse.getSuffix();
-          int prefixInt = x.getValue();
-          int suffixInt = y.getValue();
-          String val = prefixInt + ":" + suffixInt;
-          Long l = (((long) prefixInt) << 16) | (suffixInt);
-          CommunityVar var = new CommunityVar(CommunityVar.Type.EXACT, val, l);
-          comms.add(var);
-        } else {
-          throw new BatfishException("TODO: community non literal: " + cse);
-        }
-      }
-    }
-    if (ce instanceof NamedCommunitySet) {
-      NamedCommunitySet c = (NamedCommunitySet) ce;
-      String cname = c.getName();
-      CommunityList cl = conf.getCommunityLists().get(cname);
-      if (cl != null) {
-        for (CommunityListLine line : cl.getLines()) {
-          CommunityVar var = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
-          comms.add(var);
-        }
-      }
-    }
-    return comms;
-  }
-
-  /*
-   * Map named community sets that contain a single match
-   * back to the community/regex value. This makes it
-   * easier to provide intuitive counter examples.
-   */
-  private Map<String, String> findNamedCommunities() {
-    Map<String, String> comms = new HashMap<>();
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              conf.getCommunityLists()
-                  .forEach(
-                      (name, cl) -> {
-                        if (cl != null && cl.getLines().size() == 1) {
-                          CommunityListLine line = cl.getLines().get(0);
-                          comms.put(line.getRegex(), name);
-                        }
-                      });
-            });
-    return comms;
-  }
-
-  /*
-   * Find the set of all protocols that might be redistributed into
-   * protocol p given the current configuration and routing policy.
-   * This is based on structure of the AST.
-   */
-  public Set<Protocol> findRedistributedProtocols(
-      Configuration conf, RoutingPolicy pol, Protocol p) {
-    Set<Protocol> protos = new HashSet<>();
-    AstVisitor v = new AstVisitor();
-    v.visit(
-        conf,
-        pol.getStatements(),
-        stmt -> { },
-        expr -> {
-          if (expr instanceof MatchProtocol) {
-            MatchProtocol mp = (MatchProtocol) expr;
-            RoutingProtocol other = mp.getProtocol();
-            Protocol otherP = Protocol.fromRoutingProtocol(other);
-            if (otherP != null && otherP != p) {
-              switch (other) {
-                case BGP:
-                  protos.add(otherP);
-                  break;
-                case OSPF:
-                  protos.add(otherP);
-                  break;
-                case STATIC:
-                  protos.add(otherP);
-                  break;
-                case CONNECTED:
-                  protos.add(otherP);
-                  break;
-                default:
-                  throw new BatfishException("Unrecognized protocol: " + other.protocolName());
-              }
-            }
-          }
-        });
-    return protos;
-  }
-
-  /*
    * Initialize the map of redistributed protocols.
    */
   private void initRedistributionProtocols() {
@@ -564,7 +396,7 @@ class EncoderSlice {
 
                 RoutingPolicy pol = Graph.findCommonRoutingPolicy(conf, proto);
                 if (pol != null) {
-                  Set<Protocol> ps = findRedistributedProtocols(conf, pol, proto);
+                  Set<Protocol> ps = getGraph().findRedistributedProtocols(conf, pol, proto);
                   for (Protocol p : ps) {
                     // Make sure there is actually a routing process for the other protocol
                     // For example, it might get sliced away if not relevant
@@ -2419,8 +2251,8 @@ class EncoderSlice {
             statements = pol.getStatements();
           }
 
-          TransferFunctionSSA f =
-              new TransferFunctionSSA(
+          TransferSSA f =
+              new TransferSSA(
                   this, conf, varsOther, vars, proto, proto, statements, 0, ge, false);
           importFunction = f.compute();
 
@@ -2532,8 +2364,8 @@ class EncoderSlice {
           statements = (pol == null ? Collections.singletonList(s1) : pol.getStatements());
         }
 
-        TransferFunctionSSA f =
-            new TransferFunctionSSA(
+        TransferSSA f =
+            new TransferSSA(
                 this, conf, varsOther, vars, proto, proto, statements, cost, ge, true);
         acc = f.compute();
 

@@ -1,4 +1,4 @@
-package org.batfish.symbolic.smt;
+package org.batfish.symbolic;
 
 import javax.annotation.Nullable;
 
@@ -17,9 +17,9 @@ import javax.annotation.Nullable;
  *
  * @author Ryan Beckett
  */
-class CommunityVar {
+public class CommunityVar {
 
-  enum Type {
+  public enum Type {
     EXACT,
     REGEX,
     OTHER
@@ -65,15 +65,15 @@ class CommunityVar {
     return result;
   }
 
-  Type getType() {
+  public Type getType() {
     return _type;
   }
 
-  String getValue() {
+  public String getValue() {
     return _value;
   }
 
-  Long asLong() {
+  public Long asLong() {
     return _long;
   }
 }

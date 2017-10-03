@@ -13,6 +13,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -27,12 +29,22 @@ import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
+import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
+import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.symbolic.collections.Table2;
 
 /**
@@ -236,12 +248,10 @@ public class Graph {
   }
 
   /*
- * Initialize the ospf interface costs for each configuration
- */
+   * Initialize the ospf interface costs for each configuration
+   */
   private void initOspfCosts() {
-    _configurations.forEach((router,conf) -> {
-      initOspfInterfaceCosts(conf);
-    });
+    _configurations.forEach((router, conf) -> initOspfInterfaceCosts(conf));
   }
 
   /*
@@ -250,7 +260,6 @@ public class Graph {
   public static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
-
 
   /*
    * Collect all static routes after inferring which interface they indicate
@@ -514,20 +523,16 @@ public class Graph {
           Set<Long> areaIds = new HashSet<>();
           OspfProcess p = conf.getDefaultVrf().getOspfProcess();
           if (p != null) {
-            p.getAreas()
-                .forEach(
-                    (id, area) -> {
-                      areaIds.add(id);
-                    });
+            p.getAreas().forEach((id, area) -> areaIds.add(id));
           }
           _areaIds.put(router, areaIds);
         });
   }
 
   /*
- * Determines the collection of routers within the same AS
- * as the router provided as a parameter
- */
+   * Determines the collection of routers within the same AS
+   * as the router provided as a parameter
+   */
   private Set<String> findDomain(String router) {
     Set<String> sameDomain = new HashSet<>();
     Queue<String> todo = new ArrayDeque<>();
@@ -553,7 +558,7 @@ public class Graph {
    */
   private void initDomains() {
     int i = 0;
-    Set<String> routers =  new HashSet<>(_configurations.keySet());
+    Set<String> routers = new HashSet<>(_configurations.keySet());
     while (!routers.isEmpty()) {
       String router = routers.iterator().next();
       Set<String> domain = findDomain(router);
@@ -573,6 +578,158 @@ public class Graph {
   public Set<String> getDomain(String router) {
     int idx = _domainMap.get(router);
     return _domainMapInverse.get(idx);
+  }
+
+  /*
+ * Finds all uniquely mentioned community matches
+ * in the network by walking over every configuration.
+ */
+  public Set<CommunityVar> findAllCommunities() {
+    Set<CommunityVar> comms = new HashSet<>();
+    getConfigurations().forEach((router, conf) -> {
+      comms.addAll(findAllCommunities(router));
+    });
+    return comms;
+  }
+
+  public Set<CommunityVar> findAllCommunities(String router) {
+    Set<CommunityVar> comms = new HashSet<>();
+    Configuration conf = getConfigurations().get(router);
+    conf.getRoutingPolicies()
+        .forEach(
+            (name, pol) -> {
+              AstVisitor v = new AstVisitor();
+              v.visit(
+                  conf,
+                  pol.getStatements(),
+                  stmt -> {
+                    if (stmt instanceof SetCommunity) {
+                      SetCommunity sc = (SetCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, sc.getExpr()));
+                    }
+                    if (stmt instanceof AddCommunity) {
+                      AddCommunity ac = (AddCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, ac.getExpr()));
+                    }
+                    if (stmt instanceof DeleteCommunity) {
+                      DeleteCommunity dc = (DeleteCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, dc.getExpr()));
+                    }
+                    if (stmt instanceof RetainCommunity) {
+                      RetainCommunity rc = (RetainCommunity) stmt;
+                      comms.addAll(findAllCommunities(conf, rc.getExpr()));
+                    }
+                  },
+                  expr -> {
+                    if (expr instanceof MatchCommunitySet) {
+                      MatchCommunitySet m = (MatchCommunitySet) expr;
+                      CommunitySetExpr ce = m.getExpr();
+                      comms.addAll(findAllCommunities(conf, ce));
+                    }
+                  });
+            });
+    return comms;
+  }
+
+  /*
+   * Final all uniquely mentioned community values for a particular
+   * router configuration and community set expression.
+   */
+  public Set<CommunityVar> findAllCommunities(Configuration conf, CommunitySetExpr ce) {
+    Set<CommunityVar> comms = new HashSet<>();
+    if (ce instanceof InlineCommunitySet) {
+      InlineCommunitySet c = (InlineCommunitySet) ce;
+      for (CommunitySetElem cse : c.getCommunities()) {
+        if (cse.getPrefix() instanceof LiteralCommunitySetElemHalf
+            && cse.getSuffix() instanceof LiteralCommunitySetElemHalf) {
+          LiteralCommunitySetElemHalf x = (LiteralCommunitySetElemHalf) cse.getPrefix();
+          LiteralCommunitySetElemHalf y = (LiteralCommunitySetElemHalf) cse.getSuffix();
+          int prefixInt = x.getValue();
+          int suffixInt = y.getValue();
+          String val = prefixInt + ":" + suffixInt;
+          Long l = (((long) prefixInt) << 16) | (suffixInt);
+          CommunityVar var = new CommunityVar(CommunityVar.Type.EXACT, val, l);
+          comms.add(var);
+        } else {
+          throw new BatfishException("TODO: community non literal: " + cse);
+        }
+      }
+    }
+    if (ce instanceof NamedCommunitySet) {
+      NamedCommunitySet c = (NamedCommunitySet) ce;
+      String cname = c.getName();
+      CommunityList cl = conf.getCommunityLists().get(cname);
+      if (cl != null) {
+        for (CommunityListLine line : cl.getLines()) {
+          CommunityVar var = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
+          comms.add(var);
+        }
+      }
+    }
+    return comms;
+  }
+
+  /*
+   * Map named community sets that contain a single match
+   * back to the community/regex value. This makes it
+   * easier to provide intuitive counter examples.
+   */
+  public Map<String, String> findNamedCommunities() {
+    Map<String, String> comms = new HashMap<>();
+    getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              conf.getCommunityLists()
+                  .forEach(
+                      (name, cl) -> {
+                        if (cl != null && cl.getLines().size() == 1) {
+                          CommunityListLine line = cl.getLines().get(0);
+                          comms.put(line.getRegex(), name);
+                        }
+                      });
+            });
+    return comms;
+  }
+
+  /*
+   * Find the set of all protocols that might be redistributed into
+   * protocol p given the current configuration and routing policy.
+   * This is based on structure of the AST.
+   */
+  public Set<Protocol> findRedistributedProtocols(
+      Configuration conf, RoutingPolicy pol, Protocol p) {
+    Set<Protocol> protos = new HashSet<>();
+    AstVisitor v = new AstVisitor();
+    v.visit(
+        conf,
+        pol.getStatements(),
+        stmt -> { },
+        expr -> {
+          if (expr instanceof MatchProtocol) {
+            MatchProtocol mp = (MatchProtocol) expr;
+            RoutingProtocol other = mp.getProtocol();
+            Protocol otherP = Protocol.fromRoutingProtocol(other);
+            if (otherP != null && otherP != p) {
+              switch (other) {
+                case BGP:
+                  protos.add(otherP);
+                  break;
+                case OSPF:
+                  protos.add(otherP);
+                  break;
+                case STATIC:
+                  protos.add(otherP);
+                  break;
+                case CONNECTED:
+                  protos.add(otherP);
+                  break;
+                default:
+                  throw new BatfishException("Unrecognized protocol: " + other.protocolName());
+              }
+            }
+          }
+        });
+    return protos;
   }
 
   /*
