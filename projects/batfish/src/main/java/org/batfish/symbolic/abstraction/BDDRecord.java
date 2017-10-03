@@ -9,7 +9,6 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.symbolic.CommunityVar;
-import org.batfish.symbolic.ICopy;
 import org.batfish.symbolic.Protocol;
 
 /**
@@ -17,7 +16,7 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-class BDDRecord implements ICopy<BDDRecord> {
+public class BDDRecord {
 
   private BDDFactory _factory;
 
@@ -162,7 +161,7 @@ class BDDRecord implements ICopy<BDDRecord> {
     this._communities = communities;
   }
 
-  @Override public BDDRecord copy() {
+  public BDDRecord copy() {
     return new BDDRecord(this);
   }
 }

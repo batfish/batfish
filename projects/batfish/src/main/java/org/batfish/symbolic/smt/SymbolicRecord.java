@@ -12,7 +12,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
-import org.batfish.symbolic.ICopy;
 import org.batfish.symbolic.Protocol;
 
 /**
@@ -21,7 +20,7 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-class SymbolicRecord implements ICopy<SymbolicRecord> {
+public class SymbolicRecord {
 
   private String _name;
 
@@ -494,7 +493,7 @@ class SymbolicRecord implements ICopy<SymbolicRecord> {
     return _name.hashCode();
   }
 
-  @Override public SymbolicRecord copy() {
+  public SymbolicRecord copy() {
     return new SymbolicRecord(this);
   }
 }

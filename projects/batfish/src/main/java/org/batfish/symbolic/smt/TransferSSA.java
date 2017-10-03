@@ -987,11 +987,14 @@ class TransferSSA {
           default:
             p.debug("True Branch");
             // clear changed variables before proceeding
+            TransferParam<SymbolicRecord> p1 = p.indent().setOther(p.getOther().copy());
+            TransferParam<SymbolicRecord> p2 = p.indent().setOther(p.getOther().copy());
+
             TransferResult<BoolExpr,BoolExpr> trueBranch =
-                compute(i.getTrueStatements(), p.indent().copyRecord(), initialResult());
+                compute(i.getTrueStatements(), p1, initialResult());
             p.debug("False Branch");
             TransferResult<BoolExpr,BoolExpr> falseBranch =
-                compute(i.getFalseStatements(), p.indent().copyRecord(), initialResult());
+                compute(i.getFalseStatements(), p2, initialResult());
             p.debug("JOIN");
             PList<Pair<String, Pair<Expr, Expr>>> pairs =
                 trueBranch.mergeChangedVariables(falseBranch);

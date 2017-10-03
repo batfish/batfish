@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.symbolic.collections.PList;
 import org.batfish.symbolic.smt.Encoder;
 
-public class TransferParam<T extends ICopy<T>> {
+public class TransferParam<T> {
 
   public enum CallContext {
     EXPR_CALL,
@@ -104,12 +104,6 @@ public class TransferParam<T extends ICopy<T>> {
   public TransferParam<T> setChainContext(ChainContext cc) {
     TransferParam<T> ret = new TransferParam<>(this);
     ret._chainContext = cc;
-    return ret;
-  }
-
-  public TransferParam<T> copyRecord() {
-    TransferParam<T> ret = new TransferParam<>(this);
-    ret._other = this._other.copy();
     return ret;
   }
 

@@ -671,8 +671,9 @@ class TransferBDD {
         p.debug("guard: " + str);
 
         BDDRecord current = result.getReturnValue().getFirst();
-        TransferParam<BDDRecord> pTrue = p.indent().copyRecord().setOther(current);
-        TransferParam<BDDRecord> pFalse = p.indent().copyRecord().setOther(current);
+
+        TransferParam<BDDRecord> pTrue = p.indent().setOther(current.copy());
+        TransferParam<BDDRecord> pFalse = p.indent().setOther(current.copy());
         p.debug("True Branch");
         TransferResult<BDDReturn, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
         p.debug("False Branch");
