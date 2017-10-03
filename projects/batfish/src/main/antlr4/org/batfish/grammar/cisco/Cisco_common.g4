@@ -527,3 +527,8 @@ variable_secret
 :
    ~( NEWLINE | ROLE )+
 ;
+
+variable_vlan
+:
+   ~( NEWLINE | ACCESS_MAP | DEC )
+;

@@ -715,6 +715,17 @@ if_null_inner
    ) ~NEWLINE* NEWLINE
 ;
 
+if_null_single
+:
+   NO?
+   (
+      BCMC_OPTIMIZATION
+      | JUMBO
+      | SUPPRESS_ARP
+      | TRUSTED
+   ) ~NEWLINE* NEWLINE
+;
+
 if_port_security
 :
    PORT SECURITY NEWLINE
@@ -735,7 +746,9 @@ if_spanning_tree
 if_st_null
 :
    (
-      BPDUFILTER
+   // intentional blank
+
+      | BPDUFILTER
       | BPDUGUARD
       | COST
       | GUARD
@@ -1050,6 +1063,7 @@ s_interface
       | if_vrrp
       // do not rearrange items below
 
+      | if_null_single
       | if_null_block
       |
       { !_disableUnrecognized }?

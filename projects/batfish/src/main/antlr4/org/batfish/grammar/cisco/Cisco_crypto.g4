@@ -275,7 +275,8 @@ cipt_null
 cis_null
 :
    (
-      ENABLE
+      EAP_PASSTHROUGH
+      | ENABLE
       | IDENTITY
       | INVALID_SPI_RECOVERY
       | KEEPALIVE
@@ -306,9 +307,12 @@ cispol_null
    (
       AUTHENTICATION
       | ENCR
+      | ENCRYPTION
       | GROUP
       | HASH
       | LIFETIME
+      | PRF
+      | VERSION
    ) ~NEWLINE* NEWLINE
 ;
 

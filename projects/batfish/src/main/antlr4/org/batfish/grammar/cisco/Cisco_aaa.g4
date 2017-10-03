@@ -260,17 +260,25 @@ aaa_authentication
    AUTHENTICATION
    (
       aaa_authentication_banner
+      | aaa_authentication_captive_portal
       | aaa_authentication_dot1x
       | aaa_authentication_enable
       | aaa_authentication_http
       | aaa_authentication_include
       | aaa_authentication_login
+      | aaa_authentication_mac
       | aaa_authentication_policy
       | aaa_authentication_ppp
       | aaa_authentication_serial
       | aaa_authentication_ssh
+      | aaa_authentication_stateful_dot1x
+      | aaa_authentication_stateful_kerberos
+      | aaa_authentication_stateful_ntlm
       | aaa_authentication_telnet
       | aaa_authentication_username_prompt
+      | aaa_authentication_vpn
+      | aaa_authentication_wired
+      | aaa_authentication_wispr
    )
 ;
 
@@ -284,13 +292,63 @@ aaa_authentication_banner
    BANNER banner
 ;
 
+aaa_authentication_captive_portal
+:
+   CAPTIVE_PORTAL ~NEWLINE* NEWLINE
+   (
+      aaa_authentication_captive_portal_null
+   )*
+;
+
+aaa_authentication_captive_portal_null
+:
+   NO?
+   (
+      DEFAULT_GUEST_ROLE
+      | DEFAULT_ROLE
+      | ENABLE_WELCOME_PAGE
+      | GUEST_LOGON
+      | LOGIN_PAGE
+      | MAX_AUTHENTICATION_FAILURES
+      | PROTOCOL_HTTP
+      | REDIRECT_PAUSE
+      | SERVER_GROUP
+      | WELCOME_PAGE
+      | WHITE_LIST
+   ) ~NEWLINE* NEWLINE
+;
+
 aaa_authentication_dot1x
 :
    DOT1X
    (
-      DEFAULT
-      | list = variable
-   ) aaa_authentication_list_method+ NEWLINE
+      (
+         (
+            DEFAULT
+            | list = variable
+         ) aaa_authentication_list_method+ NEWLINE
+      )
+      |
+      (
+         double_quoted_string NEWLINE
+         (
+            aaa_authentication_dot1x_null
+         )*
+      )
+   )
+;
+
+aaa_authentication_dot1x_null
+:
+   NO?
+   (
+      MACHINE_AUTHENTICATION
+      | MAX_AUTHENTICATION_FAILURES
+      | REAUTHENTICATION
+      | TERMINATION
+      | TIMER
+      | WPA_FAST_HANDOVER
+   ) ~NEWLINE* NEWLINE
 ;
 
 aaa_authentication_enable
@@ -449,6 +507,26 @@ aaa_authentication_login_privilege_mode
    PRIVILEGE_MODE NEWLINE
 ;
 
+aaa_authentication_mac
+:
+   MAC double_quoted_string NEWLINE
+   (
+      aaa_authentication_mac_null
+   )*
+;
+
+aaa_authentication_mac_null
+:
+   NO?
+   (
+      CASE
+      | DELIMITER
+      | MAX_AUTHENTICATION_FAILURES
+      | REAUTHENTICATION
+      | TIMER
+   ) ~NEWLINE* NEWLINE
+;
+
 aaa_authentication_policy
 :
    POLICY
@@ -473,9 +551,48 @@ aaa_authentication_serial
    SERIAL aaa_authentication_asa_console
 ;
 
+aaa_authentication_server
+:
+   AUTHENTICATION_SERVER
+   (
+      aaa_authentication_server_radius
+   )
+;
+
+aaa_authentication_server_radius
+:
+   RADIUS double_quoted_string NEWLINE
+   (
+      aaa_authentication_server_radius_null
+   )*
+;
+
+aaa_authentication_server_radius_null
+:
+   NO?
+   (
+      HOST
+   ) ~NEWLINE* NEWLINE
+;
+
 aaa_authentication_ssh
 :
    SSH aaa_authentication_asa_console
+;
+
+aaa_authentication_stateful_dot1x
+:
+   STATEFUL_DOT1X NEWLINE
+;
+
+aaa_authentication_stateful_kerberos
+:
+   STATEFUL_KERBEROS double_quoted_string NEWLINE
+;
+
+aaa_authentication_stateful_ntlm
+:
+   STATEFUL_NTLM double_quoted_string NEWLINE
 ;
 
 aaa_authentication_telnet
@@ -486,6 +603,21 @@ aaa_authentication_telnet
 aaa_authentication_username_prompt
 :
    USERNAME_PROMPT DOUBLE_QUOTE RAW_TEXT? DOUBLE_QUOTE NEWLINE
+;
+
+aaa_authentication_vpn
+:
+   VPN double_quoted_string NEWLINE
+;
+
+aaa_authentication_wired
+:
+   WIRED NEWLINE
+;
+
+aaa_authentication_wispr
+:
+   WISPR double_quoted_string NEWLINE
 ;
 
 aaa_authorization
@@ -605,6 +737,22 @@ aaa_default_taskgroup
    DEFAULT_TASKGROUP ~NEWLINE* NEWLINE
 ;
 
+aaa_derivation_rules
+:
+   DERIVATION_RULES ~NEWLINE* NEWLINE
+   (
+      aaa_derivation_rules_null
+   )*
+;
+
+aaa_derivation_rules_null
+:
+   NO?
+   (
+      SET
+   ) ~NEWLINE* NEWLINE
+;
+
 aaa_group
 :
    GROUP SERVER
@@ -722,6 +870,61 @@ aaa_new_model
    NEW_MODEL NEWLINE
 ;
 
+aaa_password_policy
+:
+   PASSWORD_POLICY ~NEWLINE* NEWLINE
+;
+
+aaa_profile
+:
+   PROFILE double_quoted_string NEWLINE
+   (
+      aaa_profile_null
+   )*
+;
+
+aaa_profile_null
+:
+   NO?
+   (
+      AUTHENTICATION_DOT1X
+      | DOT1X_DEFAULT_ROLE
+      | DOT1X_SERVER_GROUP
+      | ENFORCE_DHCP
+      | INITIAL_ROLE
+      | MAC_DEFAULT_ROLE
+      | MAC_SERVER_GROUP
+      | RADIUS_ACCOUNTING
+      | RADIUS_INTERIM_ACCOUNTING
+      | RFC_3576_SERVER
+      | WIRED_TO_WIRELESS_ROAM
+   ) ~NEWLINE* NEWLINE
+;
+
+aaa_rfc_3576_server
+:
+   RFC_3576_SERVER double_quoted_string NEWLINE
+;
+
+aaa_server_group
+:
+   SERVER_GROUP double_quoted_string NEWLINE
+   (
+      aaa_server_group_null
+   )*
+;
+
+aaa_server_group_null
+:
+   NO?
+   (
+      ALLOW_FAIL_THROUGH
+      | AUTH_SERVER
+      | LOAD_BALANCE
+      | SET
+   ) ~NEWLINE* NEWLINE
+;
+
 aaa_session_id
 :
    SESSION_ID
@@ -738,7 +941,7 @@ aaa_user
       DEFAULT_ROLE
       | FAST_AGE
    ) NEWLINE
-   ;
+;
 
 aaaac_action_type
 :
@@ -791,10 +994,16 @@ s_aaa
    (
       aaa_accounting
       | aaa_authentication
+      | aaa_authentication_server
       | aaa_authorization
       | aaa_bandwidth_contract
+      | aaa_derivation_rules
       | aaa_group
       | aaa_new_model
+      | aaa_password_policy
+      | aaa_profile
+      | aaa_rfc_3576_server
+      | aaa_server_group
       | aaa_session_id
       | aaa_user
       | null_aaa_substanza

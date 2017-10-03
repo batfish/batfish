@@ -67,6 +67,15 @@ address_family_multicast_tail
    )*
 ;
 
+ags_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | ID
+   ) ~NEWLINE* NEWLINE
+;
+
 aiimgp_stanza
 :
    address_aiimgp_stanza
@@ -75,6 +84,77 @@ aiimgp_stanza
 allow_iimgp_stanza
 :
    ALLOW ~NEWLINE* NEWLINE aiimgp_stanza*
+;
+
+ap_null
+:
+   NO?
+   (
+      AP_BLACKLIST_TIME
+      | ENET_LINK_PROFILE
+      | FLUSH_R1_ON_NEW_R0
+      | GENERAL_PROFILE
+      | LLDP
+      | MESH_CLUSTER_PROFILE
+      | MESH_HT_SSID_PROFILE
+      | MESH_RADIO_PROFILE
+      | PROVISIONING_PROFILE
+      | SPECTRUM
+      | WIRED_AP_PROFILE
+      | WIRED_PORT_PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
+ap_regulatory_domain_profile
+:
+   REGULATORY_DOMAIN_PROFILE ~NEWLINE* NEWLINE
+   (
+      aprdp_null
+   )*
+;
+
+ap_system_profile
+:
+   SYSTEM_PROFILE ~NEWLINE* NEWLINE
+   (
+      apsp_null
+   )*
+;
+
+apg_null
+:
+   NO?
+   (
+      AP_SYSTEM_PROFILE
+      | DOT11A_RADIO_PROFILE
+      | DOT11G_RADIO_PROFILE
+      | IDS_PROFILE
+      | VIRTUAL_AP
+   ) ~NEWLINE* NEWLINE
+;
+
+aprdp_null
+:
+   NO?
+   (
+      COUNTRY_CODE
+      | VALID_11A_40MHZ_CHANNEL_PAIR
+      | VALID_11A_80MHZ_CHANNEL_GROUP
+      | VALID_11A_CHANNEL
+      | VALID_11G_40MHZ_CHANNEL_PAIR
+      | VALID_11G_CHANNEL
+   ) ~NEWLINE* NEWLINE
+;
+
+apsp_null
+:
+   NO?
+   (
+      BKUP_LMS_IP
+      | DNS_DOMAIN
+      | LMS_IP
+      | LMS_PREEMPTION
+   ) ~NEWLINE* NEWLINE
 ;
 
 asa_comment_stanza
@@ -163,6 +243,16 @@ cp_service_policy
       INPUT
       | OUTPUT
    ) name = variable NEWLINE
+;
+
+cps_null
+:
+   NO?
+   (
+      AUTO_CERT_ALLOW_ALL
+      | AUTO_CERT_ALLOWED_ADDRS
+      | AUTO_CERT_PROV
+   ) ~NEWLINE* NEWLINE
 ;
 
 cqg_null
@@ -278,6 +368,31 @@ dhcp_profile_null
       | LEASE
       | POOL
       | SUBNET_MASK
+   ) ~NEWLINE* NEWLINE
+;
+
+dialer_group
+:
+   GROUP ~NEWLINE* NEWLINE
+   (
+      dialer_group_null
+   )*
+;
+
+dialer_group_null
+:
+   NO?
+   (
+      DIAL_STRING
+      | INIT_STRING
+   ) ~NEWLINE* NEWLINE
+;
+
+dialer_null
+:
+   NO?
+   (
+      WATCH_LIST
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -441,6 +556,14 @@ flowv_null
    ) ~NEWLINE* NEWLINE
 ;
 
+gae_null
+:
+   NO?
+   (
+      SMTP_SERVER
+   ) ~NEWLINE* NEWLINE
+;
+
 gk_null
 :
    NO?
@@ -470,6 +593,208 @@ hardware_null
       | RBACL
       | SPAN
       | VACL
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_ap_classification_rule
+:
+   AP_CLASSIFICATION_RULE double_quoted_string NEWLINE
+   (
+      ids_ap_classification_rule_null
+   )*
+;
+
+ids_ap_classification_rule_null
+:
+   NO?
+   (
+      CONF_LEVEL_INCR
+      | DISCOVERED_AP_CNT
+      | SSID
+      | SNR_MAX
+      | SNR_MIN
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_ap_rule_matching
+:
+   AP_RULE_MATCHING NEWLINE
+   (
+      ids_ap_rule_matching_null
+   )*
+;
+
+ids_ap_rule_matching_null
+:
+   NO?
+   (
+      RULE_NAME
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_dos_profile
+:
+   DOS_PROFILE double_quoted_string NEWLINE
+   (
+      ids_dos_profile_null
+   )*
+;
+
+ids_dos_profile_null
+:
+   NO?
+   (
+      DETECT_AP_FLOOD
+      | DETECT_CHOPCHOP_ATTACK
+      | DETECT_CLIENT_FLOOD
+      | DETECT_CTS_RATE_ANOMALY
+      | DETECT_EAP_RATE_ANOMALY
+      | DETECT_HT_40MHZ_INTOLERANCE
+      | DETECT_INVALID_ADDRESS_COMBINATION
+      | DETECT_MALFORMED_ASSOCIATION_REQUEST
+      | DETECT_MALFORMED_AUTH_FRAME
+      | DETECT_MALFORMED_HTIE
+      | DETECT_MALFORMED_LARGE_DURATION
+      | DETECT_OVERFLOW_EAPOL_KEY
+      | DETECT_OVERFLOW_IE
+      | DETECT_RATE_ANOMALIES
+      | DETECT_RTS_RATE_ANOMALY
+      | DETECT_TKIP_REPLAY_ATTACK
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_general_profile
+:
+   GENERAL_PROFILE double_quoted_string NEWLINE
+   (
+      ids_general_profile_null
+   )*
+;
+
+ids_general_profile_null
+:
+   NO?
+   (
+      WIRED_CONTAINMENT
+      | WIRELESS_CONTAINMENT
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_impersonation_profile
+:
+   IMPERSONATION_PROFILE double_quoted_string NEWLINE
+   (
+      ids_impersonation_profile_null
+   )*
+;
+
+ids_impersonation_profile_null
+:
+   NO?
+   (
+      DETECT_AP_IMPERSONATION
+      | DETECT_BEACON_WRONG_CHANNEL
+      | DETECT_HOTSPOTTER
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_null
+:
+   NO?
+   (
+      MANAGEMENT_PROFILE
+      | RATE_THRESHOLDS_PROFILE
+      | SIGNATURE_PROFILE
+      | WMS_LOCAL_SYSTEM_PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_profile
+:
+   PROFILE double_quoted_string NEWLINE
+   (
+      ids_profile_null
+   )*
+;
+
+ids_profile_null
+:
+   NO?
+   (
+      DOS_PROFILE
+      | GENERAL_PROFILE
+      | SIGNATURE_MATCHING_PROFILE
+      | IMPERSONATION_PROFILE
+      | UNAUTHORIZED_DEVICE_PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_signature_matching_profile
+:
+   SIGNATURE_MATCHING_PROFILE double_quoted_string NEWLINE
+   (
+      ids_signature_matching_profile_null
+   )*
+;
+
+ids_signature_matching_profile_null
+:
+   NO?
+   (
+      SIGNATURE
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_unauthorized_device_profile
+:
+   UNAUTHORIZED_DEVICE_PROFILE double_quoted_string NEWLINE
+   (
+      ids_unauthorized_device_profile_null
+   )*
+;
+
+ids_unauthorized_device_profile_null
+:
+   NO?
+   (
+      DETECT_ADHOC_NETWORK
+      | DETECT_BAD_WEP
+      | DETECT_HT_GREENFIELD
+      | DETECT_INVALID_MAC_OUI
+      | DETECT_MISCONFIGURED_AP
+      | DETECT_VALID_SSID_MISUSE
+      | DETECT_WIRELESS_BRIDGE
+      | DETECT_WIRELESS_HOSTED_NETWORK
+      | PRIVACY
+      | PROTECT_SSID
+      | PROTECT_VALID_STA
+      | REQUIRE_WPA
+      | SUSPECT_ROGUE_CONF_LEVEL
+      | VALID_AND_PROTECTED_SSID
+   ) ~NEWLINE* NEWLINE
+;
+
+ids_wms_general_profile
+:
+   WMS_GENERAL_PROFILE NEWLINE
+   (
+      ids_wms_general_profile_null
+   )*
+;
+
+ids_wms_general_profile_null
+:
+   NO?
+   (
+      COLLECT_STATS
+   ) ~NEWLINE* NEWLINE
+;
+
+ifmap_null
+:
+   NO?
+   (
+      ENABLE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -531,7 +856,8 @@ ip_default_gateway_stanza
 ip_dhcp_null
 :
    (
-      PACKET
+      EXCLUDED_ADDRESS
+      | PACKET
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -547,7 +873,8 @@ ip_dhcp_pool_null
 :
    NO?
    (
-      BOOTFILE
+      AUTHORITATIVE
+      | BOOTFILE
       | CLIENT_IDENTIFIER
       | CLIENT_NAME
       | DEFAULT_ROUTER
@@ -633,7 +960,8 @@ ip_nat_pool
    (
       POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
       (
-         // intentional blank
+      // intentional blank
+
          |
          (
             NETMASK mask = IP_ADDRESS
@@ -649,6 +977,17 @@ ip_nat_pool
 ip_nat_pool_range
 :
    RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
+;
+
+ip_probe_null
+:
+   NO?
+   (
+      BURST_SIZE
+      | FREQUENCY
+      | MODE
+      | RETRIES
+   ) ~NEWLINE* NEWLINE
 ;
 
 ip_route_stanza
@@ -1020,6 +1359,14 @@ lbgbdv_null
    ) ~NEWLINE* NEWLINE
 ;
 
+license_null
+:
+   NO?
+   (
+      CENTRALIZED_LICENSING_ENABLE
+   ) ~NEWLINE* NEWLINE
+;
+
 lpts_null
 :
    NO?
@@ -1366,6 +1713,59 @@ redundancy_null
    ) ~NEWLINE* NEWLINE
 ;
 
+rf_arm_profile
+:
+   ARM_PROFILE double_quoted_string NEWLINE
+   (
+      rf_arm_profile_null
+   )*
+;
+
+rf_arm_profile_null
+:
+   NO?
+   (
+      ASSIGNMENT
+      | BACKOFF_TIME
+      | ERROR_RATE_THRESHOLD
+      | FREE_CHANNEL_INDEX
+      | IDEAL_COVERAGE_INDEX
+      | MAX_TX_POWER
+      | MIN_TX_POWER
+      | ROGUE_AP_AWARE
+      | SCANNING
+   ) ~NEWLINE* NEWLINE
+;
+
+rf_null
+:
+   NO?
+   (
+      ARM_RF_DOMAIN_PROFILE
+      | EVENT_THRESHOLDS_PROFILE
+      | OPTIMIZATION_PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
+rf_dot11a_radio_profile
+:
+   DOT11A_RADIO_PROFILE double_quoted_string NEWLINE
+   (
+      rf_dot11a_radio_profile_null
+   )*
+;
+
+rf_dot11a_radio_profile_null
+:
+   NO?
+   (
+      ARM_PROFILE
+      | MODE
+      | SPECTRUM_LOAD_BALANCING
+      | SPECTRUM_MONITORING
+   ) ~NEWLINE* NEWLINE
+;
+
 rlcg_null
 :
    NO?
@@ -1417,6 +1817,32 @@ router_multicast_tail
       | null_inner
       | peer_stanza
       | rmc_null
+   )*
+;
+
+s_airgroupservice
+:
+   AIRGROUPSERVICE ~NEWLINE* NEWLINE
+   (
+      ags_null
+   )*
+;
+
+s_ap
+:
+   AP
+   (
+      ap_null
+      | ap_regulatory_domain_profile
+      | ap_system_profile
+   )
+;
+
+s_ap_group
+:
+   AP_GROUP double_quoted_string NEWLINE
+   (
+      apg_null
    )*
 ;
 
@@ -1492,6 +1918,14 @@ s_control_plane_tail
    | cp_service_policy
 ;
 
+s_control_plane_security
+:
+   CONTROL_PLANE_SECURITY NEWLINE
+   (
+      cps_null
+   )*
+;
+
 s_cops
 :
    COPS
@@ -1523,6 +1957,15 @@ s_dhcp
       dhcp_null
       | dhcp_profile
    )*
+;
+
+s_dialer
+:
+   DIALER
+   (
+      dialer_group
+      | dialer_null
+   )
 ;
 
 s_dial_peer
@@ -1692,6 +2135,14 @@ s_global_port_security
    )*
 ;
 
+s_guest_access_email
+:
+   GUEST_ACCESS_EMAIL NEWLINE
+   (
+      gae_null
+   )*
+;
+
 s_hardware
 :
    NO? HARDWARE ~NEWLINE* NEWLINE
@@ -1715,6 +2166,31 @@ s_hostname
          )+
       )
    ) NEWLINE
+;
+
+s_ids
+:
+   IDS
+   (
+      ids_ap_classification_rule
+      | ids_ap_rule_matching
+      | ids_dos_profile
+      | ids_general_profile
+      | ids_impersonation_profile
+      | ids_null
+      | ids_profile
+      | ids_signature_matching_profile
+      | ids_unauthorized_device_profile
+      | ids_wms_general_profile
+   )
+;
+
+s_ifmap
+:
+   IFMAP ~NEWLINE* NEWLINE
+   (
+      ifmap_null
+   )*
 ;
 
 s_interface_line
@@ -1775,6 +2251,14 @@ s_ip_nat
       ip_nat_null
       | ip_nat_pool
    )
+;
+
+s_ip_probe
+:
+   IP PROBE ~NEWLINE* NEWLINE
+   (
+      ip_probe_null
+   )*
 ;
 
 s_ip_sla
@@ -1864,6 +2348,14 @@ s_l2vpn
       l2vpn_bridge_group
       | l2vpn_logging
       | l2vpn_xconnect
+   )*
+;
+
+s_license
+:
+   LICENSE ~NEWLINE* NEWLINE
+   (
+      license_null
    )*
 ;
 
@@ -2025,6 +2517,16 @@ s_redundancy
    )*
 ;
 
+s_rf
+:
+   RF
+   (
+      rf_arm_profile
+      | rf_null
+      | rf_dot11a_radio_profile
+   )
+;
+
 s_role
 :
    NO? ROLE ~NEWLINE* NEWLINE
@@ -2182,6 +2684,15 @@ s_tunnel_group
    )*
 ;
 
+s_user_role
+:
+   USER_ROLE name = variable_permissive NEWLINE
+   (
+      ur_access_list
+      | ur_null
+   )*
+;
+
 s_username
 :
    USERNAME
@@ -2216,11 +2727,19 @@ s_vlan
    NO? VLAN
    (
       ACCESS_MAP
-      | DEC
+      |
+      (
+         variable_vlan? DEC
+      )
    ) ~NEWLINE* NEWLINE
    (
       vlan_null
    )*
+;
+
+s_vlan_name
+:
+   VLAN_NAME name = variable_permissive NEWLINE
 ;
 
 s_voice
@@ -2273,6 +2792,14 @@ s_vpn
    )*
 ;
 
+s_vpn_dialer
+:
+   VPN_DIALER name = variable NEWLINE
+   (
+      vpn_dialer_null
+   )*
+;
+
 s_vrf_context
 :
    VRF CONTEXT name = variable NEWLINE
@@ -2294,12 +2821,30 @@ s_vrf_definition
    )?
 ;
 
+s_web_server
+:
+   WEB_SERVER PROFILE NEWLINE
+   (
+      web_server_null
+   )*
+;
+
 s_webvpn
 :
    NO? WEBVPN ~NEWLINE* NEWLINE
    (
       webvpn_null
    )*
+;
+
+s_wlan
+:
+   WLAN
+   (
+      wlan_null
+      | wlan_ssid_profile
+      | wlan_virtual_ap
+   )
 ;
 
 s_wsma
@@ -2512,6 +3057,9 @@ stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
+   | s_airgroupservice
+   | s_ap
+   | s_ap_group
    | s_application
    | s_application_var
    | s_archive
@@ -2523,6 +3071,7 @@ stanza
    | s_class_map
    | s_cluster
    | s_control_plane
+   | s_control_plane_security
    | s_controller
    | s_cops
    | s_cos_queue_group
@@ -2531,6 +3080,7 @@ stanza
    | s_depi_class
    | s_depi_tunnel
    | s_dhcp
+   | s_dialer
    | s_dial_peer
    | s_domain
    | s_domain_name
@@ -2548,8 +3098,11 @@ stanza
    | s_feature
    | s_gatekeeper
    | s_global_port_security
+   | s_guest_access_email
    | s_hardware
    | s_hostname
+   | s_ids
+   | s_ifmap
    |
    // do not move below s_interface
    s_interface_line
@@ -2562,6 +3115,7 @@ stanza
    | s_ip_name_server
    | s_ip_nat
    | s_ip_pim
+   | s_ip_probe
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
@@ -2574,6 +3128,7 @@ stanza
    | s_l2
    | s_l2tp_class
    | s_l2vpn
+   | s_license
    |
    {!_cadant}?
 
@@ -2616,6 +3171,7 @@ stanza
    | s_queue_monitor
    | s_radius_server
    | s_redundancy
+   | s_rf
    | s_role
    | s_router_eigrp
    | s_router_ospf
@@ -2640,18 +3196,23 @@ stanza
    | s_time_range
    | s_track
    | s_tunnel_group
+   | s_user_role
    | s_username
    | s_username_attributes
    | s_vlan
+   | s_vlan_name
    | s_voice
    | s_voice_card
    | s_voice_port
    | s_vpc
    | s_vpdn_group
    | s_vpn
+   | s_vpn_dialer
    | s_vrf_context
    | s_vrf_definition
+   | s_web_server
    | s_webvpn
+   | s_wlan
    | s_wsma
    | s_xconnect_logging
    | srlg_stanza
@@ -2856,7 +3417,7 @@ u_password
       | up_arista_sha512
       | up_cisco
    )
-   ;
+;
 
 u_privilege
 :
@@ -2895,6 +3456,21 @@ up_arista_sha512
 up_cisco
 :
    DEC pass = variable_secret
+;
+
+ur_access_list
+:
+   ACCESS_LIST SESSION name = variable_permissive NEWLINE
+;
+
+ur_null
+:
+   NO?
+   (
+      CAPTIVE_PORTAL
+      | MAX_SESSIONS
+      | VLAN
+   ) ~NEWLINE* NEWLINE
 ;
 
 vc_null
@@ -3055,6 +3631,14 @@ vpdnga_null
    ) ~NEWLINE* NEWLINE
 ;
 
+vpn_dialer_null
+:
+   NO?
+   (
+      IKE
+   ) ~NEWLINE* NEWLINE
+;
+
 vpn_null
 :
    NO?
@@ -3180,6 +3764,18 @@ wccp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+web_server_null
+:
+   NO?
+   (
+      CAPTIVE_PORTAL_CERT
+      | IDP_CERT
+      | SESSION_TIMEOUT
+      | SWITCH_CERT
+      | WEB_HTTPS_PORT_443
+   ) ~NEWLINE* NEWLINE
+;
+
 webvpn_null
 :
    NO?
@@ -3193,6 +3789,72 @@ webvpn_null
       | ERROR_RECOVERY
       | KEEPOUT
       | TUNNEL_GROUP_LIST
+   ) ~NEWLINE* NEWLINE
+;
+
+wlan_null
+:
+   NO?
+   (
+      BCN_RPT_REQ_PROFILE
+      | DOT11K_PROFILE
+      | DOT11R_PROFILE
+      | EDCA_PARAMETERS_PROFILE
+      | HANDOVER_TRIGGER_PROFILE
+      | HOTSPOT
+      | HT_SSID_PROFILE
+      | RRM_IE_PROFILE
+      | TSM_REQ_PROFILE
+      | VOIP_CAC_PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
+wlan_ssid_profile
+:
+   SSID_PROFILE double_quoted_string NEWLINE
+   (
+      wlan_ssid_profile_null
+   )*
+;
+
+wlan_ssid_profile_null
+:
+   NO?
+   (
+      EAPOL_RATE_OPT
+      | ESSID
+      | HT_SSID_PROFILE
+      | MAX_CLIENTS
+      | MCAST_RATE_OPT
+      | OPMODE
+      | SSID_ENABLE
+      | WMM
+   ) ~NEWLINE* NEWLINE
+;
+
+wlan_virtual_ap
+:
+   VIRTUAL_AP double_quoted_string NEWLINE
+   (
+      wlan_virtual_ap_null
+   )*
+;
+
+wlan_virtual_ap_null
+:
+   NO?
+   (
+      AAA_PROFILE
+      | AUTH_FAILURE_BLACKLIST_TIME
+      | BLACKLIST
+      | BLACKLIST_TIME
+      | BROADCAST_FILTER
+      | DENY_INTER_USER_TRAFFIC
+      | DYNAMIC_MCAST_OPTIMIZATION
+      | DYNAMIC_MCAST_OPTIMIZATION_THRESH
+      | SSID_PROFILE
+      | VAP_ENABLE
+      | VLAN
    ) ~NEWLINE* NEWLINE
 ;
 

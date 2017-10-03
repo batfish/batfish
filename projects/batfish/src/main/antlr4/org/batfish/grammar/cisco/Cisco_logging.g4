@@ -14,14 +14,19 @@ logging_address
       | IPV6_ADDRESS
    )
    (
-      VRF vrf = variable
-      | SEVERITY severity = variable
-      | DISCRIMINATOR descr = variable
-      | PORT
+      DISCRIMINATOR descr = variable
+      | FACILITY facility = variable
+      |
       (
-         DEFAULT
-         | DEC
+         PORT
+         (
+            DEFAULT
+            | DEC
+         )
       )
+      | SEVERITY severity = variable
+      | TYPE ltype = variable
+      | VRF vrf = variable
    )* NEWLINE
 ;
 

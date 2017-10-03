@@ -1,5 +1,5 @@
 !
-hostname arista_airgroup
+hostname aruba_airgroup
 !
 airgroup active-wireless-discovery "enable"
 airgroup cppm-server aaa

@@ -83,9 +83,6 @@ firewall-visibility
 guest-access-email
    smtp-server 1.2.3.4
 !
-ifmap cppm
- enable
-!
 no kernel coredump
 ids ap-classification-rule "abcd"
  conf-level-incr 78
@@ -128,15 +125,15 @@ ids impersonation-profile "default"
 !
 ids management-profile
 ids rate-thresholds-profile "default"
-ids signature-matching-profile "default"
-  signature "fleef"
-!
 ids profile "florfo"
  dos-profile "fwip"
  general-profile "fleep"
  signature-matching-profile "blorp"
  impersonation-profile "thwank"
  unauthorized-device-profile "flarg"
+!
+ids signature-matching-profile "default"
+  signature "fleef"
 !
 ids signature-profile "default"
 ids unauthorized-device-profile "blah"
@@ -159,6 +156,9 @@ ids wms-general-profile
  collect-stats
 !
 ids wms-local-system-profile
+ifmap cppm
+ enable
+!
 ip domain-lookup
 ip igmp
 ip mobile domain default
@@ -180,8 +180,8 @@ license profile
 mgmt-server type amp primary-server 1.2.3.4 profile default-amp
 mgmt-user admin root 0123456789abcdef0123456789abcdef0123456789abcdef01
 pan active-profile
-pan-options
 pan profile "default"
+pan-options
 process monitor log
 rf arm-profile "blah"
  assignment maintain

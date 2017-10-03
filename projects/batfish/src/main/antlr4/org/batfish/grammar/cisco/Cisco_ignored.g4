@@ -578,10 +578,16 @@ null_single
       )
       | ACCOUNTING
       | ACCOUNTING_PORT
+      | ACTIVATE_SERVICE_WHITELIST
+      | ADP
       | AGING
+      | AIRGROUP
       | ALIAS
-      | AP
+      | AMON
+      | AP_CRASH_TRANSFER
+      | AP_LACP_STRIPING_IP
       | AQM_REGISTER_FNF
+      | APP
       | ARP
       | ASA
       | ASDM
@@ -606,21 +612,17 @@ null_single
       | CONFIG
       | CONFIG_REGISTER
       | CONSOLE
+      | CONTROLLER_IP
       | COS_MAPPING
+      | COUNTRY
       | CTS
       | CURRENT_CONFIGURATION
+      | DATABASE
       | DEFAULT
       | DEPI
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
-      |
-      (
-         DIALER
-         (
-            WATCH_LIST
-         )
-      )
       | DIALER_LIST
       | DNS
       | DNS_GUARD
@@ -639,6 +641,7 @@ null_single
       | FAN
       | FILE
       | FIREWALL
+      | FIREWALL_VISIBILITY
       | FIRMWARE
       | FLOWCONTROL
       | FRAME_RELAY
@@ -691,10 +694,12 @@ null_single
             | LOCAL
             | MFIB
             | MFWD
+            | MOBILE
             | MROUTE
             | MSDP
             | MULTICAST
             | MULTICAST_ROUTING
+            | NEXTHOP_LIST
             |
             (
                OSPF
@@ -717,11 +722,13 @@ null_single
          )
       )
       | IP_ADDRESS_LITERAL
+      | IP_FLOW_EXPORT_PROFILE
       |
       (
          IPV6
          (
             CEF
+            | FIREWALL
             | HOP_LIMIT
             | HOST
             | LOCAL
@@ -743,13 +750,14 @@ null_single
          )
       )
       | ISDN
+      | KERNEL
       | L2PROTOCOL
+      | LCD_MENU
       | LDAP_BASE_DN
       | LDAP_LOGIN
       | LDAP_LOGIN_DN
       | LDAP_NAMING_ATTRIBUTE
       | LDAP_SCOPE
-      | LICENSE
       | LLDP
       | LOAD_INTERVAL
       | LOCALE
@@ -765,6 +773,8 @@ null_single
       | MEMORY
       | MEMORY_SIZE
       | MGCP
+      | MGMT_SERVER
+      | MGMT_USER
       | MICROCODE
       | MIRROR
       | MLS
@@ -834,6 +844,8 @@ null_single
       | OWNER
       | PACKETCABLE
       | PAGER
+      | PAN
+      | PAN_OPTIONS
       | PARSER
       | PASSWORD
       | PERCENT
@@ -883,6 +895,8 @@ null_single
       | SUBSCRIBER
       | SUBSCRIBE_TO
       | SUN
+      | SYSCONTACT
+      | SYSLOCATION
       | SYSOPT
       | TAG_SWITCHING
       | TELNET
@@ -893,11 +907,15 @@ null_single
       | THU
       | TRANSLATE
       | TUE
+      | TUNNELED_NODE_ADDRESS
       | UDLD
       | UNABLE
       | UPGRADE
+      | UPGRADE_PROFILE
+      | UPLINK
       | USER_IDENTITY
       | USE_VRF
+      | VALID_NETWORK_OUI_PROFILE
       | VERSION
       | VIDEO
       |
@@ -916,7 +934,6 @@ null_single
       | VTP
       | VOICE_CARD
       | WED
-      | WLAN
       | WRR
       | WRR_QUEUE
       | X25
