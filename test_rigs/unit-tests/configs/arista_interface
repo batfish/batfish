@@ -1,0 +1,15 @@
+!
+hostname arista_interface
+!
+interface ap1
+!
+interface et1
+  source et2
+!
+interface et2
+  source et1
+!
+interface ma1
+!
+!
+

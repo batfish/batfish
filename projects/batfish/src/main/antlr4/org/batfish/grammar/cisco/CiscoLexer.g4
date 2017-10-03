@@ -63,6 +63,7 @@ tokens {
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
+   DSA1024,
    END_CADANT,
    HEX_FRAGMENT,
    IS_LOCAL,
@@ -508,9 +509,14 @@ ALERTS
    'alerts'
 ;
 
+ALG
+:
+   'alg'
+;
+
 ALIAS
 :
-   'alias'
+   'alias' -> pushMode ( M_Alias )
 ;
 
 ALL
@@ -641,6 +647,16 @@ AP
 API
 :
    'api'
+;
+
+APP
+:
+   'app'
+;
+
+APPCATEGORY
+:
+   'appcategory'
 ;
 
 APPLETALK
@@ -1010,6 +1026,11 @@ BANDWIDTH
    'bandwidth'
 ;
 
+BANDWIDTH_CONTRACT
+:
+   'bandwidth-contract'
+;
+
 BANDWIDTH_PERCENTAGE
 :
    'bandwidth-percentage'
@@ -1093,6 +1114,16 @@ BIFF
 BIND
 :
    'bind'
+;
+
+BITTORRENT
+:
+   'bittorrent'
+;
+
+BITTORRENT_APPLICATION
+:
+   'bittorrent-application'
 ;
 
 BLOCK
@@ -1343,6 +1374,11 @@ CAM_PROFILE
 CAPABILITY
 :
    'capability'
+;
+
+CAPTIVE
+:
+   'captive'
 ;
 
 CARD
@@ -2263,7 +2299,7 @@ DEPLOY
 
 DES
 :
-   'des' -> pushMode ( M_DES )
+   'des' -> pushMode ( M_Des )
 ;
 
 DES_SHA1
@@ -2581,6 +2617,11 @@ DOT11
    'dot11'
 ;
 
+DOT1P_PRIORITY
+:
+   'dot1p-priority'
+;
+
 DOT1Q
 :
    'dot1' [Qq]
@@ -2676,6 +2717,11 @@ DSS
    'dss'
 ;
 
+DST_NAT
+:
+   'dst-nat'
+;
+
 DSU
 :
    'dsu'
@@ -2739,6 +2785,11 @@ DYNAMIC_EXTENDED
 DYNAMIC_MAP
 :
    'dynamic-map'
+;
+
+EARLY_OFFER
+:
+   'early-offer'
 ;
 
 EBGP
@@ -3026,6 +3077,11 @@ ERROR_RECOVERY
    'error-recovery'
 ;
 
+ERROR_PASSTHRU
+:
+   'error-passthru'
+;
+
 ERRORS
 :
    'errors'
@@ -3054,6 +3110,11 @@ ESP
 ESTABLISHED
 :
    'established'
+;
+
+ETH
+:
+   'eth' 
 ;
 
 ETHERCHANNEL
@@ -3331,6 +3392,11 @@ FALLBACK_DN
 FAN
 :
    'fan'
+;
+
+FAST_AGE
+:
+   'fast-age'
 ;
 
 FAST_DETECT
@@ -3835,6 +3901,11 @@ HASH_ALGORITHM
    'hash-algorithm'
 ;
 
+HEADER_PASSING
+:
+   'header-passing'
+;
+
 HEARTBEAT_INTERVAL
 :
    'heartbeat-interval'
@@ -3888,6 +3959,11 @@ HIDDEN_SHARES
 HIDEKEYS
 :
    'hidekeys'
+;
+
+HIGH
+:
+   'high'
 ;
 
 HIGH_AVAILABILITY
@@ -4345,6 +4421,11 @@ INVALID_SPI_RECOVERY
 INVALID_USERNAME_LOG
 :
    'invalid-username-log'
+;
+
+INVERT
+:
+   'invert'
 ;
 
 IOS_REGEX
@@ -5207,6 +5288,11 @@ MAX_CONFERENCES
    'max-conferences'
 ;
 
+MAX_CONNECTIONS
+:
+   'max-connections'
+;
+
 MAX_DN
 :
    'max-dn'
@@ -5425,6 +5511,11 @@ MFWD
 MGCP
 :
    'mgcp'
+;
+
+MGMT_AUTH
+:
+   'mgmt-auth'
 ;
 
 MIB
@@ -5774,7 +5865,7 @@ NAMESERVER
 
 NAT
 :
-   'nat'
+   [Nn][Aa][Tt]
 ;
 
 NAT_CONTROL
@@ -5902,9 +5993,24 @@ NETCONF
    'netconf'
 ;
 
+NETDESTINATION
+:
+   'netdestination'
+;
+
+NETDESTINATION6
+:
+   'netdestination6'
+;
+
 NETMASK
 :
    'netmask'
+;
+
+NETSERVICE
+:
+   'netservice'
 ;
 
 NETWORK
@@ -5970,6 +6076,11 @@ NEXT_HOP_THIRD_PARTY
 NEXT_SERVER
 :
    'next-server'
+;
+
+NEXTEXTHDR
+:
+   'nextexthdr'
 ;
 
 NEXTHOP
@@ -6070,6 +6181,11 @@ NOAUTH
 NODE
 :
    'node'
+;
+
+NOE
+:
+   'noe'
 ;
 
 NON500_ISAKMP
@@ -6627,6 +6743,11 @@ PEER_SWITCH
    'peer-switch'
 ;
 
+PEER_TO_PEER
+:
+   'peer-to-peer'
+;
+
 PENALTY_PERIOD
 :
    'penalty-period'
@@ -7049,7 +7170,7 @@ PRIVATE_AS
 
 PRIVATE_KEY
 :
-   'private-key' -> pushMode ( M_CadantSshKey )
+   'private-key' -> pushMode ( M_SshKey )
 ;
 
 PRIVATE_VLAN
@@ -7194,7 +7315,7 @@ PUBKEY_CHAIN
 
 PUBLIC_KEY
 :
-   'public-key' -> pushMode ( M_CadantSshKey )
+   'public-key' -> pushMode ( M_SshKey )
 ;
 
 PVC
@@ -7877,11 +7998,6 @@ RSAKEYPAIR
    'rsakeypair'
 ;
 
-RTR
-:
-   'rtr'
-;
-
 RST
 :
    'rst'
@@ -7900,6 +8016,21 @@ RSVP
 RT
 :
    'rt'
+;
+
+RTR
+:
+   'rtr'
+;
+
+RTR_ADV
+:
+   'rtr-adv'
+;
+
+RTSP
+:
+   'rtsp'
 ;
 
 RULE
@@ -8337,9 +8468,19 @@ SGBP
    'sgbp'
 ;
 
+SHA
+:
+   'sha' -> pushMode ( M_Sha )
+;
+
 SHA1
 :
    'sha1' -> pushMode ( M_SHA1 )
+;
+
+SHA512
+:
+   'sha512'
 ;
 
 SHA512_PASSWORD
@@ -8435,6 +8576,11 @@ SIP
 SIP_UA
 :
    'sip-ua'
+;
+
+SIPS
+:
+   'sips'
 ;
 
 SITE_ID
@@ -8627,6 +8773,11 @@ SQLNET
    'sqlnet'
 ;
 
+SRC_NAT
+:
+   'src-nat'
+;
+
 SRLG
 :
    'srlg'
@@ -8794,6 +8945,11 @@ STP
    'stp'
 ;
 
+STREAMING
+:
+   'streaming'
+;
+
 STREET_ADDRESS
 :
    'street-address'
@@ -8937,6 +9093,11 @@ SVC
 SVCLC
 :
    'svclc'
+;
+
+SVP
+:
+   'svp'
 ;
 
 SWITCH
@@ -9292,6 +9453,11 @@ TIMER
 TIMERS
 :
    'timers'
+;
+
+TIMESOURCE
+:
+   'timesource'
 ;
 
 TIMESTAMP
@@ -9954,6 +10120,11 @@ VMTRACER
    'vmtracer'
 ;
 
+VOCERA
+:
+   'vocera'
+;
+
 VOICE
 :
    'voice'
@@ -10136,6 +10307,16 @@ WED
    'Wed'
 ;
 
+WEEKDAY
+:
+   'weekday'
+;
+
+WEEKEND
+:
+   'weekend'
+;
+
 WEIGHT
 :
    'weight'
@@ -10281,6 +10462,16 @@ MULTICONFIGPART
 :
    '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel ( HIDDEN
    )
+;
+
+MD5_ARISTA
+:
+   '$1$' F_AristaBase64String '$' F_AristaBase64String
+;
+
+SHA512_ARISTA
+:
+   '$6$' F_AristaBase64String '$' F_AristaBase64String
 ;
 
 POUND
@@ -10719,6 +10910,18 @@ WS
 ; // Fragments
 
 fragment
+F_AristaBase64Char
+:
+   [0-9A-Za-z/.]
+;
+
+fragment
+F_AristaBase64String
+:
+   F_AristaBase64Char+
+;
+
+fragment
 F_Base64Char
 :
    [0-9A-Za-z/+]
@@ -10878,6 +11081,18 @@ F_Whitespace
    ' '
    | '\t'
    | '\u000C'
+;
+
+mode M_Alias;
+
+M_Alias_VARIABLE
+:
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_Alias_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPath;
@@ -11277,12 +11492,22 @@ mode M_CadantSshKey;
 
 M_CadantSshKey_END
 :
-   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode 
+   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode
 ;
 
 M_CadantSshKey_LINE
 :
-   F_NonNewline+ F_Newline+
+   F_HexDigit+ F_Newline+
+;
+
+M_CadantSshKey_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_CadantSshKey_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE )
 ;
 
 mode M_Certificate;
@@ -11374,24 +11599,29 @@ M_COMMENT_NON_NEWLINE
    F_NonNewline+
 ;
 
-mode M_DES;
+mode M_Des;
 
-M_DES_DEC_PART
+M_Des_DEC_PART
 :
    F_Digit+
 ;
 
-M_DES_HEX_PART
+M_Des_HEX_PART
 :
    F_HexDigit+ -> popMode
 ;
 
-M_DES_NEWLINE
+M_Des_REDACTED
+:
+   '*'+ -> popMode
+;
+
+M_Des_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
-M_DES_WS
+M_Des_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -11928,6 +12158,33 @@ M_Seed_WS
    F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
 ;
 
+mode M_Sha;
+
+M_Sha_DEC_PART
+:
+   F_Digit+
+;
+
+M_Sha_HEX_PART
+:
+   F_HexDigit+ -> popMode
+;
+
+M_Sha_REDACTED
+:
+   '*'+ -> popMode
+;
+
+M_Sha_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Sha_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_SHA1;
 
 M_SHA1_DEC_PART
@@ -11941,6 +12198,23 @@ M_SHA1_HEX_PART
 ;
 
 M_SHA1_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SshKey;
+
+M_SshKey_DSA1024
+:
+   'dsa1024' -> type ( DSA1024 ), mode ( M_CadantSshKey )
+;
+
+M_SshKey_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_SshKey_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;

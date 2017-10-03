@@ -83,6 +83,28 @@ appletalk_access_list_stanza
    ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
 ;
 
+aruba_access_list_action
+:
+   action = access_list_action
+   | CAPTIVE
+   |
+   (
+      DST_NAT dstnat = DEC
+   )
+   | SRC_NAT
+;
+
+aruba_app
+:
+   BITTORRENT
+   | BITTORRENT_APPLICATION
+;
+
+aruba_appcategory
+:
+   PEER_TO_PEER
+;
+
 as_path_set_elem
 :
    IOS_REGEX AS_PATH_SET_REGEX
@@ -242,7 +264,7 @@ extended_access_list_stanza
 :
    (
       (
-         IP ACCESS_LIST EXTENDED name = variable_permissive
+         IP ACCESS_LIST EXTENDED name = variable_aclname
       )
       |
       (
@@ -256,12 +278,12 @@ extended_access_list_stanza
          ) ACCESS_LIST
          (
             shortname = variable
-            | name = variable_permissive
+            | name = variable_aclname
          )
       )
       |
       (
-         ACCESS_LIST name = variable_permissive EXTENDED
+         ACCESS_LIST name = variable_aclname EXTENDED
       )
    )
    (
@@ -509,6 +531,126 @@ ip_prefix_list_tail
    )* NEWLINE
 ;
 
+ipacleth_line
+:
+   action = access_list_action ipacleth_range NEWLINE
+;
+
+ipacleth_range
+:
+   ANY
+;
+
+ipaclsession_ip_range
+:
+   (
+      ALIAS alias = variable
+   )
+   | ANY
+   |
+   (
+      HOST hostip = IP_ADDRESS
+   )
+   |
+   (
+      NETWORK net = IP_ADDRESS mask = IP_ADDRESS
+   )
+   | USER
+;
+
+ipaclsession_ip6_range
+:
+   (
+      ALIAS alias = variable
+   )
+   | ANY
+   |
+   (
+      HOST hostip = IPV6_ADDRESS
+   )
+   |
+   (
+      NETWORK net = IPV6_PREFIX
+   )
+   | USER
+;
+
+ipaclsession_line
+:
+   src = ipaclsession_ip_range dst = ipaclsession_ip_range svc =
+   ipaclsession_service action = aruba_access_list_action
+   (
+      (
+         DOT1P_PRIORITY d1ppri = DEC
+      )
+      | LOG
+      |
+      (
+         QUEUE
+         (
+            HIGH
+         )
+      )
+      |
+      (
+         TOS tos = DEC
+      )
+   )* NEWLINE
+;
+
+ipaclsession_line6
+:
+   IPV6 src = ipaclsession_ip6_range dst = ipaclsession_ip6_range svc =
+   ipaclsession_service6 action = aruba_access_list_action
+   (
+      LOG
+      |
+      (
+         QUEUE
+         (
+            HIGH
+         )
+      )
+   )* NEWLINE
+;
+
+ipaclsession_service
+:
+   (
+      APP app = aruba_app
+   )
+   |
+   (
+      APPCATEGORY appcat = aruba_appcategory
+   )
+   |
+   (
+      prot = protocol ps = netservice_port_specifier?
+   )
+   | netsvc = variable
+;
+
+ipaclsession_service6
+:
+   (
+      (
+         (
+            TCP
+            | UDP
+         ) ps = netservice_port_specifier?
+      )
+      |
+      (
+         ICMPV6 is = netservice_icmpv6_specifier?
+      )
+      |
+      (
+         prot = protocol
+      )
+   )
+   | netsvc = variable
+;
+
 ipv6_prefix_list_tail
 :
    (
@@ -564,6 +706,81 @@ mac_access_list_additional_feature
    |
    (
       PRIORITY_MAPPING priority_mapping = DEC
+   )
+;
+
+netdestination_description
+:
+   desc = description_line
+;
+
+netdestination_host
+:
+   HOST ip = IP_ADDRESS NEWLINE
+;
+
+netdestination_invert
+:
+   INVERT NEWLINE
+;
+
+netdestination_name
+:
+   NAME name = variable_permissive NEWLINE
+;
+
+netdestination_network
+:
+   NETWORK net = IP_ADDRESS mask = IP_ADDRESS NEWLINE
+;
+
+netdestination6_description
+:
+   desc = description_line
+;
+
+netdestination6_host
+:
+   HOST ip6 = IPV6_ADDRESS NEWLINE
+;
+
+netdestination6_invert
+:
+   INVERT NEWLINE
+;
+
+netdestination6_name
+:
+   NAME name = variable_permissive NEWLINE
+;
+
+netdestination6_network
+:
+   NETWORK net6 = IPV6_PREFIX NEWLINE
+;
+
+netservice_icmpv6_specifier
+:
+   DEC
+   | RTR_ADV
+;
+
+netservice_port_specifier
+:
+   (
+      (
+         start_port = DEC
+         (
+            end_port = DEC
+         )?
+      )
+      |
+      (
+         LIST DOUBLE_QUOTE
+         (
+            elems += DEC
+         )+ DOUBLE_QUOTE
+      )
    )
 ;
 
@@ -694,6 +911,23 @@ s_foundry_mac_access_list
    )* NEWLINE
 ;
 
+s_ip_access_list_eth
+:
+   IP ACCESS_LIST ETH name = variable NEWLINE
+   (
+      ipacleth_line
+   )*
+;
+
+s_ip_access_list_session
+:
+   IP ACCESS_LIST SESSION name=variable NEWLINE
+   (
+      ipaclsession_line
+      | ipaclsession_line6
+   )*
+;
+
 s_mac_access_list
 :
    ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
@@ -727,6 +961,38 @@ s_mac_access_list_extended_tail
    )? mac_access_list_additional_feature* NEWLINE
 ;
 
+s_netdestination
+:
+   NETDESTINATION name = variable NEWLINE
+   (
+      netdestination_description
+      | netdestination_host
+      | netdestination_invert
+      | netdestination_name
+      | netdestination_network
+   )*
+;
+
+s_netdestination6
+:
+   NETDESTINATION6 name = variable NEWLINE
+   (
+      netdestination6_description
+      | netdestination6_host
+      | netdestination6_invert
+      | netdestination6_name
+      | netdestination6_network
+   )*
+;
+
+s_netservice
+:
+   NETSERVICE name = variable prot = protocol ps = netservice_port_specifier?
+   (
+      ALG alg = netservice_alg
+   )? NEWLINE
+;
+
 standard_access_list_additional_feature
 :
    (
@@ -757,7 +1023,7 @@ standard_access_list_stanza
 :
    (
       (
-         IP ACCESS_LIST STANDARD name = variable_permissive
+         IP ACCESS_LIST STANDARD name = variable_aclname
       )
       |
       (
@@ -765,7 +1031,7 @@ standard_access_list_stanza
       )
       |
       (
-         ACCESS_LIST name = variable_permissive STANDARD
+         ACCESS_LIST name = variable_aclname STANDARD
       )
    )
    (

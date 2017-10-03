@@ -2422,7 +2422,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEnable_secret(Enable_secretContext ctx) {
-    String passwordRehash = CommonUtil.sha256Digest(ctx.pass.getText() + CommonUtil.salt());
+    String password;
+    if (ctx.double_quoted_string() != null) {
+      password = unquote(ctx.double_quoted_string().getText());
+    } else {
+      password = ctx.pass.getText() + CommonUtil.salt();
+    }
+    String passwordRehash = CommonUtil.sha256Digest(password);
     _configuration.getCf().setEnableSecret(passwordRehash);
   }
 
@@ -5590,7 +5596,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitU_password(U_passwordContext ctx) {
-    String passwordRehash = CommonUtil.sha256Digest(ctx.pass.getText() + CommonUtil.salt());
+    String passwordString;
+    if (ctx.up_arista_md5() != null) {
+      passwordString = ctx.up_arista_md5().pass.getText();
+    } else if (ctx.up_arista_sha512() != null) {
+      passwordString = ctx.up_arista_sha512().pass.getText();
+    } else if (ctx.up_cisco() != null) {
+      passwordString = ctx.up_cisco().pass.getText();
+    } else {
+      throw new BatfishException("Missing username password handling");
+    }
+    String passwordRehash = CommonUtil.sha256Digest(passwordString + CommonUtil.salt());
     _currentUser.setPassword(passwordRehash);
   }
 

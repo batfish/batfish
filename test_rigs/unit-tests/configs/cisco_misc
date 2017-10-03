@@ -125,13 +125,6 @@ aaa new-model
 ip flow-aggregation cache source-prefix
  enabled
 !
-voice service voip
- allow-connections h323 to h323
- h323
- h225 id-passthru
- fax protocol cisco
- shutdown
-!
 ip ospf name-lookup
 coap http enable
 !
@@ -160,20 +153,6 @@ event manager applet URLFilter_bw_safeguard
  action 6 syslog msg "Interface Tunnel9 to URLfilter pepper has been shutdown. It needs to be manually unshut."
  action 7 syslog msg "Interface \"Tunnel9\" to URLfilter pepper has been shutdown. It needs to be manually unshut."
  action 8 syslog msg ""
-!
-dial-peer voice 1 voip
- codec transparent
- description oigjaiowfjiofjweiofjowe
- destination-pattern .T
- direct-inward-dial
- dtmf-relay rtp-nte
- forward-digits all
- incoming from-vide
- media flow-around
- session target ras
- translation-profile incoming from-vide
- translation-profile
- no vad
 !
 gatekeeper
  zone local SVL-GK.cenic.net cenic.net invia SVL-GK.cenic.net outvia SVL-GK.cenic.net
@@ -248,9 +227,6 @@ fex 111
 no schedule tech-support
 cluster run
 rp mgmtethernet forwarding
-voice translation-rule 1
- rule 1 /^0011649\(.*\)/ /\100/
-!
 xml agent tty
 sap cache-timeout 30
 ipv6 enable-acl-cam-sharing

@@ -82,6 +82,16 @@ asa_comment_stanza
    COLON ~NEWLINE* NEWLINE
 ;
 
+av_null
+:
+   NO?
+   (
+      INTERFACE
+      | SHUTDOWN
+      | TIMESOURCE
+   ) ~NEWLINE* NEWLINE
+;
+
 banner_stanza
 :
    BANNER banner_type banner
@@ -341,7 +351,13 @@ enable_password
 
 enable_secret
 :
-   SECRET DEC pass = variable_secret NEWLINE
+   SECRET
+   (
+      (
+         DEC pass = variable_secret
+      )
+      | double_quoted_string
+   ) NEWLINE
 ;
 
 event_null
@@ -617,6 +633,8 @@ ip_nat_pool
    (
       POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
       (
+         // intentional blank
+         |
          (
             NETMASK mask = IP_ADDRESS
          )
@@ -1290,6 +1308,28 @@ phone_proxy_null
    ) ~NEWLINE* NEWLINE
 ;
 
+qm_length
+:
+   LENGTH ~NEWLINE* NEWLINE
+;
+
+qm_streaming
+:
+   STREAMING NEWLINE
+   (
+      qms_null
+   )*
+;
+
+qms_null
+:
+   NO?
+   (
+      MAX_CONNECTIONS
+      | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
 redundancy_linecard_group
 :
    LINECARD_GROUP ~NEWLINE* NEWLINE
@@ -1391,6 +1431,14 @@ s_application
    )?
 ;
 
+s_application_var
+:
+   APPLICATION name = variable NEWLINE
+   (
+      av_null
+   )*
+;
+
 s_archive
 :
    ARCHIVE ~NEWLINE* NEWLINE
@@ -1488,8 +1536,16 @@ s_dial_peer
          | DESTINATION_PATTERN
          | DIRECT_INWARD_DIAL
          | DTMF_RELAY
+         | FAX
          | FORWARD_DIGITS
          | INCOMING
+         |
+         (
+            IP
+            (
+               QOS
+            )
+         )
          | MEDIA
          | PORT
          | PREFERENCE
@@ -1937,6 +1993,15 @@ s_process_max_time
    NO? PROCESS_MAX_TIME DEC NEWLINE
 ;
 
+s_queue_monitor
+:
+   QUEUE_MONITOR
+   (
+      qm_length
+      | qm_streaming
+   )
+;
+
 s_radius_server
 :
    RADIUS SERVER name = variable NEWLINE
@@ -2093,6 +2158,14 @@ s_tap
    )*
 ;
 
+s_time_range
+:
+   TIME_RANGE name = variable PERIODIC? NEWLINE
+   (
+      tr_null
+   )*
+;
+
 s_track
 :
    TRACK ~NEWLINE* NEWLINE
@@ -2155,6 +2228,7 @@ s_voice
    NO? VOICE ~NEWLINE* NEWLINE
    (
       voice_null
+      | voice_sip
    )*
 ;
 
@@ -2367,6 +2441,7 @@ ssh_null
       | KEY
       | KEY_EXCHANGE
       | LOGIN_ATTEMPTS
+      | MGMT_AUTH
       | STRICTHOSTKEYCHECK
       | VERSION
    ) ~NEWLINE* NEWLINE
@@ -2438,6 +2513,7 @@ stanza
    | rsvp_stanza
    | s_aaa
    | s_application
+   | s_application_var
    | s_archive
    | s_authentication
    | s_cable
@@ -2478,6 +2554,8 @@ stanza
    // do not move below s_interface
    s_interface_line
    | s_interface
+   | s_ip_access_list_eth
+   | s_ip_access_list_session
    | s_ip_dhcp
    | s_ip_domain
    | s_ip_domain_name
@@ -2518,6 +2596,9 @@ stanza
    | s_mpls_traffic_eng
    | s_mtu
    | s_name
+   | s_netdestination
+   | s_netdestination6
+   | s_netservice
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_ntp
@@ -2532,6 +2613,7 @@ stanza
    | s_privilege
    | s_process_max_time
    | s_qos_mapping
+   | s_queue_monitor
    | s_radius_server
    | s_redundancy
    | s_role
@@ -2555,6 +2637,7 @@ stanza
    | s_tacacs
    | s_tacacs_server
    | s_tap
+   | s_time_range
    | s_track
    | s_tunnel_group
    | s_username
@@ -2696,6 +2779,15 @@ tg_null
    ) ~NEWLINE* NEWLINE
 ;
 
+tr_null
+:
+   NO?
+   (
+      WEEKDAY
+      | WEEKEND
+   ) ~NEWLINE* NEWLINE
+;
+
 track_null
 :
    NO?
@@ -2758,8 +2850,13 @@ u_password
    (
       PASSWORD
       | SECRET
-   ) DEC pass = variable_secret
-;
+   )
+   (
+      up_arista_md5
+      | up_arista_sha512
+      | up_cisco
+   )
+   ;
 
 u_privilege
 :
@@ -2780,6 +2877,24 @@ ua_null
       GROUP_LOCK
       | VPN_GROUP_POLICY
    ) ~NEWLINE* NEWLINE
+;
+
+up_arista_md5
+:
+   DEC
+   (
+      pass = MD5_ARISTA
+   )
+;
+
+up_arista_sha512
+:
+   SHA512 pass = SHA512_ARISTA
+;
+
+up_cisco
+:
+   DEC pass = variable_secret
 ;
 
 vc_null
@@ -2868,6 +2983,7 @@ voice_null
       ADDRESS_HIDING
       | ALLOW_CONNECTIONS
       | ASYMMETRIC
+      | CODEC
       | FAX
       | FAX_RELAY
       | H225
@@ -2875,8 +2991,15 @@ voice_null
       | MODEM
       | RULE
       | SHUTDOWN
-      | SIP
    ) ~NEWLINE* NEWLINE
+;
+
+voice_sip
+:
+   SIP NEWLINE
+   (
+      vs_null
+   )*
 ;
 
 vp_null
@@ -3004,6 +3127,16 @@ vrrp_interface
    (
       vi_address_family
    )* NEWLINE?
+;
+
+vs_null
+:
+   NO?
+   (
+      EARLY_OFFER
+      | ERROR_PASSTHRU
+      | HEADER_PASSING
+   ) ~NEWLINE* NEWLINE
 ;
 
 wccp_id

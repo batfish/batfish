@@ -1,0 +1,9 @@
+!
+hostname cisco_application
+!
+application metawatch
+    interface ap9 sequence-number
+    no shutdown
+    timesource pps
+!
+

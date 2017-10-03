@@ -132,6 +132,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
     Map<String, String> prefixes = new LinkedHashMap<>();
+    prefixes.put("ap", "ap");
     prefixes.put("Async", "Async");
     prefixes.put("ATM", "ATM");
     prefixes.put("BDI", "BDI");
@@ -161,6 +162,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     prefixes.put("Group-Async", "Group-Async");
     prefixes.put("LongReachEthernet", "LongReachEthernet");
     prefixes.put("Loopback", "Loopback");
+    prefixes.put("ma", "Management");
     prefixes.put("Management", "Management");
     prefixes.put("ManagementEthernet", "ManagementEthernet");
     prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
@@ -3025,7 +3027,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       }
       if (highestIp == Ip.ZERO) {
-        throw new VendorConversionException("No candidates for OSPF router-id");
+        _w.redFlag("No candidates for OSPF router-id");
+        return null;
       }
       routerId = highestIp;
     }

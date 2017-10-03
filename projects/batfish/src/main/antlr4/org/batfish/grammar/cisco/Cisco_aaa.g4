@@ -595,6 +595,11 @@ aaa_authorization_ssh_publickey
    SSH_PUBLICKEY DEFAULT aaa_authorization_method
 ;
 
+aaa_bandwidth_contract
+:
+   BANDWIDTH_CONTRACT name = variable ~NEWLINE* NEWLINE
+;
+
 aaa_default_taskgroup
 :
    DEFAULT_TASKGROUP ~NEWLINE* NEWLINE
@@ -611,6 +616,7 @@ aaa_group
    (
       aaa_group_deadtime
       | aaa_group_ip_tacacs
+      | aaa_group_ip_vrf
       | aaa_group_no_source_interface
       | aaa_group_server
       | aaa_group_server_private
@@ -628,6 +634,11 @@ aaa_group_deadtime
 aaa_group_ip_tacacs
 :
    IP TACACS SOURCE_INTERFACE interface_name NEWLINE
+;
+
+aaa_group_ip_vrf
+:
+   IP VRF FORWARDING name = variable NEWLINE
 ;
 
 aaa_group_no_source_interface
@@ -667,8 +678,18 @@ aaa_group_server_private
       | name = variable
    )
    (
-      PORT DEC
-   )? NEWLINE
+      (
+         KEY DEC variable_secret
+      )
+      |
+      (
+         PORT DEC
+      )
+      |
+      (
+         TIMEOUT DEC
+      )
+   )* NEWLINE
 ;
 
 aaa_group_source_interface
@@ -712,8 +733,12 @@ aaa_session_id
 
 aaa_user
 :
-   USER DEFAULT_ROLE NEWLINE
-;
+   USER
+   (
+      DEFAULT_ROLE
+      | FAST_AGE
+   ) NEWLINE
+   ;
 
 aaaac_action_type
 :
@@ -767,6 +792,7 @@ s_aaa
       aaa_accounting
       | aaa_authentication
       | aaa_authorization
+      | aaa_bandwidth_contract
       | aaa_group
       | aaa_new_model
       | aaa_session_id

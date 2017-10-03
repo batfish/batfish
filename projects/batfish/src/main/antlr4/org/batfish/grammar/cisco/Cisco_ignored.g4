@@ -830,6 +830,7 @@ null_single
             NAME_LOOKUP
          )
       )
+      | NEXTEXTHDR
       | OWNER
       | PACKETCABLE
       | PAGER
@@ -848,7 +849,6 @@ null_single
       | PROTOCOL_OBJECT
       | QOS
       | QOS_SC
-      | QUEUE_MONITOR
       | QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER

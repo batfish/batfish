@@ -1,0 +1,99 @@
+!
+hostname cisco_voice
+!
+application
+ service dsapp
+ param disc-toggle-time 15
+ param callWaiting TRUE
+ param callConference TRUE
+ param blind-xfer-wait-time 10
+ param callTransfer TRUE
+!
+application
+ service something http://some.url/some.page
+ !
+ global
+  service alternate Default
+ !
+!
+call-manager-fallback
+ limit-dn 7960 2
+ ip source-address 10.48.80.9 port 2000
+ max-ephones 10
+ max-dn 32
+ dialplan-pattern 1 704.... extension-length 4
+ keepalive 20
+ default-destination 5002
+ alias 1 5003 to 5002
+ call-forward busy 5002
+ call-forward noan 5002 timeout 12
+ time-format 24
+!
+dial-peer voice 1 voip
+ codec transparent
+ description oigjaiowfjiofjweiofjowe
+ destination-pattern .T
+ direct-inward-dial
+ dtmf-relay rtp-nte
+ fax protocol t38 version 0 ls-redundancy 0 hs-redundancy 0 fallback none
+ forward-digits all
+ incoming called-number +12223334444.T
+ incoming from-vide
+ ip qos dscp cs3 signaling
+ media flow-around
+ preference 1
+ session protocol sipv2
+ session target ipv4:1.2.3.4
+ session target ras
+ session transport udp
+ translation-profile
+ translation-profile incoming from-vide
+ no vad
+ voice-class codec 2
+ voice-class sip options-keepalive
+ voice-class sip bind control source-interface GigabitEthernet0/1
+ voice-class sip bind media source-interface GigabitEthernet0/1
+!
+voice class codec 1
+ codec preference 1 g729r8
+ codec preference 2 g711alaw
+!
+voice service voip
+ address-hiding
+ allow-connections h323 to h323
+ allow-connections sip to sip
+ fax protocol cisco
+ fax protocol t38 version 0 ls-redundancy 0 hs-redundancy 0 fallback none
+ h225 id-passthru
+ h323
+ shutdown
+ sip
+  early-offer forced
+  error-passthru
+  header-passing
+!
+voice translation-profile foobarbaz
+ translate called 12
+ translate calling 11
+!
+voice translation-rule 1
+ rule 1 /^0011649\(.*\)/ /\100/
+!
+voice-card 0/2
+ codec complexity high
+ dsp services dspfarm
+ dspfarm
+ no watchdog
+!
+voice-port 0/0/0:23
+ caller-id enable
+ description giuahwefuiowjh
+ echo-cancel coverage 64
+ shutdown
+ signal cama KP-0-NXX-XXXX-ST
+ timeouts ringing infinity
+ timing hookflash-out 50
+ timing guard-out 1000
+!
+!
+

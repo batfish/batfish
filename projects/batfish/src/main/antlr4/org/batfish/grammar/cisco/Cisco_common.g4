@@ -233,6 +233,20 @@ line_type_cadant
    | VTY
 ;
 
+netservice_alg
+:
+   DHCP
+   | DNS
+   | FTP
+   | NOE
+   | RTSP
+   | SCCP
+   | SIPS
+   | SVP
+   | TFTP
+   | VOCERA
+;
+
 ospf_route_type
 :
    (
@@ -476,6 +490,13 @@ unrecognized_line
 variable
 :
    ~NEWLINE
+;
+
+variable_aclname
+:
+   (
+      ~( ETH | EXTENDED | NEWLINE | STANDARD | SESSION | WS )
+   )+
 ;
 
 variable_community_name

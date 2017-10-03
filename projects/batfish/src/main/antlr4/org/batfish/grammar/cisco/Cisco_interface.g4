@@ -625,6 +625,7 @@ if_null_block
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
+      | SOURCE
       | SPEED
       | SPEED_DUPLEX
       | SNMP
