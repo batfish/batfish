@@ -832,9 +832,9 @@ public class WorkMgrService {
    * @return Questions in configured questions directory(Empty if not provided)
    */
   @POST
-  @Path(CoordConsts.SVC_RSC_GET_QUESTIONS)
+  @Path(CoordConsts.SVC_RSC_GET_GLOBAL_QUESTIONS)
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getQuestions(
+  public JSONArray getGlobalQuestions(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
     try {
@@ -846,13 +846,13 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      Map<String, String> questions = Main.getWorkMgr().getQuestions();
+      Map<String, String> globalQuestions = Main.getWorkMgr().getGlobalQuestions();
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      String questionsStr = mapper.writeValueAsString(questions);
+      String globalQuestionsStr = mapper.writeValueAsString(globalQuestions);
       return new JSONArray(
           Arrays.asList(
               CoordConsts.SVC_KEY_SUCCESS,
-              new JSONObject().put(CoordConsts.SVC_KEY_QUESTIONS, questionsStr)));
+              new JSONObject().put(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS, globalQuestionsStr)));
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:getQuestions exception: " + stackTrace);

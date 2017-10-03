@@ -25,6 +25,7 @@ public class Settings extends BaseSettings {
 
   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "fileauthrootdir";
   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "fileauthusersfile";
+  private static final String ARG_GLOBAL_QUESTIONS_DIR = "globalquestionsdir";
   private static final String ARG_HELP = "help";
   private static final String ARG_LOG_FILE = "logfile";
   private static final String ARG_LOG_LEVEL = "loglevel";
@@ -32,7 +33,6 @@ public class Settings extends BaseSettings {
   private static final String ARG_PERIOD_CHECK_WORK_MS = "periodcheckworkms";
   private static final String ARG_PERIOD_WORKER_STATUS_REFRESH_MS = "periodworkerrefreshms";
   private static final String ARG_POOL_BIND_HOST = "poolbindhost";
-  private static final String ARG_QUESTIONS_DIR = "questionsdir";
   private static final String ARG_QUESTION_TEMPLATE_DIRS = "templatedirs";
   private static final String ARG_QUEUE_COMPLETED_WORK = "qcompletedwork";
   private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
@@ -76,6 +76,7 @@ public class Settings extends BaseSettings {
   private Path _fileAuthorizerPermsFile;
   private Path _fileAuthorizerRootDir;
   private Path _fileAuthorizerUsersFile;
+  private Path _globalquestionsDir;
   private String _logFile;
   private String _logLevel;
   private long _periodAssignWorkMs;
@@ -83,7 +84,6 @@ public class Settings extends BaseSettings {
   private long _periodWorkerStatusRefreshMs;
   private List<Path> _pluginDirs;
   private String _poolBindHost;
-  private Path _questionsDir;
   private List<Path> _questionTemplateDirs;
   private String _queueCompletedWork;
   private WorkQueue.Type _queueType;
@@ -157,6 +157,10 @@ public class Settings extends BaseSettings {
     return _fileAuthorizerUsersFile;
   }
 
+  public Path getGlobalQuestionsDir() {
+    return _globalquestionsDir;
+  }
+
   public String getLogFile() {
     return _logFile;
   }
@@ -183,10 +187,6 @@ public class Settings extends BaseSettings {
 
   public String getPoolBindHost() {
     return _poolBindHost;
-  }
-
-  public Path getQuestionsDir() {
-    return _questionsDir;
   }
 
   public String getQueueCompletedWork() {
@@ -294,6 +294,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
     setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
     setDefaultProperty(ARG_FILE_AUTHORIZER_USERS_FILE, "users.json");
+    setDefaultProperty(ARG_GLOBAL_QUESTIONS_DIR, "globalquestions");
     setDefaultProperty(ARG_HELP, false);
     setDefaultProperty(ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
@@ -301,7 +302,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
     setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
-    setDefaultProperty(ARG_QUESTIONS_DIR, "questions");
     setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
     setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
@@ -350,6 +350,11 @@ public class Settings extends BaseSettings {
 
     addBooleanOption(ARG_DRIVER_CLASS, "jdbc driver class to load explicitly");
 
+    addOption(
+        ARG_GLOBAL_QUESTIONS_DIR,
+        "directory containing the questions jsons",
+        "global_questions_dir");
+
     addBooleanOption(ARG_HELP, "print this message");
 
     addOption(ARG_LOG_FILE, "send output to specified log file", "logfile");
@@ -370,8 +375,6 @@ public class Settings extends BaseSettings {
         ARG_PERIOD_CHECK_WORK_MS, "period with which to check work (ms)", "period_check_work_ms");
 
     addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
-
-    addOption(ARG_QUESTIONS_DIR, "directory containing the questions jsons", "questions_dir");
 
     addListOption(
         ARG_QUESTION_TEMPLATE_DIRS, "paths to question template directories", ARGNAME_PATHS);
@@ -423,8 +426,8 @@ public class Settings extends BaseSettings {
     _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
+    _globalquestionsDir = Paths.get(getStringOptionValue(ARG_GLOBAL_QUESTIONS_DIR));
     _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
-    _questionsDir = Paths.get(getStringOptionValue(ARG_QUESTIONS_DIR));
     _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
     _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
     _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);

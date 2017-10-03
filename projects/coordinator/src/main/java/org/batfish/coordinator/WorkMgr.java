@@ -661,11 +661,11 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @return {@link Map} of Question Names->Question Contents
    */
-  public Map<String, String> getQuestions() {
-    Path questionsPath = Main.getSettings().getQuestionsDir();
-    Map<String, String> questions = new HashMap<>();
+  public Map<String, String> getGlobalQuestions() {
+    Path questionsPath = Main.getSettings().getGlobalQuestionsDir();
+    Map<String, String> globalQuestions = new HashMap<>();
     try {
-      checkNotNull(Main.getSettings().getQuestionsDir());
+      checkNotNull(Main.getSettings().getGlobalQuestionsDir());
       try {
         Files.walkFileTree(
             questionsPath,
@@ -677,18 +677,18 @@ public class WorkMgr extends AbstractCoordinator {
                   throws IOException {
                 String filename = file.getFileName().toString();
                 if (filename.endsWith(".json")) {
-                  addQuestion(file, questions);
+                  addQuestion(file, globalQuestions);
                 }
                 return FileVisitResult.CONTINUE;
               }
             });
-        return questions;
+        return globalQuestions;
       } catch (IOException e) {
         throw new BatfishException("Failed to visit questions dir", e);
       }
     } catch (Exception e) {
       // if walking through question dir fails, send an empty map of questions to the client
-      return questions;
+      return globalQuestions;
     }
   }
 
