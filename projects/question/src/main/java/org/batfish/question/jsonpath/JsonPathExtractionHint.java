@@ -5,7 +5,7 @@ import com.jayway.jsonpath.internal.path.PathCompiler;
 import java.io.IOException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.questions.DisplayHints.ExtractionHint;
+import org.batfish.datamodel.questions.DisplayHints.Extraction;
 
 public class JsonPathExtractionHint {
 
@@ -28,12 +28,12 @@ public class JsonPathExtractionHint {
 
   private UseType _use;
 
-  public static JsonPathExtractionHint fromExtractionHint(ExtractionHint extractionHint)
+  public static JsonPathExtractionHint fromExtractionHint(Extraction extraction)
       throws IOException {
     BatfishObjectMapper mapper = new BatfishObjectMapper();
-    String eHintStr = mapper.writeValueAsString(extractionHint.getHints());
+    String extractionMethodStr = mapper.writeValueAsString(extraction.getMethod());
     JsonPathExtractionHint jpExtractionHint =
-        mapper.readValue(eHintStr, JsonPathExtractionHint.class);
+        mapper.readValue(extractionMethodStr, JsonPathExtractionHint.class);
 
     // sanity check what we got
     if (jpExtractionHint.getUse() == null) {

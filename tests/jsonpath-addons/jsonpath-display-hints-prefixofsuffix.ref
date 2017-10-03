@@ -1168,6 +1168,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "debug" : false,
     "differential" : false,
     "innerQuestion" : {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
@@ -1178,14 +1179,14 @@
     "paths" : [
       {
         "displayHints" : {
-          "extractionHints" : {
+          "extractions" : {
             "interfaces" : {
-              "hints" : {
+              "method" : {
                 "use" : "prefixofsuffix",
                 "filter" : "$.interfaces.*",
                 "index" : 1
               },
-              "valueType" : "STRINGLIST"
+              "schema" : "List<String>"
             }
           }
         },

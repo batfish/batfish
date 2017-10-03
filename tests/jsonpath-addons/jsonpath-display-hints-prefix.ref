@@ -110,6 +110,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "debug" : false,
     "differential" : false,
     "innerQuestion" : {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
@@ -120,13 +121,13 @@
     "paths" : [
       {
         "displayHints" : {
-          "extractionHints" : {
+          "extractions" : {
             "node" : {
-              "hints" : {
+              "method" : {
                 "use" : "prefix",
                 "index" : 1
               },
-              "valueType" : "STRING"
+              "schema" : "String"
             }
           }
         },

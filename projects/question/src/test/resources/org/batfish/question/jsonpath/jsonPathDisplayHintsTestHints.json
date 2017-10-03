@@ -1,40 +1,44 @@
 {
-  "entities": {
+  "compositions": {
     "oneNode": {
-      "entityType": "node",
-      "hostname": "nodeFromPrefix"
+      "schema": "Node",
+      "dictionary": {
+        "name": "nodeFromPrefix"
+      }
     },
     "oneInterface": {
-      "entityType": "interfaceList",
-      "hostname": "nodeFromPrefix",
-      "interface": "interfaceListFromPrefixOfSuffix"
+      "schema": "List<Interface>",
+      "dictionary": {
+        "hostname": "nodeFromPrefix",
+        "interface": "interfaceListFromPrefixOfSuffix"
+      }
     }
   },
-  "extractionHints" : {
+  "extractions" : {
     "nodeFromPrefix": {
-      "valueType": "string",
-      "hints": {
+      "schema": "String",
+      "method": {
         "use": "prefix",
         "index" : 1
       }
     },
     "mtuFromSuffixOfSuffix": {
-      "valueType": "int",
-      "hints": {
+      "schema": "Integer",
+      "method": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "addressCountFromFuncOfSuffix": {
-      "valueType": "int",
-      "hints": {
+      "schema": "Integer",
+      "method": {
         "use": "funcOfsuffix",
         "filter": "$.addresses.length()"
       }
     },
     "interfaceListFromPrefixOfSuffix": {
-      "valueType": "stringList",
-      "hints": {
+      "schema": "List<String>",
+      "method": {
         "use": "prefixOfSuffix",
         "filter": "$.*",
         "index": 0

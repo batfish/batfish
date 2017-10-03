@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
@@ -22,11 +23,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.DisplayHints.ExtractionHint;
-import org.batfish.datamodel.questions.DisplayHints.ValueType;
+import org.batfish.datamodel.questions.DisplayHints.Composition;
+import org.batfish.datamodel.questions.DisplayHints.Extraction;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerer;
 
@@ -116,7 +115,7 @@ public class JsonPathResult {
 
   private Boolean _assertionResult;
 
-  private Map<String, Map<String, JsonNode>> _extractedValues;
+  private Map<String, Map<String, JsonNode>> _displayValues;
 
   private Integer _numResults;
 
@@ -126,10 +125,9 @@ public class JsonPathResult {
     _result = new TreeMap<>();
   }
 
-  public Map<String, Map<String, JsonNode>> extractDisplayValues(DisplayHints displayHints) {
-    // this will reset anything we've done in the past
-    _extractedValues = new HashMap<>();
-    for (Entry<String, ExtractionHint> entry : displayHints.getExtractionHints().entrySet()) {
+  public Map<String, Map<String, JsonNode>> computeDisplayValues(DisplayHints displayHints) {
+    _displayValues = new HashMap<>(); // reset anything we may have done in the past
+    for (Entry<String, Extraction> entry : displayHints.getExtractions().entrySet()) {
       JsonPathExtractionHint jpeHint = null;
       try {
         jpeHint = JsonPathExtractionHint.fromExtractionHint(entry.getValue());
@@ -138,39 +136,129 @@ public class JsonPathResult {
       }
       switch (jpeHint.getUse()) {
         case PREFIX:
-          extractDisplayValuesPrefix(entry.getKey(), entry.getValue(), jpeHint);
+          extractValuesFromPrefix(entry.getKey(), entry.getValue(), jpeHint);
           break;
         case FUNCOFSUFFIX:
         case PREFIXOFSUFFIX:
         case SUFFIXOFSUFFIX:
-          extractDisplayValuesSuffix(entry.getKey(), entry.getValue(), jpeHint);
+          extractValuesFromSuffix(entry.getKey(), entry.getValue(), jpeHint);
           break;
         default:
           throw new BatfishException("Unknown use type " + jpeHint.getUse());
       }
     }
-    return _extractedValues;
+    if (displayHints.getCompositions() != null) {
+      doCompositions(displayHints.getCompositions(), displayHints.getExtractions());
+    }
+    return _displayValues;
   }
 
-  private void extractDisplayValuesPrefix(
-      String displayVar, ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
-    if (extractionHint.getValueType().isListType()) {
+  private void doCompositions(
+      Map<String, Composition> compositions, Map<String, Extraction> extractions) {
+    for (String resultKey : _result.keySet()) {
+      for (Entry<String, Composition> cEntry : compositions.entrySet()) {
+        String compositionName = cEntry.getKey();
+        Composition composition = cEntry.getValue();
+        if (composition.getSchemaAsObject().isList()) {
+          doCompositionList(resultKey, compositionName, composition, extractions);
+        } else {
+          doCompositionSingleton(resultKey, compositionName, composition);
+        }
+      }
+    }
+  }
+
+  private void doCompositionList(String resultKey, String compositionName, Composition composition,
+      Map<String, Extraction> extractions) {
+    // check if we have any list type extraction variables and listLengths agree
+    int listLen = 0;
+    for (Entry<String, String> pEntry : composition.getDictionary().entrySet()) {
+      String propertyName = pEntry.getKey();
+      String varName = pEntry.getValue();
+      if (!extractions.containsKey(varName)) {
+        throw new BatfishException(String.format(
+            "varName '%s' for '%s' of '%s' is not in extractions",
+            varName,
+            composition.getDictionary().get(varName),
+            compositionName));
+      }
+      if (extractions.get(varName).getSchemaAsObject().isList()) {
+        if (!_displayValues.get(resultKey).containsKey(varName)) {
+          throw new BatfishException(String.format(
+              "varName '%s' for '%s' of '%s' is not in display values",
+              varName,
+              propertyName,
+              compositionName));
+        }
+        ArrayNode varNode = (ArrayNode) _displayValues.get(resultKey).get(varName);
+        if (listLen != 0 && listLen != varNode.size()) {
+          throw new BatfishException(
+              "Found lists of different lengths in values: " + listLen + " " + varNode.size());
+        }
+        listLen = varNode.size();
+      }
+    }
+    if (listLen == 0) {
+      throw new BatfishException("None of the extraction values is a list for " + compositionName);
+    }
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    ArrayNode arrayNode = mapper.createArrayNode();
+    for (int index = 0; index < listLen; index++) {
+      ObjectNode object = mapper.createObjectNode();
+      for (Entry<String, String> pEntry : composition.getDictionary().entrySet()) {
+        String propertyName = pEntry.getKey();
+        String varName = pEntry.getValue();
+        JsonNode varNode = _displayValues.get(resultKey).get(varName);
+        if (extractions.get(varName).getSchemaAsObject().isList()) {
+          object.set(propertyName, ((ArrayNode) varNode).get(index));
+        } else {
+          object.set(propertyName, varNode);
+        }
+      }
+      confirmValueType(object, composition.getSchemaAsObject().getBaseType());
+      arrayNode.add(object);
+    }
+    _displayValues.get(resultKey).put(compositionName, arrayNode);
+  }
+
+  private void doCompositionSingleton(
+      String resultKey, String compositionName, Composition composition) {
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    ObjectNode object = mapper.createObjectNode();
+    for (Entry<String, String> pEntry : composition.getDictionary().entrySet()) {
+      String propertyName = pEntry.getKey();
+      String varName = pEntry.getValue();
+      if (!_displayValues.get(resultKey).containsKey(varName)) {
+        throw new BatfishException(
+            String.format(
+                "varName '%s' for property '%s' of composition '%s' is not in display values",
+                varName, propertyName, compositionName));
+      }
+      object.set(propertyName, _displayValues.get(resultKey).get(varName));
+    }
+    confirmValueType(object, composition.getSchemaAsObject().getBaseType());
+    _displayValues.get(resultKey).put(compositionName, object);
+  }
+
+  private void extractValuesFromPrefix(
+      String displayVar, Extraction extraction, JsonPathExtractionHint jpeHint) {
+    if (extraction.getSchemaAsObject().isList()) {
       throw new BatfishException("Prefix-based hints are incompatible with list types");
     }
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
-      if (!_extractedValues.containsKey(entry.getKey())) {
-        _extractedValues.put(entry.getKey(), new HashMap<>());
+      if (!_displayValues.containsKey(entry.getKey())) {
+        _displayValues.put(entry.getKey(), new HashMap<>());
       }
       String prefixPart = entry.getValue().getPrefixPart(jpeHint.getIndex());
-      _extractedValues.get(entry.getKey()).put(displayVar, new TextNode(prefixPart));
+      _displayValues.get(entry.getKey()).put(displayVar, new TextNode(prefixPart));
     }
   }
 
-  private void extractDisplayValuesSuffix(
-      String displayVar, ExtractionHint extractionHint, JsonPathExtractionHint jpeHint) {
+  private void extractValuesFromSuffix(
+      String displayVar, Extraction extraction, JsonPathExtractionHint jpeHint) {
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
-      if (!_extractedValues.containsKey(entry.getKey())) {
-        _extractedValues.put(entry.getKey(), new HashMap<>());
+      if (!_displayValues.containsKey(entry.getKey())) {
+        _displayValues.put(entry.getKey(), new HashMap<>());
       }
       if (entry.getValue().getSuffix() == null) {
         throw new BatfishException(
@@ -189,10 +277,9 @@ public class JsonPathResult {
       switch (jpeHint.getUse()) {
         case FUNCOFSUFFIX:
           {
-            if (extractionHint.getValueType() != ValueType.INT
-                && extractionHint.getValueType() != ValueType.INTLIST) {
+            if (!extraction.getSchemaAsObject().isIntOrIntList()) {
               throw new BatfishException(
-                  "valueType must be INT(LIST) with funcofsuffix-based extraction hint");
+                  "schema must be INT(LIST) with funcofsuffix-based extraction hint");
             }
             Object result = JsonPathAnswerer.computePathFunction(jsonObject, query);
             if (result != null) {
@@ -223,7 +310,7 @@ public class JsonPathResult {
                   (jpeHint.getUse() == UseType.PREFIXOFSUFFIX)
                       ? new TextNode(resultEntry.getValue().getPrefixPart(jpeHint.getIndex()))
                       : resultEntry.getValue().getSuffix();
-              confirmValueType(value, extractionHint.getValueType());
+              confirmValueType(value, extraction.getSchemaAsObject().getBaseType());
               extractedList.add(value);
             }
           }
@@ -240,66 +327,28 @@ public class JsonPathResult {
                 + jsonObject);
       }
 
-      if (extractionHint.getValueType().isListType()) {
+      if (extraction.getSchemaAsObject().isList()) {
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         ArrayNode arrayNode = mapper.valueToTree(extractedList);
-        _extractedValues.get(entry.getKey()).put(displayVar, arrayNode);
+        _displayValues.get(entry.getKey()).put(displayVar, arrayNode);
       } else {
         if (extractedList.size() > 1) {
           throw new BatfishException(
               "Got multiple results after filtering suffix values "
                   + " of the answer, but the display type is non-list");
         }
-        _extractedValues.get(entry.getKey()).put(displayVar, extractedList.get(0));
+        _displayValues.get(entry.getKey()).put(displayVar, extractedList.get(0));
       }
     }
   }
 
-  private static void confirmValueType(JsonNode value, DisplayHints.ValueType type) {
-    // type check what we got
-    switch (type.getBaseType()) {
-      case INT:
-        if (!value.isInt()) {
-          throw new BatfishException(
-              "Mismatch in extracted vs expected valuetype.\n"
-                  + "Expected  "
-                  + type
-                  + "\n"
-                  + "Extracted "
-                  + value);
-        }
-        break;
-      case FLOW:
-        try {
-          BatfishObjectMapper mapper = new BatfishObjectMapper();
-          mapper.readValue(value.toString(), Flow.class);
-        } catch (IOException e) {
-          throw new BatfishException(
-              "Could not recover an object of type FLOW from " + value.toString(), e);
-        }
-        break;
-      case FLOWTRACE:
-        try {
-          BatfishObjectMapper mapper = new BatfishObjectMapper();
-          mapper.readValue(value.toString(), FlowTrace.class);
-        } catch (IOException e) {
-          throw new BatfishException(
-              "Could not recover an object of type FLOWTRACE from " + value.toString(), e);
-        }
-        break;
-      case STRING:
-        if (!value.isTextual()) {
-          throw new BatfishException(
-              "Mismatch in extracted vs expected valuetype.\n"
-                  + "Expected  "
-                  + type
-                  + "\n"
-                  + "Extracted "
-                  + value);
-        }
-        break;
-      default:
-        throw new BatfishException("Unknown valuetype " + type);
+  private static void confirmValueType(JsonNode value, Class<?> baseClass) {
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    try {
+      mapper.readValue(value.toString(), baseClass);
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Could not map extracted value to expected type " + baseClass + "\nValue: " + value);
     }
   }
 
@@ -310,7 +359,7 @@ public class JsonPathResult {
 
   @JsonProperty(PROP_EXTRACTED_VALUES)
   public Map<String, Map<String, JsonNode>> getExtractedValues() {
-    return _extractedValues;
+    return _displayValues;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)
@@ -335,7 +384,7 @@ public class JsonPathResult {
 
   @JsonProperty(PROP_EXTRACTED_VALUES)
   public void setExtractedValues(Map<String, Map<String, JsonNode>> extractedValues) {
-    _extractedValues = extractedValues;
+    _displayValues = extractedValues;
   }
 
   @JsonProperty(PROP_NUM_RESULTS)

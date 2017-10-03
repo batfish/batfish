@@ -179,7 +179,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
                 JsonPathResult jsonPathResult = computeResult(jsonObject, query);
 
                 if (query.getDisplayHints() != null) {
-                  jsonPathResult.extractDisplayValues(query.getDisplayHints());
+                  jsonPathResult.computeDisplayValues(query.getDisplayHints());
                 }
 
                 allResults.put(i, jsonPathResult);
