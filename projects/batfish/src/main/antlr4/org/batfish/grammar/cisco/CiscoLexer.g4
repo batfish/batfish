@@ -634,6 +634,11 @@ AM_DISABLE
    'am-disable'
 ;
 
+AM_SCAN_PROFILE
+:
+   'am-scan-profile'
+;
+
 AMON
 :
    'amon'
@@ -707,6 +712,11 @@ AP_GROUP
 AP_LACP_STRIPING_IP
 :
    'ap-lacp-striping-ip'
+;
+
+AP_NAME
+:
+   'ap-name'
 ;
 
 AP_RULE_MATCHING
@@ -986,6 +996,11 @@ AUTHENTICATION_KEY
    'authentication-key'
 ;
 
+AUTHENTICATION_MAC
+:
+   'authentication-mac'
+;
+
 AUTHENTICATION_PORT
 :
    'authentication-port'
@@ -1154,6 +1169,11 @@ BACKUP
 BACKUPCRF
 :
    'backupcrf'
+;
+
+BAND_STEERING
+:
+   'band-steering'
 ;
 
 BANDWIDTH
@@ -6183,6 +6203,11 @@ MGCP
    'mgcp'
 ;
 
+MGMT
+:
+   'mgmt'
+;
+
 MGMT_AUTH
 :
    'mgmt-auth'
@@ -9196,6 +9221,11 @@ SERVICE_TYPE
 SESSION
 :
    'session'
+;
+
+SESSION_AUTHORIZATION
+:
+   'session-authorization'
 ;
 
 SESSION_DISCONNECT_WARNING
@@ -12346,6 +12376,11 @@ M_Authentication_MAC_MOVE
 M_Authentication_MESSAGE_DIGEST
 :
    'message-digest' -> type ( MESSAGE_DIGEST ) , popMode
+;
+
+M_Authentication_MGMT
+:
+   'mgmt' -> type ( MGMT ) , popMode
 ;
 
 M_Authentication_NEWLINE

@@ -267,6 +267,7 @@ aaa_authentication
       | aaa_authentication_include
       | aaa_authentication_login
       | aaa_authentication_mac
+      | aaa_authentication_mgmt
       | aaa_authentication_policy
       | aaa_authentication_ppp
       | aaa_authentication_serial
@@ -527,6 +528,23 @@ aaa_authentication_mac_null
    ) ~NEWLINE* NEWLINE
 ;
 
+aaa_authentication_mgmt
+:
+   MGMT NEWLINE
+   (
+      aaa_authentication_mgmt_null
+   )*
+;
+
+aaa_authentication_mgmt_null
+:
+   NO?
+   (
+      ENABLE
+      | SERVER_GROUP
+   ) ~NEWLINE* NEWLINE
+;
+
 aaa_authentication_policy
 :
    POLICY
@@ -556,6 +574,7 @@ aaa_authentication_server
    AUTHENTICATION_SERVER
    (
       aaa_authentication_server_radius
+      | aaa_authentication_server_tacacs
    )
 ;
 
@@ -572,6 +591,23 @@ aaa_authentication_server_radius_null
    NO?
    (
       HOST
+   ) ~NEWLINE* NEWLINE
+;
+
+aaa_authentication_server_tacacs
+:
+   TACACS double_quoted_string NEWLINE
+   (
+      aaa_authentication_server_tacacs_null
+   )*
+;
+
+aaa_authentication_server_tacacs_null
+:
+   NO?
+   (
+      HOST
+      | SESSION_AUTHORIZATION
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -888,6 +924,7 @@ aaa_profile_null
    NO?
    (
       AUTHENTICATION_DOT1X
+      | AUTHENTICATION_MAC
       | DOT1X_DEFAULT_ROLE
       | DOT1X_SERVER_GROUP
       | ENFORCE_DHCP

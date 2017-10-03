@@ -58,6 +58,9 @@ ap-group "default"
  virtual-ap "ddddd"
 !
 ap-lacp-striping-ip
+ap-name "blorfoo"
+ virtual-ap "abcd"
+!
 app lync traffic-control "default"
 control-plane-security
  no auto-cert-allow-all
@@ -183,6 +186,7 @@ pan active-profile
 pan profile "default"
 pan-options
 process monitor log
+rf am-scan-profile "default"
 rf arm-profile "blah"
  assignment maintain
  backoff-time 1234
@@ -197,6 +201,12 @@ rf arm-profile "blah"
 rf arm-rf-domain-profile
 rf dot11a-radio-profile "default"
  arm-profile "blah"
+ mode am-mode
+ spectrum-load-balancing
+ spectrum-monitoring
+!
+rf dot11g-radio-profile "default"
+ arm-profile "bloh"
  mode am-mode
  spectrum-load-balancing
  spectrum-monitoring
@@ -255,6 +265,7 @@ wlan tsm-req-profile "default"
 wlan virtual-ap "bbbb"
  aaa-profile "eeeeeeeeeee"
  auth-failure-blacklist-time 0
+ band-steering
  no blacklist
  blacklist-time 0
  broadcast-filter all

@@ -1,6 +1,7 @@
 !
 hostname cisco_misc
 !
+ap group default-group
 appletalk routing
 no bloggerd log-dump all
 bloggerd log-throttle

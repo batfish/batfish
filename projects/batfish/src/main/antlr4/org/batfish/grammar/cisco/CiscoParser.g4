@@ -94,6 +94,7 @@ ap_null
       | ENET_LINK_PROFILE
       | FLUSH_R1_ON_NEW_R0
       | GENERAL_PROFILE
+      | GROUP
       | LLDP
       | MESH_CLUSTER_PROFILE
       | MESH_HT_SSID_PROFILE
@@ -130,6 +131,14 @@ apg_null
       | DOT11G_RADIO_PROFILE
       | IDS_PROFILE
       | VIRTUAL_AP
+   ) ~NEWLINE* NEWLINE
+;
+
+apn_null
+:
+   NO?
+   (
+      VIRTUAL_AP
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1741,7 +1750,8 @@ rf_null
 :
    NO?
    (
-      ARM_RF_DOMAIN_PROFILE
+      AM_SCAN_PROFILE
+      | ARM_RF_DOMAIN_PROFILE
       | EVENT_THRESHOLDS_PROFILE
       | OPTIMIZATION_PROFILE
    ) ~NEWLINE* NEWLINE
@@ -1756,6 +1766,25 @@ rf_dot11a_radio_profile
 ;
 
 rf_dot11a_radio_profile_null
+:
+   NO?
+   (
+      ARM_PROFILE
+      | MODE
+      | SPECTRUM_LOAD_BALANCING
+      | SPECTRUM_MONITORING
+   ) ~NEWLINE* NEWLINE
+;
+
+rf_dot11g_radio_profile
+:
+   DOT11G_RADIO_PROFILE double_quoted_string NEWLINE
+   (
+      rf_dot11g_radio_profile_null
+   )*
+;
+
+rf_dot11g_radio_profile_null
 :
    NO?
    (
@@ -1843,6 +1872,14 @@ s_ap_group
    AP_GROUP double_quoted_string NEWLINE
    (
       apg_null
+   )*
+;
+
+s_ap_name
+:
+   AP_NAME double_quoted_string NEWLINE
+   (
+      apn_null
    )*
 ;
 
@@ -2524,6 +2561,7 @@ s_rf
       rf_arm_profile
       | rf_null
       | rf_dot11a_radio_profile
+      | rf_dot11g_radio_profile
    )
 ;
 
@@ -3060,6 +3098,7 @@ stanza
    | s_airgroupservice
    | s_ap
    | s_ap_group
+   | s_ap_name
    | s_application
    | s_application_var
    | s_archive
@@ -3846,6 +3885,7 @@ wlan_virtual_ap_null
    (
       AAA_PROFILE
       | AUTH_FAILURE_BLACKLIST_TIME
+      | BAND_STEERING
       | BLACKLIST
       | BLACKLIST_TIME
       | BROADCAST_FILTER

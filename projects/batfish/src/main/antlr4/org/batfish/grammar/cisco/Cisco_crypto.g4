@@ -81,6 +81,14 @@ cctpool_null
    ) ~NEWLINE* NEWLINE
 ;
 
+cd_null
+:
+   NO?
+   (
+      VERSION
+   ) ~NEWLINE* NEWLINE
+;
+
 cd_set
 :
    SET ~NEWLINE* NEWLINE
@@ -452,7 +460,11 @@ crypto_dynamic_map
       cd_set
       |
       (
-         NEWLINE cd_set*
+         NEWLINE
+         (
+            cd_null
+            | cd_set
+         )*
       )
    )
 ;

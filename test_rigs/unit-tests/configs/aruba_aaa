@@ -34,6 +34,10 @@ aaa authentication mac "abcd"
  reauthentication
  timer reauth-period server
 !
+aaa authentication mgmt
+ enable
+ server-group "floof"
+!
 aaa authentication stateful-dot1x
 aaa authentication stateful-kerberos "default"
 aaa authentication stateful-ntlm "default"
@@ -42,6 +46,10 @@ aaa authentication wired
 aaa authentication wispr "default"
 aaa authentication-server radius "ababcdcd"
    host "5.4.3.2"
+!
+aaa authentication-server tacacs "4.4.4.4"
+ host "4.4.4.4"
+ session-authorization
 !
 aaa bandwidth-contract foobarcontract mbits 50
 aaa derivation-rules user abcdefg
@@ -54,6 +62,7 @@ aaa group server tacacs+ authservers
 aaa password-policy mgmt
 aaa profile "fooprofile"
  authentication-dot1x "bleep"
+ authentication-mac "blarp"
  dot1x-default-role "Deny-All"
  dot1x-server-group "blorp"
  enforce-dhcp
