@@ -18,7 +18,13 @@ matrix:
         install: ./.travis/install.sh
         script: ./.travis/build.sh
 
-# Delete the batfish jars, which change every build, from the cache. Otherwise
-# the cache would be detected as updated every time.
+# Delete the batfish jars, which change every build, from the cache.
+# Also delete the locally-built jars, which are installed every build.
+#
+# Otherwise the cache would be detected as updated every time.
 before_cache:
+  - rm -rf $HOME/.m2/repository/com/jayway/jsonpath/json-path/
+  - rm -rf $HOME/.m2/repository/com/kjetland/mbknor-jackson-jsonschema_2.12/
+  - rm -rf $HOME/.m2/repository/com/microsoft/z3/z3/
+  - rm -rf $HOME/.m2/repository/org/antlr/antlr4-maven-plugin/
   - rm -rf $HOME/.m2/repository/org/batfish
