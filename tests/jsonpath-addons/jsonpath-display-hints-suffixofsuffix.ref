@@ -18,7 +18,10 @@
           "numResults" : 1,
           "result" : {
             "'nodes'->'as2border1'" : {
-              "prefix" : "$['nodes']['as2border1']",
+              "concretePath" : [
+                "'nodes'",
+                "'as2border1'"
+              ],
               "suffix" : {
                 "name" : "as2border1",
                 "communityLists" : {
