@@ -1304,16 +1304,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName,
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
     try {
-      _logger.info(
-          "WMS:uploadQuestion "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " / "
-              + objectName
-              + "\n");
+      _logger.infof(
+          "WMS:putObject %s %s %s / %s\n", apiKey, containerName, testrigName, objectName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1336,11 +1328,11 @@ public class WorkMgrService {
         | FileNotFoundException
         | IllegalArgumentException
         | AccessControlException e) {
-      _logger.error("WMS:uploadCustomObject exception: " + e.getMessage() + "\n");
+      _logger.error("WMS:putObject exception: " + e.getMessage() + "\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:uploadCustomObject exception: " + stackTrace);
+      _logger.error("WMS:putObject exception: " + stackTrace);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
