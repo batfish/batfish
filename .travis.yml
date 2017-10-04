@@ -1,3 +1,8 @@
+# Cache the Maven dependencies installed.
+cache:
+  directories:
+  - $HOME/.m2
+
 matrix:
    include:
       #      - os: osx
@@ -12,3 +17,8 @@ matrix:
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
+
+# Delete the batfish jars, which change every build, from the cache. Otherwise
+# the cache would be detected as updated every time.
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/batfish
