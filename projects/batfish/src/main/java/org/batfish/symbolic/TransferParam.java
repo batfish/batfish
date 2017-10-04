@@ -19,7 +19,7 @@ public class TransferParam<T> {
     NONE
   }
 
-  private T _other;
+  private T _data;
 
   private int _indent;
 
@@ -36,7 +36,7 @@ public class TransferParam<T> {
   private SetDefaultPolicy _defaultPolicy;
 
   public TransferParam(T other) {
-    _other = other;
+    _data = other;
     _callContext = CallContext.NONE;
     _chainContext = ChainContext.NONE;
     _indent = 0;
@@ -47,7 +47,7 @@ public class TransferParam<T> {
   }
 
   private TransferParam(TransferParam<T> p) {
-    _other = p._other;
+    _data = p._data;
     _callContext = p._callContext;
     _chainContext = p._chainContext;
     _indent = p._indent;
@@ -57,8 +57,8 @@ public class TransferParam<T> {
     _defaultPolicy = p._defaultPolicy;
   }
 
-  public T getOther() {
-    return _other;
+  public T getData() {
+    return _data;
   }
 
   public CallContext getCallContext() {
@@ -89,9 +89,9 @@ public class TransferParam<T> {
     return _scopes.get(0);
   }
 
-  public TransferParam<T> setOther(T other) {
+  public TransferParam<T> setData(T other) {
     TransferParam<T> ret = new TransferParam<>(this);
-    ret._other = other;
+    ret._data = other;
     return ret;
   }
 

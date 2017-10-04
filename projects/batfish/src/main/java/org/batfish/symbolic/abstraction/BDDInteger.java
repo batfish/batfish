@@ -7,28 +7,39 @@ import net.sf.javabdd.BDDFactory;
 
 public class BDDInteger {
 
-  private BDDFactory _factory;
-
   private BDD[] _bitvec;
 
-  public BDDInteger(BDDFactory factory, int length) {
-    _factory = factory;
-    int varIndex = factory.varNum();
-    _bitvec = new BDD[length];
-    factory.setVarNum(varIndex + length);
+
+  /*
+   * Create an integer, and initialize its values as "don't care"
+   * This requires knowing the start index variables the bitvector
+   * will use.
+   */
+  public static BDDInteger makeFromIndex(int length, int start) {
+    BDDInteger bdd = new BDDInteger(length);
     for (int i = 0; i < length; i++) {
-      _bitvec[i] = factory.ithVar(varIndex + i);
+      bdd._bitvec[i] = BDDRecord.factory.ithVar(start + i);
     }
+    return bdd;
   }
 
-  public BDDInteger(BDDFactory factory, int length, long val) {
-    _factory = factory;
+  /*
+ * Create an integer and initialize it to a concrete value
+ */
+  public static BDDInteger makeFromValue(int length, long value) {
+    BDDInteger bdd = new BDDInteger(length);
+    bdd.setValue(value);
+    return bdd;
+  }
+
+  /*
+   * Create an integer, but don't initialize its bit values
+   */
+  private BDDInteger(int length) {
     _bitvec = new BDD[length];
-    setValue(val);
   }
 
   public BDDInteger(BDDInteger other) {
-    _factory = other._factory;
     _bitvec = Arrays.copyOf(other._bitvec, other._bitvec.length);
   }
 
@@ -41,7 +52,7 @@ public class BDDInteger {
   }
 
   public BDD value(int val) {
-    BDDFactory var2 = this.getFactory();
+    BDDFactory var2 = BDDRecord.factory;
     BDD bdd = var2.one();
     for (BDD b : this._bitvec) {
       if ((val & 1) != 0) {
@@ -56,7 +67,7 @@ public class BDDInteger {
 
 
   public void setValue(long val) {
-    BDDFactory var2 = this.getFactory();
+    BDDFactory var2 = BDDRecord.factory;
     for (int var3 = 0; var3 < this._bitvec.length; ++var3) {
       if ((val & 1) != 0) {
         this._bitvec[var3] = var2.one();
@@ -77,9 +88,9 @@ public class BDDInteger {
     if (this._bitvec.length != var1._bitvec.length) {
       throw new BDDException();
     } else {
-      BDDFactory var2 = this.getFactory();
+      BDDFactory var2 = BDDRecord.factory;
       BDD var3 = var2.zero();
-      BDDInteger var4 = new BDDInteger(_factory, this._bitvec.length);
+      BDDInteger var4 = new BDDInteger(this._bitvec.length);
       for (int var5 = 0; var5 < var4._bitvec.length; ++var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5].xorWith(var3.id());
@@ -98,9 +109,9 @@ public class BDDInteger {
     if (this._bitvec.length != var1._bitvec.length) {
       throw new BDDException();
     } else {
-      BDDFactory var2 = this.getFactory();
+      BDDFactory var2 = BDDRecord.factory;
       BDD var3 = var2.zero();
-      BDDInteger var4 = new BDDInteger(_factory, this._bitvec.length);
+      BDDInteger var4 = new BDDInteger(this._bitvec.length);
       for (int var5 = 0; var5 < var4._bitvec.length; ++var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5].xorWith(var3.id());
@@ -115,10 +126,6 @@ public class BDDInteger {
       var3.free();
       return var4;
     }
-  }
-
-  public BDDFactory getFactory() {
-    return _factory;
   }
 
   public BDD[] getBitvec() {

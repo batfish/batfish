@@ -18,9 +18,7 @@ import org.batfish.symbolic.Protocol;
  */
 public class BDDRecord {
 
-  private BDDFactory _factory;
-
-  private BDD _permitted;
+  static BDDFactory factory = JFactory.init(500, 1000);
 
   private BDDInteger _prefix;
 
@@ -48,24 +46,28 @@ public class BDDRecord {
 
 
   public BDDRecord(Set<CommunityVar> comms) {
-    _factory = JFactory.init(2 * comms.size(), 1000);
-    _permitted = _factory.ithVar(0);
-
-    // Initialize communities
-    _communities = new HashMap<>();
-    int i = 1;
-    for (CommunityVar comm : comms) {
-      _communities.put(comm, _factory.ithVar(i));
-      i++;
+    // Make sure we have the right number of variables
+    int numVars = factory.varNum();
+    int numNeeded = 32 * 6 + comms.size() + 2;
+    if (numVars < numNeeded) {
+      factory.setVarNum(numNeeded);
     }
 
     // Initialize integer values
-    _prefixLength = new BDDInteger(_factory, 32);
-    _prefix = new BDDInteger(_factory, 32);
-    _metric = new BDDInteger(_factory, 32);
-    _adminDist = new BDDInteger(_factory, 32);
-    _med = new BDDInteger(_factory, 32);
-    _localPref = new BDDInteger(_factory, 32);
+    _prefixLength = BDDInteger.makeFromIndex(32, 0);
+    _prefix = BDDInteger.makeFromIndex(32, 32);
+    _metric = BDDInteger.makeFromIndex(32, 64);
+    _adminDist = BDDInteger.makeFromIndex(32, 96);
+    _med = BDDInteger.makeFromIndex(32, 128);
+    _localPref = BDDInteger.makeFromIndex(32, 160);
+
+    // Initialize communities
+    _communities = new HashMap<>();
+    int i = 192;
+    for (CommunityVar comm : comms) {
+      _communities.put(comm, factory.ithVar(i));
+      i++;
+    }
 
     // Initialize the choice of protocol
     List<Protocol> allProtos = new ArrayList<>();
@@ -73,12 +75,10 @@ public class BDDRecord {
     allProtos.add(Protocol.STATIC);
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
-    _protocolHistory = new BDDDomain<>(_factory, allProtos);
+    _protocolHistory = new BDDDomain<>(allProtos, 192 + comms.size());
   }
 
   public BDDRecord(BDDRecord other) {
-    _factory = other._factory;
-    _permitted = other._permitted;
     _communities = new HashMap<>(other._communities);
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
@@ -89,13 +89,6 @@ public class BDDRecord {
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
   }
 
-  public BDD getPermitted() {
-    return _permitted;
-  }
-
-  public void setPermitted(BDD permitted) {
-    this._permitted = permitted;
-  }
 
   public BDDInteger getPrefixLength() {
     return _prefixLength;

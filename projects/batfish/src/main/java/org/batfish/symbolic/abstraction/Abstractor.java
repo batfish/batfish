@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javafx.util.Pair;
-import net.sf.javabdd.BDD;
-import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -35,8 +33,6 @@ import org.batfish.symbolic.answers.AbstractionAnswerElement;
  */
 
 // TODO list
-// - Convert IR to a BDD representation (is the number of variables fixed?
-// - Quantify out the intermediate variables?
 // - Keep ACLs and static routes as separate BDDs?
 // - How does this interact with the following:
 //    + iBGP
@@ -95,10 +91,6 @@ public class Abstractor {
 
 
   public static AnswerElement computeAbstraction(IBatfish batfish) {
-
-    BDDInteger i = new BDDInteger(JFactory.init(200,1000), 32);
-    BDD x = i.value(4);
-    x.printDot();
 
     long start = System.currentTimeMillis();
 

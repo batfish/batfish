@@ -433,7 +433,7 @@ class TransferSSA {
     if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
-      return fromExpr(matchPrefixSet(_conf, m.getPrefixSet(), p.getOther()));
+      return fromExpr(matchPrefixSet(_conf, m.getPrefixSet(), p.getData()));
 
       // TODO: implement me
     } else if (expr instanceof MatchPrefix6Set) {
@@ -463,7 +463,7 @@ class TransferSSA {
     } else if (expr instanceof MatchCommunitySet) {
       p.debug("MatchCommunitySet");
       MatchCommunitySet mcs = (MatchCommunitySet) expr;
-      return fromExpr(matchCommunitySet(_conf, mcs.getExpr(), p.getOther()));
+      return fromExpr(matchCommunitySet(_conf, mcs.getExpr(), p.getData()));
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
@@ -622,18 +622,18 @@ class TransferSSA {
     // Update prefix length when aggregation
     BoolExpr len =
         _enc.safeEq(
-            _current.getPrefixLength(), getOrDefault(p.getOther().getPrefixLength(), defaultLen));
-    BoolExpr per = _enc.safeEq(_current.getPermitted(), p.getOther().getPermitted());
+            _current.getPrefixLength(), getOrDefault(p.getData().getPrefixLength(), defaultLen));
+    BoolExpr per = _enc.safeEq(_current.getPermitted(), p.getData().getPermitted());
 
     // Only update the router id for import edges
     BoolExpr id = _enc.mkTrue();
     if (!_isExport) {
-      id = _enc.safeEq(_current.getRouterId(), getOrDefault(p.getOther().getRouterId(), defaultId));
+      id = _enc.safeEq(_current.getRouterId(), getOrDefault(p.getData().getRouterId(), defaultId));
     }
 
     // Update OSPF area id
     BoolExpr area;
-    if (p.getOther().getOspfArea() == null || _iface.getOspfAreaName() == null) {
+    if (p.getData().getOspfArea() == null || _iface.getOspfAreaName() == null) {
       area = _enc.mkTrue();
     } else {
       area = _enc.safeEqEnum(_current.getOspfArea(), _iface.getOspfAreaName());
@@ -671,7 +671,7 @@ class TransferSSA {
             BoolExpr eq = _enc.mkEq(_current.getIgpMetric(), record.getMetric());
             acc =
                 _enc.mkAnd(
-                    acc, _enc.mkImplies(p.getOther().getClientId().checkIfValue(clientId), eq));
+                    acc, _enc.mkImplies(p.getData().getClientId().checkIfValue(clientId), eq));
           }
         }
         igpMet = acc;
@@ -685,21 +685,21 @@ class TransferSSA {
     // Update OSPF type
     BoolExpr type;
     if (result.isChanged("OSPF-TYPE")) {
-      type = _enc.safeEqEnum(_current.getOspfType(), p.getOther().getOspfType());
+      type = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
     } else {
       boolean hasAreaIface = _iface.getOspfAreaName() != null;
-      boolean hasArea = p.getOther().getOspfArea() != null;
-      boolean hasType = p.getOther().getOspfType() != null;
+      boolean hasArea = p.getData().getOspfArea() != null;
+      boolean hasType = p.getData().getOspfType() != null;
       boolean areaPossiblyChanged = hasType && hasArea && hasAreaIface;
       // Check if area changed
       if (areaPossiblyChanged) {
-        BoolExpr internal = p.getOther().getOspfType().isInternal();
-        BoolExpr same = p.getOther().getOspfArea().checkIfValue(_iface.getOspfAreaName());
+        BoolExpr internal = p.getData().getOspfType().isInternal();
+        BoolExpr same = p.getData().getOspfArea().checkIfValue(_iface.getOspfAreaName());
         BoolExpr update = _enc.mkAnd(internal, _enc.mkNot(same));
-        BoolExpr copyOld = _enc.safeEqEnum(_current.getOspfType(), p.getOther().getOspfType());
+        BoolExpr copyOld = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
         type = _enc.mkIf(update, _current.getOspfType().checkIfValue(OspfType.OIA), copyOld);
       } else {
-        type = _enc.safeEqEnum(_current.getOspfType(), p.getOther().getOspfType());
+        type = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
       }
     }
 
@@ -709,7 +709,7 @@ class TransferSSA {
     for (Map.Entry<CommunityVar, BoolExpr> entry : _current.getCommunities().entrySet()) {
       CommunityVar cvar = entry.getKey();
       BoolExpr e = entry.getValue();
-      BoolExpr eOther = p.getOther().getCommunities().get(cvar);
+      BoolExpr eOther = p.getData().getCommunities().get(cvar);
       // Update the communities if they should be sent
       if (sendCommunity()) {
         if (cvar.getType() != CommunityVar.Type.REGEX) {
@@ -721,13 +721,13 @@ class TransferSSA {
     }
 
     ArithExpr otherAd =
-        (p.getOther().getAdminDist() == null ? defaultAd : p.getOther().getAdminDist());
-    ArithExpr otherMed = (p.getOther().getMed() == null ? defaultMed : p.getOther().getMed());
-    ArithExpr otherMet = getOrDefault(p.getOther().getMetric(), defaultMet);
-    ArithExpr otherLp = getOrDefault(p.getOther().getLocalPref(), defaultLp);
+        (p.getData().getAdminDist() == null ? defaultAd : p.getData().getAdminDist());
+    ArithExpr otherMed = (p.getData().getMed() == null ? defaultMed : p.getData().getMed());
+    ArithExpr otherMet = getOrDefault(p.getData().getMetric(), defaultMet);
+    ArithExpr otherLp = getOrDefault(p.getData().getLocalPref(), defaultLp);
 
     BoolExpr ad = _enc.safeEq(_current.getAdminDist(), otherAd);
-    BoolExpr history = _enc.equalHistories(_current, p.getOther());
+    BoolExpr history = _enc.equalHistories(_current, p.getData());
     BoolExpr med = _enc.safeEq(_current.getMed(), otherMed);
     BoolExpr met = _enc.safeEq(_current.getMetric(), otherMet);
     BoolExpr lp = _enc.safeEq(_current.getLocalPref(), otherLp);
@@ -735,18 +735,18 @@ class TransferSSA {
     // If this was an external route, then we need to add the correct next-hop tag
     boolean isEbgpEdge = _enc.getGraph().getEbgpNeighbors().get(_graphEdge) != null;
     BoolExpr cid = _enc.mkTrue();
-    if (_isExport && _to.isBgp() && p.getOther().getClientId() != null) {
+    if (_isExport && _to.isBgp() && p.getData().getClientId() != null) {
       if (isEbgpEdge) {
         cid = _current.getClientId().checkIfValue(0);
       } else {
-        cid = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
+        cid = _enc.safeEqEnum(_current.getClientId(), p.getData().getClientId());
       }
     }
     if (!_isExport && _to.isBgp()) {
-      if (p.getOther().getClientId() != null) {
-        BoolExpr fromExternal = p.getOther().getClientId().checkIfValue(0);
+      if (p.getData().getClientId() != null) {
+        BoolExpr fromExternal = p.getData().getClientId().checkIfValue(0);
         BoolExpr edgeIsInternal = _enc.mkBool(!isClient && !isNonClient);
-        BoolExpr copyOver = _enc.safeEqEnum(_current.getClientId(), p.getOther().getClientId());
+        BoolExpr copyOver = _enc.safeEqEnum(_current.getClientId(), p.getData().getClientId());
         Integer x = _enc.getGraph().getOriginatorId().get(_graphEdge.getRouter());
         SymbolicOriginatorId soid = _current.getClientId();
         BoolExpr setNewValue = (x == null ? soid.checkIfValue(0) : soid.checkIfValue(x));
@@ -819,63 +819,63 @@ class TransferSSA {
     }
 
     if (variableName.equals("PREFIX-LEN")) {
-      Expr t = (trueBranch == null ? p.getOther().getPrefixLength() : trueBranch);
-      Expr f = (falseBranch == null ? p.getOther().getPrefixLength() : falseBranch);
+      Expr t = (trueBranch == null ? p.getData().getPrefixLength() : trueBranch);
+      Expr f = (falseBranch == null ? p.getData().getPrefixLength() : falseBranch);
       ArithExpr newValue = _enc.mkIf(guard, (ArithExpr) t, (ArithExpr) f);
-      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getOther().getPrefixLength(), newValue);
+      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getPrefixLength(), newValue);
       ArithExpr ret = createArithVariableWith(p, "PREFIX-LEN", newValue);
-      p.getOther().setPrefixLength(ret);
+      p.getData().setPrefixLength(ret);
       return new Pair<>(ret, null);
     }
     if (variableName.equals("ADMIN-DIST")) {
-      Expr t = (trueBranch == null ? p.getOther().getAdminDist() : trueBranch);
-      Expr f = (falseBranch == null ? p.getOther().getAdminDist() : falseBranch);
+      Expr t = (trueBranch == null ? p.getData().getAdminDist() : trueBranch);
+      Expr f = (falseBranch == null ? p.getData().getAdminDist() : falseBranch);
       ArithExpr newValue = _enc.mkIf(guard, (ArithExpr) t, (ArithExpr) f);
-      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getOther().getAdminDist(), newValue);
+      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getAdminDist(), newValue);
       ArithExpr ret = createArithVariableWith(p, "ADMIN-DIST", newValue);
-      p.getOther().setAdminDist(ret);
+      p.getData().setAdminDist(ret);
       return new Pair<>(ret, null);
     }
     if (variableName.equals("LOCAL-PREF")) {
-      Expr t = (trueBranch == null ? p.getOther().getLocalPref() : trueBranch);
-      Expr f = (falseBranch == null ? p.getOther().getLocalPref() : falseBranch);
+      Expr t = (trueBranch == null ? p.getData().getLocalPref() : trueBranch);
+      Expr f = (falseBranch == null ? p.getData().getLocalPref() : falseBranch);
       ArithExpr newValue = _enc.mkIf(guard, (ArithExpr) t, (ArithExpr) f);
-      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getOther().getLocalPref(), newValue);
+      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
       ArithExpr ret = createArithVariableWith(p, "LOCAL-PREF", newValue);
-      p.getOther().setLocalPref(ret);
+      p.getData().setLocalPref(ret);
       return new Pair<>(ret, null);
     }
     if (variableName.equals("METRIC")) {
-      Expr t = (trueBranch == null ? p.getOther().getMetric() : trueBranch);
-      Expr f = (falseBranch == null ? p.getOther().getMetric() : falseBranch);
+      Expr t = (trueBranch == null ? p.getData().getMetric() : trueBranch);
+      Expr f = (falseBranch == null ? p.getData().getMetric() : falseBranch);
       ArithExpr newValue = _enc.mkIf(guard, (ArithExpr) t, (ArithExpr) f);
-      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
+      newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getMetric(), newValue);
       ArithExpr ret = createArithVariableWith(p, "METRIC", newValue);
-      p.getOther().setMetric(ret);
+      p.getData().setMetric(ret);
       return new Pair<>(ret, null);
     }
     if (variableName.equals("OSPF-TYPE")) {
-      Expr t = (trueBranch == null ? p.getOther().getOspfType().getBitVec() : trueBranch);
-      Expr f = (falseBranch == null ? p.getOther().getOspfType().getBitVec() : falseBranch);
+      Expr t = (trueBranch == null ? p.getData().getOspfType().getBitVec() : trueBranch);
+      Expr f = (falseBranch == null ? p.getData().getOspfType().getBitVec() : falseBranch);
       BitVecExpr newValue = _enc.mkIf(guard, (BitVecExpr) t, (BitVecExpr) f);
       newValue =
-          _enc.mkIf(r.getReturnAssignedValue(), p.getOther().getOspfType().getBitVec(), newValue);
+          _enc.mkIf(r.getReturnAssignedValue(), p.getData().getOspfType().getBitVec(), newValue);
       BitVecExpr ret = createBitVecVariableWith(p, "OSPF-TYPE", 2, newValue);
-      p.getOther().getOspfType().setBitVec(ret);
+      p.getData().getOspfType().setBitVec(ret);
       return new Pair<>(ret, null);
     }
 
-    for (Map.Entry<CommunityVar, BoolExpr> entry : p.getOther().getCommunities().entrySet()) {
+    for (Map.Entry<CommunityVar, BoolExpr> entry : p.getData().getCommunities().entrySet()) {
       CommunityVar cvar = entry.getKey();
       if (variableName.equals(cvar.getValue())) {
-        Expr t = (trueBranch == null ? p.getOther().getCommunities().get(cvar) : trueBranch);
-        Expr f = (falseBranch == null ? p.getOther().getCommunities().get(cvar) : falseBranch);
+        Expr t = (trueBranch == null ? p.getData().getCommunities().get(cvar) : trueBranch);
+        Expr f = (falseBranch == null ? p.getData().getCommunities().get(cvar) : falseBranch);
         BoolExpr newValue = _enc.mkIf(guard, (BoolExpr) t, (BoolExpr) f);
         newValue =
             _enc.mkIf(
-                r.getReturnAssignedValue(), p.getOther().getCommunities().get(cvar), newValue);
+                r.getReturnAssignedValue(), p.getData().getCommunities().get(cvar), newValue);
         BoolExpr ret = createBoolVariableWith(p, cvar.getValue(), newValue);
-        p.getOther().getCommunities().put(cvar, ret);
+        p.getData().getCommunities().put(cvar, ret);
         return new Pair<>(ret, null);
       }
     }
@@ -987,8 +987,8 @@ class TransferSSA {
           default:
             p.debug("True Branch");
             // clear changed variables before proceeding
-            TransferParam<SymbolicRecord> p1 = p.indent().setOther(p.getOther().copy());
-            TransferParam<SymbolicRecord> p2 = p.indent().setOther(p.getOther().copy());
+            TransferParam<SymbolicRecord> p1 = p.indent().setData(p.getData().copy());
+            TransferParam<SymbolicRecord> p2 = p.indent().setData(p.getData().copy());
 
             TransferResult<BoolExpr,BoolExpr> trueBranch =
                 compute(i.getTrueStatements(), p1, initialResult());
@@ -1040,10 +1040,10 @@ class TransferSSA {
         if (!_current.getProto().isBgp()) {
           SetMetric sm = (SetMetric) stmt;
           LongExpr ie = sm.getMetric();
-          ArithExpr newValue = applyLongExprModification(p.getOther().getMetric(), ie);
-          newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
+          ArithExpr newValue = applyLongExprModification(p.getData().getMetric(), ie);
+          newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
           ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
-          p.getOther().setMetric(x);
+          p.getData().setMetric(x);
           result = result.addChangedVariable("METRIC", x);
         }
 
@@ -1060,20 +1060,20 @@ class TransferSSA {
         BitVecExpr newValue = t.getBitVec();
         newValue =
             _enc.mkIf(
-                result.getReturnAssignedValue(), p.getOther().getOspfType().getBitVec(), newValue);
+                result.getReturnAssignedValue(), p.getData().getOspfType().getBitVec(), newValue);
         BitVecExpr x = createBitVecVariableWith(p, "OSPF-TYPE", 2, newValue);
-        p.getOther().getOspfType().setBitVec(x);
+        p.getData().getOspfType().setBitVec(x);
         result = result.addChangedVariable("OSPF-TYPE", x);
 
       } else if (stmt instanceof SetLocalPreference) {
         p.debug("SetLocalPreference");
         SetLocalPreference slp = (SetLocalPreference) stmt;
         IntExpr ie = slp.getLocalPreference();
-        ArithExpr newValue = applyIntExprModification(p.getOther().getLocalPref(), ie);
+        ArithExpr newValue = applyIntExprModification(p.getData().getLocalPref(), ie);
         newValue =
-            _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getLocalPref(), newValue);
+            _enc.mkIf(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
         ArithExpr x = createArithVariableWith(p, "LOCAL-PREF", newValue);
-        p.getOther().setLocalPref(x);
+        p.getData().setLocalPref(x);
         result = result.addChangedVariable("LOCAL-PREF", x);
 
       } else if (stmt instanceof AddCommunity) {
@@ -1084,10 +1084,10 @@ class TransferSSA {
           BoolExpr newValue =
               _enc.mkIf(
                   result.getReturnAssignedValue(),
-                  p.getOther().getCommunities().get(cvar),
+                  p.getData().getCommunities().get(cvar),
                   _enc.mkTrue());
           BoolExpr x = createBoolVariableWith(p, cvar.getValue(), newValue);
-          p.getOther().getCommunities().put(cvar, x);
+          p.getData().getCommunities().put(cvar, x);
           result = result.addChangedVariable(cvar.getValue(), x);
         }
 
@@ -1099,10 +1099,10 @@ class TransferSSA {
           BoolExpr newValue =
               _enc.mkIf(
                   result.getReturnAssignedValue(),
-                  p.getOther().getCommunities().get(cvar),
+                  p.getData().getCommunities().get(cvar),
                   _enc.mkFalse());
           BoolExpr x = createBoolVariableWith(p, cvar.getValue(), newValue);
-          p.getOther().getCommunities().put(cvar, x);
+          p.getData().getCommunities().put(cvar, x);
           result = result.addChangedVariable(cvar.getValue(), x);
         }
 
@@ -1114,10 +1114,10 @@ class TransferSSA {
         p.debug("PrependAsPath");
         PrependAsPath pap = (PrependAsPath) stmt;
         Integer prependCost = prependLength(pap.getExpr());
-        ArithExpr newValue = _enc.mkSum(p.getOther().getMetric(), _enc.mkInt(prependCost));
-        newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getOther().getMetric(), newValue);
+        ArithExpr newValue = _enc.mkSum(p.getData().getMetric(), _enc.mkInt(prependCost));
+        newValue = _enc.mkIf(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
         ArithExpr x = createArithVariableWith(p, "METRIC", newValue);
-        p.getOther().setMetric(x);
+        p.getData().setMetric(x);
         result = result.addChangedVariable("METRIC", x);
 
       } else if (stmt instanceof SetOrigin) {
@@ -1221,7 +1221,7 @@ class TransferSSA {
    * applying the effect of aggregation.
    */
   private void computeIntermediatePrefixLen(TransferParam<SymbolicRecord> param) {
-    ArithExpr prefixLen = param.getOther().getPrefixLength();
+    ArithExpr prefixLen = param.getData().getPrefixLength();
     if (_isExport && _to.isBgp()) {
       _aggregates = aggregateRoutes();
       if (_aggregates.size() > 0) {
@@ -1231,27 +1231,27 @@ class TransferSSA {
           Prefix p = prefix.getNetworkPrefix();
           ArithExpr len = _enc.mkInt(p.getPrefixLength());
           BoolExpr relevantPfx = _enc.isRelevantFor(p, _enc.getSymbolicPacket().getDstIp());
-          BoolExpr relevantLen = _enc.mkGt(param.getOther().getPrefixLength(), len);
+          BoolExpr relevantLen = _enc.mkGt(param.getData().getPrefixLength(), len);
           BoolExpr relevant = _enc.mkAnd(relevantPfx, relevantLen, _enc.mkBool(isSuppressed));
           prefixLen = _enc.mkIf(relevant, len, prefixLen);
         }
         ArithExpr i = createArithVariableWith(param, "PREFIX-LEN", prefixLen);
-        param.getOther().setPrefixLength(i);
+        param.getData().setPrefixLength(i);
       }
     }
   }
 
   private void applyMetricUpdate(TransferParam<SymbolicRecord> p) {
     if (_isExport) {
-      ArithExpr newValue = _enc.mkSum(p.getOther().getMetric(), _enc.mkInt(_addedCost));
-      p.getOther().setMetric(newValue);
+      ArithExpr newValue = _enc.mkSum(p.getData().getMetric(), _enc.mkInt(_addedCost));
+      p.getData().setMetric(newValue);
     }
   }
 
   private void setDefaultLocalPref(TransferParam<SymbolicRecord> p) {
     // must be the case that it is an environment variable
-    if (p.getOther().getLocalPref() == null) {
-      p.getOther().setLocalPref(_enc.mkInt(100));
+    if (p.getData().getLocalPref() == null) {
+      p.getData().setLocalPref(_enc.mkInt(100));
     }
   }
 
