@@ -3276,11 +3276,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           if (value == null) {
             if (variable.getOptional()) {
               /*
-               * For now we assume optional values are top-level
-               * variables and single-line. Otherwise it's not really
-               * clear what to do.
+               * Recursively look for all key, value pairs and remove keys
+               * whose value is "${varName}." Is this fragile?
+               * To be doubly sure, we do only for keys whole parent object is a questions, which
+               * we judge by it having a key "class" whose value starts with "org.batfish.question"
                */
-              jobj.remove(varName);
+              recursivelyRemoveOptionalVar(jobj, varName);
             } else {
               // What to do here? For now, do nothing and assume that
               // later validation will handle it.
@@ -3336,6 +3337,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (JSONException | IOException e) {
       throw new BatfishException(
           String.format("Could not convert raw question text [%s] to JSON", rawQuestionText), e);
+    }
+  }
+
+  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
+      throws JSONException {
+    Iterator<?> iter = questionObject.keys();
+    while (iter.hasNext()) {
+      String key = (String) iter.next();
+      Object value = questionObject.get(key);
+      if (value instanceof String) {
+        if (value.equals("${" + varName + "}")) {
+          iter.remove();
+        }
+      } else if (value instanceof JSONObject) {
+        JSONObject childObject = (JSONObject) value;
+        if (childObject.has("class")) {
+          Object classValue = childObject.get("class");
+          if (classValue instanceof String
+              && ((String) classValue).startsWith("org.batfish.question")) {
+            recursivelyRemoveOptionalVar(childObject, varName);
+          }
+        }
+      }
     }
   }
 
@@ -4098,10 +4122,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
-      Path testRigPath,
-      Path outputPath,
-      ParseVendorConfigurationAnswerElement answerElement
-      ) {
+      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
     SortedMap<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
@@ -4117,13 +4138,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .entrySet()
             .stream()
             .filter(e -> ((HostConfiguration) e.getValue()).getOverlay())
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
+            .collect(
+                Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
     SortedMap<String, VendorConfiguration> nonOverlayHostConfigurations =
         allHostConfigurations
             .entrySet()
             .stream()
             .filter(e -> !((HostConfiguration) e.getValue()).getOverlay())
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
+            .collect(
+                Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
 
     // read and associate iptables files for specified hosts
     SortedMap<Path, String> iptablesData = new TreeMap<>();

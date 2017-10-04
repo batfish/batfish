@@ -51,7 +51,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       _batfish.popEnvironment();
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
-      for (String flowText : history.getFlowsByText().keySet()) {
+      for (String flowText : history.getTraces().keySet()) {
         // String baseEnvId = _batfish.getBaseTestrigSettings().getName() +
         // ":"
         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
@@ -67,10 +67,12 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         _batfish.pushDeltaEnvironment();
         String deltaEnvId = _batfish.getFlowTag();
         _batfish.popEnvironment();
-        Set<FlowTrace> baseFlowTraces = history.getTraces().get(flowText).get(baseEnvId);
-        Set<FlowTrace> deltaFlowTraces = history.getTraces().get(flowText).get(deltaEnvId);
+        Set<FlowTrace> baseFlowTraces =
+            history.getTraces().get(flowText).getPaths().get(baseEnvId);
+        Set<FlowTrace> deltaFlowTraces =
+            history.getTraces().get(flowText).getPaths().get(deltaEnvId);
         if (!baseFlowTraces.toString().equals(deltaFlowTraces.toString())) {
-          Flow flow = history.getFlowsByText().get(flowText);
+          Flow flow = history.getTraces().get(flowText).getFlow();
           for (FlowTrace flowTrace : baseFlowTraces) {
             filteredHistory.addFlowTrace(flow, baseEnvId, flowTrace);
           }
