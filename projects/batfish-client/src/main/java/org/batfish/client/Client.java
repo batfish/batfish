@@ -1638,10 +1638,24 @@ public class Client extends AbstractClient implements IClient {
     String questionsPathStr = parameters.get(1);
 
     Map<String, String> questionMap = new TreeMap<>();
-
-    if (!loadQuestions(null, questionsPathStr, questionMap)) {
+    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
+    if (!loadQuestions(questionsPathStr, questionMap, ae)) {
       return false;
     }
+    Answer answer = new Answer();
+    answer.addAnswerElement(ae);
+    ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+    String answerStringToPrint;
+    try {
+      answerStringToPrint = mapper.writeValueAsString(answer);
+    } catch (JsonProcessingException e) {
+      throw new BatfishException("Could not write answer element as string", e);
+    }
+    if (_settings.getPrettyPrintAnswers()) {
+      answerStringToPrint = answer.prettyPrint();
+    }
+
+    logOutput(null, answerStringToPrint);
 
     String analysisJsonString = "{}";
 
@@ -1884,8 +1898,11 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private String loadQuestion(Path file, Map<String, String> bfq) {
-    String questionText = CommonUtil.readFile(file);
+  private String loadQuestion(
+      Path file, String questionText, String questionKey, Map<String, String> bfq) {
+    if (questionText == null) {
+      questionText = CommonUtil.readFile(file);
+    }
     try {
       JSONObject questionObj = new JSONObject(questionText);
       if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
@@ -1899,7 +1916,11 @@ public class Client extends AbstractClient implements IClient {
         bfq.put(name.toLowerCase(), questionText);
         return name;
       } else {
-        throw new BatfishException("Question in file: '" + file + "' has no instance name");
+        if (questionText == null) {
+          throw new BatfishException("Question in file: '" + file + "' has no instance name");
+        } else {
+          throw new BatfishException("Question: '" + questionKey + "' has no instance name");
+        }
       }
     } catch (JSONException | IOException e) {
       throw new BatfishException("Failed to process question", e);
@@ -1911,20 +1932,68 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters,
       Map<String, String> bfq) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.LOAD_QUESTIONS)) {
+    if (!isValidArgument(options, parameters, 1, 0, 1, Command.LOAD_QUESTIONS)) {
       return false;
     }
-    String questionsPathStr = parameters.get(0);
-    return loadQuestions(outWriter, questionsPathStr, bfq);
-  }
 
-  private boolean loadQuestions(
-      FileWriter outWriter, String questionsPathStr, Map<String, String> bfq) {
-    Path questionsPath = Paths.get(questionsPathStr);
-    int numLoaded = 0;
+    boolean loadRemote = false;
+    if (options.size() == 1) {
+      if (options.get(0).equals("-loadremote")) {
+        loadRemote = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.LOAD_QUESTIONS);
+        return false;
+      }
+    }
     Answer answer = new Answer();
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
     answer.addAnswerElement(ae);
+    int numLoaded = 0;
+
+    if (parameters.isEmpty() || loadRemote) {
+      //loading remote questions from batfish
+      Map<String, String> globalQuestions = _workHelper.getGlobalQuestions();
+      for (Entry<String, String> question : globalQuestions.entrySet()) {
+        int numBefore = bfq.size();
+        String name = loadQuestion(null, question.getValue(), question.getKey(), bfq);
+        int numAfter = bfq.size();
+        if (numBefore == numAfter) {
+          ae.getReplaced().add(name);
+        } else {
+          ae.getAdded().add(name);
+        }
+        numLoaded++;
+      }
+      ae.setNumLoaded(numLoaded);
+    }
+
+    if (!parameters.isEmpty()) {
+      //loading questions from local dir, updating the answer element
+      String questionsPathStr = parameters.get(0);
+      loadQuestions(questionsPathStr, bfq, ae);
+    }
+
+    //outputting the final answer
+    ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+    String answerStringToPrint;
+    try {
+      answerStringToPrint = mapper.writeValueAsString(answer);
+    } catch (JsonProcessingException e) {
+      throw new BatfishException("Could not write answer element as string", e);
+    }
+    if (outWriter == null && _settings.getPrettyPrintAnswers()) {
+      answerStringToPrint = answer.prettyPrint();
+    }
+    logOutput(outWriter, answerStringToPrint);
+
+    return true;
+  }
+
+  private boolean loadQuestions(
+    String questionsPathStr, Map<String, String> bfq, LoadQuestionAnswerElement ae) {
+    Path questionsPath = Paths.get(questionsPathStr);
+    int numLoaded = 0;
     SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
     try {
       Files.walkFileTree(
@@ -1947,7 +2016,7 @@ public class Client extends AbstractClient implements IClient {
     }
     for (Path jsonQuestionFile : jsonQuestionFiles) {
       int numBefore = bfq.size();
-      String name = loadQuestion(jsonQuestionFile, bfq);
+      String name = loadQuestion(jsonQuestionFile, null, null, bfq);
       int numAfter = bfq.size();
       if (numBefore == numAfter) {
         ae.getReplaced().add(name);
@@ -1957,18 +2026,6 @@ public class Client extends AbstractClient implements IClient {
       numLoaded++;
     }
     ae.setNumLoaded(numLoaded);
-    ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
-    String answerStringToPrint;
-    try {
-      answerStringToPrint = mapper.writeValueAsString(answer);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write answer element as string", e);
-    }
-    if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-      answerStringToPrint = answer.prettyPrint();
-    }
-
-    logOutput(outWriter, answerStringToPrint);
     return true;
   }
 

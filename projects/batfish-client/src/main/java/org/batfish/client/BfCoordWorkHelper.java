@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.File;
@@ -472,6 +473,42 @@ public class BfCoordWorkHelper {
       return container;
     } catch (Exception e) {
       _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgrV2, containerName);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
+  }
+
+  /**
+   * Returns the questions configured in the remote coordinator service
+   *
+   * @return {@link Map containing Question Names and Question JSON strings}
+   */
+  @Nullable
+  public Map<String, String> getGlobalQuestions() {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_GLOBAL_QUESTIONS);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS)) {
+        _logger.errorf("globalquestions key not found in: %s\n", jObj);
+        return null;
+      }
+
+      String globalQuestionsStr = jObj.getString(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS);
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.readValue(globalQuestionsStr, new TypeReference<Map<String, String>>() {});
+
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
       return null;
     }

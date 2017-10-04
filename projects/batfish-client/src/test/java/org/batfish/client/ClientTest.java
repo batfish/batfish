@@ -801,7 +801,7 @@ public class ClientTest {
 
   @Test
   public void testLoadQuestionsInvalidParas() throws Exception {
-    testInvalidInput(LOAD_QUESTIONS, new String[] {});
+    testInvalidInput(LOAD_QUESTIONS, new String[] {"path1", "path2"});
   }
 
   @Test
