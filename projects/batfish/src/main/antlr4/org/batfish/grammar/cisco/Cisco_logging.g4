@@ -123,6 +123,13 @@ logging_host
       DISCRIMINATOR descr = variable
    )?
    (
+      TRANSPORT
+      (
+         TCP
+         | UDP
+      )
+   )?
+   (
       PORT
       (
          DEFAULT

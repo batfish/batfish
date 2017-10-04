@@ -1,0 +1,12 @@
+!
+hostname mos_misc
+!
+ip route 1.2.3.4 dev ma2
+ip route 2.3.4.5 dev ma2
+logging host 1.2.3.4
+ntp server 1.2.3.4
+ptp slave ma2
+ptp ttl 8
+tacacs-server host 1.2.3.4 key 7 0123456789ABCDEF0123456789AB
+!
+

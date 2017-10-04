@@ -1,11 +1,12 @@
 !
-hostname cisco_application
+hostname mos_application
 !
 application metamux
  mode 8x4
  no shutdown
 !
 application metawatch
+ capture speed 1G
  interface ap9 sequence-number
  no shutdown
  timesource pps

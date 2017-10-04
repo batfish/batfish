@@ -3716,7 +3716,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST, c);
     markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST, c);
     markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6, c);
-    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_ACCESS_GROUP, c);
+    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST, c);
     markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP, c);
     markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL, c);

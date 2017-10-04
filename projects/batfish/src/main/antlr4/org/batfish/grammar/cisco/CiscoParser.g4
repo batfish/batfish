@@ -81,6 +81,16 @@ aiimgp_stanza
    address_aiimgp_stanza
 ;
 
+al_null
+:
+   NO?
+   (
+      HIDEKEYS
+      | LOGGING
+      | NOTIFY
+   ) ~NEWLINE* NEWLINE
+;
+
 allow_iimgp_stanza
 :
    ALLOW ~NEWLINE* NEWLINE aiimgp_stanza*
@@ -166,6 +176,24 @@ apsp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+archive_log
+:
+   LOG ~NEWLINE* NEWLINE
+   (
+      al_null
+   )*
+;
+
+archive_null
+:
+   NO?
+   (
+      MAXIMUM
+      | PATH
+      | WRITE_MEMORY
+   ) ~NEWLINE* NEWLINE
+;
+
 asa_comment_stanza
 :
    COLON ~NEWLINE* NEWLINE
@@ -175,7 +203,8 @@ av_null
 :
    NO?
    (
-      INTERFACE
+      CAPTURE
+      | INTERFACE
       | MODE
       | SHUTDOWN
       | TIMESOURCE
@@ -306,6 +335,14 @@ ctlf_null
    ) ~NEWLINE* NEWLINE
 ;
 
+cvx_null
+:
+   NO?
+   (
+      SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
 d11_null
 :
    NO?
@@ -316,6 +353,15 @@ d11_null
       | MAX_ASSOCIATIONS
       | MBSSID
       | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+daemon_null
+:
+   NO?
+   (
+      EXEC
+      | SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -858,11 +904,6 @@ ip_as_path_regex_mode_stanza
    ) NEWLINE
 ;
 
-ip_default_gateway_stanza
-:
-   IP DEFAULT_GATEWAY gateway = IP_ADDRESS NEWLINE
-;
-
 ip_dhcp_null
 :
    (
@@ -1136,6 +1177,18 @@ ipca_null
       | REMOTE_PORT
       | RETRANSMIT_TIMEOUT
       | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+ipdg_address
+:
+   ip = IP_ADDRESS NEWLINE
+;
+
+ipdg_null
+:
+   (
+      IMPORT
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1436,39 +1489,106 @@ map_class_null
    ) ~NEWLINE* NEWLINE
 ;
 
-mgmt_api_stanza
+management_api
 :
-   MANAGEMENT API HTTP_COMMANDS NEWLINE
+   API HTTP_COMMANDS NEWLINE
    (
-      (
-         (
-            PROTOCOL HTTPS NEWLINE
-         )
-         | mgmt_null
-      )+
-   )
+      management_api_null
+      | management_api_vrf
+   )*
 ;
 
-mgmt_egress_iface_stanza
+management_api_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | EXIT
+      | IDLE_TIMEOUT
+      | PROTOCOL
+      | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+management_api_vrf
+:
+   VRF name = variable NEWLINE
+   (
+      management_api_vrf_null
+   )*
+;
+
+management_api_vrf_null
+:
+   NO?
+   (
+      SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+management_console
+:
+   CONSOLE NEWLINE
+   (
+      management_console_null
+   )*
+;
+
+management_console_null
+:
+   NO?
+   (
+      IDLE_TIMEOUT
+   ) ~NEWLINE* NEWLINE
+;
+
+management_egress_interface_selection
 :
    MANAGEMENT EGRESS_INTERFACE_SELECTION NEWLINE
    (
-      (
-         APPLICATION HTTP
-         | APPLICATION SNMP
-         | APPLICATION RADIUS
-         | APPLICATION TACACS
-         | APPLICATION SYSLOG
-         | APPLICATION SSH
-         | APPLICATION
-      ) NEWLINE
-   )+
+      management_egress_interface_selection_null
+   )*
    (
       EXIT NEWLINE
    )?
 ;
 
-mgmt_ip_access_group
+management_egress_interface_selection_null
+:
+   NO?
+   (
+      APPLICATION
+   ) ~NEWLINE* NEWLINE
+;
+
+management_ssh
+:
+   SSH NEWLINE
+   (
+      management_ssh_null
+   )*
+;
+
+management_ssh_null
+:
+   NO?
+   (
+      AUTHENTICATION
+      | IDLE_TIMEOUT
+      | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+management_telnet
+:
+   TELNET NEWLINE
+   (
+      management_telnet_ip_access_group
+      | management_telnet_null
+   )*
+;
+
+management_telnet_ip_access_group
 :
    IP ACCESS_GROUP name = variable
    (
@@ -1477,13 +1597,11 @@ mgmt_ip_access_group
    ) NEWLINE
 ;
 
-mgmt_null
+management_telnet_null
 :
    NO?
    (
-      AUTHENTICATION
-      | EXIT
-      | IDLE_TIMEOUT
+      IDLE_TIMEOUT
       | SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
@@ -1907,14 +2025,8 @@ s_archive
 :
    ARCHIVE ~NEWLINE* NEWLINE
    (
-      (
-         HIDEKEYS
-         | LOG
-         | LOGGING
-         | MAXIMUM
-         | NOTIFY
-         | PATH
-      ) ~NEWLINE* NEWLINE
+      archive_log
+      | archive_null
    )*
 ;
 
@@ -1989,6 +2101,22 @@ s_ctl_file
    )*
 ;
 
+s_cvx
+:
+   CVX NEWLINE
+   (
+      cvx_null
+   )*
+;
+
+s_daemon
+:
+   DAEMON ~NEWLINE* NEWLINE
+   (
+      daemon_null
+   )*
+;
+
 s_dhcp
 :
    NO? DHCP ~NEWLINE* NEWLINE
@@ -2032,9 +2160,12 @@ s_dial_peer
          | MEDIA
          | PORT
          | PREFERENCE
+         | PREFIX
          | PROGRESS_IND
          | SERVICE
          | SESSION
+         | SHUTDOWN
+         | SIGNALING
          | TRANSLATION_PROFILE
          | VAD
          | VOICE_CLASS
@@ -2239,6 +2370,15 @@ s_interface_line
    NO? INTERFACE BREAKOUT ~NEWLINE* NEWLINE
 ;
 
+s_ip_default_gateway
+:
+   NO? IP DEFAULT_GATEWAY
+   (
+      ipdg_address
+      | ipdg_null
+   )
+;
+
 s_ip_dhcp
 :
    NO?
@@ -2300,6 +2440,11 @@ s_ip_probe
    (
       ip_probe_null
    )*
+;
+
+s_ip_route_mos
+:
+   IP ROUTE IP_ADDRESS DEV interface_name NEWLINE
 ;
 
 s_ip_sla
@@ -2412,16 +2557,12 @@ s_management
 :
    MANAGEMENT
    (
-      CONSOLE
-      | SSH
-      | TELNET
-   ) NEWLINE s_management_tail*
-;
-
-s_management_tail
-:
-   mgmt_ip_access_group
-   | mgmt_null
+      management_api
+      | management_console
+      | management_egress_interface_selection
+      | management_ssh
+      | management_telnet
+   )
 ;
 
 s_map_class
@@ -2794,11 +2935,14 @@ s_vlan_name
 
 s_voice
 :
-   NO? VOICE ~NEWLINE* NEWLINE
+   NO? VOICE
    (
-      voice_null
-      | voice_sip
-   )*
+      voice_class
+      | voice_null
+      | voice_service
+      | voice_translation_profile
+      | voice_translation_rule
+   )
 ;
 
 s_voice_card
@@ -2938,7 +3082,10 @@ sip_ua_null
 :
    NO?
    (
-      RETRY
+      CONNECTION_REUSE
+      | RETRY
+      | SET
+      | SIP_SERVER
       | TIMERS
    ) ~NEWLINE* NEWLINE
 ;
@@ -3093,13 +3240,10 @@ stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
-   | ip_default_gateway_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
    | ipv6_prefix_list_stanza
    | ipx_sap_access_list_stanza
-   | mgmt_api_stanza
-   | mgmt_egress_iface_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
@@ -3137,6 +3281,8 @@ stanza
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
+   | s_cvx
+   | s_daemon
    | s_depi_class
    | s_depi_tunnel
    | s_dhcp
@@ -3169,6 +3315,7 @@ stanza
    | s_interface
    | s_ip_access_list_eth
    | s_ip_access_list_session
+   | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain
    | s_ip_domain_name
@@ -3176,6 +3323,7 @@ stanza
    | s_ip_nat
    | s_ip_pim
    | s_ip_probe
+   | s_ip_route_mos
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
@@ -3613,30 +3761,202 @@ vlan_null
    ) ~NEWLINE* NEWLINE
 ;
 
+voice_class
+:
+   CLASS
+   (
+      voice_class_codec
+      | voice_class_h323
+      | voice_class_sip_profiles
+   )
+;
+
+voice_class_codec
+:
+   CODEC ~NEWLINE* NEWLINE
+   (
+      voice_class_codec_null
+   )*
+;
+
+voice_class_codec_null
+:
+   NO?
+   (
+      CODEC
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_class_h323
+:
+   H323 ~NEWLINE* NEWLINE
+   (
+      voice_class_h323_null
+   )*
+;
+
+voice_class_h323_null
+:
+   NO?
+   (
+      CALL
+      | H225
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_class_sip_profiles
+:
+   SIP_PROFILES ~NEWLINE* NEWLINE
+   (
+      voice_class_sip_profiles_null
+   )*
+;
+
+voice_class_sip_profiles_null
+:
+   NO?
+   (
+      REQUEST
+   ) ~NEWLINE* NEWLINE
+;
+
 voice_null
+:
+   (
+      ALG_BASED_CAC
+      | CALL
+      | DIALPLAN_PROFILE
+      | HUNT
+      | IEC
+      | LOGGING
+      | REAL_TIME_CONFIG
+      | RTCP_INACTIVITY
+      | RTP
+      | SIP
+      | SIP_MIDCALL_REQ_TIMEOUT
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_service
+:
+   SERVICE
+   (
+      voice_service_voip
+   )
+;
+
+voice_service_voip
+:
+   VOIP NEWLINE
+   (
+      voice_service_voip_h323
+      | voice_service_voip_ip_address_trusted_list
+      | voice_service_voip_null
+      | voice_service_voip_sip
+   )*
+;
+
+voice_service_voip_h323
+:
+   H323 NEWLINE
+   (
+      voice_service_voip_h323_null
+   )*
+;
+
+voice_service_voip_h323_null
+:
+   NO?
+   (
+      CALL
+      | H225
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_service_voip_ip_address_trusted_list
+:
+   IP ADDRESS TRUSTED LIST NEWLINE
+   (
+      voice_service_voip_ip_address_trusted_list_null
+   )*
+;
+
+voice_service_voip_ip_address_trusted_list_null
+:
+   NO?
+   (
+      IPV4
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_service_voip_null
 :
    NO?
    (
       ADDRESS_HIDING
       | ALLOW_CONNECTIONS
-      | ASYMMETRIC
-      | CODEC
       | FAX
-      | FAX_RELAY
       | H225
-      | H323
       | MODEM
-      | RULE
       | SHUTDOWN
+      | SUPPLEMENTARY_SERVICE
    ) ~NEWLINE* NEWLINE
 ;
 
-voice_sip
+voice_service_voip_sip
 :
    SIP NEWLINE
    (
-      vs_null
+      voice_service_voip_sip_null
    )*
+;
+
+voice_service_voip_sip_null
+:
+   NO?
+   (
+      BIND
+      | EARLY_OFFER
+      | ERROR_PASSTHRU
+      | G729
+      | HEADER_PASSING
+      | LISTEN_PORT
+      | MIDCALL_SIGNALING
+      | SIP_PROFILES
+      | TRANSPORT
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_translation_profile
+:
+   TRANSLATION_PROFILE ~NEWLINE* NEWLINE
+   (
+      voice_translation_profile_null
+   )*
+;
+
+voice_translation_profile_null
+:
+   NO?
+   (
+      TRANSLATE
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_translation_rule
+:
+   TRANSLATION_RULE ~NEWLINE* NEWLINE
+   (
+      voice_translation_rule_null
+   )*
+;
+
+voice_translation_rule_null
+:
+   NO?
+   (
+      RULE
+   ) ~NEWLINE* NEWLINE
 ;
 
 vp_null
@@ -3644,6 +3964,8 @@ vp_null
    NO?
    (
       CALLER_ID
+      | CONNECTION
+      | CPTONE
       | DESCRIPTION
       | ECHO_CANCEL
       | SHUTDOWN
@@ -3774,20 +4096,6 @@ vrrp_interface
    )* NEWLINE?
 ;
 
-vs_null
-:
-   NO?
-   (
-      EARLY_OFFER
-      | ERROR_PASSTHRU
-      | HEADER_PASSING
-      | LISTEN_PORT
-      | MIDCALL_SIGNALING
-      | SIP_PROFILES
-      | TRANSPORT
-   ) ~NEWLINE* NEWLINE
-;
-
 wccp_id
 :
    id = DEC
@@ -3838,6 +4146,7 @@ web_server_null
       | SESSION_TIMEOUT
       | SWITCH_CERT
       | WEB_HTTPS_PORT_443
+      | WEB_MAX_CLIENTS
    ) ~NEWLINE* NEWLINE
 ;
 

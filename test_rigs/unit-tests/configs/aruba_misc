@@ -87,6 +87,8 @@ firewall-visibility
 guest-access-email
    smtp-server 1.2.3.4
 !
+no ip default-gateway import cell
+no ip default-gateway import pppoe
 no kernel coredump
 loginsession timeout 60
 ids ap-classification-rule "abcd"
@@ -182,9 +184,12 @@ lcd-menu
 license profile
  centralized-licensing-enable
 !
+localip 0.0.0.0 ipsec 0123456789abcdef0123456789abcdef0123456789abcdef
 masterip 1.2.3.4 ipsec ******
 mgmt-server type amp primary-server 1.2.3.4 profile default-amp
 mgmt-user admin root 0123456789abcdef0123456789abcdef0123456789abcdef01
+packet-capture-defaults datapath wifi-client 00:11:22:33:44:55 all
+packet-capture-defaults destination local-filesystem
 pan active-profile
 pan profile "default"
 pan-options
@@ -232,6 +237,7 @@ web-server profile
  session-timeout 1234
  switch-cert "blah"
  web-https-port-443
+ web-max-clients 50
 !
 wlan bcn-rpt-req-profile "default"
 wlan dot11k-profile "default"

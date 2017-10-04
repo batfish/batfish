@@ -309,7 +309,10 @@ extended_access_list_tail
          SEQ
          | SEQUENCE
       )? num = DEC
-   )? ala = access_list_action prot = protocol srcipr = access_list_ip_range
+   )? ala = access_list_action
+   (
+      VLAN vlan = DEC vmask = HEX
+   )? prot = protocol srcipr = access_list_ip_range
    (
       alps_src = port_specifier
    )? dstipr = access_list_ip_range
@@ -921,7 +924,7 @@ s_ip_access_list_eth
 
 s_ip_access_list_session
 :
-   IP ACCESS_LIST SESSION name=variable NEWLINE
+   IP ACCESS_LIST SESSION name = variable NEWLINE
    (
       ipaclsession_line
       | ipaclsession_line6

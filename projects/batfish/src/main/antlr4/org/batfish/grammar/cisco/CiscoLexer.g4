@@ -544,6 +544,11 @@ ALG
    'alg'
 ;
 
+ALG_BASED_CAC
+:
+   'alg-based-cac'
+;
+
 ALIAS
 :
    'alias' -> pushMode ( M_Alias )
@@ -1586,6 +1591,11 @@ CAPTIVE_PORTAL_CERT
    'captive-portal-cert'
 ;
 
+CAPTURE
+:
+   'capture'
+;
+
 CARD
 :
    'card'
@@ -2011,6 +2021,11 @@ CONNECTION
    'connection'
 ;
 
+CONNECTION_REUSE
+:
+   'connection-reuse'
+;
+
 CONSOLE
 :
    'console'
@@ -2280,6 +2295,11 @@ CURRENT_CONFIGURATION
 CUSTOMER_ID
 :
    'customer-id'
+;
+
+CVX
+:
+   'cvx'
 ;
 
 CWR
@@ -2767,6 +2787,11 @@ DETERMINISTIC_MED
    'deterministic-med'
 ;
 
+DEV
+:
+   'dev' -> pushMode ( M_Interface )
+;
+
 DEVICE
 :
    'device'
@@ -2837,6 +2862,11 @@ DIAGNOSTIC
    'diagnostic'
 ;
 
+DIAL_CONTROL_MIB
+:
+   'dial-control-mib'
+;
+
 DIAL_PEER
 :
    'dial-peer'
@@ -2865,6 +2895,11 @@ DIALER_LIST
 DIALPLAN_PATTERN
 :
    'dialplan-pattern'
+;
+
+DIALPLAN_PROFILE
+:
+   'dialplan-profile'
 ;
 
 DIRECT
@@ -4226,6 +4261,11 @@ G709
    'g709'
 ;
 
+G729
+:
+   'g729'
+;
+
 GATEKEEPER
 :
    'gatekeeper'
@@ -4631,6 +4671,11 @@ HTTPS
    'https'
 ;
 
+HUNT
+:
+   'hunt'
+;
+
 HW_MODULE
 :
    'hw-module'
@@ -4734,6 +4779,11 @@ IDS
 IDS_PROFILE
 :
    'ids-profile'
+;
+
+IEC
+:
+   'iec'
 ;
 
 IF
@@ -5636,6 +5686,11 @@ LOCATION
 LOCALE
 :
    'locale'
+;
+
+LOCALIP
+:
+   'localip'
 ;
 
 LOG
@@ -7273,6 +7328,11 @@ PACKET
    'packet'
 ;
 
+PACKET_CAPTURE_DEFAULTS
+:
+   'packet-capture-defaults'
+;
+
 PACKET_TOO_BIG
 :
    'packet-too-big'
@@ -8328,6 +8388,11 @@ REAL
    'real'
 ;
 
+REAL_TIME_CONFIG
+:
+   'real-time-config'
+;
+
 REAUTHENTICATION
 :
    'reauthentication'
@@ -8883,6 +8948,16 @@ RT
    'rt'
 ;
 
+RTCP_INACTIVITY
+:
+   'rtcp-inactivity'
+;
+
+RTP
+:
+   'rtp'
+;
+
 RTR
 :
    'rtr'
@@ -9418,6 +9493,11 @@ SIGNAL
    'signal'
 ;
 
+SIGNALING
+:
+   'signaling'
+;
+
 SIGNALLED_BANDWIDTH
 :
    'signalled-bandwidth'
@@ -9473,9 +9553,19 @@ SIP
    'sip'
 ;
 
+SIP_MIDCALL_REQ_TIMEOUT
+:
+   'sip-midcall-req-timeout'
+;
+
 SIP_PROFILES
 :
    'sip-profiles'
+;
+
+SIP_SERVER
+:
+   'sip-server'
 ;
 
 SIP_UA
@@ -9611,6 +9701,11 @@ SOFT_PREEMPTION
 SOFT_RECONFIGURATION
 :
    'soft' '-reconfiguration'?
+;
+
+SOFTWARE
+:
+   'software'
 ;
 
 SONET
@@ -10003,6 +10098,11 @@ SUNRPC
 SUPER_USER_PASSWORD
 :
    'super-user-password'
+;
+
+SUPPLEMENTARY_SERVICE
+:
+   'supplementary-service'
 ;
 
 SUPPLEMENTARY_SERVICES
@@ -10565,6 +10665,11 @@ TRANSLATION
    'translation'
 ;
 
+TRANSLATION_RULE
+:
+   'translation-rule'
+;
+
 TRANSLATION_PROFILE
 :
    'translation-profile'
@@ -10613,6 +10718,11 @@ TRAPS
 TRIGGER
 :
    'trigger'
+;
+
+TRIMODE
+:
+   'trimode'
 ;
 
 TRUNK
@@ -11210,6 +11320,11 @@ VOICE_SERVICE
    'voice-service'
 ;
 
+VOIP
+:
+   'voip'
+;
+
 VOIP_CAC_PROFILE
 :
    'voip-cac-profile'
@@ -11377,6 +11492,11 @@ WEB_HTTPS_PORT_443
    'web-https-port-443'
 ;
 
+WEB_MAX_CLIENTS
+:
+   'web-max-clients'
+;
+
 WEB_SERVER
 :
    'web-server'
@@ -11525,6 +11645,11 @@ WRED
 WRED_PROFILE
 :
    'wred-profile'
+;
+
+WRITE_MEMORY
+:
+   'write-memory'
 ;
 
 WRR
@@ -11843,6 +11968,19 @@ COMMENT_LINE
 COMMENT_TAIL
 :
    '!' F_NonNewline* -> channel ( HIDDEN )
+;
+
+ARISTA_PAGINATION_DISABLED
+:
+   'Pagination disabled.' F_Newline+ -> channel ( HIDDEN )
+;
+
+ARISTA_PROMPT_SHOW_RUN
+:
+   F_NonWhitespace+ [>#]
+   {lastTokenType == NEWLINE || lastTokenType == -1}?
+
+   'show' F_Whitespace+ 'run' ( 'n' ( 'i' ( 'n' ( 'g' ( '-' ( 'c' ( 'o' ( 'n' ( 'f' ( 'i' 'g'? )? )? )? )? )? )? )? )? )? )? F_Whitespace* F_Newline+ -> channel ( HIDDEN )
 ;
 
 DASH
@@ -13059,6 +13197,7 @@ M_Interface_PREFIX
       )*
    )
    | 'Dot11Radio'
+   | [Ee]'1'
    | [Tt]'1'
 ;
 

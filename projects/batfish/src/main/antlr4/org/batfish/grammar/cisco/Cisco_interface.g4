@@ -723,6 +723,7 @@ if_null_single
       | JUMBO
       | PHY
       | SUPPRESS_ARP
+      | TRIMODE
       | TRUSTED
    ) ~NEWLINE* NEWLINE
 ;
@@ -885,6 +886,7 @@ if_vrrp
    (
       ifvrrp_authentication
       | ifvrrp_ip
+      | ifvrrp_ip_secondary
       | ifvrrp_preempt
       | ifvrrp_priority
    )
@@ -976,6 +978,11 @@ ifvrrp_authentication
 ifvrrp_ip
 :
    IP ip = IP_ADDRESS NEWLINE
+;
+
+ifvrrp_ip_secondary
+:
+   IP ip = IP_ADDRESS SECONDARY NEWLINE
 ;
 
 ifvrrp_preempt

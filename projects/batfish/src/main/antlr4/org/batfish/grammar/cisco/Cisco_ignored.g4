@@ -43,7 +43,6 @@ null_block
       | COPP
       | COPY
       | CPD
-      | DAEMON
       | DCB
       | DCB_BUFFER_THRESHOLD
       | DEBUG
@@ -154,6 +153,7 @@ null_block
       | MACRO
       | MANAGEMENT_ACCESS
       | MAP_LIST
+      | MASTERIP
       | MENU
       | MLAG
       | MODULE
@@ -259,7 +259,6 @@ null_block
       | VLAN_GROUP
       | VLAN_POLICY
       | VLT
-      | VOICE
       | VXLAN
       | VTY_POOL
       | WISM
@@ -624,6 +623,7 @@ null_single
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
+      | DIAL_CONTROL_MIB
       | DIALER_LIST
       | DNS
       | DNS_GUARD
@@ -762,6 +762,7 @@ null_single
       | LLDP
       | LOAD_INTERVAL
       | LOCALE
+      | LOCALIP
       | LOCATION
       | LOGINSESSION
       |
@@ -845,6 +846,7 @@ null_single
       )
       | NETEXTHDR
       | OWNER
+      | PACKET_CAPTURE_DEFAULTS
       | PACKETCABLE
       | PAGER
       | PAN
@@ -887,6 +889,7 @@ null_single
       | SHELL
       | SMTP_SERVER
       | SNMP
+      | SOFTWARE
       | SPD
       | SPE
       | SPEED
@@ -935,7 +938,6 @@ null_single
       | VPDN
       | VSTACK
       | VTP
-      | VOICE_CARD
       | WED
       | WRR
       | WRR_QUEUE

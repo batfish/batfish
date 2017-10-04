@@ -281,7 +281,6 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_expanded_stanzaCo
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_expanded_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Ip_default_gateway_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_nameContext;
@@ -311,6 +310,7 @@ import org.batfish.grammar.cisco.CiscoParser.Logging_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_trapContext;
+import org.batfish.grammar.cisco.CiscoParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_as_path_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_community_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_access_list_rm_stanzaContext;
@@ -320,7 +320,6 @@ import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_prefix_list_rm_stanzaCon
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Mgmt_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_inheritContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_rb_stanzaContext;
@@ -420,6 +419,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_ip_default_gatewayContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_dhcpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domainContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ip_domain_nameContext;
@@ -3422,7 +3422,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIp_default_gateway_stanza(Ip_default_gateway_stanzaContext ctx) {
+  public void exitS_ip_default_gateway(S_ip_default_gatewayContext ctx) {
     todo(ctx, F_IP_DEFAULT_GATEWAY);
   }
 
@@ -3877,14 +3877,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitMgmt_ip_access_group(Mgmt_ip_access_groupContext ctx) {
+  public void exitManagement_telnet_ip_access_group(Management_telnet_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _configuration.getManagementAccessGroups().add(name);
     _configuration.referenceStructure(
         CiscoStructureType.IPV4_ACCESS_LIST,
         name,
-        CiscoStructureUsage.MANAGEMENT_ACCESS_GROUP,
+        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
         line);
   }
 
