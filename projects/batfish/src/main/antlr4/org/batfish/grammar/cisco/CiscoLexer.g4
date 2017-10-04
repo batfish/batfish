@@ -354,6 +354,11 @@ ADMIN_STATE
    'admin-state'
 ;
 
+ADMIN_VDC
+:
+   'admin-vdc'
+;
+
 ADMINISTRATIVE_WEIGHT
 :
    'administrative-weight'
@@ -627,6 +632,11 @@ ALWAYS
 ALWAYS_COMPARE_MED
 :
    'always-compare-med'
+;
+
+ALWAYS_ON
+:
+   'always-on'
 ;
 
 ALWAYS_ON_VPN
@@ -1109,6 +1119,11 @@ AUTO_SYNC
 AUTO_TUNNEL
 :
    'auto-tunnel'
+;
+
+AUTO_UPGRADE
+:
+   'auto-upgrade'
 ;
 
 AUTOHANGUP
@@ -4396,6 +4411,11 @@ GROUP_RANGE
    'group-range'
 ;
 
+GROUP_TIMEOUT
+:
+   'group-timeout'
+;
+
 GROUP_URL
 :
    'group-url'
@@ -5428,6 +5448,11 @@ LAST_MEMBER_QUERY_INTERVAL
    'last-member-query-interval'
 ;
 
+LAST_MEMBER_QUERY_RESPONSE_TIME
+:
+   'last-member-query-response-time'
+;
+
 LCD_MENU
 :
    'lcd-menu'
@@ -5566,6 +5591,11 @@ LINECODE
 LINK
 :
    'link'
+;
+
+LINK_FAIL
+:
+   'link-fail'
 ;
 
 LINK_FAULT_SIGNALING
@@ -8233,6 +8263,11 @@ QUERY_ONLY
    'query-only'
 ;
 
+QUERY_TIMEOUT
+:
+   'query-timeout'
+;
+
 QUEUE
 :
    'queue'
@@ -8658,6 +8693,11 @@ RETRANSMIT
    'retransmit'
 ;
 
+RETRANSMIT_INTERVAL
+:
+   'retransmit-interval'
+;
+
 RETRANSMIT_TIMEOUT
 :
    'retransmit-timeout'
@@ -8776,6 +8816,11 @@ RMON
 RO
 :
    [rR] [oO]
+;
+
+ROBUSTNESS_VARIABLE
+:
+   'robustness-variable'
 ;
 
 ROGUE_AP_AWARE
@@ -9603,6 +9648,11 @@ SMALL_HELLO
    'small-hello'
 ;
 
+SMART_RELAY
+:
+   'smart-relay'
+;
+
 SMTP
 :
    'smtp'
@@ -10035,6 +10085,11 @@ SUBNET
    'subnet'
 ;
 
+SUBNET_BROADCAST
+:
+   'subnet-broadcast'
+;
+
 SUBNET_MASK
 :
    'subnet-mask'
@@ -10048,6 +10103,11 @@ SUBNETS
 SUBNET_ZERO
 :
    'subnet-zero'
+;
+
+SUB_OPTION
+:
+   'sub-option'
 ;
 
 SUB_ROUTE_MAP
@@ -10678,6 +10738,11 @@ TRANSLATION_PROFILE
 TRANSMIT
 :
    'transmit'
+;
+
+TRANSMIT_DELAY
+:
+   'transmit-delay'
 ;
 
 TRANSPARENT_HW_FLOODING

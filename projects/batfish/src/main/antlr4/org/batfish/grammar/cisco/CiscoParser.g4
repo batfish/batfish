@@ -909,6 +909,8 @@ ip_dhcp_null
    (
       EXCLUDED_ADDRESS
       | PACKET
+      | SMART_RELAY
+      | SNOOPING
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -953,8 +955,11 @@ ip_dhcp_relay
 ip_dhcp_relay_null
 :
    (
-      OPTION
+      ALWAYS_ON
+      | INFORMATION
+      | OPTION
       | SOURCE_INTERFACE
+      | SUB_OPTION
       | USE_LINK_ADDRESS
    ) ~NEWLINE* NEWLINE
 ;
@@ -2539,7 +2544,7 @@ s_l2vpn
 
 s_license
 :
-   LICENSE ~NEWLINE* NEWLINE
+   NO? LICENSE ~NEWLINE* NEWLINE
    (
       license_null
    )*
@@ -2813,7 +2818,7 @@ s_switchport
 
 s_system
 :
-   SYSTEM
+   NO? SYSTEM
    (
       system_default
       | system_null
@@ -3070,12 +3075,36 @@ sd_null
    (
       DCE_MODE
       | INTERFACE
+      | LINK_FAIL
    ) ~NEWLINE* NEWLINE
 ;
 
 sd_switchport
 :
-   SWITCHPORT SHUTDOWN? NEWLINE
+   SWITCHPORT
+   (
+      sd_switchport_blank
+      | sd_switchport_null
+      | sd_switchport_shutdown
+   )
+;
+
+sd_switchport_blank
+:
+   NEWLINE
+;
+
+sd_switchport_null
+:
+   (
+      FABRICPATH
+      | MONITOR
+   ) ~NEWLINE* NEWLINE
+;
+
+sd_switchport_shutdown
+:
+   SHUTDOWN NEWLINE
 ;
 
 sip_ua_null
@@ -3460,7 +3489,9 @@ system_default
 system_null
 :
    (
-      FABRIC
+      ADMIN_VDC
+      | AUTO_UPGRADE
+      | FABRIC
       | FABRIC_MODE
       | FLOWCONTROL
       | JUMBOMTU

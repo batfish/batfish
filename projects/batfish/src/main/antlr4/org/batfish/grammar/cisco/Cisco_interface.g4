@@ -459,6 +459,8 @@ if_null_block
                   | MTU_IGNORE
                   | NETWORK
                   | PRIORITY
+                  | RETRANSMIT_INTERVAL
+                  | TRANSMIT_DELAY
                )
             )
             |
@@ -469,6 +471,7 @@ if_null_block
                   | BORDER_ROUTER
                   | BSR_BORDER
                   | DR_PRIORITY
+                  | HELLO_INTERVAL
                   | PASSIVE
                   | QUERY_INTERVAL
                   | SNOOPING
@@ -895,7 +898,8 @@ if_vrrp
 ifdhcp_null
 :
    (
-      SNOOPING
+      SMART_RELAY
+      | SNOOPING
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -923,6 +927,7 @@ ifdhcpr_null
 :
    (
       INFORMATION
+      | SUBNET_BROADCAST
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -934,12 +939,16 @@ ifigmp_access_group
 ifigmp_null
 :
    (
-      HOST_PROXY
+      GROUP_TIMEOUT
+      | HOST_PROXY
       | LAST_MEMBER_QUERY_COUNT
       | LAST_MEMBER_QUERY_INTERVAL
+      | LAST_MEMBER_QUERY_RESPONSE_TIME
       | MULTICAST_STATIC_ONLY
       | QUERY_INTERVAL
       | QUERY_MAX_RESPONSE_TIME
+      | QUERY_TIMEOUT
+      | ROBUSTNESS_VARIABLE
       | ROUTER_ALERT
       | SNOOPING
       | STARTUP_QUERY_COUNT

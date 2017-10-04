@@ -446,7 +446,8 @@ import org.batfish.grammar.cisco.CiscoParser.S_switchportContext;
 import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
-import org.batfish.grammar.cisco.CiscoParser.Sd_switchportContext;
+import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_blankContext;
+import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Send_community_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_as_path_prepend_rm_stanzaContext;
@@ -696,10 +697,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_SWITCHING_MODE = "switching-mode";
 
   private static final String F_TTL = "acl ttl eq number";
-
-  private String getCanonicalInterfaceName(String ifaceName) {
-    return _configuration.canonicalizeInterfaceName(ifaceName);
-  }
 
   private static Ip getIp(Access_list_ip_rangeContext ctx) {
     if (ctx.ip != null) {
@@ -1633,6 +1630,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.MULTIPOINT() != null) {
       todo(ctx, F_INTERFACE_MULTIPOINT);
     }
+  }
+
+  @Override
+  public void enterS_ip_dhcp(S_ip_dhcpContext ctx) {
+    _no = (ctx.NO() != null);
   }
 
   @Override
@@ -2890,33 +2892,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
-    if (!_no) {
-      if (ctx.ip != null) {
-        Ip ip = toIp(ctx.ip);
-        _configuration.getDhcpRelayServers().add(ip);
-      }
-    }
-  }
-
-  @Override
-  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setDhcpRelayClient(true);
-    }
-  }
-
-  @Override
-  public void enterS_ip_dhcp(S_ip_dhcpContext ctx) {
-    _no = (ctx.NO() != null);
-  }
-
-  @Override
-  public void exitS_ip_dhcp(S_ip_dhcpContext ctx) {
-    _no = false;
-  }
-
-  @Override
   public void exitIf_ip_helper_address(If_ip_helper_addressContext ctx) {
     for (Interface iface : _currentInterfaces) {
       Ip dhcpRelayAddress = toIp(ctx.address);
@@ -3244,6 +3219,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIfdhcpr_client(Ifdhcpr_clientContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setDhcpRelayClient(true);
+    }
+  }
+
+  @Override
   public void exitIfigmp_access_group(Ifigmp_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -3422,8 +3404,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitS_ip_default_gateway(S_ip_default_gatewayContext ctx) {
-    todo(ctx, F_IP_DEFAULT_GATEWAY);
+  public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
+    if (!_no) {
+      if (ctx.ip != null) {
+        Ip ip = toIp(ctx.ip);
+        _configuration.getDhcpRelayServers().add(ip);
+      }
+    }
   }
 
   @Override
@@ -3777,6 +3764,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitManagement_telnet_ip_access_group(Management_telnet_ip_access_groupContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.getManagementAccessGroups().add(name);
+    _configuration.referenceStructure(
+        CiscoStructureType.IPV4_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
+        line);
+  }
+
+  @Override
   public void exitMatch_as_path_access_list_rm_stanza(
       Match_as_path_access_list_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
@@ -3874,18 +3873,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
     todo(ctx, F_BGP_MAXIMUM_PEERS);
-  }
-
-  @Override
-  public void exitManagement_telnet_ip_access_group(Management_telnet_ip_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.getManagementAccessGroups().add(name);
-    _configuration.referenceStructure(
-        CiscoStructureType.IPV4_ACCESS_LIST,
-        name,
-        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
-        line);
   }
 
   @Override
@@ -4980,6 +4967,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_ip_default_gateway(S_ip_default_gatewayContext ctx) {
+    todo(ctx, F_IP_DEFAULT_GATEWAY);
+  }
+
+  @Override
+  public void exitS_ip_dhcp(S_ip_dhcpContext ctx) {
+    _no = false;
+  }
+
+  @Override
   public void exitS_ip_domain(S_ip_domainContext ctx) {
     _no = false;
   }
@@ -5101,13 +5098,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitSd_switchport(Sd_switchportContext ctx) {
-    if (ctx.SHUTDOWN() != null) {
-      _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.NONE);
-    } else {
-      // TODO: support more
-      _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.ACCESS);
-    }
+  public void exitSd_switchport_blank(Sd_switchport_blankContext ctx) {
+    _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.ACCESS);
+  }
+
+  @Override
+  public void exitSd_switchport_shutdown(Sd_switchport_shutdownContext ctx) {
+    _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.NONE);
   }
 
   @Override
@@ -5769,6 +5766,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return null;
     }
+  }
+
+  private String getCanonicalInterfaceName(String ifaceName) {
+    return _configuration.canonicalizeInterfaceName(ifaceName);
   }
 
   public CiscoConfiguration getConfiguration() {

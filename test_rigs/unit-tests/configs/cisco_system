@@ -1,6 +1,8 @@
 !
 hostname cisco_system
 !
+no system admin-vdc
+no system auto-upgrade epld
 system default dce-mode edge
 system default dce-mode off
 system default interface 40g auto-negotiation
@@ -8,7 +10,12 @@ system default interface congestion mode core
 system default interface congestion mode edge
 system default interface pause mode core
 system default interface pause mode edge
+no system default interface slow-speed mode core
+no system default interface slow-speed mode edge
+no system default link-fail laser-on
 system default switchport
+no system default switchport fabricpath
+no system default switchport monitor exclude header
 system default switchport shutdown
 system fabric
 system fabric-mode full-rate

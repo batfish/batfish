@@ -12,6 +12,7 @@ daemon efgh
  exec /mnt/flash/bleh/installed/blerp_example.py
  no shutdown
 !
+ip pim rp-address 1.2.3.4
 management api http-commands
  protocol unix-socket
  no shutdown

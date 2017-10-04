@@ -2188,13 +2188,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     if (ospfAreaLong != null) {
       OspfProcess proc = vrf.getOspfProcess();
-      if (iface.getOspfActive()) {
-        proc.getActiveInterfaceList().add(name);
-      }
-      if (iface.getOspfPassive()) {
-        proc.getPassiveInterfaceList().add(name);
-      }
       if (proc != null) {
+        if (iface.getOspfActive()) {
+          proc.getActiveInterfaceList().add(name);
+        }
+        if (iface.getOspfPassive()) {
+          proc.getPassiveInterfaceList().add(name);
+        }
         for (Prefix prefix : newIface.getAllPrefixes()) {
           Prefix networkPrefix = prefix.getNetworkPrefix();
           OspfNetwork ospfNetwork = new OspfNetwork(networkPrefix, ospfAreaLong);

@@ -124,6 +124,7 @@ lag "[aa]-1X10-PNI-TO-ME" dynamic id 1
  ports ethernet 1/1
  primary-port 1/1
 !
+no license grace-period
 no lldp run
 load-balance policies
  load-balance fm6000 profile LoadBalance_Profile1_5tuple
@@ -160,6 +161,7 @@ nv
 !
 object-group service SVCGRP-ICMP
  service-object icmp echo
+no onep
 password-policy minimum-length 7
 phone-proxy ASA-phone-proxy
  cipc security-mode authenticated
