@@ -8,7 +8,13 @@
           "path" : {
             "exceptions" : [
               {
-                "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']",
+                "concretePath" : [
+                  "'nodes'",
+                  "'as3border1'",
+                  "'interfaces'",
+                  "'Ethernet0/0'",
+                  "'mtu'"
+                ],
                 "suffix" : 1500
               }
             ],
@@ -17,15 +23,33 @@
           },
           "result" : {
             "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet0/0'->'mtu'" : {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet0/0']['mtu']",
+              "concretePath" : [
+                "'nodes'",
+                "'as3border1'",
+                "'interfaces'",
+                "'GigabitEthernet0/0'",
+                "'mtu'"
+              ],
               "suffix" : 1500
             },
             "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet1/0'->'mtu'" : {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['GigabitEthernet1/0']['mtu']",
+              "concretePath" : [
+                "'nodes'",
+                "'as3border1'",
+                "'interfaces'",
+                "'GigabitEthernet1/0'",
+                "'mtu'"
+              ],
               "suffix" : 1500
             },
             "'nodes'->'as3border1'->'interfaces'->'Loopback0'->'mtu'" : {
-              "prefix" : "$['nodes']['as3border1']['interfaces']['Loopback0']['mtu']",
+              "concretePath" : [
+                "'nodes'",
+                "'as3border1'",
+                "'interfaces'",
+                "'Loopback0'",
+                "'mtu'"
+              ],
               "suffix" : 1500
             }
           }
@@ -51,7 +75,13 @@
       {
         "exceptions" : [
           {
-            "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']",
+            "concretePath" : [
+              "'nodes'",
+              "'as3border1'",
+              "'interfaces'",
+              "'Ethernet0/0'",
+              "'mtu'"
+            ],
             "suffix" : 1500
           }
         ],
