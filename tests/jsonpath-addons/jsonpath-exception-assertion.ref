@@ -13,7 +13,13 @@
             },
             "exceptions" : [
               {
-                "prefix" : "$['nodes']['as3border1']['interfaces']['Ethernet0/0']['mtu']",
+                "concretePath" : [
+                  "'nodes'",
+                  "'as3border1'",
+                  "'interfaces'",
+                  "'Ethernet0/0'",
+                  "'mtu'"
+                ],
                 "suffix" : 1500
               }
             ],
