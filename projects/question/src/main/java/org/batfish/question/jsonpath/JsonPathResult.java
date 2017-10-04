@@ -30,23 +30,28 @@ public class JsonPathResult {
 
   public static class JsonPathResultEntry {
 
-    private static final String PROP_PREFIX = "prefix";
+    private static final String PROP_CONCRETE_PATH = "concretePath";
 
     private static final String PROP_SUFFIX = "suffix";
 
-    private final JsonNode _prefix;
+    private final List<String> _concretePath;
 
     private final JsonNode _suffix;
 
     @JsonCreator
     public JsonPathResultEntry(
-        @JsonProperty(PROP_PREFIX) JsonNode prefix, @JsonProperty(PROP_SUFFIX) JsonNode suffix) {
-      _prefix = prefix;
+        @JsonProperty(PROP_CONCRETE_PATH) List<String> concretePath,
+        @JsonProperty(PROP_SUFFIX) JsonNode suffix) {
+      _concretePath = concretePath;
       if (suffix != null && suffix.isNull()) {
         _suffix = null;
       } else {
         _suffix = suffix;
       }
+    }
+
+    public JsonPathResultEntry(JsonNode prefix, JsonNode suffix) {
+      this(getPrefixParts(prefix), suffix);
     }
 
     @Override
@@ -56,31 +61,31 @@ public class JsonPathResult {
       } else if (!(o instanceof JsonPathResultEntry)) {
         return false;
       }
-      return Objects.equals(_prefix, ((JsonPathResultEntry) o)._prefix)
+      return Objects.equals(_concretePath, ((JsonPathResultEntry) o)._concretePath)
           && Objects.equals(_suffix, ((JsonPathResultEntry) o)._suffix);
     }
 
     @JsonIgnore
     public String getMapKey() {
-      return String.join("->", getPrefixParts());
+      return String.join("->", _concretePath);
     }
 
-    @JsonProperty(PROP_PREFIX)
-    public JsonNode getPrefix() {
-      return _prefix;
+    @JsonProperty(PROP_CONCRETE_PATH)
+    public List<String> getConcretePath() {
+      return _concretePath;
     }
 
     public String getPrefixPart(int index) {
-      List<String> parts = getPrefixParts();
-      if (parts.size() <= index) {
-        throw new BatfishException("No valid part at index " + index + "for prefix " + _prefix);
+      if (_concretePath.size() <= index) {
+        throw new BatfishException(
+            "No valid part at index " + index + "for concrete path " + _concretePath);
       }
       // remove the single quotes around the string
-      return parts.get(index).replaceAll("^\'|\'$", "");
+      return _concretePath.get(index).replaceAll("^\'|\'$", "");
     }
 
-    private List<String> getPrefixParts() {
-      String text = _prefix.textValue();
+    private static List<String> getPrefixParts(JsonNode prefix) {
+      String text = prefix.textValue();
       if (text.equals("$")) {
         return Arrays.asList("$");
       }
@@ -98,7 +103,7 @@ public class JsonPathResult {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_prefix, _suffix);
+      return Objects.hash(_concretePath, _suffix);
     }
   }
 
