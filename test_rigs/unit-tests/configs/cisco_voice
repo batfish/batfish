@@ -62,7 +62,7 @@ dial-peer voice 1 voip
  voice-class sip bind control source-interface GigabitEthernet0/1
  voice-class sip bind media source-interface GigabitEthernet0/1
 !
-sip-ua 
+sip-ua
  connection-reuse
  retry bye 2
  retry cancel 2
@@ -80,13 +80,13 @@ voice class codec 1
  codec preference 2 g711alaw
 !
 voice class h323 10
- call preserve 
+ call preserve
  h225 timeout tcp establish 2
 !
 voice class sip-profiles 1
- request ANY sip-header From modify "aaa" "bbb" 
- request ANY sip-header P-Asserted-Identity modify "aaa" "bbb" 
- request ANY sip-header Remote-Party-ID modify "aaa" "bbb" 
+ request ANY sip-header From modify "aaa" "bbb"
+ request ANY sip-header P-Asserted-Identity modify "aaa" "bbb"
+ request ANY sip-header Remote-Party-ID modify "aaa" "bbb"
 !
 no voice hunt invalid-number
 no voice hunt unassigned-number

@@ -1,8 +1,8 @@
 !
 hostname aruba_snmp
 !
-snmp-server community "abc" 
-snmp-server community "def" 
+snmp-server community "abc"
+snmp-server community "def"
 snmp-server enable trap
 snmp-server host 1.2.3.4 version 2c foofoo udp-port 123
 snmp-server trap source 0.0.0.0

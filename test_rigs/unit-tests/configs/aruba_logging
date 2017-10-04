@@ -1,17 +1,17 @@
 !
 hostname aruba_logging
 !
-logging 1.2.3.4 type ap-debug severity informational facility local0 
-logging 1.2.3.4 type arm-user-debug severity informational facility local0 
-logging 1.2.3.4 type arm severity informational facility local0 
-logging 1.2.3.4 type network severity informational facility local0 
-logging 1.2.3.4 type security severity informational facility local0 
-logging 1.2.3.4 type system severity informational facility local0 
-logging 1.2.3.4 type user severity informational facility local0 
-logging 1.2.3.4 type user-debug severity informational facility local0 
-logging 1.2.3.4 type wireless severity informational facility local0 
-logging level debugging ap-debug 1 
-logging level debugging ap-debug 10 
+logging 1.2.3.4 type ap-debug severity informational facility local0
+logging 1.2.3.4 type arm-user-debug severity informational facility local0
+logging 1.2.3.4 type arm severity informational facility local0
+logging 1.2.3.4 type network severity informational facility local0
+logging 1.2.3.4 type security severity informational facility local0
+logging 1.2.3.4 type system severity informational facility local0
+logging 1.2.3.4 type user severity informational facility local0
+logging 1.2.3.4 type user-debug severity informational facility local0
+logging 1.2.3.4 type wireless severity informational facility local0
+logging level debugging ap-debug 1
+logging level debugging ap-debug 10
 logging level debugging system process cfgm
 logging level debugging system process processes subcat mapc
 logging level informational arm

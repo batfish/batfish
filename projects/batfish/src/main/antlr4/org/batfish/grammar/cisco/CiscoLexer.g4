@@ -3654,7 +3654,7 @@ ESTABLISHED
 
 ETH
 :
-   'eth' 
+   'eth'
 ;
 
 ETHERCHANNEL
