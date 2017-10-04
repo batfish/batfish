@@ -615,6 +615,7 @@ null_single
       | CONTROLLER_IP
       | COS_MAPPING
       | COUNTRY
+      | CRYPTO_LOCAL
       | CTS
       | CURRENT_CONFIGURATION
       | DATABASE
@@ -762,6 +763,7 @@ null_single
       | LOAD_INTERVAL
       | LOCALE
       | LOCATION
+      | LOGINSESSION
       |
       (
          MAC
@@ -770,6 +772,7 @@ null_single
          )
       )
       | MAC_ADDRESS_TABLE
+      | MASTERIP
       | MEMORY
       | MEMORY_SIZE
       | MGCP
@@ -840,7 +843,7 @@ null_single
             NAME_LOOKUP
          )
       )
-      | NEXTEXTHDR
+      | NETEXTHDR
       | OWNER
       | PACKETCABLE
       | PAGER
@@ -882,7 +885,6 @@ null_single
       | SETUP
       | SHELFNAME
       | SHELL
-      | SIP_UA
       | SMTP_SERVER
       | SNMP
       | SPD
@@ -931,6 +933,7 @@ null_single
       )
       | VMPS
       | VPDN
+      | VSTACK
       | VTP
       | VOICE_CARD
       | WED

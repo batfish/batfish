@@ -182,7 +182,9 @@ archive
   logging size 200
   notify syslog contenttype plaintext
   hidekeys
+ maximum 14
  path tftp://172.16.1.10/
+ path flash:myconfig
 tls-proxy ASA-tls-proxy
  server trust-point _internal_PP_ctl_phoneproxy_file
 ctl-file ctl_phoneproxy_file
@@ -258,7 +260,6 @@ lpts pifib hardware police
 pool vrf default ipv4 mgmt-net
   address-range 130.59.60.189 130.59.60.190
 !
-sip-ua
 mirror location 0/RSP0/CPU0 disk0:disk1:
 map-class dialer swiRZ2
  dialer idle-timeout 360
@@ -267,5 +268,7 @@ map-class dialer swiRZ2
 config-register 0x2102
 !
 dialer watch-list 76 ip 130.59.53.128 255.255.255.192
+!
+no vstack
 !
 end

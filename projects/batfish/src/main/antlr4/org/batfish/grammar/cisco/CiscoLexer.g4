@@ -1526,6 +1526,11 @@ CALL
    'call'
 ;
 
+CALL_BLOCK
+:
+   'call-block'
+;
+
 CALL_FORWARD
 :
    'call-forward'
@@ -2190,6 +2195,11 @@ CRITICAL
 CRYPTO
 :
    'crypto'
+;
+
+CRYPTO_LOCAL
+:
+   'crypto-local'
 ;
 
 CRYPTOGRAPHIC_ALGORITHM
@@ -5528,6 +5538,11 @@ LISTEN
    'listen'
 ;
 
+LISTEN_PORT
+:
+   'listen-port'
+;
+
 LISTENER
 :
    'listener'
@@ -5681,6 +5696,11 @@ LOGIN_AUTHENTICATION
 LOGIN_PAGE
 :
    'login-page'
+;
+
+LOGINSESSION
+:
+   'loginsession'
 ;
 
 LOGOUT_WARNING
@@ -5881,6 +5901,11 @@ MASK_REQUEST
 MASTER
 :
    'master'
+;
+
+MASTERIP
+:
+   'masterip'
 ;
 
 MATCH
@@ -6236,6 +6261,11 @@ MICROCODE
 MICROSOFT_DS
 :
    'microsoft-ds'
+;
+
+MIDCALL_SIGNALING
+:
+   'midcall-signaling'
 ;
 
 MIN_PACKET_SIZE
@@ -6718,6 +6748,11 @@ NETDESTINATION6
    'netdestination6'
 ;
 
+NETEXTHDR
+:
+   'netexthdr'
+;
+
 NETMASK
 :
    'netmask'
@@ -6791,11 +6826,6 @@ NEXT_HOP_THIRD_PARTY
 NEXT_SERVER
 :
    'next-server'
-;
-
-NEXTEXTHDR
-:
-   'nextexthdr'
 ;
 
 NEXTHOP
@@ -7548,6 +7578,11 @@ PHONE_PROXY
    'phone-proxy'
 ;
 
+PHY
+:
+   'phy'
+;
+
 PHYSICAL_LAYER
 :
    'physical-layer'
@@ -7956,6 +7991,11 @@ PROCESS_MAX_TIME
 PROFILE
 :
    'profile'
+;
+
+PROGRESS_IND
+:
+   'progress_ind'
 ;
 
 PROMPT
@@ -8561,6 +8601,11 @@ RETRANSMIT_TIMEOUT
 RETRIES
 :
    'retries'
+;
+
+RETRY
+:
+   'retry'
 ;
 
 REVERSE_ACCESS
@@ -9426,6 +9471,11 @@ SINGLE_TOPOLOGY
 SIP
 :
    'sip'
+;
+
+SIP_PROFILES
+:
+   'sip-profiles'
 ;
 
 SIP_UA
@@ -11260,6 +11310,11 @@ VRRP_GROUP
 VSERVER
 :
    'vserver'
+;
+
+VSTACK
+:
+   'vstack'
 ;
 
 VTP

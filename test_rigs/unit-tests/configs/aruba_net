@@ -15,7 +15,7 @@ netdestination6 foobar2
  network abcd::/3
 !
 !
-nextexthdr default
+netexthdr default
 !
 netservice svc-adp udp 8200
 netservice svc-bootp udp 67 69

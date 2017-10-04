@@ -116,6 +116,7 @@ interface Ethernet0
  ospfv3 network point-to-point
  packet latency threshold 536870904
  peakdetect
+ phy 1ge
  platform qos trust none remark
  port security
   age 2

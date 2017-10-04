@@ -176,6 +176,7 @@ av_null
    NO?
    (
       INTERFACE
+      | MODE
       | SHUTDOWN
       | TIMESOURCE
    ) ~NEWLINE* NEWLINE
@@ -1910,6 +1911,7 @@ s_archive
          HIDEKEYS
          | LOG
          | LOGGING
+         | MAXIMUM
          | NOTIFY
          | PATH
       ) ~NEWLINE* NEWLINE
@@ -2011,7 +2013,8 @@ s_dial_peer
    (
       NO?
       (
-         CODEC
+         CALL_BLOCK
+         | CODEC
          | DESCRIPTION
          | DESTINATION_PATTERN
          | DIRECT_INWARD_DIAL
@@ -2029,6 +2032,7 @@ s_dial_peer
          | MEDIA
          | PORT
          | PREFERENCE
+         | PROGRESS_IND
          | SERVICE
          | SESSION
          | TRANSLATION_PROFILE
@@ -2597,6 +2601,14 @@ s_service
    )+ NEWLINE
 ;
 
+s_sip_ua
+:
+   SIP_UA NEWLINE
+   (
+      sip_ua_null
+   )*
+;
+
 s_sntp
 :
    SNTP sntp_server
@@ -2922,6 +2934,15 @@ sd_switchport
    SWITCHPORT SHUTDOWN? NEWLINE
 ;
 
+sip_ua_null
+:
+   NO?
+   (
+      RETRY
+      | TIMERS
+   ) ~NEWLINE* NEWLINE
+;
+
 sntp_server
 :
    SERVER hostname = variable
@@ -3220,6 +3241,7 @@ stanza
    | s_router_vrrp
    | s_sccp
    | s_service
+   | s_sip_ua
    | s_snmp_server
    | s_sntp
    | s_spanning_tree
@@ -3759,6 +3781,10 @@ vs_null
       EARLY_OFFER
       | ERROR_PASSTHRU
       | HEADER_PASSING
+      | LISTEN_PORT
+      | MIDCALL_SIGNALING
+      | SIP_PROFILES
+      | TRANSPORT
    ) ~NEWLINE* NEWLINE
 ;
 

@@ -721,6 +721,7 @@ if_null_single
    (
       BCMC_OPTIMIZATION
       | JUMBO
+      | PHY
       | SUPPRESS_ARP
       | TRUSTED
    ) ~NEWLINE* NEWLINE

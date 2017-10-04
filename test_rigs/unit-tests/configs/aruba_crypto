@@ -19,5 +19,7 @@ crypto isakmp policy 1
  prf prf-hmac-sha256
  version v2
 !
+crypto-local pki ServerCert blah.example.com blah.pem
+crypto-local pki ServerCert web-controller controller.p7b
 !
 

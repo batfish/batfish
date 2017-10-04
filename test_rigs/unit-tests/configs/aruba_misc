@@ -68,6 +68,7 @@ control-plane-security
  auto-cert-allowed-addrs 2.2.2.2 2.2.2.2
  auto-cert-prov
 !
+controller config 821
 controller-ip vlan 1234
 country GB
 no database synchronize
@@ -87,6 +88,7 @@ guest-access-email
    smtp-server 1.2.3.4
 !
 no kernel coredump
+loginsession timeout 60
 ids ap-classification-rule "abcd"
  conf-level-incr 78
  discovered-ap-cnt 56
@@ -180,6 +182,7 @@ lcd-menu
 license profile
  centralized-licensing-enable
 !
+masterip 1.2.3.4 ipsec ******
 mgmt-server type amp primary-server 1.2.3.4 profile default-amp
 mgmt-user admin root 0123456789abcdef0123456789abcdef0123456789abcdef01
 pan active-profile

@@ -30,6 +30,8 @@ call-manager-fallback
  time-format 24
 !
 dial-peer voice 1 voip
+ call-block translation-profile incoming blocked
+ codec g711ulaw
  codec transparent
  description oigjaiowfjiofjweiofjowe
  destination-pattern .T
@@ -42,6 +44,7 @@ dial-peer voice 1 voip
  ip qos dscp cs3 signaling
  media flow-around
  preference 1
+ progress_ind setup enable 3
  session protocol sipv2
  session target ipv4:1.2.3.4
  session target ras
@@ -54,9 +57,18 @@ dial-peer voice 1 voip
  voice-class sip bind control source-interface GigabitEthernet0/1
  voice-class sip bind media source-interface GigabitEthernet0/1
 !
+sip-ua 
+ retry invite 2
+ timers trying 150
+!
 voice class codec 1
  codec preference 1 g729r8
  codec preference 2 g711alaw
+!
+voice class sip-profiles 1
+ request ANY sip-header From modify "aaa" "bbb" 
+ request ANY sip-header P-Asserted-Identity modify "aaa" "bbb" 
+ request ANY sip-header Remote-Party-ID modify "aaa" "bbb" 
 !
 voice service voip
  address-hiding
@@ -71,6 +83,10 @@ voice service voip
   early-offer forced
   error-passthru
   header-passing
+  listen-port non-secure 1234
+  midcall-signaling block
+  sip-profiles 1
+  transport switch udp tcp
 !
 voice translation-profile foobarbaz
  translate called 12
