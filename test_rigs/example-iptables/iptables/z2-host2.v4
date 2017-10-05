@@ -1,0 +1,9 @@
+# custom node firewall roles for service (security.py)
+# .. This is in iptables-save format
+#    @see http://www.faqs.org/docs/iptables/iptables-save.html
+*filter
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -s 10.0.8.10 -p tcp --sport 80  -j DROP
+COMMIT
+

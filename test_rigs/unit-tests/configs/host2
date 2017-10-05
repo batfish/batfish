@@ -1,0 +1,14 @@
+!
+hostname host2
+!
+interface eth0
+  ip address 2.130.0.1/24
+!
+interface eth1
+  ip address 2.131.0.1/24
+!
+router ospf 1
+  router-id 2.130.0.1
+  network 2.130.0.0/24 area 0
+  network 2.131.0.0/24 area 0
+!
