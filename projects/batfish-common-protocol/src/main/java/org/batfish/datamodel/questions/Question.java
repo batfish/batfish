@@ -304,7 +304,7 @@ public abstract class Question implements IQuestion {
     if (retString == "") {
       return "";
     } else {
-      return retString + " | ";
+      return retString + ", ";
     }
   }
 
