@@ -76,6 +76,7 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.SUBRANGE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -85,11 +86,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang.ArrayUtils;
+import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
@@ -112,10 +115,8 @@ public class ClientTest {
           + " command line (-testrigdir <testrigdir>) or use command (INIT_TESTRIG <testrigdir>)\n";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  private BatfishObjectMapper _mapper;
-
   @Rule public ExpectedException _thrown = ExpectedException.none();
+  private BatfishObjectMapper _mapper;
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
@@ -132,7 +133,7 @@ public class ClientTest {
   @Test
   public void checkTestInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(TEST, parameters);
+    testInvalidInput(TEST, new String[] {}, parameters);
   }
 
   @Test
@@ -158,12 +159,12 @@ public class ClientTest {
 
   @Test
   public void testAddAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(ADD_ANALYSIS_QUESTIONS, new String[] {});
+    testInvalidInput(ADD_ANALYSIS_QUESTIONS, new String[] {}, new String[] {});
   }
 
   @Test
   public void testAddBatfishOptionInvalidParas() throws Exception {
-    testInvalidInput(ADD_BATFISH_OPTION, new String[] {});
+    testInvalidInput(ADD_BATFISH_OPTION, new String[] {}, new String[] {});
   }
 
   @Test
@@ -174,7 +175,7 @@ public class ClientTest {
 
   @Test
   public void testAnswerDeltaInvalidParas() throws Exception {
-    testInvalidInput(ANSWER_DELTA, new String[] {});
+    testInvalidInput(ANSWER_DELTA, new String[] {}, new String[] {});
   }
 
   @Test
@@ -185,7 +186,7 @@ public class ClientTest {
 
   @Test
   public void testAnswerInvalidParas() throws Exception {
-    testInvalidInput(ANSWER, new String[] {});
+    testInvalidInput(ANSWER, new String[] {}, new String[] {});
   }
 
   @Test
@@ -216,13 +217,13 @@ public class ClientTest {
   @Test
   public void testCheckApiKeyInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(CHECK_API_KEY, parameters);
+    testInvalidInput(CHECK_API_KEY, new String[] {}, parameters);
   }
 
   @Test
   public void testClearScreenInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(CLEAR_SCREEN, parameters);
+    testInvalidInput(CLEAR_SCREEN, new String[] {}, parameters);
   }
 
   @Test
@@ -239,12 +240,12 @@ public class ClientTest {
 
   @Test
   public void testDelAnalysisInvalidParas() throws Exception {
-    testInvalidInput(DEL_ANALYSIS, new String[] {});
+    testInvalidInput(DEL_ANALYSIS, new String[] {}, new String[] {});
   }
 
   @Test
   public void testDelAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(DEL_ANALYSIS_QUESTIONS, new String[] {});
+    testInvalidInput(DEL_ANALYSIS_QUESTIONS, new String[] {}, new String[] {});
   }
 
   @Test
@@ -261,7 +262,7 @@ public class ClientTest {
 
   @Test
   public void testDelBatfishOptionInvalidParas() throws Exception {
-    testInvalidInput(DEL_BATFISH_OPTION, new String[] {});
+    testInvalidInput(DEL_BATFISH_OPTION, new String[] {}, new String[] {});
   }
 
   @Test
@@ -273,12 +274,12 @@ public class ClientTest {
 
   @Test
   public void testDelContainerInvalidParas() throws Exception {
-    testInvalidInput(DEL_CONTAINER, new String[] {});
+    testInvalidInput(DEL_CONTAINER, new String[] {}, new String[] {});
   }
 
   @Test
   public void testDelEnvironmentInvalidParas() throws Exception {
-    testInvalidInput(DEL_ENVIRONMENT, new String[] {});
+    testInvalidInput(DEL_ENVIRONMENT, new String[] {}, new String[] {});
   }
 
   @Test
@@ -289,7 +290,7 @@ public class ClientTest {
 
   @Test
   public void testDelQuestionInvalidParas() throws Exception {
-    testInvalidInput(DEL_QUESTION, new String[] {});
+    testInvalidInput(DEL_QUESTION, new String[] {}, new String[] {});
   }
 
   @Test
@@ -300,7 +301,7 @@ public class ClientTest {
 
   @Test
   public void testDelTestrigInvalidParas() throws Exception {
-    testInvalidInput(DEL_TESTRIG, new String[] {});
+    testInvalidInput(DEL_TESTRIG, new String[] {}, new String[] {});
   }
 
   @Test
@@ -312,7 +313,7 @@ public class ClientTest {
   @Test
   public void testDirInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2"};
-    testInvalidInput(DIR, parameters);
+    testInvalidInput(DIR, new String[] {}, parameters);
   }
 
   @Test
@@ -348,7 +349,7 @@ public class ClientTest {
   @Test
   public void testExitInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(EXIT, parameters);
+    testInvalidInput(EXIT, new String[] {}, parameters);
   }
 
   @Test
@@ -359,7 +360,7 @@ public class ClientTest {
   @Test
   public void testGenerateDataplaneDeltaInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GEN_DELTA_DP, parameters);
+    testInvalidInput(GEN_DELTA_DP, new String[] {}, parameters);
   }
 
   @Test
@@ -371,7 +372,7 @@ public class ClientTest {
   @Test
   public void testGenerateDataplaneInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GEN_DP, parameters);
+    testInvalidInput(GEN_DP, new String[] {}, parameters);
   }
 
   @Test
@@ -393,7 +394,7 @@ public class ClientTest {
 
   @Test
   public void testGetAnalysisAnswersInvalidParas() throws Exception {
-    testInvalidInput(GET_ANALYSIS_ANSWERS, new String[] {});
+    testInvalidInput(GET_ANALYSIS_ANSWERS, new String[] {}, new String[] {});
   }
 
   @Test
@@ -416,7 +417,7 @@ public class ClientTest {
 
   @Test
   public void testGetAnswersInvalidParas() throws Exception {
-    testInvalidInput(GET_ANSWER, new String[] {});
+    testInvalidInput(GET_ANSWER, new String[] {}, new String[] {});
   }
 
   @Test
@@ -427,7 +428,7 @@ public class ClientTest {
 
   @Test
   public void testGetDeltaInvalidParas() throws Exception {
-    testInvalidInput(GET_DELTA, new String[] {});
+    testInvalidInput(GET_DELTA, new String[] {}, new String[] {});
   }
 
   @Test
@@ -438,12 +439,12 @@ public class ClientTest {
 
   @Test
   public void testGetInvalidParas() throws Exception {
-    testInvalidInput(GET, new String[] {});
+    testInvalidInput(GET, new String[] {}, new String[] {});
   }
 
   @Test
   public void testGetQuestionInvalidParas() throws Exception {
-    testInvalidInput(GET_QUESTION, new String[] {});
+    testInvalidInput(GET_QUESTION, new String[] {}, new String[] {});
   }
 
   @Test
@@ -484,7 +485,7 @@ public class ClientTest {
 
   @Test
   public void testInitAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(INIT_ANALYSIS, new String[] {});
+    testInvalidInput(INIT_ANALYSIS, new String[] {}, new String[] {});
   }
 
   @Test
@@ -519,12 +520,12 @@ public class ClientTest {
   @Test
   public void testInitContainerInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2", "parameter3"};
-    testInvalidInput(INIT_CONTAINER, parameters);
+    testInvalidInput(INIT_CONTAINER, new String[] {}, parameters);
   }
 
   @Test
   public void testInitEnvInvalidParas() throws Exception {
-    testInvalidInput(INIT_ENVIRONMENT, new String[] {});
+    testInvalidInput(INIT_ENVIRONMENT, new String[] {}, new String[] {});
   }
 
   @Test
@@ -535,12 +536,12 @@ public class ClientTest {
 
   @Test
   public void testInitTestrigDeltaInvalidParas() throws Exception {
-    testInvalidInput(INIT_DELTA_TESTRIG, new String[] {});
+    testInvalidInput(INIT_DELTA_TESTRIG, new String[] {}, new String[] {});
   }
 
   @Test
   public void testInitTestrigInvalidParas() throws Exception {
-    testInvalidInput(INIT_TESTRIG, new String[] {});
+    testInvalidInput(INIT_TESTRIG, new String[] {}, new String[] {});
   }
 
   @Test
@@ -585,16 +586,19 @@ public class ClientTest {
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
-  private void testInvalidInput(Command command, String[] parameters) throws Exception {
+  private void testInvalidInput(Command command, String[] options, String[] parameters)
+      throws Exception {
     Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
-            "Invalid arguments: [] %s\n%s %s\n\t%s\n\n",
+            "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",
+            Arrays.toString(options),
             Arrays.toString(parameters),
             command.commandName(),
             usage.getFirst(),
             usage.getSecond());
-    checkProcessCommandErrorMessage(command, parameters, expected);
+    checkProcessCommandErrorMessage(
+        command, (String[]) ArrayUtils.addAll(options, parameters), expected);
   }
 
   @Test
@@ -756,7 +760,7 @@ public class ClientTest {
   @Test
   public void testListAnalysisInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_ANALYSES, parameters);
+    testInvalidInput(LIST_ANALYSES, new String[] {}, parameters);
   }
 
   @Test
@@ -768,13 +772,13 @@ public class ClientTest {
   @Test
   public void testListContainersInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_CONTAINERS, parameters);
+    testInvalidInput(LIST_CONTAINERS, new String[] {}, parameters);
   }
 
   @Test
   public void testListEnvironmentsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_ENVIRONMENTS, parameters);
+    testInvalidInput(LIST_ENVIRONMENTS, new String[] {}, parameters);
   }
 
   @Test
@@ -785,7 +789,7 @@ public class ClientTest {
   @Test
   public void testListQuestionsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_QUESTIONS, parameters);
+    testInvalidInput(LIST_QUESTIONS, new String[] {}, parameters);
   }
 
   @Test
@@ -796,19 +800,59 @@ public class ClientTest {
   @Test
   public void testListTestrigsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_TESTRIGS, parameters);
+    testInvalidInput(LIST_TESTRIGS, new String[] {}, parameters);
   }
 
   @Test
-  public void testLoadQuestionsInvalidParas() throws Exception {
-    testInvalidInput(LOAD_QUESTIONS, new String[] {"path1", "path2"});
+  public void testLoadQuestionsInvalidParas1() throws Exception {
+    testInvalidInput(LOAD_QUESTIONS, new String[] {}, new String[] {"path1", "path2"});
   }
 
   @Test
-  public void testLoadQuestionsValidParas() throws Exception {
+  public void testLoadQuestionsInvalidParas2() throws Exception {
+    testInvalidInput(
+        LOAD_QUESTIONS,
+        new String[] {"-loadremote", "-loadlocal"},
+        new String[] {"param1", "param2"});
+  }
+
+  @Test
+  public void testLoadQuestionsValidParas1() throws Exception {
     Path tempFilePath = _folder.newFolder("temp").toPath();
     String[] parameters = new String[] {tempFilePath.toString()};
     testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
+  }
+
+  @Test
+  public void testLoadQuestionsValidParas2() throws Exception {
+    Path tempFilePath = _folder.newFolder("temp").toPath();
+    String[] parameters = new String[] {"-loadremote", tempFilePath.toString()};
+    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
+  }
+
+  @Test
+  public void testLoadQuestionsValidParas3() throws Exception {
+    String[] parameters = new String[] {"-loadremote"};
+    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
+  }
+
+  @Test
+  public void testLoadQuestionsValidParas4() throws Exception {
+    String[] parameters = new String[] {};
+    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
+  }
+
+  @Test
+  public void testMergeQuestions() {
+    Map<String, String> remoteQuestions =
+        Collections.singletonMap("testquestion", "testquestionvalue");
+    Map<String, String> localQuestions =
+        Collections.singletonMap("testquestion", "testquestionvalue");
+    Map<String, String> bfqMap = new HashMap<>();
+    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
+    QuestionHelper.mergeQuestions(localQuestions, remoteQuestions, bfqMap, ae);
+    assertEquals(new TreeSet<>(remoteQuestions.keySet()), ae.getReplaced());
+    assertEquals(localQuestions, bfqMap);
   }
 
   @Test
@@ -910,8 +954,8 @@ public class ClientTest {
 
   @Test
   public void testParseInitEnvironmentParamsInterfaceBlacklist() {
-    String paramsLine = "interfaceBlacklist="
-        + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
+    String paramsLine =
+        "interfaceBlacklist=" + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
     Client.parseInitEnvironmentParams(paramsLine);
   }
 
@@ -960,7 +1004,7 @@ public class ClientTest {
   @Test
   public void testPromptInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(PROMPT, parameters);
+    testInvalidInput(PROMPT, new String[] {}, parameters);
   }
 
   @Test
@@ -990,7 +1034,7 @@ public class ClientTest {
   @Test
   public void testPwdInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(PWD, parameters);
+    testInvalidInput(PWD, new String[] {}, parameters);
   }
 
   @Test
@@ -1004,13 +1048,13 @@ public class ClientTest {
   @Test
   public void testReinitTestrigDeltaInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_DELTA_TESTRIG, parameters);
+    testInvalidInput(REINIT_DELTA_TESTRIG, new String[] {}, parameters);
   }
 
   @Test
   public void testReinitTestrigInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_TESTRIG, parameters);
+    testInvalidInput(REINIT_TESTRIG, new String[] {}, parameters);
   }
 
   @Test
@@ -1027,7 +1071,7 @@ public class ClientTest {
 
   @Test
   public void testRunAnalysisInvalidParas() throws Exception {
-    testInvalidInput(RUN_ANALYSIS, new String[] {});
+    testInvalidInput(RUN_ANALYSIS, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1061,7 +1105,7 @@ public class ClientTest {
 
   @Test
   public void testSetBatfishLogLevelInvalidParas() throws Exception {
-    testInvalidInput(SET_BATFISH_LOGLEVEL, new String[] {});
+    testInvalidInput(SET_BATFISH_LOGLEVEL, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1073,7 +1117,7 @@ public class ClientTest {
 
   @Test
   public void testSetContainerInvalidParas() throws Exception {
-    testInvalidInput(SET_CONTAINER, new String[] {});
+    testInvalidInput(SET_CONTAINER, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1087,7 +1131,7 @@ public class ClientTest {
 
   @Test
   public void testSetDeltaEnvInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_ENV, new String[] {});
+    testInvalidInput(SET_DELTA_ENV, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1101,7 +1145,7 @@ public class ClientTest {
 
   @Test
   public void testSetDeltaTestrigInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_TESTRIG, new String[] {});
+    testInvalidInput(SET_DELTA_TESTRIG, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1115,7 +1159,7 @@ public class ClientTest {
 
   @Test
   public void testSetEnvInvalidParas() throws Exception {
-    testInvalidInput(SET_ENV, new String[] {});
+    testInvalidInput(SET_ENV, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1126,7 +1170,7 @@ public class ClientTest {
 
   @Test
   public void testSetLogLevelInvalidParas() throws Exception {
-    testInvalidInput(SET_LOGLEVEL, new String[] {});
+    testInvalidInput(SET_LOGLEVEL, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1138,7 +1182,7 @@ public class ClientTest {
 
   @Test
   public void testSetPrettyPrintInvalidParas() throws Exception {
-    testInvalidInput(SET_PRETTY_PRINT, new String[] {});
+    testInvalidInput(SET_PRETTY_PRINT, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1150,7 +1194,7 @@ public class ClientTest {
 
   @Test
   public void testSetTestrigInvalidParas() throws Exception {
-    testInvalidInput(SET_TESTRIG, new String[] {});
+    testInvalidInput(SET_TESTRIG, new String[] {}, new String[] {});
   }
 
   @Test
@@ -1162,7 +1206,7 @@ public class ClientTest {
   @Test
   public void testShowApiKeyInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_API_KEY, parameters);
+    testInvalidInput(SHOW_API_KEY, new String[] {}, parameters);
   }
 
   @Test
@@ -1174,7 +1218,7 @@ public class ClientTest {
   @Test
   public void testShowBatfishLogLevelInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_BATFISH_LOGLEVEL, parameters);
+    testInvalidInput(SHOW_BATFISH_LOGLEVEL, new String[] {}, parameters);
   }
 
   @Test
@@ -1186,7 +1230,7 @@ public class ClientTest {
   @Test
   public void testShowBatfishOptionsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_BATFISH_OPTIONS, parameters);
+    testInvalidInput(SHOW_BATFISH_OPTIONS, new String[] {}, parameters);
   }
 
   @Test
@@ -1204,13 +1248,13 @@ public class ClientTest {
   @Test
   public void testShowContainerInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_CONTAINER, parameters);
+    testInvalidInput(SHOW_CONTAINER, new String[] {}, parameters);
   }
 
   @Test
   public void testShowCoordinatorHostInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_COORDINATOR_HOST, parameters);
+    testInvalidInput(SHOW_COORDINATOR_HOST, new String[] {}, parameters);
   }
 
   @Test
@@ -1222,7 +1266,7 @@ public class ClientTest {
   @Test
   public void testShowDeltaTestrigInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_DELTA_TESTRIG, parameters);
+    testInvalidInput(SHOW_DELTA_TESTRIG, new String[] {}, parameters);
   }
 
   @Test
@@ -1234,7 +1278,7 @@ public class ClientTest {
   @Test
   public void testShowLogLevelInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_LOGLEVEL, parameters);
+    testInvalidInput(SHOW_LOGLEVEL, new String[] {}, parameters);
   }
 
   @Test
@@ -1246,7 +1290,7 @@ public class ClientTest {
   @Test
   public void testShowTestrigInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_TESTRIG, parameters);
+    testInvalidInput(SHOW_TESTRIG, new String[] {}, parameters);
   }
 
   @Test
@@ -1258,13 +1302,13 @@ public class ClientTest {
   @Test
   public void testShowVersionInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_TESTRIG, parameters);
+    testInvalidInput(SHOW_TESTRIG, new String[] {}, parameters);
   }
 
   @Test
   public void testGetConfigurationInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GET_CONFIGURATION, parameters);
+    testInvalidInput(GET_CONFIGURATION, new String[] {}, parameters);
   }
 
   @Test
@@ -1310,7 +1354,7 @@ public class ClientTest {
 
   @Test
   public void testUploadCustomObjectInvalidParas() throws Exception {
-    testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[] {});
+    testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[] {}, new String[] {});
   }
 
   @Test

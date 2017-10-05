@@ -1639,7 +1639,7 @@ public class Client extends AbstractClient implements IClient {
 
     Map<String, String> questionMap = new TreeMap<>();
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    if (!loadQuestions(questionsPathStr, questionMap, ae)) {
+    if (!loadLocalQuestions(questionsPathStr, questionMap, ae)) {
       return false;
     }
     Answer answer = new Answer();
@@ -1898,10 +1898,24 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private String loadQuestion(
-      Path file, String questionText, String questionKey, Map<String, String> bfq) {
+  /**
+   * Loads the question from a given file or from a given JSON <br>
+   * If questionText is null, tries loading the question from the file<br>
+   * otherwise loads the question from the question JSON in questionText
+   *
+   * @param file File containing the question JSON
+   * @param questionText Question Json Text
+   * @param questionKey JSON key of the Question
+   * @return Name of the question which was loaded
+   */
+  private JSONObject loadQuestion(
+      @Nullable Path file,
+      @Nullable String questionText,
+      @Nullable String questionKey) {
+    String questionSource = "key: " + questionKey;
     if (questionText == null) {
       questionText = CommonUtil.readFile(file);
+      questionSource = "file: " + file;
     }
     try {
       JSONObject questionObj = new JSONObject(questionText);
@@ -1912,15 +1926,9 @@ public class Client extends AbstractClient implements IClient {
         InstanceData instanceData =
             mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
         validateInstanceData(instanceData);
-        String name = instanceData.getInstanceName();
-        bfq.put(name.toLowerCase(), questionText);
-        return name;
+        return questionObj;
       } else {
-        if (questionText == null) {
-          throw new BatfishException("Question in file: '" + file + "' has no instance name");
-        } else {
-          throw new BatfishException("Question: '" + questionKey + "' has no instance name");
-        }
+        throw new BatfishException("Question in '" + questionSource + "' has no instance data");
       }
     } catch (JSONException | IOException e) {
       throw new BatfishException("Failed to process question", e);
@@ -1950,20 +1958,29 @@ public class Client extends AbstractClient implements IClient {
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
     answer.addAnswerElement(ae);
     int numLoaded = 0;
-
-    if (parameters.isEmpty() || loadRemote) {
+    Map<String, String> remoteQuestions = new HashMap<>();
+    Map<String, String> localQuestions = new HashMap<>();
+    if ((parameters.isEmpty() || loadRemote) && _workHelper != null) {
       //loading remote questions from batfish
       Map<String, String> globalQuestions = _workHelper.getGlobalQuestions();
       for (Entry<String, String> question : globalQuestions.entrySet()) {
-        int numBefore = bfq.size();
-        String name = loadQuestion(null, question.getValue(), question.getKey(), bfq);
-        int numAfter = bfq.size();
-        if (numBefore == numAfter) {
-          ae.getReplaced().add(name);
-        } else {
-          ae.getAdded().add(name);
+        try {
+          JSONObject questionJSON = loadQuestion(null, question.getValue(), question.getKey());
+          String questionName =
+              questionJSON
+                  .getJSONObject(BfConsts.PROP_INSTANCE)
+                  .getString(BfConsts.PROP_INSTANCE_NAME);
+          if (remoteQuestions.containsKey(questionName.toLowerCase())) {
+            ae.getReplaced().add(questionName);
+          } else {
+            ae.getAdded().add(questionName);
+          }
+          remoteQuestions.put(questionName.toLowerCase(), questionJSON.toString());
+          numLoaded++;
+        } catch (JSONException e) {
+          throw new BatfishException(
+              "Could not find instanceName in question " + question.getKey());
         }
-        numLoaded++;
       }
       ae.setNumLoaded(numLoaded);
     }
@@ -1971,9 +1988,11 @@ public class Client extends AbstractClient implements IClient {
     if (!parameters.isEmpty()) {
       //loading questions from local dir, updating the answer element
       String questionsPathStr = parameters.get(0);
-      loadQuestions(questionsPathStr, bfq, ae);
+      loadLocalQuestions(questionsPathStr, localQuestions, ae);
     }
 
+    //merging the questions
+    QuestionHelper.mergeQuestions(localQuestions, remoteQuestions, bfq, ae);
     //outputting the final answer
     ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
     String answerStringToPrint;
@@ -1990,8 +2009,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean loadQuestions(
-    String questionsPathStr, Map<String, String> bfq, LoadQuestionAnswerElement ae) {
+  private boolean loadLocalQuestions(
+      String questionsPathStr, Map<String, String> localQuestions, LoadQuestionAnswerElement ae) {
     Path questionsPath = Paths.get(questionsPathStr);
     int numLoaded = 0;
     SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
@@ -2015,15 +2034,22 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException("Failed to visit questions dir", e);
     }
     for (Path jsonQuestionFile : jsonQuestionFiles) {
-      int numBefore = bfq.size();
-      String name = loadQuestion(jsonQuestionFile, null, null, bfq);
-      int numAfter = bfq.size();
-      if (numBefore == numAfter) {
-        ae.getReplaced().add(name);
-      } else {
-        ae.getAdded().add(name);
+      try {
+        JSONObject questionJSON = loadQuestion(jsonQuestionFile, null, null);
+        String questionName =
+            questionJSON
+                .getJSONObject(BfConsts.PROP_INSTANCE)
+                .getString(BfConsts.PROP_INSTANCE_NAME);
+        if (localQuestions.containsKey(questionName.toLowerCase())) {
+          ae.getReplaced().add(questionName);
+        } else {
+          ae.getAdded().add(questionName);
+        }
+        localQuestions.put(questionName.toLowerCase(), questionJSON.toString());
+        numLoaded++;
+      } catch (JSONException e) {
+        throw new BatfishException("Could not find instanceName in question " + jsonQuestionFile);
       }
-      numLoaded++;
     }
     ae.setNumLoaded(numLoaded);
     return true;
@@ -2040,6 +2066,7 @@ public class Client extends AbstractClient implements IClient {
       }
     }
   }
+
 
   static InitEnvironmentParams parseInitEnvironmentParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
