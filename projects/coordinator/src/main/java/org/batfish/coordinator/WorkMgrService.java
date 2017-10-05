@@ -74,12 +74,8 @@ public class WorkMgrService {
       checkStringParam(clientVersion, "Client version");
 
       checkClientVersion(clientVersion);
-
-      if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
-        return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, true));
-      } else {
-        return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, false));
-      }
+      boolean valid = Main.getAuthorizer().isValidWorkApiKey(apiKey);
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, valid));
     } catch (FileExistsException
         | FileNotFoundException
         | IllegalArgumentException
