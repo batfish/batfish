@@ -48,12 +48,28 @@ interface Ethernet0
  ip address 13.9.2.2 255.255.255.255
  ip address virtual 1.2.3.4/27
  no ip address
+ ip arp gratuitous request
+ ip arp gratuitous update
  no ip arp inspection trust
+ ip arp timeout 1500
  ip bgp fast-external-fallover permit
+ ip dhcp relay address 1.2.3.4
+ ip dhcp relay address 2.3.4.5
+ no ip dhcp relay information trusted
+ no ip dhcp relay subnet-broadcast
+ no ip dhcp smart-relay
+ ip dhcp snooping limit rate 10
+ ip dhcp snooping trust
  no ip dhcp snooping trust
  ip helper-address 172.16.0.1
  ip helper-address 172.17.0.1
  ip igmp access-group 1
+ ip igmp group-timeout 260
+ ip igmp last-member-query-response-time 1
+ ip igmp query-interval 125
+ ip igmp query-max-response-time 10
+ ip igmp query-timeout 255
+ ip igmp robustness-variable 2
  ip multicast boundary 1
  ip nat destination static 1.2.3.4 access-list mynatacl 2.3.4.5
  ip nat inside
@@ -62,7 +78,16 @@ interface Ethernet0
  ip nat source dynamic access-list abc pool beeble
  ip nhrp map 130.59.254.2 130.59.32.21
  ip ospf 1 area 0
+ ip ospf cost 1
+ ip ospf dead-interval 40
  ip ospf demand-circuit
+ ip ospf hello-interval 10
+ ip ospf passive-interface
+ ip ospf priority 1
+ ip ospf retransmit-interval 5
+ ip ospf transmit-delay 1
+ ip pim dr-priority 1
+ ip pim hello-interval 30000
  ip pim sparse-mode
  no ip redirects
  no ip route-cache

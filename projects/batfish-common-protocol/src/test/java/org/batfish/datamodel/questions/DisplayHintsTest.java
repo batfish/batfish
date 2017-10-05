@@ -7,8 +7,7 @@ import java.io.IOException;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.questions.DisplayHints.ExtractionHint;
-import org.batfish.datamodel.questions.DisplayHints.ValueType;
+import org.batfish.datamodel.questions.DisplayHints.Extraction;
 import org.junit.Test;
 
 public class DisplayHintsTest {
@@ -22,25 +21,23 @@ public class DisplayHintsTest {
     // here, we only test for ExtractionHint level concepts
     // tests that sit with jsonpath question validate if prefix/suffix filters are parsed correctly
 
-    assertThat(displayHints.getTextDesc().equals("${mynode} has nothing on ${myinterface}"),
+    assertThat(
+        displayHints.getTextDesc().equals("${mynode} has nothing on ${myinterface}"),
         equalTo(true));
 
-    Map<String, ExtractionHint> extractionHints = displayHints.getExtractionHints();
-    assertThat(extractionHints.size(), equalTo(3));
+    Map<String, Extraction> extractions = displayHints.getExtractions();
+    assertThat(extractions.size(), equalTo(3));
 
-    ExtractionHint hint0 = extractionHints.get("node1");
-    assertThat(hint0.getValueType().isListType(), equalTo(false));
-    assertThat(hint0.getValueType(), equalTo(ValueType.STRING));
-    assertThat(hint0.getHints().containsKey("use"), equalTo(true));
+    Extraction hint0 = extractions.get("node1");
+    assertThat(hint0.getSchemaAsObject().isList(), equalTo(false));
+    assertThat(
+        hint0.getSchemaAsObject().getBaseType().getCanonicalName(), equalTo("java.lang.String"));
+    assertThat(hint0.getMethod().containsKey("use"), equalTo(true));
 
-    ExtractionHint hint1 = extractionHints.get("interfaces1");
-    assertThat(hint1.getValueType().isListType(), equalTo(true));
-    assertThat(hint1.getValueType(), equalTo(ValueType.STRINGLIST));
-    assertThat(hint1.getHints().containsKey("use"), equalTo(true));
+    Extraction hint1 = extractions.get("interfaces1");
+    assertThat(hint1.getSchemaAsObject().isList(), equalTo(true));
 
-    ExtractionHint hint2 = extractionHints.get("nodes1");
-    assertThat(hint2.getValueType().isListType(), equalTo(true));
-    assertThat(hint2.getValueType(), equalTo(ValueType.INTLIST));
-    assertThat(hint2.getHints().containsKey("use"), equalTo(true));
+    Extraction hint2 = extractions.get("nodes1");
+    assertThat(hint2.getSchemaAsObject().isIntOrIntList(), equalTo(true));
   }
 }

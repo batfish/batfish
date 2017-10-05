@@ -42,6 +42,7 @@ aaa authentication login blah group tacacs+ enable
 aaa authentication login default line
 aaa authentication login default tacacs+ enable
 aaa authentication login default group tacacs+ local enable
+no aaa authentication login invalid-username-log
 aaa authentication login privilege-mode
 aaa authentication policy local allow-nopassword-remote-login
 aaa authentication policy on-failure log
@@ -72,8 +73,8 @@ aaa group server tacacs+ authservers
  !
  server-private 2.3.4.5 port 49
  !
+!
 aaa new-model
-no aaa authentication login invalid-username-log
 no aaa new-model
 no aaa root
 aaa session-id common

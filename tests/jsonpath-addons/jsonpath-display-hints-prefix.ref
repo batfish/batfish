@@ -54,49 +54,94 @@
           "numResults" : 15,
           "result" : {
             "'nodes'->'as1border1'" : {
-              "prefix" : "$['nodes']['as1border1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as1border1'"
+              ]
             },
             "'nodes'->'as1border2'" : {
-              "prefix" : "$['nodes']['as1border2']"
+              "concretePath" : [
+                "'nodes'",
+                "'as1border2'"
+              ]
             },
             "'nodes'->'as1core1'" : {
-              "prefix" : "$['nodes']['as1core1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as1core1'"
+              ]
             },
             "'nodes'->'as2border1'" : {
-              "prefix" : "$['nodes']['as2border1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2border1'"
+              ]
             },
             "'nodes'->'as2border2'" : {
-              "prefix" : "$['nodes']['as2border2']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2border2'"
+              ]
             },
             "'nodes'->'as2core1'" : {
-              "prefix" : "$['nodes']['as2core1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2core1'"
+              ]
             },
             "'nodes'->'as2core2'" : {
-              "prefix" : "$['nodes']['as2core2']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2core2'"
+              ]
             },
             "'nodes'->'as2dept1'" : {
-              "prefix" : "$['nodes']['as2dept1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2dept1'"
+              ]
             },
             "'nodes'->'as2dist1'" : {
-              "prefix" : "$['nodes']['as2dist1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2dist1'"
+              ]
             },
             "'nodes'->'as2dist2'" : {
-              "prefix" : "$['nodes']['as2dist2']"
+              "concretePath" : [
+                "'nodes'",
+                "'as2dist2'"
+              ]
             },
             "'nodes'->'as3border1'" : {
-              "prefix" : "$['nodes']['as3border1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as3border1'"
+              ]
             },
             "'nodes'->'as3border2'" : {
-              "prefix" : "$['nodes']['as3border2']"
+              "concretePath" : [
+                "'nodes'",
+                "'as3border2'"
+              ]
             },
             "'nodes'->'as3core1'" : {
-              "prefix" : "$['nodes']['as3core1']"
+              "concretePath" : [
+                "'nodes'",
+                "'as3core1'"
+              ]
             },
             "'nodes'->'host1'" : {
-              "prefix" : "$['nodes']['host1']"
+              "concretePath" : [
+                "'nodes'",
+                "'host1'"
+              ]
             },
             "'nodes'->'host2'" : {
-              "prefix" : "$['nodes']['host2']"
+              "concretePath" : [
+                "'nodes'",
+                "'host2'"
+              ]
             }
           }
         }
@@ -110,6 +155,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "debug" : false,
     "differential" : false,
     "innerQuestion" : {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
@@ -120,13 +166,13 @@
     "paths" : [
       {
         "displayHints" : {
-          "extractionHints" : {
+          "extractions" : {
             "node" : {
-              "hints" : {
+              "method" : {
                 "use" : "prefix",
                 "index" : 1
               },
-              "valueType" : "STRING"
+              "schema" : "String"
             }
           }
         },

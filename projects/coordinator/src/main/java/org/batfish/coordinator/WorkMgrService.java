@@ -826,6 +826,40 @@ public class WorkMgrService {
     }
   }
 
+  /**
+   * Fetches the questions in the provided questions directory
+   *
+   * @return Questions in configured questions directory(Empty if not provided)
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_GLOBAL_QUESTIONS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getGlobalQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
+    try {
+      _logger.info("WMS:getQuestions " + apiKey + " " + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      Map<String, String> globalQuestions = Main.getWorkMgr().getGlobalQuestions();
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String globalQuestionsStr = mapper.writeValueAsString(globalQuestions);
+      return new JSONArray(
+          Arrays.asList(
+              CoordConsts.SVC_KEY_SUCCESS,
+              new JSONObject().put(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS, globalQuestionsStr)));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getQuestions exception: " + stackTrace);
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
+    }
+  }
+
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
@@ -1270,16 +1304,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName,
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
     try {
-      _logger.info(
-          "WMS:uploadQuestion "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " / "
-              + objectName
-              + "\n");
+      _logger.infof(
+          "WMS:putObject %s %s %s / %s\n", apiKey, containerName, testrigName, objectName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1302,11 +1328,11 @@ public class WorkMgrService {
         | FileNotFoundException
         | IllegalArgumentException
         | AccessControlException e) {
-      _logger.error("WMS:uploadCustomObject exception: " + e.getMessage() + "\n");
+      _logger.error("WMS:putObject exception: " + e.getMessage() + "\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:uploadCustomObject exception: " + stackTrace);
+      _logger.error("WMS:putObject exception: " + stackTrace);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }

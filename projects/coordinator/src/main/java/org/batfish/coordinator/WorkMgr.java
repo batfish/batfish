@@ -1,11 +1,20 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +34,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -42,6 +50,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.questions.Question.InstanceData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -625,6 +634,62 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Container '" + containerName + "' does not exist");
     }
     return containerDir;
+  }
+
+  private void addQuestion(Path file, Map<String, String> questions) {
+    String questionText = CommonUtil.readFile(file);
+    try {
+      JSONObject questionObj = new JSONObject(questionText);
+      if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
+        JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
+        String instanceDataStr = instanceDataObj.toString();
+        BatfishObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+        InstanceData instanceData =
+            mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
+        String name = instanceData.getInstanceName();
+        questions.put(name.toLowerCase(), questionText);
+      } else {
+        throw new BatfishException("Question in file: '" + file + "' has no instance name");
+      }
+    } catch (JSONException | IOException e) {
+      throw new BatfishException("Failed to process question", e);
+    }
+  }
+
+  /**
+   * Fetches all questions from questions directory configured while running Coordinator
+   *
+   * @return {@link Map} of Question Names->Question Contents
+   */
+  public Map<String, String> getGlobalQuestions() {
+    Path questionsPath = Main.getSettings().getGlobalQuestionsDir();
+    Map<String, String> globalQuestions = new HashMap<>();
+    try {
+      checkNotNull(Main.getSettings().getGlobalQuestionsDir());
+      try {
+        Files.walkFileTree(
+            questionsPath,
+            EnumSet.of(FOLLOW_LINKS),
+            1,
+            new SimpleFileVisitor<Path>() {
+              @Override
+              public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                  throws IOException {
+                String filename = file.getFileName().toString();
+                if (filename.endsWith(".json")) {
+                  addQuestion(file, globalQuestions);
+                }
+                return FileVisitResult.CONTINUE;
+              }
+            });
+        return globalQuestions;
+      } catch (IOException e) {
+        throw new BatfishException("Failed to visit questions dir", e);
+      }
+    } catch (Exception e) {
+      // if walking through question dir fails, send an empty map of questions to the client
+      return globalQuestions;
+    }
   }
 
   private Path getdirContainerAnalysis(String containerName, String analysisName) {
