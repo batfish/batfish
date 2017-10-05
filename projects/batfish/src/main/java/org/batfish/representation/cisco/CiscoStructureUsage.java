@@ -47,7 +47,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   IP_NAT_SOURCE_POOL("ip nat source pool"),
   LINE_ACCESS_CLASS_LIST("line access-class list"),
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
-  MANAGEMENT_ACCESS_GROUP("management ip access-group"),
+  MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
   NTP_ACCESS_GROUP("ntp access-group"),
   OSPF_DEFAULT_ORIGINATE_ROUTE_MAP("ospf default-originate route-map"),

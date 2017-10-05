@@ -1,33 +1,37 @@
 {
-  "entities": {
+  "compositions": {
     "mynode": {
-      "entityType": "node",
-      "hostname": "node1"
+      "schema": "Node",
+      "dictionary": {
+        "hostname": "node1"
+      }
     },
     "myinterface": {
-      "entityType": "interfaceList",
-      "hostname": "nodes1",
-      "interface": "interfaces1"
+      "schema": "Interface",
+      "dictionary": {
+        "hostname": "nodes1",
+        "interface": "interfaces1"
+      }
     }
   },
-  "extractionHints" : {
+  "extractions" : {
     "node1": {
-      "valueType": "string",
-      "hints": {
+      "schema": "String",
+      "method": {
         "use": "prefix",
         "index" : 1
       }
     },
     "interfaces1": {
-      "valueType" : "stringList",
-      "hints": {
+      "schema" : "List<String>",
+      "method": {
         "use": "suffixOfsuffix",
         "filter": "$"
       }
     },
     "nodes1": {
-      "valueType": "intList",
-      "hints": {
+      "schema": "List<Integer>",
+      "method": {
         "use": "prefixOfSuffix",
         "filter": "$.*",
         "index": 0

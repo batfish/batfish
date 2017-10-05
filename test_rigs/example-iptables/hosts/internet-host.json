@@ -1,0 +1,10 @@
+{
+  "hostname": "internet-host",
+  "hostInterfaces": {
+    "eth0": {
+      "name": "eth0",
+      "prefix": "10.0.8.10/24",
+      "gateway": "10.0.8.1"
+    }
+  }
+}

@@ -20,6 +20,7 @@ dhcp ipv4
  interface Bundle-Ether1.1031 relay profile irnc-dhcp
  interface Bundle-Ether1.1032 relay profile irnc-dhcp
 !
+no ip dhcp packet strict-validation
 ip dhcp pool abcdefg
   network 1.2.3.0 255.255.255.0
   default-router 1.2.3.1
@@ -34,10 +35,18 @@ ip dhcp pool abcdefg
   hardware-address 0025.90fc.6d00
   option 42 ip 130.59.48.65
 !
+ip dhcp relay
+ip dhcp relay information option
+no ip dhcp relay information option vpn
+no ip dhcp relay sub-option type cisco
+no ip dhcp smart-relay global
+no ip dhcp snooping
+no ip dhcp snooping information option
+ip dhcp snooping verify mac-address
 ipv6 dhcp relay
-no ip dhcp packet strict-validation
 no ipv6 dhcp relay option vpn
 no ipv6 dhcp relay option type cisco
 no ipv6 dhcp relay source-interface
+service dhcp
 !
 

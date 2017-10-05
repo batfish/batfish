@@ -4,110 +4,106 @@
       "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
-        "flows" : [
-          {
-            "@id" : 1,
-            "dscp" : 0,
-            "dstIp" : "70.70.70.70",
-            "dstPort" : 0,
-            "ecn" : 0,
-            "fragmentOffset" : 0,
-            "icmpCode" : 0,
-            "icmpVar" : 0,
-            "ingressNode" : "R0",
-            "ingressVrf" : "default",
-            "ipProtocol" : "HOPOPT",
-            "packetLength" : 0,
-            "srcIp" : "0.0.0.0",
-            "srcPort" : 0,
-            "state" : "NEW",
-            "tag" : "SMT",
-            "tcpFlagsAck" : 1,
-            "tcpFlagsCwr" : 1,
-            "tcpFlagsEce" : 1,
-            "tcpFlagsFin" : 1,
-            "tcpFlagsPsh" : 1,
-            "tcpFlagsRst" : 1,
-            "tcpFlagsSyn" : 1,
-            "tcpFlagsUrg" : 1
-          }
-        ],
-        "flowsByText" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : 1
-        },
         "traces" : {
           "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
-            "BASE" : [
-              {
-                "disposition" : "ACCEPTED",
-                "hops" : [
-                  {
-                    "edge" : {
-                      "node1" : "R0",
-                      "node1interface" : "Serial0",
-                      "node2" : "R1",
-                      "node2interface" : "Serial0"
+            "flow" : {
+              "dscp" : 0,
+              "dstIp" : "70.70.70.70",
+              "dstPort" : 0,
+              "ecn" : 0,
+              "fragmentOffset" : 0,
+              "icmpCode" : 0,
+              "icmpVar" : 0,
+              "ingressNode" : "R0",
+              "ingressVrf" : "default",
+              "ipProtocol" : "HOPOPT",
+              "packetLength" : 0,
+              "srcIp" : "0.0.0.0",
+              "srcPort" : 0,
+              "state" : "NEW",
+              "tag" : "SMT",
+              "tcpFlagsAck" : 1,
+              "tcpFlagsCwr" : 1,
+              "tcpFlagsEce" : 1,
+              "tcpFlagsFin" : 1,
+              "tcpFlagsPsh" : 1,
+              "tcpFlagsRst" : 1,
+              "tcpFlagsSyn" : 1,
+              "tcpFlagsUrg" : 1
+            },
+            "paths" : {
+              "BASE" : [
+                {
+                  "disposition" : "ACCEPTED",
+                  "hops" : [
+                    {
+                      "edge" : {
+                        "node1" : "R0",
+                        "node1interface" : "Serial0",
+                        "node2" : "R1",
+                        "node2interface" : "Serial0"
+                      },
+                      "routes" : [
+                        "OspfRoute<70.70.70.70/32,nhip:192.3.64.1/24,nhint:dynamic>"
+                      ]
                     },
-                    "routes" : [
-                      "OspfRoute<70.70.70.70/32,nhip:192.3.64.1/24,nhint:dynamic>"
-                    ]
-                  },
-                  {
-                    "edge" : {
-                      "node1" : "R1",
-                      "node1interface" : "Serial1",
-                      "node2" : "R3",
-                      "node2interface" : "Serial0"
+                    {
+                      "edge" : {
+                        "node1" : "R1",
+                        "node1interface" : "Serial1",
+                        "node2" : "R3",
+                        "node2interface" : "Serial0"
+                      },
+                      "routes" : [
+                        "OspfRoute<70.70.70.70/32,nhip:192.1.64.1/24,nhint:dynamic>"
+                      ]
                     },
-                    "routes" : [
-                      "OspfRoute<70.70.70.70/32,nhip:192.1.64.1/24,nhint:dynamic>"
-                    ]
-                  },
-                  {
-                    "edge" : {
-                      "node1" : "R3",
-                      "node1interface" : "Loopback0",
-                      "node2" : "(none)",
-                      "node2interface" : "null_interface"
+                    {
+                      "edge" : {
+                        "node1" : "R3",
+                        "node1interface" : "Loopback0",
+                        "node2" : "(none)",
+                        "node2interface" : "null_interface"
+                      },
+                      "routes" : [
+                        "ConnectedRoute<70.70.70.70/32,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
+                      ]
+                    }
+                  ],
+                  "notes" : "ACCEPTED"
+                }
+              ],
+              "FAILED" : [
+                {
+                  "disposition" : "DENIED_OUT",
+                  "hops" : [
+                    {
+                      "edge" : {
+                        "node1" : "R0",
+                        "node1interface" : "Serial1",
+                        "node2" : "R2",
+                        "node2interface" : "Serial0"
+                      },
+                      "routes" : [
+                        "OspfRoute<70.70.70.70/32,nhip:192.4.64.1/24,nhint:dynamic>"
+                      ]
                     },
-                    "routes" : [
-                      "ConnectedRoute<70.70.70.70/32,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
-                    ]
-                  }
-                ],
-                "notes" : "ACCEPTED"
-              }
-            ],
-            "FAILED" : [
-              {
-                "disposition" : "DENIED_OUT",
-                "hops" : [
-                  {
-                    "edge" : {
-                      "node1" : "R0",
-                      "node1interface" : "Serial1",
-                      "node2" : "R2",
-                      "node2interface" : "Serial0"
-                    },
-                    "routes" : [
-                      "OspfRoute<70.70.70.70/32,nhip:192.4.64.1/24,nhint:dynamic>"
-                    ]
-                  },
-                  {
-                    "edge" : {
-                      "node1" : "R2",
-                      "node1interface" : "Serial1",
-                      "node2" : "R3",
-                      "node2interface" : "Serial1"
-                    },
-                    "routes" : [
-                      "OspfRoute<70.70.70.70/32,nhip:192.2.64.1/24,nhint:dynamic>"
-                    ]
-                  }
-                ],
-                "notes" : "DENIED_OUT{101}{deny ip any 70.70.70.70  0.0.0.255}"
-              }
-            ]
+                    {
+                      "edge" : {
+                        "node1" : "R2",
+                        "node1interface" : "Serial1",
+                        "node2" : "R3",
+                        "node2interface" : "Serial1"
+                      },
+                      "routes" : [
+                        "OspfRoute<70.70.70.70/32,nhip:192.2.64.1/24,nhint:dynamic>"
+                      ]
+                    }
+                  ],
+                  "notes" : "DENIED_OUT{101}{deny ip any 70.70.70.70  0.0.0.255}"
+                }
+              ]
+            }
           }
         }
       },

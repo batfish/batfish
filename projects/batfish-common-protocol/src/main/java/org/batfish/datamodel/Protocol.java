@@ -9,7 +9,10 @@ import org.batfish.common.BatfishException;
 
 public enum Protocol {
   DNS("dns", IpProtocol.UDP, NamedPort.DOMAIN.number()),
+  HTTP("http", IpProtocol.TCP, NamedPort.HTTP.number()),
+  HTTPS("https", IpProtocol.TCP, NamedPort.HTTPS.number()),
   SSH("ssh", IpProtocol.TCP, NamedPort.SSH.number()),
+  TELNET("telnet", IpProtocol.TCP, NamedPort.TELNET.number()),
   TCP("tcp", IpProtocol.TCP, null),
   UDP("udp", IpProtocol.UDP, null);
 

@@ -103,7 +103,7 @@ public class JsonPathAssertionTest {
     jpAssertion.setType(JsonPathAssertionType.equals);
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      JsonNode expect = mapper.readValue("[{\"prefix\": \"kkl\"}]", JsonNode.class);
+      JsonNode expect = mapper.readValue("[{\"concretePath\": [\"'kkl'\"]}]", JsonNode.class);
       jpAssertion.setExpect(expect);
     } catch (IOException e) {
       e.printStackTrace();
@@ -124,7 +124,7 @@ public class JsonPathAssertionTest {
       JsonNode expect =
           mapper.readValue(
               "[{"
-                  + "\"prefix\": \"$[\'nodes\'][\'node1\'][\'ntpServers\']\", "
+                  + "\"concretePath\": [\"'nodes'\", \"'node1'\", \"'ntpServers'\"], "
                   + "\"suffix\" : [\"1.2.3.4\", \"5.6.7.8\"]"
                   + "}]",
               JsonNode.class);
@@ -146,7 +146,7 @@ public class JsonPathAssertionTest {
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       JsonNode expect =
-          mapper.readValue("[{\"prefix\": \"$[\'nodes\'][\'node1\']\"}]", JsonNode.class);
+          mapper.readValue("[{\"concretePath\": [\"'nodes'\", \"'node1'\"]}]", JsonNode.class);
       jpAssertion.setExpect(expect);
     } catch (IOException e) {
       e.printStackTrace();

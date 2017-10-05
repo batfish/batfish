@@ -418,104 +418,104 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         String retString = String.format("reachability %sactions=%s", prettyPrintBase(), _actions);
         // we only print "interesting" values
         if (_reachabilityType != ReachabilityType.STANDARD) {
-          retString += String.format(" | %s=%s", PROP_REACHABILITY_TYPE, _reachabilityType);
+          retString += String.format(", %s=%s", PROP_REACHABILITY_TYPE, _reachabilityType);
         }
         if (getNegateHeader()) {
-          retString += " | negateHeader=true";
+          retString += ", negateHeader=true";
         }
         if (getDstIps() != null && !getDstIps().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_DST_IPS, getDstIps());
+          retString += String.format(", %s=%s", PROP_DST_IPS, getDstIps());
         }
         if (getDstPorts() != null && !getDstPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_DST_PORTS, getDstPorts());
+          retString += String.format(", %s=%s", PROP_DST_PORTS, getDstPorts());
         }
         if (getDstProtocols() != null && !getDstProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_DST_PROTOCOLS, getDstProtocols());
+          retString += String.format(", %s=%s", PROP_DST_PROTOCOLS, getDstProtocols());
         }
         if (!_finalNodeRegex.equals(DEFAULT_FINAL_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", PROP_FINAL_NODE_REGEX, _finalNodeRegex);
+          retString += String.format(", %s=%s", PROP_FINAL_NODE_REGEX, _finalNodeRegex);
         }
         if (getFragmentOffsets() != null && !getFragmentOffsets().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_FRAGMENT_OFFSETS, getFragmentOffsets());
+          retString += String.format(", %s=%s", PROP_FRAGMENT_OFFSETS, getFragmentOffsets());
         }
         if (getIcmpCodes() != null && !getIcmpCodes().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_ICMP_CODES, getIcmpCodes());
+          retString += String.format(", %s=%s", PROP_ICMP_CODES, getIcmpCodes());
         }
         if (getIcmpTypes() != null && !getIcmpTypes().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_ICMP_TYPES, getIcmpTypes());
+          retString += String.format(", %s=%s", PROP_ICMP_TYPES, getIcmpTypes());
         }
         if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
+          retString += String.format(", %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
         }
         if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_IP_PROTOCOLS, getIpProtocols());
+          retString += String.format(", %s=%s", PROP_IP_PROTOCOLS, getIpProtocols());
         }
         if (getPacketLengths() != null && !getPacketLengths().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_PACKET_LENGTHS, getPacketLengths());
+          retString += String.format(", %s=%s", PROP_PACKET_LENGTHS, getPacketLengths());
         }
         if (getSrcIps() != null && !getSrcIps().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_SRC_IPS, getSrcIps());
+          retString += String.format(", %s=%s", PROP_SRC_IPS, getSrcIps());
         }
         if (getSrcPorts() != null && !getSrcPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_SRC_PORTS, getSrcPorts());
+          retString += String.format(", %s=%s", PROP_SRC_PORTS, getSrcPorts());
         }
         if (getSrcProtocols() != null && !getSrcProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_SRC_PROTOCOLS, getSrcProtocols());
+          retString += String.format(", %s=%s", PROP_SRC_PROTOCOLS, getSrcProtocols());
         }
         if (getSrcOrDstIps() != null && !getSrcOrDstIps().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_SRC_OR_DST_IPS, getSrcOrDstIps());
+          retString += String.format(", %s=%s", PROP_SRC_OR_DST_IPS, getSrcOrDstIps());
         }
         if (getSrcOrDstPorts() != null && !getSrcOrDstPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_SRC_OR_DST_PORTS, getSrcOrDstPorts());
+          retString += String.format(", %s=%s", PROP_SRC_OR_DST_PORTS, getSrcOrDstPorts());
         }
         if (getSrcOrDstProtocols() != null && !getSrcOrDstProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
+          retString += String.format(", %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
         }
         if (_transitNodes != null && !_transitNodes.isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_TRANSIT_NODES, _transitNodes);
+          retString += String.format(", %s=%s", PROP_TRANSIT_NODES, _transitNodes);
         }
         if (getNotDstIps() != null && !getNotDstIps().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_DST_IPS, getNotDstIps());
+          retString += String.format(", %s=%s", PROP_NOT_DST_IPS, getNotDstIps());
         }
         if (getNotDstPorts() != null && !getNotDstPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_DST_PORTS, getNotDstPorts());
+          retString += String.format(", %s=%s", PROP_NOT_DST_PORTS, getNotDstPorts());
         }
         if (getNotDstProtocols() != null && !getNotDstProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_DST_PROTOCOLS, getNotDstProtocols());
+          retString += String.format(", %s=%s", PROP_NOT_DST_PROTOCOLS, getNotDstProtocols());
         }
         if (!_notFinalNodeRegex.equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", PROP_NOT_FINAL_NODE_REGEX, _notFinalNodeRegex);
+          retString += String.format(", %s=%s", PROP_NOT_FINAL_NODE_REGEX, _notFinalNodeRegex);
         }
         if (getNotFragmentOffsets() != null && !getNotFragmentOffsets().isEmpty()) {
           retString +=
-              String.format(" | %s=%s", PROP_NOT_FRAGMENT_OFFSETS, getNotFragmentOffsets());
+              String.format(", %s=%s", PROP_NOT_FRAGMENT_OFFSETS, getNotFragmentOffsets());
         }
         if (getNotIcmpCodes() != null && !getNotIcmpCodes().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_ICMP_CODES, getNotIcmpCodes());
+          retString += String.format(", %s=%s", PROP_NOT_ICMP_CODES, getNotIcmpCodes());
         }
         if (getNotIcmpTypes() != null && !getNotIcmpTypes().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_ICMP_TYPES, getNotIcmpTypes());
+          retString += String.format(", %s=%s", PROP_NOT_ICMP_TYPES, getNotIcmpTypes());
         }
         if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
-          retString += String.format(" | %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
+          retString += String.format(", %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
         }
         if (getNotIpProtocols() != null && !getNotIpProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_IP_PROTOCOLS, getNotIpProtocols());
+          retString += String.format(", %s=%s", PROP_NOT_IP_PROTOCOLS, getNotIpProtocols());
         }
         if (getNotPacketLengths() != null && !getNotPacketLengths().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_PACKET_LENGTHS, getNotPacketLengths());
+          retString += String.format(", %s=%s", PROP_NOT_PACKET_LENGTHS, getNotPacketLengths());
         }
         if (getNotSrcIps() != null && !getNotSrcIps().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_SRC_IPS, getNotSrcIps());
+          retString += String.format(", %s=%s", PROP_NOT_SRC_IPS, getNotSrcIps());
         }
         if (getNotSrcPorts() != null && !getNotSrcPorts().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_SRC_PORTS, getNotSrcPorts());
+          retString += String.format(", %s=%s", PROP_NOT_SRC_PORTS, getNotSrcPorts());
         }
         if (getNotSrcProtocols() != null && !getNotSrcProtocols().isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
+          retString += String.format(", %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
         }
         if (_notTransitNodes != null && !_notTransitNodes.isEmpty()) {
-          retString += String.format(" | %s=%s", PROP_NOT_TRANSIT_NODES, _notTransitNodes);
+          retString += String.format(", %s=%s", PROP_NOT_TRANSIT_NODES, _notTransitNodes);
         }
         return retString;
       } catch (Exception e) {

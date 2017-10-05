@@ -18,7 +18,10 @@
           "numResults" : 1,
           "result" : {
             "'nodes'->'as2border1'" : {
-              "prefix" : "$['nodes']['as2border1']",
+              "concretePath" : [
+                "'nodes'",
+                "'as2border1'"
+              ],
               "suffix" : {
                 "name" : "as2border1",
                 "communityLists" : {
@@ -1168,6 +1171,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "debug" : false,
     "differential" : false,
     "innerQuestion" : {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
@@ -1178,14 +1182,14 @@
     "paths" : [
       {
         "displayHints" : {
-          "extractionHints" : {
+          "extractions" : {
             "interfaces" : {
-              "hints" : {
+              "method" : {
                 "use" : "prefixofsuffix",
                 "filter" : "$.interfaces.*",
                 "index" : 1
               },
-              "valueType" : "STRINGLIST"
+              "schema" : "List<String>"
             }
           }
         },
