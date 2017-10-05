@@ -4628,7 +4628,7 @@
               "proxyArp" : false,
               "ripEnabled" : false,
               "ripPassive" : false,
-              "spanningTreePortfast" : false,
+              "spanningTreePortfast" : true,
               "switchport" : true,
               "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
