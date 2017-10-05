@@ -1,0 +1,57 @@
+!
+hostname aruba_snmp
+!
+snmp-server community "abc"
+snmp-server community "def"
+snmp-server enable trap
+snmp-server host 1.2.3.4 version 2c foofoo udp-port 123
+snmp-server trap source 0.0.0.0
+snmp-server trap disable wlsxAdhocNetwork
+snmp-server trap disable wlsxAdhocNetworkBridgeDetectedAP
+snmp-server trap disable wlsxAdhocNetworkBridgeDetectedSta
+snmp-server trap disable wlsxAdhocUsingValidSSID
+snmp-server trap disable wlsxAuthMaxAclEntries
+snmp-server trap disable wlsxAuthMaxBWContracts
+snmp-server trap disable wlsxAuthMaxUserEntries
+snmp-server trap disable wlsxAuthServerIsUp
+snmp-server trap disable wlsxAuthServerReqTimedOut
+snmp-server trap disable wlsxAuthServerTimedOut
+snmp-server trap disable wlsxChannelChanged
+snmp-server trap disable wlsxCoverageHoleDetected
+snmp-server trap disable wlsxDBCommunicationFailure
+snmp-server trap disable wlsxDisconnectStationAttack
+snmp-server trap disable wlsxESIServerDown
+snmp-server trap disable wlsxESIServerUp
+snmp-server trap disable wlsxFanFailure
+snmp-server trap disable wlsxFanTrayInserted
+snmp-server trap disable wlsxFanTrayRemoved
+snmp-server trap disable wlsxGBICInserted
+snmp-server trap disable wlsxIpSpoofingDetected
+snmp-server trap disable wlsxLCInserted
+snmp-server trap disable wlsxLCRemoved
+snmp-server trap disable wlsxLicenseExpiry
+snmp-server trap disable wlsxLowMemory
+snmp-server trap disable wlsxLowOnFlashSpace
+snmp-server trap disable wlsxOutOfRangeTemperature
+snmp-server trap disable wlsxOutOfRangeVoltage
+snmp-server trap disable wlsxPowerSupplyFailure
+snmp-server trap disable wlsxPowerSupplyMissing
+snmp-server trap disable wlsxProcessDied
+snmp-server trap disable wlsxProcessExceedsMemoryLimits
+snmp-server trap disable wlsxSCInserted
+snmp-server trap disable wlsxSignatureMatch
+snmp-server trap disable wlsxStaUnAssociatedFromUnsecureAP
+snmp-server trap disable wlsxStationAddedToBlackList
+snmp-server trap disable wlsxStationRemovedFromBlackList
+snmp-server trap disable wlsxSwitchIPChanged
+snmp-server trap disable wlsxSwitchRoleChange
+snmp-server trap disable wlsxUserAuthenticationFailed
+snmp-server trap disable wlsxUserEntryAuthenticated
+snmp-server trap disable wlsxUserEntryChanged
+snmp-server trap disable wlsxUserEntryCreated
+snmp-server trap disable wlsxUserEntryDeAuthenticated
+snmp-server trap disable wlsxUserEntryDeleted
+snmp-server trap disable wlsxVrrpStateChange
+snmp-server user "foofoo" auth-prot sha ****** priv-prot des ******
+!
+

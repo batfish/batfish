@@ -1,0 +1,21 @@
+!
+hostname aruba_interface
+!
+interface gigabitethernet 0/0/0
+ bcmc-optimization
+ description "blah"
+ ip address 1.2.3.4/5
+ ip helper-address 2.3.4.5
+ jumbo
+ lldp med
+ lldp receive
+ lldp transmit
+ no spanning-tree
+ no suppress-arp
+ switchport mode trunk
+ switchport trunk native vlan 123
+ switchport trunk allowed vlan 124,125
+ trusted
+ trusted vlan 1-1234
+!
+

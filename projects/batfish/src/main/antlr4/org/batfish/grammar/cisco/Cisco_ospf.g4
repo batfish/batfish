@@ -183,6 +183,13 @@ ro_null
       )
       | MESSAGE_DIGEST_KEY
       | MTU_IGNORE
+      |
+      (
+         NO
+         (
+            DEFAULT_INFORMATION
+         )
+      )
       | NSF
       | NSR
       | RFC1583COMPATIBILITY

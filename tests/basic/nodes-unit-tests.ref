@@ -617,6 +617,54 @@
             }
           }
         },
+        "arista_acl" : {
+          "name" : "arista_acl",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "ipAccessLists" : {
+            "abcd" : {
+              "name" : "abcd",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "224.0.0.0/4"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "name" : "5 permit vlan 123 0x000 udp any 224.0.0.0/4",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                },
+                {
+                  "action" : "REJECT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "name" : "20 deny ip any any",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_acl"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "arista_bgp" : {
           "name" : "arista_bgp",
           "configurationFormat" : "ARISTA",
@@ -748,6 +796,66 @@
             }
           }
         },
+        "arista_interface" : {
+          "name" : "arista_interface",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Vlan1" : {
+              "name" : "Vlan1",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "1.2.3.4/23",
+                "2.3.4.5/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "dhcpRelayAddresses" : [
+                "5.5.5.5"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.2.3.4/23",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default",
+              "vrrpGroups" : {
+                "1" : {
+                  "name" : 1,
+                  "preempt" : true,
+                  "priority" : 110,
+                  "virtualAddress" : "1.2.3.4/23"
+                }
+              }
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_interface"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Vlan1"
+              ]
+            }
+          }
+        },
         "arista_ip_route" : {
           "name" : "arista_ip_route",
           "configurationFormat" : "CISCO_NX",
@@ -818,6 +926,43 @@
             }
           }
         },
+        "arista_ospf" : {
+          "name" : "arista_ospf",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "routingPolicies" : {
+            "~OSPF_EXPORT_POLICY:default~" : {
+              "name" : "~OSPF_EXPORT_POLICY:default~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_ospf"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "arista_queue_monitor" : {
+          "name" : "arista_queue_monitor",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "arista_queue_monitor"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "arista_username" : {
           "name" : "arista_username",
           "configurationFormat" : "CISCO_NX",
@@ -825,19 +970,342 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "enableSecret" : "a450caf35b93cba6024429006d971e68a18697468c1999449b1240b07fb26a04",
+              "enableSecret" : "6a04b2b4f67a9c3a69b681b1782b6cbcddf018f7dd810a274e71e012c83f5efe",
               "hostname" : "arista_username",
               "users" : {
                 "admin" : {
                   "name" : "admin",
-                  "password" : "68f3055315344bb16950b708cd7e9389077221ab2edbaff6c6edd5d2ec10f8be",
+                  "password" : "6a04b2b4f67a9c3a69b681b1782b6cbcddf018f7dd810a274e71e012c83f5efe",
                   "role" : "network-admin"
                 },
-                "network" : {
-                  "name" : "network",
-                  "password" : "26b6d23991f12e4b6d2bcc115981f8a1d7535451f98888b0dd55f35f96962473"
+                "noc" : {
+                  "name" : "noc",
+                  "password" : "bee05f48f9aed7d383bf9b82553b31b06fc417df4ac06a02120c51271d396453"
                 }
               }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_aaa" : {
+          "name" : "aruba_aaa",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "aaa" : {
+                "authentication" : { },
+                "newModel" : false
+              },
+              "hostname" : "aruba_aaa"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_acl" : {
+          "name" : "aruba_acl",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_acl"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_airgroup" : {
+          "name" : "aruba_airgroup",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_airgroup"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_crypto" : {
+          "name" : "aruba_crypto",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_crypto"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_dhcp" : {
+          "name" : "aruba_dhcp",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_dhcp",
+              "services" : {
+                "dhcp" : {
+                  "enabled" : true
+                }
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_interface" : {
+          "name" : "aruba_interface",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "GigabitEthernet0/0/0" : {
+              "name" : "GigabitEthernet0/0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "1.2.3.4/5"
+              ],
+              "allowedVlans" : [
+                "124-124",
+                "125-125"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "description" : "\"blah\"",
+              "dhcpRelayAddresses" : [
+                "2.3.4.5"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 123,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "1.2.3.4/5",
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "TRUNK",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_interface"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "GigabitEthernet0/0/0"
+              ]
+            }
+          }
+        },
+        "aruba_logging" : {
+          "name" : "aruba_logging",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "loggingServers" : [
+            "1.2.3.4"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_logging",
+              "logging" : {
+                "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  }
+                },
+                "on" : true
+              }
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_misc" : {
+          "name" : "aruba_misc",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_misc"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_net" : {
+          "name" : "aruba_net",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_net"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_snmp" : {
+          "name" : "aruba_snmp",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "snmpTrapServers" : [
+            "1.2.3.4"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_snmp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "snmpServer" : {
+                "communities" : {
+                  "abc" : {
+                    "name" : "abc",
+                    "ro" : false,
+                    "rw" : false
+                  },
+                  "def" : {
+                    "name" : "def",
+                    "ro" : false,
+                    "rw" : false
+                  }
+                },
+                "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  }
+                },
+                "vrf" : "default"
+              }
+            }
+          }
+        },
+        "aruba_time_range" : {
+          "name" : "aruba_time_range",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_time_range"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_user_role" : {
+          "name" : "aruba_user_role",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_user_role"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_vlan" : {
+          "name" : "aruba_vlan",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_vlan"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_voice" : {
+          "name" : "aruba_voice",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_voice"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "aruba_vpn" : {
+          "name" : "aruba_vpn",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "aruba_vpn"
             }
           },
           "vrfs" : {
@@ -3681,60 +4149,17 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_dhcp"
+              "hostname" : "cisco_dhcp",
+              "services" : {
+                "dhcp" : {
+                  "enabled" : true
+                }
+              }
             }
           },
           "vrfs" : {
             "default" : {
               "name" : "default"
-            }
-          }
-        },
-        "cisco_dhcp_helper" : {
-          "name" : "cisco_dhcp_helper",
-          "configurationFormat" : "CISCO_NX",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "interfaces" : {
-            "Ethernet0" : {
-              "name" : "Ethernet0",
-              "accessVlan" : 0,
-              "active" : true,
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "dhcpRelayAddresses" : [
-                "1.2.3.4",
-                "2.3.4.5"
-              ],
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "proxyArp" : false,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            }
-          },
-          "vendorFamily" : {
-            "cisco" : {
-              "hostname" : "cisco_dhcp_helper"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default",
-              "interfaces" : [
-                "Ethernet0"
-              ]
             }
           }
         },
@@ -4184,6 +4609,8 @@
               "bandwidth" : 1.0E9,
               "description" : "description-goes-here",
               "dhcpRelayAddresses" : [
+                "1.2.3.4",
+                "2.3.4.5",
                 "172.16.0.1",
                 "172.17.0.1"
               ],
@@ -4192,7 +4619,8 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 6,
-              "ospfDeadInterval" : 0,
+              "ospfCost" : 1,
+              "ospfDeadInterval" : 40,
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
@@ -4200,7 +4628,7 @@
               "proxyArp" : false,
               "ripEnabled" : false,
               "ripPassive" : false,
-              "spanningTreePortfast" : true,
+              "spanningTreePortfast" : false,
               "switchport" : true,
               "switchportMode" : "TRUNK",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5780,6 +6208,7 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "loggingServers" : [
+            "1.1.1.1",
             "1.2.3.4",
             "10.246.131.130",
             "10.246.131.138",
@@ -5797,6 +6226,9 @@
                 },
                 "console" : { },
                 "hosts" : {
+                  "1.1.1.1" : {
+                    "name" : "1.1.1.1"
+                  },
                   "1.2.3.4" : {
                     "name" : "1.2.3.4"
                   },
@@ -5851,9 +6283,6 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "aaa" : {
-                "newModel" : true
-              },
               "hostname" : "cisco_misc",
               "sntp" : {
                 "servers" : {
@@ -6769,14 +7198,14 @@
             }
           }
         },
-        "cisco_voice_port" : {
-          "name" : "cisco_voice_port",
+        "cisco_voice" : {
+          "name" : "cisco_voice",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_voice_port"
+              "hostname" : "cisco_voice"
             }
           },
           "vrfs" : {
@@ -10607,6 +11036,178 @@
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "mac_access_list"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "mos_application" : {
+          "name" : "mos_application",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "mos_application"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "mos_interface" : {
+          "name" : "mos_interface",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet1" : {
+              "name" : "Ethernet1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Ethernet2" : {
+              "name" : "Ethernet2",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "Management1" : {
+              "name" : "Management1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "ap1" : {
+              "name" : "ap1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "UNKNOWN",
+              "vrf" : "default"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "mos_interface"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet1",
+                "Ethernet2",
+                "Management1",
+                "ap1"
+              ]
+            }
+          }
+        },
+        "mos_misc" : {
+          "name" : "mos_misc",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "loggingServers" : [
+            "1.2.3.4"
+          ],
+          "ntpServers" : [
+            "1.2.3.4"
+          ],
+          "tacacsServers" : [
+            "1.2.3.4"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "mos_misc",
+              "logging" : {
+                "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  }
+                },
+                "on" : true
+              },
+              "ntp" : {
+                "servers" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  }
+                }
+              }
             }
           },
           "vrfs" : {

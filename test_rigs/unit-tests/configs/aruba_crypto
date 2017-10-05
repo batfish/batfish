@@ -1,0 +1,25 @@
+!
+hostname aruba_crypto
+!
+crypto dynamic-map abcd 1234
+ set transform-set "foo" "bar" "baz"
+ version v2
+!
+crypto isakmp eap-passthrough eap-mschapv2
+crypto isakmp eap-passthrough eap-peap
+crypto isakmp eap-passthrough eap-tls
+!
+crypto isakmp policy 1
+ authentication rsa-sig
+ encryption aes128
+ encryption aes256
+ group 19
+ group 20
+ hash sha2-256-128
+ prf prf-hmac-sha256
+ version v2
+!
+crypto-local pki ServerCert blah.example.com blah.pem
+crypto-local pki ServerCert web-controller controller.p7b
+!
+

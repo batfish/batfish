@@ -81,6 +81,14 @@ cctpool_null
    ) ~NEWLINE* NEWLINE
 ;
 
+cd_null
+:
+   NO?
+   (
+      VERSION
+   ) ~NEWLINE* NEWLINE
+;
+
 cd_set
 :
    SET ~NEWLINE* NEWLINE
@@ -275,7 +283,8 @@ cipt_null
 cis_null
 :
    (
-      ENABLE
+      EAP_PASSTHROUGH
+      | ENABLE
       | IDENTITY
       | INVALID_SPI_RECOVERY
       | KEEPALIVE
@@ -306,9 +315,12 @@ cispol_null
    (
       AUTHENTICATION
       | ENCR
+      | ENCRYPTION
       | GROUP
       | HASH
       | LIFETIME
+      | PRF
+      | VERSION
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -448,7 +460,11 @@ crypto_dynamic_map
       cd_set
       |
       (
-         NEWLINE cd_set*
+         NEWLINE
+         (
+            cd_null
+            | cd_set
+         )*
       )
    )
 ;

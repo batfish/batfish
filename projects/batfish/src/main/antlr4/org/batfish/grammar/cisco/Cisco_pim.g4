@@ -57,6 +57,7 @@ pim_null
       | DM_FALLBACK
       | EVENT_HISTORY
       | LOG_NEIGHBOR_CHANGES
+      | MTU
       | REGISTER_RATE_LIMIT
       | REGISTER_SOURCE
       | RPF_VECTOR

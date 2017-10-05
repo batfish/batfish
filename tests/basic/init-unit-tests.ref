@@ -13,12 +13,31 @@
         "address_family" : "address_family",
         "aggAddress" : "ios_bgp_aggregate_address",
         "arista-event-handler" : "arista-event-handler",
+        "arista_acl" : "arista_acl",
         "arista_bgp" : "arista_bgp",
         "arista_dhcp_relay" : "arista_dhcp_relay",
+        "arista_interface" : "arista_interface",
         "arista_ip_route" : "arista_ip_route",
         "arista_logging" : "arista-logging",
         "arista_misc" : "arista_misc",
+        "arista_ospf" : "arista_ospf",
+        "arista_queue_monitor" : "arista_queue_monitor",
         "arista_username" : "arista_username",
+        "aruba_aaa" : "aruba_aaa",
+        "aruba_acl" : "aruba_acl",
+        "aruba_airgroup" : "aruba_airgroup",
+        "aruba_crypto" : "aruba_crypto",
+        "aruba_dhcp" : "aruba_dhcp",
+        "aruba_interface" : "aruba_interface",
+        "aruba_logging" : "aruba_logging",
+        "aruba_misc" : "aruba_misc",
+        "aruba_net" : "aruba_net",
+        "aruba_snmp" : "aruba_snmp",
+        "aruba_time_range" : "aruba_time_range",
+        "aruba_user_role" : "aruba_user_role",
+        "aruba_vlan" : "aruba_vlan",
+        "aruba_voice" : "aruba_voice",
+        "aruba_vpn" : "aruba_vpn",
         "as_path_prepend" : "as_path_prepend",
         "asa_acl" : "asa_acl",
         "asa_banner" : "asa_banner",
@@ -57,7 +76,6 @@
         "cisco_controller" : "cisco_controller",
         "cisco_crypto" : "cisco_crypto",
         "cisco_dhcp" : "cisco_dhcp",
-        "cisco_dhcp_helper" : "cisco_dhcp_helper",
         "cisco_domain" : "cisco_domain",
         "cisco_dot11" : "cisco_dot11",
         "cisco_dot1x" : "cisco_dot1x",
@@ -109,7 +127,7 @@
         "cisco_username_without_password" : "cisco_username_without_password",
         "cisco_vdc" : "cisco_vdc",
         "cisco_vlan" : "cisco_vlan",
-        "cisco_voice_port" : "cisco_voice_port",
+        "cisco_voice" : "cisco_voice",
         "cisco_vpdn" : "cisco_vpdn",
         "cisco_vpn" : "cisco_vpn",
         "cisco_vrf" : "cisco_vrf",
@@ -163,6 +181,9 @@
         "juniper_tacplus" : "juniper_tacplus",
         "local_v6_addr" : "local_v6_addr",
         "mac_access_list" : "mac_access_list",
+        "mos_application" : "mos_application",
+        "mos_interface" : "mos_interface",
+        "mos_misc" : "mos_misc",
         "msdp_originator_id" : "msdp_originator_id",
         "named_and_numbered_lists" : "named_and_numbered_lists",
         "neighbor" : "neighbor",
@@ -218,12 +239,31 @@
         "address_family" : "PASSED",
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
+        "arista_acl" : "PASSED",
         "arista_bgp" : "PASSED",
         "arista_dhcp_relay" : "PASSED",
+        "arista_interface" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
+        "arista_ospf" : "PASSED",
+        "arista_queue_monitor" : "PASSED",
         "arista_username" : "PASSED",
+        "aruba_aaa" : "PASSED",
+        "aruba_acl" : "PASSED",
+        "aruba_airgroup" : "PASSED",
+        "aruba_crypto" : "PASSED",
+        "aruba_dhcp" : "PASSED",
+        "aruba_interface" : "PASSED",
+        "aruba_logging" : "PASSED",
+        "aruba_misc" : "PASSED",
+        "aruba_net" : "PASSED",
+        "aruba_snmp" : "PASSED",
+        "aruba_time_range" : "PASSED",
+        "aruba_user_role" : "PASSED",
+        "aruba_vlan" : "PASSED",
+        "aruba_voice" : "PASSED",
+        "aruba_vpn" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
         "asa_banner" : "PASSED",
@@ -262,7 +302,6 @@
         "cisco_controller" : "PASSED",
         "cisco_crypto" : "PASSED",
         "cisco_dhcp" : "PASSED",
-        "cisco_dhcp_helper" : "PASSED",
         "cisco_domain" : "PASSED",
         "cisco_dot11" : "PASSED",
         "cisco_dot1x" : "PASSED",
@@ -314,7 +353,7 @@
         "cisco_username_without_password" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
-        "cisco_voice_port" : "PASSED",
+        "cisco_voice" : "PASSED",
         "cisco_vpdn" : "PASSED",
         "cisco_vpn" : "PASSED",
         "cisco_vrf" : "PASSED",
@@ -368,6 +407,9 @@
         "juniper_tacplus" : "PASSED",
         "local_v6_addr" : "PASSED",
         "mac_access_list" : "PASSED",
+        "mos_application" : "PASSED",
+        "mos_interface" : "PASSED",
+        "mos_misc" : "PASSED",
         "msdp_originator_id" : "PASSED",
         "named_and_numbered_lists" : "PASSED",
         "neighbor" : "PASSED",
@@ -494,6 +536,15 @@
                 30,
                 46,
                 47
+              ]
+            }
+          }
+        },
+        "arista_misc" : {
+          "ipv4 acl" : {
+            "abc" : {
+              "management telnet ip access-group" : [
+                32
               ]
             }
           }
@@ -664,24 +715,24 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                72
+                97
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                58
+                74
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                56
+                66
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                75
+                100
               ]
             },
             "ag1" : {
@@ -691,14 +742,14 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                61
+                77
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                62
+                78
               ]
             }
           }
@@ -748,7 +799,7 @@
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
-                100
+                29
               ]
             }
           }
@@ -766,17 +817,17 @@
           "ipv4 acl" : {
             "232.0.0.0/8" : {
               "pim ssl acl" : [
-                9
+                10
               ]
             },
             "foobar" : {
               "pim rp-address" : [
-                6
+                7
               ]
             },
             "foobarmap" : {
               "pim rp-address" : [
-                7
+                8
               ]
             }
           }
@@ -1280,6 +1331,13 @@
             ]
           }
         },
+        "arista_acl" : {
+          "extended ip access-list" : {
+            "abcd" : [
+              4
+            ]
+          }
+        },
         "arista_bgp" : {
           "bgp group" : {
             "UNDEFINED_PEER_GROUP" : [
@@ -1449,6 +1507,9 @@
           "nat pool" : {
             "abc" : [
               4
+            ],
+            "dynamic-srcnat" : [
+              12
             ],
             "example-1-dynamic-nat-pool" : [
               8
@@ -1787,6 +1848,11 @@
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.3.4'"
           }
         },
+        "arista_ospf" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: No candidates for OSPF router-id"
+          }
+        },
         "bgp_address_family" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.10.1.1'",
@@ -1888,12 +1954,31 @@
         "address_family" : "PASSED",
         "aggAddress" : "PASSED",
         "arista-event-handler" : "PASSED",
+        "arista_acl" : "PASSED",
         "arista_bgp" : "PASSED",
         "arista_dhcp_relay" : "PASSED",
+        "arista_interface" : "PASSED",
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
+        "arista_ospf" : "PASSED",
+        "arista_queue_monitor" : "PASSED",
         "arista_username" : "PASSED",
+        "aruba_aaa" : "PASSED",
+        "aruba_acl" : "PASSED",
+        "aruba_airgroup" : "PASSED",
+        "aruba_crypto" : "PASSED",
+        "aruba_dhcp" : "PASSED",
+        "aruba_interface" : "PASSED",
+        "aruba_logging" : "PASSED",
+        "aruba_misc" : "PASSED",
+        "aruba_net" : "PASSED",
+        "aruba_snmp" : "PASSED",
+        "aruba_time_range" : "PASSED",
+        "aruba_user_role" : "PASSED",
+        "aruba_vlan" : "PASSED",
+        "aruba_voice" : "PASSED",
+        "aruba_vpn" : "PASSED",
         "as_path_prepend" : "PASSED",
         "asa_acl" : "PASSED",
         "asa_banner" : "PASSED",
@@ -1932,7 +2017,6 @@
         "cisco_controller" : "PASSED",
         "cisco_crypto" : "PASSED",
         "cisco_dhcp" : "PASSED",
-        "cisco_dhcp_helper" : "PASSED",
         "cisco_domain" : "PASSED",
         "cisco_dot11" : "PASSED",
         "cisco_dot1x" : "PASSED",
@@ -1984,7 +2068,7 @@
         "cisco_username_without_password" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
-        "cisco_voice_port" : "PASSED",
+        "cisco_voice" : "PASSED",
         "cisco_vpdn" : "PASSED",
         "cisco_vpn" : "PASSED",
         "cisco_vrf" : "PASSED",
@@ -2038,6 +2122,9 @@
         "juniper_tacplus" : "PASSED",
         "local_v6_addr" : "PASSED",
         "mac_access_list" : "PASSED",
+        "mos_application" : "PASSED",
+        "mos_interface" : "PASSED",
+        "mos_misc" : "PASSED",
         "msdp_originator_id" : "PASSED",
         "named_and_numbered_lists" : "PASSED",
         "neighbor" : "PASSED",

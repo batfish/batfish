@@ -22,6 +22,7 @@ s_snmp_server
       NEWLINE
       | ss_community
       | ss_enable_mib_null
+      | ss_enable_trap
       | ss_enable_traps
       | ss_file_transfer
       | ss_host
@@ -54,6 +55,11 @@ ss_community
 ss_enable_mib_null
 :
    ENABLE MIB variable NEWLINE
+;
+
+ss_enable_trap
+:
+   ENABLE TRAP NEWLINE
 ;
 
 ss_enable_traps
