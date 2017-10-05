@@ -248,7 +248,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       String retString =
           String.format(
-              "uniqueipassignments %snodeRegex=\"%s\" | verbose=%s",
+              "uniqueipassignments %snodeRegex=\"%s\", verbose=%s",
               prettyPrintBase(), _nodeRegex, _verbose);
       return retString;
     }
