@@ -14,6 +14,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -89,6 +90,12 @@ public class Abstractor {
     }
   }
 
+  public static void computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
+    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
+    BDDRecord rec = t.compute();
+    System.out.println("Rec: " + rec);
+  }
+
 
   public static AnswerElement computeAbstraction(IBatfish batfish) {
 
@@ -122,6 +129,22 @@ public class Abstractor {
 
               if (!conf.getInterfaces().isEmpty()) {
                 protos.add(Protocol.CONNECTED);
+              }
+            });
+
+    // Compute BDD policies
+    g.getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              List<GraphEdge> edges = g.getEdgeMap().get(router);
+              for (GraphEdge ge : edges) {
+                if (ge.getEnd() == null) {
+                  RoutingPolicy pol = g.findImportRoutingPolicy(router, Protocol.BGP, ge);
+                  if (pol != null) {
+                    System.out.println("Looking at: " + ge);
+                    computeBDD(g, conf, pol);
+                  }
+                }
               }
             });
 

@@ -100,6 +100,7 @@ public class PropertyChecker {
       }
       // Otherwise, we add the destination IP range
       Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
+      System.out.println("Adding " + pfx);
       IpWildcard dst = new IpWildcard(pfx);
       q.getHeaderSpace().getDstIps().add(dst);
     }

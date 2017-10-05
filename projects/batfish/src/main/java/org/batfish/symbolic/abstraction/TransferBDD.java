@@ -184,7 +184,7 @@ class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  public BDD isRelevantFor(BDDRecord record, PrefixRange range) {
+  private BDD isRelevantFor(BDDRecord record, PrefixRange range) {
     Prefix p = range.getPrefix();
     SubRange r = range.getLengthRange();
     int len = p.getPrefixLength();
