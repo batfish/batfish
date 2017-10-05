@@ -53,12 +53,13 @@ If you'd like a hosted service, drop a line to info@intentionet.com.
 
 Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
   - Arista
+  - Aruba
   - AWS VPCs
   - Cisco (Nexus, IOS, IOS-XR, ASA)
   - Dell Force10
   - Foundry
   - iptables (on hosts)
-  - Juniper (JunOS, Firewall)
+  - Juniper (JunOS, SRX)
   - MRV
   - Quagga
   - Quanta
