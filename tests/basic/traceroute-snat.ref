@@ -4,6 +4,12 @@
       "class" : "org.batfish.datamodel.FlowHistory",
       "traces" : {
         "Flow<ingressNode:host1 ingressVrf:default srcIp:172.20.0.1 dstIp:1.2.3.4 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_94bd0dc4-cc40-49a1-a62e-d9c85d856f35"
+            }
+          },
           "flow" : {
             "dscp" : 0,
             "dstIp" : "1.2.3.4",
