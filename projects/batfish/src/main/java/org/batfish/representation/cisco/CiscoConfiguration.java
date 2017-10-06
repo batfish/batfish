@@ -1838,6 +1838,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
         peerExportPolicy.getStatements().add(new SetNextHop(new SelfNextHop(), false));
       }
+      if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
+        peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());
+      }
       If peerExportConditional = new If();
       peerExportConditional.setComment(
           "peer-export policy main conditional: exitAccept if true / exitReject if false");

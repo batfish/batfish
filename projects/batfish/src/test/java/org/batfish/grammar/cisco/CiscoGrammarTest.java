@@ -11,8 +11,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -82,5 +89,63 @@ public class CiscoGrammarTest {
             .get(new Prefix("1.2.0.1/32"))
             .getRemoteBgpNeighbor(),
         is(notNullValue()));
+  }
+
+  @Test
+  public void testBgpRemovePrivateAs() throws IOException {
+    String testrigName = "bgp-remove-private-as";
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
+    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+
+    // Check that 1.1.1.1/32 appears on r3
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Prefix r1Loopback = new Prefix("1.1.1.1/32");
+    assertTrue(r3Prefixes.contains(r1Loopback));
+
+    // check that private AS is present in path in received 1.1.1.1/32 advert on r2
+    batfish.initBgpAdvertisements(configurations);
+    Configuration r2 = configurations.get("r2");
+    AtomicBoolean r2HasPrivate = new AtomicBoolean();
+    r2.getReceivedEbgpAdvertisements()
+        .stream()
+        .filter(a -> a.getNetwork().equals(r1Loopback))
+        .toArray(BgpAdvertisement[]::new)[0]
+        .getAsPath()
+        .getAsSets()
+        .stream()
+        .flatMap(asSet -> asSet.stream())
+        .forEach(
+            as -> {
+              if (AsPath.isPrivateAs(as)) {
+                r2HasPrivate.set(true);
+              }
+            });
+    assertTrue(r2HasPrivate.get());
+
+    // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
+    Configuration r3 = configurations.get("r3");
+    r3.getReceivedEbgpAdvertisements()
+        .stream()
+        .filter(a -> a.getNetwork().equals(r1Loopback))
+        .toArray(BgpAdvertisement[]::new)[0]
+        .getAsPath()
+        .getAsSets()
+        .stream()
+        .flatMap(asSet -> asSet.stream())
+        .forEach(
+            as -> {
+              assertFalse(AsPath.isPrivateAs(as));
+            });
   }
 }

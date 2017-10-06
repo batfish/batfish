@@ -15,6 +15,10 @@ public class AsPath implements Serializable, Comparable<AsPath> {
 
   private static final long serialVersionUID = 1L;
 
+  public static boolean isPrivateAs(int as) {
+    return (as >= 64512 && as <= 65535);
+  }
+
   private final List<SortedSet<Integer>> _asSets;
 
   @JsonCreator

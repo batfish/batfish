@@ -2,7 +2,12 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
+import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -13,6 +18,7 @@ public enum Statements {
   ExitAccept,
   ExitReject,
   FallThrough,
+  RemovePrivateAs,
   Return,
   ReturnFalse,
   ReturnLocalDefaultAction,
@@ -72,6 +78,41 @@ public enum Statements {
           result.setReturn(true);
           result.setFallThrough(true);
           break;
+
+        case RemovePrivateAs:
+          {
+            BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+            List<SortedSet<Integer>> newAsPath =
+                bgpRouteBuilder
+                    .getAsPath()
+                    .stream()
+                    .map(
+                        asSet ->
+                            asSet
+                                .stream()
+                                .filter(as -> !AsPath.isPrivateAs(as))
+                                .collect(ImmutableSortedSet.toImmutableSortedSet(Integer::compare)))
+                    .filter(asSet -> !asSet.isEmpty())
+                    .collect(ImmutableList.toImmutableList());
+            bgpRouteBuilder.setAsPath(newAsPath);
+            if (environment.getWriteToIntermediateBgpAttributes()) {
+              BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+              List<SortedSet<Integer>> iAsPath =
+                  ir.getAsPath()
+                      .stream()
+                      .map(
+                          asSet ->
+                              asSet
+                                  .stream()
+                                  .filter(AsPath::isPrivateAs)
+                                  .collect(
+                                      ImmutableSortedSet.toImmutableSortedSet(Integer::compare)))
+                      .filter(asSet -> !asSet.isEmpty())
+                      .collect(ImmutableList.toImmutableList());
+              ir.setAsPath(iAsPath);
+            }
+            break;
+          }
 
         case Return:
           result.setReturn(true);
