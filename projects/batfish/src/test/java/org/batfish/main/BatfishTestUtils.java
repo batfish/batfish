@@ -103,8 +103,7 @@ public class BatfishTestUtils {
         });
     iptablesFilesText.forEach(
         (filename, content) -> {
-          Path filePath =
-              testrigPath.resolve(Paths.get("iptables", filename));
+          Path filePath = testrigPath.resolve(Paths.get("iptables", filename));
           CommonUtil.writeFile(filePath, content);
         });
 
@@ -148,7 +147,7 @@ public class BatfishTestUtils {
    *     configurations
    * @param configFilenames The names of the configuration files. The filename for each
    *     configuration should be identical to hostname declared therein.
-   * @param tempFolder
+   * @param tempFolder Temporary folder in which to place the container for the scenario
    * @return A Batfish pointing to the newly prepared scenario.
    */
   public static Batfish getBatfishFromTestrigResource(
