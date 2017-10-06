@@ -2227,11 +2227,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       BgpNeighbor bgpNeighbor = e.getKey();
       Ip remoteAddress = e.getValue();
       Ip localAddress = bgpNeighbor.getLocalIp();
+      int localLocalAs = bgpNeighbor.getLocalAs();
+      int localRemoteAs = bgpNeighbor.getRemoteAs();
       Set<BgpNeighbor> remoteBgpNeighborCandidates = localAddresses.get(remoteAddress);
       if (remoteBgpNeighborCandidates != null) {
         for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
+          int remoteLocalAs = remoteBgpNeighborCandidate.getLocalAs();
+          int remoteRemoteAs = remoteBgpNeighborCandidate.getRemoteAs();
           Ip reciprocalRemoteIp = remoteBgpNeighborCandidate.getAddress();
-          if (localAddress.equals(reciprocalRemoteIp)) {
+          if (localAddress.equals(reciprocalRemoteIp)
+              && localLocalAs == remoteRemoteAs
+              && localRemoteAs == remoteLocalAs) {
             bgpNeighbor.getCandidateRemoteBgpNeighbors().add(remoteBgpNeighborCandidate);
             bgpNeighbor.setRemoteBgpNeighbor(remoteBgpNeighborCandidate);
           }
