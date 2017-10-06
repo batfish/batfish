@@ -301,6 +301,7 @@ import org.batfish.grammar.cisco.CiscoParser.L_access_classContext;
 import org.batfish.grammar.cisco.CiscoParser.L_exec_timeoutContext;
 import org.batfish.grammar.cisco.CiscoParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.L_transportContext;
+import org.batfish.grammar.cisco.CiscoParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_bufferedContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_consoleContext;
@@ -3642,6 +3643,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Line line = _configuration.getCf().getLines().get(currentName);
       setter.accept(line, protocols);
     }
+  }
+
+  @Override
+  public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
+    int as = toInteger(ctx.as);
+    _currentPeerGroup.setLocalAs(as);
   }
 
   @Override
