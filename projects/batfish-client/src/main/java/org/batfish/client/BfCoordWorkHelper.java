@@ -486,7 +486,7 @@ public class BfCoordWorkHelper {
   @Nullable
   public Map<String, String> getGlobalQuestions() {
     try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_GLOBAL_QUESTIONS);
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES);
 
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -495,15 +495,15 @@ public class BfCoordWorkHelper {
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
+        return new HashMap<>();
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_QUESTION_LIST)) {
+        _logger.errorf("questionslist key not found in: %s\n", jObj);
         return null;
       }
 
-      if (!jObj.has(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS)) {
-        _logger.errorf("globalquestions key not found in: %s\n", jObj);
-        return null;
-      }
-
-      String globalQuestionsStr = jObj.getString(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS);
+      String globalQuestionsStr = jObj.getString(CoordConsts.SVC_KEY_QUESTION_LIST);
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       return mapper.readValue(globalQuestionsStr, new TypeReference<Map<String, String>>() {});
 
