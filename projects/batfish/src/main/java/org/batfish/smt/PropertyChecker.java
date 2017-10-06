@@ -40,6 +40,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.answers.SmtManyAnswerElement;
@@ -122,7 +123,7 @@ public class PropertyChecker {
   }
 
   private static Ip ipVal(Model m, Expr e) {
-    return new Ip(intVal(m,e));
+    return new Ip(intVal(m, e));
   }
 
   /*
@@ -284,6 +285,7 @@ public class PropertyChecker {
   }
 
   private static FlowHistory buildFlowCounterExample(
+      IBatfish batfish,
       VerificationResult res,
       List<String> sourceRouters,
       Model model,
@@ -296,7 +298,10 @@ public class PropertyChecker {
         BoolExpr sourceVar = reach.get(source);
         if (isFalse(model, sourceVar)) {
           Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
-          fh.addFlowTrace(tup.getFirst(), "BASE", tup.getSecond());
+          // TODO: Correctly add any relevant routing message or failures
+          Environment baseEnv =
+              new Environment("BASE", batfish.getTestrigName(), null, null, null, null, null, null);
+          fh.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
         }
       }
     }
@@ -304,6 +309,7 @@ public class PropertyChecker {
   }
 
   private static FlowHistory buildFlowDiffCounterExample(
+      IBatfish batfish,
       VerificationResult res,
       List<String> sourceRouters,
       Model model,
@@ -323,8 +329,14 @@ public class PropertyChecker {
         if (!Objects.equals(val1, val2)) {
           Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, model, source);
           Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
-          fh.addFlowTrace(base.getFirst(), "BASE", base.getSecond());
-          fh.addFlowTrace(diff.getFirst(), "FAILED", diff.getSecond());
+          // TODO: Correctly add any relevant routing message or failures
+          Environment baseEnv =
+              new Environment("BASE", batfish.getTestrigName(), null, null, null, null, null, null);
+          Environment failedEnv =
+              new Environment(
+                  "FAILED", batfish.getTestrigName(), null, null, null, null, null, null);
+          fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
+          fh.addFlowTrace(diff.getFirst(), "FAILED", failedEnv, diff.getSecond());
         }
       }
     }
@@ -434,9 +446,10 @@ public class PropertyChecker {
 
     FlowHistory fh;
     if (q.getEquivalence()) {
-      fh = buildFlowDiffCounterExample(res, sourceRouters, model, enc, enc2, reach, reach2);
+      fh =
+          buildFlowDiffCounterExample(batfish, res, sourceRouters, model, enc, enc2, reach, reach2);
     } else {
-      fh = buildFlowCounterExample(res, sourceRouters, model, enc, reach);
+      fh = buildFlowCounterExample(batfish, res, sourceRouters, model, enc, reach);
     }
 
     SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
@@ -803,7 +816,7 @@ public class PropertyChecker {
                       /* String msg =
                        String.format(
                            "Warning: community %s found for router %s but not %s.",
-                           cvar.getValue(), conf1.getName(), conf2.getName());
+                           cvar.getValue(), conf1.getEnvName(), conf2.getEnvName());
                       System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce1));
@@ -821,7 +834,7 @@ public class PropertyChecker {
                       /* String msg =
                        String.format(
                            "Warning: community %s found for router %s but not %s.",
-                           cvar.getValue(), conf2.getName(), conf1.getName());
+                           cvar.getValue(), conf2.getEnvName(), conf1.getEnvName());
                       System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce2));
@@ -833,8 +846,8 @@ public class PropertyChecker {
                 BoolExpr equalVars = slice1.equal(conf1, proto1, vars1, vars2, lge1, true);
                 equalEnvs = ctx.mkAnd(equalEnvs, unsetComms, samePermitted, equalVars, equalComms);
 
-                //System.out.println("Unset communities: ");
-                //System.out.println(unsetComms);
+                // System.out.println("Unset communities: ");
+                // System.out.println(unsetComms);
 
               } else if (hasEnv1 || hasEnv2) {
                 System.out.println("Edge1: " + lge1);
@@ -904,7 +917,7 @@ public class PropertyChecker {
         required =
             ctx.mkAnd(
                 sameForwarding,
-                equalOutputs); //, equalOutputs); //, equalOutputs, equalIncomingAcls);
+                equalOutputs); // , equalOutputs); //, equalOutputs, equalIncomingAcls);
       }
 
       // System.out.println("Assumptions: ");
