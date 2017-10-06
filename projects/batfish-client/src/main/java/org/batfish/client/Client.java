@@ -1968,7 +1968,7 @@ public class Client extends AbstractClient implements IClient {
       answerStringToPrint = answer.prettyPrint();
     }
 
-    logOutput(outWriter, answerStringToPrint);
+    logOutput(outWriter, answerStringToPrint + "\n");
     return true;
   }
 

@@ -1,0 +1,9 @@
+!
+hostname arista_acl
+!
+ip access-list abcd
+ 5 permit vlan 123 0x000 udp any 224.0.0.0/4
+ 20 deny ip any any
+!
+!
+

@@ -1,0 +1,9 @@
+!
+hostname arista_queue_monitor
+!
+queue-monitor streaming
+ max-connections 5
+ no shutdown
+!
+!
+

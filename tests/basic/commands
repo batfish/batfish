@@ -5,8 +5,8 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # example testrig
-test tests/basic/init.ref init-testrig test_rigs/example
-test tests/basic/init-delta.ref init-delta-testrig test_rigs/example-with-delta
+test tests/basic/init.ref init-testrig test_rigs/example basic-example
+test tests/basic/init-delta.ref init-delta-testrig test_rigs/example-with-delta basic-example-delta
 test tests/basic/genDp.ref generate-dataplane
 test tests/basic/genDp-delta.ref generate-delta-dataplane
 test tests/basic/aclReachability.ref get aclReachability
@@ -45,19 +45,26 @@ test tests/basic/perRole.ref get perRole question={"class": "org.batfish.questio
 #test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
 # example2 testrig
-test tests/basic/init-example2.ref init-testrig test_rigs/example2
+test tests/basic/init-example2.ref init-testrig test_rigs/example2 basic-example2
 test tests/basic/inferRoles.ref get inferRoles
 test tests/basic/roleNeighbors2.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 
 # disable-as-reuse
-test tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse
+test tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse basic-dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
 
 # snat
-test tests/basic/init-snat.ref init-testrig test_rigs/snat
+test tests/basic/init-snat.ref init-testrig test_rigs/snat basic-snat
 test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dstIp="1.2.3.4"
 
 # parsing unit-tests through nodes question
-test tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests
+test tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests basic-unit-tests
 test tests/basic/nodes-unit-tests.ref get nodes summary=false
+
+# iptables
+test tests/basic/example-iptables-init.ref init-testrig test_rigs/example-iptables
+test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DROP"]
+test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes=["z1-firewall"], actions=["ACCEPT"]
+test tests/basic/example-iptables-protection.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.20","10.0.3.21"], notSrcIps=["10.0.3.0/24", "10.0.4.0/24"], notIpProtocols=["OSPF"], actions=["ACCEPT"]
+
 

@@ -1,0 +1,291 @@
+!
+hostname aruba_misc
+!
+activate-service-whitelist
+adp discovery enable
+adp igmp-join enable
+adp igmp-vlan 0
+amon msg-buffer-size 1234
+ap ap-blacklist-time 1234
+ap enet-link-profile "default"
+ap flush-r1-on-new-r0 disable
+ap general-profile
+ap lldp med-network-policy-profile "default"
+ap lldp profile "default"
+ap mesh-cluster-profile "default"
+ap mesh-ht-ssid-profile "default"
+ap mesh-radio-profile "default"
+ap provisioning-profile "default"
+ap regulatory-domain-profile "default"
+   country-code US
+   valid-11g-channel 1
+   valid-11g-channel 6
+   valid-11g-channel 11
+   valid-11a-channel 36
+   valid-11a-channel 40
+   valid-11a-channel 44
+   valid-11a-channel 48
+   valid-11a-channel 149
+   valid-11a-channel 153
+   valid-11a-channel 157
+   valid-11a-channel 161
+   valid-11a-channel 165
+   valid-11g-40mhz-channel-pair 1-5
+   valid-11g-40mhz-channel-pair 7-11
+   valid-11a-40mhz-channel-pair 36-40
+   valid-11a-40mhz-channel-pair 44-48
+   valid-11a-40mhz-channel-pair 149-153
+   valid-11a-40mhz-channel-pair 157-161
+   valid-11a-80mhz-channel-group 36-48
+   valid-11a-80mhz-channel-group 149-161
+!
+ap spectrum local-override
+ap system-profile "fuffuff"
+ bkup-lms-ip 1.2.3.5
+ dns-domain "2.3.4.5"
+ dns-domain "2.3.4.6"
+ lms-ip 1.2.3.4
+ lms-preemption
+!
+ap wired-ap-profile "default"
+ap wired-port-profile "default"
+ap-crash-transfer
+ap-group "default"
+ ap-system-profile "bbbbbb"
+ dot11a-radio-profile "vvvv"
+ dot11g-radio-profile "vvdd"
+ ids-profile "cccccc"
+ virtual-ap "ddddd"
+!
+ap-lacp-striping-ip
+ap-name "blorfoo"
+ virtual-ap "abcd"
+!
+app lync traffic-control "default"
+control-plane-security
+ no auto-cert-allow-all
+ auto-cert-allowed-addrs 1.1.1.1 1.1.1.1
+ auto-cert-allowed-addrs 2.2.2.2 2.2.2.2
+ auto-cert-prov
+!
+controller config 821
+controller-ip vlan 1234
+country GB
+no database synchronize
+file syncing profile
+no firewall attack-rate cp 32
+firewall cp
+firewall dpi
+firewall enable ICE-STUN based firewall traversal
+firewall jumbo mtu 9123
+firewall log-icmp-error
+firewall prevent-dhcp-exhaustion
+firewall prohibit-arp-spoofing
+firewall prohibit-rst-replay
+firewall web-cc
+firewall-visibility
+guest-access-email
+   smtp-server 1.2.3.4
+!
+no ip default-gateway import cell
+no ip default-gateway import pppoe
+no kernel coredump
+loginsession timeout 60
+ids ap-classification-rule "abcd"
+ conf-level-incr 78
+ discovered-ap-cnt 56
+ ssid "ABCDEFG"
+ ssid "HIJKLMN"
+ snr-max 34
+ snr-min 12
+!
+ids ap-rule-matching
+ rule-name "blorp"
+!
+ids dos-profile "default"
+ detect-ap-flood
+ detect-chopchop-attack
+ detect-client-flood
+ detect-cts-rate-anomaly
+ detect-eap-rate-anomaly
+ detect-ht-40mhz-intolerance
+ detect-invalid-address-combination
+ detect-malformed-association-request
+ detect-malformed-auth-frame
+ detect-malformed-htie
+ detect-malformed-large-duration
+ detect-overflow-eapol-key
+ detect-overflow-ie
+ detect-rate-anomalies
+ detect-rts-rate-anomaly
+ detect-tkip-replay-attack
+!
+ids general-profile "default"
+ wired-containment
+ wireless-containment none
+ wireless-containment tarpit-non-valid-sta
+!
+ids impersonation-profile "default"
+ detect-ap-impersonation
+ detect-beacon-wrong-channel
+ detect-hotspotter
+!
+ids management-profile
+ids rate-thresholds-profile "default"
+ids profile "florfo"
+ dos-profile "fwip"
+ general-profile "fleep"
+ signature-matching-profile "blorp"
+ impersonation-profile "thwank"
+ unauthorized-device-profile "flarg"
+!
+ids signature-matching-profile "default"
+  signature "fleef"
+!
+ids signature-profile "default"
+ids unauthorized-device-profile "blah"
+ detect-adhoc-network
+ detect-bad-wep
+ detect-ht-greenfield
+ detect-invalid-mac-oui
+ detect-misconfigured-ap
+ detect-valid-ssid-misuse
+ detect-wireless-bridge
+ detect-wireless-hosted-network
+ privacy
+ protect-ssid
+ protect-valid-sta
+ require-wpa
+ suspect-rogue-conf-level 80
+ valid-and-protected-ssid "foofoo"
+!
+ids wms-general-profile
+ collect-stats
+!
+ids wms-local-system-profile
+ifmap cppm
+ enable
+!
+ip domain-lookup
+ip igmp
+ip mobile domain default
+ip nexthop-list abcdefg
+ip probe default
+ burst-size 1
+ frequency 2
+ mode Ping
+ retries 3
+!
+ip radius nas-ip 1.2.3.4
+ip-flow-export-profile
+ipv6 firewall ext-hdr-parse-len 100
+ipv6 mld
+lcd-menu
+license profile
+ centralized-licensing-enable
+!
+localip 0.0.0.0 ipsec 0123456789abcdef0123456789abcdef0123456789abcdef
+masterip 1.2.3.4 ipsec ******
+mgmt-server type amp primary-server 1.2.3.4 profile default-amp
+mgmt-user admin root 0123456789abcdef0123456789abcdef0123456789abcdef01
+packet-capture-defaults datapath wifi-client 00:11:22:33:44:55 all
+packet-capture-defaults destination local-filesystem
+pan active-profile
+pan profile "default"
+pan-options
+process monitor log
+rf am-scan-profile "default"
+rf arm-profile "blah"
+ assignment maintain
+ backoff-time 1234
+ error-rate-threshold 44
+ free-channel-index 123
+ ideal-coverage-index 5
+ max-tx-power 67
+ min-tx-power 65
+ rogue-ap-aware
+ no scanning
+!
+rf arm-rf-domain-profile
+rf dot11a-radio-profile "default"
+ arm-profile "blah"
+ mode am-mode
+ spectrum-load-balancing
+ spectrum-monitoring
+!
+rf dot11g-radio-profile "default"
+ arm-profile "bloh"
+ mode am-mode
+ spectrum-load-balancing
+ spectrum-monitoring
+!
+rf event-thresholds-profile "default"
+rf optimization-profile "default"
+no ssh mgmt-auth public-key
+ssh mgmt-auth username/password
+syscontact "def"
+syslocation "abc"
+tunneled-node-address 0.0.0.0
+upgrade-profile
+uplink disable
+no uplink wired vlan 1
+valid-network-oui-profile
+vpdn group l2tp
+web-server profile
+ captive-portal-cert "blah.example.com"
+ idp-cert "blah.example.com"
+ session-timeout 1234
+ switch-cert "blah"
+ web-https-port-443
+ web-max-clients 50
+!
+wlan bcn-rpt-req-profile "default"
+wlan dot11k-profile "default"
+wlan dot11r-profile "default"
+wlan edca-parameters-profile ap "default"
+wlan edca-parameters-profile station "default"
+wlan handover-trigger-profile "default"
+wlan hotspot advertisement-profile "default"
+wlan hotspot anqp-3gpp-nwk-profile "default"
+wlan hotspot anqp-domain-name-profile "default"
+wlan hotspot anqp-ip-addr-avail-profile "default"
+wlan hotspot anqp-nai-realm-profile "default"
+wlan hotspot anqp-nwk-auth-profile "default"
+wlan hotspot anqp-roam-cons-profile "default"
+wlan hotspot anqp-venue-name-profile "default"
+wlan hotspot h2qp-conn-capability-profile "default"
+wlan hotspot h2qp-op-cl-profile "default"
+wlan hotspot h2qp-operator-friendly-name-profile "default"
+wlan hotspot h2qp-wan-metrics-profile "default"
+wlan hotspot hs2-profile "default"
+wlan ht-ssid-profile "default"
+wlan rrm-ie-profile "default"
+wlan ssid-profile "abcd"
+ no eapol-rate-opt
+ essid "bbbb"
+ ht-ssid-profile "fafafafa"
+ max-clients 123
+ mcast-rate-opt
+ opmode wpa2-aes
+ no ssid-enable
+ wmm
+!
+wlan tsm-req-profile "default"
+wlan virtual-ap "bbbb"
+ aaa-profile "eeeeeeeeeee"
+ auth-failure-blacklist-time 0
+ band-steering
+ no blacklist
+ blacklist-time 0
+ broadcast-filter all
+ deny-inter-user-traffic
+ dynamic-mcast-optimization
+ dynamic-mcast-optimization-thresh 123
+ ssid-profile "ffffffffffff"
+ no vap-enable
+ vlan 123
+ vlan foobar
+!
+wlan voip-cac-profile "default"
+!
+

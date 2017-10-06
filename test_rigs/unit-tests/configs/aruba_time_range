@@ -1,0 +1,8 @@
+!
+hostname aruba_time_range
+!
+time-range foobar periodic
+ weekday 09:00-17:00
+ weekend 12:00-16:00
+!
+

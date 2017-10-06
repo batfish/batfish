@@ -25,6 +25,7 @@ public class Settings extends BaseSettings {
 
   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "fileauthrootdir";
   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "fileauthusersfile";
+  private static final String ARG_GLOBAL_QUESTIONS_DIR = "globalquestionsdir";
   private static final String ARG_HELP = "help";
   private static final String ARG_LOG_FILE = "logfile";
   private static final String ARG_LOG_LEVEL = "loglevel";
@@ -75,6 +76,7 @@ public class Settings extends BaseSettings {
   private Path _fileAuthorizerPermsFile;
   private Path _fileAuthorizerRootDir;
   private Path _fileAuthorizerUsersFile;
+  private Path _globalquestionsDir;
   private String _logFile;
   private String _logLevel;
   private long _periodAssignWorkMs;
@@ -153,6 +155,10 @@ public class Settings extends BaseSettings {
 
   public Path getFileAuthorizerUsersFile() {
     return _fileAuthorizerUsersFile;
+  }
+
+  public Path getGlobalQuestionsDir() {
+    return _globalquestionsDir;
   }
 
   public String getLogFile() {
@@ -288,6 +294,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
     setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
     setDefaultProperty(ARG_FILE_AUTHORIZER_USERS_FILE, "users.json");
+    setDefaultProperty(ARG_GLOBAL_QUESTIONS_DIR, "globalquestions");
     setDefaultProperty(ARG_HELP, false);
     setDefaultProperty(ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
@@ -342,6 +349,11 @@ public class Settings extends BaseSettings {
         "expiration time (ms)");
 
     addBooleanOption(ARG_DRIVER_CLASS, "jdbc driver class to load explicitly");
+
+    addOption(
+        ARG_GLOBAL_QUESTIONS_DIR,
+        "directory containing the questions jsons",
+        "global_questions_dir");
 
     addBooleanOption(ARG_HELP, "print this message");
 
@@ -414,6 +426,7 @@ public class Settings extends BaseSettings {
     _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
+    _globalquestionsDir = Paths.get(getStringOptionValue(ARG_GLOBAL_QUESTIONS_DIR));
     _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
     _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
     _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);

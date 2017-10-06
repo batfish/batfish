@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
@@ -75,6 +76,7 @@ public class BatfishTestUtils {
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
+    settings.setDisableUnrecognized(true);
     Path containerDir = tempFolder.newFolder("container").toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
@@ -101,8 +103,7 @@ public class BatfishTestUtils {
         });
     iptablesFilesText.forEach(
         (filename, content) -> {
-          Path filePath =
-              testrigPath.resolve(Paths.get("iptables", filename));
+          Path filePath = testrigPath.resolve(Paths.get("iptables", filename));
           CommonUtil.writeFile(filePath, content);
         });
 
@@ -137,6 +138,37 @@ public class BatfishTestUtils {
       config.getInterfaces().put(interfaceName, new Interface(interfaceName, config));
     }
     return config;
+  }
+
+  /**
+   * Prepares a default scenario from provided configs and returns a Batfish pointing to it.
+   *
+   * @param configsResourcePrefix Denotes the resource path to the directory containing the
+   *     configurations
+   * @param configFilenames The names of the configuration files. The filename for each
+   *     configuration should be identical to hostname declared therein.
+   * @param tempFolder Temporary folder in which to place the container for the scenario
+   * @return A Batfish pointing to the newly prepared scenario.
+   */
+  public static Batfish getBatfishFromTestrigResource(
+      String configsResourcePrefix, String[] configFilenames, @Nullable TemporaryFolder tempFolder)
+      throws IOException {
+    SortedMap<String, String> configurationsText = new TreeMap<>();
+    for (String configurationName : configFilenames) {
+      String configurationPath =
+          String.format(
+              "%s/%s/%s",
+              configsResourcePrefix, BfConsts.RELPATH_CONFIGURATIONS_DIR, configurationName);
+      String configurationText = CommonUtil.readResource(configurationPath);
+      configurationsText.put(configurationName, configurationText);
+    }
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromConfigurationText(
+            configurationsText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            tempFolder);
+    return batfish;
   }
 
   /**

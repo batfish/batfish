@@ -63,6 +63,7 @@ tokens {
    COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
+   DSA1024,
    END_CADANT,
    HEX_FRAGMENT,
    IS_LOCAL,
@@ -77,13 +78,23 @@ tokens {
    RAW_TEXT,
    SELF_SIGNED,
    SLIP_PPP,
+   STATEFUL_DOT1X,
+   STATEFUL_KERBEROS,
+   STATEFUL_NTLM,
    TEXT,
-   VALUE
+   VALUE,
+   WIRED,
+   WISPR
 } // Cisco Keywords
 
 AAA
 :
    'aaa'
+;
+
+AAA_PROFILE
+:
+   'aaa-profile'
 ;
 
 AAA_SERVER
@@ -228,6 +239,11 @@ ACTIVATE
    'activate'
 ;
 
+ACTIVATE_SERVICE_WHITELIST
+:
+   'activate-service-whitelist'
+;
+
 ACTIVATION_CHARACTER
 :
    'activation-character'
@@ -338,6 +354,11 @@ ADMIN_STATE
    'admin-state'
 ;
 
+ADMIN_VDC
+:
+   'admin-vdc'
+;
+
 ADMINISTRATIVE_WEIGHT
 :
    'administrative-weight'
@@ -351,6 +372,11 @@ ADMISSION
 ADMISSION_CONTROL
 :
    'admission-control'
+;
+
+ADP
+:
+   'adp'
 ;
 
 ADVERTISE
@@ -483,6 +509,16 @@ AHP
    'ahp'
 ;
 
+AIRGROUP
+:
+   'airgroup'
+;
+
+AIRGROUPSERVICE
+:
+   'airgroupservice'
+;
+
 AIS_SHUT
 :
    'ais-shut'
@@ -508,9 +544,19 @@ ALERTS
    'alerts'
 ;
 
+ALG
+:
+   'alg'
+;
+
+ALG_BASED_CAC
+:
+   'alg-based-cac'
+;
+
 ALIAS
 :
-   'alias'
+   'alias' -> pushMode ( M_Alias )
 ;
 
 ALL
@@ -548,6 +594,11 @@ ALLOW_DEFAULT
    'allow-default'
 ;
 
+ALLOW_FAIL_THROUGH
+:
+   'allow-fail-through'
+;
+
 ALLOW_NOPASSWORD_REMOTE_LOGIN
 :
    'allow-nopassword-remote-login'
@@ -583,6 +634,11 @@ ALWAYS_COMPARE_MED
    'always-compare-med'
 ;
 
+ALWAYS_ON
+:
+   'always-on'
+;
+
 ALWAYS_ON_VPN
 :
    'always-on-vpn'
@@ -591,6 +647,16 @@ ALWAYS_ON_VPN
 AM_DISABLE
 :
    'am-disable'
+;
+
+AM_SCAN_PROFILE
+:
+   'am-scan-profile'
+;
+
+AMON
+:
+   'amon'
 ;
 
 AND
@@ -638,9 +704,59 @@ AP
    'ap'
 ;
 
+AP_BLACKLIST_TIME
+:
+   'ap-blacklist-time'
+;
+
+AP_CLASSIFICATION_RULE
+:
+   'ap-classification-rule'
+;
+
+AP_CRASH_TRANSFER
+:
+   'ap-crash-transfer'
+;
+
+AP_GROUP
+:
+   'ap-group'
+;
+
+AP_LACP_STRIPING_IP
+:
+   'ap-lacp-striping-ip'
+;
+
+AP_NAME
+:
+   'ap-name'
+;
+
+AP_RULE_MATCHING
+:
+   'ap-rule-matching'
+;
+
+AP_SYSTEM_PROFILE
+:
+   'ap-system-profile'
+;
+
 API
 :
    'api'
+;
+
+APP
+:
+   'app'
+;
+
+APPCATEGORY
+:
+   'appcategory'
 ;
 
 APPLETALK
@@ -691,6 +807,16 @@ AREA
 AREA_PASSWORD
 :
    'area-password'
+;
+
+ARM_PROFILE
+:
+   'arm-profile'
+;
+
+ARM_RF_DOMAIN_PROFILE
+:
+   'arm-rf-domain-profile'
 ;
 
 ARP
@@ -753,6 +879,11 @@ ASN
 ASSEMBLER
 :
    'assembler'
+;
+
+ASSIGNMENT
+:
+   'assignment'
 ;
 
 ASSOC_RETRANSMIT
@@ -840,6 +971,11 @@ AUTH
    'auth'
 ;
 
+AUTH_FAILURE_BLACKLIST_TIME
+:
+   'auth-failure-blacklist-time'
+;
+
 AUTH_PORT
 :
    'auth-port'
@@ -848,6 +984,11 @@ AUTH_PORT
 AUTH_PROXY
 :
    'auth-proxy'
+;
+
+AUTH_SERVER
+:
+   'auth-server'
 ;
 
 AUTHENTICATE
@@ -860,9 +1001,19 @@ AUTHENTICATION
    'authentication' -> pushMode ( M_Authentication )
 ;
 
+AUTHENTICATION_DOT1X
+:
+   'authentication-dot1x'
+;
+
 AUTHENTICATION_KEY
 :
    'authentication-key'
+;
+
+AUTHENTICATION_MAC
+:
+   'authentication-mac'
 ;
 
 AUTHENTICATION_PORT
@@ -875,9 +1026,19 @@ AUTHENTICATION_RETRIES
    'authentication-retries'
 ;
 
+AUTHENTICATION_SERVER
+:
+   'authentication-server'
+;
+
 AUTHENTICATION_SERVER_GROUP
 :
    'authentication-server-group'
+;
+
+AUTHORITATIVE
+:
+   'authoritative'
 ;
 
 AUTHORIZATION
@@ -898,6 +1059,21 @@ AUTHORIZATION_SERVER_GROUP
 AUTO
 :
    'auto'
+;
+
+AUTO_CERT_ALLOW_ALL
+:
+   'auto-cert-allow-all'
+;
+
+AUTO_CERT_ALLOWED_ADDRS
+:
+   'auto-cert-allowed-addrs'
+;
+
+AUTO_CERT_PROV
+:
+   'auto-cert-prov'
 ;
 
 AUTO_COST
@@ -943,6 +1119,11 @@ AUTO_SYNC
 AUTO_TUNNEL
 :
    'auto-tunnel'
+;
+
+AUTO_UPGRADE
+:
+   'auto-upgrade'
 ;
 
 AUTOHANGUP
@@ -995,6 +1176,11 @@ BACKGROUND_ROUTES_ENABLE
    'background-routes-enable'
 ;
 
+BACKOFF_TIME
+:
+   'backoff-time'
+;
+
 BACKUP
 :
    'backup'
@@ -1005,9 +1191,19 @@ BACKUPCRF
    'backupcrf'
 ;
 
+BAND_STEERING
+:
+   'band-steering'
+;
+
 BANDWIDTH
 :
    'bandwidth'
+;
+
+BANDWIDTH_CONTRACT
+:
+   'bandwidth-contract'
 ;
 
 BANDWIDTH_PERCENTAGE
@@ -1023,6 +1219,16 @@ BANNER
 BASH
 :
    'bash'
+;
+
+BCMC_OPTIMIZATION
+:
+   'bcmc-optimization'
+;
+
+BCN_RPT_REQ_PROFILE
+:
+   'bcn-rpt-req-profile'
 ;
 
 BEACON
@@ -1093,6 +1299,31 @@ BIFF
 BIND
 :
    'bind'
+;
+
+BITTORRENT
+:
+   'bittorrent'
+;
+
+BITTORRENT_APPLICATION
+:
+   'bittorrent-application'
+;
+
+BKUP_LMS_IP
+:
+   'bkup-lms-ip'
+;
+
+BLACKLIST
+:
+   'blacklist'
+;
+
+BLACKLIST_TIME
+:
+   'blacklist-time'
 ;
 
 BLOCK
@@ -1210,6 +1441,11 @@ BROADCAST_ADDRESS
    'broadcast-address'
 ;
 
+BROADCAST_FILTER
+:
+   'broadcast-filter'
+;
+
 BSD_CLIENT
 :
    'bsd-client'
@@ -1260,6 +1496,11 @@ BUFFERS
    'buffers'
 ;
 
+BURST_SIZE
+:
+   'burst-size'
+;
+
 CA
 :
    'ca'
@@ -1305,6 +1546,11 @@ CALL
    'call'
 ;
 
+CALL_BLOCK
+:
+   'call-block'
+;
+
 CALL_FORWARD
 :
    'call-forward'
@@ -1345,6 +1591,26 @@ CAPABILITY
    'capability'
 ;
 
+CAPTIVE
+:
+   'captive'
+;
+
+CAPTIVE_PORTAL
+:
+   'captive-portal'
+;
+
+CAPTIVE_PORTAL_CERT
+:
+   'captive-portal-cert'
+;
+
+CAPTURE
+:
+   'capture'
+;
+
 CARD
 :
    'card'
@@ -1363,6 +1629,11 @@ CARRIER_DELAY
 CAS_CUSTOM
 :
    'cas-custom'
+;
+
+CASE
+:
+   'case'
 ;
 
 CCM
@@ -1393,6 +1664,11 @@ CDP_URL
 CEF
 :
    'cef'
+;
+
+CENTRALIZED_LICENSING_ENABLE
+:
+   'centralized-licensing-enable'
 ;
 
 CERTIFICATE
@@ -1605,6 +1881,11 @@ COLLECT
    'collect'
 ;
 
+COLLECT_STATS
+:
+   'collect-stats'
+;
+
 COMM_LIST
 :
    'comm-list'
@@ -1680,6 +1961,11 @@ CON
    'con'
 ;
 
+CONF_LEVEL_INCR
+:
+   'conf-level-incr'
+;
+
 CONFDCONFIG
 :
    'confdConfig'
@@ -1750,6 +2036,11 @@ CONNECTION
    'connection'
 ;
 
+CONNECTION_REUSE
+:
+   'connection-reuse'
+;
+
 CONSOLE
 :
    'console'
@@ -1806,6 +2097,11 @@ CONTROL_PLANE
    'control-plane'
 ;
 
+CONTROL_PLANE_SECURITY
+:
+   'control-plane-security'
+;
+
 CONTROL_WORD
 :
    'control-word'
@@ -1819,6 +2115,11 @@ CONTROLLER
 CONVERSION_ERROR
 :
    'conversion-error'
+;
+
+CONTROLLER_IP
+:
+   'controller-ip'
 ;
 
 COOKIE
@@ -1864,6 +2165,16 @@ COST
 COUNT
 :
    'count'
+;
+
+COUNTRY
+:
+   'country'
+;
+
+COUNTRY_CODE
+:
+   'country-code'
 ;
 
 COUNTER
@@ -1914,6 +2225,11 @@ CRITICAL
 CRYPTO
 :
    'crypto'
+;
+
+CRYPTO_LOCAL
+:
+   'crypto-local'
 ;
 
 CRYPTOGRAPHIC_ALGORITHM
@@ -1994,6 +2310,11 @@ CURRENT_CONFIGURATION
 CUSTOMER_ID
 :
    'customer-id'
+;
+
+CVX
+:
+   'cvx'
 ;
 
 CWR
@@ -2136,6 +2457,11 @@ DEFAULT_GROUP_POLICY
    'default-group-policy'
 ;
 
+DEFAULT_GUEST_ROLE
+:
+   'default-guest-role'
+;
+
 DEFAULT_GW
 :
    'default-gw'
@@ -2211,6 +2537,11 @@ DEL
    'Del'
 ;
 
+DELIMITER
+:
+   'delimiter'
+;
+
 DELAY
 :
    'delay'
@@ -2241,6 +2572,11 @@ DENY
    'deny'
 ;
 
+DENY_INTER_USER_TRAFFIC
+:
+   'deny-inter-user-traffic'
+;
+
 DEPI
 :
    'depi'
@@ -2261,9 +2597,14 @@ DEPLOY
    'deploy'
 ;
 
+DERIVATION_RULES
+:
+   'derivation-rules'
+;
+
 DES
 :
-   'des' -> pushMode ( M_DES )
+   'des' -> pushMode ( M_Des )
 ;
 
 DES_SHA1
@@ -2321,9 +2662,149 @@ DETAIL
    'detail'
 ;
 
+DETECT_ADHOC_NETWORK
+:
+   'detect-adhoc-network'
+;
+
+DETECT_AP_FLOOD
+:
+   'detect-ap-flood'
+;
+
+DETECT_AP_IMPERSONATION
+:
+   'detect-ap-impersonation'
+;
+
+DETECT_BAD_WEP
+:
+   'detect-bad-wep'
+;
+
+DETECT_BEACON_WRONG_CHANNEL
+:
+   'detect-beacon-wrong-channel'
+;
+
+DETECT_CHOPCHOP_ATTACK
+:
+   'detect-chopchop-attack'
+;
+
+DETECT_CLIENT_FLOOD
+:
+   'detect-client-flood'
+;
+
+DETECT_CTS_RATE_ANOMALY
+:
+   'detect-cts-rate-anomaly'
+;
+
+DETECT_EAP_RATE_ANOMALY
+:
+   'detect-eap-rate-anomaly'
+;
+
+DETECT_HOTSPOTTER
+:
+   'detect-hotspotter'
+;
+
+DETECT_HT_40MHZ_INTOLERANCE
+:
+   'detect-ht-40mhz-intolerance'
+;
+
+DETECT_HT_GREENFIELD
+:
+   'detect-ht-greenfield'
+;
+
+DETECT_INVALID_ADDRESS_COMBINATION
+:
+   'detect-invalid-address-combination'
+;
+
+DETECT_INVALID_MAC_OUI
+:
+   'detect-invalid-mac-oui'
+;
+
+DETECT_MALFORMED_ASSOCIATION_REQUEST
+:
+   'detect-malformed-association-request'
+;
+
+DETECT_MALFORMED_AUTH_FRAME
+:
+   'detect-malformed-auth-frame'
+;
+
+DETECT_MALFORMED_HTIE
+:
+   'detect-malformed-htie'
+;
+
+DETECT_MALFORMED_LARGE_DURATION
+:
+   'detect-malformed-large-duration'
+;
+
+DETECT_MISCONFIGURED_AP
+:
+   'detect-misconfigured-ap'
+;
+
+DETECT_OVERFLOW_EAPOL_KEY
+:
+   'detect-overflow-eapol-key'
+;
+
+DETECT_OVERFLOW_IE
+:
+   'detect-overflow-ie'
+;
+
+DETECT_RATE_ANOMALIES
+:
+   'detect-rate-anomalies'
+;
+
+DETECT_RTS_RATE_ANOMALY
+:
+   'detect-rts-rate-anomaly'
+;
+
+DETECT_TKIP_REPLAY_ATTACK
+:
+   'detect-tkip-replay-attack'
+;
+
+DETECT_VALID_SSID_MISUSE
+:
+   'detect-valid-ssid-misuse'
+;
+
+DETECT_WIRELESS_BRIDGE
+:
+   'detect-wireless-bridge'
+;
+
+DETECT_WIRELESS_HOSTED_NETWORK
+:
+   'detect-wireless-hosted-network'
+;
+
 DETERMINISTIC_MED
 :
    'deterministic-med'
+;
+
+DEV
+:
+   'dev' -> pushMode ( M_Interface )
 ;
 
 DEVICE
@@ -2396,9 +2877,19 @@ DIAGNOSTIC
    'diagnostic'
 ;
 
+DIAL_CONTROL_MIB
+:
+   'dial-control-mib'
+;
+
 DIAL_PEER
 :
    'dial-peer'
+;
+
+DIAL_STRING
+:
+   'dial-string'
 ;
 
 DIALER
@@ -2419,6 +2910,11 @@ DIALER_LIST
 DIALPLAN_PATTERN
 :
    'dialplan-pattern'
+;
+
+DIALPLAN_PROFILE
+:
+   'dialplan-profile'
 ;
 
 DIRECT
@@ -2461,6 +2957,11 @@ DISCARD_ROUTE
    'discard-route'
 ;
 
+DISCOVERED_AP_CNT
+:
+   'discovered-ap-cnt'
+;
+
 DISCOVERY
 :
    'discovery'
@@ -2494,6 +2995,11 @@ DM_FALLBACK
 DNS
 :
    'dns'
+;
+
+DNS_DOMAIN
+:
+   'dns-domain'
 ;
 
 DNS_GUARD
@@ -2576,9 +3082,39 @@ DONT_CAPABILITY_NEGOTIATE
    'dont-capability-negotiate'
 ;
 
+DOS_PROFILE
+:
+   'dos-profile'
+;
+
 DOT11
 :
    'dot11'
+;
+
+DOT11A_RADIO_PROFILE
+:
+   'dot11a-radio-profile'
+;
+
+DOT11G_RADIO_PROFILE
+:
+   'dot11g-radio-profile'
+;
+
+DOT11K_PROFILE
+:
+   'dot11k-profile'
+;
+
+DOT11R_PROFILE
+:
+   'dot11r-profile'
+;
+
+DOT1P_PRIORITY
+:
+   'dot1p-priority'
 ;
 
 DOT1Q
@@ -2596,9 +3132,19 @@ DOT1X
    'dot1x'
 ;
 
+DOT1X_DEFAULT_ROLE
+:
+   'dot1x-default-role'
+;
+
 DOT1X_ENABLE
 :
    'dot1x-enable'
+;
+
+DOT1X_SERVER_GROUP
+:
+   'dot1x-server-group'
 ;
 
 DOWNLINK
@@ -2676,6 +3222,11 @@ DSS
    'dss'
 ;
 
+DST_NAT
+:
+   'dst-nat'
+;
+
 DSU
 :
    'dsu'
@@ -2741,6 +3292,31 @@ DYNAMIC_MAP
    'dynamic-map'
 ;
 
+DYNAMIC_MCAST_OPTIMIZATION
+:
+   'dynamic-mcast-optimization'
+;
+
+DYNAMIC_MCAST_OPTIMIZATION_THRESH
+:
+   'dynamic-mcast-optimization-thresh'
+;
+
+EAP_PASSTHROUGH
+:
+   'eap-passthrough'
+;
+
+EAPOL_RATE_OPT
+:
+   'eapol-rate-opt'
+;
+
+EARLY_OFFER
+:
+   'early-offer'
+;
+
 EBGP
 :
    'ebgp'
@@ -2789,6 +3365,11 @@ ECMP_GROUP
 ECN
 :
    'ecn'
+;
+
+EDCA_PARAMETERS_PROFILE
+:
+   'edca-parameters-profile'
 ;
 
 EDGE
@@ -2886,6 +3467,11 @@ ENABLE_QOS_STATISTICS
    'enable-qos-statistics'
 ;
 
+ENABLE_WELCOME_PAGE
+:
+   'enable-welcome-page'
+;
+
 ENABLED
 :
    'enabled'
@@ -2946,6 +3532,16 @@ END_SET
    'end-set'
    { inCommunitySet = false; }
 
+;
+
+ENET_LINK_PROFILE
+:
+   'enet-link-profile'
+;
+
+ENFORCE_DHCP
+:
+   'enforce-dhcp'
 ;
 
 ENFORCE_FIRST_AS
@@ -3021,9 +3617,19 @@ ERROR_ENABLE
    'error-enable'
 ;
 
+ERROR_RATE_THRESHOLD
+:
+   'error-rate-threshold'
+;
+
 ERROR_RECOVERY
 :
    'error-recovery'
+;
+
+ERROR_PASSTHRU
+:
+   'error-passthru'
 ;
 
 ERRORS
@@ -3051,9 +3657,19 @@ ESP
    'esp'
 ;
 
+ESSID
+:
+   'essid'
+;
+
 ESTABLISHED
 :
    'established'
+;
+
+ETH
+:
+   'eth'
 ;
 
 ETHERCHANNEL
@@ -3096,6 +3712,11 @@ EVENT_HISTORY
    'event-history'
 ;
 
+EVENT_THRESHOLDS_PROFILE
+:
+   'event-thresholds-profile'
+;
+
 EVENTS
 :
    'events'
@@ -3129,6 +3750,11 @@ EXCEPTION_SLAVE
 EXCLUDE
 :
    'exclude'
+;
+
+EXCLUDED_ADDRESS
+:
+   'excluded-address'
 ;
 
 EXEC
@@ -3333,6 +3959,11 @@ FAN
    'fan'
 ;
 
+FAST_AGE
+:
+   'fast-age'
+;
+
 FAST_DETECT
 :
    'fast-detect'
@@ -3440,6 +4071,11 @@ FIREWALL
 
 ;
 
+FIREWALL_VISIBILITY
+:
+   'firewall-visibility'
+;
+
 FIN
 :
    'fin'
@@ -3520,6 +4156,11 @@ FLUSH_AT_ACTIVATION
    'flush-at-activation'
 ;
 
+FLUSH_R1_ON_NEW_R0
+:
+   'flush-r1-on-new-r0'
+;
+
 FORCE
 :
    'force'
@@ -3580,6 +4221,11 @@ FRAMING
    'framing'
 ;
 
+FREE_CHANNEL_INDEX
+:
+   'free-channel-index'
+;
+
 FREQUENCY
 :
    'frequency'
@@ -3630,6 +4276,11 @@ G709
    'g709'
 ;
 
+G729
+:
+   'g729'
+;
+
 GATEKEEPER
 :
    'gatekeeper'
@@ -3648,6 +4299,11 @@ GE
 GENERAL_GROUP_DEFAULTS
 :
    'general-group-defaults'
+;
+
+GENERAL_PROFILE
+:
+   'general-profile'
 ;
 
 GENERATE
@@ -3755,6 +4411,11 @@ GROUP_RANGE
    'group-range'
 ;
 
+GROUP_TIMEOUT
+:
+   'group-timeout'
+;
+
 GROUP_URL
 :
    'group-url'
@@ -3778,6 +4439,16 @@ GW_TYPE_PREFIX
 GUARD
 :
    'guard'
+;
+
+GUEST_ACCESS_EMAIL
+:
+   'guest-access-email'
+;
+
+GUEST_LOGON
+:
+   'guest-logon'
 ;
 
 GUEST_MODE
@@ -3810,6 +4481,11 @@ HALF_DUPLEX
    'half-duplex'
 ;
 
+HANDOVER_TRIGGER_PROFILE
+:
+   'handover-trigger-profile'
+;
+
 HARDWARE
 :
    'hardware'
@@ -3833,6 +4509,11 @@ HASH
 HASH_ALGORITHM
 :
    'hash-algorithm'
+;
+
+HEADER_PASSING
+:
+   'header-passing'
 ;
 
 HEARTBEAT_INTERVAL
@@ -3888,6 +4569,11 @@ HIDDEN_SHARES
 HIDEKEYS
 :
    'hidekeys'
+;
+
+HIGH
+:
+   'high'
 ;
 
 HIGH_AVAILABILITY
@@ -3970,6 +4656,11 @@ HOSTNAME
    'hostname'
 ;
 
+HOTSPOT
+:
+   'hotspot'
+;
+
 HPM
 :
    'hpm'
@@ -3978,6 +4669,11 @@ HPM
 HSRP
 :
    'hsrp'
+;
+
+HT_SSID_PROFILE
+:
+   'ht-ssid-profile'
 ;
 
 HTTP
@@ -3993,6 +4689,11 @@ HTTP_COMMANDS
 HTTPS
 :
    'https'
+;
+
+HUNT
+:
+   'hunt'
 ;
 
 HW_MODULE
@@ -4060,6 +4761,11 @@ ID_RANDOMIZATION
    'id-randomization'
 ;
 
+IDEAL_COVERAGE_INDEX
+:
+   'ideal-coverage-index'
+;
+
 IDENT
 :
    'ident'
@@ -4078,6 +4784,26 @@ IDLE
 IDLE_TIMEOUT
 :
    'idle-timeout'
+;
+
+IDP_CERT
+:
+   'idp-cert'
+;
+
+IDS
+:
+   'ids'
+;
+
+IDS_PROFILE
+:
+   'ids-profile'
+;
+
+IEC
+:
+   'iec'
 ;
 
 IF
@@ -4103,6 +4829,11 @@ IF_NEEDED
 IFINDEX
 :
    'ifindex'
+;
+
+IFMAP
+:
+   'ifmap'
 ;
 
 IFMIB
@@ -4135,6 +4866,11 @@ IGP
    'igp'
 ;
 
+IKE
+:
+   'ike'
+;
+
 IKEV1
 :
    'ikev1'
@@ -4153,6 +4889,11 @@ ILMI_KEEPALIVE
 IMAP4
 :
    'imap4'
+;
+
+IMPERSONATION_PROFILE
+:
+   'impersonation-profile'
 ;
 
 IMPLICIT_USER
@@ -4260,9 +5001,19 @@ INIT
    'init'
 ;
 
+INIT_STRING
+:
+   'init-string'
+;
+
 INIT_TECH_LIST
 :
    'init-tech-list'
+;
+
+INITIAL_ROLE
+:
+   'initial-role'
 ;
 
 INPUT
@@ -4347,6 +5098,11 @@ INVALID_USERNAME_LOG
    'invalid-username-log'
 ;
 
+INVERT
+:
+   'invert'
+;
+
 IOS_REGEX
 :
    'ios-regex' -> pushMode ( M_IosRegex )
@@ -4360,6 +5116,11 @@ IP
 IP_ADDRESS_LITERAL
 :
    'ip-address'
+;
+
+IP_FLOW_EXPORT_PROFILE
+:
+   'ip-flow-export-profile'
 ;
 
 IPC
@@ -4492,6 +5253,11 @@ IUC
    'iuc'
 ;
 
+JUMBO
+:
+   'jumbo'
+;
+
 JUMBOMTU
 :
    'jumbomtu'
@@ -4515,6 +5281,11 @@ KEEPOUT
 KERBEROS
 :
    'kerberos'
+;
+
+KERNEL
+:
+   'kernel'
 ;
 
 KEY
@@ -4677,6 +5448,16 @@ LAST_MEMBER_QUERY_INTERVAL
    'last-member-query-interval'
 ;
 
+LAST_MEMBER_QUERY_RESPONSE_TIME
+:
+   'last-member-query-response-time'
+;
+
+LCD_MENU
+:
+   'lcd-menu'
+;
+
 LDAP
 :
    'ldap'
@@ -4812,6 +5593,11 @@ LINK
    'link'
 ;
 
+LINK_FAIL
+:
+   'link-fail'
+;
+
 LINK_FAULT_SIGNALING
 :
    'link-fault-signaling'
@@ -4832,6 +5618,11 @@ LISTEN
    'listen'
 ;
 
+LISTEN_PORT
+:
+   'listen-port'
+;
+
 LISTENER
 :
    'listener'
@@ -4840,6 +5631,16 @@ LISTENER
 LLDP
 :
    'lldp'
+;
+
+LMS_IP
+:
+   'lms-ip'
+;
+
+LMS_PREEMPTION
+:
+   'lms-preemption'
 ;
 
 LOAD_BALANCE
@@ -4917,6 +5718,11 @@ LOCALE
    'locale'
 ;
 
+LOCALIP
+:
+   'localip'
+;
+
 LOG
 :
    'log'
@@ -4970,6 +5776,16 @@ LOGIN_ATTEMPTS
 LOGIN_AUTHENTICATION
 :
    'login-authentication'
+;
+
+LOGIN_PAGE
+:
+   'login-page'
+;
+
+LOGINSESSION
+:
+   'loginsession'
 ;
 
 LOGOUT_WARNING
@@ -5057,6 +5873,11 @@ MAC_ADDRESS_TABLE
    'mac-address-table'
 ;
 
+MAC_DEFAULT_ROLE
+:
+   'mac-default-role'
+;
+
 MAC_LEARN
 :
    'mac-learn'
@@ -5065,6 +5886,16 @@ MAC_LEARN
 MAC_MOVE
 :
    'mac-move'
+;
+
+MAC_SERVER_GROUP
+:
+   'mac-server-group'
+;
+
+MACHINE_AUTHENTICATION
+:
+   'machine-authentication'
 ;
 
 MACRO
@@ -5100,6 +5931,11 @@ MANAGEMENT_ONLY
 MANAGEMENT_PLANE
 :
    'management-plane'
+;
+
+MANAGEMENT_PROFILE
+:
+   'management-profile'
 ;
 
 MANAGER
@@ -5152,6 +5988,11 @@ MASTER
    'master'
 ;
 
+MASTERIP
+:
+   'masterip'
+;
+
 MATCH
 :
    'match'
@@ -5177,24 +6018,24 @@ MATCHES_EVERY
    'matches-every'
 ;
 
-MAXPOLL
-:
-   'maxpoll'
-;
-
-MAXSTARTUPS
-:
-   'maxstartups'
-;
-
 MAX_ASSOCIATIONS
 :
    'max-associations'
 ;
 
+MAX_AUTHENTICATION_FAILURES
+:
+   'max-authentication-failures'
+;
+
 MAX_BURST
 :
    'max-burst'
+;
+
+MAX_CLIENTS
+:
+   'max-clients'
 ;
 
 MAX_CONCAT_BURST
@@ -5205,6 +6046,11 @@ MAX_CONCAT_BURST
 MAX_CONFERENCES
 :
    'max-conferences'
+;
+
+MAX_CONNECTIONS
+:
+   'max-connections'
 ;
 
 MAX_DN
@@ -5247,6 +6093,16 @@ MAX_ROUTE
    'max-route'
 ;
 
+MAX_SESSIONS
+:
+   'max-sessions'
+;
+
+MAX_TX_POWER
+:
+   'max-tx-power'
+;
+
 MAXIMUM
 :
    'maximum'
@@ -5277,6 +6133,16 @@ MAXIMUM_ROUTES
    'maximum-routes'
 ;
 
+MAXPOLL
+:
+   'maxpoll'
+;
+
+MAXSTARTUPS
+:
+   'maxstartups'
+;
+
 MBSSID
 :
    'mbssid'
@@ -5285,6 +6151,11 @@ MBSSID
 MCAST_BOUNDARY
 :
    'mcast-boundary'
+;
+
+MCAST_RATE_OPT
+:
+   'mcast-rate-opt'
 ;
 
 MDIX
@@ -5342,9 +6213,24 @@ MENU
    'menu'
 ;
 
+MESH_CLUSTER_PROFILE
+:
+   'mesh-cluster-profile'
+;
+
 MESH_GROUP
 :
    'mesh-group'
+;
+
+MESH_HT_SSID_PROFILE
+:
+   'mesh-ht-ssid-profile'
+;
+
+MESH_RADIO_PROFILE
+:
+   'mesh-radio-profile'
 ;
 
 MESSAGE_COUNTER
@@ -5427,6 +6313,26 @@ MGCP
    'mgcp'
 ;
 
+MGMT
+:
+   'mgmt'
+;
+
+MGMT_AUTH
+:
+   'mgmt-auth'
+;
+
+MGMT_SERVER
+:
+   'mgmt-server'
+;
+
+MGMT_USER
+:
+   'mgmt-user'
+;
+
 MIB
 :
    'mib'
@@ -5442,6 +6348,11 @@ MICROSOFT_DS
    'microsoft-ds'
 ;
 
+MIDCALL_SIGNALING
+:
+   'midcall-signaling'
+;
+
 MIN_PACKET_SIZE
 :
    'min-packet-size'
@@ -5450,6 +6361,11 @@ MIN_PACKET_SIZE
 MIN_RATE
 :
    'min-rate'
+;
+
+MIN_TX_POWER
+:
+   'min-tx-power'
 ;
 
 MINIMAL
@@ -5515,6 +6431,11 @@ MLDV2
 MLS
 :
    'mls'
+;
+
+MOBILE
+:
+   'mobile'
 ;
 
 MOBILE_IP
@@ -5774,7 +6695,7 @@ NAMESERVER
 
 NAT
 :
-   'nat'
+   [Nn][Aa][Tt]
 ;
 
 NAT_CONTROL
@@ -5902,9 +6823,29 @@ NETCONF
    'netconf'
 ;
 
+NETDESTINATION
+:
+   'netdestination'
+;
+
+NETDESTINATION6
+:
+   'netdestination6'
+;
+
+NETEXTHDR
+:
+   'netexthdr'
+;
+
 NETMASK
 :
    'netmask'
+;
+
+NETSERVICE
+:
+   'netservice'
 ;
 
 NETWORK
@@ -5992,6 +6933,11 @@ NEXTHOP_ATTRIBUTE
    'nexthop-attribute'
 ;
 
+NEXTHOP_LIST
+:
+   'nexthop-list'
+;
+
 NHOP_ONLY
 :
    'nhop-only'
@@ -6070,6 +7016,11 @@ NOAUTH
 NODE
 :
    'node'
+;
+
+NOE
+:
+   'noe'
 ;
 
 NON500_ISAKMP
@@ -6237,6 +7188,11 @@ OPERATION
    'operation'
 ;
 
+OPMODE
+:
+   'opmode'
+;
+
 OPS
 :
    'ops'
@@ -6245,6 +7201,11 @@ OPS
 OPTICAL_MONITOR
 :
    'optical-monitor'
+;
+
+OPTIMIZATION_PROFILE
+:
+   'optimization-profile'
 ;
 
 OPTIMIZE
@@ -6397,6 +7358,11 @@ PACKET
    'packet'
 ;
 
+PACKET_CAPTURE_DEFAULTS
+:
+   'packet-capture-defaults'
+;
+
 PACKET_TOO_BIG
 :
    'packet-too-big'
@@ -6410,6 +7376,16 @@ PACKETCABLE
 PAGER
 :
    'pager'
+;
+
+PAN
+:
+   'pan'
+;
+
+PAN_OPTIONS
+:
+   'pan-options'
 ;
 
 PARAM
@@ -6627,6 +7603,11 @@ PEER_SWITCH
    'peer-switch'
 ;
 
+PEER_TO_PEER
+:
+   'peer-to-peer'
+;
+
 PENALTY_PERIOD
 :
    'penalty-period'
@@ -6685,6 +7666,11 @@ PHONE_NUMBER
 PHONE_PROXY
 :
    'phone-proxy'
+;
+
+PHY
+:
+   'phy'
 ;
 
 PHYSICAL_LAYER
@@ -7042,6 +8028,11 @@ PRIV
    'priv'
 ;
 
+PRIVACY
+:
+   'privacy'
+;
+
 PRIVATE_AS
 :
    'private-as'
@@ -7049,7 +8040,7 @@ PRIVATE_AS
 
 PRIVATE_KEY
 :
-   'private-key' -> pushMode ( M_CadantSshKey )
+   'private-key' -> pushMode ( M_SshKey )
 ;
 
 PRIVATE_VLAN
@@ -7092,6 +8083,11 @@ PROFILE
    'profile'
 ;
 
+PROGRESS_IND
+:
+   'progress_ind'
+;
+
 PROMPT
 :
    'prompt'
@@ -7117,9 +8113,19 @@ PROTECT
    'protect'
 ;
 
+PROTECT_SSID
+:
+   'protect-ssid'
+;
+
 PROTECT_TUNNEL
 :
    'protect-tunnel'
+;
+
+PROTECT_VALID_STA
+:
+   'protect-valid-sta'
 ;
 
 PROTECTION
@@ -7130,6 +8136,11 @@ PROTECTION
 PROTOCOL
 :
    'protocol'
+;
+
+PROTOCOL_HTTP
+:
+   'protocol-http'
 ;
 
 PROTOCOL_OBJECT
@@ -7145,6 +8156,11 @@ PROTOCOL_VIOLATION
 PROVISION
 :
    'provision'
+;
+
+PROVISIONING_PROFILE
+:
+   'provisioning-profile'
 ;
 
 PROXY_ARP
@@ -7194,7 +8210,7 @@ PUBKEY_CHAIN
 
 PUBLIC_KEY
 :
-   'public-key' -> pushMode ( M_CadantSshKey )
+   'public-key' -> pushMode ( M_SshKey )
 ;
 
 PVC
@@ -7247,6 +8263,11 @@ QUERY_ONLY
    'query-only'
 ;
 
+QUERY_TIMEOUT
+:
+   'query-timeout'
+;
+
 QUEUE
 :
    'queue'
@@ -7287,6 +8308,11 @@ RADIUS
    'radius'
 ;
 
+RADIUS_ACCOUNTING
+:
+   'radius-accounting'
+;
+
 RADIUS_ACCT
 :
    'radius-acct'
@@ -7295,6 +8321,11 @@ RADIUS_ACCT
 RADIUS_COMMON_PW
 :
    'radius-common-pw'
+;
+
+RADIUS_INTERIM_ACCOUNTING
+:
+   'radius-interim-accounting'
 ;
 
 RADIUS_SERVER
@@ -7330,6 +8361,11 @@ RATE_LIMIT
 RATE_MODE
 :
    'rate-mode'
+;
+
+RATE_THRESHOLDS_PROFILE
+:
+   'rate-thresholds-profile'
 ;
 
 RBACL
@@ -7387,6 +8423,16 @@ REAL
    'real'
 ;
 
+REAL_TIME_CONFIG
+:
+   'real-time-config'
+;
+
+REAUTHENTICATION
+:
+   'reauthentication'
+;
+
 RECEIVE
 :
    'receive'
@@ -7430,6 +8476,11 @@ REDIRECT_FQDN
 REDIRECT_LIST
 :
    'redirect-list'
+;
+
+REDIRECT_PAUSE
+:
+   'redirect-pause'
 ;
 
 REDIRECTS
@@ -7490,6 +8541,11 @@ REGISTER_SOURCE
 REGISTERED
 :
    'registered'
+;
+
+REGULATORY_DOMAIN_PROFILE
+:
+   'regulatory-domain-profile'
 ;
 
 RELAY
@@ -7602,6 +8658,11 @@ REQUEST_DATA_SIZE
    'request-data-size'
 ;
 
+REQUIRE_WPA
+:
+   'require-wpa'
+;
+
 RESOURCE
 :
    'resource'
@@ -7632,6 +8693,11 @@ RETRANSMIT
    'retransmit'
 ;
 
+RETRANSMIT_INTERVAL
+:
+   'retransmit-interval'
+;
+
 RETRANSMIT_TIMEOUT
 :
    'retransmit-timeout'
@@ -7640,6 +8706,11 @@ RETRANSMIT_TIMEOUT
 RETRIES
 :
    'retries'
+;
+
+RETRY
+:
+   'retry'
 ;
 
 REVERSE_ACCESS
@@ -7677,6 +8748,11 @@ REWRITE
    'rewrite'
 ;
 
+RF
+:
+   'rf'
+;
+
 RF_CHANNEL
 :
    'rf-channel'
@@ -7695,6 +8771,11 @@ RF_SHUTDOWN
 RF_SWITCH
 :
    'rf-switch'
+;
+
+RFC_3576_SERVER
+:
+   'rfc-3576-server'
 ;
 
 RFC1583COMPATIBILITY
@@ -7735,6 +8816,16 @@ RMON
 RO
 :
    [rR] [oO]
+;
+
+ROBUSTNESS_VARIABLE
+:
+   'robustness-variable'
+;
+
+ROGUE_AP_AWARE
+:
+   'rogue-ap-aware'
 ;
 
 ROLE
@@ -7867,6 +8958,11 @@ RP_LIST
    'rp-list'
 ;
 
+RRM_IE_PROFILE
+:
+   'rrm-ie-profile'
+;
+
 RSA
 :
    'rsa'
@@ -7875,11 +8971,6 @@ RSA
 RSAKEYPAIR
 :
    'rsakeypair'
-;
-
-RTR
-:
-   'rtr'
 ;
 
 RST
@@ -7902,9 +8993,39 @@ RT
    'rt'
 ;
 
+RTCP_INACTIVITY
+:
+   'rtcp-inactivity'
+;
+
+RTP
+:
+   'rtp'
+;
+
+RTR
+:
+   'rtr'
+;
+
+RTR_ADV
+:
+   'rtr-adv'
+;
+
+RTSP
+:
+   'rtsp'
+;
+
 RULE
 :
    'rule' {enableREGEX = true;}
+;
+
+RULE_NAME
+:
+   'rule-name'
 ;
 
 RUN
@@ -7980,6 +9101,11 @@ SCALE_FACTOR
 SCAN_TIME
 :
    'scan-time'
+;
+
+SCANNING
+:
+   'scanning'
 ;
 
 SCCP
@@ -8197,6 +9323,11 @@ SERVER_ARP
    'server-arp'
 ;
 
+SERVER_GROUP
+:
+   'server-group'
+;
+
 SERVERFARM
 :
    'serverfarm'
@@ -8255,6 +9386,11 @@ SERVICE_TYPE
 SESSION
 :
    'session'
+;
+
+SESSION_AUTHORIZATION
+:
+   'session-authorization'
 ;
 
 SESSION_DISCONNECT_WARNING
@@ -8337,9 +9473,19 @@ SGBP
    'sgbp'
 ;
 
+SHA
+:
+   'sha' -> pushMode ( M_Sha )
+;
+
 SHA1
 :
    'sha1' -> pushMode ( M_SHA1 )
+;
+
+SHA512
+:
+   'sha512'
 ;
 
 SHA512_PASSWORD
@@ -8392,6 +9538,11 @@ SIGNAL
    'signal'
 ;
 
+SIGNALING
+:
+   'signaling'
+;
+
 SIGNALLED_BANDWIDTH
 :
    'signalled-bandwidth'
@@ -8405,6 +9556,21 @@ SIGNALLED_NAME
 SIGNALLING
 :
    'signalling'
+;
+
+SIGNATURE
+:
+   'signature'
+;
+
+SIGNATURE_MATCHING_PROFILE
+:
+   'signature-matching-profile'
+;
+
+SIGNATURE_PROFILE
+:
+   'signature-profile'
 ;
 
 SIGNING
@@ -8432,9 +9598,29 @@ SIP
    'sip'
 ;
 
+SIP_MIDCALL_REQ_TIMEOUT
+:
+   'sip-midcall-req-timeout'
+;
+
+SIP_PROFILES
+:
+   'sip-profiles'
+;
+
+SIP_SERVER
+:
+   'sip-server'
+;
+
 SIP_UA
 :
    'sip-ua'
+;
+
+SIPS
+:
+   'sips'
 ;
 
 SITE_ID
@@ -8460,6 +9646,11 @@ SLOT_TABLE_COS
 SMALL_HELLO
 :
    'small-hello'
+;
+
+SMART_RELAY
+:
+   'smart-relay'
 ;
 
 SMTP
@@ -8507,6 +9698,16 @@ SNP
    'snp'
 ;
 
+SNR_MAX
+:
+   'snr-max'
+;
+
+SNR_MIN
+:
+   'snr-min'
+;
+
 SNTP
 :
    'sntp'
@@ -8522,6 +9723,21 @@ SPE
    'spe'
 ;
 
+SPECTRUM
+:
+   'spectrum'
+;
+
+SPECTRUM_LOAD_BALANCING
+:
+   'spectrum-load-balancing'
+;
+
+SPECTRUM_MONITORING
+:
+   'spectrum-monitoring'
+;
+
 SPF_INTERVAL
 :
    'spf-interval'
@@ -8535,6 +9751,11 @@ SOFT_PREEMPTION
 SOFT_RECONFIGURATION
 :
    'soft' '-reconfiguration'?
+;
+
+SOFTWARE
+:
+   'software'
 ;
 
 SONET
@@ -8627,6 +9848,11 @@ SQLNET
    'sqlnet'
 ;
 
+SRC_NAT
+:
+   'src-nat'
+;
+
 SRLG
 :
    'srlg'
@@ -8660,6 +9886,16 @@ SSH_PUBLICKEY
 SSID
 :
    'ssid'
+;
+
+SSID_ENABLE
+:
+   'ssid-enable'
+;
+
+SSID_PROFILE
+:
+   'ssid-profile'
 ;
 
 SSL
@@ -8794,6 +10030,11 @@ STP
    'stp'
 ;
 
+STREAMING
+:
+   'streaming'
+;
+
 STREET_ADDRESS
 :
    'street-address'
@@ -8844,6 +10085,11 @@ SUBNET
    'subnet'
 ;
 
+SUBNET_BROADCAST
+:
+   'subnet-broadcast'
+;
+
 SUBNET_MASK
 :
    'subnet-mask'
@@ -8857,6 +10103,11 @@ SUBNETS
 SUBNET_ZERO
 :
    'subnet-zero'
+;
+
+SUB_OPTION
+:
+   'sub-option'
 ;
 
 SUB_ROUTE_MAP
@@ -8909,6 +10160,11 @@ SUPER_USER_PASSWORD
    'super-user-password'
 ;
 
+SUPPLEMENTARY_SERVICE
+:
+   'supplementary-service'
+;
+
 SUPPLEMENTARY_SERVICES
 :
    'supplementary-services'
@@ -8917,6 +10173,11 @@ SUPPLEMENTARY_SERVICES
 SUPPRESS
 :
    'suppress'
+;
+
+SUPPRESS_ARP
+:
+   'suppress-arp'
 ;
 
 SUPPRESS_FIB_PENDING
@@ -8929,6 +10190,11 @@ SUPPRESSED
    'suppressed'
 ;
 
+SUSPECT_ROGUE_CONF_LEVEL
+:
+   'suspect-rogue-conf-level'
+;
+
 SVC
 :
    'svc'
@@ -8939,9 +10205,19 @@ SVCLC
    'svclc'
 ;
 
+SVP
+:
+   'svp'
+;
+
 SWITCH
 :
    'switch'
+;
+
+SWITCH_CERT
+:
+   'switch-cert'
 ;
 
 SWITCH_PRIORITY
@@ -9004,6 +10280,16 @@ SYNCHRONOUS
    'synchronous'
 ;
 
+SYSCONTACT
+:
+   'syscontact'
+;
+
+SYSLOCATION
+:
+   'syslocation'
+;
+
 SYSLOG
 :
    'syslog'
@@ -9037,6 +10323,11 @@ SYSTEM_MAX
 SYSTEM_PRIORITY
 :
    'system-priority'
+;
+
+SYSTEM_PROFILE
+:
+   'system-profile'
 ;
 
 SYSTEM_SHUTDOWN
@@ -9194,6 +10485,11 @@ TERMINAL_TYPE
    'terminal-type'
 ;
 
+TERMINATION
+:
+   'termination'
+;
+
 TEST
 :
    'test'
@@ -9292,6 +10588,11 @@ TIMER
 TIMERS
 :
    'timers'
+;
+
+TIMESOURCE
+:
+   'timesource'
 ;
 
 TIMESTAMP
@@ -9424,6 +10725,11 @@ TRANSLATION
    'translation'
 ;
 
+TRANSLATION_RULE
+:
+   'translation-rule'
+;
+
 TRANSLATION_PROFILE
 :
    'translation-profile'
@@ -9432,6 +10738,11 @@ TRANSLATION_PROFILE
 TRANSMIT
 :
    'transmit'
+;
+
+TRANSMIT_DELAY
+:
+   'transmit-delay'
 ;
 
 TRANSPARENT_HW_FLOODING
@@ -9474,6 +10785,11 @@ TRIGGER
    'trigger'
 ;
 
+TRIMODE
+:
+   'trimode'
+;
+
 TRUNK
 :
    'trunk'
@@ -9487,6 +10803,11 @@ TRUNK_THRESHOLD
 TRUST
 :
    'trust'
+;
+
+TRUSTED
+:
+   'trusted'
 ;
 
 TRUSTED_KEY
@@ -9507,6 +10828,11 @@ TRUSTPOOL
 TSID
 :
    'tsid'
+;
+
+TSM_REQ_PROFILE
+:
+   'tsm-req-profile'
 ;
 
 TTL
@@ -9557,6 +10883,11 @@ TUNNEL_GROUP_LIST
 TUNNEL_ID
 :
    'tunnel-id'
+;
+
+TUNNELED_NODE_ADDRESS
+:
+   'tunneled-node-address'
 ;
 
 TX_QUEUE
@@ -9612,6 +10943,11 @@ UID
 UNABLE
 :
    'Unable'
+;
+
+UNAUTHORIZED_DEVICE_PROFILE
+:
+   'unauthorized-device-profile'
 ;
 
 UNICAST_ROUTING
@@ -9672,6 +11008,16 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+UPGRADE_PROFILE
+:
+   'upgrade-profile'
+;
+
+UPLINK
+:
+   'uplink'
 ;
 
 UPLINKFAST
@@ -9754,6 +11100,11 @@ USER_MESSAGE
    'user-message' -> pushMode ( M_Description )
 ;
 
+USER_ROLE
+:
+   'user-role'
+;
+
 USER_STATISTICS
 :
    'user-statistics'
@@ -9824,9 +11175,49 @@ VAD
    'vad'
 ;
 
+VALID_11A_40MHZ_CHANNEL_PAIR
+:
+   'valid-11a-40mhz-channel-pair'
+;
+
+VALID_11A_80MHZ_CHANNEL_GROUP
+:
+   'valid-11a-80mhz-channel-group'
+;
+
+VALID_11A_CHANNEL
+:
+   'valid-11a-channel'
+;
+
+VALID_11G_40MHZ_CHANNEL_PAIR
+:
+   'valid-11g-40mhz-channel-pair'
+;
+
+VALID_11G_CHANNEL
+:
+   'valid-11g-channel'
+;
+
+VALID_AND_PROTECTED_SSID
+:
+   'valid-and-protected-ssid'
+;
+
+VALID_NETWORK_OUI_PROFILE
+:
+   'valid-network-oui-profile'
+;
+
 VALIDATION_USAGE
 :
    'validation-usage'
+;
+
+VAP_ENABLE
+:
+   'vap-enable'
 ;
 
 VDC
@@ -9884,6 +11275,11 @@ VIRTUAL_ADDRESS
    'virtual-address'
 ;
 
+VIRTUAL_AP
+:
+   'virtual-ap'
+;
+
 VIRTUAL_REASSEMBLY
 :
    'virtual-reassembly'
@@ -9917,6 +11313,11 @@ VLAN
 VLAN_GROUP
 :
    'vlan-group'
+;
+
+VLAN_NAME
+:
+   'vlan-name'
 ;
 
 VLAN_POLICY
@@ -9954,6 +11355,11 @@ VMTRACER
    'vmtracer'
 ;
 
+VOCERA
+:
+   'vocera'
+;
+
 VOICE
 :
    'voice'
@@ -9979,6 +11385,16 @@ VOICE_SERVICE
    'voice-service'
 ;
 
+VOIP
+:
+   'voip'
+;
+
+VOIP_CAC_PROFILE
+:
+   'voip-cac-profile'
+;
+
 VPC
 :
    'vpc'
@@ -10002,6 +11418,11 @@ VPLS
 VPN
 :
    'vpn'
+;
+
+VPN_DIALER
+:
+   'vpn-dialer'
 ;
 
 VPN_GROUP_POLICY
@@ -10071,6 +11492,11 @@ VSERVER
    'vserver'
 ;
 
+VSTACK
+:
+   'vstack'
+;
+
 VTP
 :
    'vtp'
@@ -10126,6 +11552,21 @@ WEB_CACHE
    'web-cache'
 ;
 
+WEB_HTTPS_PORT_443
+:
+   'web-https-port-443'
+;
+
+WEB_MAX_CLIENTS
+:
+   'web-max-clients'
+;
+
+WEB_SERVER
+:
+   'web-server'
+;
+
 WEBVPN
 :
    'webvpn'
@@ -10136,6 +11577,16 @@ WED
    'Wed'
 ;
 
+WEEKDAY
+:
+   'weekday'
+;
+
+WEEKEND
+:
+   'weekend'
+;
+
 WEIGHT
 :
    'weight'
@@ -10144,6 +11595,16 @@ WEIGHT
 WEIGHTING
 :
    'weighting'
+;
+
+WELCOME_PAGE
+:
+   'welcome-page'
+;
+
+WHITE_LIST
+:
+   'white-list'
 ;
 
 WHO
@@ -10181,6 +11642,31 @@ WINS_SERVER
    'wins-server'
 ;
 
+WIRED_AP_PROFILE
+:
+   'wired-ap-profile'
+;
+
+WIRED_CONTAINMENT
+:
+   'wired-containment'
+;
+
+WIRED_PORT_PROFILE
+:
+   'wired-port-profile'
+;
+
+WIRED_TO_WIRELESS_ROAM
+:
+   'wired-to-wireless-roam'
+;
+
+WIRELESS_CONTAINMENT
+:
+   'wireless-containment'
+;
+
 WISM
 :
    'wism'
@@ -10196,6 +11682,26 @@ WLAN
    'wlan'
 ;
 
+WMM
+:
+   'wmm'
+;
+
+WMS_GENERAL_PROFILE
+:
+   'wms-general-profile'
+;
+
+WMS_LOCAL_SYSTEM_PROFILE
+:
+   'wms-local-system-profile'
+;
+
+WPA_FAST_HANDOVER
+:
+   'wpa-fast-handover'
+;
+
 WRED
 :
    'wred'
@@ -10204,6 +11710,11 @@ WRED
 WRED_PROFILE
 :
    'wred-profile'
+;
+
+WRITE_MEMORY
+:
+   'write-memory'
 ;
 
 WRR
@@ -10281,6 +11792,16 @@ MULTICONFIGPART
 :
    '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel ( HIDDEN
    )
+;
+
+MD5_ARISTA
+:
+   '$1$' F_AristaBase64String '$' F_AristaBase64String
+;
+
+SHA512_ARISTA
+:
+   '$6$' F_AristaBase64String '$' F_AristaBase64String
 ;
 
 POUND
@@ -10514,6 +12035,19 @@ COMMENT_TAIL
    '!' F_NonNewline* -> channel ( HIDDEN )
 ;
 
+ARISTA_PAGINATION_DISABLED
+:
+   'Pagination disabled.' F_Newline+ -> channel ( HIDDEN )
+;
+
+ARISTA_PROMPT_SHOW_RUN
+:
+   F_NonWhitespace+ [>#]
+   {lastTokenType == NEWLINE || lastTokenType == -1}?
+
+   'show' F_Whitespace+ 'run' ( 'n' ( 'i' ( 'n' ( 'g' ( '-' ( 'c' ( 'o' ( 'n' ( 'f' ( 'i' 'g'? )? )? )? )? )? )? )? )? )? )? F_Whitespace* F_Newline+ -> channel ( HIDDEN )
+;
+
 DASH
 :
    '-'
@@ -10719,6 +12253,18 @@ WS
 ; // Fragments
 
 fragment
+F_AristaBase64Char
+:
+   [0-9A-Za-z/.]
+;
+
+fragment
+F_AristaBase64String
+:
+   F_AristaBase64Char+
+;
+
+fragment
 F_Base64Char
 :
    [0-9A-Za-z/+]
@@ -10880,6 +12426,18 @@ F_Whitespace
    | '\u000C'
 ;
 
+mode M_Alias;
+
+M_Alias_VARIABLE
+:
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_Alias_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_AsPath;
 
 M_AsPath_ACCESS_LIST
@@ -11008,6 +12566,11 @@ M_Authentication_ATTEMPTS
    'attempts' -> type ( ATTEMPTS ) , popMode
 ;
 
+M_Authentication_CAPTIVE_PORTAL
+:
+   'captive-portal' -> type ( CAPTIVE_PORTAL ) , popMode
+;
+
 M_Authentication_COMMAND
 :
    'command' -> type ( COMMAND ) , popMode
@@ -11058,6 +12621,11 @@ M_Authentication_LOGIN
    'login' -> type ( LOGIN ) , popMode
 ;
 
+M_Authentication_MAC
+:
+   'mac' -> type ( MAC ) , popMode
+;
+
 M_Authentication_MAC_MOVE
 :
    'mac-move' -> type ( MAC_MOVE ) , popMode
@@ -11066,6 +12634,11 @@ M_Authentication_MAC_MOVE
 M_Authentication_MESSAGE_DIGEST
 :
    'message-digest' -> type ( MESSAGE_DIGEST ) , popMode
+;
+
+M_Authentication_MGMT
+:
+   'mgmt' -> type ( MGMT ) , popMode
 ;
 
 M_Authentication_NEWLINE
@@ -11108,6 +12681,21 @@ M_Authentication_SSH
    'ssh' -> type ( SSH ) , popMode
 ;
 
+M_Authentication_STATEFUL_DOT1X
+:
+   'stateful-dot1x' -> type ( STATEFUL_DOT1X ) , popMode
+;
+
+M_Authentication_STATEFUL_KERBEROS
+:
+   'stateful-kerberos' -> type ( STATEFUL_KERBEROS ) , popMode
+;
+
+M_Authentication_STATEFUL_NTLM
+:
+   'stateful-ntlm' -> type ( STATEFUL_NTLM ) , popMode
+;
+
 M_Authentication_SUCCESS
 :
    'success' -> type ( SUCCESS ) , popMode
@@ -11132,6 +12720,21 @@ M_Authentication_USERNAME_PROMPT
 :
    'username-prompt' -> type ( USERNAME_PROMPT ) , mode (
    M_AuthenticationUsernamePrompt )
+;
+
+M_Authentication_VPN
+:
+   'vpn' -> type ( VPN ) , popMode
+;
+
+M_Authentication_WIRED
+:
+   'wired' -> type ( WIRED ) , popMode
+;
+
+M_Authentication_WISPR
+:
+   'wispr' -> type ( WISPR ) , popMode
 ;
 
 M_Authentication_VARIABLE
@@ -11277,12 +12880,22 @@ mode M_CadantSshKey;
 
 M_CadantSshKey_END
 :
-   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode 
+   '/end' F_NonNewline* F_Newline -> type ( END_CADANT ) , popMode
 ;
 
 M_CadantSshKey_LINE
 :
-   F_NonNewline+ F_Newline+
+   F_HexDigit+ F_Newline+
+;
+
+M_CadantSshKey_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_CadantSshKey_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE )
 ;
 
 mode M_Certificate;
@@ -11374,24 +12987,29 @@ M_COMMENT_NON_NEWLINE
    F_NonNewline+
 ;
 
-mode M_DES;
+mode M_Des;
 
-M_DES_DEC_PART
+M_Des_DEC_PART
 :
    F_Digit+
 ;
 
-M_DES_HEX_PART
+M_Des_HEX_PART
 :
    F_HexDigit+ -> popMode
 ;
 
-M_DES_NEWLINE
+M_Des_REDACTED
+:
+   '*'+ -> popMode
+;
+
+M_Des_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
-M_DES_WS
+M_Des_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -11644,6 +13262,7 @@ M_Interface_PREFIX
       )*
    )
    | 'Dot11Radio'
+   | [Ee]'1'
    | [Tt]'1'
 ;
 
@@ -11928,6 +13547,33 @@ M_Seed_WS
    F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
 ;
 
+mode M_Sha;
+
+M_Sha_DEC_PART
+:
+   F_Digit+
+;
+
+M_Sha_HEX_PART
+:
+   F_HexDigit+ -> popMode
+;
+
+M_Sha_REDACTED
+:
+   '*'+ -> popMode
+;
+
+M_Sha_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Sha_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_SHA1;
 
 M_SHA1_DEC_PART
@@ -11941,6 +13587,23 @@ M_SHA1_HEX_PART
 ;
 
 M_SHA1_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_SshKey;
+
+M_SshKey_DSA1024
+:
+   'dsa1024' -> type ( DSA1024 ), mode ( M_CadantSshKey )
+;
+
+M_SshKey_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_SshKey_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;

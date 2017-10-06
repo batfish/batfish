@@ -459,6 +459,8 @@ if_null_block
                   | MTU_IGNORE
                   | NETWORK
                   | PRIORITY
+                  | RETRANSMIT_INTERVAL
+                  | TRANSMIT_DELAY
                )
             )
             |
@@ -469,6 +471,7 @@ if_null_block
                   | BORDER_ROUTER
                   | BSR_BORDER
                   | DR_PRIORITY
+                  | HELLO_INTERVAL
                   | PASSIVE
                   | QUERY_INTERVAL
                   | SNOOPING
@@ -625,6 +628,7 @@ if_null_block
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
+      | SOURCE
       | SPEED
       | SPEED_DUPLEX
       | SNMP
@@ -714,6 +718,19 @@ if_null_inner
    ) ~NEWLINE* NEWLINE
 ;
 
+if_null_single
+:
+   NO?
+   (
+      BCMC_OPTIMIZATION
+      | JUMBO
+      | PHY
+      | SUPPRESS_ARP
+      | TRIMODE
+      | TRUSTED
+   ) ~NEWLINE* NEWLINE
+;
+
 if_port_security
 :
    PORT SECURITY NEWLINE
@@ -728,6 +745,7 @@ if_spanning_tree
    (
       if_st_null
       | if_st_portfast
+      | NEWLINE
    )
 ;
 
@@ -870,6 +888,7 @@ if_vrrp
    (
       ifvrrp_authentication
       | ifvrrp_ip
+      | ifvrrp_ip_secondary
       | ifvrrp_preempt
       | ifvrrp_priority
    )
@@ -878,7 +897,8 @@ if_vrrp
 ifdhcp_null
 :
    (
-      SNOOPING
+      SMART_RELAY
+      | SNOOPING
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -906,6 +926,7 @@ ifdhcpr_null
 :
    (
       INFORMATION
+      | SUBNET_BROADCAST
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -917,12 +938,16 @@ ifigmp_access_group
 ifigmp_null
 :
    (
-      HOST_PROXY
+      GROUP_TIMEOUT
+      | HOST_PROXY
       | LAST_MEMBER_QUERY_COUNT
       | LAST_MEMBER_QUERY_INTERVAL
+      | LAST_MEMBER_QUERY_RESPONSE_TIME
       | MULTICAST_STATIC_ONLY
       | QUERY_INTERVAL
       | QUERY_MAX_RESPONSE_TIME
+      | QUERY_TIMEOUT
+      | ROBUSTNESS_VARIABLE
       | ROUTER_ALERT
       | SNOOPING
       | STARTUP_QUERY_COUNT
@@ -961,6 +986,11 @@ ifvrrp_authentication
 ifvrrp_ip
 :
    IP ip = IP_ADDRESS NEWLINE
+;
+
+ifvrrp_ip_secondary
+:
+   IP ip = IP_ADDRESS SECONDARY NEWLINE
 ;
 
 ifvrrp_preempt
@@ -1049,6 +1079,7 @@ s_interface
       | if_vrrp
       // do not rearrange items below
 
+      | if_null_single
       | if_null_block
       |
       { !_disableUnrecognized }?

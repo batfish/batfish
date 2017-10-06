@@ -136,6 +136,7 @@ import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1680,10 +1681,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public String getDifferentialFlowTag() {
     // return _settings.getQuestionName() + ":" +
-    // _baseTestrigSettings.getName()
-    // + ":" + _baseTestrigSettings.getEnvironmentSettings().getName()
-    // + ":" + _deltaTestrigSettings.getName() + ":"
-    // + _deltaTestrigSettings.getEnvironmentSettings().getName();
+    // _baseTestrigSettings.getEnvName()
+    // + ":" + _baseTestrigSettings.getEnvironmentSettings().getEnvName()
+    // + ":" + _deltaTestrigSettings.getEnvName() + ":"
+    // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
     return DIFFERENTIAL_FLOW_TAG;
   }
 
@@ -1702,6 +1703,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
     long difference = System.currentTimeMillis() - beforeTime;
     double seconds = difference / 1000d;
     return seconds;
+  }
+
+  public Environment getEnvironment() {
+    EdgeSet edgeBlackList = getEdgeBlacklist();
+    Set<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
+    NodeSet nodeBlackList = getNodeBlacklist();
+    // TODO: add bgp tables and external announcements as well
+    return new Environment(
+        getEnvironmentName(),
+        getTestrigName(),
+        edgeBlackList,
+        interfaceBlackList,
+        nodeBlackList,
+        null,
+        null,
+        null);
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
@@ -1736,9 +1753,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public String getFlowTag(TestrigSettings testrigSettings) {
-    // return _settings.getQuestionName() + ":" + testrigSettings.getName() +
+    // return _settings.getQuestionName() + ":" + testrigSettings.getEnvName() +
     // ":"
-    // + testrigSettings.getEnvironmentSettings().getName();
+    // + testrigSettings.getEnvironmentSettings().getEnvName();
     if (testrigSettings == _deltaTestrigSettings) {
       return DELTA_TESTRIG_TAG;
     } else if (testrigSettings == _baseTestrigSettings) {
@@ -1757,25 +1774,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public FlowHistory getHistory() {
     FlowHistory flowHistory = new FlowHistory();
     if (_settings.getDiffQuestion()) {
-      String tag = getDifferentialFlowTag();
-      // String baseName = _baseTestrigSettings.getName() + ":"
-      // + _baseTestrigSettings.getEnvironmentSettings().getName();
-      String baseName = getFlowTag(_baseTestrigSettings);
-      // String deltaName = _deltaTestrigSettings.getName() + ":"
-      // + _deltaTestrigSettings.getEnvironmentSettings().getName();
-      String deltaName = getFlowTag(_deltaTestrigSettings);
+      String flowTag = getDifferentialFlowTag();
+      // String baseEnvTag = _baseTestrigSettings.getEnvName() + ":"
+      // + _baseTestrigSettings.getEnvironmentSettings().getEnvName();
+      String baseEnvTag = getFlowTag(_baseTestrigSettings);
+      // String deltaName = _deltaTestrigSettings.getEnvName() + ":"
+      // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
+      String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
       pushBaseEnvironment();
-      populateFlowHistory(flowHistory, baseName, tag);
+      Environment baseEnv = getEnvironment();
+      populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
       popEnvironment();
       pushDeltaEnvironment();
-      populateFlowHistory(flowHistory, deltaName, tag);
+      Environment deltaEnv = getEnvironment();
+      populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
       popEnvironment();
     } else {
-      String tag = getFlowTag();
-      // String name = testrigSettings.getName() + ":"
-      // + testrigSettings.getEnvironmentSettings().getName();
-      String envName = tag;
-      populateFlowHistory(flowHistory, envName, tag);
+      String flowTag = getFlowTag();
+      // String name = testrigSettings.getEnvName() + ":"
+      // + testrigSettings.getEnvironmentSettings().getEnvName();
+      String envTag = flowTag;
+      Environment env = getEnvironment();
+      populateFlowHistory(flowHistory, envTag, env, flowTag);
     }
     _logger.debug(flowHistory.toString());
     return flowHistory;
@@ -2227,11 +2247,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       BgpNeighbor bgpNeighbor = e.getKey();
       Ip remoteAddress = e.getValue();
       Ip localAddress = bgpNeighbor.getLocalIp();
+      int localLocalAs = bgpNeighbor.getLocalAs();
+      int localRemoteAs = bgpNeighbor.getRemoteAs();
       Set<BgpNeighbor> remoteBgpNeighborCandidates = localAddresses.get(remoteAddress);
       if (remoteBgpNeighborCandidates != null) {
         for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
+          int remoteLocalAs = remoteBgpNeighborCandidate.getLocalAs();
+          int remoteRemoteAs = remoteBgpNeighborCandidate.getRemoteAs();
           Ip reciprocalRemoteIp = remoteBgpNeighborCandidate.getAddress();
-          if (localAddress.equals(reciprocalRemoteIp)) {
+          if (localAddress.equals(reciprocalRemoteIp)
+              && localLocalAs == remoteRemoteAs
+              && localRemoteAs == remoteLocalAs) {
             bgpNeighbor.getCandidateRemoteBgpNeighbors().add(remoteBgpNeighborCandidate);
             bgpNeighbor.setRemoteBgpNeighbor(remoteBgpNeighborCandidate);
           }
@@ -3236,15 +3262,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettingsStack.remove(lastIndex);
   }
 
-  private void populateFlowHistory(FlowHistory flowHistory, String environmentName, String tag) {
+  private void populateFlowHistory(
+      FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
     List<Flow> flows = _dataPlanePlugin.getHistoryFlows();
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces();
     int numEntries = flows.size();
     for (int i = 0; i < numEntries; i++) {
       Flow flow = flows.get(i);
-      if (flow.getTag().equals(tag)) {
+      if (flow.getTag().equals(flowTag)) {
         FlowTrace flowTrace = flowTraces.get(i);
-        flowHistory.addFlowTrace(flow, environmentName, flowTrace);
+        flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
       }
     }
   }
@@ -3276,11 +3303,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           if (value == null) {
             if (variable.getOptional()) {
               /*
-               * For now we assume optional values are top-level
-               * variables and single-line. Otherwise it's not really
-               * clear what to do.
+               * Recursively look for all key, value pairs and remove keys
+               * whose value is "${varName}." Is this fragile?
+               * To be doubly sure, we do only for keys whole parent object is a questions, which
+               * we judge by it having a key "class" whose value starts with "org.batfish.question"
                */
-              jobj.remove(varName);
+              recursivelyRemoveOptionalVar(jobj, varName);
             } else {
               // What to do here? For now, do nothing and assume that
               // later validation will handle it.
@@ -3336,6 +3364,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (JSONException | IOException e) {
       throw new BatfishException(
           String.format("Could not convert raw question text [%s] to JSON", rawQuestionText), e);
+    }
+  }
+
+  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
+      throws JSONException {
+    Iterator<?> iter = questionObject.keys();
+    while (iter.hasNext()) {
+      String key = (String) iter.next();
+      Object value = questionObject.get(key);
+      if (value instanceof String) {
+        if (value.equals("${" + varName + "}")) {
+          iter.remove();
+        }
+      } else if (value instanceof JSONObject) {
+        JSONObject childObject = (JSONObject) value;
+        if (childObject.has("class")) {
+          Object classValue = childObject.get("class");
+          if (classValue instanceof String
+              && ((String) classValue).startsWith("org.batfish.question")) {
+            recursivelyRemoveOptionalVar(childObject, varName);
+          }
+        }
+      }
     }
   }
 
@@ -4098,10 +4149,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
-      Path testRigPath,
-      Path outputPath,
-      ParseVendorConfigurationAnswerElement answerElement
-      ) {
+      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
     SortedMap<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
@@ -4117,13 +4165,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .entrySet()
             .stream()
             .filter(e -> ((HostConfiguration) e.getValue()).getOverlay())
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
+            .collect(
+                Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
     SortedMap<String, VendorConfiguration> nonOverlayHostConfigurations =
         allHostConfigurations
             .entrySet()
             .stream()
             .filter(e -> !((HostConfiguration) e.getValue()).getOverlay())
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1,v2) -> v1, TreeMap::new));
+            .collect(
+                Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
 
     // read and associate iptables files for specified hosts
     SortedMap<Path, String> iptablesData = new TreeMap<>();
