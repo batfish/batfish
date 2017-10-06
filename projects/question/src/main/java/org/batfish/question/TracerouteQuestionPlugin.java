@@ -19,6 +19,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.ITracerouteQuestion;
 import org.batfish.datamodel.questions.Question;
 
@@ -52,32 +53,34 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getTraces().keySet()) {
-        // String baseEnvId = _batfish.getBaseTestrigSettings().getName() +
+        // String baseEnvTag = _batfish.getBaseTestrigSettings().getEnvName() +
         // ":"
         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
-        // .getName();
+        // .getEnvName();
         _batfish.pushBaseEnvironment();
-        String baseEnvId = _batfish.getFlowTag();
+        String baseEnvTag = _batfish.getFlowTag();
+        Environment baseEnv = _batfish.getEnvironment();
         _batfish.popEnvironment();
-        // String deltaEnvId = _batfish.getDeltaTestrigSettings().getName()
+        // String deltaEnvTag = _batfish.getDeltaTestrigSettings().getEnvName()
         // +
         // ":"
         // + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
-        // .getName();
+        // .getEnvName();
         _batfish.pushDeltaEnvironment();
-        String deltaEnvId = _batfish.getFlowTag();
+        String deltaEnvTag = _batfish.getFlowTag();
+        Environment deltaEnv = _batfish.getEnvironment();
         _batfish.popEnvironment();
         Set<FlowTrace> baseFlowTraces =
-            history.getTraces().get(flowText).getPaths().get(baseEnvId);
+            history.getTraces().get(flowText).getPaths().get(baseEnvTag);
         Set<FlowTrace> deltaFlowTraces =
-            history.getTraces().get(flowText).getPaths().get(deltaEnvId);
+            history.getTraces().get(flowText).getPaths().get(deltaEnvTag);
         if (!baseFlowTraces.toString().equals(deltaFlowTraces.toString())) {
           Flow flow = history.getTraces().get(flowText).getFlow();
           for (FlowTrace flowTrace : baseFlowTraces) {
-            filteredHistory.addFlowTrace(flow, baseEnvId, flowTrace);
+            filteredHistory.addFlowTrace(flow, baseEnvTag, baseEnv, flowTrace);
           }
           for (FlowTrace flowTrace : deltaFlowTraces) {
-            filteredHistory.addFlowTrace(flow, deltaEnvId, flowTrace);
+            filteredHistory.addFlowTrace(flow, deltaEnvTag, deltaEnv, flowTrace);
           }
         }
       }

@@ -136,6 +136,7 @@ import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1680,10 +1681,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public String getDifferentialFlowTag() {
     // return _settings.getQuestionName() + ":" +
-    // _baseTestrigSettings.getName()
-    // + ":" + _baseTestrigSettings.getEnvironmentSettings().getName()
-    // + ":" + _deltaTestrigSettings.getName() + ":"
-    // + _deltaTestrigSettings.getEnvironmentSettings().getName();
+    // _baseTestrigSettings.getEnvName()
+    // + ":" + _baseTestrigSettings.getEnvironmentSettings().getEnvName()
+    // + ":" + _deltaTestrigSettings.getEnvName() + ":"
+    // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
     return DIFFERENTIAL_FLOW_TAG;
   }
 
@@ -1702,6 +1703,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
     long difference = System.currentTimeMillis() - beforeTime;
     double seconds = difference / 1000d;
     return seconds;
+  }
+
+  public Environment getEnvironment() {
+    EdgeSet edgeBlackList = getEdgeBlacklist();
+    Set<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
+    NodeSet nodeBlackList = getNodeBlacklist();
+    // TODO: add bgp tables and external announcements as well
+    return new Environment(
+        getEnvironmentName(),
+        getTestrigName(),
+        edgeBlackList,
+        interfaceBlackList,
+        nodeBlackList,
+        null,
+        null,
+        null);
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
@@ -1736,9 +1753,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public String getFlowTag(TestrigSettings testrigSettings) {
-    // return _settings.getQuestionName() + ":" + testrigSettings.getName() +
+    // return _settings.getQuestionName() + ":" + testrigSettings.getEnvName() +
     // ":"
-    // + testrigSettings.getEnvironmentSettings().getName();
+    // + testrigSettings.getEnvironmentSettings().getEnvName();
     if (testrigSettings == _deltaTestrigSettings) {
       return DELTA_TESTRIG_TAG;
     } else if (testrigSettings == _baseTestrigSettings) {
@@ -1757,25 +1774,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public FlowHistory getHistory() {
     FlowHistory flowHistory = new FlowHistory();
     if (_settings.getDiffQuestion()) {
-      String tag = getDifferentialFlowTag();
-      // String baseName = _baseTestrigSettings.getName() + ":"
-      // + _baseTestrigSettings.getEnvironmentSettings().getName();
-      String baseName = getFlowTag(_baseTestrigSettings);
-      // String deltaName = _deltaTestrigSettings.getName() + ":"
-      // + _deltaTestrigSettings.getEnvironmentSettings().getName();
-      String deltaName = getFlowTag(_deltaTestrigSettings);
+      String flowTag = getDifferentialFlowTag();
+      // String baseEnvTag = _baseTestrigSettings.getEnvName() + ":"
+      // + _baseTestrigSettings.getEnvironmentSettings().getEnvName();
+      String baseEnvTag = getFlowTag(_baseTestrigSettings);
+      // String deltaName = _deltaTestrigSettings.getEnvName() + ":"
+      // + _deltaTestrigSettings.getEnvironmentSettings().getEnvName();
+      String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
       pushBaseEnvironment();
-      populateFlowHistory(flowHistory, baseName, tag);
+      Environment baseEnv = getEnvironment();
+      populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
       popEnvironment();
       pushDeltaEnvironment();
-      populateFlowHistory(flowHistory, deltaName, tag);
+      Environment deltaEnv = getEnvironment();
+      populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
       popEnvironment();
     } else {
-      String tag = getFlowTag();
-      // String name = testrigSettings.getName() + ":"
-      // + testrigSettings.getEnvironmentSettings().getName();
-      String envName = tag;
-      populateFlowHistory(flowHistory, envName, tag);
+      String flowTag = getFlowTag();
+      // String name = testrigSettings.getEnvName() + ":"
+      // + testrigSettings.getEnvironmentSettings().getEnvName();
+      String envTag = flowTag;
+      Environment env = getEnvironment();
+      populateFlowHistory(flowHistory, envTag, env, flowTag);
     }
     _logger.debug(flowHistory.toString());
     return flowHistory;
@@ -3242,15 +3262,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettingsStack.remove(lastIndex);
   }
 
-  private void populateFlowHistory(FlowHistory flowHistory, String environmentName, String tag) {
+  private void populateFlowHistory(
+      FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
     List<Flow> flows = _dataPlanePlugin.getHistoryFlows();
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces();
     int numEntries = flows.size();
     for (int i = 0; i < numEntries; i++) {
       Flow flow = flows.get(i);
-      if (flow.getTag().equals(tag)) {
+      if (flow.getTag().equals(flowTag)) {
         FlowTrace flowTrace = flowTraces.get(i);
-        flowHistory.addFlowTrace(flow, environmentName, flowTrace);
+        flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
       }
     }
   }
