@@ -383,7 +383,7 @@ public abstract class BgpPeerGroup implements Serializable {
       _inboundRoute6MapLine = pg.getInboundRoute6MapLine();
     }
     if (_localAs == null) {
-      _localAs = pg.getMaximumPaths();
+      _localAs = pg.getLocalAs();
     }
     if (_maximumPaths == null) {
       _maximumPaths = pg.getMaximumPaths();
