@@ -7,7 +7,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_8cfbd65f-296d-4348-bfdc-ce84b6afc600"
+              "testrigName" : "basic-snat"
             }
           },
           "flow" : {

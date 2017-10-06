@@ -7,7 +7,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_995fe845-0d59-4000-b21f-4838c515be7f"
+              "testrigName" : "basic-example"
             }
           },
           "flow" : {
