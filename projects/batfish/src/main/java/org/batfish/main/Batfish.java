@@ -3292,6 +3292,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       JSONObject jobj = new JSONObject(rawQuestionText);
       if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
+        ((JSONObject) (jobj.get("instance"))).remove("delta");
+        ((JSONObject) (jobj.get("instance"))).remove("base");
         String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         InstanceData instanceData =
