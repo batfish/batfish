@@ -24,6 +24,7 @@ public class DisplayHints {
 
     static {
       Map<String, String> aMap = new HashMap<>();
+      aMap.put("Environment", "class:org.batfish.datamodel.pojo.Environment");
       aMap.put("FileLine", "class:org.batfish.datamodel.collections.FileLinePair");
       aMap.put("Flow", "class:org.batfish.datamodel.Flow");
       aMap.put("FlowTrace", "class:org.batfish.datamodel.FlowTrace");
