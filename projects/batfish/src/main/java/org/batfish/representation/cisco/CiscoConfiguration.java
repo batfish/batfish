@@ -2022,7 +2022,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag("No remote-as set for peer: " + lpg.getName());
           continue;
         }
-
+        Integer pgLocalAs = lpg.getLocalAs();
+        int localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
         BgpNeighbor newNeighbor;
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
@@ -2058,7 +2059,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (importPolicy != null) {
           newNeighbor.setImportPolicy(inboundRouteMapName);
         }
-        newNeighbor.setLocalAs(proc.getName());
+        newNeighbor.setLocalAs(localAs);
         newNeighbor.setLocalIp(updateSource);
         newNeighbor.setExportPolicy(peerExportPolicyName);
         newNeighbor.setRemoteAs(lpg.getRemoteAs());

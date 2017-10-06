@@ -11,4 +11,5 @@ public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
   public abstract Prefix getNeighborPrefix();
 
   public abstract Prefix6 getNeighborPrefix6();
+
 }
