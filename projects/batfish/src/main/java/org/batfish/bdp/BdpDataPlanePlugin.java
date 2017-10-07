@@ -62,7 +62,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    * Set to true to debug oscillation. Make sure to set max recorded iterations to minimum necessary
    * value.
    */
-  private static boolean DEBUG_REPEAT_ITERATIONS = true;
+  private static boolean DEBUG_REPEAT_ITERATIONS = false;
 
   private static final String TRACEROUTE_INGRESS_NODE_INTERFACE_NAME =
       "traceroute_source_interface";
