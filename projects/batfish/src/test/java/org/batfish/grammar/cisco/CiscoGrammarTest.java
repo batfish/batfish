@@ -116,36 +116,30 @@ public class CiscoGrammarTest {
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
     batfish.initBgpAdvertisements(configurations);
     Configuration r2 = configurations.get("r2");
-    AtomicBoolean r2HasPrivate = new AtomicBoolean();
-    r2.getReceivedEbgpAdvertisements()
-        .stream()
-        .filter(a -> a.getNetwork().equals(r1Loopback))
-        .toArray(BgpAdvertisement[]::new)[0]
-        .getAsPath()
-        .getAsSets()
-        .stream()
-        .flatMap(asSet -> asSet.stream())
-        .forEach(
-            as -> {
-              if (AsPath.isPrivateAs(as)) {
-                r2HasPrivate.set(true);
-              }
-            });
-    assertTrue(r2HasPrivate.get());
+    boolean r2HasPrivate =
+        r2.getReceivedEbgpAdvertisements()
+            .stream()
+            .filter(a -> a.getNetwork().equals(r1Loopback))
+            .toArray(BgpAdvertisement[]::new)[0]
+            .getAsPath()
+            .getAsSets()
+            .stream()
+            .flatMap(asSet -> asSet.stream())
+            .anyMatch(AsPath::isPrivateAs);
+    assertTrue(r2HasPrivate);
 
     // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
     Configuration r3 = configurations.get("r3");
-    r3.getReceivedEbgpAdvertisements()
-        .stream()
-        .filter(a -> a.getNetwork().equals(r1Loopback))
-        .toArray(BgpAdvertisement[]::new)[0]
-        .getAsPath()
-        .getAsSets()
-        .stream()
-        .flatMap(asSet -> asSet.stream())
-        .forEach(
-            as -> {
-              assertFalse(AsPath.isPrivateAs(as));
-            });
+    boolean r3HasPrivate =
+        r3.getReceivedEbgpAdvertisements()
+            .stream()
+            .filter(a -> a.getNetwork().equals(r1Loopback))
+            .toArray(BgpAdvertisement[]::new)[0]
+            .getAsPath()
+            .getAsSets()
+            .stream()
+            .flatMap(asSet -> asSet.stream())
+            .anyMatch(AsPath::isPrivateAs);
+    assertFalse(r3HasPrivate);
   }
 }

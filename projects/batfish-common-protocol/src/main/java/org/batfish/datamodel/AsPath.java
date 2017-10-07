@@ -15,6 +15,18 @@ public class AsPath implements Serializable, Comparable<AsPath> {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Returns false if the provided AS number is reserved for private use by RFC 6696:
+   * https://tools.ietf.org/html/rfc6996#section-5
+   */
+  public static boolean isNotPrivateAs(int as) {
+    return !isPrivateAs(as);
+  }
+
+  /**
+   * Returns true iff the provided AS number is reserved for private use by RFC 6696:
+   * https://tools.ietf.org/html/rfc6996#section-5
+   */
   public static boolean isPrivateAs(int as) {
     return (as >= 64512 && as <= 65535);
   }

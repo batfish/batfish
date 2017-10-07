@@ -90,7 +90,7 @@ public enum Statements {
                         asSet ->
                             asSet
                                 .stream()
-                                .filter(as -> !AsPath.isPrivateAs(as))
+                                .filter(AsPath::isNotPrivateAs)
                                 .collect(ImmutableSortedSet.toImmutableSortedSet(Integer::compare)))
                     .filter(asSet -> !asSet.isEmpty())
                     .collect(ImmutableList.toImmutableList());
@@ -104,7 +104,7 @@ public enum Statements {
                           asSet ->
                               asSet
                                   .stream()
-                                  .filter(AsPath::isPrivateAs)
+                                  .filter(AsPath::isNotPrivateAs)
                                   .collect(
                                       ImmutableSortedSet.toImmutableSortedSet(Integer::compare)))
                       .filter(asSet -> !asSet.isEmpty())
