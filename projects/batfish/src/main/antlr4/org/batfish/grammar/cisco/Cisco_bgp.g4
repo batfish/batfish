@@ -147,6 +147,7 @@ bgp_advertise_inactive_rb_stanza
 
 //confederations are not currently implemented
 //not putting this under null so we can warn the user
+
 bgp_confederation_rb_stanza
 :
    BGP CONFEDERATION ~NEWLINE+ NEWLINE
@@ -663,10 +664,7 @@ remote_as_bgp_tail
 
 remove_private_as_bgp_tail
 :
-   (
-      REMOVE_PRIVATE_AS
-      | REMOVE_PRIVATE_CAP_A_CAP_S
-   ) ALL? NEWLINE
+   REMOVE_PRIVATE_AS ALL? NEWLINE
 ;
 
 route_map_bgp_tail
@@ -823,7 +821,10 @@ router_bgp_stanza_tail
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    | vrf_block_rb_stanza
-   | { !_disableUnrecognized }? unrecognized_line
+   |
+   { !_disableUnrecognized }?
+
+   unrecognized_line
 ;
 
 router_id_bgp_tail
