@@ -40,6 +40,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.answers.SmtManyAnswerElement;
@@ -307,6 +308,7 @@ public class PropertyChecker {
   }
 
   private static FlowHistory buildFlowCounterExample(
+      IBatfish batfish,
       VerificationResult res,
       List<String> sourceRouters,
       Model model,
@@ -319,14 +321,29 @@ public class PropertyChecker {
         BoolExpr sourceVar = reach.get(source);
         if (isFalse(model, sourceVar)) {
           Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
-          fh.addFlowTrace(tup.getFirst(), "BASE", tup.getSecond());
+          // TODO: Correctly add any relevant routing message or failures
+          Environment baseEnv =
+              new Environment("BASE", batfish.getTestrigName(), null, null, null, null, null, null);
+          fh.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
         }
       }
     }
     return fh;
   }
 
+  private static String environmentString(VerificationResult res) {
+    StringBuilder sb = new StringBuilder();
+    res.getEnvModel().forEach((envEdge, values) -> {
+      sb.append(envEdge).append("\n");
+      values.forEach((name, val) -> {
+        sb.append("  ").append(name).append(" ").append(val).append("\n");
+      });
+    });
+    return sb.toString();
+  }
+
   private static FlowHistory buildFlowDiffCounterExample(
+      IBatfish batfish,
       VerificationResult res,
       List<String> sourceRouters,
       Model model,
@@ -346,8 +363,15 @@ public class PropertyChecker {
         if (!Objects.equals(val1, val2)) {
           Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, model, source);
           Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
-          fh.addFlowTrace(base.getFirst(), "BASE", base.getSecond());
-          fh.addFlowTrace(diff.getFirst(), "FAILED", diff.getSecond());
+          // TODO: Correctly add any relevant routing message or failures
+          String env = environmentString(res);
+          Environment baseEnv =
+              new Environment("BASE", batfish.getTestrigName(), null, null, null, null, null, env);
+          Environment failedEnv =
+              new Environment(
+                  "FAILED", batfish.getTestrigName(), null, null, null, null, null, env);
+          fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
+          fh.addFlowTrace(diff.getFirst(), "FAILED", failedEnv, diff.getSecond());
         }
       }
     }
@@ -443,16 +467,17 @@ public class PropertyChecker {
         BoolExpr sourceReachable2 = reach2.get(source);
         BoolExpr val;
         switch (q.getDiffType()) {
-        case INCREASED:
-          val = enc.mkImplies(sourceReachable1, sourceReachable2);
-          break;
-        case REDUCED:
-          val = enc.mkImplies(sourceReachable2, sourceReachable1);
-          break;
-        case ANY:
-          val = enc.mkEq(sourceReachable1, sourceReachable2);
-          break;
-        default: throw new BatfishException("Missing case: " + q.getDiffType());
+          case INCREASED:
+            val = enc.mkImplies(sourceReachable1, sourceReachable2);
+            break;
+          case REDUCED:
+            val = enc.mkImplies(sourceReachable2, sourceReachable1);
+            break;
+          case ANY:
+            val = enc.mkEq(sourceReachable1, sourceReachable2);
+            break;
+          default:
+            throw new BatfishException("Missing case: " + q.getDiffType());
         }
         required = enc.mkAnd(required, val);
       }
@@ -480,23 +505,26 @@ public class PropertyChecker {
     }
 
     // Only consider failures for allowed edges
-    graph.getEdgeMap().forEach((router, edges) -> {
-      for (GraphEdge ge : edges) {
-        ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
-        assert f != null;
-        if (!failOptions.contains(ge)) {
-          enc.add(enc.mkEq(f, enc.mkInt(0)));
-        } else if (destPorts.contains(ge)) {
-          // Don't fail an interface if it is for the destination ip we are considering
-          // Otherwise, any failure can trivially make equivalence false
-          Prefix pfx = ge.getStart().getPrefix();
-          ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
-          BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
-          BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
-          enc.add(enc.mkImplies(relevant, notFailed));
-        }
-      }
-    });
+    graph
+        .getEdgeMap()
+        .forEach(
+            (router, edges) -> {
+              for (GraphEdge ge : edges) {
+                ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
+                assert f != null;
+                if (!failOptions.contains(ge)) {
+                  enc.add(enc.mkEq(f, enc.mkInt(0)));
+                } else if (destPorts.contains(ge)) {
+                  // Don't fail an interface if it is for the destination ip we are considering
+                  // Otherwise, any failure can trivially make equivalence false
+                  Prefix pfx = ge.getStart().getPrefix();
+                  ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
+                  BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
+                  BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
+                  enc.add(enc.mkImplies(relevant, notFailed));
+                }
+              }
+            });
 
     Tuple<VerificationResult, Model> result = enc.verify();
     VerificationResult res = result.getFirst();
@@ -507,9 +535,10 @@ public class PropertyChecker {
     FlowHistory fh;
     if (q.getDiffType() != null) {
       System.out.println("Building counter example");
-      fh = buildFlowDiffCounterExample(res, sourceRouters, model, enc, enc2, reach, reach2);
+      fh =
+          buildFlowDiffCounterExample(batfish, res, sourceRouters, model, enc, enc2, reach, reach2);
     } else {
-      fh = buildFlowCounterExample(res, sourceRouters, model, enc, reach);
+      fh = buildFlowCounterExample(batfish, res, sourceRouters, model, enc, reach);
     }
 
     SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
@@ -876,7 +905,7 @@ public class PropertyChecker {
                       /* String msg =
                        String.format(
                            "Warning: community %s found for router %s but not %s.",
-                           cvar.getValue(), conf1.getName(), conf2.getName());
+                           cvar.getValue(), conf1.getEnvName(), conf2.getEnvName());
                       System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce1));
@@ -894,7 +923,7 @@ public class PropertyChecker {
                       /* String msg =
                        String.format(
                            "Warning: community %s found for router %s but not %s.",
-                           cvar.getValue(), conf2.getName(), conf1.getName());
+                           cvar.getValue(), conf2.getEnvName(), conf1.getEnvName());
                       System.out.println(msg); */
                     }
                     unsetComms = e1.mkAnd(unsetComms, e1.mkNot(ce2));
@@ -906,8 +935,8 @@ public class PropertyChecker {
                 BoolExpr equalVars = slice1.equal(conf1, proto1, vars1, vars2, lge1, true);
                 equalEnvs = ctx.mkAnd(equalEnvs, unsetComms, samePermitted, equalVars, equalComms);
 
-                //System.out.println("Unset communities: ");
-                //System.out.println(unsetComms);
+                // System.out.println("Unset communities: ");
+                // System.out.println(unsetComms);
 
               } else if (hasEnv1 || hasEnv2) {
                 System.out.println("Edge1: " + lge1);
@@ -977,7 +1006,7 @@ public class PropertyChecker {
         required =
             ctx.mkAnd(
                 sameForwarding,
-                equalOutputs); //, equalOutputs); //, equalOutputs, equalIncomingAcls);
+                equalOutputs); // , equalOutputs); //, equalOutputs, equalIncomingAcls);
       }
 
       // System.out.println("Assumptions: ");

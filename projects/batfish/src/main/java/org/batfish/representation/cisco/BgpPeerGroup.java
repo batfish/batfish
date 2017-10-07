@@ -57,6 +57,8 @@ public abstract class BgpPeerGroup implements Serializable {
 
   private transient boolean _inherited;
 
+  private Integer _localAs;
+
   private Integer _maximumPaths;
 
   private Integer _maximumPathsEbgp;
@@ -197,6 +199,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public boolean getInherited() {
     return _inherited;
+  }
+
+  public Integer getLocalAs() {
+    return _localAs;
   }
 
   public Integer getMaximumPaths() {
@@ -376,6 +382,9 @@ public abstract class BgpPeerGroup implements Serializable {
       _inboundRoute6Map = pg.getInboundRoute6Map();
       _inboundRoute6MapLine = pg.getInboundRoute6MapLine();
     }
+    if (_localAs == null) {
+      _localAs = pg.getLocalAs();
+    }
     if (_maximumPaths == null) {
       _maximumPaths = pg.getMaximumPaths();
     }
@@ -405,6 +414,9 @@ public abstract class BgpPeerGroup implements Serializable {
     }
     if (_remoteAs == null) {
       _remoteAs = pg.getRemoteAs();
+    }
+    if (_removePrivateAs == null) {
+      _removePrivateAs = pg.getRemovePrivateAs();
     }
     if (_routeReflectorClient == null) {
       _routeReflectorClient = pg.getRouteReflectorClient();
@@ -523,6 +535,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setInboundRouteMapLine(Integer inboundRouteMapLine) {
     _inboundRouteMapLine = inboundRouteMapLine;
+  }
+
+  public void setLocalAs(Integer localAs) {
+    _localAs = localAs;
   }
 
   public void setMaximumPaths(Integer maximumPaths) {

@@ -1,0 +1,15 @@
+! boot system flash:EOS.swi
+hostname r2
+!
+interface Ethernet1
+ ip address 1.2.0.2/24
+!
+interface Loopback0
+ ip address 2.2.2.2/32
+!
+router bgp 3
+ router-id 2.2.2.2
+ neighbor 1.2.0.1 remote-as 1
+ ! below line causes r2 to report its local-as as 2 instead of 3 (from process-id) when establishing session with 1.2.0.1
+ neighbor 1.2.0.1 local-as 2 no-prepend replace-as
+!

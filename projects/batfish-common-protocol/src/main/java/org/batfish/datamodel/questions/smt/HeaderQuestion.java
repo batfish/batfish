@@ -138,7 +138,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   @Override
   public String getName() {
-    throw new BatfishException("Unimplemented getName");
+    throw new BatfishException("Unimplemented getEnvName");
   }
 
   @JsonProperty(NOT_DST_IPS_VAR)
