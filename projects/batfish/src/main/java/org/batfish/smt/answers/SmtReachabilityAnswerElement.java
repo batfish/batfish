@@ -16,13 +16,9 @@ public class SmtReachabilityAnswerElement extends SmtOneAnswerElement {
 
   @Override
   public String prettyPrint() {
-
     StringBuilder sb = new StringBuilder();
     if (_result.isVerified()) {
       sb.append("\nVerified");
-    } else {
-      sb.append(_result.prettyPrintEnv());
-      sb.append(_result.prettyPrintFailures());
     }
     return sb + _flowHistory.prettyPrint();
   }

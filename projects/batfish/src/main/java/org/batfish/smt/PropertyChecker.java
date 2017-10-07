@@ -136,10 +136,8 @@ public class PropertyChecker {
   }
 
   /*
-   * A collection of helper functions to create counter examples in
-   * the form of the Batfish Flow data type from z3's model
+   * Reconstruct the packet z3 found in the counterexample
    */
-
   private static Flow buildFlow(Model m, SymbolicPacket pkt, String router) {
     Ip srcIp = ipVal(m, pkt.getSrcIp());
     Ip dstIp = ipVal(m, pkt.getDstIp());
@@ -178,6 +176,82 @@ public class PropertyChecker {
     return b.build();
   }
 
+  /*
+   * Convert an SMT GraphEdge to a Batfish Edge
+   */
+  private static Edge fromGraphEdge(GraphEdge ge) {
+    String w = ge.getRouter();
+    String x = ge.getStart() == null ? "none" : ge.getStart().getName();
+    String y = ge.getPeer();
+    String z = ge.getEnd() == null ? "none" : ge.getEnd().getName();
+    return new Edge(w, x, y, z);
+  }
+
+  /*
+   * From the model, reconstruct the collection of Edges in
+   * the graph that have been failed.
+   */
+  private static Set<Edge> buildFailedLinks(Encoder enc, Model m) {
+    Set<GraphEdge> failed = new HashSet<>();
+    Graph g = enc.getMainSlice().getGraph();
+    g.getEdgeMap()
+        .forEach(
+            (router, edges) -> {
+              for (GraphEdge ge : edges) {
+                ArithExpr e = enc.getSymbolicFailures().getFailedVariable(ge);
+                assert e != null;
+                String s = evaluate(m, e);
+                if (!"0".equals(s)) {
+                  // Don't add both directions?
+                  GraphEdge other = g.getOtherEnd().get(ge);
+                  if (other == null || !failed.contains(other)) {
+                    failed.add(ge);
+                  }
+                }
+              }
+            });
+    // Convert to Batfish Edge type
+    Set<Edge> failedEdges = new HashSet<>();
+    for (GraphEdge ge : failed) {
+      failedEdges.add(fromGraphEdge(ge));
+    }
+    return failedEdges;
+  }
+
+  private static Map<String, String> buildEnvRoutingTable(Encoder enc, Model m) {
+    Map<String, String> routes = new TreeMap<>();
+    EncoderSlice slice = enc.getMainSlice();
+    LogicalGraph lg = slice.getLogicalGraph();
+    lg.getEnvironmentVars()
+        .forEach(
+            (lge, record) -> {
+              // If there is an external advertisement
+              String s = evaluate(m, record.getPermitted());
+              if ("true".equals(s)) {
+                // If we actually use it
+                GraphEdge ge = lge.getEdge();
+                String router = ge.getRouter();
+                SymbolicDecisions decisions = slice.getSymbolicDecisions();
+                BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
+                assert ctrFwd != null;
+                s = evaluate(m, ctrFwd);
+                if ("true".equals(s)) {
+                  SymbolicRecord r = decisions.getBestNeighbor().get(router);
+                  SymbolicPacket pkt = slice.getSymbolicPacket();
+                  Flow f = buildFlow(m, pkt, router);
+                  Prefix pfx = buildPrefix(r, m, f);
+                  Protocol proto = buildProcotol(r, m, slice, router);
+                  String route = buildRoute(pfx, proto, ge);
+                  routes.put(ge.toString(), route);
+                }
+              }
+            });
+    return routes;
+  }
+
+  /*
+   * Build an individual flow hop along a path
+   */
   private static FlowTraceHop buildFlowTraceHop(Flow f, GraphEdge ge, String route) {
     String node1 = ge.getRouter();
     String int1 = ge.getStart().getName();
@@ -189,6 +263,9 @@ public class PropertyChecker {
     return new FlowTraceHop(edge, routes, null);
   }
 
+  /*
+   * Reconstruct the actual route used to forward the packet.
+   */
   private static String buildRoute(Prefix pfx, Protocol proto, GraphEdge ge) {
     String type;
     String nhip;
@@ -205,6 +282,32 @@ public class PropertyChecker {
     return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx.getNetworkPrefix(), nhip, nhint);
   }
 
+  /*
+   * Reconstruct the prefix from a symbolic record
+   */
+  private static Prefix buildPrefix(SymbolicRecord r, Model m, Flow f) {
+    Integer pfxLen = intVal(m, r.getPrefixLength());
+    return new Prefix(f.getDstIp(), pfxLen);
+  }
+
+  /*
+   * Reconstruct the protocol from a symbolic record
+   */
+  private static Protocol buildProcotol(
+      SymbolicRecord r, Model m, EncoderSlice slice, String router) {
+    Protocol proto;
+    if (r.getProtocolHistory().getBitVec() == null) {
+      proto = slice.getProtocols().get(router).get(0);
+    } else {
+      Integer idx = intVal(m, r.getProtocolHistory().getBitVec());
+      proto = r.getProtocolHistory().value(idx);
+    }
+    return proto;
+  }
+
+  /*
+   * Build flow information for a given hop along a path
+   */
   private static Tuple<Flow, FlowTrace> buildFlowTrace(Encoder enc, Model m, String router) {
     EncoderSlice slice = enc.getMainSlice();
     SymbolicPacket pkt = slice.getSymbolicPacket();
@@ -223,15 +326,8 @@ public class PropertyChecker {
       Map<GraphEdge, BoolExpr> across = enc.getMainSlice().getForwardsAcross().get(current);
       // Find the route used
       SymbolicRecord r = decisions.getBestNeighbor().get(current);
-      Protocol proto;
-      if (r.getProtocolHistory().getBitVec() == null) {
-        proto = slice.getProtocols().get(current).get(0);
-      } else {
-        Integer idx = intVal(m, r.getProtocolHistory().getBitVec());
-        proto = r.getProtocolHistory().value(idx);
-      }
-      Integer pfxLen = intVal(m, r.getPrefixLength());
-      Prefix pfx = new Prefix(f.getDstIp(), pfxLen);
+      Protocol proto = buildProcotol(r, m, slice, current);
+      Prefix pfx = buildPrefix(r, m, f);
       // pick the next router
       boolean found = false;
       for (Entry<GraphEdge, BoolExpr> entry : dfwd.entrySet()) {
@@ -307,6 +403,10 @@ public class PropertyChecker {
     }
   }
 
+  /*
+   * Creates a trace-based example of what happens
+   * to a packet (e.g., why it is not reachable).
+   */
   private static FlowHistory buildFlowCounterExample(
       IBatfish batfish,
       VerificationResult res,
@@ -321,9 +421,18 @@ public class PropertyChecker {
         BoolExpr sourceVar = reach.get(source);
         if (isFalse(model, sourceVar)) {
           Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
-          // TODO: Correctly add any relevant routing message or failures
+          Set<Edge> failedLinks = buildFailedLinks(enc, model);
+          Map<String, String> envRoutes = buildEnvRoutingTable(enc, model);
           Environment baseEnv =
-              new Environment("BASE", batfish.getTestrigName(), null, null, null, null, null, null);
+              new Environment(
+                  "BASE",
+                  batfish.getTestrigName(),
+                  failedLinks,
+                  null,
+                  null,
+                  null,
+                  envRoutes,
+                  null);
           fh.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
         }
       }
@@ -331,17 +440,10 @@ public class PropertyChecker {
     return fh;
   }
 
-  private static String environmentString(VerificationResult res) {
-    StringBuilder sb = new StringBuilder();
-    res.getEnvModel().forEach((envEdge, values) -> {
-      sb.append(envEdge).append("\n");
-      values.forEach((name, val) -> {
-        sb.append("  ").append(name).append(" ").append(val).append("\n");
-      });
-    });
-    return sb.toString();
-  }
-
+  /*
+   * Create a trace-based counterexample demonstrating
+   * the difference between two networks on a single packet.
+   */
   private static FlowHistory buildFlowDiffCounterExample(
       IBatfish batfish,
       VerificationResult res,
@@ -363,13 +465,30 @@ public class PropertyChecker {
         if (!Objects.equals(val1, val2)) {
           Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, model, source);
           Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
-          // TODO: Correctly add any relevant routing message or failures
-          String env = environmentString(res);
+          Set<Edge> failedLinksDiff = buildFailedLinks(enc, model);
+          Set<Edge> failedLinksBase = buildFailedLinks(enc2, model);
+          Map<String, String> envRoutesDiff = buildEnvRoutingTable(enc, model);
+          Map<String, String> envRoutesBase = buildEnvRoutingTable(enc2, model);
           Environment baseEnv =
-              new Environment("BASE", batfish.getTestrigName(), null, null, null, null, null, env);
+              new Environment(
+                  "BASE",
+                  batfish.getTestrigName(),
+                  failedLinksBase,
+                  null,
+                  null,
+                  null,
+                  envRoutesBase,
+                  null);
           Environment failedEnv =
               new Environment(
-                  "FAILED", batfish.getTestrigName(), null, null, null, null, null, env);
+                  "FAILED",
+                  batfish.getTestrigName(),
+                  failedLinksDiff,
+                  null,
+                  null,
+                  null,
+                  envRoutesDiff,
+                  null);
           fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
           fh.addFlowTrace(diff.getFirst(), "FAILED", failedEnv, diff.getSecond());
         }
@@ -378,6 +497,9 @@ public class PropertyChecker {
     return fh;
   }
 
+  /*
+   * Find the set of edges that the solver can consider to fail
+   */
   private static Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
     Pattern p1 = Pattern.compile(q.getFailNode1Regex());
     Pattern p2 = Pattern.compile(q.getFailNode2Regex());

@@ -112,10 +112,10 @@ test tests/java-smt/campus2-reachability2.ref get smt-reachability ingressNodeRe
 #test tests/java-smt/campus2-reachability3.ref get smt-reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", finalIfaceRegex="FastEthernet1/0" , failures=2, noEnvironment=True
 
 # Test differential reachabililty 
-init-testrig test_rigs/smt-examples/OSPF5
+init-testrig test_rigs/smt-examples/OSPF5 tr-smt-ospf5
 test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, diffType=any 
 test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="R0", failNode1Regex="R0"
 
 # Put everything together in testrigs/example
-init-testrig test_rigs/example
+init-testrig test_rigs/example tr-smt-example
 test tests/java-smt/differential3.ref get smt-reachability failures=1, diffType=any, ingressNodeRegex="host1", finalNodeRegex="as3core1", failNode1Regex="as2border2", failNode2Regex="as3border1"
