@@ -62,7 +62,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    * Set to true to debug oscillation. Make sure to set max recorded iterations to minimum necessary
    * value.
    */
-  private static boolean DEBUG_REPEAT_ITERATIONS = false;
+  private static boolean DEBUG_REPEAT_ITERATIONS = true;
 
   private static final String TRACEROUTE_INGRESS_NODE_INTERFACE_NAME =
       "traceroute_source_interface";
@@ -465,10 +465,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     Map<Integer, Integer> iterationByHashCode = new HashMap<>();
     Map<Integer, Integer> iterationHashCodes = new TreeMap<>();
     Map<Integer, RouteSet> iterationRoutes = null;
+    Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
+        iterationAbstractRoutes = null;
     if (DEBUG_ALL_ITERATIONS) {
       iterationRoutes = new TreeMap<>();
+      iterationAbstractRoutes = new TreeMap<>();
     } else if (DEBUG_REPEAT_ITERATIONS && DEBUG_MAX_RECORDED_ITERATIONS > 1) {
       iterationRoutes = new LRUMap<>(DEBUG_MAX_RECORDED_ITERATIONS);
+      iterationAbstractRoutes = new LRUMap<>(DEBUG_MAX_RECORDED_ITERATIONS);
     }
     AtomicBoolean dependentRoutesChanged = new AtomicBoolean(true);
     int dependentRoutesIterations = 0;
@@ -760,6 +764,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       if (DEBUG_REPEAT_ITERATIONS) {
         Map<Ip, String> ipOwners = dp.getIpOwnersSimple();
         RouteSet routes = computeOutputRoutes(nodes, ipOwners);
+        iterationAbstractRoutes.put(
+            dependentRoutesIterations, computeOutputAbstractRoutes(nodes, ipOwners));
         iterationRoutes.put(dependentRoutesIterations, routes);
       }
 
@@ -784,12 +790,20 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         if (!DEBUG_REPEAT_ITERATIONS) {
           throw new BatfishException(msg);
         } else if (!DEBUG_ALL_ITERATIONS) {
+          /*String errorMessage =
+          debugIterations(
+              msg, iterationRoutes, iterationWithThisHashCode, dependentRoutesIterations);*/
           String errorMessage =
-              debugIterations(
-                  msg, iterationRoutes, iterationWithThisHashCode, dependentRoutesIterations);
+              debugAbstractRoutesIterations(
+                  msg,
+                  iterationAbstractRoutes,
+                  iterationWithThisHashCode,
+                  dependentRoutesIterations);
           throw new BatfishException(errorMessage);
         } else {
-          String errorMessage = debugIterations(msg, iterationRoutes, 1, dependentRoutesIterations);
+          String errorMessage =
+              debugAbstractRoutesIterations(
+                  msg, iterationAbstractRoutes, 1, dependentRoutesIterations);
           throw new BatfishException(errorMessage);
         }
       }
@@ -904,6 +918,23 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     return outputRoutes;
   }
 
+  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
+      computeOutputAbstractRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> outputRoutes = new TreeMap<>();
+    nodes.forEach(
+        (hostname, node) -> {
+          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = new TreeMap<>();
+          outputRoutes.put(hostname, routesByVrf);
+          node._virtualRouters.forEach(
+              (vrName, vr) -> {
+                SortedSet<AbstractRoute> routes = new TreeSet<>();
+                routes.addAll(vr._mainRib.getRoutes());
+                routesByVrf.put(vrName, routes);
+              });
+        });
+    return outputRoutes;
+  }
+
   private String debugIterations(
       String msg, Map<Integer, RouteSet> iterationRoutes, int first, int last) {
     StringBuilder sb = new StringBuilder();
@@ -930,6 +961,107 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     }
     String errorMessage = sb.toString();
     return errorMessage;
+  }
+
+  private String debugAbstractRoutesIterations(
+      String msg,
+      Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
+          iterationAbsRoutes,
+      int first,
+      int last) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(msg);
+    sb.append("\n");
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> initialRoutes;
+    initialRoutes = iterationAbsRoutes.get(first);
+    sb.append("Initial routes (iteration " + first + "):\n");
+    initialRoutes.forEach(
+        (hostname, routesByVrf) -> {
+          routesByVrf.forEach(
+              (vrfName, routes) -> {
+                for (AbstractRoute route : routes) {
+                  sb.append(
+                      String.format("node:%s vrf:%s %s\n", hostname, vrfName, route.fullString()));
+                }
+              });
+        });
+    for (int i = first + 1; i <= last; i++) {
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> baseRoutesByHostname =
+          iterationAbsRoutes.get(i - 1);
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> deltaRoutesByHostname =
+          iterationAbsRoutes.get(i);
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
+          new TreeMap<>();
+      sb.append("Changed routes (iteration " + (i - 1) + " ==> " + i + "):\n");
+      Set<String> hosts = new LinkedHashSet<>();
+      hosts.addAll(baseRoutesByHostname.keySet());
+      hosts.addAll(deltaRoutesByHostname.keySet());
+      for (String host : hosts) {
+        SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = new TreeMap<>();
+        routesByHostname.put(host, routesByVrf);
+        SortedMap<String, SortedSet<AbstractRoute>> baseRoutesByVrf =
+            baseRoutesByHostname.get(host);
+        SortedMap<String, SortedSet<AbstractRoute>> deltaRoutesByVrf =
+            deltaRoutesByHostname.get(host);
+        if (baseRoutesByVrf == null) {
+          for (Entry<String, SortedSet<AbstractRoute>> e : deltaRoutesByVrf.entrySet()) {
+            String vrfName = e.getKey();
+            SortedSet<AbstractRoute> deltaRoutes = e.getValue();
+            SortedSet<AbstractRoute> routes = new TreeSet<>();
+            routesByVrf.put(vrfName, routes);
+            for (AbstractRoute deltaRoute : deltaRoutes) {
+              sb.append(
+                  String.format("+ node:%s vrf:%s %s\n", host, vrfName, deltaRoute.fullString()));
+            }
+          }
+        } else if (deltaRoutesByVrf == null) {
+          for (Entry<String, SortedSet<AbstractRoute>> e : baseRoutesByVrf.entrySet()) {
+            String vrfName = e.getKey();
+            SortedSet<AbstractRoute> baseRoutes = e.getValue();
+            SortedSet<AbstractRoute> routes = new TreeSet<>();
+            routesByVrf.put(vrfName, routes);
+            for (AbstractRoute baseRoute : baseRoutes) {
+              sb.append(
+                  String.format("- node:%s vrf:%s %s\n", host, vrfName, baseRoute.fullString()));
+            }
+          }
+        } else {
+          Set<String> vrfNames = new LinkedHashSet<>();
+          vrfNames.addAll(baseRoutesByVrf.keySet());
+          vrfNames.addAll(deltaRoutesByVrf.keySet());
+          for (String vrfName : vrfNames) {
+            SortedSet<AbstractRoute> routes = new TreeSet<>();
+            routesByVrf.put(vrfName, routes);
+            SortedSet<AbstractRoute> baseRoutes = baseRoutesByVrf.get(vrfName);
+            SortedSet<AbstractRoute> deltaRoutes = deltaRoutesByVrf.get(vrfName);
+            if (baseRoutes == null) {
+              for (AbstractRoute deltaRoute : deltaRoutes) {
+                sb.append(
+                    String.format("+ node:%s vrf:%s %s\n", host, vrfName, deltaRoute.fullString()));
+              }
+            } else if (deltaRoutes == null) {
+              for (AbstractRoute baseRoute : baseRoutes) {
+                sb.append(
+                    String.format("- node:%s vrf:%s %s\n", host, vrfName, baseRoute.fullString()));
+              }
+            } else {
+              Set<AbstractRoute> tmpBaseRoutes = new LinkedHashSet<>(baseRoutes);
+              baseRoutes.removeAll(deltaRoutes);
+              deltaRoutes.removeAll(tmpBaseRoutes);
+              for (AbstractRoute baseRoute : baseRoutes) {
+                sb.append(
+                    String.format("- node:%s vrf:%s %s\n", host, vrfName, baseRoute.fullString()));
+              }
+              for (AbstractRoute deltaRoute : deltaRoutes) {
+                sb.append(
+                    String.format("+ node:%s vrf:%s %s\n", host, vrfName, deltaRoute.fullString()));
+              }
+            }
+          }
+        }
+      }
+    }
+    return sb.toString();
   }
 
   private boolean flowTraceDeniedHelper(
