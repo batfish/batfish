@@ -357,8 +357,15 @@ public class PropertyChecker {
   private static Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
     Pattern p1 = Pattern.compile(q.getFailNode1Regex());
     Pattern p2 = Pattern.compile(q.getFailNode2Regex());
+    Pattern p3 = Pattern.compile(q.getNotFailNode1Regex());
+    Pattern p4 = Pattern.compile(q.getNotFailNode2Regex());
     Set<GraphEdge> failChoices = PatternUtils.findMatchingEdges(g, p1, p2);
-    failChoices.addAll(PatternUtils.findMatchingEdges(g, p2, p1));
+    Set<GraphEdge> failChoices2 = PatternUtils.findMatchingEdges(g, p2, p1);
+    Set<GraphEdge> notFailChoices = PatternUtils.findMatchingEdges(g, p3, p4);
+    Set<GraphEdge> notFailChoices2 = PatternUtils.findMatchingEdges(g, p4, p3);
+    failChoices.addAll(failChoices2);
+    failChoices.removeAll(notFailChoices);
+    failChoices.removeAll(notFailChoices2);
     return failChoices;
   }
 
