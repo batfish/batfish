@@ -119,4 +119,3 @@ test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", 
 # Put everything together in testrigs/example
 init-testrig test_rigs/example tr-smt-example
 test tests/java-smt/differential3.ref get smt-reachability failures=1, diffType=any, ingressNodeRegex="host1", finalNodeRegex="as3core1", failNode1Regex="as2border2", failNode2Regex="as3border1", noEnvironment=True
-test tests/java-smt/differential-env.ref get smt-reachability failures=0, envDiff=True, diffType=any
