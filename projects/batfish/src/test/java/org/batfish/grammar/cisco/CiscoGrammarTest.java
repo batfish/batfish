@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
@@ -33,12 +32,12 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link CiscoParser}Cisco parser and {@link CiscoControlPlaneExtractor}. */
 public class CiscoGrammarTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   private static String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco/testconfigs/";
-
   private static String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
+
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
   public void testAaaNewmodel() throws IOException {
