@@ -161,7 +161,7 @@ class Optimizations {
   } */
 
   /*
-   * Check if the BGP local preference is needed. mkIf it is never set,
+   * Check if the BGP local preference is needed. If it is never set,
    * then the variable can be removed from the encoding.
    */
   private boolean computeKeepLocalPref() {
@@ -220,7 +220,7 @@ class Optimizations {
   }
 
   /*
-   * Check if we need to keep around the OSPF type. mkIf the type
+   * Check if we need to keep around the OSPF type. If the type
    * is never set via redistribution, and there is a single area,
    * then it is unnecessary.
    */
@@ -340,7 +340,7 @@ class Optimizations {
         .forEach(
             (router, conf) -> {
 
-              // mkIf iBGP is used, and no multipath, then we need the routerId
+              // If iBGP is used, and no multipath, then we need the routerId
               boolean usesIbgp = false;
               for (GraphEdge ge : _encoderSlice.getGraph().getEdgeMap().get(router)) {
                 if (_encoderSlice.getGraph().getIbgpNeighbors().get(ge) != null) {
@@ -349,7 +349,7 @@ class Optimizations {
                 }
               }
 
-              // mkIf eBGP is used, and no multipath, then we need the routerId
+              // If eBGP is used, and no multipath, then we need the routerId
               boolean usesEbgp = _encoderSlice.getProtocols().get(router).contains(Protocol.BGP);
 
               // check if multipath is used
@@ -384,7 +384,7 @@ class Optimizations {
   }
 
   /*
-   * mkIf there is only a single protocol running on a router, then
+   * If there is only a single protocol running on a router, then
    * there is no need to keep both per-protocol and overall best
    * copies of the final choice.
    */
@@ -512,7 +512,9 @@ class Optimizations {
                         isPure = false;
                       }
 
-                      if (safeMergeEdge && sameInternal && isPure) {
+                      boolean noFailures = _encoderSlice.getEncoder().getFailures() == 0;
+
+                      if (safeMergeEdge && sameInternal && isPure && noFailures) {
                         if (hasExportVariables(ge, proto)) {
                           edges.add(ge);
                         }

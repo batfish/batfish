@@ -143,7 +143,7 @@ public class Graph {
     _neighbors = new HashMap<>();
     routerIfaceMap.forEach(
         (router, nips) -> {
-          List<GraphEdge> graphEdges = new ArrayList<>();
+          Set<GraphEdge> graphEdges = new HashSet<>();
 
           Set<String> neighs = new HashSet<>();
           nips.forEach(
@@ -155,7 +155,6 @@ public class Graph {
                   GraphEdge ge = new GraphEdge(i1, null, router, null, false);
                   graphEdges.add(ge);
                 }
-
                 if (es != null) {
                   boolean hasMultipleEnds = (es.size() > 2);
                   if (hasMultipleEnds) {
@@ -163,6 +162,12 @@ public class Graph {
                     graphEdges.add(ge);
                   } else {
                     for (Edge e : es) {
+                      // Weird inference behavior from Batfish here with a self-loop
+                      if (router.equals(e.getNode1()) && router.equals(e.getNode2())) {
+                        GraphEdge ge = new GraphEdge(i1, null, router, null, false);
+                        graphEdges.add(ge);
+                      }
+                      // Only look at the first pair
                       if (!router.equals(e.getNode2())) {
                         Interface i2 = ifaceMap.get(e.getInterface2());
                         String neighbor = e.getNode2();
@@ -172,12 +177,13 @@ public class Graph {
                         graphEdges.add(ge1);
                         neighs.add(neighbor);
                       }
+
                     }
                   }
                 }
               });
 
-          _edgeMap.put(router, graphEdges);
+          _edgeMap.put(router, new ArrayList<>(graphEdges));
           _neighbors.put(router, neighs);
         });
   }
@@ -185,7 +191,6 @@ public class Graph {
   public static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
-
 
   /*
    * Collect all static routes after inferring which interface they indicate
@@ -459,9 +464,9 @@ public class Graph {
   }
 
   /*
- * Determines the collection of routers within the same AS
- * as the router provided as a parameter
- */
+   * Determines the collection of routers within the same AS
+   * as the router provided as a parameter
+   */
   private Set<String> findDomain(String router) {
     Set<String> sameDomain = new HashSet<>();
     Queue<String> todo = new ArrayDeque<>();
@@ -487,7 +492,7 @@ public class Graph {
    */
   private void initDomains() {
     int i = 0;
-    Set<String> routers =  new HashSet<>(_configurations.keySet());
+    Set<String> routers = new HashSet<>(_configurations.keySet());
     while (!routers.isEmpty()) {
       String router = routers.iterator().next();
       Set<String> domain = findDomain(router);

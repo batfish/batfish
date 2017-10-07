@@ -5,10 +5,10 @@
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
             "flow" : {
               "dscp" : 0,
-              "dstIp" : "70.70.70.0",
+              "dstIp" : "70.70.70.70",
               "dstPort" : 0,
               "ecn" : 0,
               "fragmentOffset" : 0,
@@ -44,7 +44,7 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1/24,nhint:dynamic>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1,nhint:dynamic>"
                       ]
                     },
                     {
@@ -55,18 +55,61 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1/24,nhint:dynamic>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1,nhint:dynamic>"
                       ]
-                    },
+                    }
+                  ],
+                  "notes" : "ACCEPTED"
+                }
+              ],
+              "FAILED" : [
+                {
+                  "disposition" : "NO_ROUTE",
+                  "notes" : "NO_ROUTE"
+                }
+              ]
+            }
+          },
+          "Flow<ingressNode:R2 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+            "flow" : {
+              "dscp" : 0,
+              "dstIp" : "70.70.70.70",
+              "dstPort" : 0,
+              "ecn" : 0,
+              "fragmentOffset" : 0,
+              "icmpCode" : 0,
+              "icmpVar" : 0,
+              "ingressNode" : "R2",
+              "ingressVrf" : "default",
+              "ipProtocol" : "HOPOPT",
+              "packetLength" : 0,
+              "srcIp" : "0.0.0.0",
+              "srcPort" : 0,
+              "state" : "NEW",
+              "tag" : "SMT",
+              "tcpFlagsAck" : 1,
+              "tcpFlagsCwr" : 1,
+              "tcpFlagsEce" : 1,
+              "tcpFlagsFin" : 1,
+              "tcpFlagsPsh" : 1,
+              "tcpFlagsRst" : 1,
+              "tcpFlagsSyn" : 1,
+              "tcpFlagsUrg" : 1
+            },
+            "paths" : {
+              "BASE" : [
+                {
+                  "disposition" : "ACCEPTED",
+                  "hops" : [
                     {
                       "edge" : {
-                        "node1" : "R3",
-                        "node1interface" : "Loopback0",
-                        "node2" : "(none)",
-                        "node2interface" : "null_interface"
+                        "node1" : "R2",
+                        "node1interface" : "Serial1",
+                        "node2" : "R3",
+                        "node2interface" : "Serial1"
                       },
                       "routes" : [
-                        "ConnectedRoute<70.70.70.0/24,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.2.64.1,nhint:dynamic>"
                       ]
                     }
                   ],
@@ -86,15 +129,13 @@
       "result" : {
         "failuresModel" : [
           "link(R0,R1)",
-          "link(R0,R2)"
+          "link(R2,R3)"
         ],
         "forwardingModel" : [
-          "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R2,Serial1 --> R3,Serial1 (OSPF)",
-          "R3,Loopback0 --> _,_ (CONNECTED)"
+          "R1,Serial1 --> R3,Serial0 (OSPF)"
         ],
         "packetModel" : {
-          "dstIp" : "70.70.70.0"
+          "dstIp" : "70.70.70.70"
         },
         "verified" : false
       }

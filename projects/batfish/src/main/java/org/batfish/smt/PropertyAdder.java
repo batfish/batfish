@@ -127,16 +127,32 @@ public class PropertyAdder {
               ArithExpr id = idVars.get(router);
               // Add the base case, reachable if we forward to a directly connected interface
               BoolExpr hasDirectRoute = ctx.mkFalse();
+              BoolExpr isAbsorbed = ctx.mkFalse();
+
+              SymbolicRecord r =
+                  _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+
               for (GraphEdge ge : edges) {
                 if (!ge.isAbstract() && ges.contains(ge)) {
-                  BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-                  assert (fwdIface != null);
-                  hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+                  // Reachable if we leave the network
+                  if (ge.getPeer() == null) {
+                    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+                    assert (fwdIface != null);
+                    hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+                  }
+                  // Also reachable if connected route and we use it despite not forwarding
+                  if (r != null) {
+                    ArithExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+                    ArithExpr ip = ctx.mkInt(ge.getStart().getPrefix().getAddress().asLong());
+                    BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+                    isAbsorbed = ctx.mkOr(isAbsorbed, reach);
+                  }
                 }
               }
               // Add the recursive case, where it is reachable through a neighbor
               BoolExpr recursive = recursiveReachability(ctx, slice, edges, idVars, router, id);
-              BoolExpr cond = slice.mkIf(hasDirectRoute, ctx.mkEq(id, ctx.mkInt(1)), recursive);
+              BoolExpr guard = ctx.mkOr(hasDirectRoute, isAbsorbed);
+              BoolExpr cond = slice.mkIf(guard, ctx.mkEq(id, ctx.mkInt(1)), recursive);
               solver.add(cond);
             });
 
@@ -170,7 +186,6 @@ public class PropertyAdder {
 
     return reachableVars;
   }
-
 
   // Potentially useful in the future to optimize reachability when we know
   // that there can't be routing loops e.g., due to a preliminary static analysis
@@ -311,12 +326,30 @@ public class PropertyAdder {
               ArithExpr length = lenVars.get(router);
 
               // If there is a direct route, then we have length 0
-              BoolExpr acc = ctx.mkFalse();
+              BoolExpr hasDirectRoute = ctx.mkFalse();
+              BoolExpr isAbsorbed = ctx.mkFalse();
+
+              SymbolicRecord r =
+                  _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+
+
               for (GraphEdge ge : edges) {
                 if (!ge.isAbstract() && ges.contains(ge)) {
-                  BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-                  assert (fwdIface != null);
-                  acc = ctx.mkOr(acc, fwdIface);
+
+                  // Reachable if we leave the network
+                  if (ge.getPeer() == null) {
+                    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+                    assert (fwdIface != null);
+                    hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+                  }
+                  // Also reachable if connected route and we use it despite not forwarding
+                  if (r != null) {
+                    ArithExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+                    ArithExpr ip = ctx.mkInt(ge.getStart().getPrefix().getAddress().asLong());
+                    BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+                    isAbsorbed = ctx.mkOr(isAbsorbed, reach);
+                  }
+
                 }
               }
 
@@ -338,8 +371,10 @@ public class PropertyAdder {
                   }
                 }
               }
+
+              BoolExpr guard = _encoderSlice.mkOr(hasDirectRoute, isAbsorbed);
               BoolExpr cond1 = _encoderSlice.mkIf(accNone, ctx.mkEq(length, minusOne), accSome);
-              BoolExpr cond2 = _encoderSlice.mkIf(acc, ctx.mkEq(length, zero), cond1);
+              BoolExpr cond2 = _encoderSlice.mkIf(guard, ctx.mkEq(length, zero), cond1);
               solver.add(cond2);
             });
 

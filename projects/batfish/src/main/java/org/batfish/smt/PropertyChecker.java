@@ -69,6 +69,7 @@ public class PropertyChecker {
     Encoder encoder = new Encoder(batfish, q);
     encoder.computeEncoding();
     VerificationResult result = encoder.verify().getFirst();
+    //result.debug(encoder.getMainSlice(), true, "MAIN_DATA-FORWARDING_host1_eth0");
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;
@@ -76,28 +77,27 @@ public class PropertyChecker {
 
   private static Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
     Set<GraphEdge> edges = new HashSet<>();
-    for (GraphEdge ge : PatternUtils.findMatchingEdges(g, p)) {
-      if (ge.getPeer() == null || g.isEdgeHostConnected(ge)) {
-        edges.add(ge);
-      }
-    }
+    edges.addAll(PatternUtils.findMatchingEdges(g, p));
     return edges;
   }
 
   private static void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Infer relevant destination IP headerspace from interfaces
-    for (GraphEdge ge : destPorts) {
-      // If there is an external interface, then
-      // it can be any prefix, so we leave it unconstrained
-      if (g.getEbgpNeighbors().containsKey(ge)) {
-        q.getHeaderSpace().getDstIps().clear();
-        break;
+    if (q.getHeaderSpace().getDstIps().isEmpty()) {
+      for (GraphEdge ge : destPorts) {
+        // If there is an external interface, then
+        // it can be any prefix, so we leave it unconstrained
+        if (g.getEbgpNeighbors().containsKey(ge)) {
+          q.getHeaderSpace().getDstIps().clear();
+          break;
+        }
+        // Otherwise, we add the destination IP range
+        Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
+        // System.out.println("Inferred: " + pfx);
+        IpWildcard dst = new IpWildcard(pfx);
+        q.getHeaderSpace().getDstIps().add(dst);
       }
-      // Otherwise, we add the destination IP range
-      Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
-      IpWildcard dst = new IpWildcard(pfx);
-      q.getHeaderSpace().getDstIps().add(dst);
     }
   }
 
@@ -122,7 +122,7 @@ public class PropertyChecker {
   }
 
   private static Ip ipVal(Model m, Expr e) {
-    return new Ip(intVal(m,e));
+    return new Ip(intVal(m, e));
   }
 
   /*
@@ -198,10 +198,10 @@ public class PropertyChecker {
       nhint = ge.getStart().getName();
     } else {
       type = StringUtils.capitalize(proto.name().toLowerCase()) + "Route";
-      nhip = ge.getStart().getPrefix().toString();
+      nhip = ge.getStart().getPrefix().getAddress().toString();
       nhint = "dynamic";
     }
-    return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx.toString(), nhip, nhint);
+    return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx.getNetworkPrefix(), nhip, nhint);
   }
 
   private static Tuple<Flow, FlowTrace> buildFlowTrace(Encoder enc, Model m, String router) {
@@ -242,8 +242,8 @@ public class PropertyChecker {
         if (isTrue(m, dexpr)) {
           hops.add(buildFlowTraceHop(f, ge, route));
           if (isFalse(m, aexpr)) {
-            Interface i = ge.getStart();
-            IpAccessList acl = i.getInboundFilter();
+            Interface i = ge.getEnd();
+            IpAccessList acl = i.getIncomingFilter();
             FilterResult fr = acl.filter(f);
             IpAccessListLine line = acl.getLines().get(fr.getMatchLine());
             String note = String.format("DENIED_IN{%s}{%s}", acl.getName(), line.getName());
@@ -254,7 +254,11 @@ public class PropertyChecker {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
             return new Tuple<>(f, ft);
           } else if (ge.getPeer() == null) {
-            FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "EXITS_NETWORK");
+            FlowTrace ft =
+                new FlowTrace(
+                    FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                    hops,
+                    "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
             return new Tuple<>(f, ft);
           } else {
             current = ge.getPeer();
@@ -277,6 +281,25 @@ public class PropertyChecker {
         }
       }
       if (!found) {
+        BoolExpr permitted = r.getPermitted();
+        String s1 = evaluate(m, permitted);
+        if ("true".equals(s1)) {
+          // Check if there is an accepting interface
+          for (GraphEdge ge : slice.getGraph().getEdgeMap().get(current)) {
+            Interface i = ge.getStart();
+            Ip ip = i.getPrefix().getAddress();
+            if (ip.equals(f.getDstIp())) {
+              FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
+              return new Tuple<>(f, ft);
+            }
+          }
+          FlowTrace ft =
+              new FlowTrace(
+                  FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                  hops,
+                  "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
+          return new Tuple<>(f, ft);
+        }
         FlowTrace ft = new FlowTrace(FlowDisposition.NO_ROUTE, hops, "NO_ROUTE");
         return new Tuple<>(f, ft);
       }
@@ -342,6 +365,9 @@ public class PropertyChecker {
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
+
+    // System.out.println("Graph: \n" + graph);
+    // System.out.println("Destination Ports: " + destPorts);
 
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
@@ -411,6 +437,9 @@ public class PropertyChecker {
       enc.add(related);
       enc.add(enc.mkNot(required));
 
+      // System.out.println("Related: \n" + related);
+      // System.out.println("Required: \n" + required);
+
     } else {
       BoolExpr allReach = enc.mkTrue();
       for (String router : sourceRouters) {
@@ -420,17 +449,22 @@ public class PropertyChecker {
       enc.add(enc.mkNot(allReach));
     }
 
-    // We don't really care about the case where the interface is directly failed
+    // Don't fail an interface if it is for the destination ip we are considering
+    // Otherwise, any failure can trivially make equivalence false
     for (GraphEdge ge : destPorts) {
       ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
-      assert (f != null);
-      enc.add(enc.mkEq(f, enc.mkInt(0)));
+      Prefix pfx = ge.getStart().getPrefix();
+      ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
+      BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
+      BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
+      enc.add(enc.mkImplies(relevant, notFailed));
     }
 
     Tuple<VerificationResult, Model> result = enc.verify();
     VerificationResult res = result.getFirst();
     Model model = result.getSecond();
-    // res.debug(enc.getMainSlice(), true, null);
+
+    // res.debug(enc.getMainSlice(), true, "MAIN_CONTROL-FORWARDING_as2core2_GigabitEthernet1/0");
 
     FlowHistory fh;
     if (q.getEquivalence()) {
