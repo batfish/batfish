@@ -1,7 +1,9 @@
 package org.batfish.smt.utils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +59,30 @@ public class PatternUtils {
                     Matcher m4 = p4.matcher(ifaceName);
                     if (m3.matches() && !m4.matches()) {
                       acc.add(edge);
+                    }
+                  }
+                }
+              }
+            });
+    return acc;
+  }
+
+  public static Set<GraphEdge> findMatchingEdges(Graph graph, Pattern p1, Pattern p2) {
+    Set<GraphEdge> acc = new HashSet<>();
+    graph
+        .getEdgeMap()
+        .forEach(
+            (router, edges) -> {
+              Matcher m1 = p1.matcher(router);
+              if (m1.matches()) {
+                for (GraphEdge edge : edges) {
+                  if (!edge.isAbstract()) {
+                    String peer = edge.getPeer();
+                    if (peer != null) {
+                      Matcher m2 = p2.matcher(peer);
+                      if (m2.matches()) {
+                        acc.add(edge);
+                      }
                     }
                   }
                 }

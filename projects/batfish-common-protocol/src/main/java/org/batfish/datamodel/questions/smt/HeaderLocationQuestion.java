@@ -10,6 +10,10 @@ public class HeaderLocationQuestion extends HeaderQuestion {
 
   private static final String DEFAULT_INGRESS_NODE_REGEX = ".*";
 
+  private static final String DEFAULT_FAIL_NODE1_REGEX = ".*";
+
+  private static final String DEFAULT_FAIL_NODE2_REGEX = ".*";
+
   private static final String DEFAULT_NOT_FINAL_NODE_REGEX = "";
 
   private static final String DEFAULT_NOT_FINAL_IFACE_REGEX = "";
@@ -21,6 +25,10 @@ public class HeaderLocationQuestion extends HeaderQuestion {
   private static final String FINAL_IFACE_REGEX_VAR = "finalIfaceRegex";
 
   private static final String INGRESS_NODE_REGEX_VAR = "ingressNodeRegex";
+
+  private static final String FAIL_NODE1_REGEX_VAR = "failNode1Regex";
+
+  private static final String FAIL_NODE2_REGEX_VAR = "failNode2Regex";
 
   private static final String NOT_FINAL_NODE_REGEX_VAR = "notFinalNodeRegex";
 
@@ -34,6 +42,10 @@ public class HeaderLocationQuestion extends HeaderQuestion {
 
   private String _ingressNodeRegex;
 
+  private String _failNode1Regex;
+
+  private String _failNode2Regex;
+
   private String _notFinalNodeRegex;
 
   private String _notFinalIfaceRegex;
@@ -45,6 +57,8 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     _finalNodeRegex = DEFAULT_FINAL_NODE_REGEX;
     _finalIfaceRegex = DEFAULT_FINAL_IFACE_REGEX;
     _ingressNodeRegex = DEFAULT_INGRESS_NODE_REGEX;
+    _failNode1Regex = DEFAULT_FAIL_NODE1_REGEX;
+    _failNode2Regex = DEFAULT_FAIL_NODE2_REGEX;
     _notFinalNodeRegex = DEFAULT_NOT_FINAL_NODE_REGEX;
     _notFinalIfaceRegex = DEFAULT_NOT_FINAL_IFACE_REGEX;
     _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
@@ -55,6 +69,8 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     this._finalNodeRegex = other._finalNodeRegex;
     this._finalIfaceRegex = other._finalIfaceRegex;
     this._ingressNodeRegex = other._ingressNodeRegex;
+    this._failNode1Regex = other._failNode1Regex;
+    this._failNode2Regex = other._failNode2Regex;
     this._notFinalNodeRegex = other._notFinalNodeRegex;
     this._notFinalIfaceRegex = other._notFinalIfaceRegex;
     this._notIngressNodeRegex = other._notIngressNodeRegex;
@@ -73,6 +89,16 @@ public class HeaderLocationQuestion extends HeaderQuestion {
   @JsonProperty(INGRESS_NODE_REGEX_VAR)
   public String getIngressNodeRegex() {
     return _ingressNodeRegex;
+  }
+
+  @JsonProperty(FAIL_NODE1_REGEX_VAR)
+  public String getFailNode1Regex() {
+    return _failNode1Regex;
+  }
+
+  @JsonProperty(FAIL_NODE2_REGEX_VAR)
+  public String getFailNode2Regex() {
+    return _failNode2Regex;
   }
 
   @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)
@@ -103,6 +129,16 @@ public class HeaderLocationQuestion extends HeaderQuestion {
   @JsonProperty(INGRESS_NODE_REGEX_VAR)
   public void setIngressNodeRegex(String regex) {
     _ingressNodeRegex = regex;
+  }
+
+  @JsonProperty(FAIL_NODE1_REGEX_VAR)
+  public void setFailNode1Regex(String regex) {
+    _failNode1Regex = regex;
+  }
+
+  @JsonProperty(FAIL_NODE2_REGEX_VAR)
+  public void setFailNode2Regex(String regex) {
+    _failNode2Regex = regex;
   }
 
   @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)

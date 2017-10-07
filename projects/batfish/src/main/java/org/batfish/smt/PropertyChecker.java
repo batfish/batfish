@@ -354,6 +354,14 @@ public class PropertyChecker {
     return fh;
   }
 
+  private static Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
+    Pattern p1 = Pattern.compile(q.getFailNode1Regex());
+    Pattern p2 = Pattern.compile(q.getFailNode2Regex());
+    Set<GraphEdge> failChoices = PatternUtils.findMatchingEdges(g, p1, p2);
+    failChoices.addAll(PatternUtils.findMatchingEdges(g, p2, p1));
+    return failChoices;
+  }
+
   /*
    * Compute if a collection of source routers can reach a collection of destination
    * ports. This is broken up into multiple queries, one for each destination port.
@@ -365,6 +373,7 @@ public class PropertyChecker {
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
+    Set<GraphEdge> failOptions = failLinkSet(graph, q);
 
     // System.out.println("Graph: \n" + graph);
     // System.out.println("Destination Ports: " + destPorts);
@@ -449,16 +458,23 @@ public class PropertyChecker {
       enc.add(enc.mkNot(allReach));
     }
 
-    // Don't fail an interface if it is for the destination ip we are considering
-    // Otherwise, any failure can trivially make equivalence false
-    for (GraphEdge ge : destPorts) {
-      ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
-      Prefix pfx = ge.getStart().getPrefix();
-      ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
-      BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
-      BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
-      enc.add(enc.mkImplies(relevant, notFailed));
-    }
+    // Only consider failures for allowed edges
+    graph.getEdgeMap().forEach((router, edges) -> {
+      for (GraphEdge ge : edges) {
+        ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
+        if (!failOptions.contains(ge)) {
+          enc.add(enc.mkEq(f, enc.mkInt(0)));
+        } else if (destPorts.contains(ge)) {
+          // Don't fail an interface if it is for the destination ip we are considering
+          // Otherwise, any failure can trivially make equivalence false
+          Prefix pfx = ge.getStart().getPrefix();
+          ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
+          BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
+          BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
+          enc.add(enc.mkImplies(relevant, notFailed));
+        }
+      }
+    });
 
     Tuple<VerificationResult, Model> result = enc.verify();
     VerificationResult res = result.getFirst();

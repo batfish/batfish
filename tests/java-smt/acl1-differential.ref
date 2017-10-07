@@ -123,6 +123,8 @@
       "192.4.64.0/24"
     ],
     "equivalence" : true,
+    "failNode1Regex" : "R2",
+    "failNode2Regex" : "R3",
     "failures" : 1,
     "finalIfaceRegex" : ".*",
     "finalNodeRegex" : ".*",
