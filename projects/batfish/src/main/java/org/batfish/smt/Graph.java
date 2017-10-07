@@ -14,6 +14,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -568,17 +569,19 @@ public class Graph {
   /*
    * Determine if an edge is potentially attached to a host
    */
-  public boolean isEdgeHostConnected(GraphEdge ge) {
-    boolean isBgpPeering = getEbgpNeighbors().get(ge) != null;
-    if (isBgpPeering) {
-      return false;
-    }
-    if (ge.getPeer() == null) {
-      return true;
-    }
-    Configuration peerConf = _configurations.get(ge.getPeer());
+  public boolean isHost(String router) {
+    Configuration peerConf = _configurations.get(router);
     String vendor = peerConf.getConfigurationFormat().getVendorString();
     return "host".equals(vendor);
+  }
+
+  /*
+   * Check if a graph edge is a loopback address
+   */
+  public boolean isLoopback(GraphEdge ge) {
+    Configuration conf = _configurations.get(ge.getRouter());
+    ConfigurationFormat format = conf.getConfigurationFormat();
+    return ge.getStart().isLoopback(format);
   }
 
   /*

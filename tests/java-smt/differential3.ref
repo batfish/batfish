@@ -5,13 +5,13 @@
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
-          "Flow<ingressNode:host1 ingressVrf:default srcIp:2.128.0.0 dstIp:3.0.1.2 ipProtocol:TCP srcPort:0 dstPort:TELNET(23) dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tcpFlags:11111111 tag:SMT>" : {
+          "Flow<ingressNode:host1 ingressVrf:default srcIp:2.128.0.0 dstIp:3.0.2.2 ipProtocol:TCP srcPort:0 dstPort:TELNET(23) dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tcpFlags:11111111 tag:SMT>" : {
             "environments" : {
               "BASE" : {
                 "envName" : "BASE",
                 "testrigName" : "tr-smt-example"
               },
-              "FAILED" : {
+              "DIFF" : {
                 "edgeBlacklist" : [
                   {
                     "node1" : "as2border2",
@@ -20,13 +20,13 @@
                     "node2interface" : "GigabitEthernet1/0"
                   }
                 ],
-                "envName" : "FAILED",
+                "envName" : "DIFF",
                 "testrigName" : "tr-smt-example"
               }
             },
             "flow" : {
               "dscp" : 0,
-              "dstIp" : "3.0.1.2",
+              "dstIp" : "3.0.2.2",
               "dstPort" : 23,
               "ecn" : 0,
               "fragmentOffset" : 0,
@@ -73,7 +73,7 @@
                         "node2interface" : "GigabitEthernet2/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:2.34.101.4,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:2.34.101.4,nhint:dynamic>"
                       ]
                     },
                     {
@@ -84,7 +84,7 @@
                         "node2interface" : "GigabitEthernet3/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:2.23.21.3,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:2.23.21.3,nhint:dynamic>"
                       ]
                     },
                     {
@@ -95,7 +95,7 @@
                         "node2interface" : "GigabitEthernet1/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:2.12.22.2,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:2.12.22.2,nhint:dynamic>"
                       ]
                     },
                     {
@@ -106,7 +106,7 @@
                         "node2interface" : "GigabitEthernet1/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:10.23.21.2,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:10.23.21.2,nhint:dynamic>"
                       ]
                     },
                     {
@@ -117,14 +117,14 @@
                         "node2interface" : "GigabitEthernet1/0"
                       },
                       "routes" : [
-                        "ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>"
+                        "OspfRoute<3.0.2.0/24,nhip:3.0.1.1,nhint:dynamic>"
                       ]
                     }
                   ],
                   "notes" : "ACCEPTED"
                 }
               ],
-              "FAILED" : [
+              "DIFF" : [
                 {
                   "disposition" : "DENIED_OUT",
                   "hops" : [
@@ -147,7 +147,7 @@
                         "node2interface" : "GigabitEthernet2/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:2.34.101.4,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:2.34.101.4,nhint:dynamic>"
                       ]
                     },
                     {
@@ -158,7 +158,7 @@
                         "node2interface" : "GigabitEthernet3/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:2.23.21.3,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:2.23.21.3,nhint:dynamic>"
                       ]
                     },
                     {
@@ -169,7 +169,7 @@
                         "node2interface" : "GigabitEthernet2/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:2.12.12.2,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:2.12.12.2,nhint:dynamic>"
                       ]
                     },
                     {
@@ -180,7 +180,7 @@
                         "node2interface" : "GigabitEthernet1/0"
                       },
                       "routes" : [
-                        "BgpRoute<3.0.1.0/24,nhip:10.12.11.2,nhint:dynamic>"
+                        "BgpRoute<3.0.2.0/24,nhip:10.12.11.2,nhint:dynamic>"
                       ]
                     }
                   ],
@@ -192,12 +192,6 @@
         }
       },
       "result" : {
-        "environmentModel" : {
-          "as1border2,GigabitEthernet2/0 (BGP)" : {
-            "prefix" : "0.0.0.0/1",
-            "protocol metric" : "1"
-          }
-        },
         "failuresModel" : [
           "link(as2border2,as3border1)"
         ],
@@ -215,13 +209,13 @@
           "as2dist1,GigabitEthernet1/0 --> as2core2,GigabitEthernet3/0 (BGP)",
           "as2dist2,GigabitEthernet0/0 --> as2core2,GigabitEthernet2/0 (BGP)",
           "as2dist2,GigabitEthernet1/0 --> as2core1,GigabitEthernet3/0 (BGP)",
-          "as3border1,GigabitEthernet0/0 --> as3core1,GigabitEthernet1/0 (CONNECTED)",
-          "as3border2,GigabitEthernet1/0 --> as3core1,GigabitEthernet0/0 (OSPF)",
+          "as3border1,GigabitEthernet0/0 --> as3core1,GigabitEthernet1/0 (OSPF)",
+          "as3border2,GigabitEthernet1/0 --> as3core1,GigabitEthernet0/0 (CONNECTED)",
           "host1,eth0 --> as2dept1,GigabitEthernet2/0 (STATIC)",
           "host2,eth0 --> as2dept1,GigabitEthernet3/0 (STATIC)"
         ],
         "packetModel" : {
-          "dstIp" : "3.0.1.2",
+          "dstIp" : "3.0.2.2",
           "dstPort" : "23",
           "protocol" : "TCP",
           "srcIp" : "2.128.0.0"
@@ -240,6 +234,7 @@
       "3.10.1.1",
       "90.90.90.0/24"
     ],
+    "envDiff" : false,
     "failNode1Regex" : "as2border2",
     "failNode2Regex" : "as3border1",
     "failures" : 1,
@@ -248,7 +243,7 @@
     "fullModel" : false,
     "ingressNodeRegex" : "host1",
     "minimize" : false,
-    "noEnvironment" : false
+    "noEnvironment" : true
   },
   "status" : "SUCCESS",
   "summary" : {

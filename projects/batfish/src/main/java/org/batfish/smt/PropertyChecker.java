@@ -354,15 +354,25 @@ public class PropertyChecker {
             FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
             return new Tuple<>(f, ft);
           }
-          if (slice.getGraph().isEdgeHostConnected(ge)) {
+          boolean isBgpPeering = slice.getGraph().getEbgpNeighbors().get(ge) != null;
+          boolean isLoopback = slice.getGraph().isLoopback(ge);
+          if (isLoopback) {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
             return new Tuple<>(f, ft);
           } else if (ge.getPeer() == null) {
-            FlowTrace ft =
-                new FlowTrace(
-                    FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
-                    hops,
-                    "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
+            if (isBgpPeering) {
+              FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
+              return new Tuple<>(f, ft);
+            } else {
+              FlowTrace ft =
+                  new FlowTrace(
+                      FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
+                      hops,
+                      "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
+              return new Tuple<>(f, ft);
+            }
+          } else if (slice.getGraph().isHost(ge.getPeer())) {
+            FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
             return new Tuple<>(f, ft);
           } else {
             current = ge.getPeer();
@@ -488,7 +498,7 @@ public class PropertyChecker {
                   null);
           Environment failedEnv =
               new Environment(
-                  "FAILED",
+                  "DIFF",
                   batfish.getTestrigName(),
                   failedLinksDiff,
                   null,
@@ -497,7 +507,7 @@ public class PropertyChecker {
                   envRoutesDiff,
                   null);
           fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
-          fh.addFlowTrace(diff.getFirst(), "FAILED", failedEnv, diff.getSecond());
+          fh.addFlowTrace(diff.getFirst(), "DIFF", failedEnv, diff.getSecond());
         }
       }
     }
@@ -577,21 +587,23 @@ public class PropertyChecker {
 
       BoolExpr related = enc.mkTrue();
 
-      // relate environments
-      Map<LogicalEdge, SymbolicRecord> map =
-          enc.getMainSlice().getLogicalGraph().getEnvironmentVars();
-      for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
-        LogicalEdge le = entry.getKey();
-        SymbolicRecord r1 = entry.getValue();
-        String router = le.getEdge().getRouter();
-        Configuration conf = enc.getMainSlice().getGraph().getConfigurations().get(router);
+      // relate environments if necessary
+      if (!q.getEnvDiff()) {
+        Map<LogicalEdge, SymbolicRecord> map =
+            enc.getMainSlice().getLogicalGraph().getEnvironmentVars();
+        for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
+          LogicalEdge le = entry.getKey();
+          SymbolicRecord r1 = entry.getValue();
+          String router = le.getEdge().getRouter();
+          Configuration conf = enc.getMainSlice().getGraph().getConfigurations().get(router);
 
-        // Lookup the same environment variable in the other copy
-        // The copy will have a different name but the same edge and type
-        SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
-        assert r2 != null;
-        BoolExpr x = equal(enc, conf, r1, r2);
-        related = enc.mkAnd(related, x);
+          // Lookup the same environment variable in the other copy
+          // The copy will have a different name but the same edge and type
+          SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
+          assert r2 != null;
+          BoolExpr x = equal(enc, conf, r1, r2);
+          related = enc.mkAnd(related, x);
+        }
       }
 
       PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());

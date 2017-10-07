@@ -47,8 +47,6 @@ class Optimizations {
 
   private EncoderSlice _encoderSlice;
 
-  private boolean _hasExternalCommunity;
-
   private Map<String, List<Protocol>> _protocols;
 
   private Map<String, Set<Prefix>> _suppressedAggregates;
@@ -77,7 +75,6 @@ class Optimizations {
 
   Optimizations(EncoderSlice encoderSlice) {
     _encoderSlice = encoderSlice;
-    _hasExternalCommunity = false;
     _protocols = new HashMap<>();
     _relevantAggregates = new HashMap<>();
     _suppressedAggregates = new HashMap<>();
@@ -94,7 +91,6 @@ class Optimizations {
   }
 
   void computeOptimizations() {
-    _hasExternalCommunity = computeHasExternalCommunity();
     _keepLocalPref = computeKeepLocalPref();
     _keepAdminDist = computeKeepAdminDistance();
     _keepMed = computeKeepMed();
@@ -713,7 +709,4 @@ class Optimizations {
     return _keepOspfType;
   }
 
-  public boolean getHasExternalCommunity() {
-    return _hasExternalCommunity;
-  }
 }

@@ -380,7 +380,7 @@ class EncoderSlice {
 
     // Add an other variable for each regex community
     // Don't do this by default
-    if (_optimizations.getHasExternalCommunity() && Encoder.MODEL_EXTERNAL_COMMUNITIES) {
+    if (Encoder.MODEL_EXTERNAL_COMMUNITIES) {
 
       List<CommunityVar> others = new ArrayList<>();
       for (CommunityVar c : _allCommunities) {
@@ -3150,21 +3150,6 @@ class EncoderSlice {
             (le, vars) -> {
               if (vars.getClientId() != null) {
                 add(vars.getClientId().isNotFromClient());
-              }
-            });
-
-    // Communities only when send-community is configured
-    getLogicalGraph()
-        .getEnvironmentVars()
-        .forEach(
-            (le, vars) -> {
-              BgpNeighbor n = getGraph().getEbgpNeighbors().get(le.getEdge());
-              if (!n.getSendCommunity()) {
-                vars.getCommunities()
-                    .forEach(
-                        (cvar, b) -> {
-                          add(mkNot(b));
-                        });
               }
             });
 

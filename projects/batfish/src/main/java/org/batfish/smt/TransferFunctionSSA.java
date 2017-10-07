@@ -586,6 +586,9 @@ class TransferFunctionSSA {
    */
   private boolean sendCommunity() {
     if (_to.isBgp()) {
+      if (!_isExport) {
+        return true;
+      }
       BgpNeighbor n = getBgpNeighbor();
       return n.getSendCommunity();
     } else {
@@ -695,7 +698,6 @@ class TransferFunctionSSA {
     }
 
     BoolExpr comms = _enc.mkTrue();
-    // regex matches that now match due to the concrete added value
     // update all community values
     for (Map.Entry<CommunityVar, BoolExpr> entry : _current.getCommunities().entrySet()) {
       CommunityVar cvar = entry.getKey();

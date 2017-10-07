@@ -11,7 +11,7 @@
                 "envName" : "BASE",
                 "testrigName" : "tr-smt-acl1"
               },
-              "FAILED" : {
+              "DIFF" : {
                 "edgeBlacklist" : [
                   {
                     "node1" : "R0",
@@ -20,7 +20,7 @@
                     "node2interface" : "Serial0"
                   }
                 ],
-                "envName" : "FAILED",
+                "envName" : "DIFF",
                 "testrigName" : "tr-smt-acl1"
               }
             },
@@ -80,7 +80,7 @@
                   "notes" : "ACCEPTED"
                 }
               ],
-              "FAILED" : [
+              "DIFF" : [
                 {
                   "disposition" : "DENIED_OUT",
                   "hops" : [
@@ -140,6 +140,7 @@
       "192.3.64.0/24",
       "192.4.64.0/24"
     ],
+    "envDiff" : false,
     "failNode1Regex" : "R0",
     "failNode2Regex" : "R1",
     "failures" : 1,

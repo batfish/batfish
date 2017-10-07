@@ -62,6 +62,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String DIFF_TYPE_VAR = "diffType";
 
+  private static final String ENV_DIFF_VAR = "envDiff";
+
   private Set<ForwardingAction> _actions;
 
   private final HeaderSpace _headerSpace;
@@ -76,6 +78,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private DiffType _diffType;
 
+  private boolean _envDiff;
+
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
     _headerSpace = new HeaderSpace();
@@ -84,6 +88,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _noEnvironment = false;
     _minimize = false;
     _diffType = null;
+    _envDiff = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -94,6 +99,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
     _diffType = q._diffType;
+    _envDiff = q._envDiff;
   }
 
   @Override
@@ -224,6 +230,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(DIFF_TYPE_VAR)
   public DiffType getDiffType() {
     return _diffType;
+  }
+
+  @JsonProperty(ENV_DIFF_VAR)
+  public boolean getEnvDiff() {
+    return _envDiff;
   }
 
   @Override
@@ -412,6 +423,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(DIFF_TYPE_VAR)
   public void setDiffType(DiffType d) {
     _diffType = d;
+  }
+
+  @JsonProperty(ENV_DIFF_VAR)
+  public void setEnvDiff(boolean b) {
+    _envDiff = b;
   }
 
 }
