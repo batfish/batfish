@@ -415,6 +415,9 @@ public abstract class BgpPeerGroup implements Serializable {
     if (_remoteAs == null) {
       _remoteAs = pg.getRemoteAs();
     }
+    if (_removePrivateAs == null) {
+      _removePrivateAs = pg.getRemovePrivateAs();
+    }
     if (_routeReflectorClient == null) {
       _routeReflectorClient = pg.getRouteReflectorClient();
     }
