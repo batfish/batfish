@@ -396,7 +396,7 @@ public class PropertyChecker {
     Encoder enc2 = null;
     Map<String, BoolExpr> reach2 = null;
 
-    if (q.getEquivalence()) {
+    if (q.getDiffType() != null) {
       HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
       q2.setFailures(0);
       enc2 = new Encoder(enc, graph, q2);
@@ -404,7 +404,7 @@ public class PropertyChecker {
     }
 
     // TODO: Should equivalence be factored out separately?
-    if (q.getEquivalence()) {
+    if (q.getDiffType() != null) {
       assert (enc2 != null);
 
       // create a map for enc2 to lookup a related environment variable from enc
@@ -436,11 +436,25 @@ public class PropertyChecker {
       PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
       reach2 = pa2.instrumentReachability(destPorts);
 
+      // Add diff constraints
       BoolExpr required = enc.mkTrue();
       for (String source : sourceRouters) {
         BoolExpr sourceReachable1 = reach.get(source);
         BoolExpr sourceReachable2 = reach2.get(source);
-        required = enc.mkAnd(required, enc.mkEq(sourceReachable1, sourceReachable2));
+        BoolExpr val;
+        switch (q.getDiffType()) {
+        case INCREASED:
+          val = enc.mkImplies(sourceReachable1, sourceReachable2);
+          break;
+        case REDUCED:
+          val = enc.mkImplies(sourceReachable2, sourceReachable1);
+          break;
+        case ANY:
+          val = enc.mkEq(sourceReachable1, sourceReachable2);
+          break;
+        default: throw new BatfishException("Missing case: " + q.getDiffType());
+        }
+        required = enc.mkAnd(required, val);
       }
 
       // Ensure packets are equal
@@ -469,6 +483,7 @@ public class PropertyChecker {
     graph.getEdgeMap().forEach((router, edges) -> {
       for (GraphEdge ge : edges) {
         ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
+        assert f != null;
         if (!failOptions.contains(ge)) {
           enc.add(enc.mkEq(f, enc.mkInt(0)));
         } else if (destPorts.contains(ge)) {
@@ -490,7 +505,8 @@ public class PropertyChecker {
     // res.debug(enc.getMainSlice(), true, "MAIN_CONTROL-FORWARDING_as2core2_GigabitEthernet1/0");
 
     FlowHistory fh;
-    if (q.getEquivalence()) {
+    if (q.getDiffType() != null) {
+      System.out.println("Building counter example");
       fh = buildFlowDiffCounterExample(res, sourceRouters, model, enc, enc2, reach, reach2);
     } else {
       fh = buildFlowCounterExample(res, sourceRouters, model, enc, reach);

@@ -86,7 +86,6 @@
     "dstIps" : [
       "41.41.41.1"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

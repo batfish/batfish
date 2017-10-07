@@ -103,7 +103,8 @@
     "dstIps" : [
       "70.70.70.70"
     ],
-    "equivalence" : false,
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
     "failures" : 0,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R3",

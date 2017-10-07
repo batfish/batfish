@@ -105,7 +105,6 @@
     "dstIps" : [
       "70.70.70.70"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

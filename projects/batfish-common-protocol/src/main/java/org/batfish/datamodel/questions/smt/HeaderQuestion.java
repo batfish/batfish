@@ -60,7 +60,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String MINIMIZE_VAR = "minimize";
 
-  private static final String EQUIVALENCE_VAR = "equivalence";
+  private static final String DIFF_TYPE_VAR = "diffType";
 
   private Set<ForwardingAction> _actions;
 
@@ -74,7 +74,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _minimize;
 
-  private boolean _equivalence;
+  private DiffType _diffType;
 
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
@@ -83,7 +83,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = false;
     _noEnvironment = false;
     _minimize = false;
-    _equivalence = false;
+    _diffType = null;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -93,7 +93,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = q._fullModel;
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
-    _equivalence = q._equivalence;
+    _diffType = q._diffType;
   }
 
   @Override
@@ -221,9 +221,9 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _minimize;
   }
 
-  @JsonProperty(EQUIVALENCE_VAR)
-  public boolean getEquivalence() {
-    return _equivalence;
+  @JsonProperty(DIFF_TYPE_VAR)
+  public DiffType getDiffType() {
+    return _diffType;
   }
 
   @Override
@@ -409,9 +409,9 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = b;
   }
 
-  @JsonProperty(EQUIVALENCE_VAR)
-  public void setEquivalence(boolean b) {
-    _equivalence = b;
+  @JsonProperty(DIFF_TYPE_VAR)
+  public void setDiffType(DiffType d) {
+    _diffType = d;
   }
 
 }

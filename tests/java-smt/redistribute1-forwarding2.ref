@@ -72,7 +72,6 @@
     "dstIps" : [
       "69.69.69.0"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

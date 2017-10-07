@@ -214,6 +214,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "diffType" : "any",
     "differential" : false,
     "dstIps" : [
       "3.0.1.0/24",
@@ -221,7 +222,6 @@
       "3.10.1.1",
       "90.90.90.0/24"
     ],
-    "equivalence" : true,
     "failNode1Regex" : "as2border2",
     "failNode2Regex" : "as3border1",
     "failures" : 1,

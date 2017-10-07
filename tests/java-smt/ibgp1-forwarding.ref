@@ -176,7 +176,6 @@
     "dstIps" : [
       "20.20.20.20"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

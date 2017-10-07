@@ -5,16 +5,16 @@
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "Flow<ingressNode:R2 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
             "flow" : {
               "dscp" : 0,
-              "dstIp" : "70.70.70.0",
+              "dstIp" : "70.70.70.70",
               "dstPort" : 0,
               "ecn" : 0,
               "fragmentOffset" : 0,
               "icmpCode" : 0,
               "icmpVar" : 0,
-              "ingressNode" : "R0",
+              "ingressNode" : "R2",
               "ingressVrf" : "default",
               "ipProtocol" : "HOPOPT",
               "packetLength" : 0,
@@ -34,8 +34,38 @@
             "paths" : {
               "BASE" : [
                 {
+                  "disposition" : "DENIED_OUT",
+                  "hops" : [
+                    {
+                      "edge" : {
+                        "node1" : "R2",
+                        "node1interface" : "Serial1",
+                        "node2" : "R3",
+                        "node2interface" : "Serial1"
+                      },
+                      "routes" : [
+                        "OspfRoute<70.70.70.70/32,nhip:192.2.64.1,nhint:dynamic>"
+                      ]
+                    }
+                  ],
+                  "notes" : "DENIED_OUT{101}{deny ip any 70.70.70.70  0.0.0.255}"
+                }
+              ],
+              "FAILED" : [
+                {
                   "disposition" : "ACCEPTED",
                   "hops" : [
+                    {
+                      "edge" : {
+                        "node1" : "R2",
+                        "node1interface" : "Serial0",
+                        "node2" : "R0",
+                        "node2interface" : "Serial1"
+                      },
+                      "routes" : [
+                        "OspfRoute<70.70.70.70/32,nhip:192.4.64.2,nhint:dynamic>"
+                      ]
+                    },
                     {
                       "edge" : {
                         "node1" : "R0",
@@ -44,7 +74,7 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1,nhint:dynamic>"
+                        "OspfRoute<70.70.70.70/32,nhip:192.3.64.1,nhint:dynamic>"
                       ]
                     },
                     {
@@ -55,28 +85,11 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1,nhint:dynamic>"
-                      ]
-                    },
-                    {
-                      "edge" : {
-                        "node1" : "R3",
-                        "node1interface" : "Loopback0",
-                        "node2" : "(none)",
-                        "node2interface" : "null_interface"
-                      },
-                      "routes" : [
-                        "ConnectedRoute<70.70.70.0/24,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
+                        "OspfRoute<70.70.70.70/32,nhip:192.1.64.1,nhint:dynamic>"
                       ]
                     }
                   ],
                   "notes" : "ACCEPTED"
-                }
-              ],
-              "FAILED" : [
-                {
-                  "disposition" : "NO_ROUTE",
-                  "notes" : "NO_ROUTE"
                 }
               ]
             }
@@ -85,16 +98,15 @@
       },
       "result" : {
         "failuresModel" : [
-          "link(R0,R1)",
-          "link(R0,R2)"
+          "link(R2,R3)"
         ],
         "forwardingModel" : [
+          "R0,Serial0 --> R1,Serial0 (OSPF)",
           "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R2,Serial1 --> R3,Serial1 (OSPF)",
-          "R3,Loopback0 --> _,_ (CONNECTED)"
+          "R2,Serial0 --> R0,Serial1 (OSPF)"
         ],
         "packetModel" : {
-          "dstIp" : "70.70.70.0"
+          "dstIp" : "70.70.70.70"
         },
         "verified" : false
       }
@@ -102,18 +114,22 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
-    "diffType" : "any",
+    "diffType" : "increased",
     "differential" : false,
     "dstIps" : [
-      "70.70.70.0/24"
+      "70.70.70.70",
+      "192.1.64.0/24",
+      "192.2.64.0/24",
+      "192.3.64.0/24",
+      "192.4.64.0/24"
     ],
-    "failNode1Regex" : "R0",
+    "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
-    "failures" : 2,
-    "finalIfaceRegex" : "Loopback.*",
-    "finalNodeRegex" : "R3",
+    "failures" : 1,
+    "finalIfaceRegex" : ".*",
+    "finalNodeRegex" : ".*",
     "fullModel" : false,
-    "ingressNodeRegex" : "R0",
+    "ingressNodeRegex" : ".*",
     "minimize" : false,
     "noEnvironment" : false
   },
