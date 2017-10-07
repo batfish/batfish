@@ -6,6 +6,24 @@
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
           "Flow<ingressNode:host1 ingressVrf:default srcIp:2.128.0.0 dstIp:3.0.1.2 ipProtocol:TCP srcPort:0 dstPort:TELNET(23) dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tcpFlags:11111111 tag:SMT>" : {
+            "environments" : {
+              "BASE" : {
+                "envName" : "BASE",
+                "testrigName" : "tr-smt-example"
+              },
+              "FAILED" : {
+                "edgeBlacklist" : [
+                  {
+                    "node1" : "as2border2",
+                    "node1interface" : "GigabitEthernet0/0",
+                    "node2" : "as3border1",
+                    "node2interface" : "GigabitEthernet1/0"
+                  }
+                ],
+                "envName" : "FAILED",
+                "testrigName" : "tr-smt-example"
+              }
+            },
             "flow" : {
               "dscp" : 0,
               "dstIp" : "3.0.1.2",

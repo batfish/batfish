@@ -12,6 +12,20 @@
                 "testrigName" : "tr-smt-ospf5"
               },
               "FAILED" : {
+                "edgeBlacklist" : [
+                  {
+                    "node1" : "R0",
+                    "node1interface" : "Serial0",
+                    "node2" : "R1",
+                    "node2interface" : "Serial0"
+                  },
+                  {
+                    "node1" : "R2",
+                    "node1interface" : "Serial0",
+                    "node2" : "R0",
+                    "node2interface" : "Serial1"
+                  }
+                ],
                 "envName" : "FAILED",
                 "testrigName" : "tr-smt-ospf5"
               }

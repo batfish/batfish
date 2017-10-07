@@ -12,6 +12,14 @@
                 "testrigName" : "tr-smt-acl1"
               },
               "FAILED" : {
+                "edgeBlacklist" : [
+                  {
+                    "node1" : "R0",
+                    "node1interface" : "Serial0",
+                    "node2" : "R1",
+                    "node2interface" : "Serial0"
+                  }
+                ],
                 "envName" : "FAILED",
                 "testrigName" : "tr-smt-acl1"
               }
