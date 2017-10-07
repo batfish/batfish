@@ -140,8 +140,8 @@
       "192.3.64.0/24",
       "192.4.64.0/24"
     ],
-    "failNode1Regex" : ".*",
-    "failNode2Regex" : ".*",
+    "failNode1Regex" : "R0",
+    "failNode2Regex" : "R1",
     "failures" : 1,
     "finalIfaceRegex" : ".*",
     "finalNodeRegex" : ".*",

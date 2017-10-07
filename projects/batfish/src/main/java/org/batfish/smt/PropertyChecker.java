@@ -76,12 +76,19 @@ public class PropertyChecker {
     return answer;
   }
 
+  /*
+   * Find the collection of relevant destination interfaces
+   */
   private static Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
     Set<GraphEdge> edges = new HashSet<>();
     edges.addAll(PatternUtils.findMatchingEdges(g, p));
     return edges;
   }
 
+  /*
+   * From the destination interfaces, infer the relevant headerspace.
+   * E.g., what range of destination IP is interesting for the query
+   */
   private static void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Infer relevant destination IP headerspace from interfaces
@@ -525,6 +532,14 @@ public class PropertyChecker {
     Graph graph = new Graph(batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
+
+    if (destPorts.isEmpty()) {
+      throw new BatfishException("Set of valid destination interfaces is empty");
+    }
+    if (sourceRouters.isEmpty()) {
+      throw new BatfishException("Set of valid ingress nodes is empty");
+    }
+
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
 
