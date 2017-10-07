@@ -73,17 +73,12 @@ public class PatternUtils {
         .getEdgeMap()
         .forEach(
             (router, edges) -> {
-              Matcher m1 = p1.matcher(router);
-              if (m1.matches()) {
-                for (GraphEdge edge : edges) {
-                  if (!edge.isAbstract()) {
-                    String peer = edge.getPeer();
-                    if (peer != null) {
-                      Matcher m2 = p2.matcher(peer);
-                      if (m2.matches()) {
-                        acc.add(edge);
-                      }
-                    }
+              for (GraphEdge ge : edges) {
+                if (!ge.isAbstract() && ge.getPeer() != null) {
+                  Matcher m1 = p1.matcher(ge.getRouter());
+                  Matcher m2 = p2.matcher(ge.getPeer());
+                  if (m1.matches() && m2.matches()) {
+                    acc.add(ge);
                   }
                 }
               }
