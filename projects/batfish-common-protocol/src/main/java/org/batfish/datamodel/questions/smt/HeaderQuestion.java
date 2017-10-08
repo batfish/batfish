@@ -60,7 +60,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String MINIMIZE_VAR = "minimize";
 
-  private static final String EQUIVALENCE_VAR = "equivalence";
+  private static final String DIFF_TYPE_VAR = "diffType";
+
+  private static final String ENV_DIFF_VAR = "envDiff";
 
   private Set<ForwardingAction> _actions;
 
@@ -74,7 +76,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _minimize;
 
-  private boolean _equivalence;
+  private DiffType _diffType;
+
+  private boolean _envDiff;
 
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
@@ -83,7 +87,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = false;
     _noEnvironment = false;
     _minimize = false;
-    _equivalence = false;
+    _diffType = null;
+    _envDiff = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -93,7 +98,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = q._fullModel;
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
-    _equivalence = q._equivalence;
+    _diffType = q._diffType;
+    _envDiff = q._envDiff;
   }
 
   @Override
@@ -221,9 +227,14 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _minimize;
   }
 
-  @JsonProperty(EQUIVALENCE_VAR)
-  public boolean getEquivalence() {
-    return _equivalence;
+  @JsonProperty(DIFF_TYPE_VAR)
+  public DiffType getDiffType() {
+    return _diffType;
+  }
+
+  @JsonProperty(ENV_DIFF_VAR)
+  public boolean getEnvDiff() {
+    return _envDiff;
   }
 
   @Override
@@ -409,9 +420,14 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = b;
   }
 
-  @JsonProperty(EQUIVALENCE_VAR)
-  public void setEquivalence(boolean b) {
-    _equivalence = b;
+  @JsonProperty(DIFF_TYPE_VAR)
+  public void setDiffType(DiffType d) {
+    _diffType = d;
+  }
+
+  @JsonProperty(ENV_DIFF_VAR)
+  public void setEnvDiff(boolean b) {
+    _envDiff = b;
   }
 
 }
