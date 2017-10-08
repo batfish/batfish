@@ -21,6 +21,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.BdpSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -50,20 +51,6 @@ import org.batfish.datamodel.collections.RouteSet;
 
 public class BdpDataPlanePlugin extends DataPlanePlugin {
 
-  /**
-   * Set to true to debug all iterations, including during oscillation. Ignores max recorded
-   * iterations value.
-   */
-  private static boolean DEBUG_ALL_ITERATIONS = false;
-
-  private static final int DEBUG_MAX_RECORDED_ITERATIONS = 12;
-
-  /**
-   * Set to true to debug oscillation. Make sure to set max recorded iterations to minimum necessary
-   * value.
-   */
-  private static boolean DEBUG_REPEAT_ITERATIONS = false;
-
   private static final String TRACEROUTE_INGRESS_NODE_INTERFACE_NAME =
       "traceroute_source_interface";
 
@@ -71,8 +58,15 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   private final Map<BdpDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
+  private BdpSettings _settings;
+
   public BdpDataPlanePlugin() {
     _flowTraces = new HashMap<>();
+  }
+
+  @Override
+  protected void dataPlanePluginInitialize() {
+    _settings = (BdpSettings) _batfish.getDataPlanePluginSettings();
   }
 
   /**
@@ -467,12 +461,19 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     Map<Integer, RouteSet> iterationRoutes = null;
     Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
         iterationAbstractRoutes = null;
-    if (DEBUG_ALL_ITERATIONS) {
-      iterationRoutes = new TreeMap<>();
-      iterationAbstractRoutes = new TreeMap<>();
-    } else if (DEBUG_REPEAT_ITERATIONS && DEBUG_MAX_RECORDED_ITERATIONS > 1) {
-      iterationRoutes = new LRUMap<>(DEBUG_MAX_RECORDED_ITERATIONS);
-      iterationAbstractRoutes = new LRUMap<>(DEBUG_MAX_RECORDED_ITERATIONS);
+    if (_settings.getBdpDebugAllIterations()) {
+      if (_settings.getBdpDebugIterationsDetailed()) {
+        iterationAbstractRoutes = new TreeMap<>();
+      } else {
+        iterationRoutes = new TreeMap<>();
+      }
+    } else if (_settings.getBdpDebugRepeatIterations()
+        && _settings.getBdpDebugMaxRecordedIterations() > 1) {
+      if (_settings.getBdpDebugIterationsDetailed()) {
+        iterationAbstractRoutes = new LRUMap<>(_settings.getBdpDebugMaxRecordedIterations());
+      } else {
+        iterationRoutes = new LRUMap<>(_settings.getBdpDebugMaxRecordedIterations());
+      }
     }
     AtomicBoolean dependentRoutesChanged = new AtomicBoolean(true);
     int dependentRoutesIterations = 0;
@@ -761,12 +762,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               .sum();
       ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
 
-      if (DEBUG_REPEAT_ITERATIONS) {
+      if (_settings.getBdpDebugRepeatIterations()) {
         Map<Ip, String> ipOwners = dp.getIpOwnersSimple();
-        RouteSet routes = computeOutputRoutes(nodes, ipOwners);
-        iterationAbstractRoutes.put(
-            dependentRoutesIterations, computeOutputAbstractRoutes(nodes, ipOwners));
-        iterationRoutes.put(dependentRoutesIterations, routes);
+        if (_settings.getBdpDebugIterationsDetailed()) {
+          iterationAbstractRoutes.put(
+              dependentRoutesIterations, computeOutputAbstractRoutes(nodes, ipOwners));
+        } else {
+          iterationRoutes.put(dependentRoutesIterations, computeOutputRoutes(nodes, ipOwners));
+        }
       }
 
       // Check to see if routes have changed
@@ -787,23 +790,25 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 + iterationWithThisHashCode
                 + "\n"
                 + iterationHashCodes;
-        if (!DEBUG_REPEAT_ITERATIONS) {
+        if (!_settings.getBdpDebugRepeatIterations()) {
           throw new BatfishException(msg);
-        } else if (!DEBUG_ALL_ITERATIONS) {
-          /*String errorMessage =
-          debugIterations(
-              msg, iterationRoutes, iterationWithThisHashCode, dependentRoutesIterations);*/
+        } else if (!_settings.getBdpDebugAllIterations()) {
           String errorMessage =
-              debugAbstractRoutesIterations(
-                  msg,
-                  iterationAbstractRoutes,
-                  iterationWithThisHashCode,
-                  dependentRoutesIterations);
+              _settings.getBdpDebugIterationsDetailed()
+                  ? debugAbstractRoutesIterations(
+                      msg,
+                      iterationAbstractRoutes,
+                      iterationWithThisHashCode,
+                      dependentRoutesIterations)
+                  : debugIterations(
+                      msg, iterationRoutes, iterationWithThisHashCode, dependentRoutesIterations);
           throw new BatfishException(errorMessage);
         } else {
           String errorMessage =
-              debugAbstractRoutesIterations(
-                  msg, iterationAbstractRoutes, 1, dependentRoutesIterations);
+              _settings.getBdpDebugIterationsDetailed()
+                  ? debugAbstractRoutesIterations(
+                      msg, iterationAbstractRoutes, 1, dependentRoutesIterations)
+                  : debugIterations(msg, iterationRoutes, 1, dependentRoutesIterations);
           throw new BatfishException(errorMessage);
         }
       }
