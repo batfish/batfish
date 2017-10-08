@@ -73,9 +73,9 @@ public interface IBatfish extends IPluginConsumer {
 
   FlowHistory getHistory();
 
-  Map<String, String> getQuestionTemplates();
-
   NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
+
+  Map<String, String> getQuestionTemplates();
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
@@ -155,6 +155,24 @@ public interface IBatfish extends IPluginConsumer {
 
   void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
 
+  AnswerElement smtBlackhole(HeaderQuestion q);
+
+  AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
+
+  AnswerElement smtEqualLength(HeaderLocationQuestion q);
+
+  AnswerElement smtForwarding(HeaderQuestion q);
+
+  AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold);
+
+  AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
+
+  AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
+
+  AnswerElement smtReachability(HeaderLocationQuestion q);
+
+  AnswerElement smtRoutingLoop(HeaderQuestion q);
+
   AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
@@ -166,22 +184,4 @@ public interface IBatfish extends IPluginConsumer {
       Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
-
-  AnswerElement smtForwarding(HeaderQuestion q);
-
-  AnswerElement smtReachability(HeaderLocationQuestion q);
-
-  AnswerElement smtBlackhole(HeaderQuestion q);
-
-  AnswerElement smtRoutingLoop(HeaderQuestion q);
-
-  AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
-
-  AnswerElement smtEqualLength(HeaderLocationQuestion q);
-
-  AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
-
-  AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold);
-
-  AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
 }

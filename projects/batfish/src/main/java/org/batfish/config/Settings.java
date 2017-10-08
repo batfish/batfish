@@ -756,10 +756,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _containerDir;
   }
 
-  public void setContainerDir(Path containerDir) {
-    _containerDir = containerDir;
-  }
-
   public String getCoordinatorHost() {
     return _coordinatorHost;
   }
@@ -802,6 +798,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getDiffQuestion() {
     return _diffQuestion;
+  }
+
+  @Override
+  public boolean getDisableUnrecognized() {
+    return _disableUnrecognized;
   }
 
   public String getEnvironmentName() {
@@ -888,11 +889,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   @Override
   public int getMaxParserContextTokens() {
     return _maxParserContextTokens;
-  }
-
-  @Override
-  public boolean getDisableUnrecognized() {
-    return _disableUnrecognized;
   }
 
   public int getMaxRuntimeMs() {
@@ -1017,10 +1013,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public String getTestrig() {
     return _testrig;
-  }
-
-  public void setTestrig(String testrig) {
-    _testrig = testrig;
   }
 
   @Override
@@ -1525,11 +1517,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _printParseTree;
   }
 
-  @Override
-  public void setDisableUnrecognized(boolean b) {
-    _disableUnrecognized = b;
-  }
-
   public boolean runInServiceMode() {
     return _runInServiceMode;
   }
@@ -1554,6 +1541,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _bdpDebugRepeatIterations = bdpDebugRepeatIterations;
   }
 
+  public void setContainerDir(Path containerDir) {
+    _containerDir = containerDir;
+  }
+
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
     _deltaEnvironmentName = diffEnvironmentName;
   }
@@ -1568,6 +1559,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setDiffQuestion(boolean diffQuestion) {
     _diffQuestion = diffQuestion;
+  }
+
+  @Override
+  public void setDisableUnrecognized(boolean b) {
+    _disableUnrecognized = b;
   }
 
   public void setEnvironmentName(String envName) {
@@ -1644,6 +1640,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setTaskId(String taskId) {
     _taskId = taskId;
+  }
+
+  public void setTestrig(String testrig) {
+    _testrig = testrig;
   }
 
   @Override
