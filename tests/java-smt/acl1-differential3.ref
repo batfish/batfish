@@ -11,7 +11,7 @@
                 "envName" : "BASE",
                 "testrigName" : "tr-smt-acl1"
               },
-              "DIFF" : {
+              "DELTA" : {
                 "edgeBlacklist" : [
                   {
                     "node1" : "R2",
@@ -20,7 +20,7 @@
                     "node2interface" : "Serial1"
                   }
                 ],
-                "envName" : "DIFF",
+                "envName" : "DELTA",
                 "testrigName" : "tr-smt-acl1"
               }
             },
@@ -69,7 +69,7 @@
                   "notes" : "DENIED_OUT{101}{deny ip any 70.70.70.70  0.0.0.255}"
                 }
               ],
-              "DIFF" : [
+              "DELTA" : [
                 {
                   "disposition" : "ACCEPTED",
                   "hops" : [
