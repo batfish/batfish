@@ -24,7 +24,7 @@ public class HeaderLocationQuestion extends HeaderQuestion {
 
   private static final String DEFAULT_NOT_FAIL_NODE2_REGEX = "";
 
-  private static final String PROP_FINAL_NODE_REGEX_VAR = "finalNodeRegex";
+  private static final String PROP_FINAL_NODE_REGEX = "finalNodeRegex";
 
   private static final String PROP_FINAL_IFACE_REGEX = "finalIfaceRegex";
 
