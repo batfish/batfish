@@ -3850,6 +3850,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void repairEnvironment() {
+    _cachedConfigurations.invalidate(_testrigSettings);
     SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     veae.setVersion(Version.getVersion());
