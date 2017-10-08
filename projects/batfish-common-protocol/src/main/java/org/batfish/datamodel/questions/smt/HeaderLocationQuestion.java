@@ -24,21 +24,21 @@ public class HeaderLocationQuestion extends HeaderQuestion {
 
   private static final String DEFAULT_NOT_FAIL_NODE2_REGEX = "";
 
-  private static final String FINAL_NODE_REGEX_VAR = "finalNodeRegex";
+  private static final String PROP_FINAL_NODE_REGEX = "finalNodeRegex";
 
-  private static final String FINAL_IFACE_REGEX_VAR = "finalIfaceRegex";
+  private static final String PROP_FINAL_IFACE_REGEX = "finalIfaceRegex";
 
-  private static final String INGRESS_NODE_REGEX_VAR = "ingressNodeRegex";
+  private static final String PROP_INGRESS_NODE_REGEX = "ingressNodeRegex";
 
   private static final String FAIL_NODE1_REGEX_VAR = "failNode1Regex";
 
   private static final String FAIL_NODE2_REGEX_VAR = "failNode2Regex";
 
-  private static final String NOT_FINAL_NODE_REGEX_VAR = "notFinalNodeRegex";
+  private static final String PROP_NOT_FINAL_NODE_REGEX = "notFinalNodeRegex";
 
-  private static final String NOT_FINAL_IFACE_REGEX_VAR = "notFinalIfaceRegex";
+  private static final String PROP_NOT_FINAL_IFACE_REGEX = "notFinalIfaceRegex";
 
-  private static final String NOT_INGRESS_NODE_REGEX_VAR = "notIngressNodeRegex";
+  private static final String PROP_NOT_INGRESS_NODE_REGEX = "notIngressNodeRegex";
 
   private static final String NOT_FAIL_NODE1_REGEX_VAR = "notFailNode1Regex";
 
@@ -92,17 +92,17 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     this._notFailNode2Regex = other._notFailNode2Regex;
   }
 
-  @JsonProperty(FINAL_NODE_REGEX_VAR)
+  @JsonProperty(PROP_FINAL_NODE_REGEX)
   public String getFinalNodeRegex() {
     return _finalNodeRegex;
   }
 
-  @JsonProperty(FINAL_IFACE_REGEX_VAR)
+  @JsonProperty(PROP_FINAL_IFACE_REGEX)
   public String getFinalIfaceRegex() {
     return _finalIfaceRegex;
   }
 
-  @JsonProperty(INGRESS_NODE_REGEX_VAR)
+  @JsonProperty(PROP_INGRESS_NODE_REGEX)
   public String getIngressNodeRegex() {
     return _ingressNodeRegex;
   }
@@ -117,19 +117,51 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     return _failNode2Regex;
   }
 
-  @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)
+  @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
   public String getNotFinalNodeRegex() {
     return _notFinalNodeRegex;
   }
 
-  @JsonProperty(NOT_FINAL_IFACE_REGEX_VAR)
+  @JsonProperty(PROP_NOT_FINAL_IFACE_REGEX)
   public String getNotFinalIfaceRegex() {
     return _notFinalIfaceRegex;
   }
 
-  @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)
+  @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
   public String getNotIngressNodeRegex() {
     return _notIngressNodeRegex;
+  }
+
+  @Override
+  public String prettyPrint() {
+    return String.format("headerlocation %s", prettyPrintParams());
+  }
+
+  protected String prettyPrintParams() {
+    try {
+      String retString = super.prettyPrintParams();
+      if (!_finalNodeRegex.equals(DEFAULT_FINAL_NODE_REGEX)) {
+        retString += String.format(", %s=%s", PROP_FINAL_NODE_REGEX, _finalNodeRegex);
+      }
+      if (!_finalIfaceRegex.equals(DEFAULT_FINAL_IFACE_REGEX)) {
+        retString += String.format(", %s=%s", PROP_FINAL_IFACE_REGEX, _finalIfaceRegex);
+      }
+      if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
+        retString += String.format(", %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
+      }
+      if (!_notFinalNodeRegex.equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
+        retString += String.format(", %s=%s", PROP_NOT_FINAL_NODE_REGEX, _notFinalNodeRegex);
+      }
+      if (!_notFinalIfaceRegex.equals(DEFAULT_NOT_FINAL_IFACE_REGEX)) {
+        retString += String.format(", %s=%s", PROP_NOT_FINAL_IFACE_REGEX, _notFinalIfaceRegex);
+      }
+      if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
+        retString += String.format(", %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
+      }
+      return retString;
+    } catch (Exception e) {
+      return "Pretty printing failed. Printing Json\n" + toJsonString();
+    }
   }
 
   @JsonProperty(NOT_FAIL_NODE1_REGEX_VAR)
@@ -142,17 +174,17 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     return _notFailNode2Regex;
   }
 
-  @JsonProperty(FINAL_NODE_REGEX_VAR)
+  @JsonProperty(PROP_FINAL_NODE_REGEX)
   public void setFinalNodeRegex(String regex) {
     _finalNodeRegex = regex;
   }
 
-  @JsonProperty(FINAL_IFACE_REGEX_VAR)
+  @JsonProperty(PROP_FINAL_IFACE_REGEX)
   public void setFinalIfaceRegex(String regex) {
     _finalIfaceRegex = regex;
   }
 
-  @JsonProperty(INGRESS_NODE_REGEX_VAR)
+  @JsonProperty(PROP_INGRESS_NODE_REGEX)
   public void setIngressNodeRegex(String regex) {
     _ingressNodeRegex = regex;
   }
@@ -167,17 +199,17 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     _failNode2Regex = regex;
   }
 
-  @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)
+  @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
   public void setNotFinalNodeRegex(String notFinalNodeRegex) {
     _notFinalNodeRegex = notFinalNodeRegex;
   }
 
-  @JsonProperty(NOT_FINAL_IFACE_REGEX_VAR)
+  @JsonProperty(PROP_NOT_FINAL_IFACE_REGEX)
   public void setNotFinalIfaceRegex(String notFinalIfaceRegex) {
     _notFinalIfaceRegex = notFinalIfaceRegex;
   }
 
-  @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)
+  @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
   public void setNotIngressNodeRegex(String notIngressNodeRegex) {
     _notIngressNodeRegex = notIngressNodeRegex;
   }
