@@ -518,7 +518,7 @@ public class PropertyChecker {
                   null);
           Environment failedEnv =
               new Environment(
-                  "DIFF",
+                  "DELTA",
                   batfish.getTestrigName(),
                   failedLinksDiff,
                   null,
@@ -527,7 +527,7 @@ public class PropertyChecker {
                   envRoutesDiff,
                   null);
           fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
-          fh.addFlowTrace(diff.getFirst(), "DIFF", failedEnv, diff.getSecond());
+          fh.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
         }
       }
     }
