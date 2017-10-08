@@ -98,12 +98,30 @@ public class PropertyChecker {
         // it can be any prefix, so we leave it unconstrained
         if (g.getEbgpNeighbors().containsKey(ge)) {
           q.getHeaderSpace().getDstIps().clear();
+          q.getHeaderSpace().getNotDstIps().clear();
           break;
         }
-        // Otherwise, we add the destination IP range
-        Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
-        IpWildcard dst = new IpWildcard(pfx);
-        q.getHeaderSpace().getDstIps().add(dst);
+        // If we don't know what is on the other end
+        if (ge.getPeer() == null) {
+          Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
+          IpWildcard dst = new IpWildcard(pfx);
+          q.getHeaderSpace().getDstIps().add(dst);
+        } else {
+          // If host, add the subnet but not the neighbor's address
+          if (g.isHost(ge.getRouter())) {
+            Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
+            IpWildcard dst = new IpWildcard(pfx);
+            q.getHeaderSpace().getDstIps().add(dst);
+            Ip ip = ge.getEnd().getPrefix().getAddress();
+            IpWildcard dst2 = new IpWildcard(ip);
+            q.getHeaderSpace().getNotDstIps().add(dst2);
+          } else {
+            // Otherwise, we add the exact address
+            Ip ip = ge.getStart().getPrefix().getAddress();
+            IpWildcard dst = new IpWildcard(ip);
+            q.getHeaderSpace().getDstIps().add(dst);
+          }
+        }
       }
     }
   }
@@ -685,7 +703,6 @@ public class PropertyChecker {
 
     FlowHistory fh;
     if (q.getDiffType() != null) {
-      System.out.println("Building counter example");
       fh =
           buildFlowDiffCounterExample(batfish, res, sourceRouters, model, enc, enc2, reach, reach2);
     } else {
