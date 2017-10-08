@@ -63,9 +63,11 @@ public class BatfishTestUtils {
       testrigs.put(settings.getBaseTestrigSettings(), configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
-
-    return new Batfish(
-        settings, testrigs, makeDataPlaneCache(), makeEnvBgpCache(), makeEnvRouteCache());
+    Batfish batfish =
+        new Batfish(
+            settings, testrigs, makeDataPlaneCache(), makeEnvBgpCache(), makeEnvRouteCache());
+    batfish.setMonotonicCache(true);
+    return batfish;
   }
 
   private static Batfish initBatfishFromConfigurationText(
