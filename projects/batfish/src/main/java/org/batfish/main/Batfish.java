@@ -443,6 +443,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private long _timerCount;
 
+  private boolean _monotonicCache;
+
   public Batfish(
       Settings settings,
       Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
@@ -3850,7 +3852,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void repairEnvironment() {
-    _cachedConfigurations.invalidate(_testrigSettings);
+    if (!_monotonicCache) {
+      _cachedConfigurations.invalidate(_testrigSettings);
+    }
     SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     veae.setVersion(Version.getVersion());
@@ -4379,6 +4383,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
     _dataPlanePlugin = dataPlanePlugin;
+  }
+
+  public void setMonotonicCache(boolean monotonicCache) {
+    _monotonicCache = monotonicCache;
   }
 
   public void setTerminatedWithException(boolean terminatedWithException) {
