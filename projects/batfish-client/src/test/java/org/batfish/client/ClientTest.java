@@ -97,8 +97,10 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.Question;
+import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -804,6 +806,47 @@ public class ClientTest {
   }
 
   @Test
+  public void testLoadQuestionsFromDir() throws Exception {
+    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
+    Map<String, String> loadedQuestions = new HashMap<>();
+    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
+    client.loadQuestionsFromDir(questionJsonPath.toString(), loadedQuestions, ae);
+    assertEquals(
+        Collections.singletonMap("testquestionname", testQuestion.toString()), loadedQuestions);
+    assertEquals(new TreeSet<>(Arrays.asList("testQuestionName")), ae.getAdded());
+    assertEquals(1, ae.getNumLoaded());
+    assertEquals(Collections.emptySortedSet(), ae.getReplaced());
+  }
+
+  @Test
+  public void testLoadQuestionsFromJson() throws Exception {
+    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    JSONObject testJson = new JSONObject().put("testQuestion", testQuestion.toString());
+    Map<String, String> loadedQuestions = new HashMap<>();
+    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
+    client.loadQuestionsFromJson(testJson, loadedQuestions, ae);
+    assertEquals(
+        Collections.singletonMap("testquestionname", testQuestion.toString()), loadedQuestions);
+    assertEquals(new TreeSet<>(Arrays.asList("testQuestionName")), ae.getAdded());
+    assertEquals(1, ae.getNumLoaded());
+    assertEquals(Collections.emptySortedSet(), ae.getReplaced());
+  }
+
+  @Test
   public void testLoadQuestionsInvalidParas1() throws Exception {
     testInvalidInput(LOAD_QUESTIONS, new String[] {}, new String[] {"path1", "path2"});
   }
@@ -843,14 +886,15 @@ public class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions() {
+  public void testMergeQuestions() throws Exception {
+    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
     Map<String, String> remoteQuestions =
         Collections.singletonMap("testquestion", "testquestionvalue");
     Map<String, String> localQuestions =
         Collections.singletonMap("testquestion", "testquestionvalue");
     Map<String, String> bfqMap = new HashMap<>();
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    QuestionHelper.mergeQuestions(localQuestions, remoteQuestions, bfqMap, ae);
+    client.mergeQuestions(localQuestions, remoteQuestions, bfqMap, ae);
     assertEquals(new TreeSet<>(remoteQuestions.keySet()), ae.getReplaced());
     assertEquals(localQuestions, bfqMap);
   }
