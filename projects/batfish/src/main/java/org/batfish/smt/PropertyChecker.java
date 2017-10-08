@@ -102,7 +102,6 @@ public class PropertyChecker {
         }
         // Otherwise, we add the destination IP range
         Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
-        // System.out.println("Inferred: " + pfx);
         IpWildcard dst = new IpWildcard(pfx);
         q.getHeaderSpace().getDstIps().add(dst);
       }
@@ -130,7 +129,7 @@ public class PropertyChecker {
   }
 
   private static Ip ipVal(Model m, Expr e) {
-    return new Ip(intVal(m, e));
+    return new Ip(Long.parseLong(evaluate(m, e)));
   }
 
   /*
@@ -345,6 +344,10 @@ public class PropertyChecker {
         String route = buildRoute(pfx, proto, ge);
         if (isTrue(m, dexpr)) {
           hops.add(buildFlowTraceHop(f, ge, route));
+          if (ge.getPeer() != null && visited.contains(ge.getPeer())) {
+            FlowTrace ft = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
+            return new Tuple<>(f, ft);
+          }
           if (isFalse(m, aexpr)) {
             Interface i = ge.getEnd();
             IpAccessList acl = i.getIncomingFilter();
@@ -354,12 +357,13 @@ public class PropertyChecker {
             FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
             return new Tuple<>(f, ft);
           }
-          boolean isBgpPeering = slice.getGraph().getEbgpNeighbors().get(ge) != null;
           boolean isLoopback = slice.getGraph().isLoopback(ge);
           if (isLoopback) {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
             return new Tuple<>(f, ft);
-          } else if (ge.getPeer() == null) {
+          }
+          if (ge.getPeer() == null) {
+            boolean isBgpPeering = slice.getGraph().getEbgpNeighbors().get(ge) != null;
             if (isBgpPeering) {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
               return new Tuple<>(f, ft);
@@ -371,18 +375,16 @@ public class PropertyChecker {
                       "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK");
               return new Tuple<>(f, ft);
             }
-          } else if (slice.getGraph().isHost(ge.getPeer())) {
+          }
+          if (slice.getGraph().isHost(ge.getPeer())) {
             FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
             return new Tuple<>(f, ft);
-          } else {
-            current = ge.getPeer();
-            found = true;
-            if (visited.contains(current)) {
-              FlowTrace ft = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
-              return new Tuple<>(f, ft);
-            }
-            break;
           }
+
+          current = ge.getPeer();
+          found = true;
+          break;
+
         } else if (isTrue(m, cexpr)) {
           hops.add(buildFlowTraceHop(f, ge, route));
           Interface i = ge.getStart();
@@ -679,7 +681,7 @@ public class PropertyChecker {
     VerificationResult res = result.getFirst();
     Model model = result.getSecond();
 
-    // res.debug(enc.getMainSlice(), true, "MAIN_CONTROL-FORWARDING_as2core2_GigabitEthernet1/0");
+    // res.debug(enc.getMainSlice(), true, "reachable_host3");
 
     FlowHistory fh;
     if (q.getDiffType() != null) {
