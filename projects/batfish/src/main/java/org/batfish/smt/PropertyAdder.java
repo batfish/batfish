@@ -119,9 +119,8 @@ public class PropertyAdder {
     Map<String, ArithExpr> idVars = new HashMap<>();
 
     initializeReachabilityVars(slice, ctx, solver, reachableVars, idVars);
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
+    Graph g = _encoderSlice.getGraph();
+    g.getEdgeMap()
         .forEach(
             (router, edges) -> {
               ArithExpr id = idVars.get(router);
@@ -134,6 +133,11 @@ public class PropertyAdder {
 
               for (GraphEdge ge : edges) {
                 if (!ge.isAbstract() && ges.contains(ge)) {
+                  // If a host, consider reachable
+                  if (g.isHost(router)) {
+                    hasDirectRoute = ctx.mkTrue();
+                    break;
+                  }
                   // Reachable if we leave the network
                   if (ge.getPeer() == null) {
                     BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
@@ -332,7 +336,6 @@ public class PropertyAdder {
               SymbolicRecord r =
                   _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
 
-
               for (GraphEdge ge : edges) {
                 if (!ge.isAbstract() && ges.contains(ge)) {
 
@@ -349,7 +352,6 @@ public class PropertyAdder {
                     BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
                     isAbsorbed = ctx.mkOr(isAbsorbed, reach);
                   }
-
                 }
               }
 

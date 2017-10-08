@@ -1994,8 +1994,6 @@ class EncoderSlice {
 
                   SymbolicRecord vars = correctVars(e);
                   BoolExpr choice = _symbolicDecisions.getChoiceVariables().get(router, proto, e);
-
-                  // TODO: do we need this equality check?
                   BoolExpr isBest = mkAnd(choice, equal(conf, proto, best, vars, e, false));
 
                   GraphEdge ge = e.getEdge();
@@ -2003,7 +2001,7 @@ class EncoderSlice {
                   // Connected routes should only forward if not absorbed by interface
                   GraphEdge other = getGraph().getOtherEnd().get(ge);
                   BoolExpr connectedWillSend;
-                  if (other == null) {
+                  if (other == null || getGraph().isHost(ge.getPeer())) {
                     Ip ip = ge.getStart().getPrefix().getAddress();
                     connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), mkInt(ip.asLong())));
                   } else {
