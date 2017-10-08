@@ -486,6 +486,18 @@ public class Encoder {
     } else {
       add(mkLe(sum, mkInt(k)));
     }
+
+    /* if (getFailures() > 0) {
+      getSymbolicFailures().getFailedInternalLinks().forEach((x, y, var) -> {
+        System.out.println("Edge: " + x + "," + y);
+        boolean b1 = x.equals("as2border2") && y.equals("as3border1");
+        boolean b2 = x.equals("as3border1") && y.equals("as2border2");
+        if (b1 || b2) {
+          System.out.println("  Failing");
+          add(mkEq(var, mkInt(1)));
+        }
+      });
+    } */
   }
 
   /*

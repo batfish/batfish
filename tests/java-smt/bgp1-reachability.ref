@@ -16,7 +16,8 @@
     "dstIps" : [
       "42.42.42.0/24"
     ],
-    "equivalence" : false,
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
     "failures" : 0,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R1",

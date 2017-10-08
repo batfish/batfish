@@ -1838,6 +1838,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
         peerExportPolicy.getStatements().add(new SetNextHop(new SelfNextHop(), false));
       }
+      if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
+        peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());
+      }
       If peerExportConditional = new If();
       peerExportConditional.setComment(
           "peer-export policy main conditional: exitAccept if true / exitReject if false");
@@ -2022,7 +2025,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag("No remote-as set for peer: " + lpg.getName());
           continue;
         }
-
+        Integer pgLocalAs = lpg.getLocalAs();
+        int localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
         BgpNeighbor newNeighbor;
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
@@ -2058,7 +2062,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (importPolicy != null) {
           newNeighbor.setImportPolicy(inboundRouteMapName);
         }
-        newNeighbor.setLocalAs(proc.getName());
+        newNeighbor.setLocalAs(localAs);
         newNeighbor.setLocalIp(updateSource);
         newNeighbor.setExportPolicy(peerExportPolicyName);
         newNeighbor.setRemoteAs(lpg.getRemoteAs());

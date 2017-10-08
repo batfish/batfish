@@ -60,7 +60,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_MINIMIZE = "minimize";
 
-  private static final String PROP_EQUIVALENCE = "equivalence";
+  private static final String PROP_DIFF_TYPE = "diffType";
+
+  private static final String PROP_ENV_DIFF = "envDiff";
 
   private Set<ForwardingAction> _actions;
 
@@ -74,7 +76,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _minimize;
 
-  private boolean _equivalence;
+  private DiffType _diffType;
+
+  private boolean _envDiff;
 
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
@@ -83,7 +87,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = false;
     _noEnvironment = false;
     _minimize = false;
-    _equivalence = false;
+    _diffType = null;
+    _envDiff = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -93,7 +98,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = q._fullModel;
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
-    _equivalence = q._equivalence;
+    _diffType = q._diffType;
+    _envDiff = q._envDiff;
   }
 
   @Override
@@ -138,7 +144,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   @Override
   public String getName() {
-    throw new BatfishException("Unimplemented getName");
+    throw new BatfishException("Unimplemented getEnvName");
   }
 
   @JsonProperty(PROP_NOT_DST_IPS)
@@ -221,9 +227,14 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _minimize;
   }
 
-  @JsonProperty(PROP_EQUIVALENCE)
-  public boolean getEquivalence() {
-    return _equivalence;
+  @JsonProperty(PROP_DIFF_TYPE)
+  public DiffType getDiffType() {
+    return _diffType;
+  }
+
+  @JsonProperty(PROP_ENV_DIFF)
+  public boolean getEnvDiff() {
+    return _envDiff;
   }
 
   @Override
@@ -413,9 +424,14 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = b;
   }
 
-  @JsonProperty(PROP_EQUIVALENCE)
-  public void setEquivalence(boolean b) {
-    _equivalence = b;
+  @JsonProperty(PROP_DIFF_TYPE)
+  public void setDiffType(DiffType d) {
+    _diffType = d;
+  }
+
+  @JsonProperty(PROP_ENV_DIFF)
+  public void setEnvDiff(boolean b) {
+    _envDiff = b;
   }
 
 }

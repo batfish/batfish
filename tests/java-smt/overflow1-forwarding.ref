@@ -4,18 +4,17 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
-          "R1,Loopback0 --> _,_ (CONNECTED)",
           "R2,Serial0 --> R1,Serial0 (BGP)"
         ],
         "model" : {
-          "|0_CONTROL-FORWARDING_R1_Loopback0|" : "true",
+          "|0_CONTROL-FORWARDING_R1_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R1_Serial0|" : "false",
           "|0_CONTROL-FORWARDING_R2_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R2_Serial0|" : "true",
           "|0_CONTROL-FORWARDING_R2_Serial1|" : "false",
           "|0_CONTROL-FORWARDING_R3_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial0|" : "false",
-          "|0_DATA-FORWARDING_R1_Loopback0|" : "true",
+          "|0_DATA-FORWARDING_R1_Loopback0|" : "false",
           "|0_DATA-FORWARDING_R1_Serial0|" : "false",
           "|0_DATA-FORWARDING_R2_Loopback0|" : "false",
           "|0_DATA-FORWARDING_R2_Serial0|" : "true",
@@ -87,7 +86,6 @@
     "dstIps" : [
       "41.41.41.1"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

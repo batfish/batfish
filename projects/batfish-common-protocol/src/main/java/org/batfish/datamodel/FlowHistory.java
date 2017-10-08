@@ -2,61 +2,81 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Environment;
 
 public class FlowHistory implements AnswerElement {
 
-  public static class FlowPathsPair {
+  public static class FlowHistoryInfo {
+
+    private static final String PROP_ENVIRONMENTS = "environments";
 
     private static final String PROP_FLOW = "flow";
 
     private static final String PROP_PATHS = "paths";
 
+    private Map<String, Environment> _environments;
+
     private Flow _flow;
 
-    private SortedMap<String, SortedSet<FlowTrace>> _paths;
+    private Map<String, Set<FlowTrace>> _paths;
 
     @JsonCreator
-    public FlowPathsPair(
+    public FlowHistoryInfo(
         @JsonProperty(PROP_FLOW) Flow flow,
-        @JsonProperty(PROP_PATHS) SortedMap<String, SortedSet<FlowTrace>> paths) {
+        @JsonProperty(PROP_ENVIRONMENTS) Map<String, Environment> environments,
+        @JsonProperty(PROP_PATHS) Map<String, Set<FlowTrace>> paths) {
       _flow = flow;
+      _environments = environments;
       _paths = paths;
+    }
+
+    public Map<String, Environment> getEnvironments() {
+      return _environments;
     }
 
     public Flow getFlow() {
       return _flow;
     }
 
-    public SortedMap<String, SortedSet<FlowTrace>> getPaths() {
+    public Map<String, Set<FlowTrace>> getPaths() {
       return _paths;
     }
   }
 
-  private SortedMap<String, FlowPathsPair> _traces;
+  private Map<String, FlowHistoryInfo> _traces;
 
   public FlowHistory() {
     _traces = new TreeMap<>();
   }
 
-  public void addFlowTrace(Flow flow, String environment, FlowTrace trace) {
+  public void addFlowTrace(Flow flow, String envTag, Environment environment, FlowTrace trace) {
     String flowText = flow.toString();
     if (!_traces.containsKey(flowText)) {
-      _traces.put(flowText, new FlowPathsPair(flow, new TreeMap<>()));
+      _traces.put(flowText, new FlowHistoryInfo(flow, new TreeMap<>(), new TreeMap<>()));
     }
-    if (!_traces.get(flowText).getPaths().containsKey(environment)) {
-      _traces.get(flowText).getPaths().put(environment, new TreeSet<>());
+    if (_traces.get(flowText).getEnvironments().containsKey(envTag)) {
+      if (!_traces.get(flowText).getEnvironments().get(envTag).equals(environment)) {
+        throw new BatfishException(
+            "Different environment with the same tag '" + envTag + "' is being added: ");
+      }
+    } else {
+      _traces.get(flowText).getEnvironments().put(envTag, environment);
     }
-    _traces.get(flowText).getPaths().get(environment).add(trace);
+    if (!_traces.get(flowText).getPaths().containsKey(envTag)) {
+      _traces.get(flowText).getPaths().put(envTag, new TreeSet<>());
+    }
+    _traces.get(flowText).getPaths().get(envTag).add(trace);
   }
 
-  public SortedMap<String, FlowPathsPair> getTraces() {
+  public Map<String, FlowHistoryInfo> getTraces() {
     return _traces;
   }
 
@@ -66,9 +86,10 @@ public class FlowHistory implements AnswerElement {
     for (String flowStr : _traces.keySet()) {
       Flow flow = _traces.get(flowStr).getFlow();
       retString.append(flow.prettyPrint("") + "\n");
-      for (String environment : _traces.get(flowStr).getPaths().keySet()) {
-        retString.append("  environment:" + environment + "\n");
-        for (FlowTrace trace : _traces.get(flowStr).getPaths().get(environment)) {
+      for (String envTag : _traces.get(flowStr).getPaths().keySet()) {
+        retString.append("  environment:" + envTag + "\n");
+        retString.append(_traces.get(flowStr).getEnvironments().get(envTag) + "\n");
+        for (FlowTrace trace : _traces.get(flowStr).getPaths().get(envTag)) {
           retString.append(trace.toString("    ") + "\n");
         }
       }
@@ -76,8 +97,7 @@ public class FlowHistory implements AnswerElement {
     return retString.toString();
   }
 
-  private void setTraces(
-      SortedMap<String, FlowPathsPair> traces) {
+  private void setTraces(SortedMap<String, FlowHistoryInfo> traces) {
     _traces = traces;
   }
 
@@ -87,7 +107,7 @@ public class FlowHistory implements AnswerElement {
     for (String flowString : _traces.keySet()) {
       Flow flow = _traces.get(flowString).getFlow();
       sb.append("Flow: " + flowString + "\n");
-      SortedMap<String, SortedSet<FlowTrace>> envTraceSetMap = _traces.get(flowString).getPaths();
+      Map<String, Set<FlowTrace>> envTraceSetMap = _traces.get(flowString).getPaths();
       for (String environmentName : envTraceSetMap.keySet()) {
         sb.append(" Environment: " + environmentName + "\n");
         Set<FlowTrace> traces = envTraceSetMap.get(environmentName);
