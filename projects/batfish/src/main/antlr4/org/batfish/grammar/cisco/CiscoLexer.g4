@@ -8605,12 +8605,7 @@ REMOTE_PORTS
 
 REMOVE_PRIVATE_AS
 :
-   'remove-private-as'
-;
-
-REMOVE_PRIVATE_CAP_A_CAP_S
-:
-   'remove-private-AS'
+   'remove-private-' [Aa] [Ss]
 ;
 
 REMOTE_SERVER

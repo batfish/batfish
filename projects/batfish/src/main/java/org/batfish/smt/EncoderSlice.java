@@ -24,6 +24,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -308,7 +309,16 @@ class EncoderSlice {
 
                 IpAccessList outbound = i.getOutgoingFilter();
                 if (outbound != null) {
-                  String outName = router + "_" + i.getName() + "_OUTBOUND_" + outbound.getName();
+                  String outName =
+                      String.format(
+                          "%d_%s_%s_%s_%s_%s",
+                          _encoder.getId(),
+                          _sliceName,
+                          router,
+                          i.getName(),
+                          "OUTBOUND",
+                          outbound.getName());
+
                   BoolExpr outAcl = getCtx().mkBoolConst(outName);
                   BoolExpr outAclFunc = computeACL(outbound);
                   add(mkEq(outAcl, outAclFunc));
@@ -317,7 +327,16 @@ class EncoderSlice {
 
                 IpAccessList inbound = i.getIncomingFilter();
                 if (inbound != null) {
-                  String inName = router + "_" + i.getName() + "_INBOUND_" + inbound.getName();
+                  String inName =
+                      String.format(
+                          "%d_%s_%s_%s_%s_%s",
+                          _encoder.getId(),
+                          _sliceName,
+                          router,
+                          i.getName(),
+                          "INBOUND",
+                          inbound.getName());
+
                   BoolExpr inAcl = getCtx().mkBoolConst(inName);
                   BoolExpr inAclFunc = computeACL(inbound);
                   add(mkEq(inAcl, inAclFunc));
@@ -340,7 +359,8 @@ class EncoderSlice {
               if (edge.getEnd() == null) {
                 inAcl = mkTrue();
               } else {
-                inAcl = _inboundAcls.get(edge);
+                GraphEdge ge = getGraph().getOtherEnd().get(edge);
+                inAcl = _inboundAcls.get(ge);
                 if (inAcl == null) {
                   inAcl = mkTrue();
                 }
@@ -360,7 +380,7 @@ class EncoderSlice {
 
     // Add an other variable for each regex community
     // Don't do this by default
-    if (_optimizations.getHasExternalCommunity() && Encoder.MODEL_EXTERNAL_COMMUNITIES) {
+    if (Encoder.MODEL_EXTERNAL_COMMUNITIES) {
 
       List<CommunityVar> others = new ArrayList<>();
       for (CommunityVar c : _allCommunities) {
@@ -792,6 +812,14 @@ class EncoderSlice {
     throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
   }
 
+  public SymbolicRecord getBestNeighborPerProtocol(String router, Protocol proto) {
+    if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
+      return getSymbolicDecisions().getBestNeighbor().get(router);
+    } else {
+      return getSymbolicDecisions().getBestNeighborPerProtocol().get(router, proto);
+    }
+  }
+
   /*
    * Initializes the logical graph edges for the protocol-centric view
    */
@@ -1176,7 +1204,7 @@ class EncoderSlice {
    * Initialize all environment symbolic records for BGP.
    */
   private void addEnvironmentVariables() {
-    // mkIf not the main slice, just use the main slice
+    // If not the main slice, just use the main slice
     if (!isMainSlice()) {
       Map<LogicalEdge, SymbolicRecord> envs = _logicalGraph.getEnvironmentVars();
       EncoderSlice main = _encoder.getMainSlice();
@@ -1376,6 +1404,14 @@ class EncoderSlice {
    * remove various attributes from messages when unnecessary.
    */
 
+  public ArithExpr defaultAdminDistance(Configuration conf, Protocol proto, SymbolicRecord r) {
+    ArithExpr def = mkInt(defaultAdminDistance(conf, proto));
+    if (r.getBgpInternal() == null) {
+      return def;
+    }
+    return mkIf(r.getBgpInternal(), mkInt(200), def);
+  }
+
   public int defaultAdminDistance(Configuration conf, Protocol proto) {
     RoutingProtocol rp = Protocol.toRoutingProtocol(proto);
     return rp.getDefaultAdministrativeCost(conf.getConfigurationFormat());
@@ -1427,7 +1463,7 @@ class EncoderSlice {
 
   /*
    * Creates a symbolic test between a record representing the best
-   * field and another field (vars). mkIf the vars field is missing,
+   * field and another field (vars). If the vars field is missing,
    * then the value is filled in with the default value.
    *
    * An assumption is that if best != null, then vars != null
@@ -1484,13 +1520,18 @@ class EncoderSlice {
    * Creates a test to check for equal bgp client id tags after
    * accounting for the possibility of null values.
    */
-  private BoolExpr equalClientIds(SymbolicRecord best, SymbolicRecord vars) {
+  private BoolExpr equalClientIds(String router, SymbolicRecord best, SymbolicRecord vars) {
     if (best.getClientId() == null) {
       return mkTrue();
     } else {
       if (vars.getClientId() == null) {
         // Lookup the actual originator id
-        return best.getClientId().checkIfValue(0);
+        Integer i = getGraph().getOriginatorId().get(router);
+        if (i == null) {
+          return best.getClientId().checkIfValue(0);
+        } else {
+          return best.getClientId().checkIfValue(i);
+        }
       } else {
         return best.getClientId().mkEq(vars.getClientId());
       }
@@ -1548,7 +1589,6 @@ class EncoderSlice {
    */
   private BoolExpr equalIds(
       SymbolicRecord best, SymbolicRecord vars, Protocol proto, @Nullable LogicalEdge e) {
-
     BoolExpr equalId;
     if (vars.getRouterId() == null) {
       if (best.getRouterId() == null || e == null) {
@@ -1583,7 +1623,7 @@ class EncoderSlice {
    * symbolic record (vars). It checks pairwise that all fields
    * are equal, while filling in values missing due to optimizations
    * with default values based on the protocol.
-   * mkIf there is no corresponding edge e, then the value null can be used
+   * If there is no corresponding edge e, then the value null can be used
    */
   public BoolExpr equal(
       Configuration conf,
@@ -1594,7 +1634,7 @@ class EncoderSlice {
       boolean compareCommunities) {
 
     ArithExpr defaultLocal = mkInt(defaultLocalPref());
-    ArithExpr defaultAdmin = mkInt(defaultAdminDistance(conf, proto));
+    ArithExpr defaultAdmin = defaultAdminDistance(conf, proto, vars);
     ArithExpr defaultMet = mkInt(defaultMetric());
     ArithExpr defaultMed = mkInt(defaultMed(proto));
     ArithExpr defaultLen = mkInt(defaultLength());
@@ -1627,7 +1667,7 @@ class EncoderSlice {
     equalId = equalIds(best, vars, proto, e);
     equalHistory = equalHistories(best, vars);
     equalBgpInternal = equalBgpInternal(best, vars);
-    equalClientIds = equalClientIds(best, vars);
+    equalClientIds = equalClientIds(conf.getName(), best, vars);
     equalCommunities = (compareCommunities ? equalCommunities(best, vars) : mkTrue());
 
     return mkAnd(
@@ -1714,7 +1754,7 @@ class EncoderSlice {
       @Nullable LogicalEdge e) {
 
     ArithExpr defaultLocal = mkInt(defaultLocalPref());
-    ArithExpr defaultAdmin = mkInt(defaultAdminDistance(conf, proto));
+    ArithExpr defaultAdmin = defaultAdminDistance(conf, proto, vars);
     ArithExpr defaultMet = mkInt(defaultMetric());
     ArithExpr defaultMed = mkInt(defaultMed(proto));
     ArithExpr defaultLen = mkInt(defaultLength());
@@ -1929,7 +1969,7 @@ class EncoderSlice {
 
   /*
    * Constraints that define control-plane forwarding.
-   * mkIf there is some valid import, then control plane forwarding
+   * If there is some valid import, then control plane forwarding
    * will occur out an interface when this is the best choice.
    * Otherwise, it will not occur.
    */
@@ -1954,17 +1994,24 @@ class EncoderSlice {
 
                   SymbolicRecord vars = correctVars(e);
                   BoolExpr choice = _symbolicDecisions.getChoiceVariables().get(router, proto, e);
-
-                  // TODO: do we need this equality check?
                   BoolExpr isBest = mkAnd(choice, equal(conf, proto, best, vars, e, false));
 
-                  // Connected routes should only forward if there is a host through arp
-                  BoolExpr connectedWillSend = mkBool(getGraph().isEdgeHostConnected(e.getEdge()));
+                  GraphEdge ge = e.getEdge();
+
+                  // Connected routes should only forward if not absorbed by interface
+                  GraphEdge other = getGraph().getOtherEnd().get(ge);
+                  BoolExpr connectedWillSend;
+                  if (other == null || getGraph().isHost(ge.getPeer())) {
+                    Ip ip = ge.getStart().getPrefix().getAddress();
+                    connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), mkInt(ip.asLong())));
+                  } else {
+                    Ip ip = other.getStart().getPrefix().getAddress();
+                    connectedWillSend = mkEq(_symbolicPacket.getDstIp(), mkInt(ip.asLong()));
+                  }
                   BoolExpr canSend = (proto.isConnected() ? connectedWillSend : mkTrue());
 
                   BoolExpr sends = mkAnd(canSend, isBest);
 
-                  GraphEdge ge = e.getEdge();
                   BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
                   assert (cForward != null);
                   add(mkImplies(sends, cForward));
@@ -2128,11 +2175,14 @@ class EncoderSlice {
       BoolExpr local = null;
 
       if (l.getDstIps() != null) {
-        local = computeWildcardMatch(l.getDstIps(), _symbolicPacket.getDstIp());
+        BoolExpr val = computeWildcardMatch(l.getDstIps(), _symbolicPacket.getDstIp());
+        val = l.getDstIps().isEmpty() ? mkTrue() : val;
+        local = val;
       }
 
       if (l.getSrcIps() != null) {
         BoolExpr val = computeWildcardMatch(l.getSrcIps(), _symbolicPacket.getSrcIp());
+        val = l.getDstIps().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
@@ -2140,13 +2190,15 @@ class EncoderSlice {
         throw new BatfishException("detected dscps");
       }
 
-      if (l.getDstPorts() != null && !l.getDstPorts().isEmpty()) {
+      if (l.getDstPorts() != null) {
         BoolExpr val = computeValidRange(l.getDstPorts(), _symbolicPacket.getDstPort());
+        val = l.getDstPorts().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getSrcPorts() != null && !l.getSrcPorts().isEmpty()) {
+      if (l.getSrcPorts() != null) {
         BoolExpr val = computeValidRange(l.getSrcPorts(), _symbolicPacket.getSrcPort());
+        val = l.getSrcPorts().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
@@ -2154,8 +2206,9 @@ class EncoderSlice {
         throw new BatfishException("detected ecns");
       }
 
-      if (l.getTcpFlags() != null && !l.getTcpFlags().isEmpty()) {
+      if (l.getTcpFlags() != null) {
         BoolExpr val = computeTcpFlags(l.getTcpFlags());
+        val = l.getTcpFlags().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
@@ -2163,13 +2216,15 @@ class EncoderSlice {
         throw new BatfishException("detected fragment offsets");
       }
 
-      if (l.getIcmpCodes() != null && !l.getIcmpCodes().isEmpty()) {
+      if (l.getIcmpCodes() != null) {
         BoolExpr val = computeValidRange(l.getIcmpCodes(), _symbolicPacket.getIcmpCode());
+        val = l.getIcmpCodes().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getIcmpTypes() != null && !l.getIcmpTypes().isEmpty()) {
+      if (l.getIcmpTypes() != null) {
         BoolExpr val = computeValidRange(l.getIcmpTypes(), _symbolicPacket.getIcmpType());
+        val = l.getIcmpTypes().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
@@ -2177,8 +2232,9 @@ class EncoderSlice {
         throw new BatfishException("detected states");
       }
 
-      if (l.getIpProtocols() != null && !l.getIpProtocols().isEmpty()) {
+      if (l.getIpProtocols() != null) {
         BoolExpr val = computeIpProtocols(l.getIpProtocols());
+        val = l.getIpProtocols().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
@@ -2574,8 +2630,17 @@ class EncoderSlice {
           if (isClientEdge) {
             cost = 0;
           } else {
-            doExport = mkNot(varsOther.getBgpInternal());
-            cost = 0;
+            // Lookup if we learned from iBGP, and if so, don't export the route
+            SymbolicRecord other = getBestNeighborPerProtocol(router, proto);
+            /* if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
+              other = varsOther;
+            } else {
+              other = getSymbolicDecisions().getBestNeighborPerProtocol().get(router, proto);
+            } */
+            if (other.getBgpInternal() != null) {
+              doExport = mkNot(other.getBgpInternal());
+              cost = 0;
+            }
           }
         }
 
@@ -2662,6 +2727,7 @@ class EncoderSlice {
             values = origin.compute();
 
           } else {
+
             // TODO: delete the unused values below
             BoolExpr per = vars.getPermitted();
             BoolExpr lp = safeEq(vars.getLocalPref(), mkInt(0));
@@ -2730,6 +2796,8 @@ class EncoderSlice {
                           break;
 
                         case EXPORT:
+
+                          // varsOther = getBestNeighborPerProtocol(router, proto);
                           varsOther = _symbolicDecisions.getBestNeighbor().get(router);
                           List<Prefix> originations = getOriginatedNetworks(conf, proto);
                           usedExport =
@@ -3080,21 +3148,6 @@ class EncoderSlice {
             (le, vars) -> {
               if (vars.getClientId() != null) {
                 add(vars.getClientId().isNotFromClient());
-              }
-            });
-
-    // Communities only when send-community is configured
-    getLogicalGraph()
-        .getEnvironmentVars()
-        .forEach(
-            (le, vars) -> {
-              BgpNeighbor n = getGraph().getEbgpNeighbors().get(le.getEdge());
-              if (!n.getSendCommunity()) {
-                vars.getCommunities()
-                    .forEach(
-                        (cvar, b) -> {
-                          add(mkNot(b));
-                        });
               }
             });
 

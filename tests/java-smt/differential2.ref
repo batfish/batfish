@@ -11,8 +11,22 @@
                 "envName" : "BASE",
                 "testrigName" : "tr-smt-ospf5"
               },
-              "FAILED" : {
-                "envName" : "FAILED",
+              "DELTA" : {
+                "edgeBlacklist" : [
+                  {
+                    "node1" : "R0",
+                    "node1interface" : "Serial0",
+                    "node2" : "R1",
+                    "node2interface" : "Serial0"
+                  },
+                  {
+                    "node1" : "R2",
+                    "node1interface" : "Serial0",
+                    "node2" : "R0",
+                    "node2interface" : "Serial1"
+                  }
+                ],
+                "envName" : "DELTA",
                 "testrigName" : "tr-smt-ospf5"
               }
             },
@@ -54,7 +68,7 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1/24,nhint:dynamic>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1,nhint:dynamic>"
                       ]
                     },
                     {
@@ -65,7 +79,7 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1/24,nhint:dynamic>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1,nhint:dynamic>"
                       ]
                     },
                     {
@@ -83,7 +97,7 @@
                   "notes" : "ACCEPTED"
                 }
               ],
-              "FAILED" : [
+              "DELTA" : [
                 {
                   "disposition" : "NO_ROUTE",
                   "notes" : "NO_ROUTE"
@@ -112,16 +126,19 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "diffType" : "any",
     "differential" : false,
     "dstIps" : [
       "70.70.70.0/24"
     ],
-    "equivalence" : true,
+    "envDiff" : false,
+    "failNode1Regex" : "R0",
+    "failNode2Regex" : ".*",
     "failures" : 2,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R3",
     "fullModel" : false,
-    "ingressNodeRegex" : ".*",
+    "ingressNodeRegex" : "R0",
     "minimize" : false,
     "noEnvironment" : false
   },

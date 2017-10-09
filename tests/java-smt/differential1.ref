@@ -12,11 +12,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "diffType" : "any",
     "differential" : false,
     "dstIps" : [
       "70.70.70.0/24"
     ],
-    "equivalence" : true,
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
     "failures" : 1,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R3",

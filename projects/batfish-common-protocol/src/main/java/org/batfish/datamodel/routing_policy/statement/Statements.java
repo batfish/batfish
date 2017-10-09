@@ -2,7 +2,10 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -13,6 +16,7 @@ public enum Statements {
   ExitAccept,
   ExitReject,
   FallThrough,
+  RemovePrivateAs,
   Return,
   ReturnFalse,
   ReturnLocalDefaultAction,
@@ -26,10 +30,11 @@ public enum Statements {
   UnsetWriteIntermediateBgpAttributes;
 
   public static class StaticStatement extends Statement {
-    /** */
-    private static final long serialVersionUID = 1L;
 
     private static final String PROP_TYPE = "type";
+
+    /** */
+    private static final long serialVersionUID = 1L;
 
     private Statements _type;
 
@@ -72,6 +77,20 @@ public enum Statements {
           result.setReturn(true);
           result.setFallThrough(true);
           break;
+
+        case RemovePrivateAs:
+          {
+            BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+            List<SortedSet<Integer>> newAsPath =
+                AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
+            bgpRouteBuilder.setAsPath(newAsPath);
+            if (environment.getWriteToIntermediateBgpAttributes()) {
+              BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+              List<SortedSet<Integer>> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
+              ir.setAsPath(iAsPath);
+            }
+            break;
+          }
 
         case Return:
           result.setReturn(true);
