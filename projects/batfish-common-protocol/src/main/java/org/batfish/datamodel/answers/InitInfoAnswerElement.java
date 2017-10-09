@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException.BatfishStackTrace;
+import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
@@ -14,6 +15,8 @@ public class InitInfoAnswerElement implements AnswerElement {
   private SortedMap<String, Set<BatfishStackTrace>> _errors;
 
   private SortedMap<String, ParseStatus> _parseStatus;
+
+  private SortedMap<String, ParseTreeSentences> _parseTrees;
 
   private SortedMap<String, Warnings> _warnings;
 
@@ -30,6 +33,10 @@ public class InitInfoAnswerElement implements AnswerElement {
 
   public SortedMap<String, ParseStatus> getParseStatus() {
     return _parseStatus;
+  }
+
+  public SortedMap<String, ParseTreeSentences> getParseTrees() {
+    return _parseTrees;
   }
 
   public SortedMap<String, Warnings> getWarnings() {
@@ -174,6 +181,10 @@ public class InitInfoAnswerElement implements AnswerElement {
 
   public void setParseStatus(SortedMap<String, ParseStatus> parseStatus) {
     _parseStatus = parseStatus;
+  }
+
+  public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
+    _parseTrees = parseTrees;
   }
 
   public void setWarnings(SortedMap<String, Warnings> warnings) {
