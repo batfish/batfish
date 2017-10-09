@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 
@@ -10,6 +11,8 @@ public class ParseEnvironmentRoutingTablesAnswerElement implements AnswerElement
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
   private SortedMap<String, ParseStatus> _parseStatus;
 
@@ -20,9 +23,14 @@ public class ParseEnvironmentRoutingTablesAnswerElement implements AnswerElement
   private SortedMap<String, Warnings> _warnings;
 
   public ParseEnvironmentRoutingTablesAnswerElement() {
+    _errors = new TreeMap<>();
     _parseStatus = new TreeMap<>();
     _parseTrees = new TreeMap<>();
     _warnings = new TreeMap<>();
+  }
+
+  public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
+    return _errors;
   }
 
   public SortedMap<String, ParseStatus> getParseStatus() {
@@ -39,6 +47,10 @@ public class ParseEnvironmentRoutingTablesAnswerElement implements AnswerElement
 
   public SortedMap<String, Warnings> getWarnings() {
     return _warnings;
+  }
+
+  public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
+    _errors = errors;
   }
 
   public void setParseStatus(SortedMap<String, ParseStatus> parseStatus) {

@@ -1437,7 +1437,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
         // dirty hack for setting bandwidth for now
         double ciscoBandwidth =
-            org.batfish.representation.cisco.Interface.getDefaultBandwidth(ifaceName);
+            org.batfish.representation.cisco.Interface.getDefaultBandwidth(
+                ifaceName, ConfigurationFormat.CISCO_IOS);
         double juniperBandwidth =
             org.batfish.representation.juniper.Interface.getDefaultBandwidthByName(ifaceName);
         double bandwidth = Math.min(ciscoBandwidth, juniperBandwidth);
@@ -2121,10 +2122,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
           loadParseEnvironmentRoutingTablesAnswerElement();
       if (!summary) {
+        if (verboseError) {
+          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
+          parseAnswer
+              .getErrors()
+              .forEach(
+                  (hostname, parseErrors) -> {
+                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
+                  });
+          parseAnswer
+              .getErrors()
+              .forEach(
+                  (hostname, convertErrors) -> {
+                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
+                  });
+        }
         SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
         warnings.putAll(parseAnswer.getWarnings());
       }
       answerElement.setParseStatus(parseAnswer.getParseStatus());
+      answerElement.setParseTrees(parseAnswer.getParseTrees());
     } else {
       ParseVendorConfigurationAnswerElement parseAnswer =
           loadParseVendorConfigurationAnswerElement();
