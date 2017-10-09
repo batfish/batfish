@@ -165,7 +165,7 @@ class TransferBDD {
     BDD[] bits = record.getPrefix().getBitvec();
     BitSet b = p.getAddress().getAddressBits();
     BDD acc = factory.one();
-    for (int i = 0; i <= length; i++) {
+    for (int i = 0; i < length; i++) {
       boolean res = b.get(i);
       if (res) {
         acc = acc.and(bits[i]);
@@ -193,9 +193,13 @@ class TransferBDD {
 
     BDD lowerBitsMatch = firstBitsEqual(record, p, len);
     BDD acc = factory.zero();
-    for (int i = lower; i <= upper; i++) {
-      BDD equalLen = record.getPrefixLength().value(lower);
-      acc = acc.or(equalLen);
+    if (lower == 0 && upper == 32) {
+      acc = factory.one();
+    } else {
+      for (int i = lower; i <= upper; i++) {
+        BDD equalLen = record.getPrefixLength().value(i);
+        acc = acc.or(equalLen);
+      }
     }
     return acc.and(lowerBitsMatch);
   }
@@ -203,16 +207,19 @@ class TransferBDD {
   /*
    * Converts a route filter list to a boolean expression.
    */
-  private BDD matchFilterList(RouteFilterList x, BDDRecord other) {
+  private BDD matchFilterList(TransferParam<BDDRecord> p, RouteFilterList x, BDDRecord other) {
     BDD acc = factory.zero();
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
     for (RouteFilterLine line : lines) {
-      Prefix p = line.getPrefix();
+      Prefix pfx = line.getPrefix();
       SubRange r = line.getLengthRange();
-      PrefixRange range = new PrefixRange(p, r);
+      PrefixRange range = new PrefixRange(pfx, r);
+      p.debug("Prefix Range: " + range);
       BDD matches = isRelevantFor(other, range);
+      // p.debug("Matches: " + matches);
       BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
+      // p.debug("Action: " + action);
       acc = ite(matches, action, acc);
     }
     return acc;
@@ -221,26 +228,30 @@ class TransferBDD {
   /*
    * Converts a prefix set to a boolean expression.
    */
-  private BDD matchPrefixSet(Configuration conf, PrefixSetExpr e, BDDRecord other) {
+  private BDD matchPrefixSet(
+      TransferParam<BDDRecord> p, Configuration conf, PrefixSetExpr e, BDDRecord other) {
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
 
       Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
       if (ranges.isEmpty()) {
+        p.debug("empty");
         return factory.one();
       }
 
       BDD acc = factory.zero();
       for (PrefixRange range : ranges) {
+        p.debug("Prefix Range: " + range);
         acc = acc.or(isRelevantFor(other, range));
       }
       return acc;
 
     } else if (e instanceof NamedPrefixSet) {
       NamedPrefixSet x = (NamedPrefixSet) e;
+      p.debug("Named: " + x.getName());
       String name = x.getName();
       RouteFilterList fl = conf.getRouteFilterLists().get(name);
-      return matchFilterList(fl, other);
+      return matchFilterList(p, fl, other);
 
     } else {
       throw new BatfishException("TODO: match prefix set: " + e);
@@ -302,13 +313,13 @@ class TransferBDD {
    * Convert a Batfish AST boolean expression to a symbolic Z3 boolean expression
    * by performing inlining of stateful side effects.
    */
-  private TransferResult<BDDReturn, BDD> compute(
-      BooleanExpr expr, TransferParam<BDDRecord> p) {
+  private TransferResult<BDDReturn, BDD> compute(BooleanExpr expr, TransferParam<BDDRecord> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
       p.debug("MatchIpv4");
       BDDReturn ret = new BDDReturn(p.getData(), factory.one());
+      p.debug("MatchIpv4 Result: " + ret);
       return fromExpr(ret);
     }
     if (expr instanceof MatchIpv6) {
@@ -327,6 +338,7 @@ class TransferBDD {
         acc = acc.and(r.getReturnValue().getSecond());
       }
       BDDReturn ret = new BDDReturn(p.getData(), acc);
+      p.debug("Conjunction Result: " + ret);
       return result.setReturnValue(ret);
     }
 
@@ -341,6 +353,7 @@ class TransferBDD {
         acc = acc.or(r.getReturnValue().getSecond());
       }
       BDDReturn ret = new BDDReturn(p.getData(), acc);
+      p.debug("Disjunction Result: " + ret);
       return result.setReturnValue(ret);
     }
 
@@ -363,9 +376,7 @@ class TransferBDD {
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr conjunct = conjuncts.get(i);
           TransferParam<BDDRecord> param =
-              record
-                  .setDefaultPolicy(null)
-                  .setChainContext(TransferParam.ChainContext.CONJUNCTION);
+              record.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
           TransferResult<BDDReturn, BDD> r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
@@ -394,15 +405,13 @@ class TransferBDD {
         for (int i = disjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr disjunct = disjuncts.get(i);
           TransferParam<BDDRecord> param =
-              record
-                  .setDefaultPolicy(null)
-                  .setChainContext(TransferParam.ChainContext.CONJUNCTION);
+              record.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
           TransferResult<BDDReturn, BDD> r = compute(disjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
-        p.debug("DisjunctionChain Result: " + acc);
         BDDReturn ret = new BDDReturn(record.getData(), acc);
+        p.debug("DisjunctionChain Result: " + ret);
         return result.setReturnValue(ret);
       }
     }
@@ -413,6 +422,7 @@ class TransferBDD {
       TransferResult<BDDReturn, BDD> result = compute(n.getExpr(), p);
       BDDReturn r = result.getReturnValue();
       BDDReturn ret = new BDDReturn(r.getFirst(), r.getSecond().not());
+      p.debug("Not Result: " + ret);
       return result.setReturnValue(ret);
     }
 
@@ -427,14 +437,16 @@ class TransferBDD {
       BDD protoMatch = p.getData().getProtocolHistory().value(proto);
       p.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
       BDDReturn ret = new BDDReturn(p.getData(), protoMatch);
+      p.debug("MatchProtocol Result: " + ret);
       return fromExpr(ret);
     }
 
     if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
-      BDD r = matchPrefixSet(_conf, m.getPrefixSet(), p.getData());
+      BDD r = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
       BDDReturn ret = new BDDReturn(p.getData(), r);
+      // p.debug("MatchPrefixSet Result: " + ret);
       return fromExpr(ret);
 
       // TODO: implement me
@@ -449,8 +461,7 @@ class TransferBDD {
       String name = c.getCalledPolicyName();
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
       p = p.setCallContext(TransferParam.CallContext.EXPR_CALL);
-      TransferResult<BDDReturn, BDD> r =
-          compute(pol.getStatements(), p.indent().enterScope(name));
+      TransferResult<BDDReturn, BDD> r = compute(pol.getStatements(), p.indent().enterScope(name));
       p.debug("CallExpr (return): " + r.getReturnValue());
       p.debug("CallExpr (fallthrough): " + r.getFallthroughValue());
       return r;
@@ -467,6 +478,7 @@ class TransferBDD {
       MatchCommunitySet mcs = (MatchCommunitySet) expr;
       BDD c = matchCommunitySet(_conf, mcs.getExpr(), p.getData());
       BDDReturn ret = new BDDReturn(p.getData(), c);
+      p.debug("MatchCommunitySet Result: " + ret);
       return fromExpr(ret);
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -525,6 +537,7 @@ class TransferBDD {
   private BDDInteger applyIntExprModification(BDDInteger x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
+      System.out.println("Literal: " + z.getValue());
       return BDDInteger.makeFromValue(32, z.getValue());
     }
     if (e instanceof IncrementLocalPreference) {
@@ -565,8 +578,7 @@ class TransferBDD {
     return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
   }
 
-  private TransferResult<BDDReturn, BDD> fallthrough(
-      TransferResult<BDDReturn, BDD> r) {
+  private TransferResult<BDDReturn, BDD> fallthrough(TransferResult<BDDReturn, BDD> r) {
     BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
     return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
   }
@@ -662,10 +674,9 @@ class TransferBDD {
       } else if (stmt instanceof If) {
         p.debug("If");
         If i = (If) stmt;
-        TransferResult<BDDReturn, BDD> r = compute(i.getGuard(), p);
+        TransferResult<BDDReturn, BDD> r = compute(i.getGuard(), p.indent());
         BDD guard = r.getReturnValue().getSecond();
-        String str = guard.toString();
-        p.debug("guard: " + str);
+        p.debug("guard: " + guard.not());
 
         BDDRecord current = result.getReturnValue().getFirst();
 
@@ -673,13 +684,10 @@ class TransferBDD {
         TransferParam<BDDRecord> pFalse = p.indent().setData(current.copy());
         p.debug("True Branch");
         TransferResult<BDDReturn, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
+        p.debug("True Branch: " + trueBranch.getReturnValue());
         p.debug("False Branch");
-        TransferResult<BDDReturn, BDD> falseBranch =
-            compute(i.getFalseStatements(), pFalse);
-        p.debug("JOIN");
-
-        BDDInteger x;
-        BDDInteger y;
+        TransferResult<BDDReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
+        p.debug("False Branch: " + trueBranch.getReturnValue());
 
         BDDRecord recordVal = ite(guard, pTrue.getData(), pFalse.getData());
 
@@ -689,14 +697,24 @@ class TransferBDD {
                 guard,
                 trueBranch.getReturnValue().getSecond(),
                 falseBranch.getReturnValue().getSecond());
+
+        // p.debug("New Return Value (neg): " + returnVal.not());
+
         BDD returnAss =
             ite(guard, trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
+
+        // p.debug("New Return Assigned: " + returnAss);
+
         BDD fallThrough =
             ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
-        result
-            .setReturnValue(new BDDReturn(recordVal, returnVal))
-            .setReturnAssignedValue(returnAss)
-            .setFallthroughValue(fallThrough);
+
+        // p.debug("New fallthrough: " + fallThrough);
+
+        result =
+            result
+                .setReturnValue(new BDDReturn(recordVal, returnVal))
+                .setReturnAssignedValue(returnAss)
+                .setFallthroughValue(fallThrough);
 
       } else if (stmt instanceof SetDefaultPolicy) {
         p.debug("SetDefaultPolicy");
@@ -712,6 +730,7 @@ class TransferBDD {
         BDDInteger newValue = applyLongExprModification(p.getData().getMetric(), ie);
         BDDInteger med = ite(updateMed, p.getData().getMed(), newValue);
         BDDInteger met = ite(updateMet, p.getData().getMetric(), newValue);
+        p.debug("Set Metric Update: " + met.getBitvec()[0]);
         p.getData().setMetric(met);
         p.getData().setMetric(med);
 
@@ -723,6 +742,11 @@ class TransferBDD {
         SetLocalPreference slp = (SetLocalPreference) stmt;
         IntExpr ie = slp.getLocalPreference();
         BDDInteger newValue = applyIntExprModification(p.getData().getLocalPref(), ie);
+        p.debug("return assigned: " + result.getReturnAssignedValue());
+        for (int i = 0; i < 32; i++) {
+          p.debug("newLP" + i + ": " + newValue.getBitvec()[i]);
+
+        }
         newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
         p.getData().setLocalPref(newValue);
 
@@ -807,7 +831,7 @@ class TransferBDD {
   public BDDRecord compute() {
     _comms = _graph.findAllCommunities();
     BDDRecord o = new BDDRecord(_comms);
-    TransferParam<BDDRecord> p = new TransferParam<>(o);
+    TransferParam<BDDRecord> p = new TransferParam<>(o, true);
     TransferResult<BDDReturn, BDD> result = compute(_statements, p);
     return result.getReturnValue().getFirst();
   }

@@ -43,6 +43,9 @@ public class BDDInteger {
     _bitvec = Arrays.copyOf(other._bitvec, other._bitvec.length);
   }
 
+  /*
+   * Map an if-then-else over each bit in the bitvector
+   */
   public BDDInteger ite(BDD b, BDDInteger other) {
     BDDInteger val = new BDDInteger(this);
     for (int i = 0; i < _bitvec.length; i++) {
@@ -51,39 +54,51 @@ public class BDDInteger {
     return val;
   }
 
+  /*
+   * Create a BDD representing the exact value
+   */
   public BDD value(int val) {
     BDDFactory var2 = BDDRecord.factory;
     BDD bdd = var2.one();
-    for (BDD b : this._bitvec) {
+    for (int i = this._bitvec.length - 1; i >= 0; i--) {
+      BDD b = this._bitvec[i];
       if ((val & 1) != 0) {
-        bdd.andWith(b);
+        bdd = bdd.and(b);
       } else {
-        bdd.andWith(b.not());
+        bdd = bdd.and(b.not());
       }
       val >>= 1;
     }
     return bdd;
   }
 
-
+  /*
+   * Set this BDD to have an exact value
+   */
   public void setValue(long val) {
-    BDDFactory var2 = BDDRecord.factory;
-    for (int var3 = 0; var3 < this._bitvec.length; ++var3) {
+    BDDFactory factory = BDDRecord.factory;
+    for (int i = this._bitvec.length - 1; i >= 0; i--) {
       if ((val & 1) != 0) {
-        this._bitvec[var3] = var2.one();
+        this._bitvec[i] = factory.one();
       } else {
-        this._bitvec[var3] = var2.zero();
+        this._bitvec[i] = factory.zero();
       }
       val >>= 1;
     }
   }
 
+  /*
+   * Set this BDD to be equal to another BDD
+   */
   public void setValue(BDDInteger other) {
     for (int i = 0; i < this._bitvec.length; ++i) {
       this._bitvec[i] = other._bitvec[i].id();
     }
   }
 
+  /*
+   * Add two BDDs bitwise to create a new BDD
+   */
   public BDDInteger add(BDDInteger var1) {
     if (this._bitvec.length != var1._bitvec.length) {
       throw new BDDException();
@@ -93,11 +108,11 @@ public class BDDInteger {
       BDDInteger var4 = new BDDInteger(this._bitvec.length);
       for (int var5 = 0; var5 < var4._bitvec.length; ++var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
-        var4._bitvec[var5].xorWith(var3.id());
+        var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
         BDD var6 = this._bitvec[var5].or(var1._bitvec[var5]);
-        var6.andWith(var3);
+        var6 = var6.and(var3);
         BDD var7 = this._bitvec[var5].and(var1._bitvec[var5]);
-        var7.orWith(var6);
+        var7 = var7.or(var6);
         var3 = var7;
       }
       var3.free();
@@ -105,6 +120,9 @@ public class BDDInteger {
     }
   }
 
+  /*
+   * Subtract one BDD from another bitwise to create a new BDD
+   */
   public BDDInteger sub(BDDInteger var1) {
     if (this._bitvec.length != var1._bitvec.length) {
       throw new BDDException();
@@ -114,13 +132,13 @@ public class BDDInteger {
       BDDInteger var4 = new BDDInteger(this._bitvec.length);
       for (int var5 = 0; var5 < var4._bitvec.length; ++var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
-        var4._bitvec[var5].xorWith(var3.id());
+        var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
         BDD var6 = var1._bitvec[var5].or(var3);
         BDD var7 = this._bitvec[var5].apply(var6, BDDFactory.less);
         var6.free();
         var6 = this._bitvec[var5].and(var1._bitvec[var5]);
-        var6.andWith(var3);
-        var6.orWith(var7);
+        var6 = var6.and(var3);
+        var6 = var6.or(var7);
         var3 = var6;
       }
       var3.free();

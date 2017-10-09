@@ -3,7 +3,6 @@ package org.batfish.symbolic;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.symbolic.collections.PList;
-import org.batfish.symbolic.smt.Encoder;
 
 public class TransferParam<T> {
 
@@ -35,8 +34,10 @@ public class TransferParam<T> {
 
   private SetDefaultPolicy _defaultPolicy;
 
-  public TransferParam(T other) {
-    _data = other;
+  private boolean _debug;
+
+  public TransferParam(T data, boolean debug) {
+    _data = data;
     _callContext = CallContext.NONE;
     _chainContext = ChainContext.NONE;
     _indent = 0;
@@ -44,6 +45,7 @@ public class TransferParam<T> {
     _defaultAccept = false;
     _defaultAcceptLocal = false;
     _defaultPolicy = null;
+    _debug = debug;
   }
 
   private TransferParam(TransferParam<T> p) {
@@ -55,6 +57,7 @@ public class TransferParam<T> {
     _defaultAccept = p._defaultAccept;
     _defaultAcceptLocal = p._defaultAcceptLocal;
     _defaultPolicy = p._defaultPolicy;
+    _debug = p._debug;
   }
 
   public T getData() {
@@ -138,7 +141,7 @@ public class TransferParam<T> {
   }
 
   public void debug(String str) {
-    if (Encoder.ENABLE_DEBUGGING) {
+    if (_debug) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < _indent; i++) {
         sb.append("    ");

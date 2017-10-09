@@ -9,4 +9,7 @@ public class BDDReturn extends Tuple<BDDRecord, BDD> {
     super(r,b);
   }
 
+  public String debug() {
+    return this.getFirst().getDot(this.getSecond());
+  }
 }

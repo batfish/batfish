@@ -1,7 +1,9 @@
 package org.batfish.symbolic.abstraction;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,23 +20,30 @@ import org.batfish.symbolic.Protocol;
  */
 public class BDDRecord {
 
-  static BDDFactory factory = JFactory.init(500, 1000);
+  static BDDFactory factory;
+
+  static {
+    CallbackHandler handler = new CallbackHandler();
+    try {
+      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
+      factory = JFactory.init(100, 10000);
+      factory.registerGCCallback(handler, m);
+      factory.registerResizeCallback(handler, m);
+      factory.registerReorderCallback(handler, m);
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
+  }
 
   private BDDInteger _prefix;
-
   private BDDInteger _prefixLength;
-
   private BDDInteger _adminDist;
-
   private BDDInteger _metric;
-
   private BDDInteger _med;
-
   private BDDInteger _localPref;
-
   private BDDDomain<Protocol> _protocolHistory;
-
   private Map<CommunityVar, BDD> _communities;
+  private Map<Integer, String> _bitNames;
 
   // TODO: Same parent route reflectors
 
@@ -45,28 +54,50 @@ public class BDDRecord {
   // TODO: MED
 
 
+  private void addBitNames(String s, int length, int index) {
+    for (int i = index; i < index + length; i++) {
+      _bitNames.put(i, s + (i - index));
+    }
+  }
+
   public BDDRecord(Set<CommunityVar> comms) {
+
     // Make sure we have the right number of variables
     int numVars = factory.varNum();
-    int numNeeded = 32 * 6 + comms.size() + 2;
+    int numNeeded = 32 * 5 + 5 + comms.size() + 2;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
 
+    _bitNames = new HashMap<>();
+
     // Initialize integer values
-    _prefixLength = BDDInteger.makeFromIndex(32, 0);
-    _prefix = BDDInteger.makeFromIndex(32, 32);
-    _metric = BDDInteger.makeFromIndex(32, 64);
-    _adminDist = BDDInteger.makeFromIndex(32, 96);
-    _med = BDDInteger.makeFromIndex(32, 128);
-    _localPref = BDDInteger.makeFromIndex(32, 160);
+    int idx = 0;
+    _metric = BDDInteger.makeFromIndex(32, idx);
+    addBitNames("metric", 32, idx);
+    idx += 32;
+    _adminDist = BDDInteger.makeFromIndex(32, idx);
+    addBitNames("ad", 32, idx);
+    idx += 32;
+    _med = BDDInteger.makeFromIndex(32, idx);
+    addBitNames("med", 32, idx);
+    idx += 32;
+    _localPref = BDDInteger.makeFromIndex(32, idx);
+    addBitNames("lp", 32, idx);
+    idx += 32;
+    _prefixLength = BDDInteger.makeFromIndex(5, idx);
+    addBitNames("pfxLen", 32, idx);
+    idx += 5;
+    _prefix = BDDInteger.makeFromIndex(32, idx);
+    addBitNames("pfx", 32, idx);
+    idx += 32;
 
     // Initialize communities
     _communities = new HashMap<>();
-    int i = 192;
     for (CommunityVar comm : comms) {
-      _communities.put(comm, factory.ithVar(i));
-      i++;
+      _communities.put(comm, factory.ithVar(idx));
+      _bitNames.put(idx, comm.getValue());
+      idx++;
     }
 
     // Initialize the choice of protocol
@@ -75,7 +106,10 @@ public class BDDRecord {
     allProtos.add(Protocol.STATIC);
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
-    _protocolHistory = new BDDDomain<>(allProtos, 192 + comms.size());
+    _protocolHistory = new BDDDomain<>(allProtos, idx);
+
+    int len = _protocolHistory.getInteger().getBitvec().length;
+    addBitNames("proto", len, idx);
   }
 
   public BDDRecord(BDDRecord other) {
@@ -89,6 +123,41 @@ public class BDDRecord {
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
   }
 
+  private Integer dotId(BDD bdd) {
+    if (bdd.isZero()) {
+      return 0;
+    }
+    if (bdd.isOne()) {
+      return 1;
+    }
+    return bdd.hashCode() + 2;
+  }
+
+  private void getDotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
+    if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
+      return;
+    }
+    int val = dotId(bdd);
+    int valLow = dotId(bdd.low());
+    int valHigh = dotId(bdd.high());
+    String name = _bitNames.get(bdd.var());
+    sb.append(val).append(" [label=\"").append(name).append("\"]\n");
+    sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
+    sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
+    visited.add(bdd);
+    getDotRec(sb, bdd.low(), visited);
+    getDotRec(sb, bdd.high(), visited);
+  }
+
+  public String getDot(BDD bdd) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("digraph G {\n");
+    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    getDotRec(sb, bdd, new HashSet<>());
+    sb.append("}");
+    return sb.toString();
+  }
 
   public BDDInteger getPrefixLength() {
     return _prefixLength;

@@ -1278,7 +1278,7 @@ class TransferSSA {
 
   public BoolExpr compute() {
     SymbolicRecord o = new SymbolicRecord(_other);
-    TransferParam<SymbolicRecord> p = new TransferParam<>(o);
+    TransferParam<SymbolicRecord> p = new TransferParam<>(o, Encoder.ENABLE_DEBUGGING);
     computeIntermediatePrefixLen(p);
     applyMetricUpdate(p);
     setDefaultLocalPref(p);

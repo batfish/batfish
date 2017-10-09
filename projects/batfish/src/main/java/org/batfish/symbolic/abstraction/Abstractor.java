@@ -9,10 +9,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javafx.util.Pair;
+import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -94,7 +94,8 @@ public class Abstractor {
   public static void computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     BDDRecord rec = t.compute();
-    System.out.println("Rec: " + rec);
+    BDD bdd = rec.getLocalPref().getBitvec()[31];
+    System.out.println("DOT: \n" + rec.getDot(bdd));
   }
 
 
@@ -161,7 +162,7 @@ public class Abstractor {
                 List<Prefix> destinations;
                 // For connected interfaces add address if there is a peer
                 // Otherwise, add the entire prefix since we don't know
-                if (proto.isConnected()) {
+                /* if (proto.isConnected()) {
                   destinations = new ArrayList<>();
                   List<GraphEdge> edges = g.getEdgeMap().get(router);
                   for (GraphEdge ge : edges) {
@@ -173,10 +174,10 @@ public class Abstractor {
                       destinations.add(pfx);
                     }
                   }
-                } else {
-                  // System.out.println("  Looking at protocol: " + proto.name());
-                  destinations = Graph.getOriginatedNetworks(conf, proto);
-                }
+                } else { */
+                // System.out.println("  Looking at protocol: " + proto.name());
+                destinations = Graph.getOriginatedNetworks(conf, proto);
+                //}
 
                 // Add all destinations to the prefix trie
                 for (Prefix p : destinations) {
@@ -217,6 +218,13 @@ public class Abstractor {
         Set<String> ds = new TreeSet<>();
         ds.add(device);
         workset.split(ds);
+
+        // Don't abstract neighbors
+        //for (String neigh : g.getNeighbors().get(device)) {
+        //  ds = new TreeSet<>();
+        //  ds.add(neigh);
+        //  workset.split(ds);
+        //}
       }
 
       // System.out.println("Computing abstraction for: " + devices);
