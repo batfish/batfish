@@ -12,6 +12,7 @@ import javafx.util.Pair;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -157,8 +158,27 @@ public class Abstractor {
             (router, conf) -> {
               // System.out.println("Looking at router: " + router);
               for (Protocol proto : protocols.get(router)) {
-                // System.out.println("  Looking at protocol: " + proto.name());
-                List<Prefix> destinations = Graph.getOriginatedNetworks(conf, proto);
+                List<Prefix> destinations;
+                // For connected interfaces add address if there is a peer
+                // Otherwise, add the entire prefix since we don't know
+                if (proto.isConnected()) {
+                  destinations = new ArrayList<>();
+                  List<GraphEdge> edges = g.getEdgeMap().get(router);
+                  for (GraphEdge ge : edges) {
+                    if (ge.getPeer() == null) {
+                      destinations.add(ge.getStart().getPrefix());
+                    } else {
+                      Ip ip = ge.getStart().getPrefix().getAddress();
+                      Prefix pfx = new Prefix(ip,32);
+                      destinations.add(pfx);
+                    }
+                  }
+                } else {
+                  // System.out.println("  Looking at protocol: " + proto.name());
+                  destinations = Graph.getOriginatedNetworks(conf, proto);
+                }
+
+                // Add all destinations to the prefix trie
                 for (Prefix p : destinations) {
                   //System.out.println(
                   //    "Destination for " + router + "," + proto.name() + " has: " + p);
