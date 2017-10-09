@@ -16,6 +16,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -170,7 +171,7 @@ public class Graph {
     _neighbors = new HashMap<>();
     routerIfaceMap.forEach(
         (router, nips) -> {
-          List<GraphEdge> graphEdges = new ArrayList<>();
+          Set<GraphEdge> graphEdges = new HashSet<>();
 
           Set<String> neighs = new HashSet<>();
           nips.forEach(
@@ -182,7 +183,6 @@ public class Graph {
                   GraphEdge ge = new GraphEdge(i1, null, router, null, false);
                   graphEdges.add(ge);
                 }
-
                 if (es != null) {
                   boolean hasMultipleEnds = (es.size() > 2);
                   if (hasMultipleEnds) {
@@ -190,6 +190,12 @@ public class Graph {
                     graphEdges.add(ge);
                   } else {
                     for (Edge e : es) {
+                      // Weird inference behavior from Batfish here with a self-loop
+                      if (router.equals(e.getNode1()) && router.equals(e.getNode2())) {
+                        GraphEdge ge = new GraphEdge(i1, null, router, null, false);
+                        graphEdges.add(ge);
+                      }
+                      // Only look at the first pair
                       if (!router.equals(e.getNode2())) {
                         Interface i2 = ifaceMap.get(e.getInterface2());
                         String neighbor = e.getNode2();
@@ -199,12 +205,13 @@ public class Graph {
                         graphEdges.add(ge1);
                         neighs.add(neighbor);
                       }
+
                     }
                   }
                 }
               });
 
-          _edgeMap.put(router, graphEdges);
+          _edgeMap.put(router, new ArrayList<>(graphEdges));
           _neighbors.put(router, neighs);
         });
   }
@@ -300,7 +307,7 @@ public class Graph {
                 someIface = true;
                 List<StaticRoute> srs = map.getOrDefault(hereName, new ArrayList<>());
                 srs.add(sr);
-                map.put(there.getName(), srs);
+                map.put(here.getName(), srs);
               }
             }
 
@@ -786,17 +793,19 @@ public class Graph {
   /*
    * Determine if an edge is potentially attached to a host
    */
-  public boolean isEdgeHostConnected(GraphEdge ge) {
-    boolean isBgpPeering = getEbgpNeighbors().get(ge) != null;
-    if (isBgpPeering) {
-      return false;
-    }
-    if (ge.getPeer() == null) {
-      return true;
-    }
-    Configuration peerConf = _configurations.get(ge.getPeer());
+  public boolean isHost(String router) {
+    Configuration peerConf = _configurations.get(router);
     String vendor = peerConf.getConfigurationFormat().getVendorString();
     return "host".equals(vendor);
+  }
+
+  /*
+   * Check if a graph edge is a loopback address
+   */
+  public boolean isLoopback(GraphEdge ge) {
+    Configuration conf = _configurations.get(ge.getRouter());
+    ConfigurationFormat format = conf.getConfigurationFormat();
+    return ge.getStart().isLoopback(format);
   }
 
   /*

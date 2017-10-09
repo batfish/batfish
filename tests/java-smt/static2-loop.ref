@@ -50,7 +50,6 @@
     "dstIps" : [
       "172.0.0.0/8"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

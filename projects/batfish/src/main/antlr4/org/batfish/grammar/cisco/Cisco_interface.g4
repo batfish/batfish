@@ -745,15 +745,14 @@ if_spanning_tree
    (
       if_st_null
       | if_st_portfast
+      | NEWLINE
    )
 ;
 
 if_st_null
 :
    (
-   // intentional blank
-
-      | BPDUFILTER
+      BPDUFILTER
       | BPDUGUARD
       | COST
       | GUARD

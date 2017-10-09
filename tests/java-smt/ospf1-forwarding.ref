@@ -3,17 +3,14 @@
     {
       "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
       "result" : {
-        "forwardingModel" : [
-          "R1,Serial2 --> _,_ (CONNECTED)"
-        ],
         "model" : {
           "|0_CONTROL-FORWARDING_R1_Serial0|" : "false",
-          "|0_CONTROL-FORWARDING_R1_Serial2|" : "true",
+          "|0_CONTROL-FORWARDING_R1_Serial2|" : "false",
           "|0_CONTROL-FORWARDING_R2_Serial0|" : "false",
           "|0_CONTROL-FORWARDING_R2_Serial1|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial0|" : "false",
           "|0_DATA-FORWARDING_R1_Serial0|" : "false",
-          "|0_DATA-FORWARDING_R1_Serial2|" : "true",
+          "|0_DATA-FORWARDING_R1_Serial2|" : "false",
           "|0_DATA-FORWARDING_R2_Serial0|" : "false",
           "|0_DATA-FORWARDING_R2_Serial1|" : "false",
           "|0_DATA-FORWARDING_R3_Serial0|" : "false",
@@ -72,7 +69,6 @@
     "dstIps" : [
       "70.70.70.70"
     ],
-    "equivalence" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

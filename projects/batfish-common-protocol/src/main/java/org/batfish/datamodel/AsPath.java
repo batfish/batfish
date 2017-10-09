@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,6 +15,27 @@ import org.batfish.common.util.CommonUtil;
 public class AsPath implements Serializable, Comparable<AsPath> {
 
   private static final long serialVersionUID = 1L;
+
+  /**
+   * Returns true iff the provided AS number is reserved for private use by RFC 6696:
+   * https://tools.ietf.org/html/rfc6996#section-5
+   */
+  public static boolean isPrivateAs(int as) {
+    return (as >= 64512 && as <= 65535);
+  }
+
+  public static List<SortedSet<Integer>> removePrivateAs(List<SortedSet<Integer>> asPath) {
+    return asPath
+        .stream()
+        .map(
+            asSet ->
+                asSet
+                    .stream()
+                    .filter(as -> !AsPath.isPrivateAs(as))
+                    .collect(ImmutableSortedSet.toImmutableSortedSet(Integer::compare)))
+        .filter(asSet -> !asSet.isEmpty())
+        .collect(ImmutableList.toImmutableList());
+  }
 
   private final List<SortedSet<Integer>> _asSets;
 

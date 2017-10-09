@@ -1,0 +1,15 @@
+! boot system flash:EOS.swi
+hostname r1
+!
+interface Ethernet1
+ ip address 1.2.0.1/24
+!
+interface Loopback0
+ ip address 1.1.1.1/32
+!
+!private as number below
+router bgp 65530
+ router-id 1.1.1.1
+ neighbor 1.2.0.2 remote-as 2
+ network 1.1.1.1 mask 255.255.255.255
+!

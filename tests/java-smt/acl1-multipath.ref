@@ -6,8 +6,7 @@
         "forwardingModel" : [
           "R0,Serial0 --> R1,Serial0 (OSPF)",
           "R0,Serial1 --> R2,Serial0 (OSPF)",
-          "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R3,Loopback0 --> _,_ (CONNECTED)"
+          "R1,Serial1 --> R3,Serial0 (OSPF)"
         ],
         "model" : {
           "|0_CONTROL-FORWARDING_R0_Serial0|" : "true",
@@ -16,7 +15,7 @@
           "|0_CONTROL-FORWARDING_R1_Serial1|" : "true",
           "|0_CONTROL-FORWARDING_R2_Serial0|" : "false",
           "|0_CONTROL-FORWARDING_R2_Serial1|" : "true",
-          "|0_CONTROL-FORWARDING_R3_Loopback0|" : "true",
+          "|0_CONTROL-FORWARDING_R3_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial0|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial1|" : "false",
           "|0_DATA-FORWARDING_R0_Serial0|" : "true",
@@ -25,7 +24,7 @@
           "|0_DATA-FORWARDING_R1_Serial1|" : "true",
           "|0_DATA-FORWARDING_R2_Serial0|" : "false",
           "|0_DATA-FORWARDING_R2_Serial1|" : "false",
-          "|0_DATA-FORWARDING_R3_Loopback0|" : "true",
+          "|0_DATA-FORWARDING_R3_Loopback0|" : "false",
           "|0_DATA-FORWARDING_R3_Serial0|" : "false",
           "|0_DATA-FORWARDING_R3_Serial1|" : "false",
           "|0_FAILED-EDGE_R0_R1|" : "0",
@@ -104,7 +103,8 @@
     "dstIps" : [
       "70.70.70.70"
     ],
-    "equivalence" : false,
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
     "failures" : 0,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R3",

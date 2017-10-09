@@ -595,6 +595,9 @@ class TransferSSA {
    */
   private boolean sendCommunity() {
     if (_to.isBgp()) {
+      if (!_isExport) {
+        return true;
+      }
       BgpNeighbor n = getBgpNeighbor();
       return n.getSendCommunity();
     } else {
@@ -609,7 +612,7 @@ class TransferSSA {
       TransferParam<SymbolicRecord> p, TransferResult<BoolExpr,BoolExpr> result) {
 
     ArithExpr defaultLen = _enc.mkInt(_enc.defaultLength());
-    ArithExpr defaultAd = _enc.mkInt(_enc.defaultAdminDistance(_conf, _from));
+    ArithExpr defaultAd = _enc.defaultAdminDistance(_conf, _from, p.getData());
     ArithExpr defaultMed = _enc.mkInt(_enc.defaultMed(_from));
     ArithExpr defaultLp = _enc.mkInt(_enc.defaultLocalPref());
     ArithExpr defaultId = _enc.mkInt(_enc.defaultId());
@@ -704,7 +707,6 @@ class TransferSSA {
     }
 
     BoolExpr comms = _enc.mkTrue();
-    // regex matches that now match due to the concrete added value
     // update all community values
     for (Map.Entry<CommunityVar, BoolExpr> entry : _current.getCommunities().entrySet()) {
       CommunityVar cvar = entry.getKey();
@@ -1243,7 +1245,26 @@ class TransferSSA {
 
   private void applyMetricUpdate(TransferParam<SymbolicRecord> p) {
     if (_isExport) {
-      ArithExpr newValue = _enc.mkSum(p.getData().getMetric(), _enc.mkInt(_addedCost));
+      // If it is a BGP route learned from IGP, then we use metric 0
+      ArithExpr newValue;
+      ArithExpr cost = _enc.mkInt(_addedCost);
+      ArithExpr sum = _enc.mkSum(p.getData().getMetric(), cost);
+      if (_to.isBgp()) {
+        BoolExpr isBGP;
+        String router = _conf.getName();
+        boolean hasProtocolVar = _other.getProtocolHistory() != null;
+        boolean onlyBGP = _enc.getOptimizations().getSliceHasSingleProtocol().contains(router);
+        if (hasProtocolVar) {
+          isBGP = _other.getProtocolHistory().checkIfValue(Protocol.BGP);
+        } else if (onlyBGP) {
+          isBGP = _enc.mkTrue();
+        } else {
+          isBGP = _enc.mkFalse();
+        }
+        newValue = _enc.mkIf(isBGP, sum, cost);
+      } else {
+        newValue = sum;
+      }
       p.getData().setMetric(newValue);
     }
   }

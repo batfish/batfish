@@ -16,51 +16,53 @@ import org.batfish.datamodel.questions.Question;
 
 public class HeaderQuestion extends Question implements IQuestion {
 
-  private static final String DST_IPS_VAR = "dstIps";
+  private static final String PROP_DST_IPS = "dstIps";
 
-  private static final String DST_PORTS_VAR = "dstPorts";
+  private static final String PROP_DST_PORTS = "dstPorts";
 
-  private static final String FRAGMENT_OFFSETS_VAR = "fragmentOffsets";
+  private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
 
-  private static final String ICMP_CODES_VAR = "icmpCodes";
+  private static final String PROP_ICMP_CODES = "icmpCodes";
 
-  private static final String ICMP_TYPES_VAR = "icmpTypes";
+  private static final String PROP_ICMP_TYPES = "icmpTypes";
 
-  private static final String IP_PROTOCOLS_VAR = "ipProtocols";
+  private static final String PROP_IP_PROTOCOLS = "ipProtocols";
 
-  private static final String NOT_DST_IPS_VAR = "notDstIps";
+  private static final String PROP_NOT_DST_IPS = "notDstIps";
 
-  private static final String NOT_DST_PORTS_VAR = "notDstPorts";
+  private static final String PROP_NOT_DST_PORTS = "notDstPorts";
 
-  private static final String NOT_FRAGMENT_OFFSETS_VAR = "notFragmentOffsets";
+  private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
 
-  private static final String NOT_ICMP_CODE_VAR = "notIcmpCodes";
+  private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
 
-  private static final String NOT_ICMP_TYPE_VAR = "notIcmpTypes";
+  private static final String PROP_NOT_ICMP_TYPES = "notIcmpTypes";
 
-  private static final String NOT_IP_PROTOCOLS_VAR = "notIpProtocols";
+  private static final String PROP_NOT_IP_PROTOCOLS = "notIpProtocols";
 
-  private static final String NOT_SRC_IPS_VAR = "notSrcIps";
+  private static final String PROP_NOT_SRC_IPS = "notSrcIps";
 
   private static final String NOT_SRC_PORTS_VAR = "notSrcPorts";
 
-  private static final String SRC_IPS_VAR = "srcIps";
+  private static final String PROP_SRC_IPS = "srcIps";
 
-  private static final String SRC_OR_DST_IPS_VAR = "srcOrDstIps";
+  private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
 
-  private static final String SRC_OR_DST_PORTS_VAR = "srcOrDstPorts";
+  private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
 
-  private static final String SRC_PORTS_VAR = "srcPorts";
+  private static final String PROP_SRC_PORTS = "srcPorts";
 
-  private static final String FAILURES_VAR = "failures";
+  private static final String PROP_FAILURES = "failures";
 
-  private static final String FULL_MODEL_VAR = "fullModel";
+  private static final String PROP_FULL_MODEL = "fullModel";
 
-  private static final String NO_ENVIRONMENT_VAR = "noEnvironment";
+  private static final String PROP_NO_ENVIRONMENT = "noEnvironment";
 
-  private static final String MINIMIZE_VAR = "minimize";
+  private static final String PROP_MINIMIZE = "minimize";
 
-  private static final String EQUIVALENCE_VAR = "equivalence";
+  private static final String PROP_DIFF_TYPE = "diffType";
+
+  private static final String PROP_ENV_DIFF = "envDiff";
 
   private Set<ForwardingAction> _actions;
 
@@ -74,7 +76,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _minimize;
 
-  private boolean _equivalence;
+  private DiffType _diffType;
+
+  private boolean _envDiff;
 
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
@@ -83,7 +87,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = false;
     _noEnvironment = false;
     _minimize = false;
-    _equivalence = false;
+    _diffType = null;
+    _envDiff = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -93,7 +98,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = q._fullModel;
     _noEnvironment = q._noEnvironment;
     _minimize = q._minimize;
-    _equivalence = q._equivalence;
+    _diffType = q._diffType;
+    _envDiff = q._envDiff;
   }
 
   @Override
@@ -101,17 +107,17 @@ public class HeaderQuestion extends Question implements IQuestion {
     return true;
   }
 
-  @JsonProperty(DST_IPS_VAR)
+  @JsonProperty(PROP_DST_IPS)
   public Set<IpWildcard> getDstIps() {
     return _headerSpace.getDstIps();
   }
 
-  @JsonProperty(DST_PORTS_VAR)
+  @JsonProperty(PROP_DST_PORTS)
   public Set<SubRange> getDstPorts() {
     return _headerSpace.getDstPorts();
   }
 
-  @JsonProperty(FRAGMENT_OFFSETS_VAR)
+  @JsonProperty(PROP_FRAGMENT_OFFSETS)
   public Set<SubRange> getFragmentOffsets() {
     return _headerSpace.getFragmentOffsets();
   }
@@ -121,57 +127,57 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _headerSpace;
   }
 
-  @JsonProperty(ICMP_CODES_VAR)
+  @JsonProperty(PROP_ICMP_CODES)
   public Set<SubRange> getIcmpCodes() {
     return _headerSpace.getIcmpCodes();
   }
 
-  @JsonProperty(ICMP_TYPES_VAR)
+  @JsonProperty(PROP_ICMP_TYPES)
   public Set<SubRange> getIcmpTypes() {
     return _headerSpace.getIcmpTypes();
   }
 
-  @JsonProperty(IP_PROTOCOLS_VAR)
+  @JsonProperty(PROP_IP_PROTOCOLS)
   public Set<IpProtocol> getIpProtocols() {
     return _headerSpace.getIpProtocols();
   }
 
   @Override
   public String getName() {
-    throw new BatfishException("Unimplemented getName");
+    throw new BatfishException("Unimplemented getEnvName");
   }
 
-  @JsonProperty(NOT_DST_IPS_VAR)
+  @JsonProperty(PROP_NOT_DST_IPS)
   public Set<IpWildcard> getNotDstIps() {
     return _headerSpace.getNotDstIps();
   }
 
-  @JsonProperty(NOT_DST_PORTS_VAR)
+  @JsonProperty(PROP_NOT_DST_PORTS)
   public Set<SubRange> getNotDstPorts() {
     return _headerSpace.getNotDstPorts();
   }
 
-  @JsonProperty(NOT_FRAGMENT_OFFSETS_VAR)
+  @JsonProperty(PROP_NOT_FRAGMENT_OFFSETS)
   private Set<SubRange> getNotFragmentOffsets() {
     return _headerSpace.getNotFragmentOffsets();
   }
 
-  @JsonProperty(NOT_ICMP_CODE_VAR)
+  @JsonProperty(PROP_NOT_ICMP_CODES)
   public Set<SubRange> getNotIcmpCodes() {
     return _headerSpace.getNotIcmpCodes();
   }
 
-  @JsonProperty(NOT_ICMP_TYPE_VAR)
+  @JsonProperty(PROP_NOT_ICMP_TYPES)
   public Set<SubRange> getNotIcmpTypes() {
     return _headerSpace.getNotIcmpTypes();
   }
 
-  @JsonProperty(NOT_IP_PROTOCOLS_VAR)
+  @JsonProperty(PROP_NOT_IP_PROTOCOLS)
   public Set<IpProtocol> getNotIpProtocols() {
     return _headerSpace.getNotIpProtocols();
   }
 
-  @JsonProperty(NOT_SRC_IPS_VAR)
+  @JsonProperty(PROP_NOT_SRC_IPS)
   public Set<IpWildcard> getNotSrcIps() {
     return _headerSpace.getNotSrcIps();
   }
@@ -181,49 +187,54 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _headerSpace.getNotSrcPorts();
   }
 
-  @JsonProperty(SRC_IPS_VAR)
+  @JsonProperty(PROP_SRC_IPS)
   public Set<IpWildcard> getSrcIps() {
     return _headerSpace.getSrcIps();
   }
 
-  @JsonProperty(SRC_OR_DST_IPS_VAR)
+  @JsonProperty(PROP_SRC_OR_DST_IPS)
   public Set<IpWildcard> getSrcOrDstIps() {
     return _headerSpace.getSrcOrDstIps();
   }
 
-  @JsonProperty(SRC_OR_DST_PORTS_VAR)
+  @JsonProperty(PROP_SRC_OR_DST_PORTS)
   public Set<SubRange> getSrcOrDstPorts() {
     return _headerSpace.getSrcOrDstPorts();
   }
 
-  @JsonProperty(SRC_PORTS_VAR)
+  @JsonProperty(PROP_SRC_PORTS)
   public Set<SubRange> getSrcPorts() {
     return _headerSpace.getSrcPorts();
   }
 
-  @JsonProperty(FAILURES_VAR)
+  @JsonProperty(PROP_FAILURES)
   public int getFailures() {
     return _failures;
   }
 
-  @JsonProperty(FULL_MODEL_VAR)
+  @JsonProperty(PROP_FULL_MODEL)
   public boolean getFullModel() {
     return _fullModel;
   }
 
-  @JsonProperty(NO_ENVIRONMENT_VAR)
+  @JsonProperty(PROP_NO_ENVIRONMENT)
   public boolean getNoEnvironment() {
     return _noEnvironment;
   }
 
-  @JsonProperty(MINIMIZE_VAR)
+  @JsonProperty(PROP_MINIMIZE)
   public boolean getMinimize() {
     return _minimize;
   }
 
-  @JsonProperty(EQUIVALENCE_VAR)
-  public boolean getEquivalence() {
-    return _equivalence;
+  @JsonProperty(PROP_DIFF_TYPE)
+  public DiffType getDiffType() {
+    return _diffType;
+  }
+
+  @JsonProperty(PROP_ENV_DIFF)
+  public boolean getEnvDiff() {
+    return _envDiff;
   }
 
   @Override
@@ -233,74 +244,78 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   @Override
   public String prettyPrint() {
+    return String.format("header %s", prettyPrintParams());
+  }
+
+  protected String prettyPrintParams() {
     try {
-      String retString = String.format("reachability %sactions=%s",
+      String retString = String.format("%sactions=%s",
           prettyPrintBase(), _actions.toString());
       if (getDstPorts() != null && getDstPorts().size() != 0) {
-        retString += String.format(" | dstPorts=%s", getDstPorts());
+        retString += String.format(", dstPorts=%s", getDstPorts());
       }
       if (getDstIps() != null && getDstIps().size() != 0) {
-        retString += String.format(" | dstIps=%s", getDstIps());
+        retString += String.format(", dstIps=%s", getDstIps());
       }
       if (getFragmentOffsets() != null
           && getFragmentOffsets().size() != 0) {
-        retString += String.format(" | fragmentOffsets=%s",
+        retString += String.format(", fragmentOffsets=%s",
             getFragmentOffsets());
       }
       if (getIcmpCodes() != null && getIcmpCodes().size() != 0) {
-        retString += String.format(" | icmpCodes=%s", getIcmpCodes());
+        retString += String.format(", icmpCodes=%s", getIcmpCodes());
       }
       if (getIcmpTypes() != null && getIcmpTypes().size() != 0) {
-        retString += String.format(" | icmpTypes=%s", getIcmpTypes());
+        retString += String.format(", icmpTypes=%s", getIcmpTypes());
       }
       if (getIpProtocols() != null && getIpProtocols().size() != 0) {
-        retString += String.format(" | ipProtocols=%s",
+        retString += String.format(", ipProtocols=%s",
             getIpProtocols().toString());
       }
       if (getSrcOrDstPorts() != null && getSrcOrDstPorts().size() != 0) {
-        retString += String.format(" | srcOrDstPorts=%s",
+        retString += String.format(", srcOrDstPorts=%s",
             getSrcOrDstPorts());
       }
       if (getSrcOrDstIps() != null && getSrcOrDstIps().size() != 0) {
-        retString += String.format(" | srcOrDstIps=%s",
+        retString += String.format(", srcOrDstIps=%s",
             getSrcOrDstIps());
       }
       if (getSrcIps() != null && getSrcIps().size() != 0) {
-        retString += String.format(" | srcIps=%s", getSrcIps());
+        retString += String.format(", srcIps=%s", getSrcIps());
       }
       if (getSrcPorts() != null && getSrcPorts().size() != 0) {
-        retString += String.format(" | srcPorts=%s", getSrcPorts());
+        retString += String.format(", srcPorts=%s", getSrcPorts());
       }
       if (getNotDstPorts() != null && getNotDstPorts().size() != 0) {
-        retString += String.format(" | notDstPorts=%s",
+        retString += String.format(", notDstPorts=%s",
             getNotDstPorts());
       }
       if (getNotDstIps() != null && getNotDstIps().size() != 0) {
-        retString += String.format(" | notDstIps=%s", getNotDstIps());
+        retString += String.format(", notDstIps=%s", getNotDstIps());
       }
       if (getNotFragmentOffsets() != null
           && getNotFragmentOffsets().size() != 0) {
-        retString += String.format(" | notFragmentOffsets=%s",
+        retString += String.format(", notFragmentOffsets=%s",
             getNotFragmentOffsets());
       }
       if (getNotIcmpCodes() != null && getNotIcmpCodes().size() != 0) {
-        retString += String.format(" | notIcmpCodes=%s",
+        retString += String.format(", notIcmpCodes=%s",
             getNotIcmpCodes());
       }
       if (getNotIcmpTypes() != null && getNotIcmpTypes().size() != 0) {
-        retString += String.format(" | notIcmpTypes=%s",
+        retString += String.format(", notIcmpTypes=%s",
             getNotIcmpTypes());
       }
       if (getNotIpProtocols() != null
           && getNotIpProtocols().size() != 0) {
-        retString += String.format(" | notIpProtocols=%s",
+        retString += String.format(", notIpProtocols=%s",
             getNotIpProtocols().toString());
       }
       if (getNotSrcIps() != null && getNotSrcIps().size() != 0) {
-        retString += String.format(" | notSrcIps=%s", getNotSrcIps());
+        retString += String.format(", notSrcIps=%s", getNotSrcIps());
       }
       if (getNotSrcPorts() != null && getNotSrcPorts().size() != 0) {
-        retString += String.format(" | notSrcPorts=%s",
+        retString += String.format(", notSrcPorts=%s",
             getNotSrcPorts());
       }
       return retString;
@@ -309,32 +324,32 @@ public class HeaderQuestion extends Question implements IQuestion {
     }
   }
 
-  @JsonProperty(NOT_DST_IPS_VAR)
+  @JsonProperty(PROP_NOT_DST_IPS)
   public void setNotDstIps(Set<IpWildcard> notDstIps) {
     _headerSpace.setNotDstIps(new TreeSet<>(notDstIps));
   }
 
-  @JsonProperty(NOT_DST_PORTS_VAR)
+  @JsonProperty(PROP_NOT_DST_PORTS)
   public void setNotDstPorts(Set<SubRange> notDstPorts) {
     _headerSpace.setNotDstPorts(new TreeSet<>(notDstPorts));
   }
 
-  @JsonProperty(NOT_ICMP_CODE_VAR)
+  @JsonProperty(PROP_NOT_ICMP_CODES)
   public void setNotIcmpCodes(Set<SubRange> notIcmpCodes) {
     _headerSpace.setNotIcmpCodes(new TreeSet<>(notIcmpCodes));
   }
 
-  @JsonProperty(NOT_ICMP_TYPE_VAR)
+  @JsonProperty(PROP_NOT_ICMP_TYPES)
   public void setNotIcmpTypes(Set<SubRange> notIcmpType) {
     _headerSpace.setNotIcmpTypes(new TreeSet<>(notIcmpType));
   }
 
-  @JsonProperty(NOT_IP_PROTOCOLS_VAR)
+  @JsonProperty(PROP_NOT_IP_PROTOCOLS)
   public void setNotIpProtocols(Set<IpProtocol> notIpProtocols) {
     _headerSpace.setNotIpProtocols(new TreeSet<>(notIpProtocols));
   }
 
-  @JsonProperty(NOT_SRC_IPS_VAR)
+  @JsonProperty(PROP_NOT_SRC_IPS)
   public void setNotSrcIps(Set<IpWildcard> notSrcIps) {
     _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
   }
@@ -344,74 +359,79 @@ public class HeaderQuestion extends Question implements IQuestion {
     _headerSpace.setNotSrcPorts(new TreeSet<>(notSrcPorts));
   }
 
-  @JsonProperty(SRC_IPS_VAR)
+  @JsonProperty(PROP_SRC_IPS)
   public void setSrcIps(Set<IpWildcard> srcIps) {
     _headerSpace.setSrcIps(new TreeSet<>(srcIps));
   }
 
-  @JsonProperty(SRC_OR_DST_IPS_VAR)
+  @JsonProperty(PROP_SRC_OR_DST_IPS)
   public void setSrcOrDstIps(Set<IpWildcard> srcOrDstIps) {
     _headerSpace.setSrcOrDstIps(new TreeSet<>(srcOrDstIps));
   }
 
-  @JsonProperty(SRC_OR_DST_PORTS_VAR)
+  @JsonProperty(PROP_SRC_OR_DST_PORTS)
   public void setSrcOrDstPorts(Set<SubRange> srcOrDstPorts) {
     _headerSpace.setSrcOrDstPorts(new TreeSet<>(srcOrDstPorts));
   }
 
-  @JsonProperty(SRC_PORTS_VAR)
+  @JsonProperty(PROP_SRC_PORTS)
   public void setSrcPorts(Set<SubRange> srcPorts) {
     _headerSpace.setSrcPorts(new TreeSet<>(srcPorts));
   }
 
-  @JsonProperty(DST_IPS_VAR)
+  @JsonProperty(PROP_DST_IPS)
   public void setDstIps(Set<IpWildcard> dstIps) {
     _headerSpace.setDstIps(new TreeSet<>(dstIps));
   }
 
-  @JsonProperty(DST_PORTS_VAR)
+  @JsonProperty(PROP_DST_PORTS)
   public void setDstPorts(Set<SubRange> dstPorts) {
     _headerSpace.setDstPorts(new TreeSet<>(dstPorts));
   }
 
-  @JsonProperty(ICMP_CODES_VAR)
+  @JsonProperty(PROP_ICMP_CODES)
   public void setIcmpCodes(Set<SubRange> icmpCodes) {
     _headerSpace.setIcmpCodes(new TreeSet<>(icmpCodes));
   }
 
-  @JsonProperty(ICMP_TYPES_VAR)
+  @JsonProperty(PROP_ICMP_TYPES)
   public void setIcmpTypes(Set<SubRange> icmpTypes) {
     _headerSpace.setIcmpTypes(new TreeSet<>(icmpTypes));
   }
 
-  @JsonProperty(IP_PROTOCOLS_VAR)
+  @JsonProperty(PROP_IP_PROTOCOLS)
   public void setIpProtocols(Set<IpProtocol> ipProtocols) {
     _headerSpace.setIpProtocols(new TreeSet<>(ipProtocols));
   }
 
-  @JsonProperty(FAILURES_VAR)
+  @JsonProperty(PROP_FAILURES)
   public void setFailures(int k) {
     _failures = k;
   }
 
-  @JsonProperty(FULL_MODEL_VAR)
+  @JsonProperty(PROP_FULL_MODEL)
   public void setFullModel(boolean b) {
     _fullModel = b;
   }
 
-  @JsonProperty(NO_ENVIRONMENT_VAR)
+  @JsonProperty(PROP_NO_ENVIRONMENT)
   public void setNoEnvironment(boolean b) {
     _noEnvironment = b;
   }
 
-  @JsonProperty(MINIMIZE_VAR)
+  @JsonProperty(PROP_MINIMIZE)
   public void setMinimize(boolean b) {
     _minimize = b;
   }
 
-  @JsonProperty(EQUIVALENCE_VAR)
-  public void setEquivalence(boolean b) {
-    _equivalence = b;
+  @JsonProperty(PROP_DIFF_TYPE)
+  public void setDiffType(DiffType d) {
+    _diffType = d;
+  }
+
+  @JsonProperty(PROP_ENV_DIFF)
+  public void setEnvDiff(boolean b) {
+    _envDiff = b;
   }
 
 }
