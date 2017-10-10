@@ -742,10 +742,6 @@ class TransferBDD {
         IntExpr ie = slp.getLocalPreference();
         BDDInteger newValue = applyIntExprModification(p.getData().getLocalPref(), ie);
         p.debug("return assigned: " + result.getReturnAssignedValue());
-        for (int i = 0; i < 32; i++) {
-          p.debug("newLP" + i + ": " + newValue.getBitvec()[i]);
-
-        }
         newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
         p.getData().setLocalPref(newValue);
 
@@ -777,6 +773,7 @@ class TransferBDD {
         p.debug("PrependAsPath");
         PrependAsPath pap = (PrependAsPath) stmt;
         Integer prependCost = prependLength(pap.getExpr());
+        p.indent().debug("Cost: " + prependCost);
         BDDInteger newValue =
             p.getData().getMetric().add(BDDInteger.makeFromValue(32, prependCost));
         newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);

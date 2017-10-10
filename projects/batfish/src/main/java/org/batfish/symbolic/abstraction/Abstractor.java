@@ -94,7 +94,7 @@ public class Abstractor {
   public static BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     BDDRecord rec = t.compute();
-    BDD bdd = rec.getLocalPref().getBitvec()[31];
+    BDD bdd = rec.getMetric().getBitvec()[31];
     System.out.println("DOT: \n" + rec.getDot(bdd));
     return rec;
   }

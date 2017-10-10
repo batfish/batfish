@@ -106,7 +106,7 @@ public class BDDInteger {
       BDDFactory var2 = BDDRecord.factory;
       BDD var3 = var2.zero();
       BDDInteger var4 = new BDDInteger(this._bitvec.length);
-      for (int var5 = 0; var5 < var4._bitvec.length; ++var5) {
+      for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
         BDD var6 = this._bitvec[var5].or(var1._bitvec[var5]);
@@ -130,7 +130,7 @@ public class BDDInteger {
       BDDFactory var2 = BDDRecord.factory;
       BDD var3 = var2.zero();
       BDDInteger var4 = new BDDInteger(this._bitvec.length);
-      for (int var5 = 0; var5 < var4._bitvec.length; ++var5) {
+      for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
         BDD var6 = var1._bitvec[var5].or(var3);
