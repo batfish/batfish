@@ -231,7 +231,7 @@ public class Graph {
                 someIface = true;
                 List<StaticRoute> srs = map.getOrDefault(hereName, new ArrayList<>());
                 srs.add(sr);
-                map.put(there.getName(), srs);
+                map.put(here.getName(), srs);
               }
             }
 

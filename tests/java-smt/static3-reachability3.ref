@@ -5,40 +5,22 @@
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "Flow<ingressNode:host1 ingressVrf:default srcIp:0.0.0.0 dstIp:192.168.8.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
             "environments" : {
               "BASE" : {
                 "envName" : "BASE",
-                "testrigName" : "tr-smt-ospf5"
-              },
-              "DELTA" : {
-                "edgeBlacklist" : [
-                  {
-                    "node1" : "R0",
-                    "node1interface" : "Serial0",
-                    "node2" : "R1",
-                    "node2interface" : "Serial0"
-                  },
-                  {
-                    "node1" : "R2",
-                    "node1interface" : "Serial0",
-                    "node2" : "R0",
-                    "node2interface" : "Serial1"
-                  }
-                ],
-                "envName" : "DELTA",
-                "testrigName" : "tr-smt-ospf5"
+                "testrigName" : "tr-smt-static3"
               }
             },
             "flow" : {
               "dscp" : 0,
-              "dstIp" : "70.70.70.0",
+              "dstIp" : "192.168.8.1",
               "dstPort" : 0,
               "ecn" : 0,
               "fragmentOffset" : 0,
               "icmpCode" : 0,
               "icmpVar" : 0,
-              "ingressNode" : "R0",
+              "ingressNode" : "host1",
               "ingressVrf" : "default",
               "ipProtocol" : "HOPOPT",
               "packetLength" : 0,
@@ -62,45 +44,39 @@
                   "hops" : [
                     {
                       "edge" : {
-                        "node1" : "R0",
-                        "node1interface" : "Serial0",
+                        "node1" : "host1",
+                        "node1interface" : "eth0",
                         "node2" : "R1",
-                        "node2interface" : "Serial0"
+                        "node2interface" : "Ethernet0/0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1,nhint:dynamic>"
+                        "StaticRoute<0.0.0.0/0,nhip:192.168.1.2,nhint:dynamic>"
                       ]
                     },
                     {
                       "edge" : {
                         "node1" : "R1",
-                        "node1interface" : "Serial1",
-                        "node2" : "R3",
-                        "node2interface" : "Serial0"
+                        "node1interface" : "Ethernet0/1",
+                        "node2" : "R2",
+                        "node2interface" : "Ethernet0/0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1,nhint:dynamic>"
+                        "StaticRoute<192.168.8.0/24,nhip:10.10.10.1,nhint:dynamic>"
                       ]
                     },
                     {
                       "edge" : {
-                        "node1" : "R3",
-                        "node1interface" : "Loopback0",
-                        "node2" : "(none)",
-                        "node2interface" : "null_interface"
+                        "node1" : "R2",
+                        "node1interface" : "Ethernet0/1",
+                        "node2" : "R3",
+                        "node2interface" : "Ethernet0/0"
                       },
                       "routes" : [
-                        "ConnectedRoute<70.70.70.0/24,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
+                        "StaticRoute<192.168.8.0/24,nhip:10.10.11.1,nhint:dynamic>"
                       ]
                     }
                   ],
                   "notes" : "ACCEPTED"
-                }
-              ],
-              "DELTA" : [
-                {
-                  "disposition" : "NO_ROUTE",
-                  "notes" : "NO_ROUTE"
                 }
               ]
             }
@@ -108,17 +84,14 @@
         }
       },
       "result" : {
-        "failuresModel" : [
-          "link(R0,R1)",
-          "link(R0,R2)"
-        ],
         "forwardingModel" : [
-          "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R2,Serial1 --> R3,Serial1 (OSPF)",
-          "R3,Loopback0 --> _,_ (CONNECTED)"
+          "R1,Ethernet0/1 --> R2,Ethernet0/0 (STATIC)",
+          "R2,Ethernet0/1 --> R3,Ethernet0/0 (STATIC)",
+          "host1,eth0 --> R1,Ethernet0/0 (STATIC)",
+          "host3,eth0 --> R3,Ethernet0/1 (CONNECTED)"
         ],
         "packetModel" : {
-          "dstIp" : "70.70.70.0"
+          "dstIp" : "192.168.8.1"
         },
         "verified" : false
       }
@@ -126,19 +99,18 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
-    "diffType" : "any",
     "differential" : false,
     "dstIps" : [
-      "70.70.70.0/24"
+      "192.168.8.1"
     ],
     "envDiff" : false,
-    "failNode1Regex" : "R0",
+    "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
-    "failures" : 2,
-    "finalIfaceRegex" : "Loopback.*",
-    "finalNodeRegex" : "R3",
+    "failures" : 0,
+    "finalIfaceRegex" : ".*",
+    "finalNodeRegex" : "host3",
     "fullModel" : false,
-    "ingressNodeRegex" : "R0",
+    "ingressNodeRegex" : "host1",
     "minimize" : false,
     "noEnvironment" : false
   },
