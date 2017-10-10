@@ -14,7 +14,7 @@ import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.GrammarSettings;
 
-public final class Settings extends BaseSettings implements GrammarSettings {
+public final class Settings extends BaseSettings implements BdpSettings, GrammarSettings {
 
   public static final class EnvironmentSettings {
 
@@ -501,6 +501,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private TestrigSettings _baseTestrigSettings;
 
+  private boolean _bdpDebugAllIterations;
+
+  private boolean _bdpDebugIterationsDetailed;
+
+  private int _bdpDebugMaxRecordedIterations;
+
+  private boolean _bdpDebugRepeatIterations;
+
   private List<String> _blockNames;
 
   private boolean _canExecute;
@@ -718,6 +726,22 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
+  }
+
+  public boolean getBdpDebugAllIterations() {
+    return _bdpDebugAllIterations;
+  }
+
+  public boolean getBdpDebugIterationsDetailed() {
+    return _bdpDebugIterationsDetailed;
+  }
+
+  public int getBdpDebugMaxRecordedIterations() {
+    return _bdpDebugMaxRecordedIterations;
+  }
+
+  public boolean getBdpDebugRepeatIterations() {
+    return _bdpDebugRepeatIterations;
   }
 
   public List<String> getBlockNames() {
@@ -1049,6 +1073,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(ARG_ANONYMIZE, false);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
+    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_ALL_ITERATIONS, false);
+    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_ITERATIONS_DETAILED, false);
+    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS, 12);
+    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_REPEAT_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
@@ -1134,6 +1162,28 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(
         BfConsts.ARG_ANSWER_JSON_PATH, "save query json output to specified file", ARGNAME_PATH);
+
+    addBooleanOption(
+        BfConsts.ARG_BDP_DEBUG_ALL_ITERATIONS,
+        "Set to true to debug all iterations, including during oscillation. Ignores max recorded "
+            + "iterations value.");
+
+    addBooleanOption(
+        BfConsts.ARG_BDP_DEBUG_ITERATIONS_DETAILED,
+        "Set to true to see detailed protocol-specific information about routes in each iteration "
+            + "(when iteration debugging is enabled), rather than only protocol-independent "
+            + "information");
+
+    addOption(
+        BfConsts.ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS,
+        "Max number of iterations to record when debugging BDP. When debugging oscillations, set "
+            + "this at least as high as the length of the cycle.",
+        ARGNAME_NUMBER);
+
+    addBooleanOption(
+        BfConsts.ARG_BDP_DEBUG_REPEAT_ITERATIONS,
+        "Set to true to debug oscillations. Make sure to set max recorded iterations to minimum "
+            + "necessary value.");
 
     addListOption(
         BfConsts.ARG_BLOCK_NAMES, "list of blocks of logic rules to add or remove", "blocknames");
@@ -1386,6 +1436,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _analyze = getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
     _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
+    _bdpDebugAllIterations = getBooleanOptionValue(BfConsts.ARG_BDP_DEBUG_ALL_ITERATIONS);
+    _bdpDebugIterationsDetailed = getBooleanOptionValue(BfConsts.ARG_BDP_DEBUG_ITERATIONS_DETAILED);
+    _bdpDebugMaxRecordedIterations =
+        getIntOptionValue(BfConsts.ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS);
+    _bdpDebugRepeatIterations = getBooleanOptionValue(BfConsts.ARG_BDP_DEBUG_REPEAT_ITERATIONS);
     _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
     _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     _containerDir = getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
@@ -1481,6 +1536,22 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
     _activeTestrigSettings = activeTestrigSettings;
+  }
+
+  public void setBdpDebugAllIterations(boolean bdpDebugAllIterations) {
+    _bdpDebugAllIterations = bdpDebugAllIterations;
+  }
+
+  public void setBdpDebugIterationsDetailed(boolean bdpDebugIterationsDetailed) {
+    _bdpDebugIterationsDetailed = bdpDebugIterationsDetailed;
+  }
+
+  public void setBdpDebugMaxRecordedIterations(int bdpDebugMaxRecordedIterations) {
+    _bdpDebugMaxRecordedIterations = bdpDebugMaxRecordedIterations;
+  }
+
+  public void setBdpDebugRepeatIterations(boolean bdpDebugRepeatIterations) {
+    _bdpDebugRepeatIterations = bdpDebugRepeatIterations;
   }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {

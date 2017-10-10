@@ -5882,7 +5882,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
-    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
+    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix, _format);
     int mtu = Interface.getDefaultMtu();
     iface.setBandwidth(bandwidth);
     iface.setVrf(vrf);

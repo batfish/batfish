@@ -61,6 +61,7 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.DataPlanePluginSettings;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
@@ -442,6 +443,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final List<TestrigSettings> _testrigSettingsStack;
 
   private long _timerCount;
+
+  private boolean _monotonicCache;
 
   public Batfish(
       Settings settings,
@@ -1435,7 +1438,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
         // dirty hack for setting bandwidth for now
         double ciscoBandwidth =
-            org.batfish.representation.cisco.Interface.getDefaultBandwidth(ifaceName);
+            org.batfish.representation.cisco.Interface.getDefaultBandwidth(
+                ifaceName, ConfigurationFormat.CISCO_IOS);
         double juniperBandwidth =
             org.batfish.representation.juniper.Interface.getDefaultBandwidthByName(ifaceName);
         double bandwidth = Math.min(ciscoBandwidth, juniperBandwidth);
@@ -1658,6 +1662,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public DataPlanePlugin getDataPlanePlugin() {
     return _dataPlanePlugin;
+  }
+
+  @Override
+  public DataPlanePluginSettings getDataPlanePluginSettings() {
+    return _settings;
   }
 
   private Map<String, Configuration> getDeltaConfigurations() {
@@ -2119,10 +2128,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
           loadParseEnvironmentRoutingTablesAnswerElement();
       if (!summary) {
+        if (verboseError) {
+          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
+          parseAnswer
+              .getErrors()
+              .forEach(
+                  (hostname, parseErrors) -> {
+                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
+                  });
+          parseAnswer
+              .getErrors()
+              .forEach(
+                  (hostname, convertErrors) -> {
+                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
+                  });
+        }
         SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
         warnings.putAll(parseAnswer.getWarnings());
       }
       answerElement.setParseStatus(parseAnswer.getParseStatus());
+      answerElement.setParseTrees(parseAnswer.getParseTrees());
     } else {
       ParseVendorConfigurationAnswerElement parseAnswer =
           loadParseVendorConfigurationAnswerElement();
@@ -2162,6 +2187,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 });
       }
       answerElement.setParseStatus(parseAnswer.getParseStatus());
+      answerElement.setParseTrees(parseAnswer.getParseTrees());
       for (String failed : convertAnswer.getFailed()) {
         answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
       }
@@ -3850,6 +3876,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void repairEnvironment() {
+    if (!_monotonicCache) {
+      _cachedConfigurations.invalidate(_testrigSettings);
+    }
     SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     veae.setVersion(Version.getVersion());
@@ -4020,7 +4049,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getInitInfo()) {
-      answer.addAnswerElement(initInfo(true, false, false));
+      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false, false);
+      // In this context we can remove parse trees because they will be returned in preceding answer
+      // element. Note that parse trees are not removed when asking initInfo as its own question.
+      initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
+      answer.addAnswerElement(initInfoAnswerElement);
       action = true;
     }
 
@@ -4378,6 +4411,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
     _dataPlanePlugin = dataPlanePlugin;
+  }
+
+  public void setMonotonicCache(boolean monotonicCache) {
+    _monotonicCache = monotonicCache;
   }
 
   public void setTerminatedWithException(boolean terminatedWithException) {
