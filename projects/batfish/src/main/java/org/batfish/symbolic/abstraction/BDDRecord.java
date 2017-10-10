@@ -15,6 +15,7 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
+import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 
 /**
@@ -53,6 +54,8 @@ public class BDDRecord {
 
   private BDDInteger _localPref;
 
+  private BDDDomain<OspfType> _ospfMetric;
+
   private BDDDomain<Protocol> _protocolHistory;
 
   private SortedMap<CommunityVar, BDD> _communities;
@@ -77,7 +80,7 @@ public class BDDRecord {
 
     // Make sure we have the right number of variables
     int numVars = factory.varNum();
-    int numNeeded = 32 * 5 + 5 + comms.size() + 2;
+    int numNeeded = 32 * 5 + 5 + comms.size() + 4;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -89,11 +92,11 @@ public class BDDRecord {
     _metric = BDDInteger.makeFromIndex(32, idx);
     addBitNames("metric", 32, idx);
     idx += 32;
-    _adminDist = BDDInteger.makeFromIndex(32, idx);
-    addBitNames("ad", 32, idx);
-    idx += 32;
     _med = BDDInteger.makeFromIndex(32, idx);
     addBitNames("med", 32, idx);
+    idx += 32;
+    _adminDist = BDDInteger.makeFromIndex(32, idx);
+    addBitNames("ad", 32, idx);
     idx += 32;
     _localPref = BDDInteger.makeFromIndex(32, idx);
     addBitNames("lp", 32, idx);
@@ -122,9 +125,20 @@ public class BDDRecord {
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
     _protocolHistory = new BDDDomain<>(allProtos, idx);
-
     int len = _protocolHistory.getInteger().getBitvec().length;
     addBitNames("proto", len, idx);
+    idx = idx + len;
+
+    // Initialize OSPF type
+    // Realistically, the AST will only set E1 or E1. Others are just for completeness
+    List<OspfType> allMetricTypes = new ArrayList<>();
+    allMetricTypes.add(OspfType.O);
+    allMetricTypes.add(OspfType.OIA);
+    allMetricTypes.add(OspfType.E1);
+    allMetricTypes.add(OspfType.E2);
+    _ospfMetric = new BDDDomain<OspfType>(allMetricTypes, idx);
+    len = _ospfMetric.getInteger().getBitvec().length;
+    addBitNames("ospfMetric", len, idx);
   }
 
   /*
@@ -140,6 +154,7 @@ public class BDDRecord {
     _med = new BDDInteger(other._med);
     _localPref = new BDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
+    _ospfMetric = new BDDDomain<>(other._ospfMetric);
   }
 
   /*
@@ -212,6 +227,10 @@ public class BDDRecord {
     return _metric;
   }
 
+  public BDDDomain<OspfType> getOspfMetric() {
+    return _ospfMetric;
+  }
+
   public BDDInteger getMed() {
     return _med;
   }
@@ -234,6 +253,10 @@ public class BDDRecord {
 
   public void setMetric(BDDInteger metric) {
     this._metric = metric;
+  }
+
+  public void setOspfMetric(BDDDomain<OspfType> ospfMetric) {
+    this._ospfMetric = ospfMetric;
   }
 
   public void setPrefix(BDDInteger prefix) {
@@ -269,6 +292,7 @@ public class BDDRecord {
     BDDRecord other = (BDDRecord) o;
 
     return Objects.equals(_metric, other._metric)
+        && Objects.equals(_ospfMetric, other._ospfMetric)
         && Objects.equals(_localPref, other._localPref)
         && Objects.equals(_communities, other._communities)
         && Objects.equals(_med, other._med)
@@ -284,6 +308,7 @@ public class BDDRecord {
     result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
     result = 31 * result + (_adminDist != null ? _adminDist.hashCode() : 0);
     result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
+    result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
     result = 31 * result + (_med != null ? _med.hashCode() : 0);
     result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
     result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);

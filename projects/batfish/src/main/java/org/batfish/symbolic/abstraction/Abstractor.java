@@ -94,8 +94,8 @@ public class Abstractor {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     BDDRecord rec = t.compute();
     rec.getCommunities().forEach((cvar, bdd) -> {
-      System.out.println("CVAR: " + cvar.getValue() + ", " + cvar.getType());
-      System.out.println("DOT: \n" + rec.getDot(bdd));
+      //System.out.println("CVAR: " + cvar.getValue() + ", " + cvar.getType());
+      //System.out.println("DOT: \n" + rec.getDot(bdd));
     });
 
     // BDD bdd = rec.getMetric().getBitvec()[31];
@@ -140,18 +140,34 @@ public class Abstractor {
             });
 
     // Compute BDD policies
+    Map<GraphEdge, BDDRecord> importPolicies = new HashMap<>();
+    Map<GraphEdge, BDDRecord> exportPolicies = new HashMap<>();
+
     Map<BDDRecord, Set<GraphEdge>> importPolMap = new HashMap<>();
+    Map<BDDRecord, Set<GraphEdge>> exportPolMap = new HashMap<>();
+
     g.getConfigurations()
         .forEach(
             (router, conf) -> {
               List<GraphEdge> edges = g.getEdgeMap().get(router);
               for (GraphEdge ge : edges) {
                 if (ge.getEnd() == null) {
-                  RoutingPolicy pol = g.findImportRoutingPolicy(router, Protocol.BGP, ge);
-                  if (pol != null) {
+                  // Import policy
+                  RoutingPolicy importPol = g.findImportRoutingPolicy(router, Protocol.BGP, ge);
+                  if (importPol != null) {
                     System.out.println("Looking at: " + ge);
-                    BDDRecord rec = computeBDD(g, conf, pol);
+                    BDDRecord rec = computeBDD(g, conf, importPol);
+                    importPolicies.put(ge, rec);
                     Set<GraphEdge> ifaces = importPolMap.computeIfAbsent(rec, k -> new HashSet<>());
+                    ifaces.add(ge);
+                  }
+                  // Export policy
+                  RoutingPolicy exportPol = g.findExportRoutingPolicy(router, Protocol.BGP, ge);
+                  if (exportPol != null) {
+                    System.out.println("Looking at: " + ge);
+                    BDDRecord rec = computeBDD(g, conf, exportPol);
+                    exportPolicies.put(ge, rec);
+                    Set<GraphEdge> ifaces = exportPolMap.computeIfAbsent(rec, k -> new HashSet<>());
                     ifaces.add(ge);
                   }
                 }
@@ -161,7 +177,12 @@ public class Abstractor {
     // Print equivalence policies
     importPolMap.forEach(
         (rec, ifaces) -> {
-          System.out.println("EC: " + ifaces);
+          System.out.println("IMPORT EC: " + ifaces);
+        });
+
+    exportPolMap.forEach(
+        (rec, ifaces) -> {
+          System.out.println("EXPORT EC: " + ifaces);
         });
 
     // Create the trie
@@ -269,16 +290,20 @@ public class Abstractor {
             Set<Pair<Integer, InterfacePolicy>> groups = new HashSet<>();
             groupMap.put(router, groups);
 
-            // TODO: translate the configurations into BDDs
-
-            Configuration conf = g.getConfigurations().get(router);
+            // TODO: convert ACLS
 
             List<GraphEdge> edges = g.getEdgeMap().get(router);
             for (GraphEdge edge : edges) {
               if (!edge.isAbstract()) {
                 String peer = edge.getPeer();
-
-                InterfacePolicy pol = new InterfacePolicy(1);
+                GraphEdge otherEnd = g.getOtherEnd().get(edge);
+                BDDRecord importPol = importPolicies.get(edge);
+                BDDRecord exportPol = null;
+                if (otherEnd != null) {
+                  exportPol = exportPolicies.get(otherEnd);
+                }
+                Integer ospfCost = edge.getStart().getOspfCost();
+                InterfacePolicy pol = new InterfacePolicy(ospfCost, importPol, exportPol);
 
                 // For external neighbors, we don't split a partition
                 Integer peerGroup;

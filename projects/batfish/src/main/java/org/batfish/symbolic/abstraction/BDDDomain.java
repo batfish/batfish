@@ -41,6 +41,11 @@ public class BDDDomain<T> {
     return _integer.value(idx);
   }
 
+  public void setValue(T value) {
+    int idx = _values.indexOf(value);
+    _integer.setValue(idx);
+  }
+
   public BDDInteger getInteger() {
     return _integer;
   }

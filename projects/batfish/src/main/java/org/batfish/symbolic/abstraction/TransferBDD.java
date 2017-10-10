@@ -14,6 +14,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
@@ -67,6 +68,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
+import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferParam;
 import org.batfish.symbolic.TransferResult;
@@ -111,6 +113,16 @@ class TransferBDD {
    */
   private BDDInteger ite(BDD b, BDDInteger x, BDDInteger y) {
     return x.ite(b, y);
+  }
+
+  /*
+ * Map ite over BDDDomain type
+ */
+  private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
+    BDDDomain<T> result = new BDDDomain<T>(x);
+    BDDInteger i = ite(b, x.getInteger(), y.getInteger());
+    result.setInteger(i);
+    return result;
   }
 
   private BDDRecord ite(BDD guard, BDDRecord r1, BDDRecord r2) {
@@ -221,10 +233,9 @@ class TransferBDD {
       SubRange r = line.getLengthRange();
       PrefixRange range = new PrefixRange(pfx, r);
       p.debug("Prefix Range: " + range);
+      p.debug("Action: " +  line.getAction());
       BDD matches = isRelevantFor(other, range);
-      // p.debug("Matches: " + matches);
       BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
-      // p.debug("Action: " + action);
       acc = ite(matches, action, acc);
     }
     return acc;
@@ -354,7 +365,6 @@ class TransferBDD {
         acc = acc.and(r.getReturnValue().getSecond());
       }
       BDDReturn ret = new BDDReturn(p.getData(), acc);
-      p.debug("Conjunction Result: " + ret);
       return result.setReturnValue(ret);
     }
 
@@ -369,7 +379,6 @@ class TransferBDD {
         acc = acc.or(r.getReturnValue().getSecond());
       }
       BDDReturn ret = new BDDReturn(p.getData(), acc);
-      p.debug("Disjunction Result: " + ret);
       return result.setReturnValue(ret);
     }
 
@@ -397,7 +406,6 @@ class TransferBDD {
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
-        p.debug("ConjunctionChain Result: " + acc);
         BDDReturn ret = new BDDReturn(record.getData(), acc);
         return result.setReturnValue(ret);
       }
@@ -427,7 +435,6 @@ class TransferBDD {
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
         BDDReturn ret = new BDDReturn(record.getData(), acc);
-        p.debug("DisjunctionChain Result: " + ret);
         return result.setReturnValue(ret);
       }
     }
@@ -438,7 +445,6 @@ class TransferBDD {
       TransferResult<BDDReturn, BDD> result = compute(n.getExpr(), p);
       BDDReturn r = result.getReturnValue();
       BDDReturn ret = new BDDReturn(r.getFirst(), r.getSecond().not());
-      p.debug("Not Result: " + ret);
       return result.setReturnValue(ret);
     }
 
@@ -453,7 +459,6 @@ class TransferBDD {
       BDD protoMatch = p.getData().getProtocolHistory().value(proto);
       p.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
       BDDReturn ret = new BDDReturn(p.getData(), protoMatch);
-      p.debug("MatchProtocol Result: " + ret);
       return fromExpr(ret);
     }
 
@@ -462,7 +467,6 @@ class TransferBDD {
       MatchPrefixSet m = (MatchPrefixSet) expr;
       BDD r = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
       BDDReturn ret = new BDDReturn(p.getData(), r);
-      // p.debug("MatchPrefixSet Result: " + ret);
       return fromExpr(ret);
 
       // TODO: implement me
@@ -478,8 +482,6 @@ class TransferBDD {
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
       p = p.setCallContext(TransferParam.CallContext.EXPR_CALL);
       TransferResult<BDDReturn, BDD> r = compute(pol.getStatements(), p.indent().enterScope(name));
-      p.debug("CallExpr (return): " + r.getReturnValue());
-      p.debug("CallExpr (fallthrough): " + r.getFallthroughValue());
       return r;
 
     } else if (expr instanceof WithEnvironmentExpr) {
@@ -758,6 +760,19 @@ class TransferBDD {
 
       } else if (stmt instanceof SetOspfMetricType) {
         p.debug("SetOspfMetricType");
+        SetOspfMetricType somt = (SetOspfMetricType) stmt;
+        OspfMetricType mt = somt.getMetricType();
+        BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
+        BDDDomain<OspfType> newValue = new BDDDomain<>(current);
+        if (mt == OspfMetricType.E1) {
+          p.indent().debug("Value: E1");
+          newValue.setValue(OspfType.E1);
+        } else {
+          p.indent().debug("Value: E2");
+          newValue.setValue(OspfType.E1);
+        }
+        newValue = ite(result.getReturnAssignedValue(), p.getData().getOspfMetric(), newValue);
+        p.getData().setOspfMetric(newValue);
 
       } else if (stmt instanceof SetLocalPreference) {
         p.debug("SetLocalPreference");
