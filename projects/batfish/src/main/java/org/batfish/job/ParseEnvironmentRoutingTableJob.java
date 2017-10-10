@@ -16,6 +16,8 @@ import org.batfish.grammar.RoutingTableFormat;
 import org.batfish.grammar.RoutingTableFormatDetector;
 import org.batfish.grammar.routing_table.eos.EosRoutingTableCombinedParser;
 import org.batfish.grammar.routing_table.eos.EosRoutingTableExtractor;
+import org.batfish.grammar.routing_table.ios.IosRoutingTableCombinedParser;
+import org.batfish.grammar.routing_table.ios.IosRoutingTableExtractor;
 import org.batfish.grammar.routing_table.nxos.NxosRoutingTableCombinedParser;
 import org.batfish.grammar.routing_table.nxos.NxosRoutingTableExtractor;
 import org.batfish.main.Batfish;
@@ -67,15 +69,6 @@ public class ParseEnvironmentRoutingTableJob
         return new ParseEnvironmentRoutingTableResult(
             elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.EMPTY);
 
-      case NXOS:
-        NxosRoutingTableCombinedParser nxosRoutingTableParser =
-            new NxosRoutingTableCombinedParser(_fileText, _settings);
-        combinedParser = nxosRoutingTableParser;
-        extractor =
-            new NxosRoutingTableExtractor(
-                _hostname, _fileText, nxosRoutingTableParser, _warnings, _batfish);
-        break;
-
       case EOS:
         EosRoutingTableCombinedParser eosRoutingTableParser =
             new EosRoutingTableCombinedParser(_fileText, _settings);
@@ -83,6 +76,24 @@ public class ParseEnvironmentRoutingTableJob
         extractor =
             new EosRoutingTableExtractor(
                 _hostname, _fileText, eosRoutingTableParser, _warnings, _batfish);
+        break;
+
+      case IOS:
+        IosRoutingTableCombinedParser iosRoutingTableParser =
+            new IosRoutingTableCombinedParser(_fileText, _settings);
+        combinedParser = iosRoutingTableParser;
+        extractor =
+            new IosRoutingTableExtractor(
+                _hostname, _fileText, iosRoutingTableParser, _warnings, _batfish);
+        break;
+
+      case NXOS:
+        NxosRoutingTableCombinedParser nxosRoutingTableParser =
+            new NxosRoutingTableCombinedParser(_fileText, _settings);
+        combinedParser = nxosRoutingTableParser;
+        extractor =
+            new NxosRoutingTableExtractor(
+                _hostname, _fileText, nxosRoutingTableParser, _warnings, _batfish);
         break;
 
         /** PLACEHOLDER CODES FOR IDENTIFIED BUT UNSUPPORTED ROUTING TABLE FORMATS */

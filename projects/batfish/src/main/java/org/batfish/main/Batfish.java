@@ -1438,7 +1438,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
         // dirty hack for setting bandwidth for now
         double ciscoBandwidth =
-            org.batfish.representation.cisco.Interface.getDefaultBandwidth(ifaceName);
+            org.batfish.representation.cisco.Interface.getDefaultBandwidth(
+                ifaceName, ConfigurationFormat.CISCO_IOS);
         double juniperBandwidth =
             org.batfish.representation.juniper.Interface.getDefaultBandwidthByName(ifaceName);
         double bandwidth = Math.min(ciscoBandwidth, juniperBandwidth);
@@ -2127,10 +2128,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
           loadParseEnvironmentRoutingTablesAnswerElement();
       if (!summary) {
+        if (verboseError) {
+          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
+          parseAnswer
+              .getErrors()
+              .forEach(
+                  (hostname, parseErrors) -> {
+                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
+                  });
+          parseAnswer
+              .getErrors()
+              .forEach(
+                  (hostname, convertErrors) -> {
+                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
+                  });
+        }
         SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
         warnings.putAll(parseAnswer.getWarnings());
       }
       answerElement.setParseStatus(parseAnswer.getParseStatus());
+      answerElement.setParseTrees(parseAnswer.getParseTrees());
     } else {
       ParseVendorConfigurationAnswerElement parseAnswer =
           loadParseVendorConfigurationAnswerElement();
@@ -2170,6 +2187,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 });
       }
       answerElement.setParseStatus(parseAnswer.getParseStatus());
+      answerElement.setParseTrees(parseAnswer.getParseTrees());
       for (String failed : convertAnswer.getFailed()) {
         answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
       }
@@ -4031,7 +4049,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getInitInfo()) {
-      answer.addAnswerElement(initInfo(true, false, false));
+      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false, false);
+      // In this context we can remove parse trees because they will be returned in preceding answer
+      // element. Note that parse trees are not removed when asking initInfo as its own question.
+      initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
+      answer.addAnswerElement(initInfoAnswerElement);
       action = true;
     }
 
