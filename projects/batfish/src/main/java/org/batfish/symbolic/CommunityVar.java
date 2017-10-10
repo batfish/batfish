@@ -60,16 +60,13 @@ public class CommunityVar implements Comparable<CommunityVar> {
       return false;
     }
     CommunityVar other = (CommunityVar) o;
-    return Objects.equals(_long, other._long)
-        && Objects.equals(_value, other._value)
-        && _type == other._type;
+    return Objects.equals(_value, other._value) && _type == other._type;
   }
 
   @Override
   public int hashCode() {
     int result = _type != null ? _type.ordinal() : 0;
     result = 31 * result + (_value != null ? _value.hashCode() : 0);
-    result = 31 * result + (_long != null ? _long.hashCode() : 0);
     return result;
   }
 
@@ -85,23 +82,6 @@ public class CommunityVar implements Comparable<CommunityVar> {
     } else if (this._value.compareTo(that._value) > 0) {
       return 1;
     }
-
-    if (this._long == null) {
-      if (that._long == null) {
-        return 0;
-      }
-      return -1;
-    } else {
-      if (that._long == null) {
-        return 1;
-      } else {
-        if (this._long.compareTo(that._long) < 0) {
-          return -1;
-        } else if (this._long.compareTo(that._long) > 0) {
-          return 1;
-        }
-        return 0;
-      }
-    }
+    return 0;
   }
 }

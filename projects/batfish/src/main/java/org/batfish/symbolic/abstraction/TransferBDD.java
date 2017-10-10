@@ -266,15 +266,22 @@ class TransferBDD {
   /*
    * Converts a community list to a boolean expression.
    */
-  private BDD matchCommunityList(CommunityList cl, BDDRecord other) {
+  private BDD matchCommunityList(TransferParam<BDDRecord> p, CommunityList cl, BDDRecord other) {
     List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
     Collections.reverse(lines);
     BDD acc = factory.zero();
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.ACCEPT);
       CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
-      BDD c = other.getCommunities().get(cvar);
-      acc = ite(c, mkBDD(action), acc);
+      p.debug("Match Line: " + cvar);
+      p.debug("Action: " + line.getAction());
+
+      List<CommunityVar> deps = _commDeps.get(cvar);
+      for (CommunityVar dep : deps) {
+        p.debug("Test for: " + dep);
+        BDD c = other.getCommunities().get(dep);
+        acc = ite(c, mkBDD(action), acc);
+      }
     }
     return acc;
   }
@@ -282,11 +289,13 @@ class TransferBDD {
   /*
    * Converts a community set to a boolean expression
    */
-  private BDD matchCommunitySet(Configuration conf, CommunitySetExpr e, BDDRecord other) {
+  private BDD matchCommunitySet(
+      TransferParam<BDDRecord> p, Configuration conf, CommunitySetExpr e, BDDRecord other) {
     if (e instanceof InlineCommunitySet) {
       Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
       BDD acc = factory.one();
       for (CommunityVar comm : comms) {
+        p.debug("Inline Community Set: " + comm);
         BDD c = other.getCommunities().get(comm);
         if (c == null) {
           throw new BatfishException("matchCommunitySet: should not be null");
@@ -297,9 +306,11 @@ class TransferBDD {
     }
 
     if (e instanceof NamedCommunitySet) {
+      p.debug("Named");
       NamedCommunitySet x = (NamedCommunitySet) e;
       CommunityList cl = conf.getCommunityLists().get(x.getName());
-      return matchCommunityList(cl, other);
+      p.debug("Named Community Set: " + cl.getName());
+      return matchCommunityList(p, cl, other);
     }
 
     throw new BatfishException("TODO: match community set");
@@ -481,9 +492,8 @@ class TransferBDD {
     } else if (expr instanceof MatchCommunitySet) {
       p.debug("MatchCommunitySet");
       MatchCommunitySet mcs = (MatchCommunitySet) expr;
-      BDD c = matchCommunitySet(_conf, mcs.getExpr(), p.getData());
+      BDD c = matchCommunitySet(p.indent(), _conf, mcs.getExpr(), p.getData());
       BDDReturn ret = new BDDReturn(p.getData(), c);
-      p.debug("MatchCommunitySet Result: " + ret);
       return fromExpr(ret);
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -852,7 +862,7 @@ class TransferBDD {
 
   public BDDRecord compute() {
     _commDeps = _graph.getCommunityDependencies();
-    _comms =  _graph.findAllCommunities();
+    _comms = _graph.findAllCommunities();
     BDDRecord o = new BDDRecord(_comms);
     TransferParam<BDDRecord> p = new TransferParam<>(o, true);
     TransferResult<BDDReturn, BDD> result = compute(_statements, p);
