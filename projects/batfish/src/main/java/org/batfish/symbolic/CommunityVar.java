@@ -1,7 +1,6 @@
 package org.batfish.symbolic;
 
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -51,6 +50,10 @@ public class CommunityVar implements Comparable<CommunityVar> {
     return _long;
   }
 
+  @Override public String toString() {
+    return '<' + _value + ',' + _type + '>';
+  }
+
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof CommunityVar)) {
@@ -70,8 +73,7 @@ public class CommunityVar implements Comparable<CommunityVar> {
     return result;
   }
 
-  @Override
-  public int compareTo(@Nonnull CommunityVar that) {
+  @Override public int compareTo(CommunityVar that) {
     if (this._type.compareTo(that._type) < 0) {
       return -1;
     } else if (this._type.compareTo(that._type) > 0) {
@@ -84,11 +86,22 @@ public class CommunityVar implements Comparable<CommunityVar> {
       return 1;
     }
 
-    if (this._long.compareTo(that._long) < 0) {
+    if (this._long == null) {
+      if (that._long == null) {
+        return 0;
+      }
       return -1;
-    } else if (this._long.compareTo(that._long) > 0) {
-      return 1;
+    } else {
+      if (that._long == null) {
+        return 1;
+      } else {
+        if (this._long.compareTo(that._long) < 0) {
+          return -1;
+        } else if (this._long.compareTo(that._long) > 0) {
+          return 1;
+        }
+        return 0;
+      }
     }
-    return 0;
   }
 }

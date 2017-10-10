@@ -3,8 +3,10 @@ package org.batfish.symbolic.abstraction;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
@@ -63,6 +65,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferParam;
@@ -76,6 +79,8 @@ class TransferBDD {
   private Graph _graph;
 
   private Set<CommunityVar> _comms;
+
+  private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
   private Configuration _conf;
 
@@ -515,17 +520,21 @@ class TransferBDD {
   /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private BDDInteger applyLongExprModification(BDDInteger x, LongExpr e) {
+  private BDDInteger applyLongExprModification(
+      TransferParam<BDDRecord> p, BDDInteger x, LongExpr e) {
     if (e instanceof LiteralLong) {
       LiteralLong z = (LiteralLong) e;
+      p.debug("LiteralLong: " + z.getValue());
       return BDDInteger.makeFromValue(32, z.getValue());
     }
     if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
+      p.debug("Decrement: " + z.getSubtrahend());
       return x.sub(BDDInteger.makeFromValue(32, z.getSubtrahend()));
     }
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
+      p.debug("Increment: " + z.getAddend());
       return x.add(BDDInteger.makeFromValue(32, z.getAddend()));
     }
     throw new BatfishException("int expr transfer function: " + e);
@@ -534,17 +543,20 @@ class TransferBDD {
   /*
    * Apply the effect of modifying an integer value (e.g., to set the local pref)
    */
-  private BDDInteger applyIntExprModification(BDDInteger x, IntExpr e) {
+  private BDDInteger applyIntExprModification(TransferParam<BDDRecord> p, BDDInteger x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
+      p.debug("LiteralInt: " + z.getValue());
       return BDDInteger.makeFromValue(32, z.getValue());
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
+      p.debug("IncrementLocalPreference: " + z.getAddend());
       return x.add(BDDInteger.makeFromValue(32, z.getAddend()));
     }
     if (e instanceof DecrementLocalPreference) {
       DecrementLocalPreference z = (DecrementLocalPreference) e;
+      p.debug("DecrementLocalPreference: " + z.getSubtrahend());
       return x.sub(BDDInteger.makeFromValue(32, z.getSubtrahend()));
     }
     throw new BatfishException("TODO: int expr transfer function: " + e);
@@ -675,7 +687,7 @@ class TransferBDD {
         If i = (If) stmt;
         TransferResult<BDDReturn, BDD> r = compute(i.getGuard(), p.indent());
         BDD guard = r.getReturnValue().getSecond();
-        p.debug("guard: " + guard.not());
+        p.debug("guard: ");
 
         BDDRecord current = result.getReturnValue().getFirst();
 
@@ -688,7 +700,9 @@ class TransferBDD {
         TransferResult<BDDReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
         p.debug("False Branch: " + trueBranch.getReturnValue());
 
-        BDDRecord recordVal = ite(guard, pTrue.getData(), pFalse.getData());
+        BDDRecord r1 = trueBranch.getReturnValue().getFirst();
+        BDDRecord r2 = falseBranch.getReturnValue().getFirst();
+        BDDRecord recordVal = ite(guard, r1, r2);
 
         // update return values
         BDD returnVal =
@@ -726,10 +740,9 @@ class TransferBDD {
         BDD isBGP = p.getData().getProtocolHistory().value(Protocol.BGP);
         BDD updateMed = isBGP.and(result.getReturnAssignedValue());
         BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
-        BDDInteger newValue = applyLongExprModification(p.getData().getMetric(), ie);
+        BDDInteger newValue = applyLongExprModification(p.indent(), p.getData().getMetric(), ie);
         BDDInteger med = ite(updateMed, p.getData().getMed(), newValue);
         BDDInteger met = ite(updateMet, p.getData().getMetric(), newValue);
-        p.debug("Set Metric Update: " + met.getBitvec()[0]);
         p.getData().setMetric(met);
         p.getData().setMetric(med);
 
@@ -740,8 +753,7 @@ class TransferBDD {
         p.debug("SetLocalPreference");
         SetLocalPreference slp = (SetLocalPreference) stmt;
         IntExpr ie = slp.getLocalPreference();
-        BDDInteger newValue = applyIntExprModification(p.getData().getLocalPref(), ie);
-        p.debug("return assigned: " + result.getReturnAssignedValue());
+        BDDInteger newValue = applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
         newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
         p.getData().setLocalPref(newValue);
 
@@ -750,8 +762,10 @@ class TransferBDD {
         AddCommunity ac = (AddCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
+          p.indent().debug("Value: " + cvar);
           BDD comm = p.getData().getCommunities().get(cvar);
           BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+          p.indent().debug("New Value: " + newValue);
           p.getData().getCommunities().put(cvar, newValue);
         }
 
@@ -759,9 +773,21 @@ class TransferBDD {
         p.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> toDelete = new HashSet<>();
+        // Find comms to delete
         for (CommunityVar cvar : comms) {
+          if (cvar.getType() == Type.REGEX) {
+            toDelete.addAll(_commDeps.get(cvar));
+          } else {
+            toDelete.add(cvar);
+          }
+        }
+        // Delete the comms
+        for (CommunityVar cvar : toDelete) {
+          p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
           BDD comm = p.getData().getCommunities().get(cvar);
           BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
+          p.indent().debug("New Value: " + newValue);
           p.getData().getCommunities().put(cvar, newValue);
         }
 
@@ -825,7 +851,8 @@ class TransferBDD {
   }
 
   public BDDRecord compute() {
-    _comms = _graph.findAllCommunities();
+    _commDeps = _graph.getCommunityDependencies();
+    _comms =  _graph.findAllCommunities();
     BDDRecord o = new BDDRecord(_comms);
     TransferParam<BDDRecord> p = new TransferParam<>(o, true);
     TransferResult<BDDReturn, BDD> result = compute(_statements, p);

@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -588,14 +591,68 @@ public class Graph {
   }
 
   /*
- * Finds all uniquely mentioned community matches
- * in the network by walking over every configuration.
- */
+   * Create a community dependency mapping. Each community regex will
+   * map to zero or more actual community values
+   */
+  public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
+    Set<CommunityVar> allComms = findAllCommunities();
+
+    // Map community regex matches to Java regex
+    Map<CommunityVar, java.util.regex.Pattern> regexes = new HashMap<>();
+    for (CommunityVar c : allComms) {
+      if (c.getType() == CommunityVar.Type.REGEX) {
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(c.getValue());
+        regexes.put(c, p);
+      }
+    }
+
+    SortedMap<CommunityVar, List<CommunityVar>> deps = new TreeMap<>();
+    for (CommunityVar c1 : allComms) {
+      // map exact match to corresponding regexes
+      if (c1.getType() == CommunityVar.Type.REGEX) {
+
+        List<CommunityVar> list = new ArrayList<>();
+        deps.put(c1, list);
+        java.util.regex.Pattern p = regexes.get(c1);
+
+        for (CommunityVar c2 : allComms) {
+          if (c2.getType() == CommunityVar.Type.EXACT) {
+            Matcher m = p.matcher(c2.getValue());
+            if (m.find()) {
+              list.add(c2);
+            }
+          }
+          if (c2.getType() == CommunityVar.Type.OTHER) {
+            if (c1.getValue().equals(c2.getValue())) {
+              list.add(c2);
+            }
+          }
+        }
+      }
+    }
+
+    return deps;
+  }
+
+
+  /*
+   * Finds all uniquely mentioned community matches
+   * in the network by walking over every configuration.
+   */
   public Set<CommunityVar> findAllCommunities() {
     Set<CommunityVar> comms = new HashSet<>();
     getConfigurations().forEach((router, conf) -> {
       comms.addAll(findAllCommunities(router));
     });
+    // Add an other option that matches a regex but isn't from this network
+    List<CommunityVar> others = new ArrayList<>();
+    for (CommunityVar c : comms) {
+      if (c.getType() == CommunityVar.Type.REGEX) {
+        CommunityVar x = new CommunityVar(CommunityVar.Type.OTHER, c.getValue(), c.asLong());
+        others.add(x);
+      }
+    }
+    comms.addAll(others);
     return comms;
   }
 

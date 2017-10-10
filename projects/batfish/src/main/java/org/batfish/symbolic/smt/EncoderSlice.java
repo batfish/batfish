@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -349,54 +348,7 @@ class EncoderSlice {
   private void initCommunities() {
     _allCommunities = getGraph().findAllCommunities();
     _namedCommunities = getGraph().findNamedCommunities();
-
-    // Add an other variable for each regex community
-    // Don't do this by default
-    if (Encoder.MODEL_EXTERNAL_COMMUNITIES) {
-
-      List<CommunityVar> others = new ArrayList<>();
-      for (CommunityVar c : _allCommunities) {
-        if (c.getType() == CommunityVar.Type.REGEX) {
-          CommunityVar x = new CommunityVar(CommunityVar.Type.OTHER, c.getValue(), c.asLong());
-          others.add(x);
-        }
-      }
-      _allCommunities.addAll(others);
-    }
-
-    // Map community regex matches to Java regex
-    Map<CommunityVar, java.util.regex.Pattern> regexes = new HashMap<>();
-    for (CommunityVar c : _allCommunities) {
-      if (c.getType() == CommunityVar.Type.REGEX) {
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile(c.getValue());
-        regexes.put(c, p);
-      }
-    }
-
-    _communityDependencies = new HashMap<>();
-    for (CommunityVar c1 : _allCommunities) {
-      // map exact match to corresponding regexes
-      if (c1.getType() == CommunityVar.Type.REGEX) {
-
-        List<CommunityVar> list = new ArrayList<>();
-        _communityDependencies.put(c1, list);
-        java.util.regex.Pattern p = regexes.get(c1);
-
-        for (CommunityVar c2 : _allCommunities) {
-          if (c2.getType() == CommunityVar.Type.EXACT) {
-            Matcher m = p.matcher(c2.getValue());
-            if (m.find()) {
-              list.add(c2);
-            }
-          }
-          if (c2.getType() == CommunityVar.Type.OTHER) {
-            if (c1.getValue().equals(c2.getValue())) {
-              list.add(c2);
-            }
-          }
-        }
-      }
-    }
+    _communityDependencies = getGraph().getCommunityDependencies();
   }
 
   /*
@@ -2976,5 +2928,9 @@ class EncoderSlice {
 
   SymbolicFailures getSymbolicFailures() {
     return _encoder.getSymbolicFailures();
+  }
+
+  public Map<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
+    return _communityDependencies;
   }
 }

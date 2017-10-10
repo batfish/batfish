@@ -58,8 +58,6 @@ public class Encoder {
 
   public static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
 
-  public static final boolean MODEL_EXTERNAL_COMMUNITIES = true;
-
   private int _encodingId;
 
   private boolean _modelIgp;

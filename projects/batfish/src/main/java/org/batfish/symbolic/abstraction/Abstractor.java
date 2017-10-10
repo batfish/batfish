@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javafx.util.Pair;
-import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -94,8 +93,13 @@ public class Abstractor {
   public static BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     BDDRecord rec = t.compute();
-    BDD bdd = rec.getMetric().getBitvec()[31];
-    System.out.println("DOT: \n" + rec.getDot(bdd));
+    rec.getCommunities().forEach((cvar, bdd) -> {
+      System.out.println("CVAR: " + cvar.getValue() + ", " + cvar.getType());
+      System.out.println("DOT: \n" + rec.getDot(bdd));
+    });
+
+    // BDD bdd = rec.getMetric().getBitvec()[31];
+    // System.out.println("DOT: \n" + rec.getDot(bdd));
     return rec;
   }
 

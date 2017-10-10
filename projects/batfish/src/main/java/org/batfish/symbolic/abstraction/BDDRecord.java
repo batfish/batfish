@@ -14,6 +14,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Protocol;
 
 /**
@@ -41,13 +42,21 @@ public class BDDRecord {
   }
 
   private BDDInteger _prefix;
+
   private BDDInteger _prefixLength;
+
   private BDDInteger _adminDist;
+
   private BDDInteger _metric;
+
   private BDDInteger _med;
+
   private BDDInteger _localPref;
+
   private BDDDomain<Protocol> _protocolHistory;
+
   private SortedMap<CommunityVar, BDD> _communities;
+
   private Map<Integer, String> _bitNames;
 
   /*
@@ -99,9 +108,11 @@ public class BDDRecord {
     // Initialize communities
     _communities = new TreeMap<>();
     for (CommunityVar comm : comms) {
-      _communities.put(comm, factory.ithVar(idx));
-      _bitNames.put(idx, comm.getValue());
-      idx++;
+      if (comm.getType() != Type.REGEX) {
+        _communities.put(comm, factory.ithVar(idx));
+        _bitNames.put(idx, comm.getValue());
+        idx++;
+      }
     }
 
     // Initialize the choice of protocol
@@ -248,6 +259,7 @@ public class BDDRecord {
   public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
     this._communities = communities;
   }
+
 
   @Override
   public boolean equals(Object o) {

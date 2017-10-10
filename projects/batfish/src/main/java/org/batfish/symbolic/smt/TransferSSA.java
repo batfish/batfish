@@ -7,6 +7,7 @@ import com.microsoft.z3.Expr;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +72,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -1097,7 +1099,17 @@ class TransferSSA {
         p.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
         Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> toDelete = new HashSet<>();
+        // Find comms to delete
         for (CommunityVar cvar : comms) {
+          if (cvar.getType() == Type.REGEX) {
+            toDelete.addAll(_enc.getCommunityDependencies().get(cvar));
+          } else {
+            toDelete.add(cvar);
+          }
+        }
+        // Delete each community
+        for (CommunityVar cvar : toDelete) {
           BoolExpr newValue =
               _enc.mkIf(
                   result.getReturnAssignedValue(),
