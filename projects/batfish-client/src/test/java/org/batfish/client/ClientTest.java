@@ -459,18 +459,32 @@ public class ClientTest {
         new JSONObject()
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
+
+    //test if question name is correct
     assertEquals("testQuestionName", Client.getQuestionName(testQuestion, "testquestion"));
   }
 
   @Test
-  public void testGetQuestionNameInvalid() throws JSONException {
+  public void testGetQuestionNameInvalid1() throws JSONException {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
         new JSONObject().put("description", "test question description"));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot extract question name from testquestion");
-    assertEquals("testQuestionName", Client.getQuestionName(testQuestion, "testquestion"));
+
+    //check exception when no instanceName is present
+    Client.getQuestionName(testQuestion, "testquestion");
+  }
+
+  @Test
+  public void testGetQuestionNameInvalid2() throws JSONException {
+    JSONObject testQuestion = new JSONObject();
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Cannot extract question name from testquestion");
+
+    //check exception when instance itself is not present
+    Client.getQuestionName(testQuestion, "testquestion");
   }
 
   @Test
@@ -843,6 +857,8 @@ public class ClientTest {
     Client.loadQuestionsFromDir(questionJsonPath.toString(), loadedQuestions);
     Multimap<String, String> expectedMap = HashMultimap.create();
     expectedMap.put("testquestionname", testQuestion.toString());
+
+    //checking if questions are loaded from disk correctly
     assertEquals(expectedMap, loadedQuestions);
   }
 
@@ -859,6 +875,8 @@ public class ClientTest {
     Client.loadQuestionsFromServer(testJson, loadedQuestions);
     Multimap<String, String> expectedMap = HashMultimap.create();
     expectedMap.put("testquestionname", testQuestion.toString());
+
+    //checking if questions are loaded from json correctly
     assertEquals(expectedMap, loadedQuestions);
   }
 
@@ -902,22 +920,41 @@ public class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions() throws Exception {
+  public void testMergeQuestions1() throws Exception {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourcequestion", "sourcequestionvalue");
-    sourceMap.put("desinationquestion", "destinationquestionvalue");
+    sourceMap.put("destinationquestion", "destinationquestionvalue");
     Map<String, String> destMap = new HashMap<>();
-    destMap.put("desinationquestion", "destinationquestionvalue");
+    destMap.put("destinationquestion", "destinationquestionvalue");
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
     Client.mergeQuestions(sourceMap, destMap, ae);
     Map<String, String> expectedMap = new HashMap<>();
     expectedMap.put("sourcequestion", "sourcequestionvalue");
-    expectedMap.put("desinationquestion", "destinationquestionvalue");
+    expectedMap.put("destinationquestion", "destinationquestionvalue");
+
+    //Test the merging populates ae and destinationquestion get replaced
     assertThat(expectedMap.entrySet(), equalTo(destMap.entrySet()));
-    assertEquals(new TreeSet<>(Arrays.asList("desinationquestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("destinationquestion")), ae.getReplaced());
     assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
+
+  @Test
+  public void testMergeQuestions2() throws Exception {
+    Multimap<String, String> sourceMap = HashMultimap.create();
+    sourceMap.put("sourcequestion", "sourcequestionvalue1");
+    sourceMap.put("sourcequestion", "sourcequestionvalue2");
+    Map<String, String> destMap = new HashMap<>();
+    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
+    Client.mergeQuestions(sourceMap, destMap, ae);
+
+    //Test the merging populates ae and sourcequestion get replaced
+    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
+    assertEquals(2, ae.getNumLoaded());
+  }
+
+
 
   @Test
   public void testMissingNonOptionalParameterNoValue() {
