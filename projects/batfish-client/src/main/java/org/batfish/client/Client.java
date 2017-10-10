@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 import java.io.BufferedReader;
 import java.io.File;
@@ -1387,6 +1389,24 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  /**
+   * Returns the name from a JSON representing a question
+   *
+   * @param question question Json
+   * @param questionIdentifier question path or question JSON key
+   * @return name of question
+   */
+  static String getQuestionName(JSONObject question, String questionIdentifier) {
+    try {
+      String questionName =
+          question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME);
+      return questionName;
+    } catch (JSONException e) {
+      throw new BatfishException(
+          String.format("Cannot extract question name from %s", questionIdentifier));
+    }
+  }
+
   private boolean getQuestionTemplates(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GET_QUESTION_TEMPLATES)) {
       return false;
@@ -1640,14 +1660,16 @@ public class Client extends AbstractClient implements IClient {
     Map<String, String> questionMap = new TreeMap<>();
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
 
+    Multimap<String, String> analysisQuestions = HashMultimap.create();
     try {
-      loadQuestionsFromDir(questionsPathStr, questionMap, ae);
+      loadQuestionsFromDir(questionsPathStr, analysisQuestions);
     } catch (Exception e) {
       return false;
     }
 
     Answer answer = new Answer();
     answer.addAnswerElement(ae);
+    mergeQuestions(analysisQuestions, questionMap, ae);
     ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
     String answerStringToPrint;
     try {
@@ -1912,7 +1934,7 @@ public class Client extends AbstractClient implements IClient {
    * @param questionKey JSON key of the Question
    * @return Name of the question which was loaded
    */
-  private JSONObject loadQuestion(
+  private static JSONObject loadQuestion(
       @Nullable Path file,
       @Nullable String questionText,
       @Nullable String questionKey) {
@@ -1926,7 +1948,7 @@ public class Client extends AbstractClient implements IClient {
       if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
         JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
         String instanceDataStr = instanceDataObj.toString();
-        BatfishObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
         InstanceData instanceData =
             mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
         validateInstanceData(instanceData);
@@ -1965,25 +1987,25 @@ public class Client extends AbstractClient implements IClient {
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
     answer.addAnswerElement(ae);
 
-    //init maps containing the questions
-    Map<String, String> remoteQuestions = new HashMap<>();
-    Map<String, String> localQuestions = new HashMap<>();
+    Multimap<String, String> remoteQuestions = HashMultimap.create();
+    Multimap<String, String> localQuestions = HashMultimap.create();
 
     //try to load remote questions if no local disk path is passed or loadremote is forced
     if ((parameters.isEmpty() || loadRemote) && _workHelper != null) {
       JSONObject remoteQuestionsJson = _workHelper.getQuestionTemplates();
-      if (remoteQuestions != null) {
-        loadQuestionsFromJson(remoteQuestionsJson, remoteQuestions, ae);
+      if (remoteQuestionsJson != null) {
+         loadQuestionsFromServer(remoteQuestionsJson, remoteQuestions);
       }
     }
 
     //try to load local questions whenever local disk path is provided
     if (!parameters.isEmpty()) {
-      loadQuestionsFromDir(parameters.get(0), localQuestions, ae);
+        loadQuestionsFromDir(parameters.get(0), localQuestions);
     }
 
-    //merging the questions
-    mergeQuestions(localQuestions, remoteQuestions, bfq, ae);
+    //updating bfq and answer element
+    mergeQuestions(remoteQuestions, bfq, ae);
+    mergeQuestions(localQuestions, bfq, ae);
 
     //outputting the final answer
     ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
@@ -2002,30 +2024,23 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
-   * Loads questions from a Json containing the questions Jsons
+   * Loads questions from a Json containing the questions
    *
    * @param questionTemplatesJson {@link JSONObject} with question key and question content Json
-   * @param loadedQuestions {@link Map} containing loaded question names and content
-   * @param ae {@link LoadQuestionAnswerElement} having loaded questions data
+   *     return loadedQuestions {@link Multimap} containing loaded question names and content
    */
-  void loadQuestionsFromJson(
-      JSONObject questionTemplatesJson,
-      Map<String, String> loadedQuestions,
-      LoadQuestionAnswerElement ae) {
+  static void loadQuestionsFromServer(
+      JSONObject questionTemplatesJson, Multimap<String, String> remoteQuestions) {
     try {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       Map<String, String> questionsMap =
           mapper.readValue(
               questionTemplatesJson.toString(), new TypeReference<Map<String, String>>() {});
       for (Entry<String, String> question : questionsMap.entrySet()) {
-
         JSONObject questionJSON = loadQuestion(null, question.getValue(), question.getKey());
-        try {
-          updateLoadedQuestionsInfo(questionJSON, loadedQuestions, ae);
-        } catch (JSONException e) {
-          throw new BatfishException(
-              "Error while processing question in json key: " + question.getKey());
-        }
+        remoteQuestions.put(
+            getQuestionName(questionJSON, question.getKey()).toLowerCase(),
+            questionJSON.toString());
       }
     } catch (IOException e) {
       throw new BatfishException("Could not load remote questions", e);
@@ -2036,11 +2051,9 @@ public class Client extends AbstractClient implements IClient {
    * Loads questions from a local directory containing questions
    *
    * @param questionsPathStr Path of directory
-   * @param loadedQuestions {@link Map} containing loaded question names and content
-   * @param ae {@link LoadQuestionAnswerElement} having loaded questions data
    */
-  void loadQuestionsFromDir(
-      String questionsPathStr, Map<String, String> loadedQuestions, LoadQuestionAnswerElement ae) {
+  static void loadQuestionsFromDir(
+      String questionsPathStr, Multimap<String, String> localQuestions) {
     Path questionsPath = Paths.get(questionsPathStr);
     SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
     try {
@@ -2064,13 +2077,10 @@ public class Client extends AbstractClient implements IClient {
     }
 
     for (Path jsonQuestionFile : jsonQuestionFiles) {
-
       JSONObject questionJSON = loadQuestion(jsonQuestionFile, null, null);
-      try {
-        updateLoadedQuestionsInfo(questionJSON, loadedQuestions, ae);
-      } catch (JSONException e) {
-        throw new BatfishException("Error while processing question in file: " + jsonQuestionFile);
-      }
+      localQuestions.put(
+          getQuestionName(questionJSON, jsonQuestionFile.toString()).toLowerCase(),
+          questionJSON.toString());
     }
   }
 
@@ -2089,55 +2099,46 @@ public class Client extends AbstractClient implements IClient {
   /**
    * Merges local and remote questions and overwrites remote with local
    *
-   * @param localQuestions Questions from disk
-   * @param remoteQuestions Questions from Coordinator
-   * @param bfQuestions Batfish Questions
-   * @param ae Answer Element
-   * @return Merged {@link Map}
+   * @param sourceMap {@link Multimap} containing question names and content
+   * @param destinationMap  {@link Map} containing the merged questions
+   * @param ae {@link LoadQuestionAnswerElement} containing the merged questions information
    */
-  LoadQuestionAnswerElement mergeQuestions(
-      Map<String, String> localQuestions,
-      Map<String, String> remoteQuestions,
-      Map<String, String> bfQuestions,
+  static void mergeQuestions(
+      Multimap<String, String> sourceMap,
+      Map<String, String> destinationMap,
       LoadQuestionAnswerElement ae) {
     //merging remote questions
-    for (Entry<String, String> question : remoteQuestions.entrySet()) {
-      if (bfQuestions.containsKey(question.getKey().toLowerCase())) {
-        ae.getReplaced().add(question.getKey());
-      }
-      bfQuestions.put(question.getKey().toLowerCase(), question.getValue());
+    for (String questionName : sourceMap.keySet()) {
+      sourceMap
+          .get(questionName)
+          .forEach(
+              questionContent -> {
+                updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae);
+              });
     }
-    //merging local questions
-    for (Entry<String, String> question : localQuestions.entrySet()) {
-      if (bfQuestions.containsKey(question.getKey().toLowerCase())) {
-        ae.getReplaced().add(question.getKey());
-      }
-      bfQuestions.put(question.getKey().toLowerCase(), question.getValue());
-    }
-    return ae;
   }
 
   /**
    * Update info in {@link LoadQuestionAnswerElement} and loaded questions {@link Map} for a given
    * question
    *
-   * @param questionJson Given question {@link JSONObject}
+   * @param questionName Question name
+   * @param questionContent Question content string
    * @param loadedQuestions {@link Map containing the loaded questions}
    * @param ae {@link LoadQuestionAnswerElement} where info has to be updated
-   * @throws JSONException if instance name not present in question
    */
-  private void updateLoadedQuestionsInfo(
-      JSONObject questionJson, Map<String, String> loadedQuestions, LoadQuestionAnswerElement ae)
-      throws JSONException {
-    String questionName =
-        questionJson.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME);
+  static void updateLoadedQuestionsInfo(
+      String questionName,
+      String questionContent,
+      Map<String, String> loadedQuestions,
+      LoadQuestionAnswerElement ae) {
     //adding question name in added list if not present else add in replaced list
     if (loadedQuestions.containsKey(questionName.toLowerCase())) {
       ae.getReplaced().add(questionName);
     } else {
       ae.getAdded().add(questionName);
     }
-    loadedQuestions.put(questionName.toLowerCase(), questionJson.toString());
+    loadedQuestions.put(questionName.toLowerCase(), questionContent);
     ae.setNumLoaded(ae.getNumLoaded() + 1);
   }
 
@@ -3054,7 +3055,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private void validateInstanceData(InstanceData instanceData) {
+  private static void validateInstanceData(InstanceData instanceData) {
     String description = instanceData.getDescription();
     String q = "Question: '" + instanceData.getInstanceName() + "'";
     if (description == null || description.length() == 0) {

@@ -81,12 +81,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
@@ -100,6 +101,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.Question;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -447,6 +449,28 @@ public class ClientTest {
   @Test
   public void testGetQuestionInvalidParas() throws Exception {
     testInvalidInput(GET_QUESTION, new String[] {}, new String[] {});
+  }
+
+  @Test
+  public void testGetQuestionName() throws JSONException {
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    assertEquals("testQuestionName", Client.getQuestionName(testQuestion, "testquestion"));
+  }
+
+  @Test
+  public void testGetQuestionNameInvalid() throws JSONException {
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject().put("description", "test question description"));
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Cannot extract question name from testquestion");
+    assertEquals("testQuestionName", Client.getQuestionName(testQuestion, "testquestion"));
   }
 
   @Test
@@ -807,7 +831,6 @@ public class ClientTest {
 
   @Test
   public void testLoadQuestionsFromDir() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
@@ -816,19 +839,15 @@ public class ClientTest {
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
-    Map<String, String> loadedQuestions = new HashMap<>();
-    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    client.loadQuestionsFromDir(questionJsonPath.toString(), loadedQuestions, ae);
-    assertEquals(
-        Collections.singletonMap("testquestionname", testQuestion.toString()), loadedQuestions);
-    assertEquals(new TreeSet<>(Arrays.asList("testQuestionName")), ae.getAdded());
-    assertEquals(1, ae.getNumLoaded());
-    assertEquals(Collections.emptySortedSet(), ae.getReplaced());
+    Multimap<String, String> loadedQuestions = HashMultimap.create();
+    Client.loadQuestionsFromDir(questionJsonPath.toString(), loadedQuestions);
+    Multimap<String, String> expectedMap = HashMultimap.create();
+    expectedMap.put("testquestionname", testQuestion.toString());
+    assertEquals(expectedMap, loadedQuestions);
   }
 
   @Test
-  public void testLoadQuestionsFromJson() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
+  public void testLoadQuestionsFromServer() throws Exception {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
@@ -836,14 +855,11 @@ public class ClientTest {
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
     JSONObject testJson = new JSONObject().put("testQuestion", testQuestion.toString());
-    Map<String, String> loadedQuestions = new HashMap<>();
-    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    client.loadQuestionsFromJson(testJson, loadedQuestions, ae);
-    assertEquals(
-        Collections.singletonMap("testquestionname", testQuestion.toString()), loadedQuestions);
-    assertEquals(new TreeSet<>(Arrays.asList("testQuestionName")), ae.getAdded());
-    assertEquals(1, ae.getNumLoaded());
-    assertEquals(Collections.emptySortedSet(), ae.getReplaced());
+    Multimap<String, String> loadedQuestions = HashMultimap.create();
+    Client.loadQuestionsFromServer(testJson, loadedQuestions);
+    Multimap<String, String> expectedMap = HashMultimap.create();
+    expectedMap.put("testquestionname", testQuestion.toString());
+    assertEquals(expectedMap, loadedQuestions);
   }
 
   @Test
@@ -887,16 +903,20 @@ public class ClientTest {
 
   @Test
   public void testMergeQuestions() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
-    Map<String, String> remoteQuestions =
-        Collections.singletonMap("testquestion", "testquestionvalue");
-    Map<String, String> localQuestions =
-        Collections.singletonMap("testquestion", "testquestionvalue");
-    Map<String, String> bfqMap = new HashMap<>();
+    Multimap<String, String> sourceMap = HashMultimap.create();
+    sourceMap.put("sourcequestion", "sourcequestionvalue");
+    sourceMap.put("desinationquestion", "destinationquestionvalue");
+    Map<String, String> destMap = new HashMap<>();
+    destMap.put("desinationquestion", "destinationquestionvalue");
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    client.mergeQuestions(localQuestions, remoteQuestions, bfqMap, ae);
-    assertEquals(new TreeSet<>(remoteQuestions.keySet()), ae.getReplaced());
-    assertEquals(localQuestions, bfqMap);
+    Client.mergeQuestions(sourceMap, destMap, ae);
+    Map<String, String> expectedMap = new HashMap<>();
+    expectedMap.put("sourcequestion", "sourcequestionvalue");
+    expectedMap.put("desinationquestion", "destinationquestionvalue");
+    assertThat(expectedMap.entrySet(), equalTo(destMap.entrySet()));
+    assertEquals(new TreeSet<>(Arrays.asList("desinationquestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
+    assertEquals(2, ae.getNumLoaded());
   }
 
   @Test
