@@ -91,11 +91,12 @@ public class Abstractor {
     }
   }
 
-  public static void computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
+  public static BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     BDDRecord rec = t.compute();
     BDD bdd = rec.getLocalPref().getBitvec()[31];
     System.out.println("DOT: \n" + rec.getDot(bdd));
+    return rec;
   }
 
 
@@ -135,6 +136,7 @@ public class Abstractor {
             });
 
     // Compute BDD policies
+    Map<BDDRecord, Set<GraphEdge>> importPolMap = new HashMap<>();
     g.getConfigurations()
         .forEach(
             (router, conf) -> {
@@ -144,11 +146,19 @@ public class Abstractor {
                   RoutingPolicy pol = g.findImportRoutingPolicy(router, Protocol.BGP, ge);
                   if (pol != null) {
                     System.out.println("Looking at: " + ge);
-                    computeBDD(g, conf, pol);
+                    BDDRecord rec = computeBDD(g, conf, pol);
+                    Set<GraphEdge> ifaces = importPolMap.computeIfAbsent(rec, k -> new HashSet<>());
+                    ifaces.add(ge);
                   }
                 }
               }
             });
+
+    // Print equivalence policies
+    importPolMap.forEach(
+        (rec, ifaces) -> {
+          System.out.println("EC: " + ifaces);
+        });
 
     // Create the trie
     PrefixTrieMap pt = new PrefixTrieMap();

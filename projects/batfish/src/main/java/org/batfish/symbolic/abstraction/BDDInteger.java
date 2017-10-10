@@ -149,4 +149,16 @@ public class BDDInteger {
   public BDD[] getBitvec() {
     return _bitvec;
   }
+
+  @Override public boolean equals(Object o) {
+    if (!(o instanceof BDDInteger)) {
+      return false;
+    }
+    BDDInteger other = (BDDInteger) o;
+    return Arrays.equals(_bitvec, other._bitvec);
+  }
+
+  @Override public int hashCode() {
+    return Arrays.hashCode(_bitvec);
+  }
 }

@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
@@ -27,6 +30,8 @@ public class BDDRecord {
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
       factory = JFactory.init(100, 10000);
+      factory.disableReorder();
+      // Disables printing
       factory.registerGCCallback(handler, m);
       factory.registerResizeCallback(handler, m);
       factory.registerReorderCallback(handler, m);
@@ -42,24 +47,23 @@ public class BDDRecord {
   private BDDInteger _med;
   private BDDInteger _localPref;
   private BDDDomain<Protocol> _protocolHistory;
-  private Map<CommunityVar, BDD> _communities;
+  private SortedMap<CommunityVar, BDD> _communities;
   private Map<Integer, String> _bitNames;
 
-  // TODO: Same parent route reflectors
-
-  // TODO: BGP internal on interface
-
-  // TODO: OSPF area on interface
-
-  // TODO: MED
-
-
+  /*
+   * Helper function that builds a map from BDD variable index
+   * to some more meaningful name. Helpful for debugging.
+   */
   private void addBitNames(String s, int length, int index) {
     for (int i = index; i < index + length; i++) {
       _bitNames.put(i, s + (i - index));
     }
   }
 
+  /*
+   * Creates a collection of BDD variables representing the
+   * various attributes of a control plane advertisement.
+   */
   public BDDRecord(Set<CommunityVar> comms) {
 
     // Make sure we have the right number of variables
@@ -93,7 +97,7 @@ public class BDDRecord {
     idx += 32;
 
     // Initialize communities
-    _communities = new HashMap<>();
+    _communities = new TreeMap<>();
     for (CommunityVar comm : comms) {
       _communities.put(comm, factory.ithVar(idx));
       _bitNames.put(idx, comm.getValue());
@@ -112,8 +116,12 @@ public class BDDRecord {
     addBitNames("proto", len, idx);
   }
 
+  /*
+   * Create a BDDRecord from another. Because BDDs are immutable,
+   * there is no need for a deep copy.
+   */
   public BDDRecord(BDDRecord other) {
-    _communities = new HashMap<>(other._communities);
+    _communities = new TreeMap<>(other._communities);
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
     _metric = new BDDInteger(other._metric);
@@ -123,6 +131,17 @@ public class BDDRecord {
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
   }
 
+  /*
+   * Convenience method for the copy constructor
+   */
+  public BDDRecord copy() {
+    return new BDDRecord(this);
+  }
+
+  /*
+   * Creates a unique id for a bdd node when generating
+   * a DOT file for graphviz
+   */
   private Integer dotId(BDD bdd) {
     if (bdd.isZero()) {
       return 0;
@@ -133,6 +152,10 @@ public class BDDRecord {
     return bdd.hashCode() + 2;
   }
 
+  /*
+   * Recursively builds each of the intermediate BDD nodes in the
+   * graphviz DOT format.
+   */
   private void getDotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
     if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
       return;
@@ -149,6 +172,9 @@ public class BDDRecord {
     getDotRec(sb, bdd.high(), visited);
   }
 
+  /*
+   * Converts a BDD to the graphviz DOT format for debugging.
+   */
   public String getDot(BDD bdd) {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph G {\n");
@@ -163,32 +189,16 @@ public class BDDRecord {
     return _prefixLength;
   }
 
-  public void setPrefixLength(BDDInteger prefixLength) {
-    this._prefixLength = prefixLength;
-  }
-
   public BDDInteger getPrefix() {
     return _prefix;
-  }
-
-  public void setPrefix(BDDInteger prefix) {
-    this._prefix = prefix;
   }
 
   public BDDInteger getAdminDist() {
     return _adminDist;
   }
 
-  public void setAdminDist(BDDInteger adminDist) {
-    this._adminDist = adminDist;
-  }
-
   public BDDInteger getMetric() {
     return _metric;
-  }
-
-  public void setMetric(BDDInteger metric) {
-    this._metric = metric;
   }
 
   public BDDInteger getMed() {
@@ -203,12 +213,20 @@ public class BDDRecord {
     return _localPref;
   }
 
+  public BDDDomain<Protocol> getProtocolHistory() {
+    return _protocolHistory;
+  }
+
   public void setLocalPref(BDDInteger localPref) {
     this._localPref = localPref;
   }
 
-  public BDDDomain<Protocol> getProtocolHistory() {
-    return _protocolHistory;
+  public void setMetric(BDDInteger metric) {
+    this._metric = metric;
+  }
+
+  public void setPrefix(BDDInteger prefix) {
+    this._prefix = prefix;
   }
 
   public void setProtocolHistory(BDDDomain<Protocol> protocolHistory) {
@@ -219,11 +237,45 @@ public class BDDRecord {
     return _communities;
   }
 
-  public void setCommunities(Map<CommunityVar, BDD> communities) {
+  public void setAdminDist(BDDInteger adminDist) {
+    this._adminDist = adminDist;
+  }
+
+  public void setPrefixLength(BDDInteger prefixLength) {
+    this._prefixLength = prefixLength;
+  }
+
+  public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
     this._communities = communities;
   }
 
-  public BDDRecord copy() {
-    return new BDDRecord(this);
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof BDDRecord)) {
+      return false;
+    }
+    BDDRecord other = (BDDRecord) o;
+
+    return Objects.equals(_metric, other._metric)
+        && Objects.equals(_localPref, other._localPref)
+        && Objects.equals(_communities, other._communities)
+        && Objects.equals(_med, other._med)
+        && Objects.equals(_protocolHistory, other._protocolHistory)
+        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prefix, other._prefix)
+        && Objects.equals(_prefixLength, other._prefixLength);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = _prefix != null ? _prefix.hashCode() : 0;
+    result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
+    result = 31 * result + (_adminDist != null ? _adminDist.hashCode() : 0);
+    result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
+    result = 31 * result + (_med != null ? _med.hashCode() : 0);
+    result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
+    result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
+    result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+    return result;
   }
 }

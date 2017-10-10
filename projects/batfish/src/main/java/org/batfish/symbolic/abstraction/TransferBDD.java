@@ -537,7 +537,6 @@ class TransferBDD {
   private BDDInteger applyIntExprModification(BDDInteger x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
-      System.out.println("Literal: " + z.getValue());
       return BDDInteger.makeFromValue(32, z.getValue());
     }
     if (e instanceof IncrementLocalPreference) {

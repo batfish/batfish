@@ -1,5 +1,7 @@
 package org.batfish.symbolic;
 
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -17,7 +19,7 @@ import javax.annotation.Nullable;
  *
  * @author Ryan Beckett
  */
-public class CommunityVar {
+public class CommunityVar implements Comparable<CommunityVar> {
 
   public enum Type {
     EXACT,
@@ -37,34 +39,6 @@ public class CommunityVar {
     _long = l;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    CommunityVar that = (CommunityVar) o;
-
-    if (_type != that._type) {
-      return false;
-    }
-    if (_value != null ? !_value.equals(that._value) : that._value != null) {
-      return false;
-    }
-    return _long != null ? _long.equals(that._long) : that._long == null;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = _type != null ? _type.ordinal() : 0;
-    result = 31 * result + (_value != null ? _value.hashCode() : 0);
-    result = 31 * result + (_long != null ? _long.hashCode() : 0);
-    return result;
-  }
-
   public Type getType() {
     return _type;
   }
@@ -75,5 +49,46 @@ public class CommunityVar {
 
   public Long asLong() {
     return _long;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof CommunityVar)) {
+      return false;
+    }
+    CommunityVar other = (CommunityVar) o;
+    return Objects.equals(_long, other._long)
+        && Objects.equals(_value, other._value)
+        && _type == other._type;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = _type != null ? _type.ordinal() : 0;
+    result = 31 * result + (_value != null ? _value.hashCode() : 0);
+    result = 31 * result + (_long != null ? _long.hashCode() : 0);
+    return result;
+  }
+
+  @Override
+  public int compareTo(@Nonnull CommunityVar that) {
+    if (this._type.compareTo(that._type) < 0) {
+      return -1;
+    } else if (this._type.compareTo(that._type) > 0) {
+      return 1;
+    }
+
+    if (this._value.compareTo(that._value) < 0) {
+      return -1;
+    } else if (this._value.compareTo(that._value) > 0) {
+      return 1;
+    }
+
+    if (this._long.compareTo(that._long) < 0) {
+      return -1;
+    } else if (this._long.compareTo(that._long) > 0) {
+      return 1;
+    }
+    return 0;
   }
 }

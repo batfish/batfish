@@ -1,6 +1,7 @@
 package org.batfish.symbolic.abstraction;
 
 import java.util.List;
+import java.util.Objects;
 import net.sf.javabdd.BDD;
 
 /*
@@ -46,5 +47,17 @@ public class BDDDomain<T> {
 
   public void setInteger(BDDInteger i) {
     _integer = i;
+  }
+
+  @Override public boolean equals(Object o) {
+    if (!(o instanceof BDDDomain<?>)) {
+      return false;
+    }
+    BDDDomain<?> other = (BDDDomain<?>) o;
+    return Objects.equals(_integer, other._integer);
+  }
+
+  @Override public int hashCode() {
+    return _integer.hashCode();
   }
 }
