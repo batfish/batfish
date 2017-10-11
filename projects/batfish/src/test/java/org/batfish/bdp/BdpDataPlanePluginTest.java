@@ -177,4 +177,30 @@ public class BdpDataPlanePluginTest {
      */
     assertFalse(r2bPrefixes.contains(r1Loopback0Prefix));
   }
+
+  @Test
+  public void testIbgpOnlyRejectNeighborID() throws IOException {
+    String testrigName = "ibgp-only-reject-routerid-match";
+    String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    SortedSet<AbstractRoute> r2aRoutes = routes.get("r2a").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r2bRoutes = routes.get("r2b").get(Configuration.DEFAULT_VRF_NAME);
+    Set<Prefix> r2aPrefixes =
+        r2aRoutes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r2bPrefixes =
+        r2bRoutes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
+    Prefix r1Loopback1Prefix = new Prefix("1.0.0.2/32");
+    assertTrue(r2aPrefixes.contains(r1Loopback0Prefix));
+    assertTrue(r2aPrefixes.contains(r1Loopback1Prefix));
+    assertTrue(r2bPrefixes.contains(r1Loopback0Prefix));
+    assertTrue(r2bPrefixes.contains(r1Loopback1Prefix));
+  }
 }
