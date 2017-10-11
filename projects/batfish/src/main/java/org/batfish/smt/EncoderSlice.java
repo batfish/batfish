@@ -108,6 +108,8 @@ class EncoderSlice {
 
   private List<SymbolicRecord> _allSymbolicRecords;
 
+  private Map<String, SymbolicRecord> _ospfRedistributed;
+
 
   /**
    * Create a new encoding slice
@@ -163,6 +165,7 @@ class EncoderSlice {
     _inboundAcls = new HashMap<>();
     _outboundAcls = new HashMap<>();
     _forwardsAcross = new Table2<>();
+    _ospfRedistributed = new HashMap<>();
 
     initOptimizations();
     initCommunities();
@@ -1056,6 +1059,24 @@ class EncoderSlice {
                                     e.isAbstract());
                             singleProtoMap.put(proto, ev1);
                             getAllSymbolicRecords().add(ev1);
+
+                            // Add the ospf redistributed record if needed
+                            Set<Protocol> r =
+                                _logicalGraph.getRedistributedProtocols().get(router, proto);
+                            if (proto.isOspf() && r.size() > 1) {
+                              SymbolicRecord rec =
+                                  new SymbolicRecord(
+                                      this,
+                                      name + "_Redistributed",
+                                      router,
+                                      proto,
+                                      _optimizations,
+                                      null,
+                                      e.isAbstract());
+                              _ospfRedistributed.put(name, rec);
+                              getAllSymbolicRecords().add(rec);
+                            }
+
                           } else {
                             ev1 = singleVars;
                           }
@@ -1079,6 +1100,23 @@ class EncoderSlice {
                           LogicalEdge eExport = new LogicalEdge(e, EdgeType.EXPORT, ev1);
                           exportEdgeList.add(eExport);
                           getAllSymbolicRecords().add(ev1);
+
+                          // Add the ospf redistributed record if needed
+                          Set<Protocol> r =
+                              _logicalGraph.getRedistributedProtocols().get(router, proto);
+                          if (proto.isOspf() && r.size() > 1) {
+                            SymbolicRecord rec =
+                                new SymbolicRecord(
+                                    this,
+                                    name + "_Redistributed",
+                                    router,
+                                    proto,
+                                    _optimizations,
+                                    null,
+                                    e.isAbstract());
+                            _ospfRedistributed.put(name, rec);
+                            getAllSymbolicRecords().add(rec);
+                          }
                         }
                       }
 
@@ -1282,7 +1320,6 @@ class EncoderSlice {
     buildEdgeMap();
     addForwardingVariables();
     addBestVariables();
-    // addOriginationVariables();
     addSymbolicRecords();
     addChoiceVariables();
     addEnvironmentVariables();
@@ -2582,6 +2619,7 @@ class EncoderSlice {
       LogicalEdge e,
       SymbolicRecord varsOther,
       @Nullable SymbolicRecord ospfRedistribVars,
+      @Nullable SymbolicRecord overallBest,
       Configuration conf,
       Protocol proto,
       GraphEdge ge,
@@ -2681,16 +2719,30 @@ class EncoderSlice {
         // from the FIB, but also needs to know about other routes in OSPF as well.
         // We model the export here as being the better of the redistributed route
         // and the OSPF exported route. This should work since every other router
-        // will maintain the same preference.
+        // will maintain the same preference when adding to the cost.
         if (ospfRedistribVars != null) {
+          assert overallBest != null;
           f =
               new TransferFunctionSSA(
-                  this, conf, ospfRedistribVars, vars, proto, proto, statements, cost, ge, true);
+                  this,
+                  conf,
+                  overallBest,
+                  ospfRedistribVars,
+                  proto,
+                  proto,
+                  statements,
+                  cost,
+                  ge,
+                  true);
           BoolExpr acc2 = f.compute();
+          // System.out.println("ADDING: \n" + acc2.simplify());
+          add(acc2);
           BoolExpr usable2 = mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed);
           BoolExpr geq = greaterOrEqual(conf, proto, ospfRedistribVars, varsOther, e);
-          BoolExpr shouldTakeOspf = mkAnd(varsOther.getPermitted(), mkNot(geq));
-          acc = mkIf(shouldTakeOspf, mkIf(usable, acc, val), mkIf(usable2, acc2, val));
+          BoolExpr isBetter = mkNot(mkAnd(ospfRedistribVars.getPermitted(), geq));
+          BoolExpr shouldTakeOspf = mkAnd(varsOther.getPermitted(), isBetter);
+          BoolExpr eq = equal(conf, proto, ospfRedistribVars, vars, e, false);
+          acc = mkIf(shouldTakeOspf, mkIf(usable, acc, val), mkIf(usable2, eq, val));
         } else {
           acc = mkIf(usable, acc, val);
         }
@@ -2778,6 +2830,7 @@ class EncoderSlice {
     return false;
   }
 
+
   /*
    * Constraints that define relationships between various messages
    * in the network. The same transfer function abstraction is used
@@ -2811,15 +2864,18 @@ class EncoderSlice {
                           break;
 
                         case EXPORT:
-
                           // OSPF export is tricky because it does not depend on being
                           // in the FIB. So it can come from either a redistributed route
                           // or another OSPF route. We always take the direct OSPF
-
                           SymbolicRecord ospfRedistribVars = null;
+                          SymbolicRecord overallBest = null;
+                          String name = e.getSymbolicRecord().getName();
                           if (proto.isOspf()) {
                             varsOther = getBestNeighborPerProtocol(router, proto);
-                            ospfRedistribVars = _symbolicDecisions.getBestNeighbor().get(router);
+                            if (_ospfRedistributed.containsKey(name)) {
+                              ospfRedistribVars = _ospfRedistributed.get(name);
+                              overallBest = _symbolicDecisions.getBestNeighbor().get(router);
+                            }
                           } else {
                             varsOther = _symbolicDecisions.getBestNeighbor().get(router);
                           }
@@ -2827,8 +2883,16 @@ class EncoderSlice {
                           List<Prefix> originations = getOriginatedNetworks(conf, proto);
                           usedExport =
                               addExportConstraint(
-                                  e, varsOther, ospfRedistribVars, conf,
-                                  proto, ge, router, usedExport, originations);
+                                  e,
+                                  varsOther,
+                                  ospfRedistribVars,
+                                  overallBest,
+                                  conf,
+                                  proto,
+                                  ge,
+                                  router,
+                                  usedExport,
+                                  originations);
                           break;
 
                         default:

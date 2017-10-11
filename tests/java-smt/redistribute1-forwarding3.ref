@@ -41,6 +41,10 @@
           "|0_R2_OSPF_BEST_None_permitted|" : "true",
           "|0_R2_OSPF_BEST_None_prefixLength|" : "24",
           "|0_R2_OSPF_IMPORT_Serial0_choice|" : "true",
+          "|0_R2_OSPF_SINGLE-EXPORT__Redistributed_metric|" : "10",
+          "|0_R2_OSPF_SINGLE-EXPORT__Redistributed_ospfType|" : "3",
+          "|0_R2_OSPF_SINGLE-EXPORT__Redistributed_permitted|" : "true",
+          "|0_R2_OSPF_SINGLE-EXPORT__Redistributed_prefixLength|" : "24",
           "|0_R2_OSPF_SINGLE-EXPORT__metric|" : "10",
           "|0_R2_OSPF_SINGLE-EXPORT__ospfType|" : "3",
           "|0_R2_OSPF_SINGLE-EXPORT__permitted|" : "true",
@@ -72,6 +76,7 @@
     "dstIps" : [
       "180.0.0.0"
     ],
+    "envDiff" : false,
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false,

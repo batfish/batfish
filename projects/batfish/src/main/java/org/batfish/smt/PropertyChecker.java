@@ -699,7 +699,7 @@ public class PropertyChecker {
     VerificationResult res = result.getFirst();
     Model model = result.getSecond();
 
-    // res.debug(enc.getMainSlice(), true, "reachable_host3");
+    // res.debug(enc.getMainSlice(), true, "0_lhr-spine-01_OSPF_SINGLE-EXPORT__permitted");
 
     FlowHistory fh;
     if (q.getDiffType() != null) {
