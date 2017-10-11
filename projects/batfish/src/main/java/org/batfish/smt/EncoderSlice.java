@@ -2581,6 +2581,7 @@ class EncoderSlice {
   private boolean addExportConstraint(
       LogicalEdge e,
       SymbolicRecord varsOther,
+      @Nullable SymbolicRecord ospfRedistribVars,
       Configuration conf,
       Protocol proto,
       GraphEdge ge,
@@ -2644,10 +2645,6 @@ class EncoderSlice {
           }
         }
 
-        // Split Horizon (Don't re-export routes to the neighbor from which you received it)
-        // BoolExpr splitHorizon = getSymbolicDecisions().getControlForwarding().get(router, ge);
-
-        BoolExpr usable = mkAnd(active, doExport, varsOther.getPermitted(), notFailed);
         BoolExpr acc;
         RoutingPolicy pol = getGraph().findExportRoutingPolicy(router, proto, e);
 
@@ -2678,7 +2675,25 @@ class EncoderSlice {
                 this, conf, varsOther, vars, proto, proto, statements, cost, ge, true);
         acc = f.compute();
 
-        acc = mkIf(usable, acc, val);
+        BoolExpr usable = mkAnd(active, doExport, varsOther.getPermitted(), notFailed);
+
+        // OSPF is complicated because it can have routes redistributed into it
+        // from the FIB, but also needs to know about other routes in OSPF as well.
+        // We model the export here as being the better of the redistributed route
+        // and the OSPF exported route. This should work since every other router
+        // will maintain the same preference.
+        if (ospfRedistribVars != null) {
+          f =
+              new TransferFunctionSSA(
+                  this, conf, ospfRedistribVars, vars, proto, proto, statements, cost, ge, true);
+          BoolExpr acc2 = f.compute();
+          BoolExpr usable2 = mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed);
+          BoolExpr geq = greaterOrEqual(conf, proto, ospfRedistribVars, varsOther, e);
+          BoolExpr shouldTakeOspf = mkAnd(varsOther.getPermitted(), mkNot(geq));
+          acc = mkIf(shouldTakeOspf, mkIf(usable, acc, val), mkIf(usable2, acc2, val));
+        } else {
+          acc = mkIf(usable, acc, val);
+        }
 
         List<Long> areas = new ArrayList<>(getGraph().getAreaIds().get(router));
         for (Prefix p : originations) {
@@ -2797,12 +2812,23 @@ class EncoderSlice {
 
                         case EXPORT:
 
-                          // varsOther = getBestNeighborPerProtocol(router, proto);
-                          varsOther = _symbolicDecisions.getBestNeighbor().get(router);
+                          // OSPF export is tricky because it does not depend on being
+                          // in the FIB. So it can come from either a redistributed route
+                          // or another OSPF route. We always take the direct OSPF
+
+                          SymbolicRecord ospfRedistribVars = null;
+                          if (proto.isOspf()) {
+                            varsOther = getBestNeighborPerProtocol(router, proto);
+                            ospfRedistribVars = _symbolicDecisions.getBestNeighbor().get(router);
+                          } else {
+                            varsOther = _symbolicDecisions.getBestNeighbor().get(router);
+                          }
+
                           List<Prefix> originations = getOriginatedNetworks(conf, proto);
                           usedExport =
                               addExportConstraint(
-                                  e, varsOther, conf, proto, ge, router, usedExport, originations);
+                                  e, varsOther, ospfRedistribVars, conf,
+                                  proto, ge, router, usedExport, originations);
                           break;
 
                         default:

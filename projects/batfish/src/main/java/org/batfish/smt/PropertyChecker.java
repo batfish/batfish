@@ -70,7 +70,7 @@ public class PropertyChecker {
     Encoder encoder = new Encoder(batfish, q);
     encoder.computeEncoding();
     VerificationResult result = encoder.verify().getFirst();
-    //result.debug(encoder.getMainSlice(), true, "MAIN_DATA-FORWARDING_host1_eth0");
+    // result.debug(encoder.getMainSlice(), true, null);
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;

@@ -52,10 +52,10 @@ test tests/java-smt/redistribute1-forwarding4.ref get smt-forwarding dstIps=["14
 init-testrig test_rigs/smt-examples/OSPF1 tr-smt-ospf1
 test tests/java-smt/ospf1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
 
-# Only propagate routes when they are in the FIB
+# OSPF routes propagated even when not in FIB
 init-testrig test_rigs/smt-examples/OSPF2 tr-smt-ospf2
 test tests/java-smt/ospf2-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
-init-testrig test_rigs/smt-examples/OSPF4
+init-testrig test_rigs/smt-examples/OSPF4 tr-smt-ospf4
 test tests/java-smt/ospf4-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
 
 # Ensure prepending updates path
@@ -119,8 +119,8 @@ test tests/java-smt/campus2-reachability2.ref get smt-reachability ingressNodeRe
 
 # Test differential reachabililty 
 init-testrig test_rigs/smt-examples/OSPF5 tr-smt-ospf5
-test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, diffType=any 
-test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="R0", failNode1Regex="R0"
+test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, diffType=any, dstIps=["70.70.70.70"]
+test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="R0", failNode1Regex="R0", dstIps=["70.70.70.70"]
 
 # Put everything together in testrigs/example
 #init-testrig test_rigs/example tr-smt-example
