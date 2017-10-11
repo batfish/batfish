@@ -39,6 +39,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ANSWER = "answer";
   public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
+  public static final String SVC_KEY_AUTO_PROCESS = "container";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINERS = "containers";
