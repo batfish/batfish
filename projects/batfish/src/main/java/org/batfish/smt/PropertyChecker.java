@@ -156,7 +156,9 @@ public class PropertyChecker {
   private static BoolExpr equal(
       Encoder e, Configuration conf, SymbolicRecord r1, SymbolicRecord r2) {
     EncoderSlice main = e.getMainSlice();
-    return main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
+    BoolExpr eq = main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
+    BoolExpr samePermitted = e.mkEq(r1.getPermitted(), r2.getPermitted());
+    return e.mkAnd(eq, samePermitted);
   }
 
   /*
@@ -553,6 +555,77 @@ public class PropertyChecker {
   }
 
   /*
+   * Creates a boolean expression that relates the environments of
+   * two separate network copies.
+   */
+  private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
+    // create a map for enc2 to lookup a related environment variable from enc
+    Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
+    enc2.getMainSlice()
+        .getLogicalGraph()
+        .getEnvironmentVars()
+        .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
+
+    BoolExpr related = enc1.mkTrue();
+
+    // relate environments if necessary
+    Map<LogicalEdge, SymbolicRecord> map =
+        enc1.getMainSlice().getLogicalGraph().getEnvironmentVars();
+    for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
+      LogicalEdge le = entry.getKey();
+      SymbolicRecord r1 = entry.getValue();
+      String router = le.getEdge().getRouter();
+      Configuration conf = enc1.getMainSlice().getGraph().getConfigurations().get(router);
+
+      // Lookup the same environment variable in the other copy
+      // The copy will have a different name but the same edge and type
+      SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
+      assert r2 != null;
+      BoolExpr x = equal(enc1, conf, r1, r2);
+      related = enc1.mkAnd(related, x);
+    }
+    return related;
+  }
+
+  /*
+   * Relate the two packets from different network copies
+   */
+  private static BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
+    // Ensure packets are equal
+    SymbolicPacket p1 = enc1.getMainSlice().getSymbolicPacket();
+    SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
+    return p1.mkEqual(p2);
+  }
+
+  /*
+   * Adds additional constraints that certain edges should not be failed to avoid
+   * trivial false positives.
+   */
+  private static void addFailures(Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
+    Graph graph = enc.getMainSlice().getGraph();
+    graph
+        .getEdgeMap()
+        .forEach(
+            (router, edges) -> {
+              for (GraphEdge ge : edges) {
+                ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
+                assert f != null;
+                if (!failSet.contains(ge)) {
+                  enc.add(enc.mkEq(f, enc.mkInt(0)));
+                } else if (dstPorts.contains(ge)) {
+                  // Don't fail an interface if it is for the destination ip we are considering
+                  // Otherwise, any failure can trivially make equivalence false
+                  Prefix pfx = ge.getStart().getPrefix();
+                  ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
+                  BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
+                  BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
+                  enc.add(enc.mkImplies(relevant, notFailed));
+                }
+              }
+            });
+  }
+
+  /*
    * Compute if a collection of source routers can reach a collection of destination
    * ports. This is broken up into multiple queries, one for each destination port.
    */
@@ -572,9 +645,6 @@ public class PropertyChecker {
 
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
-
-    // System.out.println("Graph: \n" + graph);
-    // System.out.println("Destination Ports: " + destPorts);
 
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
@@ -609,21 +679,7 @@ public class PropertyChecker {
 
       // relate environments if necessary
       if (!q.getEnvDiff()) {
-        Map<LogicalEdge, SymbolicRecord> map =
-            enc.getMainSlice().getLogicalGraph().getEnvironmentVars();
-        for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
-          LogicalEdge le = entry.getKey();
-          SymbolicRecord r1 = entry.getValue();
-          String router = le.getEdge().getRouter();
-          Configuration conf = enc.getMainSlice().getGraph().getConfigurations().get(router);
-
-          // Lookup the same environment variable in the other copy
-          // The copy will have a different name but the same edge and type
-          SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
-          assert r2 != null;
-          BoolExpr x = equal(enc, conf, r1, r2);
-          related = enc.mkAnd(related, x);
-        }
+        related = relateEnvironments(enc, enc2);
       }
 
       PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
@@ -652,17 +708,11 @@ public class PropertyChecker {
       }
 
       // Ensure packets are equal
-      SymbolicPacket p1 = enc.getMainSlice().getSymbolicPacket();
-      SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
-      BoolExpr equalPackets = p1.mkEqual(p2);
-      related = enc.mkAnd(related, equalPackets);
+      related = enc.mkAnd(related, relatePackets(enc, enc2));
 
       // Assuming equal packets and environments, is reachability the same
       enc.add(related);
       enc.add(enc.mkNot(required));
-
-      // System.out.println("Related: \n" + related);
-      // System.out.println("Required: \n" + required);
 
     } else {
       BoolExpr allReach = enc.mkTrue();
@@ -674,26 +724,8 @@ public class PropertyChecker {
     }
 
     // Only consider failures for allowed edges
-    graph
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
-                assert f != null;
-                if (!failOptions.contains(ge)) {
-                  enc.add(enc.mkEq(f, enc.mkInt(0)));
-                } else if (destPorts.contains(ge)) {
-                  // Don't fail an interface if it is for the destination ip we are considering
-                  // Otherwise, any failure can trivially make equivalence false
-                  Prefix pfx = ge.getStart().getPrefix();
-                  ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
-                  BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
-                  BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
-                  enc.add(enc.mkImplies(relevant, notFailed));
-                }
-              }
-            });
+    addFailures(enc, destPorts, failOptions);
+
 
     Tuple<VerificationResult, Model> result = enc.verify();
     VerificationResult res = result.getFirst();
