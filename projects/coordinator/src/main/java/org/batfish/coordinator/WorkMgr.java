@@ -1195,7 +1195,7 @@ public class WorkMgr extends AbstractCoordinator {
       initTestrig(testrigDir, unzipDir, false);
     } catch (Exception e) {
       throw new BatfishException("Error initializing testrig", e);
-    } finally{
+    } finally {
       CommonUtil.deleteDirectory(unzipDir);
       CommonUtil.delete(zipFile);
     }
