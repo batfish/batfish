@@ -24,7 +24,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -186,5 +188,50 @@ public class BdpDataPlanePluginTest {
      * r2a prepending 2 in the matching route-map clause.
      */
     assertFalse(r2bPrefixes.contains(r1Loopback0Prefix));
+  }
+
+  @Test
+  public void testIosRtStaticMatchesBdp() throws IOException {
+    String testrigName = "ios-rt-static-ad";
+    String[] configurationNames = new String[] {"r1"};
+    String[] bgpTableNames = new String[] {};
+    String[] hostFilenames = new String[] {};
+    String[] iptablesFilenames = new String[] {};
+    String[] routingTableNames = new String[] {"r1"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName,
+            configurationNames,
+            bgpTableNames,
+            hostFilenames,
+            iptablesFilenames,
+            routingTableNames,
+            _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    Prefix staticRoutePrefix = new Prefix("10.0.0.0/8");
+    SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    AbstractRoute r1BdpRoute =
+        r1BdpRoutes
+            .stream()
+            .filter(r -> r.getNetwork().equals(staticRoutePrefix))
+            .findFirst()
+            .get();
+    SortedSet<Route> r1EnvironmentRoutes =
+        environmentRoutes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    Route r1EnvironmentRoute =
+        r1EnvironmentRoutes
+            .stream()
+            .filter(r -> r.getNetwork().equals(staticRoutePrefix))
+            .findFirst()
+            .get();
+    assertThat(
+        r1BdpRoute.getAdministrativeCost(), equalTo(r1EnvironmentRoute.getAdministrativeCost()));
+    assertThat(r1BdpRoute.getMetric(), equalTo(r1EnvironmentRoute.getMetric()));
+    assertThat(r1BdpRoute.getProtocol(), equalTo(r1EnvironmentRoute.getProtocol()));
   }
 }
