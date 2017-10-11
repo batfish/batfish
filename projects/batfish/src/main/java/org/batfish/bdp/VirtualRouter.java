@@ -995,8 +995,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               String importPolicyName = neighbor.getImportPolicy();
               // TODO: ensure there is always an import policy
 
-              if (ebgpSession
-                  && transformedOutgoingRoute.getAsPath().containsAs(neighbor.getLocalAs())
+              if (transformedOutgoingRoute.getAsPath().containsAs(neighbor.getLocalAs())
                   && !neighbor.getAllowLocalAsIn()) {
                 // skip routes containing peer's AS unless
                 // disable-peer-as-check (getAllowRemoteAsOut) is set

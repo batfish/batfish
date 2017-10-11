@@ -10,6 +10,7 @@ import org.batfish.common.BatfishException;
 public enum RoutingTableFormat {
   EMPTY("empty"),
   EOS("eos"),
+  IOS("ios"),
   NXOS("nxos"),
   UNKNOWN("unknown");
 

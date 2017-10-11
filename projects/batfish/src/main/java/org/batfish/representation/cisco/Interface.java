@@ -18,30 +18,68 @@ import org.batfish.datamodel.SwitchportMode;
 
 public class Interface extends ComparableStructure<String> {
 
+  private static final double ARISTA_ETHERNET_BANDWIDTH = 1E9;
+
   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12;
 
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 
-  /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
-  private static final double ETHERNET_BANDWIDTH = 1E9;
-
   private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
 
   private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
+
+  private static final double IOS_ETHERNET_BANDWIDTH = 1E7;
 
   private static final double LONG_REACH_ETHERNET_BANDWIDTH = 10E6;
 
   /** dirty hack: just chose a very large number */
   private static final double LOOPBACK_BANDWIDTH = 1E12;
 
+  /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
+  private static final double NXOS_ETHERNET_BANDWIDTH = 1E9;
+
   private static final long serialVersionUID = 1L;
 
   private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
 
-  public static double getDefaultBandwidth(String name) {
+  public static double getDefaultBandwidth(String name, ConfigurationFormat format) {
     Double bandwidth = null;
     if (name.startsWith("Ethernet")) {
-      bandwidth = ETHERNET_BANDWIDTH;
+      switch (format) {
+        case ARISTA:
+          return ARISTA_ETHERNET_BANDWIDTH;
+
+        case ALCATEL_AOS:
+        case CADANT:
+        case CISCO_IOS:
+        case CISCO_IOS_XR:
+        case FORCE10:
+        case FOUNDRY:
+          return IOS_ETHERNET_BANDWIDTH;
+
+        case CISCO_NX:
+          return NXOS_ETHERNET_BANDWIDTH;
+
+        case AWS_VPC:
+        case BLADENETWORK:
+        case EMPTY:
+        case F5:
+        case FLAT_JUNIPER:
+        case FLAT_VYOS:
+        case HOST:
+        case IGNORED:
+        case IPTABLES:
+        case JUNIPER:
+        case JUNIPER_SWITCH:
+        case MRV:
+        case MRV_COMMANDS:
+        case MSS:
+        case UNKNOWN:
+        case VXWORKS:
+        case VYOS:
+        default:
+          throw new BatfishException("Unuspported format: " + format);
+      }
     } else if (name.startsWith("FastEthernet")) {
       bandwidth = FAST_ETHERNET_BANDWIDTH;
     } else if (name.startsWith("GigabitEthernet")) {

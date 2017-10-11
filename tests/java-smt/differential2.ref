@@ -11,7 +11,7 @@
                 "envName" : "BASE",
                 "testrigName" : "tr-smt-ospf5"
               },
-              "DIFF" : {
+              "DELTA" : {
                 "edgeBlacklist" : [
                   {
                     "node1" : "R0",
@@ -26,7 +26,7 @@
                     "node2interface" : "Serial1"
                   }
                 ],
-                "envName" : "DIFF",
+                "envName" : "DELTA",
                 "testrigName" : "tr-smt-ospf5"
               }
             },
@@ -97,7 +97,7 @@
                   "notes" : "ACCEPTED"
                 }
               ],
-              "DIFF" : [
+              "DELTA" : [
                 {
                   "disposition" : "NO_ROUTE",
                   "notes" : "NO_ROUTE"

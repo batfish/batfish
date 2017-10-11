@@ -1,0 +1,40 @@
+! boot system flash:EOS.swi
+hostname r2a
+!
+interface Ethernet1
+   no switchport
+   ip address 10.12.0.2/24
+!
+interface Ethernet2
+   no switchport
+   ip address 10.22.0.1/24
+!
+interface Loopback0
+   ip address 2.0.0.1/32
+!
+ip route 2.0.0.2/32 10.22.0.2
+!
+ip routing
+!
+ip prefix-list r1loopback0 permit 1.0.0.1/32
+
+!!! Since r2b is Arista, it should reject routes (namely 1.0.0.1/32 from r1) with its own as
+!!! prepended even over an iBGP connection. Juniper also does this, but behavior varies among Cisco
+!!! routers.
+route-map 1-to-2 permit 100
+   match ip address prefix-list r1loopback0
+   set as-path prepend 2
+!
+!!! No as is prepended here, so r2b should accept anything reaching this clause (namely 1.0.0.2/32
+!!! from r1).
+route-map 1-to-2 permit 200
+!
+router bgp 2
+   router-id 2.0.0.1
+   neighbor 2.0.0.2 remote-as 2
+   neighbor 2.0.0.2 next-hop-self
+   neighbor 2.0.0.2 update-source Loopback0
+   neighbor 10.12.0.1 remote-as 1
+   neighbor 10.12.0.1 route-map 1-to-2 in
+!
+end

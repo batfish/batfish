@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
@@ -77,15 +78,9 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       List<String> nodes =
           CommonUtil.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
 
-      // produce a map from each role to the nodes that have it
-      SortedMap<String, SortedSet<String>> roleNodeMap = new TreeMap<>();
-      for (String node : nodes) {
-        SortedSet<String> roles = configurations.get(node).getRoles();
-        for (String role : roles) {
-          SortedSet<String> roleMembers = roleNodeMap.computeIfAbsent(role, k -> new TreeSet<>());
-          roleMembers.add(node);
-        }
-      }
+      NodeRoleSpecifier roleSpecifier = _batfish.getNodeRoleSpecifier(false);
+      SortedMap<String, SortedSet<String>> roleNodeMap =
+          roleSpecifier.createRoleNodesMap(new TreeSet<>(nodes));
 
       List<String> desiredRoles = question.getRoles();
       if (desiredRoles != null) {

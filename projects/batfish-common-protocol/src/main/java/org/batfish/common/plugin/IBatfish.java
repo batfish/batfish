@@ -61,6 +61,8 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
+  DataPlanePluginSettings getDataPlanePluginSettings();
+
   String getDifferentialFlowTag();
 
   Environment getEnvironment();
