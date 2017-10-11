@@ -883,7 +883,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Auto processing is not currently implemented");
     }
   }
-  
+
   private boolean isEnvFile(Path path) {
     String name = path.getFileName().toString();
     return ENV_FILENAMES.contains(name);
@@ -1194,13 +1194,11 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       initTestrig(testrigDir, unzipDir, false);
     } catch (Exception e) {
+      throw new BatfishException("Error initializing testrig", e);
+    } finally{
       CommonUtil.deleteDirectory(unzipDir);
       CommonUtil.delete(zipFile);
-      throw new BatfishException("Error initializing testrig", e);
     }
-
-    CommonUtil.deleteDirectory(unzipDir);
-    CommonUtil.delete(zipFile);
   }
 
   /**
