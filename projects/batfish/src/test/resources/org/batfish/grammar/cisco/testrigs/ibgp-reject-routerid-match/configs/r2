@@ -12,12 +12,12 @@ ip routing
 !
 !
 router bgp 1
-   router-id 2.2.2.2
-   neighbor 10.24.0.4 remote-as 1
-   neighbor 10.24.0.4 update-source Loopback0
-   network 2.0.0.1/32
+   router-id 2.0.0.1
+   neighbor 4.0.0.1 remote-as 1
+   neighbor 4.0.0.1 update-source Loopback0
 !
 ip route 1.0.0.1/32 10.24.0.4
 ip route 3.0.0.1/32 10.24.0.4
+ip route 4.0.0.1/32 10.24.0.4
 !
 end

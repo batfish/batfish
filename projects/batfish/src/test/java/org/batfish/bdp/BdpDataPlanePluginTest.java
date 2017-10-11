@@ -180,7 +180,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testEbgpAcceptSameNeighborID() throws IOException {
-    String testrigName = "ibgp-only-reject-routerid-match";
+    String testrigName = "ebgp-accept-routerid-match";
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
@@ -219,17 +219,15 @@ public class BdpDataPlanePluginTest {
         dataPlanePlugin.getRoutes();
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r4Routes = routes.get("r4").get(Configuration.DEFAULT_VRF_NAME);
     Set<Prefix> r2Prefixes =
         r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
         r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
-    Set<Prefix> r4Prefixes =
-        r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
-    Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
-    // Ensure that r1loopback was accepted by r2, because router ids are different
-    assertTrue(r2Prefixes.contains(r1Loopback0Prefix));
-    // Ensure that r1loopback was rejected by r3, because router ids are the same
-    assertFalse(r3Prefixes.contains(r1Loopback0Prefix));
+    // 9.9.9.9/32 is the prefix we test with
+    Prefix r1AdvertisedPrefix = new Prefix("9.9.9.9/32");
+    // Ensure that the prefix is accepted by r2, because router ids are different
+    assertTrue(r2Prefixes.contains(r1AdvertisedPrefix));
+    // Ensure that the prefix is rejected by r3, because router ids are the same
+    assertFalse(r3Prefixes.contains(r1AdvertisedPrefix));
   }
 }
