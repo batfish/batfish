@@ -816,8 +816,6 @@ public class WorkMgrService {
 
       checkStringParam(apiKey, "API key");
 
-      checkApiKeyValidity(apiKey);
-
       Map<String, String> questionTemplates = Main.getQuestionTemplates();
 
       if (questionTemplates == null) {
