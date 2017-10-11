@@ -97,6 +97,8 @@ public class FlowHistory implements AnswerElement {
     return retString.toString();
   }
 
+  /* Only for Jackson */
+  @SuppressWarnings("unused")
   private void setTraces(SortedMap<String, FlowHistoryInfo> traces) {
     _traces = traces;
   }
