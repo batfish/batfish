@@ -120,6 +120,7 @@
       "70.70.70.70"
     ],
     "envDiff" : false,
+    "envType" : "any",
     "failNode1Regex" : "R0",
     "failNode2Regex" : ".*",
     "failures" : 2,
@@ -127,8 +128,7 @@
     "finalNodeRegex" : "R3",
     "fullModel" : false,
     "ingressNodeRegex" : "R0",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

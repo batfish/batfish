@@ -154,10 +154,11 @@
   "question" : {
     "class" : "org.batfish.question.SmtLocalConsistencyQuestionPlugin$LocalConsistencyQuestion",
     "differential" : false,
+    "envDiff" : false,
+    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
     "minimize" : true,
-    "noEnvironment" : false,
     "nodeRegex" : ".*",
     "strict" : false
   },

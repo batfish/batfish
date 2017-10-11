@@ -104,6 +104,7 @@
       "192.168.8.1"
     ],
     "envDiff" : false,
+    "envType" : "any",
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 0,
@@ -111,8 +112,7 @@
     "finalNodeRegex" : "host3",
     "fullModel" : false,
     "ingressNodeRegex" : "host1",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

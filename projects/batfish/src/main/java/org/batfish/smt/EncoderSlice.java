@@ -2740,9 +2740,10 @@ class EncoderSlice {
           BoolExpr usable2 = mkAnd(active, doExport, ospfRedistribVars.getPermitted(), notFailed);
           BoolExpr geq = greaterOrEqual(conf, proto, ospfRedistribVars, varsOther, e);
           BoolExpr isBetter = mkNot(mkAnd(ospfRedistribVars.getPermitted(), geq));
-          BoolExpr shouldTakeOspf = mkAnd(varsOther.getPermitted(), isBetter);
+          BoolExpr usesOspf = mkAnd(varsOther.getPermitted(), isBetter);
           BoolExpr eq = equal(conf, proto, ospfRedistribVars, vars, e, false);
-          acc = mkIf(shouldTakeOspf, mkIf(usable, acc, val), mkIf(usable2, eq, val));
+          BoolExpr eqPer = mkEq(ospfRedistribVars.getPermitted(), vars.getPermitted());
+          acc = mkIf(usesOspf, mkIf(usable, acc, val), mkIf(usable2, mkAnd(eq, eqPer), val));
         } else {
           acc = mkIf(usable, acc, val);
         }

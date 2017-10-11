@@ -50,10 +50,11 @@
     "dstIps" : [
       "172.0.0.0/8"
     ],
+    "envDiff" : false,
+    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

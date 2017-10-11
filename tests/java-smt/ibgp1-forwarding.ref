@@ -176,10 +176,11 @@
     "dstIps" : [
       "20.20.20.20"
     ],
+    "envDiff" : false,
+    "envType" : "none",
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false,
-    "noEnvironment" : true
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {
