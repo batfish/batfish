@@ -73,6 +73,31 @@ public class BDDInteger {
   }
 
   /*
+   * Less than or equal to on integers
+   */
+  public BDD leq(int val) {
+    BDD[] eq = new BDD[_bitvec.length];
+    BDD[] less = new BDD[_bitvec.length];
+
+    for (int i = 0; i < _bitvec.length; i++) {
+      if ((val & 1) != 0) {
+        eq[i] = _bitvec[i];
+        less[i] = _bitvec[i].not();
+      } else {
+        eq[i] = _bitvec[i].not();
+        less[i] = BDDRecord.factory.zero();
+      }
+      val >>= 1;
+    }
+
+    BDD acc = BDDRecord.factory.one();
+    for (int i = 0; i < _bitvec.length; i++) {
+      acc = less[i].or(acc.and(eq[i]));
+    }
+    return acc;
+  }
+
+  /*
    * Set this BDD to have an exact value
    */
   public void setValue(long val) {
