@@ -105,7 +105,6 @@ public class FlowHistory implements AnswerElement {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     for (String flowString : _traces.keySet()) {
-      Flow flow = _traces.get(flowString).getFlow();
       sb.append("Flow: " + flowString + "\n");
       Map<String, Set<FlowTrace>> envTraceSetMap = _traces.get(flowString).getPaths();
       for (String environmentName : envTraceSetMap.keySet()) {
