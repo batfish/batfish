@@ -269,7 +269,9 @@ public class PropertyChecker {
                   Prefix pfx = buildPrefix(r, m, f);
                   Protocol proto = buildProcotol(r, m, slice, router);
                   String route = buildRoute(pfx, proto, ge);
-                  routes.put(ge.toString(), route);
+                  int pathLength = intVal(m, r.getMetric());
+                  String length = "as-path-length=" + pathLength;
+                  routes.put(ge.toString(), route + "," + length);
                 }
               }
             });
