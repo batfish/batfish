@@ -56,13 +56,13 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_FULL_MODEL = "fullModel";
 
-  private static final String PROP_NO_ENVIRONMENT = "noEnvironment";
-
   private static final String PROP_MINIMIZE = "minimize";
 
   private static final String PROP_DIFF_TYPE = "diffType";
 
   private static final String PROP_ENV_DIFF = "envDiff";
+
+  private static final String PROP_ENV_TYPE = "envType";
 
   private Set<ForwardingAction> _actions;
 
@@ -80,6 +80,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _envDiff;
 
+  private EnvironmentType _envType;
+
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
     _headerSpace = new HeaderSpace();
@@ -89,6 +91,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = false;
     _diffType = null;
     _envDiff = false;
+    _envType = EnvironmentType.ANY;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -100,6 +103,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = q._minimize;
     _diffType = q._diffType;
     _envDiff = q._envDiff;
+    _envType = q._envType;
   }
 
   @Override
@@ -217,11 +221,6 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _fullModel;
   }
 
-  @JsonProperty(PROP_NO_ENVIRONMENT)
-  public boolean getNoEnvironment() {
-    return _noEnvironment;
-  }
-
   @JsonProperty(PROP_MINIMIZE)
   public boolean getMinimize() {
     return _minimize;
@@ -236,6 +235,13 @@ public class HeaderQuestion extends Question implements IQuestion {
   public boolean getEnvDiff() {
     return _envDiff;
   }
+
+  @JsonProperty(PROP_ENV_TYPE)
+  public EnvironmentType getEnvironmentType() {
+    return _envType;
+  }
+
+
 
   @Override
   public boolean getTraffic() {
@@ -414,11 +420,6 @@ public class HeaderQuestion extends Question implements IQuestion {
     _fullModel = b;
   }
 
-  @JsonProperty(PROP_NO_ENVIRONMENT)
-  public void setNoEnvironment(boolean b) {
-    _noEnvironment = b;
-  }
-
   @JsonProperty(PROP_MINIMIZE)
   public void setMinimize(boolean b) {
     _minimize = b;
@@ -432,6 +433,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_ENV_DIFF)
   public void setEnvDiff(boolean b) {
     _envDiff = b;
+  }
+
+  @JsonProperty(PROP_ENV_TYPE)
+  public void setEnvironmentType(EnvironmentType e) {
+    _envType = e;
   }
 
 }

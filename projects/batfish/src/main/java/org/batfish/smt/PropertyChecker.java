@@ -41,6 +41,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.smt.EnvironmentType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.answers.SmtManyAnswerElement;
@@ -974,7 +975,7 @@ public class PropertyChecker {
     HeaderQuestion q = new HeaderQuestion();
     q.setFullModel(fullModel);
     q.setFailures(0);
-    q.setNoEnvironment(false);
+    q.setEnvironmentType(EnvironmentType.ANY);
 
     Collections.sort(routers);
 
