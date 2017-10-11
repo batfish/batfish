@@ -4,12 +4,13 @@
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
+          "R0,Serial0 --> R1,Serial0 (OSPF)",
           "R0,Serial1 --> R2,Serial0 (OSPF)",
           "R1,Serial0 --> R0,Serial0 (STATIC)",
           "R2,Serial1 --> R3,Serial1 (OSPF)"
         ],
         "model" : {
-          "|0_CONTROL-FORWARDING_R0_Serial0|" : "false",
+          "|0_CONTROL-FORWARDING_R0_Serial0|" : "true",
           "|0_CONTROL-FORWARDING_R0_Serial1|" : "true",
           "|0_CONTROL-FORWARDING_R1_Serial0|" : "true",
           "|0_CONTROL-FORWARDING_R1_Serial1|" : "false",
@@ -18,7 +19,7 @@
           "|0_CONTROL-FORWARDING_R3_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial0|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial1|" : "false",
-          "|0_DATA-FORWARDING_R0_Serial0|" : "false",
+          "|0_DATA-FORWARDING_R0_Serial0|" : "true",
           "|0_DATA-FORWARDING_R0_Serial1|" : "true",
           "|0_DATA-FORWARDING_R1_Serial0|" : "true",
           "|0_DATA-FORWARDING_R1_Serial1|" : "false",
@@ -32,7 +33,7 @@
           "|0_FAILED-EDGE_R1_R3|" : "0",
           "|0_FAILED-EDGE_R2_R3|" : "0",
           "|0_FAILED-EDGE_R3_Loopback0|" : "0",
-          "|0_R0_OSPF_IMPORT_Serial0_choice|" : "false",
+          "|0_R0_OSPF_IMPORT_Serial0_choice|" : "true",
           "|0_R0_OSPF_IMPORT_Serial1_choice|" : "true",
           "|0_R0_OSPF_SINGLE-EXPORT__metric|" : "3",
           "|0_R0_OSPF_SINGLE-EXPORT__permitted|" : "true",
@@ -45,9 +46,9 @@
           "|0_R1_OSPF_BEST_None_prefixLength|" : "32",
           "|0_R1_OSPF_IMPORT_Serial0_choice|" : "false",
           "|0_R1_OSPF_IMPORT_Serial1_choice|" : "true",
-          "|0_R1_OSPF_SINGLE-EXPORT__metric|" : "0",
-          "|0_R1_OSPF_SINGLE-EXPORT__permitted|" : "false",
-          "|0_R1_OSPF_SINGLE-EXPORT__prefixLength|" : "0",
+          "|0_R1_OSPF_SINGLE-EXPORT__metric|" : "2",
+          "|0_R1_OSPF_SINGLE-EXPORT__permitted|" : "true",
+          "|0_R1_OSPF_SINGLE-EXPORT__prefixLength|" : "32",
           "|0_R1_OVERALL_BEST_None_adminDist|" : "1",
           "|0_R1_OVERALL_BEST_None_history|" : "1",
           "|0_R1_OVERALL_BEST_None_metric|" : "0",
@@ -74,7 +75,7 @@
           "|0_R3_OSPF_BEST_None_metric|" : "2",
           "|0_R3_OSPF_BEST_None_permitted|" : "true",
           "|0_R3_OSPF_BEST_None_prefixLength|" : "32",
-          "|0_R3_OSPF_IMPORT_Serial0_choice|" : "false",
+          "|0_R3_OSPF_IMPORT_Serial0_choice|" : "true",
           "|0_R3_OSPF_IMPORT_Serial1_choice|" : "true",
           "|0_R3_OSPF_SINGLE-EXPORT__metric|" : "1",
           "|0_R3_OSPF_SINGLE-EXPORT__permitted|" : "true",
@@ -105,10 +106,11 @@
     "dstIps" : [
       "70.70.70.70"
     ],
+    "envDiff" : false,
+    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

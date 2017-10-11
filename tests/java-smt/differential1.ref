@@ -15,8 +15,10 @@
     "diffType" : "any",
     "differential" : false,
     "dstIps" : [
-      "70.70.70.0/24"
+      "70.70.70.70"
     ],
+    "envDiff" : false,
+    "envType" : "any",
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 1,
@@ -24,8 +26,7 @@
     "finalNodeRegex" : "R3",
     "fullModel" : false,
     "ingressNodeRegex" : ".*",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

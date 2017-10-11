@@ -10,10 +10,11 @@
   "question" : {
     "class" : "org.batfish.question.SmtRoutingLoopQuestionPlugin$RoutingLoopQuestion",
     "differential" : false,
+    "envDiff" : false,
+    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

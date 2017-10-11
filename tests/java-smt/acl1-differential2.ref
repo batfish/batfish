@@ -145,6 +145,7 @@
       "192.4.64.2"
     ],
     "envDiff" : false,
+    "envType" : "any",
     "failNode1Regex" : "R0",
     "failNode2Regex" : "R1",
     "failures" : 1,
@@ -152,8 +153,7 @@
     "finalNodeRegex" : ".*",
     "fullModel" : false,
     "ingressNodeRegex" : ".*",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {
