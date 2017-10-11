@@ -181,7 +181,7 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testIbgpOnlyRejectNeighborID() throws IOException {
     String testrigName = "ibgp-only-reject-routerid-match";
-    String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
@@ -190,17 +190,17 @@ public class BdpDataPlanePluginTest {
     dataPlanePlugin.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes();
-    SortedSet<AbstractRoute> r2aRoutes = routes.get("r2a").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r2bRoutes = routes.get("r2b").get(Configuration.DEFAULT_VRF_NAME);
-    Set<Prefix> r2aPrefixes =
-        r2aRoutes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
-    Set<Prefix> r2bPrefixes =
-        r2bRoutes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Set<Prefix> r1Prefixes =
+        r1Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes =
+        r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
-    // Ensure that r1loopback was accepted by r2a despite r1 having identical route ID (but uses
-    // ebgp)
-    assertTrue(r2aPrefixes.contains(r1Loopback0Prefix));
-    // Check that r1loopback was propagated to r2b correctly
-    assertTrue(r2bPrefixes.contains(r1Loopback0Prefix));
+    Prefix r3Loopback0Prefix = new Prefix("3.0.0.3/32");
+    // Ensure that r3loopback was accepted by r1
+    assertTrue(r1Prefixes.contains(r3Loopback0Prefix));
+    // Check the other direction (r1loopback is accepted by r3)
+    assertTrue(r3Prefixes.contains(r1Loopback0Prefix));
   }
 }
