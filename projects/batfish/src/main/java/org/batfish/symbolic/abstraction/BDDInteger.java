@@ -7,6 +7,8 @@ import net.sf.javabdd.BDDFactory;
 
 public class BDDInteger {
 
+  private BDDFactory _factory;
+
   private BDD[] _bitvec;
 
 
@@ -15,10 +17,10 @@ public class BDDInteger {
    * This requires knowing the start index variables the bitvector
    * will use.
    */
-  public static BDDInteger makeFromIndex(int length, int start) {
-    BDDInteger bdd = new BDDInteger(length);
+  public static BDDInteger makeFromIndex(BDDFactory factory, int length, int start) {
+    BDDInteger bdd = new BDDInteger(factory, length);
     for (int i = 0; i < length; i++) {
-      bdd._bitvec[i] = BDDRecord.factory.ithVar(start + i);
+      bdd._bitvec[i] = bdd._factory.ithVar(start + i);
     }
     return bdd;
   }
@@ -26,8 +28,8 @@ public class BDDInteger {
   /*
  * Create an integer and initialize it to a concrete value
  */
-  public static BDDInteger makeFromValue(int length, long value) {
-    BDDInteger bdd = new BDDInteger(length);
+  public static BDDInteger makeFromValue(BDDFactory factory, int length, long value) {
+    BDDInteger bdd = new BDDInteger(factory, length);
     bdd.setValue(value);
     return bdd;
   }
@@ -35,11 +37,13 @@ public class BDDInteger {
   /*
    * Create an integer, but don't initialize its bit values
    */
-  private BDDInteger(int length) {
+  private BDDInteger(BDDFactory factory, int length) {
+    _factory = factory;
     _bitvec = new BDD[length];
   }
 
   public BDDInteger(BDDInteger other) {
+    _factory = other._factory;
     _bitvec = Arrays.copyOf(other._bitvec, other._bitvec.length);
   }
 
@@ -58,8 +62,7 @@ public class BDDInteger {
    * Create a BDD representing the exact value
    */
   public BDD value(int val) {
-    BDDFactory var2 = BDDRecord.factory;
-    BDD bdd = var2.one();
+    BDD bdd = _factory.one();
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
       BDD b = this._bitvec[i];
       if ((val & 1) != 0) {
@@ -78,21 +81,43 @@ public class BDDInteger {
   public BDD leq(int val) {
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] less = new BDD[_bitvec.length];
-
-    for (int i = 0; i < _bitvec.length; i++) {
+    for (int i = _bitvec.length - 1; i >= 0; i--) {
       if ((val & 1) != 0) {
         eq[i] = _bitvec[i];
         less[i] = _bitvec[i].not();
       } else {
         eq[i] = _bitvec[i].not();
-        less[i] = BDDRecord.factory.zero();
+        less[i] = _factory.zero();
       }
       val >>= 1;
     }
+    BDD acc = _factory.one();
+    for (int i = _bitvec.length - 1; i >= 0; i--) {
+      acc = less[i].or(eq[i].and(acc));
+    }
+    System.out.println("ACC: " + acc);
+    return acc;
+  }
 
-    BDD acc = BDDRecord.factory.one();
-    for (int i = 0; i < _bitvec.length; i++) {
-      acc = less[i].or(acc.and(eq[i]));
+  /*
+ * Less than or equal to on integers
+ */
+  public BDD geq(int val) {
+    BDD[] eq = new BDD[_bitvec.length];
+    BDD[] greater = new BDD[_bitvec.length];
+    for (int i = _bitvec.length - 1; i >= 0; i--) {
+      if ((val & 1) != 0) {
+        eq[i] = _bitvec[i];
+        greater[i] = _factory.zero();
+      } else {
+        eq[i] = _bitvec[i].not();
+        greater[i] = _bitvec[i];
+      }
+      val >>= 1;
+    }
+    BDD acc = _factory.one();
+    for (int i = _bitvec.length - 1; i >= 0; i--) {
+      acc = greater[i].or(eq[i].and(acc));
     }
     return acc;
   }
@@ -101,12 +126,11 @@ public class BDDInteger {
    * Set this BDD to have an exact value
    */
   public void setValue(long val) {
-    BDDFactory factory = BDDRecord.factory;
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
       if ((val & 1) != 0) {
-        this._bitvec[i] = factory.one();
+        this._bitvec[i] = _factory.one();
       } else {
-        this._bitvec[i] = factory.zero();
+        this._bitvec[i] = _factory.zero();
       }
       val >>= 1;
     }
@@ -128,9 +152,8 @@ public class BDDInteger {
     if (this._bitvec.length != var1._bitvec.length) {
       throw new BDDException();
     } else {
-      BDDFactory var2 = BDDRecord.factory;
-      BDD var3 = var2.zero();
-      BDDInteger var4 = new BDDInteger(this._bitvec.length);
+      BDD var3 = _factory.zero();
+      BDDInteger var4 = new BDDInteger(_factory, this._bitvec.length);
       for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
@@ -152,9 +175,8 @@ public class BDDInteger {
     if (this._bitvec.length != var1._bitvec.length) {
       throw new BDDException();
     } else {
-      BDDFactory var2 = BDDRecord.factory;
-      BDD var3 = var2.zero();
-      BDDInteger var4 = new BDDInteger(this._bitvec.length);
+      BDD var3 = _factory.zero();
+      BDDInteger var4 = new BDDInteger(_factory, this._bitvec.length);
       for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
         var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
         var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
@@ -173,6 +195,10 @@ public class BDDInteger {
 
   public BDD[] getBitvec() {
     return _bitvec;
+  }
+
+  public BDDFactory getFactory() {
+    return _factory;
   }
 
   @Override public boolean equals(Object o) {

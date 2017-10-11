@@ -89,22 +89,22 @@ public class BDDRecord {
 
     // Initialize integer values
     int idx = 0;
-    _metric = BDDInteger.makeFromIndex(32, idx);
+    _metric = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("metric", 32, idx);
     idx += 32;
-    _med = BDDInteger.makeFromIndex(32, idx);
+    _med = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("med", 32, idx);
     idx += 32;
-    _adminDist = BDDInteger.makeFromIndex(32, idx);
+    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("ad", 32, idx);
     idx += 32;
-    _localPref = BDDInteger.makeFromIndex(32, idx);
+    _localPref = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("lp", 32, idx);
     idx += 32;
-    _prefixLength = BDDInteger.makeFromIndex(5, idx);
+    _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx);
     addBitNames("pfxLen", 32, idx);
     idx += 5;
-    _prefix = BDDInteger.makeFromIndex(32, idx);
+    _prefix = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("pfx", 32, idx);
     idx += 32;
 
@@ -124,7 +124,7 @@ public class BDDRecord {
     allProtos.add(Protocol.STATIC);
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
-    _protocolHistory = new BDDDomain<>(allProtos, idx);
+    _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
     int len = _protocolHistory.getInteger().getBitvec().length;
     addBitNames("proto", len, idx);
     idx = idx + len;
@@ -136,7 +136,7 @@ public class BDDRecord {
     allMetricTypes.add(OspfType.OIA);
     allMetricTypes.add(OspfType.E1);
     allMetricTypes.add(OspfType.E2);
-    _ospfMetric = new BDDDomain<OspfType>(allMetricTypes, idx);
+    _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().getBitvec().length;
     addBitNames("ospfMetric", len, idx);
   }

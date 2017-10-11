@@ -1,7 +1,7 @@
 package org.batfish.symbolic.abstraction;
 
-import com.microsoft.z3.ArithExpr;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -19,11 +19,11 @@ import org.batfish.datamodel.TcpFlags;
 
 public class AclBDD {
 
-  IpAccessList _acl;
+  private IpAccessList _acl;
 
-  BDDPacket _pkt;
+  private BDDPacket _pkt;
 
-  BDDFactory _factory;
+  private BDDFactory _factory;
 
   AclBDD(IpAccessList acl) {
     _acl = acl;
@@ -31,15 +31,33 @@ public class AclBDD {
     _pkt = new BDDPacket();
   }
 
-  public BDD compute() {
-    return _factory.one();
+  /*
+   * Check if the first length bits match the BDDInteger
+   * representing the advertisement prefix.
+   *
+   * Note: We assume the prefix is never modified, so it will
+   * be a bitvector containing only the underlying variables:
+   * [var(0), ..., var(n)]
+   */
+  public BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
+    BitSet b = p.getAddress().getAddressBits();
+    BDD acc = _factory.one();
+    for (int i = 0; i < length; i++) {
+      boolean res = b.get(i);
+      if (res) {
+        acc = acc.and(bits[i]);
+      } else {
+        acc = acc.and(bits[i].not());
+      }
+    }
+    return acc;
   }
 
   /*
    * Does the 32 bit integer match the prefix using lpm?
    */
-  public BDD isRelevantFor(Prefix p, BDDInteger i) {
-    return TransferBDD.firstBitsEqual(i.getBitvec(), p.getNetworkPrefix(), p.getPrefixLength());
+  private BDD isRelevantFor(Prefix p, BDDInteger i) {
+    return firstBitsEqual(i.getBitvec(), p.getNetworkPrefix(), p.getPrefixLength());
   }
 
   /*
@@ -51,6 +69,7 @@ public class AclBDD {
       if (!wc.isPrefix()) {
         throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
       }
+      BDD relevant = isRelevantFor(wc.toPrefix(), field);
       acc = acc.or(isRelevantFor(wc.toPrefix(), field));
     }
     return acc;
@@ -59,21 +78,20 @@ public class AclBDD {
   /*
    * Convert a set of ranges and a packet field to a symbolic boolean expression
    */
-  private BDD computeValidRange(Set<SubRange> ranges, ArithExpr field) {
+  private BDD computeValidRange(Set<SubRange> ranges, BDDInteger field) {
     BDD acc = _factory.zero();
-    /*
     for (SubRange range : ranges) {
       int start = range.getStart();
       int end = range.getEnd();
+      System.out.println("Range: " + start + "--" + end);
       if (start == end) {
-        BoolExpr val = mkEq(field, mkInt(start));
-        acc = acc.or(val);
+        BDD isValue = field.value(start);
+        acc = acc.or(isValue);
       } else {
-        BDD val1 = mkGe(field, mkInt(start));
-        BDD val2 = mkLe(field, mkInt(end));
-        acc = acc.or(val1.and(val2));
+        BDD r = field.geq(start).and(field.leq(end));
+        acc = acc.or(r);
       }
-    } */
+    }
     return acc;
   }
 
@@ -146,18 +164,20 @@ public class AclBDD {
    * Convert an Access Control List (ACL) to a symbolic boolean expression.
    * The default action in an ACL is to deny all traffic.
    */
-  private BDD computeACL(IpAccessList acl) {
+  public BDD computeACL() {
     // Check if there is an ACL first
-    if (acl == null) {
+    if (_acl == null) {
       return _factory.one();
     }
 
     BDD acc = _factory.zero();
 
-    List<IpAccessListLine> lines = new ArrayList<>(acl.getLines());
+    List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
     Collections.reverse(lines);
 
     for (IpAccessListLine l : lines) {
+      System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
+
       BDD local = null;
 
       if (l.getDstIps() != null) {
@@ -177,13 +197,13 @@ public class AclBDD {
       }
 
       if (l.getDstPorts() != null) {
-        BDD val = _factory.one(); //computeValidRange(l.getDstPorts(), _pkt.getDstPort());
+        BDD val = computeValidRange(l.getDstPorts(), _pkt.getDstPort());
         val = l.getDstPorts().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
       if (l.getSrcPorts() != null) {
-        BDD val = _factory.one(); // computeValidRange(l.getSrcPorts(), _pkt.getSrcPort());
+        BDD val = computeValidRange(l.getSrcPorts(), _pkt.getSrcPort());
         val = l.getSrcPorts().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
@@ -203,13 +223,13 @@ public class AclBDD {
       }
 
       if (l.getIcmpCodes() != null) {
-        BDD val = _factory.one(); //computeValidRange(l.getIcmpCodes(), _pkt.getIcmpCode());
+        BDD val = computeValidRange(l.getIcmpCodes(), _pkt.getIcmpCode());
         val = l.getIcmpCodes().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
       if (l.getIcmpTypes() != null) {
-        BDD val = _factory.one(); //computeValidRange(l.getIcmpTypes(), _pkt.getIcmpType());
+        BDD val = computeValidRange(l.getIcmpTypes(), _pkt.getIcmpType());
         val = l.getIcmpTypes().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
@@ -220,6 +240,7 @@ public class AclBDD {
 
       if (l.getIpProtocols() != null) {
         BDD val = computeIpProtocols(l.getIpProtocols());
+        _pkt.getDot(val);
         val = l.getIpProtocols().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }

@@ -9,9 +9,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import javafx.util.Pair;
+import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -143,8 +145,15 @@ public class Abstractor {
     Map<GraphEdge, BDDRecord> importPolicies = new HashMap<>();
     Map<GraphEdge, BDDRecord> exportPolicies = new HashMap<>();
 
+    Map<GraphEdge, BDD> inAcls = new HashMap<>();
+    Map<GraphEdge, BDD> outAcls = new HashMap<>();
+
     Map<BDDRecord, Set<GraphEdge>> importPolMap = new HashMap<>();
     Map<BDDRecord, Set<GraphEdge>> exportPolMap = new HashMap<>();
+
+    Map<BDD, Set<GraphEdge>> inAclMap = new HashMap<>();
+    Map<BDD, Set<GraphEdge>> outAclMap = new HashMap<>();
+
 
     g.getConfigurations()
         .forEach(
@@ -170,6 +179,26 @@ public class Abstractor {
                     Set<GraphEdge> ifaces = exportPolMap.computeIfAbsent(rec, k -> new HashSet<>());
                     ifaces.add(ge);
                   }
+                  IpAccessList in = ge.getStart().getIncomingFilter();
+                  IpAccessList out = ge.getStart().getOutgoingFilter();
+                  // Incoming ACL
+                  if (in != null) {
+                    System.out.println("IN ACL");
+                    AclBDD x = new AclBDD(in);
+                    BDD acl = x.computeACL();
+                    inAcls.put(ge, acl);
+                    Set<GraphEdge> ifaces = inAclMap.computeIfAbsent(acl, k -> new HashSet<>());
+                    ifaces.add(ge);
+                  }
+                  // Outgoing ACL
+                  if (out != null) {
+                    System.out.println("OUT ACL");
+                    AclBDD x = new AclBDD(out);
+                    BDD acl = x.computeACL();
+                    outAcls.put(ge, acl);
+                    Set<GraphEdge> ifaces = outAclMap.computeIfAbsent(acl, k -> new HashSet<>());
+                    ifaces.add(ge);
+                  }
                 }
               }
             });
@@ -183,6 +212,16 @@ public class Abstractor {
     exportPolMap.forEach(
         (rec, ifaces) -> {
           System.out.println("EXPORT EC: " + ifaces);
+        });
+
+    inAclMap.forEach(
+        (bdd, ifaces) -> {
+          System.out.println("IN ACL EC: " + ifaces);
+        });
+
+    outAclMap.forEach(
+        (bdd, ifaces) -> {
+          System.out.println("OUT ACL EC: " + ifaces);
         });
 
     // Create the trie

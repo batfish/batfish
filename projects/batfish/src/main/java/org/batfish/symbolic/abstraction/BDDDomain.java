@@ -3,6 +3,7 @@ package org.batfish.symbolic.abstraction;
 import java.util.List;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 
 /*
  * Class that wraps a BDDInteger around a finite collection of values
@@ -10,17 +11,21 @@ import net.sf.javabdd.BDD;
  */
 public class BDDDomain<T> {
 
+  private BDDFactory _factory;
+
   private List<T> _values;
 
   private BDDInteger _integer;
 
-  public BDDDomain(List<T> values, int index) {
+  public BDDDomain(BDDFactory factory, List<T> values, int index) {
     int bits = numBits(values);
+    _factory = factory;
     _values = values;
-    _integer = BDDInteger.makeFromIndex(bits, index);
+    _integer = BDDInteger.makeFromIndex(_factory, bits, index);
   }
 
   public BDDDomain(BDDDomain<T> other) {
+    _factory = other._factory;
     _values = other._values;
     _integer = new BDDInteger(other._integer);
   }

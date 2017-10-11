@@ -93,42 +93,50 @@ public class BDDPacket {
 
     // Initialize integer values
     int idx = 0;
-    _dstIp = BDDInteger.makeFromIndex(32, idx);
+    _dstIp = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("dstIp", 32, idx);
     idx += 32;
-    _srcIp = BDDInteger.makeFromIndex(32, idx);
+    _srcIp = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("srcIp", 32, idx);
     idx += 32;
-    _dstPort = BDDInteger.makeFromIndex(16, idx);
+    _dstPort = BDDInteger.makeFromIndex(factory, 16, idx);
     addBitNames("dstPort", 16, idx);
     idx += 16;
-    _srcPort = BDDInteger.makeFromIndex(16, idx);
+    _srcPort = BDDInteger.makeFromIndex(factory, 16, idx);
     addBitNames("srcPort", 16, idx);
     idx += 16;
-    _icmpCode = BDDInteger.makeFromIndex(8, idx);
-    addBitNames("icmpCode", 8, idx);
-    idx += 8;
-    _icmpType = BDDInteger.makeFromIndex(8, idx);
-    addBitNames("icmpType", 8, idx);
-    idx += 8;
-    _ipProtocol = BDDInteger.makeFromIndex(8, idx);
+    _ipProtocol = BDDInteger.makeFromIndex(factory, 8, idx);
     addBitNames("ipProtocol", 8, idx);
     idx += 8;
+    _icmpCode = BDDInteger.makeFromIndex(factory, 8, idx);
+    addBitNames("icmpCode", 8, idx);
+    idx += 8;
+    _icmpType = BDDInteger.makeFromIndex(factory, 8, idx);
+    addBitNames("icmpType", 8, idx);
+    idx += 8;
     _tcpAck = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpAck");
     idx += 1;
     _tcpCwr = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpCwr");
     idx += 1;
     _tcpEce = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpEce");
     idx += 1;
     _tcpFin = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpFin");
     idx += 1;
     _tcpPsh = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpPsh");
     idx += 1;
     _tcpRst = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpRst");
     idx += 1;
     _tcpSyn = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpSyn");
     idx += 1;
     _tcpUrg = factory.ithVar(idx);
+    _bitNames.put(idx, "tcpUrg");
   }
 
   /*

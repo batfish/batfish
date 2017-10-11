@@ -116,8 +116,8 @@ class TransferBDD {
   }
 
   /*
- * Map ite over BDDDomain type
- */
+   * Map ite over BDDDomain type
+   */
   private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
     BDDDomain<T> result = new BDDDomain<T>(x);
     BDDInteger i = ite(b, x.getInteger(), y.getInteger());
@@ -232,7 +232,7 @@ class TransferBDD {
       SubRange r = line.getLengthRange();
       PrefixRange range = new PrefixRange(pfx, r);
       p.debug("Prefix Range: " + range);
-      p.debug("Action: " +  line.getAction());
+      p.debug("Action: " + line.getAction());
       BDD matches = isRelevantFor(other, range);
       BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
       acc = ite(matches, action, acc);
@@ -339,7 +339,8 @@ class TransferBDD {
    * Convert a Batfish AST boolean expression to a symbolic Z3 boolean expression
    * by performing inlining of stateful side effects.
    */
-  private TransferResult<TransferReturn, BDD> compute(BooleanExpr expr, TransferParam<BDDRecord> p) {
+  private TransferResult<TransferReturn, BDD> compute(
+      BooleanExpr expr, TransferParam<BDDRecord> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
@@ -480,7 +481,8 @@ class TransferBDD {
       String name = c.getCalledPolicyName();
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
       p = p.setCallContext(TransferParam.CallContext.EXPR_CALL);
-      TransferResult<TransferReturn, BDD> r = compute(pol.getStatements(), p.indent().enterScope(name));
+      TransferResult<TransferReturn, BDD> r =
+          compute(pol.getStatements(), p.indent().enterScope(name));
       return r;
 
     } else if (expr instanceof WithEnvironmentExpr) {
@@ -536,17 +538,17 @@ class TransferBDD {
     if (e instanceof LiteralLong) {
       LiteralLong z = (LiteralLong) e;
       p.debug("LiteralLong: " + z.getValue());
-      return BDDInteger.makeFromValue(32, z.getValue());
+      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
     }
     if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("Decrement: " + z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(32, z.getSubtrahend()));
+      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
       p.debug("Increment: " + z.getAddend());
-      return x.add(BDDInteger.makeFromValue(32, z.getAddend()));
+      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     throw new BatfishException("int expr transfer function: " + e);
   }
@@ -558,17 +560,17 @@ class TransferBDD {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
       p.debug("LiteralInt: " + z.getValue());
-      return BDDInteger.makeFromValue(32, z.getValue());
+      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
     }
     if (e instanceof IncrementLocalPreference) {
       IncrementLocalPreference z = (IncrementLocalPreference) e;
       p.debug("IncrementLocalPreference: " + z.getAddend());
-      return x.add(BDDInteger.makeFromValue(32, z.getAddend()));
+      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
     if (e instanceof DecrementLocalPreference) {
       DecrementLocalPreference z = (DecrementLocalPreference) e;
       p.debug("DecrementLocalPreference: " + z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(32, z.getSubtrahend()));
+      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     throw new BatfishException("TODO: int expr transfer function: " + e);
   }
@@ -824,8 +826,8 @@ class TransferBDD {
         PrependAsPath pap = (PrependAsPath) stmt;
         Integer prependCost = prependLength(pap.getExpr());
         p.indent().debug("Cost: " + prependCost);
-        BDDInteger newValue =
-            p.getData().getMetric().add(BDDInteger.makeFromValue(32, prependCost));
+        BDDInteger met = p.getData().getMetric();
+        BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
         newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
         p.getData().setMetric(newValue);
 
@@ -878,7 +880,7 @@ class TransferBDD {
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.findAllCommunities();
     BDDRecord o = new BDDRecord(_comms);
-    TransferParam<BDDRecord> p = new TransferParam<>(o, true);
+    TransferParam<BDDRecord> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     return result.getReturnValue().getFirst();
   }
