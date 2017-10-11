@@ -217,7 +217,6 @@ public class BdpDataPlanePluginTest {
     dataPlanePlugin.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes();
-    System.out.println(routes.keySet());
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r4Routes = routes.get("r4").get(Configuration.DEFAULT_VRF_NAME);
@@ -228,9 +227,6 @@ public class BdpDataPlanePluginTest {
     Set<Prefix> r4Prefixes =
         r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
-    System.out.println(r2Prefixes);
-    System.out.println(r3Prefixes);
-    System.out.println(r4Prefixes);
     // Ensure that r1loopback was accepted by r2, because router ids are different
     assertTrue(r2Prefixes.contains(r1Loopback0Prefix));
     // Ensure that r1loopback was rejected by r3, because router ids are the same
