@@ -921,6 +921,7 @@ null_single
       | UPLINK
       | USER_IDENTITY
       | USE_VRF
+      | USING
       | VALID_NETWORK_OUI_PROFILE
       | VERSION
       | VIDEO
