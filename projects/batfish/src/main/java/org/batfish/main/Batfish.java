@@ -116,6 +116,7 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -2121,56 +2122,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
-    InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
     ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
-    ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
-    if (!summary) {
-      if (verboseError) {
-        SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
-        parseAnswer
-            .getErrors()
-            .forEach(
-                (hostname, parseErrors) -> {
-                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
-                });
-        convertAnswer
-            .getErrors()
-            .forEach(
-                (hostname, convertErrors) -> {
-                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
-                });
-      }
-      SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
-      warnings.putAll(parseAnswer.getWarnings());
-      convertAnswer
-          .getWarnings()
-          .forEach(
-              (hostname, convertWarnings) -> {
-                org.batfish.common.Warnings combined = warnings.get(hostname);
-                if (combined == null) {
-                  warnings.put(hostname, convertWarnings);
-                } else {
-                  combined.getPedanticWarnings().addAll(convertWarnings.getPedanticWarnings());
-                  combined.getRedFlagWarnings().addAll(convertWarnings.getRedFlagWarnings());
-                  combined
-                      .getUnimplementedWarnings()
-                      .addAll(convertWarnings.getUnimplementedWarnings());
-                }
-              });
-    }
-    answerElement.setParseStatus(parseAnswer.getParseStatus());
-    answerElement.setParseTrees(parseAnswer.getParseTrees());
-    for (String failed : convertAnswer.getFailed()) {
-      answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
-    }
+    InitInfoAnswerElement answerElement = initInfo(summary, verboseError, parseAnswer);
+    mergeConvertAnswer(summary, verboseError, answerElement);
     _logger.info(answerElement.prettyPrint());
     return answerElement;
   }
 
-  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+  private InitInfoAnswerElement initInfo(
+      boolean summary, boolean verboseError, ParseAnswerElement parseAnswer) {
     InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
-    ParseEnvironmentBgpTablesAnswerElement parseAnswer =
-        loadParseEnvironmentBgpTablesAnswerElement();
     if (!summary) {
       if (verboseError) {
         SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
@@ -2192,36 +2153,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     answerElement.setParseStatus(parseAnswer.getParseStatus());
     answerElement.setParseTrees(parseAnswer.getParseTrees());
+    return answerElement;
+  }
+
+  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+    ParseEnvironmentBgpTablesAnswerElement parseAnswer =
+        loadParseEnvironmentBgpTablesAnswerElement();
+    InitInfoAnswerElement answerElement = initInfo(summary, verboseError, parseAnswer);
     _logger.info(answerElement.prettyPrint());
     return answerElement;
   }
 
   public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
-    InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
     ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
         loadParseEnvironmentRoutingTablesAnswerElement();
-    if (!summary) {
-      if (verboseError) {
-        SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
-        parseAnswer
-            .getErrors()
-            .forEach(
-                (hostname, parseErrors) -> {
-                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
-                });
-        parseAnswer
-            .getErrors()
-            .forEach(
-                (hostname, convertErrors) -> {
-                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
-                });
-      }
-      SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
-      warnings.putAll(parseAnswer.getWarnings());
-    }
-    answerElement.setParseStatus(parseAnswer.getParseStatus());
-    answerElement.setParseTrees(parseAnswer.getParseTrees());
-
+    InitInfoAnswerElement answerElement = initInfo(summary, verboseError, parseAnswer);
     _logger.info(answerElement.prettyPrint());
     return answerElement;
   }
@@ -2766,6 +2712,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException(
           "Version error repairing environment for validate environment answer element");
+    }
+  }
+
+  private void mergeConvertAnswer(
+      boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
+    ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
+    if (!summary) {
+      if (verboseError) {
+        SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
+        convertAnswer
+            .getErrors()
+            .forEach(
+                (hostname, convertErrors) -> {
+                  errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
+                });
+      }
+      SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
+      convertAnswer
+          .getWarnings()
+          .forEach(
+              (hostname, convertWarnings) -> {
+                org.batfish.common.Warnings combined = warnings.get(hostname);
+                if (combined == null) {
+                  warnings.put(hostname, convertWarnings);
+                } else {
+                  combined.getPedanticWarnings().addAll(convertWarnings.getPedanticWarnings());
+                  combined.getRedFlagWarnings().addAll(convertWarnings.getRedFlagWarnings());
+                  combined
+                      .getUnimplementedWarnings()
+                      .addAll(convertWarnings.getUnimplementedWarnings());
+                }
+              });
+    }
+    for (String failed : convertAnswer.getFailed()) {
+      answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
     }
   }
 
