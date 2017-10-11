@@ -179,7 +179,7 @@ public class BdpDataPlanePluginTest {
   }
 
   @Test
-  public void testIbgpOnlyRejectNeighborID() throws IOException {
+  public void testEbgpAcceptSameNeighborID() throws IOException {
     String testrigName = "ibgp-only-reject-routerid-match";
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
     Batfish batfish =
@@ -202,5 +202,38 @@ public class BdpDataPlanePluginTest {
     assertTrue(r1Prefixes.contains(r3Loopback0Prefix));
     // Check the other direction (r1loopback is accepted by r3)
     assertTrue(r3Prefixes.contains(r1Loopback0Prefix));
+  }
+
+
+  @Test
+  public void testIbgpRejectSameNeighborID() throws IOException {
+    String testrigName = "ibgp-reject-routerid-match";
+    String[] configurationNames = new String[] {"r1", "r2", "r3", "r4"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    System.out.println(routes.keySet());
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r4Routes = routes.get("r4").get(Configuration.DEFAULT_VRF_NAME);
+    Set<Prefix> r2Prefixes =
+        r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes =
+        r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r4Prefixes =
+        r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
+    System.out.println(r2Prefixes);
+    System.out.println(r3Prefixes);
+    System.out.println(r4Prefixes);
+    // Ensure that r1loopback was accepted by r2, because router ids are different
+    assertTrue(r2Prefixes.contains(r1Loopback0Prefix));
+    // Ensure that r1loopback was rejected by r3, because router ids are the same
+    assertFalse(r3Prefixes.contains(r1Loopback0Prefix));
   }
 }
