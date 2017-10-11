@@ -51,8 +51,13 @@ public class CiscoGrammarTest {
         CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
     configurationText.put(configurationName, aaaNewmodelConfigurationText);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
-            configurationText, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configurationText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Configuration newModelConfiguration = configurations.get("aaaNewmodel");
     boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
@@ -66,9 +71,19 @@ public class CiscoGrammarTest {
   public void testBgpLocalAs() throws IOException {
     String testrigName = "bgp-local-as";
     String[] configurationNames = new String[] {"r1", "r2"};
+    String[] bgpTableNames = new String[] {};
+    String[] hostFilenames = new String[] {};
+    String[] iptablesFilenames = new String[] {};
+    String[] routingTableNames = new String[] {};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName,
+            configurationNames,
+            bgpTableNames,
+            hostFilenames,
+            iptablesFilenames,
+            routingTableNames,
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -94,9 +109,19 @@ public class CiscoGrammarTest {
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    String[] bgpTableNames = new String[] {};
+    String[] hostFilenames = new String[] {};
+    String[] iptablesFilenames = new String[] {};
+    String[] routingTableNames = new String[] {};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName,
+            configurationNames,
+            bgpTableNames,
+            hostFilenames,
+            iptablesFilenames,
+            routingTableNames,
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);

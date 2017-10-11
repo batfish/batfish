@@ -149,9 +149,19 @@ public class BdpDataPlanePluginTest {
   public void testIbgpRejectOwnAs() throws IOException {
     String testrigName = "ibgp-reject-own-as";
     String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
+    String[] bgpTableNames = new String[] {};
+    String[] hostFilenames = new String[] {};
+    String[] iptablesFilenames = new String[] {};
+    String[] routingTableNames = new String[] {};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName,
+            configurationNames,
+            bgpTableNames,
+            hostFilenames,
+            iptablesFilenames,
+            routingTableNames,
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);

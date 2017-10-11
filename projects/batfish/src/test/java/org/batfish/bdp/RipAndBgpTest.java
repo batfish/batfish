@@ -36,8 +36,10 @@ public class RipAndBgpTest {
       configurationsText.put(configurationName, configurationText);
     }
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
+        BatfishTestUtils.getBatfishFromTestrigText(
             configurationsText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
             Collections.emptySortedMap(),
             Collections.emptySortedMap(),
             _folder);
