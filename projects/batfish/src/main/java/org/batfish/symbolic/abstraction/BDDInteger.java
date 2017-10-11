@@ -95,7 +95,6 @@ public class BDDInteger {
     for (int i = _bitvec.length - 1; i >= 0; i--) {
       acc = less[i].or(eq[i].and(acc));
     }
-    System.out.println("ACC: " + acc);
     return acc;
   }
 

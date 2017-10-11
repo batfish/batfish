@@ -34,9 +34,9 @@ public class BDDRecord {
       factory = JFactory.init(100, 10000);
       factory.disableReorder();
       // Disables printing
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
+      //factory.registerGCCallback(handler, m);
+      //factory.registerResizeCallback(handler, m);
+      //factory.registerReorderCallback(handler, m);
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }

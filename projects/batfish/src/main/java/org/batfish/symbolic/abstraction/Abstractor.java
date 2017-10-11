@@ -7,20 +7,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
-import javafx.util.Pair;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.answers.AbstractionAnswerElement;
+import org.batfish.symbolic.utils.Tuple;
 
 /**
  * <p>Creates an abstraction(s) of the network by splitting the network into a collection of
@@ -53,69 +57,33 @@ public class Abstractor {
 
   private static final String EXTERNAL_NAME = "PEER";
 
+  private IBatfish _batfish;
 
-  /** TODO: This was copied from BdpDataPlanePlugin.java to initialize the OSPF inteface costs */
-  private static void initOspfInterfaceCosts(Configuration conf) {
-    if (conf.getDefaultVrf().getOspfProcess() != null) {
-      conf.getInterfaces()
-          .forEach(
-              (interfaceName, i) -> {
-                if (i.getActive()) {
-                  Integer ospfCost = i.getOspfCost();
-                  if (ospfCost == null) {
-                    if (interfaceName.startsWith("Vlan")) {
-                      // TODO: fix for non-cisco
-                      ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
-                    } else {
-                      if (i.getBandwidth() != null) {
-                        ospfCost =
-                            Math.max(
-                                (int)
-                                    (conf.getDefaultVrf().getOspfProcess().getReferenceBandwidth()
-                                        / i.getBandwidth()),
-                                1);
-                      } else {
-                        throw new BatfishException(
-                            "Expected non-null interface "
-                                + "bandwidth"
-                                + " for \""
-                                + conf.getHostname()
-                                + "\":\""
-                                + interfaceName
-                                + "\"");
-                      }
-                    }
-                  }
-                  i.setOspfCost(ospfCost);
-                }
-              });
-    }
+  private SortedMap<Interface, InterfacePolicy> _importPolicyMap;
+
+  private SortedMap<Interface, InterfacePolicy> _exportPolicyMap;
+
+
+  public Abstractor(IBatfish batfish) {
+    _batfish = batfish;
+    _importPolicyMap = new TreeMap<>();
+    _exportPolicyMap = new TreeMap<>();
   }
 
-  public static BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
+
+  /*
+   * Compute a BDD representation of a routing policy.
+   */
+  public BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     BDDRecord rec = t.compute();
-    rec.getCommunities().forEach((cvar, bdd) -> {
-      //System.out.println("CVAR: " + cvar.getValue() + ", " + cvar.getType());
-      //System.out.println("DOT: \n" + rec.getDot(bdd));
-    });
-
-    // BDD bdd = rec.getMetric().getBitvec()[31];
-    // System.out.println("DOT: \n" + rec.getDot(bdd));
     return rec;
   }
 
-
-  public static AnswerElement computeAbstraction(IBatfish batfish) {
-
-    long start = System.currentTimeMillis();
-
-    Graph g = new Graph(batfish);
-
-    g.getConfigurations().forEach((router, conf) -> {
-      initOspfInterfaceCosts(conf);
-    });
-
+  /*
+   * Determine which protocols are running on which devices
+   */
+  private Map<String, List<Protocol>> buildProtocolMap(Graph g) {
     // Figure out which protocols are running on which devices
     Map<String, List<Protocol>> protocols = new HashMap<>();
     g.getConfigurations()
@@ -140,89 +108,86 @@ public class Abstractor {
                 protos.add(Protocol.CONNECTED);
               }
             });
+    return protocols;
+  }
 
-    // Compute BDD policies
-    Map<GraphEdge, BDDRecord> importPolicies = new HashMap<>();
-    Map<GraphEdge, BDDRecord> exportPolicies = new HashMap<>();
 
+  /*
+   * For each interface in the network, creates a canonical
+   * representation of the import and export policies on this interface.
+   */
+  private void computeInterfacePolicies(Graph g) {
+    Map<GraphEdge, BDDRecord> importBgpPolicies = new HashMap<>();
+    Map<GraphEdge, BDDRecord> exportBgpPolicies = new HashMap<>();
+    Map<GraphEdge, BDDRecord> exportOspfPolicies = new HashMap<>();
     Map<GraphEdge, BDD> inAcls = new HashMap<>();
     Map<GraphEdge, BDD> outAcls = new HashMap<>();
-
-    Map<BDDRecord, Set<GraphEdge>> importPolMap = new HashMap<>();
-    Map<BDDRecord, Set<GraphEdge>> exportPolMap = new HashMap<>();
-
-    Map<BDD, Set<GraphEdge>> inAclMap = new HashMap<>();
-    Map<BDD, Set<GraphEdge>> outAclMap = new HashMap<>();
-
-
     g.getConfigurations()
         .forEach(
             (router, conf) -> {
               List<GraphEdge> edges = g.getEdgeMap().get(router);
               for (GraphEdge ge : edges) {
                 if (ge.getEnd() == null) {
-                  // Import policy
-                  RoutingPolicy importPol = g.findImportRoutingPolicy(router, Protocol.BGP, ge);
-                  if (importPol != null) {
-                    System.out.println("Looking at: " + ge);
-                    BDDRecord rec = computeBDD(g, conf, importPol);
-                    importPolicies.put(ge, rec);
-                    Set<GraphEdge> ifaces = importPolMap.computeIfAbsent(rec, k -> new HashSet<>());
-                    ifaces.add(ge);
+                  // Import BGP policy
+                  RoutingPolicy importBgp = g.findImportRoutingPolicy(router, Protocol.BGP, ge);
+                  if (importBgp != null) {
+                    BDDRecord rec = computeBDD(g, conf, importBgp);
+                    importBgpPolicies.put(ge, rec);
                   }
-                  // Export policy
-                  RoutingPolicy exportPol = g.findExportRoutingPolicy(router, Protocol.BGP, ge);
-                  if (exportPol != null) {
-                    System.out.println("Looking at: " + ge);
-                    BDDRecord rec = computeBDD(g, conf, exportPol);
-                    exportPolicies.put(ge, rec);
-                    Set<GraphEdge> ifaces = exportPolMap.computeIfAbsent(rec, k -> new HashSet<>());
-                    ifaces.add(ge);
+                  // Export BGP policy
+                  RoutingPolicy exportBgp = g.findExportRoutingPolicy(router, Protocol.BGP, ge);
+                  if (exportBgp != null) {
+                    BDDRecord rec = computeBDD(g, conf, exportBgp);
+                    exportBgpPolicies.put(ge, rec);
+                  }
+                  // Export OSPF policy
+                  RoutingPolicy exportOspf = g.findExportRoutingPolicy(router, Protocol.OSPF, ge);
+                  if (exportOspf != null) {
+                    BDDRecord rec = computeBDD(g, conf, exportOspf);
+                    exportOspfPolicies.put(ge, rec);
                   }
                   IpAccessList in = ge.getStart().getIncomingFilter();
                   IpAccessList out = ge.getStart().getOutgoingFilter();
                   // Incoming ACL
                   if (in != null) {
-                    System.out.println("IN ACL");
                     AclBDD x = new AclBDD(in);
                     BDD acl = x.computeACL();
                     inAcls.put(ge, acl);
-                    Set<GraphEdge> ifaces = inAclMap.computeIfAbsent(acl, k -> new HashSet<>());
-                    ifaces.add(ge);
                   }
                   // Outgoing ACL
                   if (out != null) {
-                    System.out.println("OUT ACL");
                     AclBDD x = new AclBDD(out);
                     BDD acl = x.computeACL();
                     outAcls.put(ge, acl);
-                    Set<GraphEdge> ifaces = outAclMap.computeIfAbsent(acl, k -> new HashSet<>());
-                    ifaces.add(ge);
                   }
                 }
               }
             });
 
-    // Print equivalence policies
-    importPolMap.forEach(
-        (rec, ifaces) -> {
-          System.out.println("IMPORT EC: " + ifaces);
-        });
+    g.getEdgeMap().forEach((router, edges) -> {
+      Configuration conf = g.getConfigurations().get(router);
+      for (GraphEdge ge : edges) {
+        BDDRecord bgpIn = importBgpPolicies.get(ge);
+        BDDRecord bgpOut = exportBgpPolicies.get(ge);
+        BDDRecord ospfOut = exportOspfPolicies.get(ge);
+        BDD aclIn = inAcls.get(ge);
+        BDD aclOut = outAcls.get(ge);
+        Integer ospfCost = ge.getStart().getOspfCost();
+        SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
+        InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, null, staticRoutes);
+        InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfOut, ospfCost, null);
+        _importPolicyMap.put(ge.getStart(), ipol);
+        _exportPolicyMap.put(ge.getStart(), epol);
+      }
+    });
+  }
 
-    exportPolMap.forEach(
-        (rec, ifaces) -> {
-          System.out.println("EXPORT EC: " + ifaces);
-        });
 
-    inAclMap.forEach(
-        (bdd, ifaces) -> {
-          System.out.println("IN ACL EC: " + ifaces);
-        });
-
-    outAclMap.forEach(
-        (bdd, ifaces) -> {
-          System.out.println("OUT ACL EC: " + ifaces);
-        });
+  public AnswerElement computeAbstraction() {
+    long start = System.currentTimeMillis();
+    Graph g = new Graph(_batfish);
+    computeInterfacePolicies(g);
+    Map<String, List<Protocol>> protoMap = buildProtocolMap(g);
 
     // Create the trie
     PrefixTrieMap pt = new PrefixTrieMap();
@@ -232,7 +197,7 @@ public class Abstractor {
         .forEach(
             (router, conf) -> {
               // System.out.println("Looking at router: " + router);
-              for (Protocol proto : protocols.get(router)) {
+              for (Protocol proto : protoMap.get(router)) {
                 List<Prefix> destinations;
                 // For connected interfaces add address if there is a peer
                 // Otherwise, add the entire prefix since we don't know
@@ -320,29 +285,28 @@ public class Abstractor {
             continue;
           }
 
-          Map<String, Set<Pair<Integer, InterfacePolicy>>> groupMap = new HashMap<>();
+          Map<String, Set<Tuple<Integer, Tuple<InterfacePolicy,InterfacePolicy>>>>
+              groupMap = new HashMap<>();
 
           for (String router : partition) {
 
             // System.out.println("  Looking at router: " + router);
 
-            Set<Pair<Integer, InterfacePolicy>> groups = new HashSet<>();
+            Set<Tuple<Integer, Tuple<InterfacePolicy, InterfacePolicy>>> groups = new HashSet<>();
             groupMap.put(router, groups);
-
-            // TODO: convert ACLS
 
             List<GraphEdge> edges = g.getEdgeMap().get(router);
             for (GraphEdge edge : edges) {
               if (!edge.isAbstract()) {
                 String peer = edge.getPeer();
+
+                Interface i = edge.getStart();
+                InterfacePolicy ipol = _importPolicyMap.get(i);
                 GraphEdge otherEnd = g.getOtherEnd().get(edge);
-                BDDRecord importPol = importPolicies.get(edge);
-                BDDRecord exportPol = null;
+                InterfacePolicy epol = null;
                 if (otherEnd != null) {
-                  exportPol = exportPolicies.get(otherEnd);
+                  epol = _exportPolicyMap.get(otherEnd.getStart());
                 }
-                Integer ospfCost = edge.getStart().getOspfCost();
-                InterfacePolicy pol = new InterfacePolicy(ospfCost, importPol, exportPol);
 
                 // For external neighbors, we don't split a partition
                 Integer peerGroup;
@@ -355,7 +319,9 @@ public class Abstractor {
                   // peerGroup = new TreeSet<>();
                   // peerGroup.add(EXTERNAL_NAME);
 
-                  Pair<Integer, InterfacePolicy> pair = new Pair<>(peerGroup, pol);
+                  Tuple<InterfacePolicy, InterfacePolicy> pols = new Tuple<>(ipol, epol);
+                  Tuple<Integer, Tuple<InterfacePolicy,InterfacePolicy>> pair =
+                      new Tuple<>(peerGroup, pols);
                   groups.add(pair);
 
                   // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
@@ -364,8 +330,8 @@ public class Abstractor {
             }
           }
 
-          Map<Set<Pair<Integer, InterfacePolicy>>, Set<String>> inversePolicyMap =
-              new HashMap<>();
+          Map<Set<Tuple<Integer, Tuple<InterfacePolicy,InterfacePolicy>>>, Set<String>>
+              inversePolicyMap = new HashMap<>();
           groupMap.forEach(
               (router, groupPairs) -> {
                 Set<String> routers =
@@ -426,4 +392,5 @@ public class Abstractor {
     return answer;
 
   }
+
 }
