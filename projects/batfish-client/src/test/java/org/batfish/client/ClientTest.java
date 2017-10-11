@@ -96,6 +96,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -467,11 +468,10 @@ public class ClientTest {
   @Test
   public void testGetQuestionNameInvalid1() throws JSONException {
     JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject().put("description", "test question description"));
+    testQuestion.put("instance", new JSONObject().put("description", "test question description"));
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Cannot extract question name from testquestion");
+    _thrown.expectMessage(
+        "question testquestion does not have instanceName field in instance");
 
     //check exception when no instanceName is present
     Client.getQuestionName(testQuestion, "testquestion");
@@ -481,7 +481,7 @@ public class ClientTest {
   public void testGetQuestionNameInvalid2() throws JSONException {
     JSONObject testQuestion = new JSONObject();
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Cannot extract question name from testquestion");
+    _thrown.expectMessage("question testquestion does not have instance field");
 
     //check exception when instance itself is not present
     Client.getQuestionName(testQuestion, "testquestion");
@@ -844,6 +844,56 @@ public class ClientTest {
   }
 
   @Test
+  public void testLoadQuestionFromFile() throws Exception {
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
+    JSONObject question = Client.loadQuestionFromFile(questionJsonPath);
+
+    //checking if actual and loaded JSONs are same
+    assertEquals(
+        "testQuestionName",
+        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME));
+    assertEquals(
+        "test question description",
+        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+  }
+
+  @Test
+  public void testLoadQuestionFromText() throws Exception {
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    JSONObject question = Client.loadQuestionFromText(testQuestion.toString(), "testquestion");
+
+    //checking if actual and loaded JSONs are same
+    assertEquals(
+        "testQuestionName",
+        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME));
+    assertEquals(
+        "test question description",
+        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+  }
+
+  @Test
+  public void testLoadQuestionFromTextInvalid() throws Exception {
+    JSONObject testQuestion = new JSONObject();
+
+    //checking if exception thrown for instance missing
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Question in questionSource has no instance data");
+    Client.loadQuestionFromText(testQuestion.toString(), "questionSource");
+  }
+
+  @Test
   public void testLoadQuestionsFromDir() throws Exception {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
@@ -853,10 +903,10 @@ public class ClientTest {
             .put("description", "test question description"));
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
-    Multimap<String, String> loadedQuestions = HashMultimap.create();
-    Client.loadQuestionsFromDir(questionJsonPath.toString(), loadedQuestions);
+    Multimap<String, String> loadedQuestions =
+        Client.loadQuestionsFromDir(questionJsonPath.toString());
     Multimap<String, String> expectedMap = HashMultimap.create();
-    expectedMap.put("testquestionname", testQuestion.toString());
+    expectedMap.put("testQuestionName", testQuestion.toString());
 
     //checking if questions are loaded from disk correctly
     assertEquals(expectedMap, loadedQuestions);
@@ -871,10 +921,9 @@ public class ClientTest {
             .put("instanceName", "testQuestionName")
             .put("description", "test question description"));
     JSONObject testJson = new JSONObject().put("testQuestion", testQuestion.toString());
-    Multimap<String, String> loadedQuestions = HashMultimap.create();
-    Client.loadQuestionsFromServer(testJson, loadedQuestions);
+    Multimap<String, String> loadedQuestions = Client.loadQuestionsFromServer(testJson);
     Multimap<String, String> expectedMap = HashMultimap.create();
-    expectedMap.put("testquestionname", testQuestion.toString());
+    expectedMap.put("testQuestionName", testQuestion.toString());
 
     //checking if questions are loaded from json correctly
     assertEquals(expectedMap, loadedQuestions);
