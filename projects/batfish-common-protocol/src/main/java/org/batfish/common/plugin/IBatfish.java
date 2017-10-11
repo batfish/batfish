@@ -33,6 +33,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -60,7 +61,11 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
+  DataPlanePluginSettings getDataPlanePluginSettings();
+
   String getDifferentialFlowTag();
+
+  Environment getEnvironment();
 
   String getFlowTag();
 
@@ -75,6 +80,8 @@ public interface IBatfish extends IPluginConsumer {
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   Directory getTestrigFileTree();
+
+  String getTestrigName();
 
   void initBgpAdvertisements(Map<String, Configuration> configurations);
 

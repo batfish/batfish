@@ -3,21 +3,17 @@
     {
       "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
       "result" : {
-        "forwardingModel" : [
-          "R1,Loopback0 --> _,_ (CONNECTED)",
-          "R2,Loopback0 --> _,_ (CONNECTED)"
-        ],
         "model" : {
-          "|0_CONTROL-FORWARDING_R1_Loopback0|" : "true",
+          "|0_CONTROL-FORWARDING_R1_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R1_Serial0|" : "false",
-          "|0_CONTROL-FORWARDING_R2_Loopback0|" : "true",
+          "|0_CONTROL-FORWARDING_R2_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R2_Serial0|" : "false",
           "|0_CONTROL-FORWARDING_R2_Serial1|" : "false",
           "|0_CONTROL-FORWARDING_R3_Loopback0|" : "false",
           "|0_CONTROL-FORWARDING_R3_Serial0|" : "false",
-          "|0_DATA-FORWARDING_R1_Loopback0|" : "true",
+          "|0_DATA-FORWARDING_R1_Loopback0|" : "false",
           "|0_DATA-FORWARDING_R1_Serial0|" : "false",
-          "|0_DATA-FORWARDING_R2_Loopback0|" : "true",
+          "|0_DATA-FORWARDING_R2_Loopback0|" : "false",
           "|0_DATA-FORWARDING_R2_Serial0|" : "false",
           "|0_DATA-FORWARDING_R2_Serial1|" : "false",
           "|0_DATA-FORWARDING_R3_Loopback0|" : "false",
@@ -77,11 +73,11 @@
     "dstIps" : [
       "70.70.70.70"
     ],
-    "equivalence" : false,
+    "envDiff" : false,
+    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

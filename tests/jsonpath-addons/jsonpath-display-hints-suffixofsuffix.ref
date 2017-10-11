@@ -66,7 +66,7 @@
                     "accessVlan" : 0,
                     "active" : false,
                     "autostate" : true,
-                    "bandwidth" : 1.0E9,
+                    "bandwidth" : 1.0E7,
                     "isisL1InterfaceMode" : "unset",
                     "isisL2InterfaceMode" : "unset",
                     "mtu" : 1500,

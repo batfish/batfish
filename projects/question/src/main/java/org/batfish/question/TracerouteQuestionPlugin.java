@@ -19,6 +19,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.ITracerouteQuestion;
 import org.batfish.datamodel.questions.Question;
 
@@ -52,32 +53,34 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getTraces().keySet()) {
-        // String baseEnvId = _batfish.getBaseTestrigSettings().getName() +
+        // String baseEnvTag = _batfish.getBaseTestrigSettings().getEnvName() +
         // ":"
         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
-        // .getName();
+        // .getEnvName();
         _batfish.pushBaseEnvironment();
-        String baseEnvId = _batfish.getFlowTag();
+        String baseEnvTag = _batfish.getFlowTag();
+        Environment baseEnv = _batfish.getEnvironment();
         _batfish.popEnvironment();
-        // String deltaEnvId = _batfish.getDeltaTestrigSettings().getName()
+        // String deltaEnvTag = _batfish.getDeltaTestrigSettings().getEnvName()
         // +
         // ":"
         // + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
-        // .getName();
+        // .getEnvName();
         _batfish.pushDeltaEnvironment();
-        String deltaEnvId = _batfish.getFlowTag();
+        String deltaEnvTag = _batfish.getFlowTag();
+        Environment deltaEnv = _batfish.getEnvironment();
         _batfish.popEnvironment();
         Set<FlowTrace> baseFlowTraces =
-            history.getTraces().get(flowText).getPaths().get(baseEnvId);
+            history.getTraces().get(flowText).getPaths().get(baseEnvTag);
         Set<FlowTrace> deltaFlowTraces =
-            history.getTraces().get(flowText).getPaths().get(deltaEnvId);
+            history.getTraces().get(flowText).getPaths().get(deltaEnvTag);
         if (!baseFlowTraces.toString().equals(deltaFlowTraces.toString())) {
           Flow flow = history.getTraces().get(flowText).getFlow();
           for (FlowTrace flowTrace : baseFlowTraces) {
-            filteredHistory.addFlowTrace(flow, baseEnvId, flowTrace);
+            filteredHistory.addFlowTrace(flow, baseEnvTag, baseEnv, flowTrace);
           }
           for (FlowTrace flowTrace : deltaFlowTraces) {
-            filteredHistory.addFlowTrace(flow, deltaEnvId, flowTrace);
+            filteredHistory.addFlowTrace(flow, deltaEnvTag, deltaEnv, flowTrace);
           }
         }
       }
@@ -511,73 +514,73 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             String.format("traceroute %singressNode=%s", prettyPrintBase(), _ingressNode);
         // we only print "interesting" values
         if (_ingressInterface != null) {
-          retString += String.format(" | %s=%s", PROP_INGRESS_INTERFACE, _ingressInterface);
+          retString += String.format(", %s=%s", PROP_INGRESS_INTERFACE, _ingressInterface);
         }
         if (_ingressVrf != null) {
-          retString += String.format(" | %s=%s", PROP_INGRESS_VRF, _ingressVrf);
+          retString += String.format(", %s=%s", PROP_INGRESS_VRF, _ingressVrf);
         }
         if (_dscp != null) {
-          retString += String.format(" | %s=%s", PROP_DSCP, _dscp);
+          retString += String.format(", %s=%s", PROP_DSCP, _dscp);
         }
         if (_dstIp != null) {
-          retString += String.format(" | %s=%s", PROP_DST_IP, _dstIp);
+          retString += String.format(", %s=%s", PROP_DST_IP, _dstIp);
         }
         if (_dstPort != null) {
-          retString += String.format(" | %S=%s", PROP_DST_PORT, _dstPort);
+          retString += String.format(", %S=%s", PROP_DST_PORT, _dstPort);
         }
         if (_dstProtocol != null) {
-          retString += String.format(" | %s=%s", PROP_DST_PROTOCOL, _dstProtocol);
+          retString += String.format(", %s=%s", PROP_DST_PROTOCOL, _dstProtocol);
         }
         if (_ecn != null) {
-          retString += String.format(" | %s=%s", PROP_ECN, _ecn);
+          retString += String.format(", %s=%s", PROP_ECN, _ecn);
         }
         if (_icmpCode != null) {
-          retString += String.format(" | %s=%s", PROP_ICMP_CODE, _icmpCode);
+          retString += String.format(", %s=%s", PROP_ICMP_CODE, _icmpCode);
         }
         if (_icmpType != null) {
-          retString += String.format(" | %s=%s", PROP_ICMP_TYPE, _icmpType);
+          retString += String.format(", %s=%s", PROP_ICMP_TYPE, _icmpType);
         }
         if (_ipProtocol != null) {
-          retString += String.format(" | %s=%s", PROP_IP_PROTOCOL, _ipProtocol);
+          retString += String.format(", %s=%s", PROP_IP_PROTOCOL, _ipProtocol);
         }
         if (_packetLength != null) {
-          retString += String.format(" | %s=%s", PROP_PACKET_LENGTH, _packetLength);
+          retString += String.format(", %s=%s", PROP_PACKET_LENGTH, _packetLength);
         }
         if (_srcIp != null) {
-          retString += String.format(" | %s=%s", PROP_SRC_IP, _srcIp);
+          retString += String.format(", %s=%s", PROP_SRC_IP, _srcIp);
         }
         if (_srcPort != null) {
-          retString += String.format(" | %s=%s", PROP_SRC_PORT, _srcPort);
+          retString += String.format(", %s=%s", PROP_SRC_PORT, _srcPort);
         }
         if (_srcProtocol != null) {
-          retString += String.format(" | %s=%s", PROP_SRC_PROTOCOL, _srcProtocol);
+          retString += String.format(", %s=%s", PROP_SRC_PROTOCOL, _srcProtocol);
         }
         if (_state != null) {
-          retString += String.format(" | %s=%s", PROP_STATE, _state);
+          retString += String.format(", %s=%s", PROP_STATE, _state);
         }
         if (_tcpFlagsAck != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_ACK, _tcpFlagsAck);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_ACK, _tcpFlagsAck);
         }
         if (_tcpFlagsCwr != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_CWR, _tcpFlagsCwr);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_CWR, _tcpFlagsCwr);
         }
         if (_tcpFlagsEce != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_ECE, _tcpFlagsEce);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_ECE, _tcpFlagsEce);
         }
         if (_tcpFlagsFin != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_FIN, _tcpFlagsFin);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_FIN, _tcpFlagsFin);
         }
         if (_tcpFlagsPsh != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_PSH, _tcpFlagsPsh);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_PSH, _tcpFlagsPsh);
         }
         if (_tcpFlagsRst != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_RST, _tcpFlagsRst);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_RST, _tcpFlagsRst);
         }
         if (_tcpFlagsSyn != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_SYN, _tcpFlagsSyn);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_SYN, _tcpFlagsSyn);
         }
         if (_tcpFlagsUrg != null) {
-          retString += String.format(" | %s=%s", PROP_TCP_FLAGS_URG, _tcpFlagsUrg);
+          retString += String.format(", %s=%s", PROP_TCP_FLAGS_URG, _tcpFlagsUrg);
         }
         return retString;
       } catch (Exception e) {

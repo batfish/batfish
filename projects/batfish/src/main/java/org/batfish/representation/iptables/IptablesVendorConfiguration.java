@@ -75,7 +75,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             prerouting
                 .getLines()
                 .stream()
-                .filter(l -> i.getName().equals(_lineInInterfaces.get(l)))
+                .filter(l -> {
+                 String iface = _lineInInterfaces.get(l);
+                 return iface == null || i.getName().equals(iface);
+                })
                 .collect(Collectors.toList());
 
         // TODO: ipv6
@@ -104,7 +107,10 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             postrouting
                 .getLines()
                 .stream()
-                .filter(l -> i.getName().equals(_lineOutInterfaces.get(l)))
+                .filter(l -> {
+                  String iface = _lineOutInterfaces.get(l);
+                  return iface == null || i.getName().equals(iface);
+                 })
                 .collect(Collectors.toList());
 
         // TODO: ipv6
@@ -164,6 +170,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
     for (IptablesRule rule : chain.getRules()) {
       IpAccessListLine aclLine = new IpAccessListLine();
+      boolean anyInterface = false;
 
       for (IptablesMatch match : rule.getMatchList()) {
 
@@ -178,9 +185,11 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             break;
           case IN_INTERFACE:
             _lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
+            anyInterface = false;
             break;
           case OUT_INTERFACE:
             _lineOutInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
+            anyInterface = false;
             break;
           case PROTOCOL:
             aclLine.getIpProtocols().add(match.toIpProtocol());
@@ -196,6 +205,11 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
           default:
             throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
+      }
+
+      if (anyInterface) {
+        _lineInInterfaces.put(aclLine, null);
+        _lineOutInterfaces.put(aclLine, null);
       }
 
       aclLine.setName(rule.getName());

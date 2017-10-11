@@ -301,6 +301,7 @@ import org.batfish.grammar.cisco.CiscoParser.L_access_classContext;
 import org.batfish.grammar.cisco.CiscoParser.L_exec_timeoutContext;
 import org.batfish.grammar.cisco.CiscoParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.L_transportContext;
+import org.batfish.grammar.cisco.CiscoParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_bufferedContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_consoleContext;
@@ -3645,6 +3646,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
+    int as = toInteger(ctx.as);
+    _currentPeerGroup.setLocalAs(as);
+  }
+
+  @Override
   public void exitLogging_buffered(Logging_bufferedContext ctx) {
     if (_no) {
       return;
@@ -5875,7 +5882,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         canonicalNamePrefix.equals(CiscoConfiguration.NXOS_MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : Configuration.DEFAULT_VRF_NAME;
-    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
+    double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix, _format);
     int mtu = Interface.getDefaultMtu();
     iface.setBandwidth(bandwidth);
     iface.setVrf(vrf);

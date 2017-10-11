@@ -40,6 +40,18 @@ public final class RoutingTableFormatDetector {
   }
 
   @Nullable
+  private RoutingTableFormat checkIos() {
+    Matcher iosMatcher =
+        Pattern.compile(
+                "(?m)Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP")
+            .matcher(_fileText);
+    if (iosMatcher.find()) {
+      return RoutingTableFormat.IOS;
+    }
+    return null;
+  }
+
+  @Nullable
   private RoutingTableFormat checkNxos() {
     Matcher nxosMatcher = Pattern.compile("(?m)IP Route Table for VRF \"").matcher(_fileText);
     if (nxosMatcher.find()) {
@@ -55,6 +67,10 @@ public final class RoutingTableFormatDetector {
       return format;
     }
     format = checkEos();
+    if (format != null) {
+      return format;
+    }
+    format = checkIos();
     if (format != null) {
       return format;
     }

@@ -5,10 +5,34 @@
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+            "environments" : {
+              "BASE" : {
+                "envName" : "BASE",
+                "testrigName" : "tr-smt-ospf5"
+              },
+              "DELTA" : {
+                "edgeBlacklist" : [
+                  {
+                    "node1" : "R0",
+                    "node1interface" : "Serial0",
+                    "node2" : "R1",
+                    "node2interface" : "Serial0"
+                  },
+                  {
+                    "node1" : "R2",
+                    "node1interface" : "Serial0",
+                    "node2" : "R0",
+                    "node2interface" : "Serial1"
+                  }
+                ],
+                "envName" : "DELTA",
+                "testrigName" : "tr-smt-ospf5"
+              }
+            },
             "flow" : {
               "dscp" : 0,
-              "dstIp" : "70.70.70.0",
+              "dstIp" : "70.70.70.70",
               "dstPort" : 0,
               "ecn" : 0,
               "fragmentOffset" : 0,
@@ -44,7 +68,7 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1/24,nhint:dynamic>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.3.64.1,nhint:dynamic>"
                       ]
                     },
                     {
@@ -55,25 +79,14 @@
                         "node2interface" : "Serial0"
                       },
                       "routes" : [
-                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1/24,nhint:dynamic>"
-                      ]
-                    },
-                    {
-                      "edge" : {
-                        "node1" : "R3",
-                        "node1interface" : "Loopback0",
-                        "node2" : "(none)",
-                        "node2interface" : "null_interface"
-                      },
-                      "routes" : [
-                        "ConnectedRoute<70.70.70.0/24,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
+                        "OspfRoute<70.70.70.0/24,nhip:192.1.64.1,nhint:dynamic>"
                       ]
                     }
                   ],
                   "notes" : "ACCEPTED"
                 }
               ],
-              "FAILED" : [
+              "DELTA" : [
                 {
                   "disposition" : "NO_ROUTE",
                   "notes" : "NO_ROUTE"
@@ -90,11 +103,10 @@
         ],
         "forwardingModel" : [
           "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R2,Serial1 --> R3,Serial1 (OSPF)",
-          "R3,Loopback0 --> _,_ (CONNECTED)"
+          "R2,Serial1 --> R3,Serial1 (OSPF)"
         ],
         "packetModel" : {
-          "dstIp" : "70.70.70.0"
+          "dstIp" : "70.70.70.70"
         },
         "verified" : false
       }
@@ -102,18 +114,21 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "diffType" : "any",
     "differential" : false,
     "dstIps" : [
-      "70.70.70.0/24"
+      "70.70.70.70"
     ],
-    "equivalence" : true,
+    "envDiff" : false,
+    "envType" : "any",
+    "failNode1Regex" : "R0",
+    "failNode2Regex" : ".*",
     "failures" : 2,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R3",
     "fullModel" : false,
-    "ingressNodeRegex" : ".*",
-    "minimize" : false,
-    "noEnvironment" : false
+    "ingressNodeRegex" : "R0",
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

@@ -3,11 +3,11 @@ package org.batfish.datamodel.pojo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,21 +22,23 @@ public class EnvironmentTest {
 
   @Test
   public void testConstructorAndGetter() {
-    List<String> nodeBlacklist = Lists.newArrayList("node1");
+    Set<String> nodeBlacklist = Sets.newHashSet("node1");
     Map<String, String> bgpTables = Collections.singletonMap("bgpTable1", "table1Content");
     Map<String, String> routingTables = Collections.singletonMap("routingTable1", "table1Content");
     Environment e =
         new Environment(
             "environment",
-            Lists.newArrayList(),
-            Lists.newArrayList(),
+            "testrig",
+            Sets.newHashSet(),
+            Sets.newHashSet(),
             nodeBlacklist,
             bgpTables,
             routingTables,
             "announcement");
-    assertThat(e.getName(), equalTo("environment"));
-    assertThat(e.getEdgeBlacklist(), equalTo(Lists.newArrayList()));
-    assertThat(e.getInterfaceBlacklist(), equalTo(Lists.newArrayList()));
+    assertThat(e.getEnvName(), equalTo("environment"));
+    assertThat(e.getTestrigName(), equalTo("testrig"));
+    assertThat(e.getEdgeBlacklist(), equalTo(Sets.newHashSet()));
+    assertThat(e.getInterfaceBlacklist(), equalTo(Sets.newHashSet()));
     assertThat(e.getNodeBlacklist(), equalTo(nodeBlacklist));
     assertThat(e.getBgpTables(), equalTo(bgpTables));
     assertThat(e.getRoutingTables(), equalTo(routingTables));
@@ -48,16 +50,18 @@ public class EnvironmentTest {
     Environment e =
         new Environment(
             "environment",
-            Lists.newArrayList(),
-            Lists.newArrayList(),
-            Lists.newArrayList(),
+            "testrig",
+            Sets.newHashSet(),
+            Sets.newHashSet(),
+            Sets.newHashSet(),
             Maps.newHashMap(),
             Maps.newHashMap(),
             "announcement");
     assertThat(
         e.toString(),
         equalTo(
-            "Environment{name=environment, edgeBlacklist=[], interfaceBlacklist=[], "
+            "Environment{envName=environment, testrigName=testrig, "
+                + "edgeBlacklist=[], interfaceBlacklist=[], "
                 + "nodeBlacklist=[], bgpTables={}, routingTables={}, "
                 + "externalBgpAnnouncements=announcement}"));
   }

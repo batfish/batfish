@@ -13,14 +13,16 @@
     "dstIps" : [
       "70.70.70.70"
     ],
-    "equivalence" : false,
+    "envDiff" : false,
+    "envType" : "any",
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
     "failures" : 0,
     "finalIfaceRegex" : "Loopback.*",
     "finalNodeRegex" : "R3",
     "fullModel" : true,
     "ingressNodeRegex" : "R(1|2)",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

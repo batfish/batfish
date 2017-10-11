@@ -16,14 +16,16 @@
     "dstIps" : [
       "2.128.0.0/24"
     ],
-    "equivalence" : false,
+    "envDiff" : false,
+    "envType" : "any",
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
     "failures" : 1,
     "finalIfaceRegex" : "FastEthernet1/0",
     "finalNodeRegex" : "as2dept1",
     "fullModel" : false,
     "ingressNodeRegex" : "as2border.*",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

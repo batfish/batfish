@@ -586,6 +586,9 @@ class TransferFunctionSSA {
    */
   private boolean sendCommunity() {
     if (_to.isBgp()) {
+      if (!_isExport) {
+        return true;
+      }
       BgpNeighbor n = getBgpNeighbor();
       return n.getSendCommunity();
     } else {
@@ -599,7 +602,7 @@ class TransferFunctionSSA {
   private BoolExpr relateVariables(TransferFunctionParam p, TransferFunctionResult result) {
 
     ArithExpr defaultLen = _enc.mkInt(_enc.defaultLength());
-    ArithExpr defaultAd = _enc.mkInt(_enc.defaultAdminDistance(_conf, _from));
+    ArithExpr defaultAd = _enc.defaultAdminDistance(_conf, _from, p.getOther());
     ArithExpr defaultMed = _enc.mkInt(_enc.defaultMed(_from));
     ArithExpr defaultLp = _enc.mkInt(_enc.defaultLocalPref());
     ArithExpr defaultId = _enc.mkInt(_enc.defaultId());
@@ -613,6 +616,7 @@ class TransferFunctionSSA {
     BoolExpr len =
         _enc.safeEq(
             _current.getPrefixLength(), getOrDefault(p.getOther().getPrefixLength(), defaultLen));
+
     BoolExpr per = _enc.safeEq(_current.getPermitted(), p.getOther().getPermitted());
 
     // Only update the router id for import edges
@@ -694,7 +698,6 @@ class TransferFunctionSSA {
     }
 
     BoolExpr comms = _enc.mkTrue();
-    // regex matches that now match due to the concrete added value
     // update all community values
     for (Map.Entry<CommunityVar, BoolExpr> entry : _current.getCommunities().entrySet()) {
       CommunityVar cvar = entry.getKey();
@@ -713,8 +716,8 @@ class TransferFunctionSSA {
     ArithExpr otherAd =
         (p.getOther().getAdminDist() == null ? defaultAd : p.getOther().getAdminDist());
     ArithExpr otherMed = (p.getOther().getMed() == null ? defaultMed : p.getOther().getMed());
-    ArithExpr otherMet = getOrDefault(p.getOther().getMetric(), defaultMet);
     ArithExpr otherLp = getOrDefault(p.getOther().getLocalPref(), defaultLp);
+    ArithExpr otherMet = getOrDefault(p.getOther().getMetric(), defaultMet);
 
     BoolExpr ad = _enc.safeEq(_current.getAdminDist(), otherAd);
     BoolExpr history = _enc.equalHistories(_current, p.getOther());
@@ -1222,7 +1225,26 @@ class TransferFunctionSSA {
 
   private void applyMetricUpdate(TransferFunctionParam p) {
     if (_isExport) {
-      ArithExpr newValue = _enc.mkSum(p.getOther().getMetric(), _enc.mkInt(_addedCost));
+      // If it is a BGP route learned from IGP, then we use metric 0
+      ArithExpr newValue;
+      ArithExpr cost = _enc.mkInt(_addedCost);
+      ArithExpr sum = _enc.mkSum(p.getOther().getMetric(), cost);
+      if (_to.isBgp()) {
+        BoolExpr isBGP;
+        String router = _conf.getName();
+        boolean hasProtocolVar = _other.getProtocolHistory() != null;
+        boolean onlyBGP = _enc.getOptimizations().getSliceHasSingleProtocol().contains(router);
+        if (hasProtocolVar) {
+          isBGP = _other.getProtocolHistory().checkIfValue(Protocol.BGP);
+        } else if (onlyBGP) {
+          isBGP = _enc.mkTrue();
+        } else {
+          isBGP = _enc.mkFalse();
+        }
+        newValue = _enc.mkIf(isBGP, sum, cost);
+      } else {
+        newValue = sum;
+      }
       p.getOther().setMetric(newValue);
     }
   }

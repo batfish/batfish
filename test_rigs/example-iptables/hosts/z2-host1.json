@@ -1,0 +1,10 @@
+{
+  "hostname": "z2-host1",
+  "hostInterfaces": {
+    "eth0": {
+      "name": "eth0",
+      "prefix": "10.0.4.20/24",
+      "gateway": "10.0.4.1"
+    }
+  }
+}

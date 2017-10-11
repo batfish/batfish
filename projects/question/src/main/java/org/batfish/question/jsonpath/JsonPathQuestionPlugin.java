@@ -408,7 +408,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     @Override
     public boolean getDataPlane() {
-      return false;
+      return _innerQuestion.getDataPlane();
     }
 
     @JsonProperty(PROP_DEBUG)

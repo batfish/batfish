@@ -30,6 +30,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.questions.smt.EnvironmentType;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.utils.Tuple;
 
@@ -486,6 +487,18 @@ public class Encoder {
     } else {
       add(mkLe(sum, mkInt(k)));
     }
+
+    /* if (getFailures() > 0) {
+      getSymbolicFailures().getFailedInternalLinks().forEach((x, y, var) -> {
+        System.out.println("Edge: " + x + "," + y);
+        boolean b1 = x.equals("as2border2") && y.equals("as3border1");
+        boolean b2 = x.equals("as3border1") && y.equals("as2border2");
+        if (b1 || b2) {
+          System.out.println("  Failing");
+          add(mkEq(var, mkInt(1)));
+        }
+      });
+    } */
   }
 
   /*
@@ -884,8 +897,8 @@ public class Encoder {
     return _allVariables;
   }
 
-  public boolean getNoEnvironment() {
-    return _question.getNoEnvironment();
+  public EnvironmentType getEnvironmentType() {
+    return _question.getEnvironmentType();
   }
 
   public int getId() {

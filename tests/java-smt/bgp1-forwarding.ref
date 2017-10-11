@@ -67,11 +67,11 @@
     "dstIps" : [
       "42.42.42.0"
     ],
-    "equivalence" : false,
+    "envDiff" : false,
+    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {
