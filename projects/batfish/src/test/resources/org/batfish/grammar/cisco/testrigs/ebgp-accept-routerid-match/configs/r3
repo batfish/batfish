@@ -8,8 +8,6 @@ interface Ethernet1
 interface Loopback0
    ip address 3.0.0.3/32
 !
-ip route 2.0.0.1/32 10.22.0.1
-!
 ip routing
 !
 router bgp 3

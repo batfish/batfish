@@ -30,8 +30,8 @@ router bgp 1
    neighbor 3.0.0.1 update-source Loopback0
    neighbor 3.0.0.1 route-reflector-client
 !
-!ip route 1.0.0.1/32 10.14.0.1
-!ip route 2.0.0.1/32 10.24.0.2
-!ip route 3.0.0.1/32 10.34.0.3
+ip route 1.0.0.1/32 10.14.0.1
+ip route 2.0.0.1/32 10.24.0.2
+ip route 3.0.0.1/32 10.34.0.3
 !
 end
