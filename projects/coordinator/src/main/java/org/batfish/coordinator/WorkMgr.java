@@ -841,6 +841,49 @@ public class WorkMgr extends AbstractCoordinator {
     return containerName;
   }
 
+  @Override
+  public void initTestrig(Path testrigDir,  Path srcDir, boolean autoProcess) {
+    /*-
+     * Sanity check what we got:
+     *    There should be just one top-level folder.
+     */
+    SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
+    if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
+      CommonUtil.deleteDirectory(testrigDir);
+      throw new BatfishException(
+          "Unexpected packaging of testrig. There should be just one top-level folder");
+    }
+    Path srcSubdir = srcDirEntries.iterator().next();
+    SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
+    Path srcTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+
+    // create empty default environment
+    Path defaultEnvironmentLeafDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                BfConsts.RELPATH_ENV_DIR));
+    defaultEnvironmentLeafDir.toFile().mkdirs();
+
+    // things look ok, now make the move
+    for (Path subFile : subFileList) {
+      Path target;
+      if (isEnvFile(subFile)) {
+        target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
+      } else {
+        target = srcTestrigDir.resolve(subFile.getFileName());
+      }
+      CommonUtil.copy(subFile, target);
+    }
+
+    if (autoProcess) {
+      //TODO: any logic to automatically parse, analyze the testrig should go here
+      //This can work by creating proper workitems, as done by Client, and calling queueWork
+      throw new BatfishException("Auto processing is not currently implemented");
+    }
+  }
+
   private boolean isEnvFile(Path path) {
     String name = path.getFileName().toString();
     return ENV_FILENAMES.contains(name);
@@ -1145,45 +1188,17 @@ public class WorkMgr extends AbstractCoordinator {
     }
     Path zipFile = CommonUtil.createTempFile("testrig", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
-    Path unzipDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+    Path unzipDir = CommonUtil.createTempDirectory("tr");
     UnzipUtility.unzip(zipFile, unzipDir);
 
-    /*-
-     * Sanity check what we got:
-     *    There should be just one top-level folder.
-     */
-    SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
-    if (unzipDirEntries.size() != 1 || !Files.isDirectory(unzipDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(testrigDir);
-      throw new BatfishException(
-          "Unexpected packaging of environment. There should be just one top-level folder");
+    try {
+      initTestrig(testrigDir, unzipDir, false);
+    } catch (Exception e) {
+      throw new BatfishException("Error initializing testrig", e);
+    } finally {
+      CommonUtil.deleteDirectory(unzipDir);
+      CommonUtil.delete(zipFile);
     }
-    Path unzipSubdir = unzipDirEntries.iterator().next();
-    SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
-
-    // create empty default environment
-    Path defaultEnvironmentLeafDir =
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                BfConsts.RELPATH_ENV_DIR));
-    defaultEnvironmentLeafDir.toFile().mkdirs();
-
-    // things look ok, now make the move
-    for (Path subFile : subFileList) {
-      Path target;
-      if (isEnvFile(subFile)) {
-        target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
-      } else {
-        target = unzipDir.resolve(subFile.getFileName());
-      }
-      CommonUtil.moveByCopy(subFile, target);
-    }
-
-    // delete the empty directory and the zip file
-    CommonUtil.deleteDirectory(unzipSubdir);
-    CommonUtil.delete(zipFile);
   }
 
   /**
