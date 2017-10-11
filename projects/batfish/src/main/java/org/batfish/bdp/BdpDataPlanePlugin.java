@@ -934,6 +934,23 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               (vrName, vr) -> {
                 SortedSet<AbstractRoute> routes = new TreeSet<>();
                 routes.addAll(vr._mainRib.getRoutes());
+                for (AbstractRoute route : routes) {
+                  route.setNode(hostname);
+                  route.setVrf(vrName);
+                  Ip nextHopIp = route.getNextHopIp();
+                  if (route.getProtocol() == RoutingProtocol.CONNECTED
+                      || (route.getProtocol() == RoutingProtocol.STATIC
+                          && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                      || Interface.NULL_INTERFACE_NAME.equals(route.getNextHopInterface())) {
+                    route.setNextHop(Configuration.NODE_NONE_NAME);
+                  }
+                  if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+                    String nextHop = ipOwners.get(nextHopIp);
+                    if (nextHop != null) {
+                      route.setNextHop(nextHop);
+                    }
+                  }
+                }
                 routesByVrf.put(vrName, routes);
               });
         });
@@ -985,8 +1002,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
           routesByVrf.forEach(
               (vrfName, routes) -> {
                 for (AbstractRoute route : routes) {
-                  route.setNode(hostname);
-                  route.setVrf(vrfName);
                   sb.append(String.format("%s\n", route.fullString()));
                 }
               });
@@ -1016,8 +1031,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             SortedSet<AbstractRoute> routes = new TreeSet<>();
             routesByVrf.put(vrfName, routes);
             for (AbstractRoute deltaRoute : deltaRoutes) {
-              deltaRoute.setNode(hostname);
-              deltaRoute.setVrf(vrfName);
               sb.append(String.format("+ %s\n", deltaRoute.fullString()));
             }
           }
@@ -1028,8 +1041,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             SortedSet<AbstractRoute> routes = new TreeSet<>();
             routesByVrf.put(vrfName, routes);
             for (AbstractRoute baseRoute : baseRoutes) {
-              baseRoute.setNode(hostname);
-              baseRoute.setVrf(vrfName);
               sb.append(String.format("- %s\n", baseRoute.fullString()));
             }
           }
@@ -1042,14 +1053,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             SortedSet<AbstractRoute> deltaRoutes = deltaRoutesByVrf.get(vrfName);
             if (baseRoutes == null) {
               for (AbstractRoute deltaRoute : deltaRoutes) {
-                deltaRoute.setNode(hostname);
-                deltaRoute.setVrf(vrfName);
                 sb.append(String.format("+ %s\n", deltaRoute.fullString()));
               }
             } else if (deltaRoutes == null) {
               for (AbstractRoute baseRoute : baseRoutes) {
-                baseRoute.setNode(hostname);
-                baseRoute.setVrf(vrfName);
                 sb.append(String.format("- %s\n", baseRoute.fullString()));
               }
             } else {
@@ -1058,13 +1065,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               SortedSet<AbstractRoute> prunedDeltaRoutes =
                   CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet::new);
               for (AbstractRoute baseRoute : prunedBaseRoutes) {
-                baseRoute.setNode(hostname);
-                baseRoute.setVrf(vrfName);
                 sb.append(String.format("- %s\n", baseRoute.fullString()));
               }
               for (AbstractRoute deltaRoute : prunedDeltaRoutes) {
-                deltaRoute.setNode(hostname);
-                deltaRoute.setVrf(vrfName);
                 sb.append(String.format("+ %s\n", deltaRoute.fullString()));
               }
             }
