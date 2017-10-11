@@ -7,9 +7,6 @@ interface Ethernet1
 interface Loopback0
    ip address 1.0.0.1/32
 !
-interface Loopback1
-   ip address 1.0.0.2/32
-!
 ip routing
 !
 router bgp 1
@@ -18,6 +15,5 @@ router bgp 1
    router-id 2.0.0.1
    neighbor 10.12.0.2 remote-as 2
    network 1.0.0.1/32
-   network 1.0.0.2/32
 !
 end

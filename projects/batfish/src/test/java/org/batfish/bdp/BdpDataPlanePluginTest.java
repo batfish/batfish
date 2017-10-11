@@ -197,10 +197,10 @@ public class BdpDataPlanePluginTest {
     Set<Prefix> r2bPrefixes =
         r2bRoutes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
-    Prefix r1Loopback1Prefix = new Prefix("1.0.0.2/32");
+    // Ensure that r1loopback was accepted by r2a despite r1 having identical route ID (but uses
+    // ebgp)
     assertTrue(r2aPrefixes.contains(r1Loopback0Prefix));
-    assertTrue(r2aPrefixes.contains(r1Loopback1Prefix));
+    // Check that r1loopback was propagated to r2b correctly
     assertTrue(r2bPrefixes.contains(r1Loopback0Prefix));
-    assertTrue(r2bPrefixes.contains(r1Loopback1Prefix));
   }
 }
