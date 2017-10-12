@@ -51,8 +51,13 @@ public class CiscoGrammarTest {
         CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
     configurationText.put(configurationName, aaaNewmodelConfigurationText);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
-            configurationText, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configurationText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Configuration newModelConfiguration = configurations.get("aaaNewmodel");
     boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
@@ -68,7 +73,7 @@ public class CiscoGrammarTest {
     String[] configurationNames = new String[] {"r1", "r2"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -96,7 +101,7 @@ public class CiscoGrammarTest {
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);
