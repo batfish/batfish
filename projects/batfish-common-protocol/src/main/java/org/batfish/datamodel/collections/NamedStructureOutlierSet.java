@@ -7,7 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.SortedSet;
 
+import org.batfish.role.OutliersHypothesis;
+
 public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOutlierSet<T>> {
+
+  private static final String PROP_HYPOTHESIS = "hypothesis";
 
   private static final String PROP_NAME = "name";
 
@@ -19,34 +23,43 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
 
   private static final String PROP_OUTLIERS = "outliers";
 
-  /** A lower bound on the probability at which a hypothesis should be considered to be true */
-  private static final double THRESHOLD_PROBABILITY = 0.9;
+  // the hypothesis used to identify outliers
+  private OutliersHypothesis _hypothesis;
 
-  /** The nodes that satisfy the above hypothesis */
-  private SortedSet<String> _conformers;
+  /** The name of the structure type (e.g., CommunityList, IpAccessList)
+   * for which we are performing outlier detection */
+  private String _structType;
 
-  /** The name of the structure */
+  /** The name of the structure for which we are performing outlier detection */
   private String _name;
 
   /**
-   * The structure definition that is hypothesized to be the correct one. If null, represents a
-   * hypothesis that no such named structure should exist in a node.
+   * If the hypothesis is SAME_DEFINITION, this field contains the structure definition that is
+   * hypothesized to be the correct one.  If the hypothesis is SAME_NAME, this field is non-null
+   * if the hypothesis is that a structure of this name should exist and null if the hypothesis
+   * is that a structure of this name should not exist.
    */
   private T _namedStructure;
 
-  /** The nodes that violate the above hypothesis */
+  /** A lower bound on the probability at which a hypothesis should be considered to be true */
+  private static final double THRESHOLD_PROBABILITY = 0.9;
+
+  /** The nodes that satisfy the hypothesis */
+  private SortedSet<String> _conformers;
+
+  /** The nodes that violate the hypothesis */
   private SortedSet<String> _outliers;
 
-  /** The name of the structure type (e.g., CommunityList, IpAccessList) */
-  private String _structType;
 
   @JsonCreator
   public NamedStructureOutlierSet(
+      @JsonProperty(PROP_HYPOTHESIS) OutliersHypothesis hypothesis,
       @JsonProperty(PROP_STRUCT_TYPE) String structType,
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_NAMED_STRUCT_TYPES) T namedStructure,
       @JsonProperty(PROP_CONFORMERS) SortedSet<String> conformers,
       @JsonProperty(PROP_OUTLIERS) SortedSet<String> outliers) {
+    _hypothesis = hypothesis;
     _structType = structType;
     _name = name;
     _namedStructure = namedStructure;
@@ -80,6 +93,12 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
     return _structType.equals(rhs.getStructType()) && _name.equals(rhs.getName());
   }
 
+  @JsonProperty(PROP_HYPOTHESIS)
+  public OutliersHypothesis getHypothesis() {
+    return _hypothesis;
+  }
+
+  @JsonProperty(PROP_CONFORMERS)
   public SortedSet<String> getConformers() {
     return _conformers;
   }
@@ -95,6 +114,7 @@ public class NamedStructureOutlierSet<T> implements Comparable<NamedStructureOut
     return _namedStructure;
   }
 
+  @JsonProperty(PROP_OUTLIERS)
   public SortedSet<String> getOutliers() {
     return _outliers;
   }
