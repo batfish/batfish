@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpRoute;
@@ -25,21 +27,11 @@ public class NamedAsPathSet extends AsPathSetExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof NamedAsPathSet)) {
       return false;
     }
     NamedAsPathSet other = (NamedAsPathSet) obj;
-    if (_name == null) {
-      if (other._name != null) {
-        return false;
-      }
-    } else if (!_name.equals(other._name)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_name, other._name);
   }
 
   public String getName() {
@@ -82,5 +74,13 @@ public class NamedAsPathSet extends AsPathSetExpr {
 
   public void setName(String name) {
     _name = name;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(NamedAsPathSet.class)
+        .omitNullValues()
+        .add("name", _name)
+        .toString();
   }
 }
