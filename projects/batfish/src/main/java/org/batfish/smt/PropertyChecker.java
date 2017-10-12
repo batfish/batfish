@@ -220,8 +220,8 @@ public class PropertyChecker {
    * From the model, reconstruct the collection of Edges in
    * the graph that have been failed.
    */
-  private static Set<Edge> buildFailedLinks(Encoder enc, Model m) {
-    Set<GraphEdge> failed = new HashSet<>();
+  private static SortedSet<Edge> buildFailedLinks(Encoder enc, Model m) {
+    Set<GraphEdge> failed = new TreeSet<>();
     Graph g = enc.getMainSlice().getGraph();
     g.getEdgeMap()
         .forEach(
@@ -240,7 +240,7 @@ public class PropertyChecker {
               }
             });
     // Convert to Batfish Edge type
-    Set<Edge> failedEdges = new HashSet<>();
+    SortedSet<Edge> failedEdges = new TreeSet<>();
     for (GraphEdge ge : failed) {
       failedEdges.add(fromGraphEdge(ge));
     }
@@ -465,7 +465,7 @@ public class PropertyChecker {
         BoolExpr sourceVar = reach.get(source);
         if (isFalse(model, sourceVar)) {
           Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
-          Set<Edge> failedLinks = buildFailedLinks(enc, model);
+          SortedSet<Edge> failedLinks = buildFailedLinks(enc, model);
           Map<String, String> envRoutes = buildEnvRoutingTable(enc, model);
           Environment baseEnv =
               new Environment(
@@ -509,8 +509,8 @@ public class PropertyChecker {
         if (!Objects.equals(val1, val2)) {
           Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, model, source);
           Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
-          Set<Edge> failedLinksDiff = buildFailedLinks(enc, model);
-          Set<Edge> failedLinksBase = buildFailedLinks(enc2, model);
+          SortedSet<Edge> failedLinksDiff = buildFailedLinks(enc, model);
+          SortedSet<Edge> failedLinksBase = buildFailedLinks(enc2, model);
           Map<String, String> envRoutesDiff = buildEnvRoutingTable(enc, model);
           Map<String, String> envRoutesBase = buildEnvRoutingTable(enc2, model);
           Environment baseEnv =
