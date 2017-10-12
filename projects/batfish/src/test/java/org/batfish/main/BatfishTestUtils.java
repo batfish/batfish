@@ -70,11 +70,11 @@ public class BatfishTestUtils {
   }
 
   private static Batfish initBatfishFromTestrigText(
-      SortedMap<String, String> configurationText,
-      SortedMap<String, String> bgpTablesText,
-      SortedMap<String, String> hostsText,
-      SortedMap<String, String> iptablesFilesText,
-      SortedMap<String, String> routingTablesText,
+      @Nullable SortedMap<String, String> configurationText,
+      @Nullable SortedMap<String, String> bgpTablesText,
+      @Nullable SortedMap<String, String> hostsText,
+      @Nullable SortedMap<String, String> iptablesFilesText,
+      @Nullable SortedMap<String, String> routingTablesText,
       @Nullable TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
@@ -86,50 +86,15 @@ public class BatfishTestUtils {
     settings.setEnvironmentName("tempEnvironment");
     Batfish.initTestrigSettings(settings);
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
-    Path configsDir = testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    Path awsDir = testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
-    Path bgpTablesDir =
-        settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvironmentBgpTablesPath();
-    Path hostConfigsDir = testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    Path iptablesDir = testrigPath.resolve("iptables");
-    Path routingTablesDir =
-        settings
-            .getBaseTestrigSettings()
-            .getEnvironmentSettings()
-            .getEnvironmentRoutingTablesPath();
-    configsDir.toFile().mkdirs();
-    awsDir.toFile().mkdirs();
-    bgpTablesDir.toFile().mkdirs();
-    hostConfigsDir.toFile().mkdirs();
-    iptablesDir.toFile().mkdirs();
-    routingTablesDir.toFile().mkdirs();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
-    configurationText.forEach(
-        (filename, content) -> {
-          Path filePath = configsDir.resolve(filename);
-          CommonUtil.writeFile(filePath, content);
-        });
-    bgpTablesText.forEach(
-        (filename, content) -> {
-          Path filePath = bgpTablesDir.resolve(filename);
-          CommonUtil.writeFile(filePath, content);
-        });
-    hostsText.forEach(
-        (filename, content) -> {
-          Path filePath = hostConfigsDir.resolve(filename);
-          CommonUtil.writeFile(filePath, content);
-        });
-    iptablesFilesText.forEach(
-        (filename, content) -> {
-          Path filePath = iptablesDir.resolve(filename);
-          CommonUtil.writeFile(filePath, content);
-        });
-    routingTablesText.forEach(
-        (filename, content) -> {
-          Path filePath = routingTablesDir.resolve(filename);
-          CommonUtil.writeFile(filePath, content);
-        });
-
+    EnvironmentSettings envSettings = settings.getBaseTestrigSettings().getEnvironmentSettings();
+    envSettings.getEnvironmentBasePath().toFile().mkdirs();
+    writeTemporaryTestrigFiles(
+        configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+    writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
+    writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
+    writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(
             settings,
@@ -182,11 +147,11 @@ public class BatfishTestUtils {
    */
   public static Batfish getBatfishFromTestrigResource(
       String testrigResourcePrefix,
-      String[] configFilenames,
-      String[] bgpFilenames,
-      String[] hostFilenames,
-      String[] iptablesFilenames,
-      String[] rtFilenames,
+      @Nullable String[] configFilenames,
+      @Nullable String[] bgpFilenames,
+      @Nullable String[] hostFilenames,
+      @Nullable String[] iptablesFilenames,
+      @Nullable String[] rtFilenames,
       @Nullable TemporaryFolder tempFolder)
       throws IOException {
     SortedMap<String, String> configurationsText =
@@ -227,15 +192,25 @@ public class BatfishTestUtils {
    * @return New Batfish instance
    */
   public static Batfish getBatfishFromTestrigText(
-      SortedMap<String, String> configurationText,
-      SortedMap<String, String> bgpTablesText,
-      SortedMap<String, String> hostText,
-      SortedMap<String, String> iptablesText,
-      SortedMap<String, String> routingTablesText,
+      @Nullable SortedMap<String, String> configurationText,
+      @Nullable SortedMap<String, String> bgpTablesText,
+      @Nullable SortedMap<String, String> hostText,
+      @Nullable SortedMap<String, String> iptablesText,
+      @Nullable SortedMap<String, String> routingTablesText,
       @Nullable TemporaryFolder tempFolder)
       throws IOException {
-    if (!configurationText.isEmpty() && tempFolder == null) {
-      throw new BatfishException("tempFolder must be set for non-empty configurations");
+    if (tempFolder == null) {
+      if (configurationText != null && !configurationText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty configurations");
+      } else if (bgpTablesText != null && !bgpTablesText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty bgp tables");
+      } else if (hostText != null && !hostText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty host configurations");
+      } else if (iptablesText != null && !iptablesText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty iptables configurations");
+      } else if (routingTablesText != null && !routingTablesText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty routing tables");
+      }
     }
     return initBatfishFromTestrigText(
         configurationText, bgpTablesText, hostText, iptablesText, routingTablesText, tempFolder);
@@ -261,11 +236,24 @@ public class BatfishTestUtils {
   private static SortedMap<String, String> readTestrigResources(
       String testrigResourcePrefix, String subfolder, String[] filenames) {
     SortedMap<String, String> content = new TreeMap<>();
-    for (String filename : filenames) {
-      String path = String.format("%s/%s/%s", testrigResourcePrefix, subfolder, filename);
-      String text = CommonUtil.readResource(path);
-      content.put(filename, text);
+    if (filenames != null) {
+      for (String filename : filenames) {
+        String path = String.format("%s/%s/%s", testrigResourcePrefix, subfolder, filename);
+        String text = CommonUtil.readResource(path);
+        content.put(filename, text);
+      }
     }
     return content;
+  }
+
+  private static void writeTemporaryTestrigFiles(
+      @Nullable SortedMap<String, String> filesText, Path outputDirectory) {
+    if (filesText != null) {
+      filesText.forEach(
+          (filename, text) -> {
+            outputDirectory.toFile().mkdirs();
+            CommonUtil.writeFile(outputDirectory.resolve(filename), text);
+          });
+    }
   }
 }

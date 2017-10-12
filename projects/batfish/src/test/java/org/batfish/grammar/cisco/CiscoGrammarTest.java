@@ -71,19 +71,9 @@ public class CiscoGrammarTest {
   public void testBgpLocalAs() throws IOException {
     String testrigName = "bgp-local-as";
     String[] configurationNames = new String[] {"r1", "r2"};
-    String[] bgpTableNames = new String[] {};
-    String[] hostFilenames = new String[] {};
-    String[] iptablesFilenames = new String[] {};
-    String[] routingTableNames = new String[] {};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName,
-            configurationNames,
-            bgpTableNames,
-            hostFilenames,
-            iptablesFilenames,
-            routingTableNames,
-            _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -109,19 +99,9 @@ public class CiscoGrammarTest {
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
-    String[] bgpTableNames = new String[] {};
-    String[] hostFilenames = new String[] {};
-    String[] iptablesFilenames = new String[] {};
-    String[] routingTableNames = new String[] {};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName,
-            configurationNames,
-            bgpTableNames,
-            hostFilenames,
-            iptablesFilenames,
-            routingTableNames,
-            _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);
