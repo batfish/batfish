@@ -40,7 +40,6 @@ import org.batfish.symbolic.utils.Tuple;
  */
 
 // TODO list
-// - Keep ACLs and static routes as separate BDDs?
 // - How does this interact with the following:
 //    + iBGP
 //    + Route Reflectors
