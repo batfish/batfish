@@ -746,6 +746,27 @@ class EncoderSlice {
     return mkAnd(mkGe(x, mkInt(y)), mkLt(x, upperBound));
   }
 
+  private BoolExpr firstBitsEqual(BitVecExpr x, long y, int n) {
+    assert (n >= 0 && n <= 32);
+    if (n == 0) {
+      return mkTrue();
+    }
+
+    int m = 0;
+    for (int i = 0; i < n; i++) {
+      m |= (1 << (31 - i));
+    }
+
+    //System.out.println("firstBitsEqual(" + x + "," + y + "," + n + ")");
+    BitVecExpr mask = getCtx().mkBV(m, 32);
+    BitVecExpr val = getCtx().mkBV(y, 32);
+    //System.out.println("mask: " + mask);
+    //System.out.println("val: " + val);
+    //System.out.println("test: " + mkEq(getCtx().mkBVAND(x, mask), getCtx().mkBVAND(val, mask)));
+    return mkEq(getCtx().mkBVAND(x, mask), getCtx().mkBVAND(val, mask));
+  }
+
+
   /*
    * Creates a symbolic expression representing that prefix p
    * is relevant (the first bits match) with arithmetic expression ae
@@ -753,6 +774,11 @@ class EncoderSlice {
   public BoolExpr isRelevantFor(Prefix p, ArithExpr ae) {
     long pfx = p.getNetworkAddress().asLong();
     return firstBitsEqual(ae, pfx, p.getPrefixLength());
+  }
+
+  public BoolExpr isRelevantFor(Prefix p, BitVecExpr be) {
+    long pfx = p.getNetworkAddress().asLong();
+    return firstBitsEqual(be, pfx, p.getPrefixLength());
   }
 
   /*
@@ -1348,12 +1374,6 @@ class EncoderSlice {
     ArithExpr upperBound16 = mkInt((long) Math.pow(2, 16));
     ArithExpr upperBound32 = mkInt((long) Math.pow(2, 32));
     ArithExpr zero = mkInt(0);
-
-    // Valid 32 bit integers
-    add(mkGe(_symbolicPacket.getDstIp(), zero));
-    add(mkGe(_symbolicPacket.getSrcIp(), zero));
-    add(mkLt(_symbolicPacket.getDstIp(), upperBound32));
-    add(mkLt(_symbolicPacket.getSrcIp(), upperBound32));
 
     // Valid 16 bit integer
     add(mkGe(_symbolicPacket.getDstPort(), zero));
@@ -2040,10 +2060,12 @@ class EncoderSlice {
                   BoolExpr connectedWillSend;
                   if (other == null || getGraph().isHost(ge.getPeer())) {
                     Ip ip = ge.getStart().getPrefix().getAddress();
-                    connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), mkInt(ip.asLong())));
+                    BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
+                    connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), val));
                   } else {
                     Ip ip = other.getStart().getPrefix().getAddress();
-                    connectedWillSend = mkEq(_symbolicPacket.getDstIp(), mkInt(ip.asLong()));
+                    BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
+                    connectedWillSend = mkEq(_symbolicPacket.getDstIp(), val);
                   }
                   BoolExpr canSend = (proto.isConnected() ? connectedWillSend : mkTrue());
 
@@ -2107,13 +2129,11 @@ class EncoderSlice {
   /*
    * Convert a set of wildcards and a packet field to a symbolic boolean expression
    */
-  private BoolExpr computeWildcardMatch(Set<IpWildcard> wcs, ArithExpr field) {
+  private BoolExpr computeWildcardMatch(Set<IpWildcard> wcs, BitVecExpr field) {
     BoolExpr acc = mkFalse();
     for (IpWildcard wc : wcs) {
-      if (!wc.isPrefix()) {
-        throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
-      }
-      acc = mkOr(acc, isRelevantFor(wc.toPrefix(), field));
+      ipWildCardBound(field, wc);
+      acc = mkOr(acc, ipWildCardBound(field, wc));
     }
     return (BoolExpr) acc.simplify();
   }
@@ -3043,12 +3063,22 @@ class EncoderSlice {
   /*
    * Create a boolean expression for a variable being withing an IpWildCard bound
    */
-  private BoolExpr ipWildCardBound(ArithExpr e, IpWildcard ipWildcard) {
+  /* private BoolExpr ipWildCardBound(ArithExpr e, IpWildcard ipWildcard) {
     if (!ipWildcard.isPrefix()) {
       throw new BatfishException("Unsupported IP wildcard: " + ipWildcard);
     }
     Prefix p = ipWildcard.toPrefix().getNetworkPrefix();
     return boundConstraint(e, p);
+  } */
+
+  private BoolExpr ipWildCardBound(BitVecExpr field, IpWildcard wc) {
+    BitVecExpr ip = getCtx().mkBV(wc.getIp().asLong(), 32);
+    BitVecExpr mask = getCtx().mkBV(~wc.getWildcard().asLong(), 32);
+    //System.out.println("ipWildCardBound");
+    //System.out.println("ip: " + ip);
+    //System.out.println("mask: " + mask);
+    //System.out.println("test: " + ));
+    return mkEq(getCtx().mkBVAND(field, mask), getCtx().mkBVAND(ip, mask));
   }
 
   /*
