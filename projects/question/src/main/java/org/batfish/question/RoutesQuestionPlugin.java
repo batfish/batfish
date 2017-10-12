@@ -341,7 +341,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                 "%s and %s flags are mutually exclusive",
                 RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_AGAINST_ENVIRONMENT));
       }
-      if (question._againstEnvironment && question._fromEnvironment) {
+      if (question._againstEnvironment && question._detail) {
         throw new BatfishException(
             String.format(
                 "%s and %s flags together are currently unsupported",
