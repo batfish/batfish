@@ -1,9 +1,9 @@
 package org.batfish.bdp;
 
 import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -170,9 +170,9 @@ public class BdpDataPlanePluginTest {
     Prefix r3Loopback0Prefix = new Prefix("3.0.0.3/32");
 
     // Ensure that r3loopback was accepted by r1
-    assertThat(r1Prefixes, contains(r3Loopback0Prefix));
+    assertThat(r3Loopback0Prefix, isIn(r1Prefixes));
     // Check the other direction (r1loopback is accepted by r3)
-    assertThat(r3Prefixes, contains(r1Loopback0Prefix));
+    assertThat(r1Loopback0Prefix, isIn(r3Prefixes));
   }
 
   @Test
@@ -229,9 +229,9 @@ public class BdpDataPlanePluginTest {
     Prefix r1AdvertisedPrefix = new Prefix("9.9.9.9/32");
 
     // Ensure that the prefix is accepted by r2, because router ids are different
-    assertThat(r2Prefixes, contains(r1AdvertisedPrefix));
+    assertThat(r1AdvertisedPrefix, isIn(r2Prefixes));
     // Ensure that the prefix is rejected by r3, because router ids are the same
-    assertThat(r3Prefixes, not(contains(r1AdvertisedPrefix)));
+    assertThat(r1AdvertisedPrefix, not(isIn(r3Prefixes)));
   }
 
   @Test
