@@ -161,8 +161,9 @@ public class Encoder {
         Tactic t1 = _ctx.mkTactic("simplify");
         Tactic t2 = _ctx.mkTactic("propagate-values");
         Tactic t3 = _ctx.mkTactic("solve-eqs");
-        Tactic t4 = _ctx.mkTactic("smt");
-        Tactic t = _ctx.then(t1, t2, t3, t4);
+        Tactic t4 = _ctx.mkTactic("bit-blast");
+        Tactic t5 = _ctx.mkTactic("smt");
+        Tactic t = _ctx.then(t1, t2, t3, t4, t5);
         _solver = _ctx.mkSolver(t);
         // System.out.println("Help: \n" + _solver.getHelp());
       }
@@ -531,7 +532,7 @@ public class Encoder {
     // If user asks for the full model
     _allVariables.forEach(
         (name, e) -> {
-          Expr val = m.evaluate(e, false);
+          Expr val = m.evaluate(e, true);
           if (!val.equals(e)) {
             String s = val.toString();
             if (_question.getFullModel()) {
@@ -802,12 +803,12 @@ public class Encoder {
     VerificationStats stats =
         new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
 
-    if (ENABLE_DEBUGGING) {
-      System.out.println("Constraints: " + stats.getNumConstraints());
-      System.out.println("Variables: " + stats.getNumVariables());
-      System.out.println("Z3 Time: " + stats.getTime());
-    }
-    // System.out.println("Stats:\n" + _solver.getStatistics());
+    //if (ENABLE_DEBUGGING) {
+    //System.out.println("Constraints: " + stats.getNumConstraints());
+    //System.out.println("Variables: " + stats.getNumVariables());
+    //System.out.println("Z3 Time: " + stats.getTime());
+    //System.out.println("Stats: \n" + _solver.getStatistics());
+    //}
 
     if (status == Status.UNSATISFIABLE) {
       VerificationResult res = new VerificationResult(true, null, null, null, null, null);
