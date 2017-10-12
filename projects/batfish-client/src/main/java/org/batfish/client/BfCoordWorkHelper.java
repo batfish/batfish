@@ -1121,7 +1121,7 @@ public class BfCoordWorkHelper {
   }
 
   public boolean uploadTestrig(
-      String containerName, String testrigName, String zipfileName, boolean autoProcess) {
+      String containerName, String testrigName, String zipfileName, boolean autoAnalyze) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_TESTRIG);
 
@@ -1133,7 +1133,7 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
       addFileMultiPart(multiPart, CoordConsts.SVC_KEY_ZIPFILE, zipfileName);
       addTextMultiPart(
-          multiPart, CoordConsts.SVC_KEY_AUTO_PROCESS_TESTRIG, String.valueOf(autoProcess));
+          multiPart, CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG, String.valueOf(autoAnalyze));
 
       return postData(webTarget, multiPart) != null;
     } catch (Exception e) {

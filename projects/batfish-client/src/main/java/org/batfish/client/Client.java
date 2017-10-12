@@ -1682,10 +1682,10 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
 
-    boolean autoProcess = false;
+    boolean autoAnalyze = false;
     if (options.size() == 1) {
-      if (options.get(0).equals("-autoprocess")) {
-        autoProcess = true;
+      if (options.get(0).equals("-autoanalyze")) {
+        autoAnalyze = true;
       } else {
         _logger.errorf("Unknown option: %s\n", options.get(0));
         printUsage(command);
@@ -1709,13 +1709,13 @@ public class Client extends AbstractClient implements IClient {
       _logger.output("\n");
     }
 
-    if (!uploadTestrig(testrigLocation, testrigName, autoProcess)) {
+    if (!uploadTestrig(testrigLocation, testrigName, autoAnalyze)) {
       unsetTestrig(delta);
       return false;
     }
     _logger.output("Uploaded testrig.\n");
 
-    if (!autoProcess) {
+    if (!autoAnalyze) {
       _logger.output("Parsing now.\n");
       WorkItem wItemParse =
           WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
@@ -2894,7 +2894,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoProcess) {
+  private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoAnalyze) {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
@@ -2905,7 +2905,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       boolean result =
           _workHelper.uploadTestrig(
-              _currContainerName, testrigName, uploadTarget.toString(), autoProcess);
+              _currContainerName, testrigName, uploadTarget.toString(), autoAnalyze);
       return result;
     } finally {
       if (createZip) {

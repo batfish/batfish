@@ -842,7 +842,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public void initTestrig(
-      String containerName, String testrigName, Path srcDir, boolean autoProcess) {
+      String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
     /*-
@@ -880,7 +880,7 @@ public class WorkMgr extends AbstractCoordinator {
       CommonUtil.copy(subFile, target);
     }
 
-    if (autoProcess) {
+    if (autoAnalyze) {
       List<WorkItem> autoWorkQueue = new LinkedList<>();
 
       WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName, false);
@@ -1209,7 +1209,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public void uploadTestrig(
-      String containerName, String testrigName, InputStream fileStream, boolean autoProcess) {
+      String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
     if (Files.exists(testrigDir)) {
@@ -1224,7 +1224,7 @@ public class WorkMgr extends AbstractCoordinator {
     UnzipUtility.unzip(zipFile, unzipDir);
 
     try {
-      initTestrig(containerName, testrigName, unzipDir, autoProcess);
+      initTestrig(containerName, testrigName, unzipDir, autoAnalyze);
     } catch (Exception e) {
       throw new BatfishException("Error initializing testrig", e);
     } finally {
