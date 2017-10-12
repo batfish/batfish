@@ -804,12 +804,11 @@ public class Encoder {
         new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
 
     //if (ENABLE_DEBUGGING) {
-    //System.out.println("Constraints: " + stats.getNumConstraints());
-    //System.out.println("Variables: " + stats.getNumVariables());
-    //System.out.println("Z3 Time: " + stats.getTime());
-    //System.out.println("Stats: \n" + _solver.getStatistics());
+    System.out.println("Constraints: " + stats.getNumConstraints());
+    System.out.println("Variables: " + stats.getNumVariables());
+    System.out.println("Z3 Time: " + stats.getTime());
+    System.out.println("Stats: \n" + _solver.getStatistics());
     //}
-    // System.out.println("Stats:\n" + _solver.getStatistics());
 
     if (status == Status.UNSATISFIABLE) {
       VerificationResult res = new VerificationResult(true, null, null, null, null, null);

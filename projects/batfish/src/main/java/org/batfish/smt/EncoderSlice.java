@@ -751,18 +751,12 @@ class EncoderSlice {
     if (n == 0) {
       return mkTrue();
     }
-
     int m = 0;
     for (int i = 0; i < n; i++) {
       m |= (1 << (31 - i));
     }
-
-    //System.out.println("firstBitsEqual(" + x + "," + y + "," + n + ")");
     BitVecExpr mask = getCtx().mkBV(m, 32);
     BitVecExpr val = getCtx().mkBV(y, 32);
-    //System.out.println("mask: " + mask);
-    //System.out.println("val: " + val);
-    //System.out.println("test: " + mkEq(getCtx().mkBVAND(x, mask), getCtx().mkBVAND(val, mask)));
     return mkEq(getCtx().mkBVAND(x, mask), getCtx().mkBVAND(val, mask));
   }
 
@@ -3074,10 +3068,6 @@ class EncoderSlice {
   private BoolExpr ipWildCardBound(BitVecExpr field, IpWildcard wc) {
     BitVecExpr ip = getCtx().mkBV(wc.getIp().asLong(), 32);
     BitVecExpr mask = getCtx().mkBV(~wc.getWildcard().asLong(), 32);
-    //System.out.println("ipWildCardBound");
-    //System.out.println("ip: " + ip);
-    //System.out.println("mask: " + mask);
-    //System.out.println("test: " + ));
     return mkEq(getCtx().mkBVAND(field, mask), getCtx().mkBVAND(ip, mask));
   }
 
