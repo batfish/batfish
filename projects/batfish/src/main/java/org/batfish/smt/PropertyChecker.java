@@ -221,7 +221,7 @@ public class PropertyChecker {
    * the graph that have been failed.
    */
   private static SortedSet<Edge> buildFailedLinks(Encoder enc, Model m) {
-    Set<GraphEdge> failed = new TreeSet<>();
+    Set<GraphEdge> failed = new HashSet<>();
     Graph g = enc.getMainSlice().getGraph();
     g.getEdgeMap()
         .forEach(
