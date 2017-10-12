@@ -1,10 +1,12 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchAsPath extends BooleanExpr {
+public final class MatchAsPath extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -23,21 +25,11 @@ public class MatchAsPath extends BooleanExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof MatchAsPath)) {
       return false;
     }
     MatchAsPath other = (MatchAsPath) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_expr, other._expr);
   }
 
   @Override
@@ -62,5 +54,14 @@ public class MatchAsPath extends BooleanExpr {
 
   public void setExpr(AsPathSetExpr expr) {
     _expr = expr;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(MatchAsPath.class)
+        .omitNullValues()
+        .add("comment", getComment())
+        .add("expr", _expr)
+        .toString();
   }
 }
