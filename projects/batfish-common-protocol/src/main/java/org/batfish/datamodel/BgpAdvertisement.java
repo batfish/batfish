@@ -435,13 +435,13 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         _med,
         _network,
         _nextHopIp,
-        _originType,
+        _originType.ordinal(),
         _originatorIp,
         _srcIp,
         _srcNode,
-        _srcProtocol,
+        _srcProtocol.ordinal(),
         _srcVrf,
-        _type,
+        _type.ordinal(),
         _weight);
   }
 

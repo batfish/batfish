@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Edge;
@@ -30,24 +30,25 @@ public class Environment {
 
   private final String _envName;
   private final String _testrigName;
-  private final Set<Edge> _edgeBlacklist;
-  private final Set<NodeInterfacePair> _interfaceBlacklist;
-  private final Set<String> _nodeBlacklist;
+  private final SortedSet<Edge> _edgeBlacklist;
+  private final SortedSet<NodeInterfacePair> _interfaceBlacklist;
+  private final SortedSet<String> _nodeBlacklist;
   private final Map<String, String> _bgpTables;
   private final Map<String, String> _routingTables;
-  private final Set<BgpAdvertisement> _externalBgpAnnouncements;
+  private final SortedSet<BgpAdvertisement> _externalBgpAnnouncements;
 
   @JsonCreator
   public Environment(
       @JsonProperty(PROP_ENV_NAME) String envName,
       @JsonProperty(PROP_TESTRIG_NAME) String testrigName,
-      @JsonProperty(PROP_EDGE_BLACKLIST) @Nullable Set<Edge> edgeBlacklist,
-      @JsonProperty(PROP_INTERFACE_BLACKLIST) @Nullable Set<NodeInterfacePair> interfaceBlacklist,
-      @JsonProperty(PROP_NODE_BLACKLIST) @Nullable Set<String> nodeBlacklist,
+      @JsonProperty(PROP_EDGE_BLACKLIST) @Nullable SortedSet<Edge> edgeBlacklist,
+      @JsonProperty(PROP_INTERFACE_BLACKLIST) @Nullable
+          SortedSet<NodeInterfacePair> interfaceBlacklist,
+      @JsonProperty(PROP_NODE_BLACKLIST) @Nullable SortedSet<String> nodeBlacklist,
       @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES) @Nullable Map<String, String> bgpTables,
       @JsonProperty(PROP_ENVIRONMENT_ROUTING_TABLES) @Nullable Map<String, String> routingTables,
       @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS) @Nullable
-          Set<BgpAdvertisement> externalBgpAnnouncements) {
+          SortedSet<BgpAdvertisement> externalBgpAnnouncements) {
     this._envName = envName;
     this._testrigName = testrigName;
     this._edgeBlacklist = edgeBlacklist;
@@ -69,17 +70,17 @@ public class Environment {
   }
 
   @JsonProperty(PROP_EDGE_BLACKLIST)
-  public Set<Edge> getEdgeBlacklist() {
+  public SortedSet<Edge> getEdgeBlacklist() {
     return _edgeBlacklist;
   }
 
   @JsonProperty(PROP_INTERFACE_BLACKLIST)
-  public Set<NodeInterfacePair> getInterfaceBlacklist() {
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
     return _interfaceBlacklist;
   }
 
   @JsonProperty(PROP_NODE_BLACKLIST)
-  public Set<String> getNodeBlacklist() {
+  public SortedSet<String> getNodeBlacklist() {
     return _nodeBlacklist;
   }
 
@@ -94,7 +95,7 @@ public class Environment {
   }
 
   @JsonProperty(PROP_EXTERNAL_BGP_ANNOUNCEMENTS)
-  public Set<BgpAdvertisement> getExternalBgpAnnouncements() {
+  public SortedSet<BgpAdvertisement> getExternalBgpAnnouncements() {
     return _externalBgpAnnouncements;
   }
 
