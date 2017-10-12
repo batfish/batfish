@@ -7023,6 +7023,11 @@ NOE
    'noe'
 ;
 
+NOHANGUP
+:
+   'nohangup'
+;
+
 NON500_ISAKMP
 :
    'non500-isakmp'
