@@ -93,6 +93,9 @@ public class BDDPacket {
 
     // Initialize integer values
     int idx = 0;
+    _ipProtocol = BDDInteger.makeFromIndex(factory, 8, idx);
+    addBitNames("ipProtocol", 8, idx);
+    idx += 8;
     _dstIp = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("dstIp", 32, idx);
     idx += 32;
@@ -105,9 +108,6 @@ public class BDDPacket {
     _srcPort = BDDInteger.makeFromIndex(factory, 16, idx);
     addBitNames("srcPort", 16, idx);
     idx += 16;
-    _ipProtocol = BDDInteger.makeFromIndex(factory, 8, idx);
-    addBitNames("ipProtocol", 8, idx);
-    idx += 8;
     _icmpCode = BDDInteger.makeFromIndex(factory, 8, idx);
     addBitNames("icmpCode", 8, idx);
     idx += 8;

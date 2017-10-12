@@ -35,6 +35,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
@@ -186,4 +187,6 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
 
   AnswerElement abstraction();
+
+  AnswerElement roles(EquivalenceType t);
 }

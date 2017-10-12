@@ -941,7 +941,11 @@ public class Graph {
       return null;
     }
     if (proto.isOspf()) {
-      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
+      OspfProcess p = conf.getDefaultVrf().getOspfProcess();
+      if (p == null) {
+        return null;
+      }
+      String exp = p.getExportPolicy();
       return conf.getRoutingPolicies().get(exp);
     }
     if (proto.isBgp()) {

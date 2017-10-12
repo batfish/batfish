@@ -83,7 +83,7 @@ public class AclBDD {
     for (SubRange range : ranges) {
       int start = range.getStart();
       int end = range.getEnd();
-      System.out.println("Range: " + start + "--" + end);
+      // System.out.println("Range: " + start + "--" + end);
       if (start == end) {
         BDD isValue = field.value(start);
         acc = acc.or(isValue);
@@ -176,7 +176,7 @@ public class AclBDD {
     Collections.reverse(lines);
 
     for (IpAccessListLine l : lines) {
-      System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
+      // System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
 
       BDD local = null;
 

@@ -12,8 +12,6 @@ public class InterfacePolicy {
 
   private BDDRecord _bgpPolicy;
 
-  private BDDRecord _ospfPolicy;
-
   private Integer _ospfCost;
 
   private SortedSet<StaticRoute> _staticRoutes;
@@ -23,12 +21,10 @@ public class InterfacePolicy {
   public InterfacePolicy(
       BDD acl,
       BDDRecord bgpPolicy,
-      @Nullable BDDRecord ospfPolicy,
       @Nullable Integer ospfCost,
       @Nullable SortedSet<StaticRoute> staticRoutes) {
     this._acl = acl;
     this._bgpPolicy = bgpPolicy;
-    this._ospfPolicy = ospfPolicy;
     this._ospfCost = ospfCost;
     this._staticRoutes = staticRoutes;
   }
@@ -39,10 +35,6 @@ public class InterfacePolicy {
 
   public BDDRecord getBgpPolicy() {
     return _bgpPolicy;
-  }
-
-  public BDDRecord getOspfPolicy() {
-    return _ospfPolicy;
   }
 
   public Integer getOspfCost() {
@@ -62,7 +54,6 @@ public class InterfacePolicy {
     return Objects.equals(_acl, other._acl)
         && Objects.equals(_bgpPolicy, other._bgpPolicy)
         && Objects.equals(_ospfCost, other._ospfCost)
-        && Objects.equals(_ospfPolicy, other._ospfPolicy)
         && Objects.equals(_staticRoutes, other._staticRoutes);
   }
 
@@ -71,7 +62,6 @@ public class InterfacePolicy {
     int result = _ospfCost != null ? _ospfCost.hashCode() : 0;
     result = 31 * result + (_acl != null ? _acl.hashCode() : 0);
     result = 31 * result + (_bgpPolicy != null ? _bgpPolicy.hashCode() : 0);
-    result = 31 * result + (_ospfPolicy != null ? _ospfPolicy.hashCode() : 0);
     result = 31 * result + (_ospfCost != null ? _ospfCost.hashCode() : 0);
     result = 31 * result + (_staticRoutes != null ? _staticRoutes.hashCode() : 0);
     return result;

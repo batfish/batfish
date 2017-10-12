@@ -141,6 +141,7 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -4787,6 +4788,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement abstraction() {
-    return Abstractor.computeAbstraction(this);
+    Abstractor a = new Abstractor(this);
+    return a.computeAbstraction();
+  }
+
+  @Override
+  public AnswerElement roles(EquivalenceType t) {
+    Abstractor a = new Abstractor(this);
+    return a.computeRoles(t);
   }
 }
