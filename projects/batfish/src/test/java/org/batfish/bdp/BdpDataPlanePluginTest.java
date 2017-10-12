@@ -161,10 +161,8 @@ public class BdpDataPlanePluginTest {
         dataPlanePlugin.getRoutes();
     SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
-    Set<Prefix> r1Prefixes =
-        r1Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
-    Set<Prefix> r3Prefixes =
-        r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r1Prefixes = r1Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
     Prefix r3Loopback0Prefix = new Prefix("3.0.0.3/32");
     // Ensure that r3loopback was accepted by r1
@@ -220,10 +218,8 @@ public class BdpDataPlanePluginTest {
         dataPlanePlugin.getRoutes();
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
-    Set<Prefix> r2Prefixes =
-        r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
-    Set<Prefix> r3Prefixes =
-        r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r2Prefixes = r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     // 9.9.9.9/32 is the prefix we test with
     Prefix r1AdvertisedPrefix = new Prefix("9.9.9.9/32");
     // Ensure that the prefix is accepted by r2, because router ids are different
