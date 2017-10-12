@@ -15,5 +15,7 @@ public interface ICoordinator {
 
   Set<String> getContainerNames();
 
+  void initTestrig(Path testrigDir, Path srcDir, boolean autoProcess);
+
   void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin);
 }

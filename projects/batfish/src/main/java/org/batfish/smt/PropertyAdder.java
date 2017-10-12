@@ -1,6 +1,7 @@
 package org.batfish.smt;
 
 import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -146,8 +147,8 @@ public class PropertyAdder {
                   }
                   // Also reachable if connected route and we use it despite not forwarding
                   if (r != null) {
-                    ArithExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-                    ArithExpr ip = ctx.mkInt(ge.getStart().getPrefix().getAddress().asLong());
+                    BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+                    BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
                     BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
                     isAbsorbed = ctx.mkOr(isAbsorbed, reach);
                   }
@@ -347,8 +348,8 @@ public class PropertyAdder {
                   }
                   // Also reachable if connected route and we use it despite not forwarding
                   if (r != null) {
-                    ArithExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-                    ArithExpr ip = ctx.mkInt(ge.getStart().getPrefix().getAddress().asLong());
+                    BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+                    BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
                     BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
                     isAbsorbed = ctx.mkOr(isAbsorbed, reach);
                   }

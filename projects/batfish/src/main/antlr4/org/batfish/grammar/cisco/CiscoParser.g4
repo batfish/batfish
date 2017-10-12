@@ -3636,6 +3636,7 @@ vi_address_family
 u
 :
    u_encrypted_password
+   | u_nohangup
    | u_password
    | u_privilege
    | u_role
@@ -3644,6 +3645,11 @@ u
 u_encrypted_password
 :
    ENCRYPTED_PASSWORD pass = variable_permissive
+;
+
+u_nohangup
+:
+   NOHANGUP
 ;
 
 u_password

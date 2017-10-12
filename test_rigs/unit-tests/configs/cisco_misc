@@ -243,6 +243,7 @@ username rancid attributes
  group-lock value NOC-VPN
 username bob1 password 1 1234
 username bob2 privilege 1 password 1 1234
+Using 12345 out of 5678 bytes
 virtual-service
   signing level cisco
 vlan ifdescr detail

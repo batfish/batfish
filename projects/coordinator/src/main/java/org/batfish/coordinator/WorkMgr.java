@@ -1,20 +1,11 @@
 package org.batfish.coordinator;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +41,6 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.questions.Question.InstanceData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -636,62 +626,6 @@ public class WorkMgr extends AbstractCoordinator {
     return containerDir;
   }
 
-  private void addQuestion(Path file, Map<String, String> questions) {
-    String questionText = CommonUtil.readFile(file);
-    try {
-      JSONObject questionObj = new JSONObject(questionText);
-      if (questionObj.has(BfConsts.PROP_INSTANCE) && !questionObj.isNull(BfConsts.PROP_INSTANCE)) {
-        JSONObject instanceDataObj = questionObj.getJSONObject(BfConsts.PROP_INSTANCE);
-        String instanceDataStr = instanceDataObj.toString();
-        BatfishObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
-        InstanceData instanceData =
-            mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
-        String name = instanceData.getInstanceName();
-        questions.put(name.toLowerCase(), questionText);
-      } else {
-        throw new BatfishException("Question in file: '" + file + "' has no instance name");
-      }
-    } catch (JSONException | IOException e) {
-      throw new BatfishException("Failed to process question", e);
-    }
-  }
-
-  /**
-   * Fetches all questions from questions directory configured while running Coordinator
-   *
-   * @return {@link Map} of Question Names->Question Contents
-   */
-  public Map<String, String> getGlobalQuestions() {
-    Path questionsPath = Main.getSettings().getGlobalQuestionsDir();
-    Map<String, String> globalQuestions = new HashMap<>();
-    try {
-      checkNotNull(Main.getSettings().getGlobalQuestionsDir());
-      try {
-        Files.walkFileTree(
-            questionsPath,
-            EnumSet.of(FOLLOW_LINKS),
-            1,
-            new SimpleFileVisitor<Path>() {
-              @Override
-              public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                  throws IOException {
-                String filename = file.getFileName().toString();
-                if (filename.endsWith(".json")) {
-                  addQuestion(file, globalQuestions);
-                }
-                return FileVisitResult.CONTINUE;
-              }
-            });
-        return globalQuestions;
-      } catch (IOException e) {
-        throw new BatfishException("Failed to visit questions dir", e);
-      }
-    } catch (Exception e) {
-      // if walking through question dir fails, send an empty map of questions to the client
-      return globalQuestions;
-    }
-  }
-
   private Path getdirContainerAnalysis(String containerName, String analysisName) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
@@ -839,6 +773,49 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("failed to create directory '" + analysesDir + "'");
     }
     return containerName;
+  }
+
+  @Override
+  public void initTestrig(Path testrigDir,  Path srcDir, boolean autoProcess) {
+    /*-
+     * Sanity check what we got:
+     *    There should be just one top-level folder.
+     */
+    SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
+    if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
+      CommonUtil.deleteDirectory(testrigDir);
+      throw new BatfishException(
+          "Unexpected packaging of testrig. There should be just one top-level folder");
+    }
+    Path srcSubdir = srcDirEntries.iterator().next();
+    SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
+    Path srcTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+
+    // create empty default environment
+    Path defaultEnvironmentLeafDir =
+        testrigDir.resolve(
+            Paths.get(
+                BfConsts.RELPATH_ENVIRONMENTS_DIR,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                BfConsts.RELPATH_ENV_DIR));
+    defaultEnvironmentLeafDir.toFile().mkdirs();
+
+    // things look ok, now make the move
+    for (Path subFile : subFileList) {
+      Path target;
+      if (isEnvFile(subFile)) {
+        target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
+      } else {
+        target = srcTestrigDir.resolve(subFile.getFileName());
+      }
+      CommonUtil.copy(subFile, target);
+    }
+
+    if (autoProcess) {
+      //TODO: any logic to automatically parse, analyze the testrig should go here
+      //This can work by creating proper workitems, as done by Client, and calling queueWork
+      throw new BatfishException("Auto processing is not currently implemented");
+    }
   }
 
   private boolean isEnvFile(Path path) {
@@ -1145,45 +1122,17 @@ public class WorkMgr extends AbstractCoordinator {
     }
     Path zipFile = CommonUtil.createTempFile("testrig", ".zip");
     CommonUtil.writeStreamToFile(fileStream, zipFile);
-    Path unzipDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
+    Path unzipDir = CommonUtil.createTempDirectory("tr");
     UnzipUtility.unzip(zipFile, unzipDir);
 
-    /*-
-     * Sanity check what we got:
-     *    There should be just one top-level folder.
-     */
-    SortedSet<Path> unzipDirEntries = CommonUtil.getEntries(unzipDir);
-    if (unzipDirEntries.size() != 1 || !Files.isDirectory(unzipDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(testrigDir);
-      throw new BatfishException(
-          "Unexpected packaging of environment. There should be just one top-level folder");
+    try {
+      initTestrig(testrigDir, unzipDir, false);
+    } catch (Exception e) {
+      throw new BatfishException("Error initializing testrig", e);
+    } finally {
+      CommonUtil.deleteDirectory(unzipDir);
+      CommonUtil.delete(zipFile);
     }
-    Path unzipSubdir = unzipDirEntries.iterator().next();
-    SortedSet<Path> subFileList = CommonUtil.getEntries(unzipSubdir);
-
-    // create empty default environment
-    Path defaultEnvironmentLeafDir =
-        testrigDir.resolve(
-            Paths.get(
-                BfConsts.RELPATH_ENVIRONMENTS_DIR,
-                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                BfConsts.RELPATH_ENV_DIR));
-    defaultEnvironmentLeafDir.toFile().mkdirs();
-
-    // things look ok, now make the move
-    for (Path subFile : subFileList) {
-      Path target;
-      if (isEnvFile(subFile)) {
-        target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
-      } else {
-        target = unzipDir.resolve(subFile.getFileName());
-      }
-      CommonUtil.moveByCopy(subFile, target);
-    }
-
-    // delete the empty directory and the zip file
-    CommonUtil.deleteDirectory(unzipSubdir);
-    CommonUtil.delete(zipFile);
   }
 
   /**

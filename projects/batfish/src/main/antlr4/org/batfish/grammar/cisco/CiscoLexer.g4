@@ -7023,6 +7023,11 @@ NOE
    'noe'
 ;
 
+NOHANGUP
+:
+   'nohangup'
+;
+
 NON500_ISAKMP
 :
    'non500-isakmp'
@@ -11123,6 +11128,11 @@ USERNAME_PROMPT
 USERS
 :
    'users'
+;
+
+USING
+:
+   'Using'
 ;
 
 UTIL_INTERVAL
