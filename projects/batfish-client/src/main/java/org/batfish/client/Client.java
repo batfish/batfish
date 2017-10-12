@@ -1678,9 +1678,21 @@ public class Client extends AbstractClient implements IClient {
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
       throws Exception {
     Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
-    if (!isValidArgument(options, parameters, 0, 1, 2, command)) {
+    if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
       return false;
     }
+
+    boolean autoProcess = false;
+    if (options.size() == 1) {
+      if (options.get(0).equals("-autoprocess")) {
+        autoProcess = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(command);
+        return false;
+      }
+    }
+
     String testrigLocation = parameters.get(0);
     String testrigName =
         (parameters.size() > 1) ? parameters.get(1) : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID();
@@ -1697,18 +1709,21 @@ public class Client extends AbstractClient implements IClient {
       _logger.output("\n");
     }
 
-    if (!uploadTestrig(testrigLocation, testrigName)) {
+    if (!uploadTestrig(testrigLocation, testrigName, autoProcess)) {
       unsetTestrig(delta);
       return false;
     }
+    _logger.output("Uploaded testrig.\n");
 
-    _logger.output("Uploaded testrig. Parsing now.\n");
+    if (!autoProcess) {
+      _logger.output("Parsing now.\n");
+      WorkItem wItemParse =
+          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
 
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
-
-    if (!execute(wItemParse, outWriter)) {
-      unsetTestrig(delta);
-      return false;
+      if (!execute(wItemParse, outWriter)) {
+        unsetTestrig(delta);
+        return false;
+      }
     }
 
     if (!delta) {
@@ -2879,7 +2894,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean uploadTestrig(String fileOrDir, String testrigName) {
+  private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoProcess) {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
@@ -2889,7 +2904,8 @@ public class Client extends AbstractClient implements IClient {
     }
     try {
       boolean result =
-          _workHelper.uploadTestrig(_currContainerName, testrigName, uploadTarget.toString());
+          _workHelper.uploadTestrig(
+              _currContainerName, testrigName, uploadTarget.toString(), autoProcess);
       return result;
     } finally {
       if (createZip) {

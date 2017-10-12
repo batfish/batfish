@@ -16,6 +16,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -880,8 +881,37 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     if (autoProcess) {
+      List<WorkItem> autoWorkQueue = new LinkedList<>();
+
       WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName, false);
-      queueWork(parseWork);
+      autoWorkQueue.add(parseWork);
+
+      Set<String> analysisNames = listAnalyses(containerName);
+      for (String analysis : analysisNames) {
+        WorkItem analyzeWork =
+            WorkItemBuilder.getWorkItemRunAnalysis(
+                analysis,
+                containerName,
+                testrigName,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                null,
+                null,
+                false,
+                false);
+        autoWorkQueue.add(analyzeWork);
+      }
+
+      // NB: This way of doing things only works when we have a single worker; otherwise workitems
+      // lower down the order can get fired before those higher in the order
+      // The right solution is to put workitem2 on the queue only after workitem1 has finished
+      // successfully. The rightest solution is for workers to be aware of dependencies so they
+      // don't try to execute tasks that depend on other tasks that are currently being executed.
+
+      for (WorkItem workItem : autoWorkQueue) {
+        if (!queueWork(workItem)) {
+          throw new BatfishException("Unable to queue work while auto processing: " + workItem);
+        }
+      }
     }
   }
 

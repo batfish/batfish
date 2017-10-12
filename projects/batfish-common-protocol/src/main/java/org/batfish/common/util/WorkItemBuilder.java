@@ -62,7 +62,8 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemParse(String containerName, String testrigName, boolean doDelta) {
+  public static WorkItem getWorkItemParse(
+      String containerName, String testrigName, boolean doDelta) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");

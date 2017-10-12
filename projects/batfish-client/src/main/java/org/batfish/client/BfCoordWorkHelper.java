@@ -23,7 +23,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
@@ -1121,7 +1120,8 @@ public class BfCoordWorkHelper {
     }
   }
 
-  public boolean uploadTestrig(String containerName, String testrigName, String zipfileName) {
+  public boolean uploadTestrig(
+      String containerName, String testrigName, String zipfileName, boolean autoProcess) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_TESTRIG);
 
@@ -1132,6 +1132,8 @@ public class BfCoordWorkHelper {
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
       addFileMultiPart(multiPart, CoordConsts.SVC_KEY_ZIPFILE, zipfileName);
+      addTextMultiPart(
+          multiPart, CoordConsts.SVC_KEY_AUTO_PROCESS_TESTRIG, String.valueOf(autoProcess));
 
       return postData(webTarget, multiPart) != null;
     } catch (Exception e) {
