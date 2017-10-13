@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -247,8 +248,8 @@ public class PropertyChecker {
     return failedEdges;
   }
 
-  private static Map<String, String> buildEnvRoutingTable(Encoder enc, Model m) {
-    Map<String, String> routes = new TreeMap<>();
+  private static SortedMap<String, String> buildEnvRoutingTable(Encoder enc, Model m) {
+    SortedMap<String, String> routes = new TreeMap<>();
     EncoderSlice slice = enc.getMainSlice();
     LogicalGraph lg = slice.getLogicalGraph();
     lg.getEnvironmentVars()
@@ -466,7 +467,7 @@ public class PropertyChecker {
         if (isFalse(model, sourceVar)) {
           Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
           SortedSet<Edge> failedLinks = buildFailedLinks(enc, model);
-          Map<String, String> envRoutes = buildEnvRoutingTable(enc, model);
+          SortedMap<String, String> envRoutes = buildEnvRoutingTable(enc, model);
           Environment baseEnv =
               new Environment(
                   "BASE",
@@ -511,8 +512,8 @@ public class PropertyChecker {
           Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
           SortedSet<Edge> failedLinksDiff = buildFailedLinks(enc, model);
           SortedSet<Edge> failedLinksBase = buildFailedLinks(enc2, model);
-          Map<String, String> envRoutesDiff = buildEnvRoutingTable(enc, model);
-          Map<String, String> envRoutesBase = buildEnvRoutingTable(enc2, model);
+          SortedMap<String, String> envRoutesDiff = buildEnvRoutingTable(enc, model);
+          SortedMap<String, String> envRoutesBase = buildEnvRoutingTable(enc2, model);
           Environment baseEnv =
               new Environment(
                   "BASE",
