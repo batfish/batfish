@@ -3637,6 +3637,7 @@ u
 :
    u_encrypted_password
    | u_nohangup
+   | u_passphrase
    | u_password
    | u_privilege
    | u_role
@@ -3650,6 +3651,16 @@ u_encrypted_password
 u_nohangup
 :
    NOHANGUP
+;
+
+u_passphrase
+:
+   PASSPHRASE
+   (
+      GRACETIME gracetime = DEC
+      | LIFETIME lifetime = DEC
+      | WARNTIME warntime = DEC
+   )*
 ;
 
 u_password

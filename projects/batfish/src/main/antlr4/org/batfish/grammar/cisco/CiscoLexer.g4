@@ -4356,6 +4356,11 @@ GRACEFUL_RESTART
    'graceful-restart'
 ;
 
+GRACETIME
+:
+   'gracetime'
+;
+
 GRANT
 :
    'grant'
@@ -7451,6 +7456,11 @@ PASSIVE_INTERFACE
 PASSIVE_ONLY
 :
    'passive-only'
+;
+
+PASSPHRASE
+:
+   'passphrase'
 ;
 
 PASSWORD
@@ -11530,6 +11540,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WARNTIME
+:
+   'warntime'
 ;
 
 WATCHDOG
