@@ -5623,6 +5623,11 @@ LINK_TYPE
    'link-type'
 ;
 
+LINKDEBOUNCE
+:
+   'linkdebounce'
+;
+
 LIST
 :
    'list'
