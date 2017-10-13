@@ -175,6 +175,7 @@
         "juniper_ntp" : "juniper_ntp",
         "juniper_passwords" : "juniper_passwords",
         "juniper_relay" : "juniper_relay",
+        "juniper_route_filter" : "juniper_route_filter",
         "juniper_routing_options" : "juniper_routing_options",
         "juniper_snmp" : "juniper_snmp",
         "juniper_syslog" : "juniper_syslog",
@@ -403,6 +404,7 @@
         "juniper_ntp" : "PASSED",
         "juniper_passwords" : "PASSED",
         "juniper_relay" : "PASSED",
+        "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",
@@ -1700,6 +1702,16 @@
             ]
           }
         },
+        "juniper_route_filter" : {
+          "policy-statement" : {
+            "route-filter-test-v4" : [
+              4
+            ],
+            "route-filter-test-v6" : [
+              11
+            ]
+          }
+        },
         "local_v6_addr" : {
           "bgp group" : {
             "NEIGH" : [
@@ -2120,6 +2132,7 @@
         "juniper_ntp" : "PASSED",
         "juniper_passwords" : "PASSED",
         "juniper_relay" : "PASSED",
+        "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",

@@ -11001,6 +11001,160 @@
             }
           }
         },
+        "juniper_route_filter" : {
+          "name" : "juniper_route_filter",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "route-filter-test-v6:t1" : {
+              "name" : "route-filter-test-v6:t1",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "48-48",
+                  "prefix" : "2001:db8:1234:0:0:0:0:0/48"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "59-128",
+                  "prefix" : "2001:db8:1235:0:0:0:0:0/58"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "68-128",
+                  "prefix" : "2001:db8:1236:0:0:0:0:0/68"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "78-88",
+                  "prefix" : "2001:db8:1237:0:0:0:0:0/78"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "100-110",
+                  "prefix" : "2001:db8:1238:0:0:0:0:0/88"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "98-98",
+                  "prefix" : "2001:db8:1239:0:0:0:0:0/98"
+                }
+              ]
+            }
+          },
+          "routeFilterLists" : {
+            "route-filter-test-v4:t1" : {
+              "name" : "route-filter-test-v4:t1",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "16-16",
+                  "prefix" : "1.2.0.0/16"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "18-32",
+                  "prefix" : "1.3.0.0/17"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "18-32",
+                  "prefix" : "1.4.0.0/18"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "19-24",
+                  "prefix" : "1.5.0.0/19"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "26-29",
+                  "prefix" : "1.6.0.0/20"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "21-21",
+                  "prefix" : "1.7.0.0/21"
+                }
+              ]
+            }
+          },
+          "routingPolicies" : {
+            "route-filter-test-v4" : {
+              "name" : "route-filter-test-v4",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "t1",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "route-filter-test-v4:t1"
+                    }
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "Return"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                    "type" : "CallExprContext"
+                  }
+                }
+              ]
+            },
+            "route-filter-test-v6" : {
+              "name" : "route-filter-test-v6",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "t1",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork6"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set",
+                      "name" : "route-filter-test-v6:t1"
+                    }
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "Return"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                    "type" : "CallExprContext"
+                  }
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "juniper" : { }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "juniper_routing_options" : {
           "name" : "juniper_routing_options",
           "configurationFormat" : "FLAT_JUNIPER",
