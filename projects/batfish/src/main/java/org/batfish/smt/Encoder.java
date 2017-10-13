@@ -30,7 +30,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.questions.smt.EnvironmentType;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.smt.utils.Tuple;
 
@@ -896,10 +895,6 @@ public class Encoder {
 
   public Map<String, Expr> getAllVariables() {
     return _allVariables;
-  }
-
-  public EnvironmentType getEnvironmentType() {
-    return _question.getEnvironmentType();
   }
 
   public int getId() {

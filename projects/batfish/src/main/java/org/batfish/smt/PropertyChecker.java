@@ -72,6 +72,7 @@ public class PropertyChecker {
   public static AnswerElement computeForwarding(IBatfish batfish, HeaderQuestion q) {
     Encoder encoder = new Encoder(batfish, q);
     encoder.computeEncoding();
+    addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
     // result.debug(encoder.getMainSlice(), true, null);
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
@@ -470,14 +471,7 @@ public class PropertyChecker {
           SortedMap<String, String> envRoutes = buildEnvRoutingTable(enc, model);
           Environment baseEnv =
               new Environment(
-                  "BASE",
-                  batfish.getTestrigName(),
-                  failedLinks,
-                  null,
-                  null,
-                  null,
-                  envRoutes,
-                  null);
+                  "BASE", batfish.getTestrigName(), failedLinks, null, null, null, envRoutes, null);
           fh.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
         }
       }
@@ -597,7 +591,6 @@ public class PropertyChecker {
    * Relate the two packets from different network copies
    */
   private static BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
-    // Ensure packets are equal
     SymbolicPacket p1 = enc1.getMainSlice().getSymbolicPacket();
     SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
     return p1.mkEqual(p2);
@@ -607,7 +600,8 @@ public class PropertyChecker {
    * Adds additional constraints that certain edges should not be failed to avoid
    * trivial false positives.
    */
-  private static void addFailures(Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
+  private static void addFailureConstraints(
+      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     graph
         .getEdgeMap()
@@ -629,6 +623,27 @@ public class PropertyChecker {
                 }
               }
             });
+  }
+
+  /*
+   * Add constraints on the environment
+   */
+  private static void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
+    LogicalGraph lg = enc.getMainSlice().getLogicalGraph();
+    Context ctx = enc.getCtx();
+    switch (t) {
+      case ANY:
+        break;
+      case NONE:
+        lg.getEnvironmentVars().forEach((le, vars) -> enc.add(ctx.mkNot(vars.getPermitted())));
+        break;
+      case SANE:
+        lg.getEnvironmentVars()
+            .forEach((le, vars) -> enc.add(ctx.mkLe(vars.getMetric(), ctx.mkInt(50))));
+        break;
+      default:
+        break;
+    }
   }
 
   /*
@@ -654,6 +669,13 @@ public class PropertyChecker {
 
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
+
+    // Add environment constraints for base case
+    if (q.getDiffType() != null) {
+      addEnvironmentConstraints(enc, q.getDeltaEnvironmentType());
+    } else {
+      addEnvironmentConstraints(enc, q.getBaseEnvironmentType());
+    }
 
     // Add reachability variables
     PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
@@ -683,8 +705,10 @@ public class PropertyChecker {
 
       BoolExpr related = enc.mkTrue();
 
-      // relate environments if necessary
-      if (!q.getEnvDiff()) {
+      // Setup environment for the second copy
+      if (q.getEnvDiff()) {
+        addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
+      } else {
         related = relateEnvironments(enc, enc2);
       }
 
@@ -730,8 +754,7 @@ public class PropertyChecker {
     }
 
     // Only consider failures for allowed edges
-    addFailures(enc, destPorts, failOptions);
-
+    addFailureConstraints(enc, destPorts, failOptions);
 
     Tuple<VerificationResult, Model> result = enc.verify();
     VerificationResult res = result.getFirst();
@@ -980,7 +1003,7 @@ public class PropertyChecker {
     HeaderQuestion q = new HeaderQuestion();
     q.setFullModel(fullModel);
     q.setFailures(0);
-    q.setEnvironmentType(EnvironmentType.ANY);
+    q.setBaseEnvironmentType(EnvironmentType.ANY);
 
     Collections.sort(routers);
 
