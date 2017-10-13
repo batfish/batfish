@@ -703,7 +703,9 @@ public class PropertyChecker {
 
     // Add environment constraints for base case
     if (q.getDiffType() != null) {
-      addEnvironmentConstraints(enc, q.getDeltaEnvironmentType());
+      if (q.getEnvDiff()) {
+        addEnvironmentConstraints(enc, q.getDeltaEnvironmentType());
+      }
     } else {
       addEnvironmentConstraints(enc, q.getBaseEnvironmentType());
     }
@@ -737,9 +739,9 @@ public class PropertyChecker {
       BoolExpr related = enc.mkTrue();
 
       // Setup environment for the second copy
-      if (q.getEnvDiff()) {
-        addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
-      } else {
+      addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
+
+      if (!q.getEnvDiff()) {
         related = relateEnvironments(enc, enc2);
       }
 
