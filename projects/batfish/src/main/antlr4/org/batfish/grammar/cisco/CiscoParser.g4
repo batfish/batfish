@@ -3494,6 +3494,7 @@ system_null
       | FABRIC
       | FABRIC_MODE
       | FLOWCONTROL
+      | INTERFACE
       | JUMBOMTU
       | MODULE_TYPE
       | MTU
