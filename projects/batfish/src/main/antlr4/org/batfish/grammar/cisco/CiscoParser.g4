@@ -3496,6 +3496,7 @@ system_null
       | FLOWCONTROL
       | INTERFACE
       | JUMBOMTU
+      | MODE
       | MODULE_TYPE
       | MTU
       | QOS
