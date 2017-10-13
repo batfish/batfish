@@ -3,5 +3,6 @@ hostname nxos_system
 feature privilege
 !
 no system interface shutdown
+no system mode maintenance
 !
 

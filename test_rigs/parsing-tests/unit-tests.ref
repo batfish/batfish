@@ -41806,6 +41806,14 @@
             "        INTERFACE:'interface'  <== mode:DEFAULT_MODE",
             "        SHUTDOWN:'shutdown'  <== mode:M_Interface",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_system",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      SYSTEM:'system'  <== mode:DEFAULT_MODE",
+            "      (system_null",
+            "        MODE:'mode'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'maintenance'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
