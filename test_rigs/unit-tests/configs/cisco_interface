@@ -17,6 +17,7 @@ interface Ethernet0
  bridge-group 1 subscriber-loop-control
  bridge-group 1 spanning-disabledinterface Ethernet0/0
  no bridge-group 1 unicast-flooding
+ carrier-delay msec 100
  cdp enable
  channel 2462
  channel width 80
@@ -82,6 +83,7 @@ interface Ethernet0
  ip ospf dead-interval 40
  ip ospf demand-circuit
  ip ospf hello-interval 10
+ ip ospf message-digest-key 20 md5 7 0123456789ABCDEF012345
  ip ospf passive-interface
  ip ospf priority 1
  ip ospf retransmit-interval 5
@@ -92,6 +94,7 @@ interface Ethernet0
  no ip redirects
  no ip route-cache
  ip router isis
+ ip router ospf 1 area 0.1.2.3
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167

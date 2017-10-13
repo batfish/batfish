@@ -18751,17 +18751,29 @@
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (if_hsrp_null",
             "          AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'cisco'  <== mode:M_Authentication",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (if_hsrp_null",
+            "          AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
             "          TEXT:'text'  <== mode:M_Authentication",
             "          VARIABLE:'blah'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_hsrp_null",
-            "          NAME:'name'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'bloop'  <== mode:M_Name",
+            "        (if_hsrp_ip_address",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (if_hsrp_null",
             "          MAC_ADDRESS:'mac-address'  <== mode:DEFAULT_MODE",
             "          M_COMMENT_NON_NEWLINE:' 0123.4567.89AB'  <== mode:M_COMMENT",
             "          NEWLINE:'\\n'  <== mode:M_COMMENT)",
+            "        (if_hsrp_null",
+            "          NAME:'name'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'bloop'  <== mode:M_Name",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (if_hsrp_preempt",
+            "          NO:'no'  <== mode:DEFAULT_MODE",
+            "          PREEMPT:'preempt'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (if_hsrp_preempt",
             "          PREEMPT:'preempt'  <== mode:DEFAULT_MODE",
             "          DELAY:'delay'  <== mode:DEFAULT_MODE",
@@ -18785,10 +18797,6 @@
             "          TIMERS:'timers'  <== mode:DEFAULT_MODE",
             "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          DEC:'4'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_hsrp_ip_address",
-            "          IP:'ip'  <== mode:DEFAULT_MODE",
-            "          IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -18888,6 +18896,11 @@
             "        BRIDGE_GROUP:'bridge-group'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'unicast-flooding'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_block",
+            "        CARRIER_DELAY:'carrier-delay'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'msec'  <== mode:DEFAULT_MODE",
+            "        DEC:'100'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        CDP:'cdp'  <== mode:DEFAULT_MODE",
@@ -19279,6 +19292,15 @@
             "        HELLO_INTERVAL:'hello-interval'  <== mode:DEFAULT_MODE",
             "        DEC:'10'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_block",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "        MESSAGE_DIGEST_KEY:'message-digest-key'  <== mode:DEFAULT_MODE",
+            "        DEC:'20'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'md5'  <== mode:DEFAULT_MODE",
+            "        DEC:'7'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'0123456789ABCDEF012345'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_ip_ospf_passive_interface",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        OSPF:'ospf'  <== mode:DEFAULT_MODE",
@@ -19333,6 +19355,14 @@
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        ROUTER:'router'  <== mode:DEFAULT_MODE",
             "        ISIS:'isis'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_router_ospf_area",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "        OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        AREA:'area'  <== mode:DEFAULT_MODE",
+            "        IP_ADDRESS:'0.1.2.3'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -46029,41 +46059,41 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                97
+                100
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                74
+                75
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                66
+                67
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                100
+                103
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                45
+                46
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                77
+                78
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                78
+                79
               ]
             }
           }
