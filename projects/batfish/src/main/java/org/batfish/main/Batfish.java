@@ -4752,4 +4752,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
     return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
   }
+
+  @Override
+  public AnswerElement smtDeterminism(HeaderQuestion q) {
+    return PropertyChecker.computeDeterminism(this, q);
+  }
 }

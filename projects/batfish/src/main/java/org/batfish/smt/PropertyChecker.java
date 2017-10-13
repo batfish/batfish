@@ -45,6 +45,7 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.smt.EnvironmentType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.smt.answers.SmtDeterminismAnswerElement;
 import org.batfish.smt.answers.SmtManyAnswerElement;
 import org.batfish.smt.answers.SmtOneAnswerElement;
 import org.batfish.smt.answers.SmtReachabilityAnswerElement;
@@ -312,6 +313,20 @@ public class PropertyChecker {
       nhint = "dynamic";
     }
     return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx.getNetworkPrefix(), nhip, nhint);
+  }
+
+  /*
+   * Create a route from a graph edge
+   */
+  private static String buildRoute(EncoderSlice slice, Model m, GraphEdge ge) {
+    String router = ge.getRouter();
+    SymbolicDecisions decisions = slice.getSymbolicDecisions();
+    SymbolicRecord r = decisions.getBestNeighbor().get(router);
+    SymbolicPacket pkt = slice.getSymbolicPacket();
+    Flow f = buildFlow(m, pkt, router);
+    Prefix pfx = buildPrefix(r, m, f);
+    Protocol proto = buildProcotol(r, m, slice, router);
+    return buildRoute(pfx, proto, ge);
   }
 
   /*
@@ -587,6 +602,23 @@ public class PropertyChecker {
   }
 
   /*
+ * Creates a boolean expression that relates the environments of
+ * two separate network copies.
+ */
+  private static BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
+    BoolExpr related = enc1.mkTrue();
+    for (GraphEdge ge : enc1.getMainSlice().getGraph().getAllRealEdges()) {
+      ArithExpr a1 = enc1.getSymbolicFailures().getFailedVariable(ge);
+      ArithExpr a2 = enc2.getSymbolicFailures().getFailedVariable(ge);
+      assert a1 != null;
+      assert a2 != null;
+      related = enc1.mkEq(a1, a2);
+    }
+    return related;
+  }
+
+
+  /*
    * Relate the two packets from different network copies
    */
   private static BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
@@ -776,6 +808,79 @@ public class PropertyChecker {
     answer.setFlowHistory(fh);
     return answer;
   }
+
+
+  /*
+   * Check if there exist multiple stable solutions to the netowrk.
+   * If so, reports the forwarding differences between the two cases.
+   */
+  public static AnswerElement computeDeterminism(IBatfish batfish, HeaderQuestion q) {
+    Graph graph = new Graph(batfish);
+    Encoder enc1 = new Encoder(graph, q);
+    Encoder enc2 = new Encoder(enc1, graph, q);
+    enc1.computeEncoding();
+    enc2.computeEncoding();
+    addEnvironmentConstraints(enc1, q.getBaseEnvironmentType());
+
+    BoolExpr relatedFailures = relateFailures(enc1, enc2);
+    BoolExpr relatedEnvs = relateEnvironments(enc1, enc2);
+    BoolExpr relatedPkts = relatePackets(enc1, enc2);
+    BoolExpr related = enc1.mkAnd(relatedFailures, relatedEnvs, relatedPkts);
+    BoolExpr required = enc1.mkTrue();
+    for (GraphEdge ge : graph.getAllRealEdges()) {
+      SymbolicDecisions d1 = enc1.getMainSlice().getSymbolicDecisions();
+      SymbolicDecisions d2 = enc2.getMainSlice().getSymbolicDecisions();
+      BoolExpr dataFwd1 = d1.getDataForwarding().get(ge.getRouter(), ge);
+      BoolExpr dataFwd2 = d2.getDataForwarding().get(ge.getRouter(), ge);
+      assert dataFwd1 != null;
+      assert dataFwd2 != null;
+      required = enc1.mkAnd(required, enc1.mkEq(dataFwd1, dataFwd2));
+    }
+
+    enc1.add(related);
+    enc1.add(enc1.mkNot(required));
+
+    Tuple<VerificationResult, Model> tup = enc1.verify();
+    VerificationResult res = tup.getFirst();
+    Model model = tup.getSecond();
+
+    SortedSet<String> case1 = null;
+    SortedSet<String> case2 = null;
+    Flow flow = null;
+    if (!res.isVerified()) {
+      case1 = new TreeSet<>();
+      case2 = new TreeSet<>();
+      flow = buildFlow(model, enc1.getMainSlice().getSymbolicPacket(), "(none)");
+      for (GraphEdge ge : graph.getAllRealEdges()) {
+        SymbolicDecisions d1 = enc1.getMainSlice().getSymbolicDecisions();
+        SymbolicDecisions d2 = enc2.getMainSlice().getSymbolicDecisions();
+        BoolExpr dataFwd1 = d1.getDataForwarding().get(ge.getRouter(), ge);
+        BoolExpr dataFwd2 = d2.getDataForwarding().get(ge.getRouter(), ge);
+        String s1 = evaluate(model, dataFwd1);
+        String s2 = evaluate(model, dataFwd2);
+        if (!Objects.equals(s1, s2)) {
+          if ("true".equals(s1)) {
+            String route = buildRoute(enc1.getMainSlice(), model, ge);
+            String msg = ge + " -- " + route;
+            case1.add(msg);
+          }
+          if ("true".equals(s2)) {
+            String route = buildRoute(enc2.getMainSlice(), model, ge);
+            String msg = ge + " -- " + route;
+            case2.add(msg);
+          }
+        }
+      }
+    }
+
+    SmtDeterminismAnswerElement answer = new SmtDeterminismAnswerElement();
+    answer.setResult(res);
+    answer.setFlow(flow);
+    answer.setForwardingCase1(case1);
+    answer.setForwardingCase2(case2);
+    return answer;
+  }
+
 
   /*
    * Compute if there can ever be a black hole for routers that are
