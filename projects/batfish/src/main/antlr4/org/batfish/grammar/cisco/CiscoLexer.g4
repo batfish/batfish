@@ -13384,14 +13384,19 @@ M_MOTD_HASH_MOTD
 
 mode M_Name;
 
-M_Name_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
 M_Name_NAME
 :
    F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_Name_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Name_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_NEIGHBOR;
