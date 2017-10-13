@@ -958,6 +958,7 @@ ip_dhcp_relay_null
       ALWAYS_ON
       | INFORMATION
       | OPTION
+      | SOURCE_ADDRESS
       | SOURCE_INTERFACE
       | SUB_OPTION
       | USE_LINK_ADDRESS
