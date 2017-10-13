@@ -6,8 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import java.util.Collections;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -31,8 +30,10 @@ public class EnvironmentTest {
   @Test public void testConstructorAndGetter() {
     SortedSet<String> nodeBlacklist = Sets.newTreeSet();
     nodeBlacklist.add("node1");
-    Map<String, String> bgpTables = Collections.singletonMap("bgpTable1", "table1Content");
-    Map<String, String> routingTables = Collections.singletonMap("routingTable1", "table1Content");
+    SortedMap<String, String> bgpTables = Maps.newTreeMap();
+    bgpTables.put("bgpTable1", "table1Content");
+    SortedMap<String, String> routingTables = Maps.newTreeMap();
+    routingTables.put("routingTable1", "table1Content");
     SortedSet<BgpAdvertisement> bgpAdvertisements = Sets.newTreeSet();
     bgpAdvertisements.add(
         new BgpAdvertisement(
@@ -82,8 +83,8 @@ public class EnvironmentTest {
               Sets.newTreeSet(),
               Sets.newTreeSet(),
               Sets.newTreeSet(),
-              Maps.newHashMap(),
-              Maps.newHashMap(),
+              Maps.newTreeMap(),
+              Maps.newTreeMap(),
               Sets.newTreeSet());
       assertThat(
           e.toString(),
