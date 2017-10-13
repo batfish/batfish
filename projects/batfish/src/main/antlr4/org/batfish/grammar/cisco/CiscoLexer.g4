@@ -2352,6 +2352,11 @@ DAMPENING
    'dampening'
 ;
 
+DATA_PRIVACY
+:
+   'data-privacy'
+;
+
 DATABASE
 :
    'database'
@@ -2875,6 +2880,11 @@ DHCPRELAY
 DIAGNOSTIC
 :
    'diagnostic'
+;
+
+DIAGNOSTIC_SIGNATURE
+:
+   'diagnostic-signature'
 ;
 
 DIAL_CONTROL_MIB
