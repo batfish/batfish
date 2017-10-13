@@ -38,6 +38,7 @@ ip dhcp pool abcdefg
 ip dhcp relay
 ip dhcp relay information option
 no ip dhcp relay information option vpn
+no ip dhcp relay source-address hsrp
 no ip dhcp relay sub-option type cisco
 no ip dhcp smart-relay global
 no ip dhcp snooping
