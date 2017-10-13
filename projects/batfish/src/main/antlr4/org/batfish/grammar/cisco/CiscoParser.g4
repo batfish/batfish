@@ -2822,6 +2822,7 @@ s_system
    (
       system_default
       | system_null
+      | system_qos
    )
 ;
 
@@ -3498,10 +3499,26 @@ system_null
       | JUMBOMTU
       | MODULE_TYPE
       | MTU
-      | QOS
       | ROUTING
       | URPF
       | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+system_qos
+:
+   QOS NEWLINE
+   (
+      system_qos_null
+   )*
+;
+
+system_qos_null
+:
+   NO?
+   (
+      FEX
+      | SERVICE_POLICY
    ) ~NEWLINE* NEWLINE
 ;
 
