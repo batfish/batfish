@@ -54,12 +54,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtRoutingLoopQuestionPlugin$RoutingLoopQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "172.0.0.0/8"
     ],
     "envDiff" : false,
-    "envType" : "any",
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false

@@ -111,6 +111,18 @@ _batfish_build_all() {
 }
 export -f _batfish_build_all
 
+batfish_rebuild_all() {
+   bash -c '_batfish_rebuild_all "$@"' _batfish_rebuild_all "$@" || return 1
+}
+export -f batfish_rebuild_all
+
+_batfish_rebuild_all() {
+   _pre_build || return 1
+   cd "${PROJECTS_PATH}"
+   mvn -DskipTests clean install || return 1
+}
+export -f _batfish_rebuild_all
+
 batfish_test_all() {
    bash -c '_batfish_test_all "$@"' _batfish_test_all "$@" || return 1
 }
