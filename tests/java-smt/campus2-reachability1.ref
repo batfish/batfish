@@ -12,12 +12,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "2.128.0.0/24"
     ],
     "envDiff" : false,
-    "envType" : "any",
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 0,

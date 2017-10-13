@@ -196,12 +196,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtForwardingQuestionPlugin$ForwardingQuestion",
+    "baseEnvType" : "none",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "20.20.20.20"
     ],
     "envDiff" : false,
-    "envType" : "none",
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false
