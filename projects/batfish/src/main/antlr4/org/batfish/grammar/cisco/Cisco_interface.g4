@@ -724,6 +724,7 @@ if_null_single
    (
       BCMC_OPTIMIZATION
       | JUMBO
+      | LINKDEBOUNCE
       | PHY
       | SUPPRESS_ARP
       | TRIMODE
