@@ -11155,6 +11155,11 @@ USERNAME_PROMPT
    'username-prompt'
 ;
 
+USERPASSPHRASE
+:
+   'userpassphrase'
+;
+
 USERS
 :
    'users'
