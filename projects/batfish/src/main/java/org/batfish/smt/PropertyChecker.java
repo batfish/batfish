@@ -557,7 +557,7 @@ public class PropertyChecker {
    * Creates a boolean expression that relates the environments of
    * two separate network copies.
    */
-  private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2, HeaderLocationQuestion q) {
+  private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
     enc2.getMainSlice()
@@ -634,13 +634,7 @@ public class PropertyChecker {
       case ANY:
         break;
       case NONE:
-        lg.getEnvironmentVars()
-            .forEach(
-                (le, vars) -> {
-                  enc.add(ctx.mkNot(vars.getPermitted()));
-                  enc.add(
-                      ctx.mkImplies(vars.getPermitted(), ctx.mkEq(vars.getMetric(), ctx.mkInt(0))));
-                });
+        lg.getEnvironmentVars().forEach((le, vars) -> enc.add(ctx.mkNot(vars.getPermitted())));
         break;
       case SANE:
         lg.getEnvironmentVars()
@@ -714,7 +708,7 @@ public class PropertyChecker {
       if (q.getEnvDiff()) {
         addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
       } else {
-        related = relateEnvironments(enc, enc2, q);
+        related = relateEnvironments(enc, enc2);
       }
 
       PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
