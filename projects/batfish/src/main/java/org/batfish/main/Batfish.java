@@ -109,13 +109,16 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -472,6 +475,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer analyze() {
     Answer answer = new Answer();
+    AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
     Path analysisQuestionsDir =
         _settings
@@ -496,9 +500,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
+            summary.combine(currentAnswer.getSummary());
           });
     }
     answer.addAnswerElement(ae);
+    answer.setSummary(summary);
     return answer;
   }
 
@@ -738,6 +744,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines, numLines, percentUnreachableLines);
 
     return answerElement;
+  }
+
+  private Warnings buildWarnings() {
+    return new Warnings(
+        _settings.getPedanticAsError(),
+        _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+        _settings.getRedFlagAsError(),
+        _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+        _settings.getUnimplementedAsError(),
+        _settings.getUnimplementedRecord() && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+        _settings.printParseTree());
   }
 
   private void checkBaseDirExists() {
@@ -1078,16 +1095,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = new TreeMap<>();
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
     for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       GenericConfigObject vc = config.getValue();
       ConvertConfigurationJob job =
           new ConvertConfigurationJob(_settings, vc, config.getKey(), warnings);
@@ -1345,16 +1353,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path inputFile = configFile.getKey();
       String fileText = configFile.getValue();
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       String name = inputFile.getFileName().toString();
       Path outputFile = outputConfigDir.resolve(name);
       FlattenVendorConfigurationJob job =
@@ -2120,78 +2119,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // }
   }
 
-  @Override
-  public InitInfoAnswerElement initInfo(
-      boolean summary, boolean verboseError, boolean environmentRoutes) {
-    InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
-    if (environmentRoutes) {
-      ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
-          loadParseEnvironmentRoutingTablesAnswerElement();
-      if (!summary) {
-        if (verboseError) {
-          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
-          parseAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, parseErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
-                  });
-          parseAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, convertErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
-                  });
-        }
-        SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
-        warnings.putAll(parseAnswer.getWarnings());
-      }
-      answerElement.setParseStatus(parseAnswer.getParseStatus());
-      answerElement.setParseTrees(parseAnswer.getParseTrees());
-    } else {
-      ParseVendorConfigurationAnswerElement parseAnswer =
-          loadParseVendorConfigurationAnswerElement();
-      ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
-      if (!summary) {
-        if (verboseError) {
-          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
-          parseAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, parseErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
-                  });
-          convertAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, convertErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
-                  });
-        }
-        SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
-        warnings.putAll(parseAnswer.getWarnings());
-        convertAnswer
-            .getWarnings()
-            .forEach(
-                (hostname, convertWarnings) -> {
-                  org.batfish.common.Warnings combined = warnings.get(hostname);
-                  if (combined == null) {
-                    warnings.put(hostname, convertWarnings);
-                  } else {
-                    combined.getPedanticWarnings().addAll(convertWarnings.getPedanticWarnings());
-                    combined.getRedFlagWarnings().addAll(convertWarnings.getRedFlagWarnings());
-                    combined
-                        .getUnimplementedWarnings()
-                        .addAll(convertWarnings.getUnimplementedWarnings());
-                  }
-                });
-      }
-      answerElement.setParseStatus(parseAnswer.getParseStatus());
-      answerElement.setParseTrees(parseAnswer.getParseTrees());
-      for (String failed : convertAnswer.getFailed()) {
-        answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
-      }
-    }
+  public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
+    ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
+    mergeConvertAnswer(summary, verboseError, answerElement);
+    _logger.info(answerElement.prettyPrint());
+    return answerElement;
+  }
+
+  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+    ParseEnvironmentBgpTablesAnswerElement parseAnswer =
+        loadParseEnvironmentBgpTablesAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
+    _logger.info(answerElement.prettyPrint());
+    return answerElement;
+  }
+
+  public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
+    ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
+        loadParseEnvironmentRoutingTablesAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     _logger.info(answerElement.prettyPrint());
     return answerElement;
   }
@@ -2739,6 +2686,55 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private void mergeConvertAnswer(
+      boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
+    ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
+    mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
+    for (String failed : convertAnswer.getFailed()) {
+      answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
+    }
+  }
+
+  private void mergeInitStepAnswer(
+      InitInfoAnswerElement initInfoAnswerElement,
+      InitStepAnswerElement initStepAnswerElement,
+      boolean summary,
+      boolean verboseError) {
+    if (!summary) {
+      if (verboseError) {
+        SortedMap<String, List<BatfishStackTrace>> errors = initInfoAnswerElement.getErrors();
+        initStepAnswerElement
+            .getErrors()
+            .forEach(
+                (hostname, initStepErrors) -> {
+                  errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors);
+                });
+      }
+      SortedMap<String, org.batfish.common.Warnings> warnings = initInfoAnswerElement.getWarnings();
+      initStepAnswerElement
+          .getWarnings()
+          .forEach(
+              (hostname, initStepWarnings) -> {
+                org.batfish.common.Warnings combined =
+                    warnings.computeIfAbsent(hostname, h -> buildWarnings());
+                combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
+                combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
+                combined
+                    .getUnimplementedWarnings()
+                    .addAll(initStepWarnings.getUnimplementedWarnings());
+              });
+    }
+  }
+
+  private InitInfoAnswerElement mergeParseAnswer(
+      boolean summary, boolean verboseError, ParseAnswerElement parseAnswer) {
+    InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
+    mergeInitStepAnswer(answerElement, parseAnswer, summary, verboseError);
+    answerElement.setParseStatus(parseAnswer.getParseStatus());
+    answerElement.setParseTrees(parseAnswer.getParseTrees());
+    return answerElement;
+  }
+
   @Override
   public AnswerElement multipath(HeaderSpace headerSpace) {
     if (SystemUtils.IS_OS_MAC_OSX) {
@@ -2970,16 +2966,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!configurations.containsKey(hostname)) {
         continue;
       }
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       ParseEnvironmentBgpTableJob job =
           new ParseEnvironmentBgpTableJob(
               _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
@@ -3015,16 +3002,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         continue;
       }
 
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       ParseEnvironmentRoutingTableJob job =
           new ParseEnvironmentRoutingTableJob(_settings, fileText, currentFile, warnings, this);
       jobs.add(job);
@@ -3143,16 +3121,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path currentFile = vendorFile.getKey();
       String fileText = vendorFile.getValue();
 
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings, fileText, currentFile, warnings, configurationFormat);
@@ -4049,7 +4018,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getInitInfo()) {
-      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false, false);
+      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false);
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());

@@ -40,7 +40,7 @@ import org.junit.rules.TemporaryFolder;
 public class WorkMgrServiceTest {
 
   @Rule public TemporaryFolder _containersFolder = new TemporaryFolder();
-  @Rule public TemporaryFolder _globalQuestionsFolder = new TemporaryFolder();
+  @Rule public TemporaryFolder _questionsTemplatesFolder = new TemporaryFolder();
 
 
   private WorkMgrService _service;
@@ -54,8 +54,8 @@ public class WorkMgrServiceTest {
         new String[] {
           "-containerslocation",
           _containersFolder.getRoot().toString(),
-          "-globalquestionsdir",
-          _globalQuestionsFolder.getRoot().toString()
+          "-templatedirs",
+            _questionsTemplatesFolder.getRoot().toString()
         });
     Main.initAuthorizer();
     Main.setLogger(logger);
@@ -217,20 +217,22 @@ public class WorkMgrServiceTest {
   }
 
   @Test
-  public void getGlobalQuestions() throws Exception {
+  public void getQuestionTemplates() throws Exception {
     initContainerEnvironment();
     Question testQuestion = createTestQuestion("testquestion", "test description");
     BatfishObjectMapper objectMapper = new BatfishObjectMapper();
     //serializing the question in the temp questions folder
     String questionJsonString = objectMapper.writeValueAsString(testQuestion);
     CommonUtil.writeFile(
-        _globalQuestionsFolder.newFile("testQuestion.json").toPath(), questionJsonString);
+        _questionsTemplatesFolder.newFile("testQuestion.json").toPath(), questionJsonString);
     JSONArray questionsResponse =
-        _service.getGlobalQuestions(CoordConsts.DEFAULT_API_KEY, Version.getVersion());
+        _service.getQuestionTemplates(CoordConsts.DEFAULT_API_KEY);
+
+    //testting if the response is valid and contains testquestion
     if (questionsResponse.get(0).equals(CoordConsts.SVC_KEY_SUCCESS)) {
       JSONObject questionsJsonObject = (JSONObject) questionsResponse.get(1);
       String questionsJsonString =
-          (String) questionsJsonObject.get(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS);
+          questionsJsonObject.getString(CoordConsts.SVC_KEY_QUESTION_LIST);
       Map<String, String> questionsMap =
           objectMapper.readValue(questionsJsonString, new TypeReference<Map<String, String>>() {});
       if (questionsMap.containsKey("testquestion")) {

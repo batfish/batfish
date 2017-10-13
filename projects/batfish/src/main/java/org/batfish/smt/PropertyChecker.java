@@ -1,6 +1,7 @@
 package org.batfish.smt;
 
 import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -148,6 +149,7 @@ public class PropertyChecker {
   }
 
   private static Ip ipVal(Model m, Expr e) {
+    String s = evaluate(m, e);
     return new Ip(Long.parseLong(evaluate(m, e)));
   }
 
@@ -619,7 +621,7 @@ public class PropertyChecker {
                   // Don't fail an interface if it is for the destination ip we are considering
                   // Otherwise, any failure can trivially make equivalence false
                   Prefix pfx = ge.getStart().getPrefix();
-                  ArithExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
+                  BitVecExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
                   BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
                   BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
                   enc.add(enc.mkImplies(relevant, notFailed));
@@ -734,7 +736,7 @@ public class PropertyChecker {
     VerificationResult res = result.getFirst();
     Model model = result.getSecond();
 
-    // res.debug(enc.getMainSlice(), true, "0_lhr-spine-01_OSPF_SINGLE-EXPORT__permitted");
+    // res.debug(enc.getMainSlice(), true, null);
 
     FlowHistory fh;
     if (q.getDiffType() != null) {

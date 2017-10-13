@@ -7125,6 +7125,10 @@
                   "password" : "a5521bc2b747bd3730859fdc9513dfb9d1f392dd635973ba26ba3b5ed773480b",
                   "role" : "network-admin"
                 },
+                "demo" : {
+                  "name" : "demo",
+                  "password" : "05f0458d6185351f479dd8ee74485d6b5f4854856ab4a36cb10146fb21e5f770"
+                },
                 "network" : {
                   "name" : "network",
                   "password" : "d6e1f4ab0f5447db4a5a3345fbdd584aad1ac24a75dc476ba7bdaad7e6cf07f5",

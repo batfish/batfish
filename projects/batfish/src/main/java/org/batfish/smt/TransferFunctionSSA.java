@@ -479,7 +479,13 @@ class TransferFunctionSSA {
       }
     }
 
-    throw new BatfishException("TODO: compute expr transfer function: " + expr);
+    String s = (_isExport ? "export" : "import");
+    String msg =
+        String.format(
+            "Unimplemented feature %s for %s transfer function on interface %s",
+            expr.toString(), s, _graphEdge.toString());
+
+    throw new BatfishException(msg);
   }
 
   /*
@@ -1109,7 +1115,14 @@ class TransferFunctionSSA {
         // TODO: implement me
 
       } else {
-        throw new BatfishException("TODO: statement transfer function: " + stmt);
+
+        String s = (_isExport ? "export" : "import");
+        String msg =
+            String.format(
+                "Unimplemented feature %s for %s transfer function on interface %s",
+                stmt.toString(), s, _graphEdge.toString());
+
+        throw new BatfishException(msg);
       }
     }
 
