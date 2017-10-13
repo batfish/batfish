@@ -1715,7 +1715,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Environment getEnvironment() {
     EdgeSet edgeBlackList = getEdgeBlacklist();
-    Set<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
+    SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
     NodeSet nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
@@ -1809,8 +1809,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowHistory;
   }
 
-  public Set<NodeInterfacePair> getInterfaceBlacklist() {
-    Set<NodeInterfacePair> blacklistInterfaces = null;
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+    SortedSet<NodeInterfacePair> blacklistInterfaces = null;
     Path interfaceBlacklistPath =
         _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
     if (interfaceBlacklistPath != null) {
@@ -3021,7 +3021,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  private Set<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
+  private SortedSet<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
     String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
     SortedSet<NodeInterfacePair> ifaces;
     try {
