@@ -45,8 +45,8 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.smt.EnvironmentType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.smt.answers.SmtDeterminismAnswerElement;
 import org.batfish.smt.answers.SmtManyAnswerElement;
-import org.batfish.smt.answers.SmtNondeterminismAnswerElement;
 import org.batfish.smt.answers.SmtOneAnswerElement;
 import org.batfish.smt.answers.SmtReachabilityAnswerElement;
 import org.batfish.smt.collections.Table2;
@@ -846,9 +846,11 @@ public class PropertyChecker {
 
     SortedSet<String> case1 = null;
     SortedSet<String> case2 = null;
+    Flow flow = null;
     if (!res.isVerified()) {
       case1 = new TreeSet<>();
       case2 = new TreeSet<>();
+      flow = buildFlow(model, enc1.getMainSlice().getSymbolicPacket(), "(none)");
       for (GraphEdge ge : graph.getAllRealEdges()) {
         SymbolicDecisions d1 = enc1.getMainSlice().getSymbolicDecisions();
         SymbolicDecisions d2 = enc2.getMainSlice().getSymbolicDecisions();
@@ -871,8 +873,9 @@ public class PropertyChecker {
       }
     }
 
-    SmtNondeterminismAnswerElement answer = new SmtNondeterminismAnswerElement();
+    SmtDeterminismAnswerElement answer = new SmtDeterminismAnswerElement();
     answer.setResult(res);
+    answer.setFlow(flow);
     answer.setForwardingCase1(case1);
     answer.setForwardingCase2(case2);
     return answer;

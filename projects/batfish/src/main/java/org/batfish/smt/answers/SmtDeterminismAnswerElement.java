@@ -1,12 +1,15 @@
 package org.batfish.smt.answers;
 
 import java.util.SortedSet;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.smt.VerificationResult;
 
-public class SmtNondeterminismAnswerElement implements AnswerElement {
+public class SmtDeterminismAnswerElement implements AnswerElement {
 
   private VerificationResult _result;
+
+  private Flow _flow;
 
   private SortedSet<String> _forwardingCase1;
 
@@ -14,6 +17,10 @@ public class SmtNondeterminismAnswerElement implements AnswerElement {
 
   public VerificationResult getResult() {
     return _result;
+  }
+
+  public Flow getFlow() {
+    return _flow;
   }
 
   public SortedSet<String> getForwardingCase1() {
@@ -28,6 +35,10 @@ public class SmtNondeterminismAnswerElement implements AnswerElement {
     this._result = x;
   }
 
+  public void setFlow(Flow x) {
+    this._flow = x;
+  }
+
   public void setForwardingCase1(SortedSet<String> x) {
     this._forwardingCase1 = x;
   }
@@ -39,9 +50,11 @@ public class SmtNondeterminismAnswerElement implements AnswerElement {
   @Override
   public String prettyPrint() {
     StringBuilder sb = new StringBuilder();
+    sb.append("\n");
     if (_result.isVerified()) {
-      sb.append("\nVerified\n");
+      sb.append("Verified\n");
     } else {
+      sb.append(_flow).append("\n\n");
       sb.append("Delta forwarding case 1:\n");
       for (String s : _forwardingCase1) {
         sb.append("   ").append(s).append("\n");
