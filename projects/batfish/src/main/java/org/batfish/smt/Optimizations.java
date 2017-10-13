@@ -115,48 +115,6 @@ class Optimizations {
   }
 
   /*
-   * Check if communities can be received from the external environment.
-   */
-  private boolean computeHasExternalCommunity() {
-    Boolean[] val = new Boolean[1];
-    val[0] = false;
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                BgpNeighbor n = _encoderSlice.getGraph().getEbgpNeighbors().get(ge);
-                if (ge.getEnd() == null && n != null && n.getSendCommunity()) {
-                  val[0] = true;
-                }
-              }
-            });
-    return val[0];
-  }
-
-  /*
-   * Check if there is any environmental variable
-   */
-  /* private boolean computeHasEnvironment() {
-    Boolean[] val = new Boolean[1];
-    val[0] = false;
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                BgpNeighbor n = _encoderSlice.getGraph().getEbgpNeighbors().get(ge);
-                if (ge.getEnd() == null && n != null) {
-                  val[0] = true;
-                }
-              }
-            });
-    return val[0];
-  } */
-
-  /*
    * Check if the BGP local preference is needed. If it is never set,
    * then the variable can be removed from the encoding.
    */

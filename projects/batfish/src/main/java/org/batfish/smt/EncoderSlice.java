@@ -3007,29 +3007,6 @@ class EncoderSlice {
   }
 
   /*
-   * Constraints that ensure when a link is not active, that messages
-   * can not flow across the link.
-   */
-  private void addInactiveLinkConstraints() {
-    _logicalGraph
-        .getLogicalEdges()
-        .forEach(
-            (router, proto, edges) -> {
-              for (ArrayList<LogicalEdge> es : edges) {
-                for (LogicalEdge e : es) {
-                  Interface iface = e.getEdge().getStart();
-                  if (!getGraph().isInterfaceActive(proto, iface)) {
-                    BoolExpr per = e.getSymbolicRecord().getPermitted();
-                    if (per != null) {
-                      add(mkNot(per));
-                    }
-                  }
-                }
-              }
-            });
-  }
-
-  /*
    * Create boolean expression for a variable being within a bound.
    */
   private BoolExpr boundConstraint(ArithExpr e, long lower, long upper) {
