@@ -94,16 +94,16 @@ test tests/java-smt/acl1-differential3.ref get smt-reachability diffType=increas
 
 # Check correctness of iBGP encoding
 init-testrig test_rigs/smt-examples/IBGP1 tr-smt-ibgp1
-test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, envType=none
+test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, baseEnvType=none
 
 # Check correctness of multiple ASes using both iBGP and eBGP. Also ensures
 # correct handling of transitivity and path metric update
 init-testrig test_rigs/smt-examples/IBGP2 tr-smt-ibgp2
-test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, envType=none
+test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
 # Check correct handling of IGP metric cost for iBGP with eBGP
 init-testrig test_rigs/smt-examples/IBGP3 tr-smt-ibgp3
-test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, envType=none
+test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
 # Putting everything together, check the campus network
 #init-testrig test_rigs/smt-examples/CAMPUS1 tr-smt-campus1

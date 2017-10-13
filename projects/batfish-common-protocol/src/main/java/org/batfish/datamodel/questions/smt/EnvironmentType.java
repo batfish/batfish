@@ -8,7 +8,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 
 public enum EnvironmentType {
-  None("none"),
+  NONE("none"),
   ANY("any"),
   SANE("sane");
 

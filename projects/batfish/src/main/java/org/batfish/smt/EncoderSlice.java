@@ -3261,25 +3261,6 @@ class EncoderSlice {
                 add(vars.getClientId().isNotFromClient());
               }
             });
-
-    // If they don't want the environment modeled
-    switch (_encoder.getEnvironmentType()) {
-    case ANY: break;
-    case None:
-      getLogicalGraph()
-          .getEnvironmentVars()
-          .forEach(
-              (le, vars) -> {
-                add(mkNot(vars.getPermitted()));
-                add(mkImplies(vars.getPermitted(), mkEq(vars.getMetric(), mkInt(0))));
-              });
-      break;
-    case SANE:
-      getLogicalGraph()
-          .getEnvironmentVars().forEach((le, vars) -> add(mkLe(vars.getMetric(), mkInt(50))));
-      break;
-    default: break;
-    }
   }
 
   /*
