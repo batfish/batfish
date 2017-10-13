@@ -12895,6 +12895,25 @@
             }
           }
         },
+        "nxos_misc" : {
+          "name" : "nxos_misc",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "features" : {
+                "privilege" : true
+              },
+              "hostname" : "nxos_misc"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "nxos_system" : {
           "name" : "nxos_system",
           "configurationFormat" : "CISCO_NX",

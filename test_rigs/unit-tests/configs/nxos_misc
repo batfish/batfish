@@ -1,0 +1,8 @@
+!
+hostname nxos_misc
+feature privilege
+!
+ip arp inspection log-buffer entries 23
+no ip arp inspection validate src-mac dst-mac ip
+!
+
