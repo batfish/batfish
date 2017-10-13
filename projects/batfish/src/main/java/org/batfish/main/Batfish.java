@@ -109,6 +109,7 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
@@ -474,6 +475,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer analyze() {
     Answer answer = new Answer();
+    AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
     Path analysisQuestionsDir =
         _settings
@@ -498,9 +500,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
+            summary.combine(currentAnswer.getSummary());
           });
     }
     answer.addAnswerElement(ae);
+    answer.setSummary(summary);
     return answer;
   }
 
