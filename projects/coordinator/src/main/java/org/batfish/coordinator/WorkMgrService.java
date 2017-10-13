@@ -1585,7 +1585,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
-      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
+      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
+      @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
     try {
       _logger.info("WMS:uploadTestrig " + apiKey + " " + containerName + " " + testrigName + "\n");
 
@@ -1598,7 +1599,12 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream);
+      boolean autoAnalyze = false;
+      if (!Strings.isNullOrEmpty(autoAnalyzeStr)) {
+        autoAnalyze = Boolean.parseBoolean(autoAnalyzeStr);
+      }
+
+      Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
     } catch (FileExistsException
