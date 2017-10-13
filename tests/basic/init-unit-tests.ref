@@ -228,8 +228,6 @@
         "taskgroup" : "taskgroup",
         "tcpflags" : "tcpflags",
         "test" : "ip_default_route_classless",
-        "testrig/iptables/host1.iptables" : "host1.iptables",
-        "testrig/iptables/host2.iptables" : "host2.iptables",
         "underscore_variable" : "underscore_variable",
         "variables" : "variables",
         "variables_dos" : "variables_dos",
@@ -463,8 +461,6 @@
         "taskgroup" : "PASSED",
         "tcpflags" : "PASSED",
         "test" : "PASSED",
-        "testrig/iptables/host1.iptables" : "PASSED",
-        "testrig/iptables/host2.iptables" : "PASSED",
         "underscore_variable" : "PASSED",
         "variables" : "PASSED",
         "variables_dos" : "PASSED",
@@ -499,12 +495,12 @@
         },
         "cisco_style_acl1" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl1'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/cisco_style_acl1'\n"
           }
         },
         "cisco_style_acl2" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl2'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/cisco_style_acl2'\n"
           }
         },
         "ios_bgp" : {
@@ -541,6 +537,17 @@
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.10.212.233'"
           }
         }
+      }
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "host1.iptables" : "host1.iptables",
+        "host2.iptables" : "host2.iptables"
+      },
+      "parseStatus" : {
+        "host1.iptables" : "PASSED",
+        "host2.iptables" : "PASSED"
       }
     },
     {
@@ -1972,6 +1979,14 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "extraComponents" : {
+        "IPTABLES" : {
+          "parseStatus" : {
+            "host1.iptables" : "PASSED",
+            "host2.iptables" : "PASSED"
+          }
+        }
+      },
       "parseStatus" : {
         "IosXrMultiCast" : "PASSED",
         "L2VPN" : "PASSED",
@@ -2198,8 +2213,6 @@
         "taskgroup" : "PASSED",
         "tcpflags" : "PASSED",
         "test" : "PASSED",
-        "testrig/iptables/host1.iptables" : "PASSED",
-        "testrig/iptables/host2.iptables" : "PASSED",
         "underscore_variable" : "PASSED",
         "variables" : "PASSED",
         "variables_dos" : "PASSED",

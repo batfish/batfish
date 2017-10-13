@@ -247,6 +247,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     private Path _parseAnswerPath;
 
+    private Path _parseIptablesAnswerPath;
+
     private Path _protocolDependencyGraphPath;
 
     private Path _protocolDependencyGraphZipPath;
@@ -301,6 +303,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public Path getParseAnswerPath() {
       return _parseAnswerPath;
+    }
+
+    public Path getParseIptablesAnswerPath() {
+      return _parseIptablesAnswerPath;
     }
 
     public Path getProtocolDependencyGraphPath() {
@@ -364,6 +370,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public void setParseAnswerPath(Path parseAnswerPath) {
       _parseAnswerPath = parseAnswerPath;
+    }
+
+    public void setParseIptablesAnswerPath(Path parseIptablesAnswerPath) {
+      _parseIptablesAnswerPath = parseIptablesAnswerPath;
     }
 
     public void setProtocolDependencyGraphPath(Path protocolDependencyGraphPath) {

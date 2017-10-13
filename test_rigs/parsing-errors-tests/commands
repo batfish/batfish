@@ -5,7 +5,7 @@ test test_rigs/parsing-errors-tests/no-verbose.ref get initinfo verboseError=fal
 
 #parsing Iptables error
 test test_rigs/parsing-errors-tests/init-invalid-iptables.ref init-testrig test_rigs/example-parsing-error/invalid-iptables
-test test_rigs/parsing-errors-tests/invalid-ip-no-verbose.ref get initinfo
+test test_rigs/parsing-errors-tests/invalid-ip-no-verbose.ref get initinfo components=["CONFIGS","IPTABLES"]
 
 #all config files failed in parsing step
 test test_rigs/parsing-errors-tests/all-parsing-failed.ref init-testrig test_rigs/example-parsing-error/all-fail

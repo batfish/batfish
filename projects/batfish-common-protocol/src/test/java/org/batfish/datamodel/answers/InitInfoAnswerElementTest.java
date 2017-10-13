@@ -61,9 +61,11 @@ public class InitInfoAnswerElementTest {
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     List<BatfishStackTrace> errors = new ArrayList<>();
     errors.add(stackTrace);
+    _element.getParseStatus().put("sampleError", ParseStatus.FAILED);
     _element.getErrors().put("sampleError", errors);
     StringBuilder expected = new StringBuilder();
     expected.append("PARSING SUMMARY\n");
+    expected.append("  sampleError: failed to parse\n");
     expected.append("DETAILED ERRORS\n");
     for (BatfishStackTrace trace : _element.getErrors().get("sampleError")) {
       expected.append("  Failed to parse sampleError:\n");
@@ -73,6 +75,7 @@ public class InitInfoAnswerElementTest {
     }
     expected.append("STATISTICS\n");
     expected.append("  Parsing results:\n");
+    expected.append("    Failed to parse: 1\n");
     assertThat(_element.prettyPrint(), equalTo(expected.toString()));
   }
 

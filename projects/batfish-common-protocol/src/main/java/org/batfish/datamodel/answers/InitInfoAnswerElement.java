@@ -1,193 +1,50 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.List;
-import java.util.Map.Entry;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.batfish.common.BatfishException.BatfishStackTrace;
-import org.batfish.common.ParseTreeSentences;
-import org.batfish.common.Warning;
-import org.batfish.common.Warnings;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class InitInfoAnswerElement implements AnswerElement {
+public class InitInfoAnswerElement extends InitInfo implements AnswerElement {
 
-  private SortedMap<String, List<BatfishStackTrace>> _errors;
+  private static final String PROP_EXTRA_COMPONENTS = "extraComponents";
 
-  private SortedMap<String, ParseStatus> _parseStatus;
-
-  private SortedMap<String, ParseTreeSentences> _parseTrees;
-
-  private SortedMap<String, Warnings> _warnings;
+  private SortedMap<InitInfoComponent, InitInfo> _extraComponents;
 
   @JsonCreator
   public InitInfoAnswerElement() {
-    _parseStatus = new TreeMap<>();
-    _warnings = new TreeMap<>();
-    _errors = new TreeMap<>();
+    _extraComponents = new TreeMap<>();
   }
 
-  public SortedMap<String, List<BatfishStackTrace>> getErrors() {
-    return _errors;
-  }
-
-  public SortedMap<String, ParseStatus> getParseStatus() {
-    return _parseStatus;
-  }
-
-  public SortedMap<String, ParseTreeSentences> getParseTrees() {
-    return _parseTrees;
-  }
-
-  public SortedMap<String, Warnings> getWarnings() {
-    return _warnings;
+  @JsonProperty(PROP_EXTRA_COMPONENTS)
+  public SortedMap<InitInfoComponent, InitInfo> getExtraComponents() {
+    return _extraComponents;
   }
 
   @Override
   public String prettyPrint() {
     final StringBuilder sb = new StringBuilder();
-    int pedanticCount = 0;
-    int redFlagCount = 0;
-    int unimplementedCount = 0;
-    int emptyCount = 0;
-    int failedCount = 0;
-    int ignoredCount = 0;
-    int orphanedCount = 0;
-    int passedCount = 0;
-    int unknownCount = 0;
-    int unrecognizedCount = 0;
-    int unsupportedCount = 0;
-    if (!_warnings.isEmpty()) {
-      sb.append("DETAILED WARNINGS\n");
-      for (String name : _warnings.keySet()) {
-        sb.append("  " + name + ":\n");
-        for (Warning warning : _warnings.get(name).getRedFlagWarnings()) {
-          sb.append("    RedFlag " + warning.getTag() + " : " + warning.getText() + "\n");
-          redFlagCount++;
-        }
-        for (Warning warning : _warnings.get(name).getUnimplementedWarnings()) {
-          sb.append("    Unimplemented " + warning.getTag() + " : " + warning.getText() + "\n");
-          unimplementedCount++;
-        }
-        for (Warning warning : _warnings.get(name).getPedanticWarnings()) {
-          sb.append("    Pedantic " + warning.getTag() + " : " + warning.getText() + "\n");
-          pedanticCount++;
-        }
-      }
+    final AtomicBoolean empty = new AtomicBoolean(true);
+    if (!_parseStatus.isEmpty()) {
+      sb.append(super.prettyPrint());
+      empty.set(false);
     }
-    sb.append("PARSING SUMMARY\n");
-    for (Entry<String, ParseStatus> e : _parseStatus.entrySet()) {
-      String hostname = e.getKey();
-      ParseStatus status = e.getValue();
-      switch (status) {
-        case FAILED:
-          sb.append("  " + hostname + ": failed to parse\n");
-          failedCount++;
-          break;
-
-        case PARTIALLY_UNRECOGNIZED:
-          sb.append("  " + hostname + ": contained at least one unrecognized line\n");
-          unrecognizedCount++;
-          break;
-
-        case PASSED:
-          passedCount++;
-          break;
-
-        case EMPTY:
-          sb.append("  " + hostname + ": empty file\n");
-          emptyCount++;
-          break;
-
-        case IGNORED:
-          sb.append("  " + hostname + ": explicitly ignored by user\n");
-          ignoredCount++;
-          break;
-
-        case ORPHANED:
-          sb.append("  " + hostname + ": is an orphaned overlay configuration\n");
-          orphanedCount++;
-          break;
-
-        case UNKNOWN:
-          sb.append("  " + hostname + ": unknown configuration format\n");
-          unknownCount++;
-          break;
-
-        case UNSUPPORTED:
-          sb.append("  " + hostname + ": known but unsupported configuration format\n");
-          unsupportedCount++;
-          break;
-
-        default:
-          break;
-      }
-    }
-    if (!_errors.isEmpty()) {
-      sb.append("DETAILED ERRORS\n");
-      for (String name : _errors.keySet()) {
-        sb.append("  Failed to parse " + name + ":\n");
-        for (BatfishStackTrace stackTrace : _errors.get(name)) {
-          for (String line : stackTrace.getLineMap()) {
-            sb.append("    " + line + "\n");
+    _extraComponents.forEach(
+        (initInfoComponent, initInfo) -> {
+          if (!initInfo._parseStatus.isEmpty()) {
+            empty.set(false);
+            sb.append(String.format("\n%s:\n%s\n", initInfoComponent, initInfo.prettyPrint()));
           }
-        }
-      }
-    }
-    sb.append("STATISTICS\n");
-    if (!_warnings.isEmpty()) {
-      sb.append("  Total warnings:\n");
-      if (redFlagCount > 0) {
-        sb.append("    Red Flag: " + redFlagCount + "\n");
-      }
-      if (unimplementedCount > 0) {
-        sb.append("    Unimplemented: " + unimplementedCount + "\n");
-      }
-      if (pedanticCount > 0) {
-        sb.append("    Pedantic: " + pedanticCount + "\n");
-      }
-    }
-    sb.append("  Parsing results:\n");
-    if (passedCount > 0) {
-      sb.append("    Parsed successfully: " + passedCount + "\n");
-    }
-    if (unrecognizedCount > 0) {
-      sb.append("    Contained unrecognized line(s): " + unrecognizedCount + "\n");
-    }
-    if (emptyCount > 0) {
-      sb.append("    Empty file: " + emptyCount + "\n");
-    }
-    if (ignoredCount > 0) {
-      sb.append("    Explicitly ignored by user: " + ignoredCount + "\n");
-    }
-    if (orphanedCount > 0) {
-      sb.append("    Is an orphaned overlay configuration: " + orphanedCount + "\n");
-    }
-    if (failedCount > 0) {
-      sb.append("    Failed to parse: " + failedCount + "\n");
-    }
-    if (unknownCount > 0) {
-      sb.append("    Unknown configuration format: " + unknownCount + "\n");
-    }
-    if (unsupportedCount > 0) {
-      sb.append("    Known but unsupported configuration format: " + unsupportedCount + "\n");
+        });
+    if (empty.get()) {
+      sb.append("WARNING: All requested init info components are empty!\n");
     }
     return sb.toString();
   }
 
-  public void setErrors(SortedMap<String, List<BatfishStackTrace>> errors) {
-    _errors = errors;
-  }
-
-  public void setParseStatus(SortedMap<String, ParseStatus> parseStatus) {
-    _parseStatus = parseStatus;
-  }
-
-  public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
-    _parseTrees = parseTrees;
-  }
-
-  public void setWarnings(SortedMap<String, Warnings> warnings) {
-    _warnings = warnings;
+  @JsonProperty(PROP_EXTRA_COMPONENTS)
+  public void setExtraComponents(SortedMap<InitInfoComponent, InitInfo> extraComponents) {
+    _extraComponents = extraComponents;
   }
 }

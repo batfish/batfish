@@ -106,7 +106,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
 
     String relativePathStr =
-        _settings.getActiveTestrigSettings().getBasePath().relativize(_file).toString();
+        _settings.getActiveTestrigSettings().getTestRigPath().relativize(_file).toString();
 
     if (format == ConfigurationFormat.UNKNOWN) {
       format = VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
@@ -157,7 +157,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         break;
 
       case HOST:
-        vc = HostConfiguration.fromJson(_fileText, _warnings);
+        try {
+          vc = HostConfiguration.fromJson(_fileText, _warnings);
+        } catch (BatfishException e) {
+          elapsedTime = System.currentTimeMillis() - startTime;
+          return new ParseVendorConfigurationResult(
+              elapsedTime,
+              _logger.getHistory(),
+              _file,
+              new BatfishException("Error processing host configuration", e));
+        }
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
             elapsedTime, _logger.getHistory(), _file, vc, _warnings, _ptSentences);
@@ -248,10 +257,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case IPTABLES:
         IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText, _settings);
+        String iptablesName = _file.getFileName().toString();
         combinedParser = iptablesParser;
         extractor =
-            new IptablesControlPlaneExtractor(
-                _fileText, iptablesParser, _warnings, relativePathStr);
+            new IptablesControlPlaneExtractor(_fileText, iptablesParser, _warnings, iptablesName);
         break;
 
       case MRV:

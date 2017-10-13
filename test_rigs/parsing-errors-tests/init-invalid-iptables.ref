@@ -2,12 +2,23 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "extraComponents" : {
+        "IPTABLES" : {
+          "parseStatus" : {
+            "host1.iptables" : "FAILED"
+          }
+        }
+      },
       "parseStatus" : {
         "as1r1" : "PASSED",
-        "host1" : "PASSED",
-        "host1.iptables" : "FAILED"
+        "host1" : "PASSED"
       }
     }
   ],
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

@@ -17,9 +17,7 @@
         "as3border2" : "as3border2.cfg",
         "as3core1" : "as3core1.cfg",
         "host1" : "host1.json",
-        "host2" : "host2.json",
-        "testrig/iptables/host1.iptables" : "host1.iptables",
-        "testrig/iptables/host2.iptables" : "host2.iptables"
+        "host2" : "host2.json"
       },
       "parseStatus" : {
         "as1border1" : "PASSED",
@@ -36,11 +34,20 @@
         "as3border2" : "PASSED",
         "as3core1" : "PASSED",
         "host1" : "PASSED",
-        "host2" : "PASSED",
-        "testrig/iptables/host1.iptables" : "PASSED",
-        "testrig/iptables/host2.iptables" : "PASSED"
+        "host2" : "PASSED"
       },
       "version" : "0.32.0"
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "host1.iptables" : "host1.iptables",
+        "host2.iptables" : "host2.iptables"
+      },
+      "parseStatus" : {
+        "host1.iptables" : "PASSED",
+        "host2.iptables" : "PASSED"
+      }
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -192,6 +199,14 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "extraComponents" : {
+        "IPTABLES" : {
+          "parseStatus" : {
+            "host1.iptables" : "PASSED",
+            "host2.iptables" : "PASSED"
+          }
+        }
+      },
       "parseStatus" : {
         "as1border1" : "PASSED",
         "as1border2" : "PASSED",
@@ -207,9 +222,7 @@
         "as3border2" : "PASSED",
         "as3core1" : "PASSED",
         "host1" : "PASSED",
-        "host2" : "PASSED",
-        "testrig/iptables/host1.iptables" : "PASSED",
-        "testrig/iptables/host2.iptables" : "PASSED"
+        "host2" : "PASSED"
       }
     }
   ],

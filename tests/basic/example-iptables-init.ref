@@ -7,9 +7,6 @@
         "r1" : "r1.cfg",
         "r2" : "r2.cfg",
         "r3" : "r3.cfg",
-        "testrig/iptables/z1-firewall.v4" : "z1-firewall.v4",
-        "testrig/iptables/z2-firewall.v4" : "z2-firewall.v4",
-        "testrig/iptables/z2-host2.v4" : "z2-host2.v4",
         "z1-firewall" : "z1-firewall.cfg",
         "z1-host1" : "z1-host1.json",
         "z1-host2" : "z1-host2.json",
@@ -22,9 +19,6 @@
         "r1" : "PASSED",
         "r2" : "PASSED",
         "r3" : "PASSED",
-        "testrig/iptables/z1-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-host2.v4" : "PASSED",
         "z1-firewall" : "PASSED",
         "z1-host1" : "PASSED",
         "z1-host2" : "PASSED",
@@ -36,29 +30,42 @@
       "warnings" : {
         "r1" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/r1.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r1.cfg'\n"
           }
         },
         "r2" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/r2.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r2.cfg'\n"
           }
         },
         "r3" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/r3.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/r3.cfg'\n"
           }
         },
         "z1-firewall" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/z1-firewall.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/z1-firewall.cfg'\n"
           }
         },
         "z2-firewall" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/z2-firewall.cfg'\n"
+            "1" : "MISCELLANEOUS: No hostname set in file: 'configs/z2-firewall.cfg'\n"
           }
         }
+      }
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "z1-firewall.v4" : "z1-firewall.v4",
+        "z2-firewall.v4" : "z2-firewall.v4",
+        "z2-host2.v4" : "z2-host2.v4"
+      },
+      "parseStatus" : {
+        "z1-firewall.v4" : "PASSED",
+        "z2-firewall.v4" : "PASSED",
+        "z2-host2.v4" : "PASSED"
       }
     },
     {
@@ -67,14 +74,20 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "extraComponents" : {
+        "IPTABLES" : {
+          "parseStatus" : {
+            "z1-firewall.v4" : "PASSED",
+            "z2-firewall.v4" : "PASSED",
+            "z2-host2.v4" : "PASSED"
+          }
+        }
+      },
       "parseStatus" : {
         "internet-host" : "PASSED",
         "r1" : "PASSED",
         "r2" : "PASSED",
         "r3" : "PASSED",
-        "testrig/iptables/z1-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-firewall.v4" : "PASSED",
-        "testrig/iptables/z2-host2.v4" : "PASSED",
         "z1-firewall" : "PASSED",
         "z1-host1" : "PASSED",
         "z1-host2" : "PASSED",
