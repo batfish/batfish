@@ -15,6 +15,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
@@ -317,26 +318,66 @@ public class BDDRecord {
   }
 
   /*
-   * Restrict the values of a bdd
+   * Take the point-wise disjunction of two BDDRecords
    */
-  private BDD restrict(BDD bdd, int len, BitSet bits) {
-    BDDPairing pairing = factory.makePair();
-    for (int i = 0; i < len; i++) {
-      BDD bit = _prefix.getBitvec()[i];
-      int var = bit.var();
-      pairing.set(var, factory.one());
+  public BDDRecord or(BDDRecord other) {
+    BDDRecord rec = new BDDRecord(this);
+
+    BDD[] prefix = rec.getPrefix().getBitvec();
+    BDD[] prefixLen = rec.getPrefixLength().getBitvec();
+    BDD[] metric = rec.getMetric().getBitvec();
+    BDD[] adminDist = rec.getAdminDist().getBitvec();
+    BDD[] med = rec.getMed().getBitvec();
+    BDD[] localPref = rec.getLocalPref().getBitvec();
+    BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
+    BDD[] proto = rec.getProtocolHistory().getInteger().getBitvec();
+
+    BDD[] prefix1 = getPrefix().getBitvec();
+    BDD[] prefixLen1 = getPrefixLength().getBitvec();
+    BDD[] metric1 = getMetric().getBitvec();
+    BDD[] adminDist1 = getAdminDist().getBitvec();
+    BDD[] med1 = getMed().getBitvec();
+    BDD[] localPref1 = getLocalPref().getBitvec();
+    BDD[] ospfMet1 = getOspfMetric().getInteger().getBitvec();
+    BDD[] proto1 = getProtocolHistory().getInteger().getBitvec();
+
+    BDD[] prefix2 = other.getPrefix().getBitvec();
+    BDD[] prefixLen2 = other.getPrefixLength().getBitvec();
+    BDD[] metric2 = other.getMetric().getBitvec();
+    BDD[] adminDist2 = other.getAdminDist().getBitvec();
+    BDD[] med2 = other.getMed().getBitvec();
+    BDD[] localPref2 = other.getLocalPref().getBitvec();
+    BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
+    BDD[] proto2 = other.getProtocolHistory().getInteger().getBitvec();
+
+    for (int i = 0; i < 32; i++) {
+      metric[i] = metric1[i].or(metric2[i]);
+      adminDist[i] = adminDist1[i].or(adminDist2[i]);
+      med[i] = med1[i].or(med2[i]);
+      localPref[i] = localPref1[i].or(localPref2[i]);
+      prefix[i] = prefix1[i].or(prefix2[i]);
     }
-    return bdd.veccompose(pairing);
+    for (int i = 0; i < 5; i++) {
+      prefixLen[i] = prefixLen1[i].or(prefixLen2[i]);
+    }
+    for (int i = 0; i < ospfMet.length; i++) {
+      ospfMet[i] = ospfMet1[i].or(ospfMet2[i]);
+    }
+    for (int i = 0; i < proto.length; i++) {
+      proto[i] = proto1[i].or(proto2[i]);
+    }
+    getCommunities().forEach((cvar, bdd1) -> {
+      BDD bdd2 = other.getCommunities().get(cvar);
+      rec.getCommunities().put(cvar, bdd1.or(bdd2));
+    });
+
+    return rec;
   }
 
-  /*
-   * Restrict the record to contain don't cares for prefix variables
-   */
   public BDDRecord restrict(Prefix pfx) {
     int len = pfx.getPrefixLength();
     BitSet bits = pfx.getAddress().getAddressBits();
 
-    // Create a substitution map
     BDDPairing p = factory.makePair();
     for (int i = 0; i < len; i++) {
       int var = prefixIndex + i;
@@ -344,7 +385,6 @@ public class BDDRecord {
       p.set(var, subst);
     }
 
-    // Substitute in each BDD
     BDDRecord rec = new BDDRecord(this);
     BDD[] prefix = rec.getPrefix().getBitvec();
     BDD[] prefixLen = rec.getPrefixLength().getBitvec();
@@ -375,5 +415,18 @@ public class BDDRecord {
     rec.setCommunities(comms);
 
     return rec;
+  }
+
+  public BDDRecord restrict(List<Prefix> prefixes) {
+    if (prefixes.isEmpty()) {
+      throw new BatfishException("Empty prefix list in BDDRecord restrict");
+    }
+    BDDRecord r = restrict(prefixes.get(0));
+    for (int i = 1; i < prefixes.size(); i++) {
+      Prefix p = prefixes.get(i);
+      BDDRecord x = restrict(p);
+      r = r.or(x);
+    }
+    return r;
   }
 }

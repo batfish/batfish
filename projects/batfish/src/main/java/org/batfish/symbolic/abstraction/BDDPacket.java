@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -11,6 +12,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -384,13 +386,9 @@ public class BDDPacket {
         && Objects.equals(_tcpUrg, other._tcpUrg);
   }
 
-  /*
-   * Restrict the record to contain don't cares for prefix variables
-   */
   public BDD restrict(BDD bdd, Prefix pfx) {
     int len = pfx.getPrefixLength();
     BitSet bits = pfx.getAddress().getAddressBits();
-    // Create a substitution map
     BDDPairing p = factory.makePair();
     for (int i = 0; i < len; i++) {
       int var = dstIpIndex + i;
@@ -398,5 +396,18 @@ public class BDDPacket {
       p.set(var, subst);
     }
     return bdd.veccompose(p);
+  }
+
+  public BDD restrict(BDD bdd, List<Prefix> prefixes) {
+    if (prefixes.isEmpty()) {
+      throw new BatfishException("Empty prefix list in BDDRecord restrict");
+    }
+    BDD r = restrict(bdd, prefixes.get(0));
+    for (int i = 1; i < prefixes.size(); i++) {
+      Prefix p = prefixes.get(i);
+      BDD x = restrict(bdd, p);
+      r = r.or(x);
+    }
+    return r;
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.symbolic.abstraction;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
@@ -80,6 +81,17 @@ public class InterfacePolicy {
     }
     if (pol._acl != null) {
       pol._acl = pol._acl.restrict(pfx);
+    }
+    return pol;
+  }
+
+  public InterfacePolicy restrict(List<Prefix> prefixes) {
+    InterfacePolicy pol = new InterfacePolicy(this);
+    if (pol._bgpPolicy != null) {
+      pol._bgpPolicy = pol._bgpPolicy.restrict(prefixes);
+    }
+    if (pol._acl != null) {
+      pol._acl = pol._acl.restrict(prefixes);
     }
     return pol;
   }

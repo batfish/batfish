@@ -109,7 +109,7 @@ public class Abstractor {
       Configuration conf = entry.getValue();
       // System.out.println("Looking at router: " + router);
       for (Protocol proto : protoMap.get(router)) {
-        List<Prefix> destinations;
+        List<Prefix> destinations = new ArrayList<>();
         // For connected interfaces add address if there is a peer
         // Otherwise, add the entire prefix since we don't know
         /* if (proto.isConnected()) {
@@ -125,9 +125,10 @@ public class Abstractor {
             }
           }
         } else { */
-        // System.out.println("  Looking at protocol: " + proto.name());
-        destinations = Graph.getOriginatedNetworks(conf, proto);
-        //}
+
+        if (!proto.isStatic()) {
+          destinations = Graph.getOriginatedNetworks(conf, proto);
+        }
 
         // Add all destinations to the prefix trie
         for (Prefix p : destinations) {
@@ -157,7 +158,7 @@ public class Abstractor {
 
     for (Entry<Set<String>, List<Prefix>> entry : destMap.entrySet()) {
       Set<String> devices = entry.getKey();
-      // List<Prefix> prefixes = entry.getValue();
+      List<Prefix> prefixes = entry.getValue();
 
       UnionSplit<String> workset = new UnionSplit<>(allDevices);
 
@@ -217,12 +218,18 @@ public class Abstractor {
                   epol = _exportPolicyMap.get(otherEnd);
                 }
 
+                // TODO: not right
+                if (ipol != null) {
+                  ipol = ipol.restrict(prefixes);
+                }
+
+                if (epol != null) {
+                  epol = epol.restrict(prefixes);
+                }
+
                 // For external neighbors, we don't split a partition
                 Integer peerGroup;
                 if (peer != null) {
-
-                  Configuration peerConf = _graph.getConfigurations().get(peer);
-
                   peerGroup = workset.getHandle(peer);
                   // else {
                   // peerGroup = new TreeSet<>();

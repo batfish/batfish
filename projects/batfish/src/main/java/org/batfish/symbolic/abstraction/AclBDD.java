@@ -357,4 +357,13 @@ public class AclBDD {
     other._bdd = this._pkt.restrict(this._bdd, pfx);
     return other;
   }
+
+  /*
+ * Create a new version of the BDD restricted to a list of prefixes
+ */
+  public AclBDD restrict(List<Prefix> prefixes) {
+    AclBDD other = new AclBDD(this);
+    other._bdd = this._pkt.restrict(this._bdd, prefixes);
+    return other;
+  }
 }

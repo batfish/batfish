@@ -103,10 +103,9 @@ public class PrefixTrieMap implements Serializable {
       if (devices == null) {
         return true;
       }
-
-      return _devices != null && !_devices.containsAll(devices)
+      return _devices != null && !devices.containsAll(_devices)
           || _left != null && _left.hasUniqueDevice(devices)
-          || (_right != null && _right.hasUniqueDevice(devices));
+          || _right != null && _right.hasUniqueDevice(devices);
     }
 
     private void createDestinationMap(
@@ -134,7 +133,7 @@ public class PrefixTrieMap implements Serializable {
             addEntry(map, devices, right);
           }
         } else {
-          addEntry(map, devices, prefix);
+         addEntry(map, devices, prefix);
         }
       }
     }
