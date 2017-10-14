@@ -270,6 +270,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+    for (Edge edge : topology.getEdges()) {
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
+      }
+      // nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt1(), edge.getNode1()));
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt2(), edge.getNode2()));
+      }
+    }
+  }
+
   public static String flatten(
       String input,
       BatfishLogger logger,
@@ -1837,6 +1865,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return blacklistNodes;
   }
 
+  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
+     If inferred is true, it returns the inferred roles;
+     otherwise it prefers the user-specified roles if they exist.
+  */
+  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
+    NodeRoleSpecifier result;
+    boolean inferredRoles = false;
+    TestrigSettings settings = _settings.getActiveTestrigSettings();
+    Path nodeRolesPath = settings.getNodeRolesPath();
+    if (!Files.exists(nodeRolesPath) || inferred) {
+      inferredRoles = true;
+      nodeRolesPath = settings.getInferredNodeRolesPath();
+      if (!Files.exists(nodeRolesPath)) {
+        return new NodeRoleSpecifier();
+      }
+    }
+    result = parseNodeRoles(nodeRolesPath);
+    result.setInferred(inferredRoles);
+    return result;
+  }
+
   @Override
   public Map<String, String> getQuestionTemplates() {
     if (_settings.getCoordinatorHost() == null) {
@@ -3362,29 +3411,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
-      throws JSONException {
-    Iterator<?> iter = questionObject.keys();
-    while (iter.hasNext()) {
-      String key = (String) iter.next();
-      Object value = questionObject.get(key);
-      if (value instanceof String) {
-        if (value.equals("${" + varName + "}")) {
-          iter.remove();
-        }
-      } else if (value instanceof JSONObject) {
-        JSONObject childObject = (JSONObject) value;
-        if (childObject.has("class")) {
-          Object classValue = childObject.get("class");
-          if (classValue instanceof String
-              && ((String) classValue).startsWith("org.batfish.question")) {
-            recursivelyRemoveOptionalVar(childObject, varName);
-          }
-        }
-      }
-    }
-  }
-
   @Override
   public void printElapsedTime() {
     double seconds = getElapsedTime(_timerCount);
@@ -3460,7 +3486,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
 
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
+        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -3536,27 +3562,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
       }
     }
-  }
-
-  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
-     If inferred is true, it returns the inferred roles;
-     otherwise it prefers the user-specified roles if they exist.
-  */
-  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
-    NodeRoleSpecifier result;
-    boolean inferredRoles = false;
-    TestrigSettings settings = _settings.getActiveTestrigSettings();
-    Path nodeRolesPath = settings.getNodeRolesPath();
-    if (!Files.exists(nodeRolesPath) || inferred) {
-      inferredRoles = true;
-      nodeRolesPath = settings.getInferredNodeRolesPath();
-      if (!Files.exists(nodeRolesPath)) {
-        return new NodeRoleSpecifier();
-      }
-    }
-    result = parseNodeRoles(nodeRolesPath);
-    result.setInferred(inferredRoles);
-    return result;
   }
 
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
@@ -3716,6 +3721,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
               "Fatal exception due to at least one Iptables file is not contained"
                   + " within the testrig"),
           failureCauses);
+    }
+  }
+
+  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
+      throws JSONException {
+    Iterator<?> iter = questionObject.keys();
+    while (iter.hasNext()) {
+      String key = (String) iter.next();
+      Object value = questionObject.get(key);
+      if (value instanceof String) {
+        if (value.equals("${" + varName + "}")) {
+          iter.remove();
+        }
+      } else if (value instanceof JSONObject) {
+        JSONObject childObject = (JSONObject) value;
+        if (childObject.has("class")) {
+          Object classValue = childObject.get("class");
+          if (classValue instanceof String
+              && ((String) classValue).startsWith("org.batfish.question")) {
+            recursivelyRemoveOptionalVar(childObject, varName);
+          }
+        }
+      }
     }
   }
 
@@ -4391,6 +4419,59 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtDeterminism(HeaderQuestion q) {
+    return PropertyChecker.computeDeterminism(this, q);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
   public AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
@@ -4675,86 +4756,5 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
-  }
-
-  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
-    for (Edge edge : topology.getEdges()) {
-      if (!configurations.containsKey(edge.getNode1())) {
-        throw new BatfishException(
-            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
-      }
-      if (!configurations.containsKey(edge.getNode2())) {
-        throw new BatfishException(
-            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
-      }
-      // nodes are valid, now checking corresponding interfaces
-      Configuration config1 = configurations.get(edge.getNode1());
-      Configuration config2 = configurations.get(edge.getNode2());
-      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
-        throw new BatfishException(
-            String.format(
-                "Topology contains a non-existent interface '%s' on node '%s'",
-                edge.getInt1(), edge.getNode1()));
-      }
-      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
-        throw new BatfishException(
-            String.format(
-                "Topology contains a non-existent interface '%s' on node '%s'",
-                edge.getInt2(), edge.getNode2()));
-      }
-    }
-  }
-
-  @Override
-  public AnswerElement smtForwarding(HeaderQuestion q) {
-    return PropertyChecker.computeForwarding(this, q);
-  }
-
-  @Override
-  public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    return PropertyChecker.computeReachability(this, q);
-  }
-
-  @Override
-  public AnswerElement smtBlackhole(HeaderQuestion q) {
-    return PropertyChecker.computeBlackHole(this, q);
-  }
-
-  @Override
-  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    return PropertyChecker.computeRoutingLoop(this, q);
-  }
-
-  @Override
-  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
-    if (bound == null) {
-      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
-    }
-    return PropertyChecker.computeBoundedLength(this, q, bound);
-  }
-
-  @Override
-  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    return PropertyChecker.computeEqualLength(this, q);
-  }
-
-  @Override
-  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    return PropertyChecker.computeMultipathConsistency(this, q);
-  }
-
-  @Override
-  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    return PropertyChecker.computeLoadBalance(this, q, threshold);
-  }
-
-  @Override
-  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
-  }
-
-  @Override
-  public AnswerElement smtDeterminism(HeaderQuestion q) {
-    return PropertyChecker.computeDeterminism(this, q);
   }
 }
