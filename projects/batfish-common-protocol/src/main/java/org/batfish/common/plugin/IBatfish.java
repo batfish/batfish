@@ -163,6 +163,8 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
 
+  AnswerElement smtDeterminism(HeaderQuestion q);
+
   AnswerElement smtEqualLength(HeaderLocationQuestion q);
 
   AnswerElement smtForwarding(HeaderQuestion q);

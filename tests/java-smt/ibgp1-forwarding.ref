@@ -88,6 +88,14 @@
           "|0_SLICE-MAIN_ip-protocol|" : "0",
           "|0_SLICE-MAIN_src-ip|" : "0",
           "|0_SLICE-MAIN_src-port|" : "0",
+          "|0_SLICE-MAIN_tcp-ack|" : "false",
+          "|0_SLICE-MAIN_tcp-cwr|" : "false",
+          "|0_SLICE-MAIN_tcp-ece|" : "false",
+          "|0_SLICE-MAIN_tcp-fin|" : "false",
+          "|0_SLICE-MAIN_tcp-psh|" : "false",
+          "|0_SLICE-MAIN_tcp-rst|" : "false",
+          "|0_SLICE-MAIN_tcp-syn|" : "false",
+          "|0_SLICE-MAIN_tcp-urg|" : "false",
           "|0_SLICE-R1_CONTROL-FORWARDING_R1_Loopback0|" : "false",
           "|0_SLICE-R1_CONTROL-FORWARDING_R1_Serial0|" : "false",
           "|0_SLICE-R1_CONTROL-FORWARDING_R1_Serial1|" : "false",
@@ -125,6 +133,14 @@
           "|0_SLICE-R1_ip-protocol|" : "6",
           "|0_SLICE-R1_src-ip|" : "0",
           "|0_SLICE-R1_src-port|" : "0",
+          "|0_SLICE-R1_tcp-ack|" : "false",
+          "|0_SLICE-R1_tcp-cwr|" : "false",
+          "|0_SLICE-R1_tcp-ece|" : "false",
+          "|0_SLICE-R1_tcp-fin|" : "false",
+          "|0_SLICE-R1_tcp-psh|" : "false",
+          "|0_SLICE-R1_tcp-rst|" : "false",
+          "|0_SLICE-R1_tcp-syn|" : "false",
+          "|0_SLICE-R1_tcp-urg|" : "false",
           "|0_SLICE-R2_CONTROL-FORWARDING_R1_Loopback0|" : "false",
           "|0_SLICE-R2_CONTROL-FORWARDING_R1_Serial0|" : "true",
           "|0_SLICE-R2_CONTROL-FORWARDING_R1_Serial1|" : "false",
@@ -161,7 +177,15 @@
           "|0_SLICE-R2_icmp-type|" : "0",
           "|0_SLICE-R2_ip-protocol|" : "6",
           "|0_SLICE-R2_src-ip|" : "0",
-          "|0_SLICE-R2_src-port|" : "0"
+          "|0_SLICE-R2_src-port|" : "0",
+          "|0_SLICE-R2_tcp-ack|" : "false",
+          "|0_SLICE-R2_tcp-cwr|" : "false",
+          "|0_SLICE-R2_tcp-ece|" : "false",
+          "|0_SLICE-R2_tcp-fin|" : "false",
+          "|0_SLICE-R2_tcp-psh|" : "false",
+          "|0_SLICE-R2_tcp-rst|" : "false",
+          "|0_SLICE-R2_tcp-syn|" : "false",
+          "|0_SLICE-R2_tcp-urg|" : "false"
         },
         "packetModel" : {
           "dstIp" : "20.20.20.20"
@@ -172,12 +196,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtForwardingQuestionPlugin$ForwardingQuestion",
+    "baseEnvType" : "none",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "20.20.20.20"
     ],
     "envDiff" : false,
-    "envType" : "none",
     "failures" : 0,
     "fullModel" : true,
     "minimize" : false

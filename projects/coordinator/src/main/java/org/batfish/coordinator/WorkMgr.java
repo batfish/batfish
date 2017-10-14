@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +38,7 @@ import org.batfish.common.plugin.AbstractCoordinator;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
+import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.answers.Answer;
@@ -246,12 +248,12 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       client =
           CommonUtil.createHttpClientBuilder(
-              _settings.getSslPoolDisable(),
-              _settings.getSslPoolTrustAllCerts(),
-              _settings.getSslPoolKeystoreFile(),
-              _settings.getSslPoolKeystorePassword(),
-              _settings.getSslPoolTruststoreFile(),
-              _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
               .build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -271,9 +273,7 @@ public class WorkMgr extends AbstractCoordinator {
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);
-        _logger.info(
-            String.format(
-                "response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
+        _logger.info(String.format("response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
 
         if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
           _logger.error(
@@ -346,9 +346,8 @@ public class WorkMgr extends AbstractCoordinator {
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
       Path qDir = questionsDir.resolve(entry.getKey());
       if (Files.exists(qDir)) {
-        throw new BatfishException(String.format("Question '%s' already exists for analysis '%s'",
-            entry.getKey(),
-            aName));
+        throw new BatfishException(
+            String.format("Question '%s' already exists for analysis '%s'", entry.getKey(), aName));
       }
       if (!qDir.toFile().mkdirs()) {
         throw new BatfishException(String.format("Failed to create question directory '%s'", qDir));
@@ -609,11 +608,11 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> containers =
-            new TreeSet<>(
-                    CommonUtil.getSubdirectories(containersDir)
-                            .stream()
-                            .map(dir -> dir.getFileName().toString())
-                            .collect(Collectors.toSet()));
+        new TreeSet<>(
+            CommonUtil.getSubdirectories(containersDir)
+                .stream()
+                .map(dir -> dir.getFileName().toString())
+                .collect(Collectors.toSet()));
     return containers;
   }
 
@@ -776,7 +775,10 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Override
-  public void initTestrig(Path testrigDir,  Path srcDir, boolean autoProcess) {
+  public void initTestrig(
+      String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
+    Path containerDir = getdirContainer(containerName);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
     /*-
      * Sanity check what we got:
      *    There should be just one top-level folder.
@@ -789,6 +791,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
+
     Path srcTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
 
     // create empty default environment
@@ -811,10 +814,38 @@ public class WorkMgr extends AbstractCoordinator {
       CommonUtil.copy(subFile, target);
     }
 
-    if (autoProcess) {
-      //TODO: any logic to automatically parse, analyze the testrig should go here
-      //This can work by creating proper workitems, as done by Client, and calling queueWork
-      throw new BatfishException("Auto processing is not currently implemented");
+    if (autoAnalyze) {
+      List<WorkItem> autoWorkQueue = new LinkedList<>();
+
+      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName, false);
+      autoWorkQueue.add(parseWork);
+
+      Set<String> analysisNames = listAnalyses(containerName);
+      for (String analysis : analysisNames) {
+        WorkItem analyzeWork =
+            WorkItemBuilder.getWorkItemRunAnalysis(
+                analysis,
+                containerName,
+                testrigName,
+                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+                null,
+                null,
+                false,
+                false);
+        autoWorkQueue.add(analyzeWork);
+      }
+
+      // NB: This way of doing things only works when we have a single worker; otherwise workitems
+      // lower down the order can get fired before those higher in the order
+      // The right solution is to put workitem2 on the queue only after workitem1 has finished
+      // successfully. The rightest solution is for workers to be aware of dependencies so they
+      // don't try to execute tasks that depend on other tasks that are currently being executed.
+
+      for (WorkItem workItem : autoWorkQueue) {
+        if (!queueWork(workItem)) {
+          throw new BatfishException("Unable to queue work while auto processing: " + workItem);
+        }
+      }
     }
   }
 
@@ -997,17 +1028,17 @@ public class WorkMgr extends AbstractCoordinator {
 
   public int syncTestrigsSyncNow(String containerName, String pluginId, boolean force) {
     if (!_testrigSyncers.containsKey(pluginId)) {
-      throw new BatfishException("PluginId " + pluginId + " not found."
-                + " (Are SyncTestrigs plugins loaded?)");
+      throw new BatfishException(
+          "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).syncNow(containerName, force);
   }
 
-  public boolean syncTestrigsUpdateSettings(String containerName, String pluginId,
-                                            Map<String, String> settings) {
+  public boolean syncTestrigsUpdateSettings(
+      String containerName, String pluginId, Map<String, String> settings) {
     if (!_testrigSyncers.containsKey(pluginId)) {
-      throw new BatfishException("PluginId " + pluginId + " not found."
-              + " (Are SyncTestrigs plugins loaded?)");
+      throw new BatfishException(
+          "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
     }
     return _testrigSyncers.get(pluginId).updateSettings(containerName, settings);
   }
@@ -1111,7 +1142,8 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.writeStreamToFile(fileStream, file);
   }
 
-  public void uploadTestrig(String containerName, String testrigName, InputStream fileStream) {
+  public void uploadTestrig(
+      String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
     if (Files.exists(testrigDir)) {
@@ -1126,7 +1158,7 @@ public class WorkMgr extends AbstractCoordinator {
     UnzipUtility.unzip(zipFile, unzipDir);
 
     try {
-      initTestrig(testrigDir, unzipDir, false);
+      initTestrig(containerName, testrigName, unzipDir, autoAnalyze);
     } catch (Exception e) {
       throw new BatfishException("Error initializing testrig", e);
     } finally {
@@ -1135,9 +1167,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  /**
-   * Returns true if the container {@code containerName} exists, false otherwise.
-   */
+  /** Returns true if the container {@code containerName} exists, false otherwise. */
   public boolean checkContainerExists(String containerName) {
     Path containerDir = getdirContainer(containerName, false);
     return Files.exists(containerDir);

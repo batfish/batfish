@@ -109,6 +109,7 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
@@ -502,6 +503,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer analyze() {
     Answer answer = new Answer();
+    AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
     Path analysisQuestionsDir =
         _settings
@@ -526,9 +528,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
+            summary.combine(currentAnswer.getSummary());
           });
     }
     answer.addAnswerElement(ae);
+    answer.setSummary(summary);
     return answer;
   }
 
@@ -1739,7 +1743,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Environment getEnvironment() {
     EdgeSet edgeBlackList = getEdgeBlacklist();
-    Set<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
+    SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
     NodeSet nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
@@ -1833,8 +1837,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowHistory;
   }
 
-  public Set<NodeInterfacePair> getInterfaceBlacklist() {
-    Set<NodeInterfacePair> blacklistInterfaces = null;
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+    SortedSet<NodeInterfacePair> blacklistInterfaces = null;
     Path interfaceBlacklistPath =
         _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
     if (interfaceBlacklistPath != null) {
@@ -3066,7 +3070,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  private Set<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
+  private SortedSet<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
     String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
     SortedSet<NodeInterfacePair> ifaces;
     try {
@@ -4425,6 +4429,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
     }
     return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtDeterminism(HeaderQuestion q) {
+    return PropertyChecker.computeDeterminism(this, q);
   }
 
   @Override

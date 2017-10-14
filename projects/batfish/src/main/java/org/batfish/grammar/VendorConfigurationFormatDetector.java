@@ -76,10 +76,15 @@ public final class VendorConfigurationFormatDetector {
         Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)").matcher(_fileText);
     Matcher ciscoStyleAcl = Pattern.compile("(?m)(^(ip )?access-list.*$)").matcher(_fileText);
     Matcher nexusCommitLine = Pattern.compile("(?m)^ *commit *$").matcher(_fileText);
+    Matcher nexusFeatureLine =
+        Pattern.compile("(?m)^ *(no)?  *feature  *[^ ].*$").matcher(_fileText);
     Matcher neighborActivateMatcher =
         Pattern.compile("(?m)^ *neighbor.*activate$").matcher(_fileText);
     Matcher neighborPeerGroupMatcher =
         Pattern.compile("(?m)^ *neighbor.*peer-group$").matcher(_fileText);
+    if (nexusFeatureLine.find()) {
+      return ConfigurationFormat.CISCO_NX;
+    }
     if (ciscoLike.find() || _firstChar == '!' || ciscoStyleAcl.find()) {
       if (_fileText.contains("exit-address-family")
           || neighborActivateMatcher.find()

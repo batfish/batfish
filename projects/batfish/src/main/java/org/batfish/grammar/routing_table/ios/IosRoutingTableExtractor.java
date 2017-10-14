@@ -118,8 +118,23 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
         nextHopInterface = nextHopInterfaces.get(i);
       }
       if (ctx.IS_DIRECTLY_CONNECTED() != null) {
-        admin = 0;
-        cost = 0;
+        if (protocol == RoutingProtocol.STATIC) {
+          // static
+          if (ctx.admin != null) {
+            admin = toInteger(ctx.admin);
+          } else {
+            admin = 1;
+          }
+          if (ctx.cost != null) {
+            cost = toInteger(ctx.cost);
+          } else {
+            cost = 0;
+          }
+        } else {
+          // connected
+          admin = 0;
+          cost = 0;
+        }
         nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
       } else {
         admin = toInteger(ctx.admin);

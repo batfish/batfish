@@ -18,12 +18,13 @@ public class Route6FilterLineLonger extends Route6FilterLine {
   @Override
   public void applyTo(Route6FilterList rfl) {
     int prefixLength = _prefix6.getPrefixLength();
-    if (prefixLength >= 32) {
-      throw new BatfishException("Route filter prefix length cannot be 'longer' than 32");
+    if (prefixLength >= Prefix6.MAX_PREFIX_LENGTH) {
+      throw new BatfishException(
+          "Route filter prefix length cannot be 'longer' than " + Prefix6.MAX_PREFIX_LENGTH);
     }
     org.batfish.datamodel.Route6FilterLine line =
         new org.batfish.datamodel.Route6FilterLine(
-            LineAction.ACCEPT, _prefix6, new SubRange(prefixLength + 1, 32));
+            LineAction.ACCEPT, _prefix6, new SubRange(prefixLength + 1, Prefix6.MAX_PREFIX_LENGTH));
     rfl.addLine(line);
   }
 

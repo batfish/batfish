@@ -1,0 +1,10 @@
+!
+hostname nxos_interface
+feature privilege
+!
+interface Ethernet0/0
+ link debounce link-up time 0
+ linkdebounce time 100
+ mdix auto
+!
+

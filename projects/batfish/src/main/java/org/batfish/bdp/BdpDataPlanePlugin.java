@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
@@ -791,7 +792,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 + "\n"
                 + iterationHashCodes;
         if (!_settings.getBdpDebugRepeatIterations()) {
-          throw new BatfishException(msg);
+          throw new BdpOscillationException(msg);
         } else if (!_settings.getBdpDebugAllIterations()) {
           String errorMessage =
               _settings.getBdpDebugIterationsDetailed()
@@ -802,14 +803,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                       dependentRoutesIterations)
                   : debugIterations(
                       msg, iterationRoutes, iterationWithThisHashCode, dependentRoutesIterations);
-          throw new BatfishException(errorMessage);
+          throw new BdpOscillationException(errorMessage);
         } else {
           String errorMessage =
               _settings.getBdpDebugIterationsDetailed()
                   ? debugAbstractRoutesIterations(
                       msg, iterationAbstractRoutes, 1, dependentRoutesIterations)
                   : debugIterations(msg, iterationRoutes, 1, dependentRoutesIterations);
-          throw new BatfishException(errorMessage);
+          throw new BdpOscillationException(errorMessage);
         }
       }
 

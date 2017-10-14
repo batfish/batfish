@@ -819,8 +819,12 @@ public class VirtualRouter extends ComparableStructure<String> {
                */
 
               Ip remoteOriginatorIp = bgpRemoteRoute.getOriginatorIp();
-              // don't accept routes whose originator ip is my BGP id
-              if (remoteOriginatorIp != null
+              /*
+               *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
+               *  same as originator id of advertisement
+               */
+              if (!ebgpSession
+                  && remoteOriginatorIp != null
                   && _vrf.getBgpProcess().getRouterId().equals(remoteOriginatorIp)) {
                 continue;
               }
