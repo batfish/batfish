@@ -64,13 +64,17 @@ public class Abstractor {
 
   private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
 
-  private Map<GraphEdge, BDDRecord> _importBgpPolicies = new HashMap<>();
+  private Map<GraphEdge, BDDRecord> _importBgpPolicies;
 
-  private Map<GraphEdge, BDDRecord> _exportBgpPolicies = new HashMap<>();
+  private Map<GraphEdge, BDDRecord> _exportBgpPolicies;
 
-  private Map<GraphEdge, BDD> _inAcls = new HashMap<>();
+  private Map<GraphEdge, BDD> _inAcls;
 
-  private Map<GraphEdge, BDD> _outAcls = new HashMap<>();
+  private Map<GraphEdge, BDDPacket> _inAclsPkts;
+
+  private Map<GraphEdge, BDD> _outAcls;
+
+  private Map<GraphEdge, BDDPacket> _outAclsPkts;
 
   public Abstractor(IBatfish batfish) {
     _batfish = batfish;
@@ -81,6 +85,8 @@ public class Abstractor {
     _exportBgpPolicies = new HashMap<>();
     _inAcls = new HashMap<>();
     _outAcls = new HashMap<>();
+    _inAclsPkts = new HashMap<>();
+    _outAclsPkts = new HashMap<>();
   }
 
   /*
@@ -98,7 +104,8 @@ public class Abstractor {
   private Map<String, List<Protocol>> buildProtocolMap() {
     // Figure out which protocols are running on which devices
     Map<String, List<Protocol>> protocols = new HashMap<>();
-    _graph.getConfigurations()
+    _graph
+        .getConfigurations()
         .forEach(
             (router, conf) -> {
               List<Protocol> protos = new ArrayList<>();
@@ -136,15 +143,13 @@ public class Abstractor {
               List<GraphEdge> edges = _graph.getEdgeMap().get(router);
               for (GraphEdge ge : edges) {
                 // Import BGP policy
-                RoutingPolicy importBgp =
-                    _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
+                RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
                 if (importBgp != null) {
                   BDDRecord rec = computeBDD(_graph, conf, importBgp);
                   _importBgpPolicies.put(ge, rec);
                 }
                 // Export BGP policy
-                RoutingPolicy exportBgp =
-                    _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
+                RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
                 if (exportBgp != null) {
                   BDDRecord rec = computeBDD(_graph, conf, exportBgp);
                   _exportBgpPolicies.put(ge, rec);
@@ -157,12 +162,14 @@ public class Abstractor {
                   AclBDD x = new AclBDD(in);
                   BDD acl = x.computeACL();
                   _inAcls.put(ge, acl);
+                  _inAclsPkts.put(ge, x.getPkt());
                 }
                 // Outgoing ACL
                 if (out != null) {
                   AclBDD x = new AclBDD(out);
                   BDD acl = x.computeACL();
                   _outAcls.put(ge, acl);
+                  _outAclsPkts.put(ge, x.getPkt());
                 }
               }
             });
@@ -177,16 +184,23 @@ public class Abstractor {
                 BDDRecord bgpOut = _exportBgpPolicies.get(ge);
                 BDD aclIn = _inAcls.get(ge);
                 BDD aclOut = _outAcls.get(ge);
+                BDDPacket aclInPkt = _inAclsPkts.get(ge);
+                BDDPacket aclOutPkt = _outAclsPkts.get(ge);
                 Integer ospfCost = ge.getStart().getOspfCost();
                 SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
-                InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
-                InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);
+                InterfacePolicy ipol =
+                    new InterfacePolicy(aclIn, aclInPkt, bgpIn, null, staticRoutes);
+                InterfacePolicy epol =
+                    new InterfacePolicy(aclOut, aclOutPkt, bgpOut, ospfCost, null);
                 _importPolicyMap.put(ge, ipol);
                 _exportPolicyMap.put(ge, epol);
               }
             });
   }
 
+  /*
+   * Helper functions to sort the sets by minimum element
+   */
   private @Nullable String min(SortedSet<String> set) {
     String x = null;
     for (String s : set) {
@@ -216,12 +230,14 @@ public class Abstractor {
     Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
     Map<BDD, SortedSet<String>> outgoingAclEcs = new HashMap<>();
     Map<Tuple<InterfacePolicy, InterfacePolicy>, SortedSet<String>> interfaceEcs = new HashMap<>();
-    Map<Set<Tuple<InterfacePolicy,InterfacePolicy>>, SortedSet<String>> nodeEcs = new HashMap<>();
+    Map<Set<Tuple<InterfacePolicy, InterfacePolicy>>, SortedSet<String>> nodeEcs = new HashMap<>();
 
     SortedSet<String> importBgpNull = new TreeSet<>();
     SortedSet<String> exportBgpNull = new TreeSet<>();
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
+
+    Prefix pfx = new Prefix("0.0.0.0/0");
 
     _graph
         .getEdgeMap()
@@ -237,7 +253,8 @@ public class Abstractor {
                   if (x1 == null) {
                     importBgpNull.add(s);
                   } else {
-                    SortedSet<String> ec = importBgpEcs.computeIfAbsent(x1, k -> new TreeSet<>());
+                    SortedSet<String> ec =
+                        importBgpEcs.computeIfAbsent(x1.restrict(pfx), k -> new TreeSet<>());
                     ec.add(s);
                   }
 
@@ -245,7 +262,8 @@ public class Abstractor {
                   if (x2 == null) {
                     exportBgpNull.add(s);
                   } else {
-                    SortedSet<String> ec = exportBgpEcs.computeIfAbsent(x2, k -> new TreeSet<>());
+                    SortedSet<String> ec =
+                        exportBgpEcs.computeIfAbsent(x2.restrict(pfx), k -> new TreeSet<>());
                     ec.add(s);
                   }
 
@@ -268,6 +286,9 @@ public class Abstractor {
 
                 InterfacePolicy x6 = _importPolicyMap.get(ge);
                 InterfacePolicy x7 = _exportPolicyMap.get(ge);
+                x6 = x6.restrict(pfx);
+                x7 = x7.restrict(pfx);
+
                 Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
 
                 if (t == EquivalenceType.INTERFACE) {
@@ -328,7 +349,6 @@ public class Abstractor {
       x7.sort(c);
     }
 
-
     RoleAnswerElement ae = new RoleAnswerElement();
     ae.setImportBgpEcs(x1);
     ae.setExportBgpEcs(x2);
@@ -348,7 +368,8 @@ public class Abstractor {
     PrefixTrieMap pt = new PrefixTrieMap();
 
     // Iterate through the destinations
-    _graph.getConfigurations()
+    _graph
+        .getConfigurations()
         .forEach(
             (router, conf) -> {
               // System.out.println("Looking at router: " + router);

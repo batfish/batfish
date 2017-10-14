@@ -304,4 +304,15 @@ public class AclBDD {
     return acc;
   }
 
+  public IpAccessList getAcl() {
+    return _acl;
+  }
+
+  public BDDPacket getPkt() {
+    return _pkt;
+  }
+
+  public BDDFactory getFactory() {
+    return _factory;
+  }
 }

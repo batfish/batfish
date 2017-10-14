@@ -5,6 +5,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 
+
 public class BDDInteger {
 
   private BDDFactory _factory;

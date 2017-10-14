@@ -2,6 +2,7 @@ package org.batfish.symbolic.abstraction;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.OspfType;
@@ -41,6 +44,8 @@ public class BDDRecord {
       e.printStackTrace();
     }
   }
+
+  private static final int prefixIndex = 133;
 
   private BDDInteger _prefix;
 
@@ -127,7 +132,7 @@ public class BDDRecord {
     _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
     int len = _protocolHistory.getInteger().getBitvec().length;
     addBitNames("proto", len, idx);
-    idx = idx + len;
+    idx += len;
 
     // Initialize OSPF type
     // Realistically, the AST will only set E1 or E1. Others are just for completeness
@@ -155,6 +160,7 @@ public class BDDRecord {
     _localPref = new BDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
+    _bitNames = other._bitNames;
   }
 
   /*
@@ -163,6 +169,68 @@ public class BDDRecord {
   public BDDRecord copy() {
     return new BDDRecord(this);
   }
+
+  /*
+   * Restrict the values of a bdd
+   */
+  private BDD restrict(BDD bdd, int len, BitSet bits) {
+    BDDPairing pairing = factory.makePair();
+    for (int i = 0; i < len; i++) {
+      BDD bit = _prefix.getBitvec()[i];
+      int var = bit.var();
+      pairing.set(var, factory.one());
+    }
+    return bdd.veccompose(pairing);
+  }
+
+  /*
+   * Restrict the record to contain don't cares for prefix variables
+   */
+  public BDDRecord restrict(Prefix pfx) {
+    int len = pfx.getPrefixLength();
+    BitSet bits = pfx.getAddress().getAddressBits();
+
+    // Create a substitution map
+    BDDPairing p = factory.makePair();
+    for (int i = 0; i < len; i++) {
+      int var = prefixIndex + i;
+      BDD subst = bits.get(i) ? factory.one() : factory.zero();
+      p.set(var, subst);
+    }
+
+    // Substitute in each BDD
+    BDDRecord rec = new BDDRecord(this);
+    BDD[] prefix = rec.getPrefix().getBitvec();
+    BDD[] prefixLen = rec.getPrefixLength().getBitvec();
+    BDD[] metric = rec.getMetric().getBitvec();
+    BDD[] adminDist = rec.getAdminDist().getBitvec();
+    BDD[] med = rec.getMed().getBitvec();
+    BDD[] localPref = rec.getLocalPref().getBitvec();
+    BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
+    BDD[] proto = rec.getProtocolHistory().getInteger().getBitvec();
+    for (int i = 0; i < 32; i++) {
+      metric[i] = metric[i].veccompose(p);
+      adminDist[i] = adminDist[i].veccompose(p);
+      med[i] = med[i].veccompose(p);
+      localPref[i] = localPref[i].veccompose(p);
+      prefix[i] = prefix[i].veccompose(p);
+    }
+    for (int i = 0; i < 5; i++) {
+      prefixLen[i] = prefixLen[i].veccompose(p);
+    }
+    for (int i = 0; i < ospfMet.length; i++) {
+      ospfMet[i] = ospfMet[i].veccompose(p);
+    }
+    for (int i = 0; i < proto.length; i++) {
+      proto[i] = proto[i].veccompose(p);
+    }
+    SortedMap<CommunityVar, BDD> comms = new TreeMap<>();
+    rec.getCommunities().forEach((cvar, bdd) -> comms.put(cvar, bdd.veccompose(p)));
+    rec.setCommunities(comms);
+
+    return rec;
+  }
+
 
   /*
    * Creates a unique id for a bdd node when generating

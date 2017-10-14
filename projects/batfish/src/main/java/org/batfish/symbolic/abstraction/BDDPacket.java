@@ -1,6 +1,7 @@
 package org.batfish.symbolic.abstraction;
 
 import java.lang.reflect.Method;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,7 +9,9 @@ import java.util.Objects;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.datamodel.Prefix;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs
@@ -33,6 +36,8 @@ public class BDDPacket {
       e.printStackTrace();
     }
   }
+
+  private static final int dstIpIndex = 9;
 
   private BDDInteger _dstIp;
 
@@ -166,6 +171,22 @@ public class BDDPacket {
    */
   public BDDPacket copy() {
     return new BDDPacket(this);
+  }
+
+  /*
+   * Restrict the record to contain don't cares for prefix variables
+   */
+  public BDD restrict(BDD bdd, Prefix pfx) {
+    int len = pfx.getPrefixLength();
+    BitSet bits = pfx.getAddress().getAddressBits();
+    // Create a substitution map
+    BDDPairing p = factory.makePair();
+    for (int i = 0; i < len; i++) {
+      int var = dstIpIndex + i;
+      BDD subst = bits.get(i) ? factory.one() : factory.zero();
+      p.set(var, subst);
+    }
+    return bdd.veccompose(p);
   }
 
   /*
