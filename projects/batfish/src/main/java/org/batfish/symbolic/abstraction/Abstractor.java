@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -80,6 +79,21 @@ public class Abstractor {
     _outAcls = new HashMap<>();
   }
 
+  /*
+   * Given a network, computes a compressed, abstract version
+   * of the network that should preserve all stable routing solutions.
+   * For example, the concrete network below:
+   *
+   *            A                A
+   *          /   \              |
+   *         B    C    ==>       B'
+   *          \  /               |
+   *           D                 D
+   *
+   * My be compressed into the abstract network on the right depending
+   * on the particular route-maps, acls, etc configured on devices
+   * A through D.
+   */
   public AnswerElement computeAbstraction() {
     long start = System.currentTimeMillis();
     computeInterfacePolicies();
@@ -90,40 +104,39 @@ public class Abstractor {
 
     // Iterate through the destinations
 
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              // System.out.println("Looking at router: " + router);
-              for (Protocol proto : protoMap.get(router)) {
-                List<Prefix> destinations;
-                // For connected interfaces add address if there is a peer
-                // Otherwise, add the entire prefix since we don't know
-                /* if (proto.isConnected()) {
-                  destinations = new ArrayList<>();
-                  List<GraphEdge> edges = g.getEdgeMap().get(router);
-                  for (GraphEdge ge : edges) {
-                    if (ge.getPeer() == null) {
-                      destinations.add(ge.getStart().getPrefix());
-                    } else {
-                      Ip ip = ge.getStart().getPrefix().getAddress();
-                      Prefix pfx = new Prefix(ip,32);
-                      destinations.add(pfx);
-                    }
-                  }
-                } else { */
-                // System.out.println("  Looking at protocol: " + proto.name());
-                destinations = Graph.getOriginatedNetworks(conf, proto);
-                //}
+    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      // System.out.println("Looking at router: " + router);
+      for (Protocol proto : protoMap.get(router)) {
+        List<Prefix> destinations;
+        // For connected interfaces add address if there is a peer
+        // Otherwise, add the entire prefix since we don't know
+        /* if (proto.isConnected()) {
+          destinations = new ArrayList<>();
+          List<GraphEdge> edges = g.getEdgeMap().get(router);
+          for (GraphEdge ge : edges) {
+            if (ge.getPeer() == null) {
+              destinations.add(ge.getStart().getPrefix());
+            } else {
+              Ip ip = ge.getStart().getPrefix().getAddress();
+              Prefix pfx = new Prefix(ip,32);
+              destinations.add(pfx);
+            }
+          }
+        } else { */
+        // System.out.println("  Looking at protocol: " + proto.name());
+        destinations = Graph.getOriginatedNetworks(conf, proto);
+        //}
 
-                // Add all destinations to the prefix trie
-                for (Prefix p : destinations) {
-                  //System.out.println(
-                  // "Destination for " + router + "," + proto.name() + " has: " + p);
-                  pt.add(p, router);
-                }
-              }
-            });
+        // Add all destinations to the prefix trie
+        for (Prefix p : destinations) {
+          //System.out.println(
+          // "Destination for " + router + "," + proto.name() + " has: " + p);
+          pt.add(p, router);
+        }
+      }
+    }
 
     // Map collections of devices to the destination IP ranges that are rooted there
     Map<Set<String>, List<Prefix>> destMap = pt.createDestinationMap();
@@ -294,29 +307,28 @@ public class Abstractor {
   private Map<String, List<Protocol>> buildProtocolMap() {
     // Figure out which protocols are running on which devices
     Map<String, List<Protocol>> protocols = new HashMap<>();
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              List<Protocol> protos = new ArrayList<>();
-              protocols.put(router, protos);
+    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      List<Protocol> protos = new ArrayList<>();
+      protocols.put(router, protos);
 
-              if (conf.getDefaultVrf().getOspfProcess() != null) {
-                protos.add(Protocol.OSPF);
-              }
+      if (conf.getDefaultVrf().getOspfProcess() != null) {
+        protos.add(Protocol.OSPF);
+      }
 
-              if (conf.getDefaultVrf().getBgpProcess() != null) {
-                protos.add(Protocol.BGP);
-              }
+      if (conf.getDefaultVrf().getBgpProcess() != null) {
+        protos.add(Protocol.BGP);
+      }
 
-              if (!conf.getDefaultVrf().getStaticRoutes().isEmpty()) {
-                protos.add(Protocol.STATIC);
-              }
+      if (!conf.getDefaultVrf().getStaticRoutes().isEmpty()) {
+        protos.add(Protocol.STATIC);
+      }
 
-              if (!conf.getInterfaces().isEmpty()) {
-                protos.add(Protocol.CONNECTED);
-              }
-            });
+      if (!conf.getInterfaces().isEmpty()) {
+        protos.add(Protocol.CONNECTED);
+      }
+    }
     return protocols;
   }
 
@@ -326,58 +338,56 @@ public class Abstractor {
    */
   private void computeInterfacePolicies() {
 
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              List<GraphEdge> edges = _graph.getEdgeMap().get(router);
-              for (GraphEdge ge : edges) {
-                // Import BGP policy
-                RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
-                if (importBgp != null) {
-                  BDDRecord rec = computeBDD(_graph, conf, importBgp);
-                  _importBgpPolicies.put(ge, rec);
-                }
-                // Export BGP policy
-                RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
-                if (exportBgp != null) {
-                  BDDRecord rec = computeBDD(_graph, conf, exportBgp);
-                  _exportBgpPolicies.put(ge, rec);
-                }
+    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      List<GraphEdge> edges = _graph.getEdgeMap().get(router);
+      for (GraphEdge ge : edges) {
+        // Import BGP policy
+        RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
+        if (importBgp != null) {
+          BDDRecord rec = computeBDD(_graph, conf, importBgp);
+          _importBgpPolicies.put(ge, rec);
+        }
+        // Export BGP policy
+        RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
+        if (exportBgp != null) {
+          BDDRecord rec = computeBDD(_graph, conf, exportBgp);
+          _exportBgpPolicies.put(ge, rec);
+        }
 
-                IpAccessList in = ge.getStart().getIncomingFilter();
-                IpAccessList out = ge.getStart().getOutgoingFilter();
-                // Incoming ACL
-                if (in != null) {
-                  AclBDD x = AclBDD.create(in);
-                  _inAcls.put(ge, x);
-                }
-                // Outgoing ACL
-                if (out != null) {
-                  AclBDD x = AclBDD.create(out);
-                  _outAcls.put(ge, x);
-                }
-              }
-            });
+        IpAccessList in = ge.getStart().getIncomingFilter();
+        IpAccessList out = ge.getStart().getOutgoingFilter();
+        // Incoming ACL
+        if (in != null) {
+          AclBDD x = AclBDD.create(in);
+          _inAcls.put(ge, x);
+        }
+        // Outgoing ACL
+        if (out != null) {
+          AclBDD x = AclBDD.create(out);
+          _outAcls.put(ge, x);
+        }
+      }
+    }
 
-    _graph
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              Configuration conf = _graph.getConfigurations().get(router);
-              for (GraphEdge ge : edges) {
-                BDDRecord bgpIn = _importBgpPolicies.get(ge);
-                BDDRecord bgpOut = _exportBgpPolicies.get(ge);
-                AclBDD aclIn = _inAcls.get(ge);
-                AclBDD aclOut = _outAcls.get(ge);
-                Integer ospfCost = ge.getStart().getOspfCost();
-                SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
-                InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
-                InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);
-                _importPolicyMap.put(ge, ipol);
-                _exportPolicyMap.put(ge, epol);
-              }
-            });
+    for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      Configuration conf = _graph.getConfigurations().get(router);
+      for (GraphEdge ge : edges) {
+        BDDRecord bgpIn = _importBgpPolicies.get(ge);
+        BDDRecord bgpOut = _exportBgpPolicies.get(ge);
+        AclBDD aclIn = _inAcls.get(ge);
+        AclBDD aclOut = _outAcls.get(ge);
+        Integer ospfCost = ge.getStart().getOspfCost();
+        SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
+        InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
+        InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);
+        _importPolicyMap.put(ge, ipol);
+        _exportPolicyMap.put(ge, epol);
+      }
+    }
   }
 
   /*
@@ -410,75 +420,74 @@ public class Abstractor {
 
     Prefix pfx = new Prefix("70.0.18.0/24");
 
-    _graph
-        .getEdgeMap()
-        .forEach(
-            (router, ges) -> {
-              Set<Tuple<InterfacePolicy, InterfacePolicy>> nodeEc = new HashSet<>();
+    for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> ges = entry.getValue();
+      Set<Tuple<InterfacePolicy, InterfacePolicy>> nodeEc = new HashSet<>();
 
-              for (GraphEdge ge : ges) {
-                String s = ge.toString();
+      for (GraphEdge ge : ges) {
+        String s = ge.toString();
 
-                if (t == EquivalenceType.POLICY) {
-                  BDDRecord x1 = _importBgpPolicies.get(ge);
-                  if (x1 == null) {
-                    importBgpNull.add(s);
-                  } else {
-                    SortedSet<String> ec =
-                        importBgpEcs.computeIfAbsent(x1.restrict(pfx), k -> new TreeSet<>());
-                    ec.add(s);
-                  }
+        if (t == EquivalenceType.POLICY) {
+          BDDRecord x1 = _importBgpPolicies.get(ge);
+          if (x1 == null) {
+            importBgpNull.add(s);
+          } else {
+            SortedSet<String> ec =
+                importBgpEcs.computeIfAbsent(x1.restrict(pfx), k -> new TreeSet<>());
+            ec.add(s);
+          }
 
-                  BDDRecord x2 = _exportBgpPolicies.get(ge);
-                  if (x2 == null) {
-                    exportBgpNull.add(s);
-                  } else {
-                    SortedSet<String> ec =
-                        exportBgpEcs.computeIfAbsent(x2.restrict(pfx), k -> new TreeSet<>());
-                    ec.add(s);
-                  }
+          BDDRecord x2 = _exportBgpPolicies.get(ge);
+          if (x2 == null) {
+            exportBgpNull.add(s);
+          } else {
+            SortedSet<String> ec =
+                exportBgpEcs.computeIfAbsent(x2.restrict(pfx), k -> new TreeSet<>());
+            ec.add(s);
+          }
 
-                  AclBDD x4 = _inAcls.get(ge);
-                  if (x4 == null) {
-                    incomingAclNull.add(s);
-                  } else {
-                    SortedSet<String> ec =
-                        incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
-                    ec.add(s);
-                  }
+          AclBDD x4 = _inAcls.get(ge);
+          if (x4 == null) {
+            incomingAclNull.add(s);
+          } else {
+            SortedSet<String> ec =
+                incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
+            ec.add(s);
+          }
 
-                  AclBDD x5 = _outAcls.get(ge);
-                  if (x4 == null) {
-                    outgoingAclNull.add(s);
-                  } else {
-                    SortedSet<String> ec =
-                        outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
-                    ec.add(s);
-                  }
-                }
+          AclBDD x5 = _outAcls.get(ge);
+          if (x4 == null) {
+            outgoingAclNull.add(s);
+          } else {
+            SortedSet<String> ec =
+                outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
+            ec.add(s);
+          }
+        }
 
-                InterfacePolicy x6 = _importPolicyMap.get(ge);
-                InterfacePolicy x7 = _exportPolicyMap.get(ge);
-                x6 = x6.restrict(pfx);
-                x7 = x7.restrict(pfx);
+        InterfacePolicy x6 = _importPolicyMap.get(ge);
+        InterfacePolicy x7 = _exportPolicyMap.get(ge);
+        x6 = x6.restrict(pfx);
+        x7 = x7.restrict(pfx);
 
-                Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
+        Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
 
-                if (t == EquivalenceType.INTERFACE) {
-                  SortedSet<String> ec = interfaceEcs.computeIfAbsent(tup, k -> new TreeSet<>());
-                  ec.add(s);
-                }
+        if (t == EquivalenceType.INTERFACE) {
+          SortedSet<String> ec = interfaceEcs.computeIfAbsent(tup, k -> new TreeSet<>());
+          ec.add(s);
+        }
 
-                if (t == EquivalenceType.NODE) {
-                  nodeEc.add(tup);
-                }
-              }
+        if (t == EquivalenceType.NODE) {
+          nodeEc.add(tup);
+        }
+      }
 
-              if (t == EquivalenceType.NODE) {
-                SortedSet<String> ec = nodeEcs.computeIfAbsent(nodeEc, k -> new TreeSet<>());
-                ec.add(router);
-              }
-            });
+      if (t == EquivalenceType.NODE) {
+        SortedSet<String> ec = nodeEcs.computeIfAbsent(nodeEc, k -> new TreeSet<>());
+        ec.add(router);
+      }
+    }
 
     List<SortedSet<String>> x1 = null;
     List<SortedSet<String>> x2 = null;
