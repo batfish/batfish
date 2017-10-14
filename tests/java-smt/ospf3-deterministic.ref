@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtDeterminismAnswerElement",
+      "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement",
       "result" : {
         "verified" : true
       }
