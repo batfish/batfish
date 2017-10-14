@@ -20,6 +20,8 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
+  private static final int dstIpIndex = 9;
+
   static BDDFactory factory;
 
   static {
@@ -37,21 +39,21 @@ public class BDDPacket {
     }
   }
 
-  private static final int dstIpIndex = 9;
+  private Map<Integer, String> _bitNames;
 
   private BDDInteger _dstIp;
 
-  private BDDInteger _srcIp;
-
   private BDDInteger _dstPort;
-
-  private BDDInteger _srcPort;
 
   private BDDInteger _icmpCode;
 
   private BDDInteger _icmpType;
 
   private BDDInteger _ipProtocol;
+
+  private BDDInteger _srcIp;
+
+  private BDDInteger _srcPort;
 
   private BDD _tcpAck;
 
@@ -68,18 +70,6 @@ public class BDDPacket {
   private BDD _tcpSyn;
 
   private BDD _tcpUrg;
-
-  private Map<Integer, String> _bitNames;
-
-  /*
-   * Helper function that builds a map from BDD variable index
-   * to some more meaningful name. Helpful for debugging.
-   */
-  private void addBitNames(String s, int length, int index) {
-    for (int i = index; i < index + length; i++) {
-      _bitNames.put(i, s + (i - index));
-    }
-  }
 
   /*
    * Creates a collection of BDD variables representing the
@@ -167,6 +157,16 @@ public class BDDPacket {
   }
 
   /*
+   * Helper function that builds a map from BDD variable index
+   * to some more meaningful name. Helpful for debugging.
+   */
+  private void addBitNames(String s, int length, int index) {
+    for (int i = index; i < index + length; i++) {
+      _bitNames.put(i, s + (i - index));
+    }
+  }
+
+  /*
    * Convenience method for the copy constructor
    */
   public BDDPacket copy() {
@@ -174,19 +174,16 @@ public class BDDPacket {
   }
 
   /*
-   * Restrict the record to contain don't cares for prefix variables
+   * Converts a BDD to the graphviz DOT format for debugging.
    */
-  public BDD restrict(BDD bdd, Prefix pfx) {
-    int len = pfx.getPrefixLength();
-    BitSet bits = pfx.getAddress().getAddressBits();
-    // Create a substitution map
-    BDDPairing p = factory.makePair();
-    for (int i = 0; i < len; i++) {
-      int var = dstIpIndex + i;
-      BDD subst = bits.get(i) ? factory.one() : factory.zero();
-      p.set(var, subst);
-    }
-    return bdd.veccompose(p);
+  public String dot(BDD bdd) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("digraph G {\n");
+    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    dotRec(sb, bdd, new HashSet<>());
+    sb.append("}");
+    return sb.toString();
   }
 
   /*
@@ -207,7 +204,7 @@ public class BDDPacket {
    * Recursively builds each of the intermediate BDD nodes in the
    * graphviz DOT format.
    */
-  private void getDotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
+  private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
     if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
       return;
     }
@@ -219,141 +216,148 @@ public class BDDPacket {
     sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
     sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
     visited.add(bdd);
-    getDotRec(sb, bdd.low(), visited);
-    getDotRec(sb, bdd.high(), visited);
-  }
-
-  /*
-   * Converts a BDD to the graphviz DOT format for debugging.
-   */
-  public String getDot(BDD bdd) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("digraph G {\n");
-    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    getDotRec(sb, bdd, new HashSet<>());
-    sb.append("}");
-    return sb.toString();
-  }
-
-  public BDDInteger getSrcIp() {
-    return _srcIp;
+    dotRec(sb, bdd.low(), visited);
+    dotRec(sb, bdd.high(), visited);
   }
 
   public BDDInteger getDstIp() {
     return _dstIp;
   }
 
-  public BDDInteger getDstPort() {
-    return _dstPort;
-  }
-
-  public BDDInteger getSrcPort() {
-    return _srcPort;
-  }
-
-  public BDDInteger getIcmpCode() {
-    return _icmpCode;
-  }
-
-  public BDDInteger getIcmpType() {
-    return _icmpType;
-  }
-
-  public BDDInteger getIpProtocol() {
-    return _ipProtocol;
-  }
-
-  public BDD getTcpAck() {
-    return _tcpAck;
-  }
-
-  public BDD getTcpCwr() {
-    return _tcpCwr;
-  }
-
-  public BDD getTcpEce() {
-    return _tcpEce;
-  }
-
-  public BDD getTcpFin() {
-    return _tcpFin;
-  }
-
-  public BDD getTcpPsh() {
-    return _tcpPsh;
-  }
-
-  public BDD getTcpRst() {
-    return _tcpRst;
-  }
-
-  public BDD getTcpSyn() {
-    return _tcpSyn;
-  }
-
-  public BDD getTcpUrg() {
-    return _tcpUrg;
-  }
-
   public void setDstIp(BDDInteger x) {
     this._dstIp = x;
+  }
+
+  public BDDInteger getDstPort() {
+    return _dstPort;
   }
 
   public void setDstPort(BDDInteger x) {
     this._dstPort = x;
   }
 
-  public void setSrcIp(BDDInteger x) {
-    this._srcIp = x;
-  }
-
-  public void setSrcPort(BDDInteger x) {
-    this._srcPort = x;
+  public BDDInteger getIcmpCode() {
+    return _icmpCode;
   }
 
   public void setIcmpCode(BDDInteger x) {
     this._icmpCode = x;
   }
 
+  public BDDInteger getIcmpType() {
+    return _icmpType;
+  }
+
   public void setIcmpType(BDDInteger x) {
     this._icmpType = x;
+  }
+
+  public BDDInteger getIpProtocol() {
+    return _ipProtocol;
   }
 
   public void setIpProtocol(BDDInteger x) {
     this._ipProtocol = x;
   }
 
+  public BDDInteger getSrcIp() {
+    return _srcIp;
+  }
+
+  public void setSrcIp(BDDInteger x) {
+    this._srcIp = x;
+  }
+
+  public BDDInteger getSrcPort() {
+    return _srcPort;
+  }
+
+  public void setSrcPort(BDDInteger x) {
+    this._srcPort = x;
+  }
+
+  public BDD getTcpAck() {
+    return _tcpAck;
+  }
+
   public void setTcpAck(BDD tcpAck) {
     this._tcpAck = tcpAck;
+  }
+
+  public BDD getTcpCwr() {
+    return _tcpCwr;
   }
 
   public void setTcpCwr(BDD tcpCwr) {
     this._tcpCwr = tcpCwr;
   }
 
+  public BDD getTcpEce() {
+    return _tcpEce;
+  }
+
   public void setTcpEce(BDD tcpEce) {
     this._tcpEce = tcpEce;
+  }
+
+  public BDD getTcpFin() {
+    return _tcpFin;
   }
 
   public void setTcpFin(BDD tcpFin) {
     this._tcpFin = tcpFin;
   }
 
+  public BDD getTcpPsh() {
+    return _tcpPsh;
+  }
+
   public void setTcpPsh(BDD tcpPsh) {
     this._tcpPsh = tcpPsh;
+  }
+
+  public BDD getTcpRst() {
+    return _tcpRst;
   }
 
   public void setTcpRst(BDD tcpRst) {
     this._tcpRst = tcpRst;
   }
 
+  public BDD getTcpSyn() {
+    return _tcpSyn;
+  }
+
   public void setTcpSyn(BDD tcpSyn) {
     this._tcpSyn = tcpSyn;
   }
 
+  public BDD getTcpUrg() {
+    return _tcpUrg;
+  }
+
   public void setTcpUrg(BDD tcpUrg) {
     this._tcpUrg = tcpUrg;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = _dstIp != null ? _dstIp.hashCode() : 0;
+    result = 31 * result + (_srcIp != null ? _srcIp.hashCode() : 0);
+    result = 31 * result + (_dstPort != null ? _dstPort.hashCode() : 0);
+    result = 31 * result + (_srcPort != null ? _srcPort.hashCode() : 0);
+    result = 31 * result + (_icmpCode != null ? _icmpCode.hashCode() : 0);
+    result = 31 * result + (_icmpType != null ? _icmpType.hashCode() : 0);
+    result = 31 * result + (_ipProtocol != null ? _ipProtocol.hashCode() : 0);
+    result = 31 * result + (_tcpAck != null ? _tcpAck.hashCode() : 0);
+    result = 31 * result + (_tcpCwr != null ? _tcpCwr.hashCode() : 0);
+    result = 31 * result + (_tcpEce != null ? _tcpEce.hashCode() : 0);
+    result = 31 * result + (_tcpFin != null ? _tcpFin.hashCode() : 0);
+    result = 31 * result + (_tcpPsh != null ? _tcpPsh.hashCode() : 0);
+    result = 31 * result + (_tcpRst != null ? _tcpRst.hashCode() : 0);
+    result = 31 * result + (_tcpSyn != null ? _tcpSyn.hashCode() : 0);
+    result = 31 * result + (_tcpUrg != null ? _tcpUrg.hashCode() : 0);
+    return result;
   }
 
   @Override
@@ -380,23 +384,19 @@ public class BDDPacket {
         && Objects.equals(_tcpUrg, other._tcpUrg);
   }
 
-  @Override
-  public int hashCode() {
-    int result = _dstIp != null ? _dstIp.hashCode() : 0;
-    result = 31 * result + (_srcIp != null ? _srcIp.hashCode() : 0);
-    result = 31 * result + (_dstPort != null ? _dstPort.hashCode() : 0);
-    result = 31 * result + (_srcPort != null ? _srcPort.hashCode() : 0);
-    result = 31 * result + (_icmpCode != null ? _icmpCode.hashCode() : 0);
-    result = 31 * result + (_icmpType != null ? _icmpType.hashCode() : 0);
-    result = 31 * result + (_ipProtocol != null ? _ipProtocol.hashCode() : 0);
-    result = 31 * result + (_tcpAck != null ? _tcpAck.hashCode() : 0);
-    result = 31 * result + (_tcpCwr != null ? _tcpCwr.hashCode() : 0);
-    result = 31 * result + (_tcpEce != null ? _tcpEce.hashCode() : 0);
-    result = 31 * result + (_tcpFin != null ? _tcpFin.hashCode() : 0);
-    result = 31 * result + (_tcpPsh != null ? _tcpPsh.hashCode() : 0);
-    result = 31 * result + (_tcpRst != null ? _tcpRst.hashCode() : 0);
-    result = 31 * result + (_tcpSyn != null ? _tcpSyn.hashCode() : 0);
-    result = 31 * result + (_tcpUrg != null ? _tcpUrg.hashCode() : 0);
-    return result;
+  /*
+   * Restrict the record to contain don't cares for prefix variables
+   */
+  public BDD restrict(BDD bdd, Prefix pfx) {
+    int len = pfx.getPrefixLength();
+    BitSet bits = pfx.getAddress().getAddressBits();
+    // Create a substitution map
+    BDDPairing p = factory.makePair();
+    for (int i = 0; i < len; i++) {
+      int var = dstIpIndex + i;
+      BDD subst = bits.get(i) ? factory.one() : factory.zero();
+      p.set(var, subst);
+    }
+    return bdd.veccompose(p);
   }
 }

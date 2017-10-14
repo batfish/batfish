@@ -56,28 +56,21 @@ public class Abstractor {
 
   private static final String EXTERNAL_NAME = "PEER";
 
-  private IBatfish _batfish;
-
-  private Graph _graph;
-
-  private Map<GraphEdge, InterfacePolicy> _importPolicyMap;
+  private Map<GraphEdge, BDDRecord> _exportBgpPolicies;
 
   private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
 
+  private Graph _graph;
+
   private Map<GraphEdge, BDDRecord> _importBgpPolicies;
 
-  private Map<GraphEdge, BDDRecord> _exportBgpPolicies;
+  private Map<GraphEdge, InterfacePolicy> _importPolicyMap;
 
-  private Map<GraphEdge, BDD> _inAcls;
+  private Map<GraphEdge, AclBDD> _inAcls;
 
-  private Map<GraphEdge, BDDPacket> _inAclsPkts;
-
-  private Map<GraphEdge, BDD> _outAcls;
-
-  private Map<GraphEdge, BDDPacket> _outAclsPkts;
+  private Map<GraphEdge, AclBDD> _outAcls;
 
   public Abstractor(IBatfish batfish) {
-    _batfish = batfish;
     _graph = new Graph(batfish);
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -85,278 +78,6 @@ public class Abstractor {
     _exportBgpPolicies = new HashMap<>();
     _inAcls = new HashMap<>();
     _outAcls = new HashMap<>();
-    _inAclsPkts = new HashMap<>();
-    _outAclsPkts = new HashMap<>();
-  }
-
-  /*
-   * Compute a BDD representation of a routing policy.
-   */
-  public BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
-    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
-    BDDRecord rec = t.compute();
-    return rec;
-  }
-
-  /*
-   * Determine which protocols are running on which devices
-   */
-  private Map<String, List<Protocol>> buildProtocolMap() {
-    // Figure out which protocols are running on which devices
-    Map<String, List<Protocol>> protocols = new HashMap<>();
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              List<Protocol> protos = new ArrayList<>();
-              protocols.put(router, protos);
-
-              if (conf.getDefaultVrf().getOspfProcess() != null) {
-                protos.add(Protocol.OSPF);
-              }
-
-              if (conf.getDefaultVrf().getBgpProcess() != null) {
-                protos.add(Protocol.BGP);
-              }
-
-              if (!conf.getDefaultVrf().getStaticRoutes().isEmpty()) {
-                protos.add(Protocol.STATIC);
-              }
-
-              if (!conf.getInterfaces().isEmpty()) {
-                protos.add(Protocol.CONNECTED);
-              }
-            });
-    return protocols;
-  }
-
-  /*
-   * For each interface in the network, creates a canonical
-   * representation of the import and export policies on this interface.
-   */
-  private void computeInterfacePolicies() {
-
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              List<GraphEdge> edges = _graph.getEdgeMap().get(router);
-              for (GraphEdge ge : edges) {
-                // Import BGP policy
-                RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
-                if (importBgp != null) {
-                  BDDRecord rec = computeBDD(_graph, conf, importBgp);
-                  _importBgpPolicies.put(ge, rec);
-                }
-                // Export BGP policy
-                RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
-                if (exportBgp != null) {
-                  BDDRecord rec = computeBDD(_graph, conf, exportBgp);
-                  _exportBgpPolicies.put(ge, rec);
-                }
-
-                IpAccessList in = ge.getStart().getIncomingFilter();
-                IpAccessList out = ge.getStart().getOutgoingFilter();
-                // Incoming ACL
-                if (in != null) {
-                  AclBDD x = new AclBDD(in);
-                  BDD acl = x.computeACL();
-                  _inAcls.put(ge, acl);
-                  _inAclsPkts.put(ge, x.getPkt());
-                }
-                // Outgoing ACL
-                if (out != null) {
-                  AclBDD x = new AclBDD(out);
-                  BDD acl = x.computeACL();
-                  _outAcls.put(ge, acl);
-                  _outAclsPkts.put(ge, x.getPkt());
-                }
-              }
-            });
-
-    _graph
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              Configuration conf = _graph.getConfigurations().get(router);
-              for (GraphEdge ge : edges) {
-                BDDRecord bgpIn = _importBgpPolicies.get(ge);
-                BDDRecord bgpOut = _exportBgpPolicies.get(ge);
-                BDD aclIn = _inAcls.get(ge);
-                BDD aclOut = _outAcls.get(ge);
-                BDDPacket aclInPkt = _inAclsPkts.get(ge);
-                BDDPacket aclOutPkt = _outAclsPkts.get(ge);
-                Integer ospfCost = ge.getStart().getOspfCost();
-                SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
-                InterfacePolicy ipol =
-                    new InterfacePolicy(aclIn, aclInPkt, bgpIn, null, staticRoutes);
-                InterfacePolicy epol =
-                    new InterfacePolicy(aclOut, aclOutPkt, bgpOut, ospfCost, null);
-                _importPolicyMap.put(ge, ipol);
-                _exportPolicyMap.put(ge, epol);
-              }
-            });
-  }
-
-  /*
-   * Helper functions to sort the sets by minimum element
-   */
-  private @Nullable String min(SortedSet<String> set) {
-    String x = null;
-    for (String s : set) {
-      if (x == null || s.compareTo(x) < 0) {
-        x = s;
-      }
-    }
-    return x;
-  }
-
-  private Comparator<SortedSet<String>> comparator() {
-    return (o1, o2) -> {
-      String min1 = min(o1);
-      String min2 = min(o2);
-      return min1.compareTo(min2);
-    };
-  }
-
-  /*
-   * Compute all the devices/interfaces configured with the
-   * equivalent policies.
-   */
-  public AnswerElement computeRoles(EquivalenceType t) {
-    computeInterfacePolicies();
-    Map<BDDRecord, SortedSet<String>> importBgpEcs = new HashMap<>();
-    Map<BDDRecord, SortedSet<String>> exportBgpEcs = new HashMap<>();
-    Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
-    Map<BDD, SortedSet<String>> outgoingAclEcs = new HashMap<>();
-    Map<Tuple<InterfacePolicy, InterfacePolicy>, SortedSet<String>> interfaceEcs = new HashMap<>();
-    Map<Set<Tuple<InterfacePolicy, InterfacePolicy>>, SortedSet<String>> nodeEcs = new HashMap<>();
-
-    SortedSet<String> importBgpNull = new TreeSet<>();
-    SortedSet<String> exportBgpNull = new TreeSet<>();
-    SortedSet<String> incomingAclNull = new TreeSet<>();
-    SortedSet<String> outgoingAclNull = new TreeSet<>();
-
-    Prefix pfx = new Prefix("0.0.0.0/0");
-
-    _graph
-        .getEdgeMap()
-        .forEach(
-            (router, ges) -> {
-              Set<Tuple<InterfacePolicy, InterfacePolicy>> nodeEc = new HashSet<>();
-
-              for (GraphEdge ge : ges) {
-                String s = ge.toString();
-
-                if (t == EquivalenceType.POLICY) {
-                  BDDRecord x1 = _importBgpPolicies.get(ge);
-                  if (x1 == null) {
-                    importBgpNull.add(s);
-                  } else {
-                    SortedSet<String> ec =
-                        importBgpEcs.computeIfAbsent(x1.restrict(pfx), k -> new TreeSet<>());
-                    ec.add(s);
-                  }
-
-                  BDDRecord x2 = _exportBgpPolicies.get(ge);
-                  if (x2 == null) {
-                    exportBgpNull.add(s);
-                  } else {
-                    SortedSet<String> ec =
-                        exportBgpEcs.computeIfAbsent(x2.restrict(pfx), k -> new TreeSet<>());
-                    ec.add(s);
-                  }
-
-                  BDD x4 = _inAcls.get(ge);
-                  if (x4 == null) {
-                    incomingAclNull.add(s);
-                  } else {
-                    SortedSet<String> ec = incomingAclEcs.computeIfAbsent(x4, k -> new TreeSet<>());
-                    ec.add(s);
-                  }
-
-                  BDD x5 = _outAcls.get(ge);
-                  if (x4 == null) {
-                    outgoingAclNull.add(s);
-                  } else {
-                    SortedSet<String> ec = outgoingAclEcs.computeIfAbsent(x5, k -> new TreeSet<>());
-                    ec.add(s);
-                  }
-                }
-
-                InterfacePolicy x6 = _importPolicyMap.get(ge);
-                InterfacePolicy x7 = _exportPolicyMap.get(ge);
-                x6 = x6.restrict(pfx);
-                x7 = x7.restrict(pfx);
-
-                Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
-
-                if (t == EquivalenceType.INTERFACE) {
-                  SortedSet<String> ec = interfaceEcs.computeIfAbsent(tup, k -> new TreeSet<>());
-                  ec.add(s);
-                }
-
-                if (t == EquivalenceType.NODE) {
-                  nodeEc.add(tup);
-                }
-              }
-
-              if (t == EquivalenceType.NODE) {
-                SortedSet<String> ec = nodeEcs.computeIfAbsent(nodeEc, k -> new TreeSet<>());
-                ec.add(router);
-              }
-            });
-
-    List<SortedSet<String>> x1 = null;
-    List<SortedSet<String>> x2 = null;
-    List<SortedSet<String>> x4 = null;
-    List<SortedSet<String>> x5 = null;
-    List<SortedSet<String>> x6 = null;
-    List<SortedSet<String>> x7 = null;
-
-    Comparator<SortedSet<String>> c = comparator();
-
-    if (t == EquivalenceType.POLICY) {
-      x1 = new ArrayList<>(importBgpEcs.values());
-      if (!importBgpNull.isEmpty()) {
-        x1.add(importBgpNull);
-      }
-      x1.sort(c);
-      x2 = new ArrayList<>(exportBgpEcs.values());
-      if (!exportBgpNull.isEmpty()) {
-        x2.add(exportBgpNull);
-      }
-      x2.sort(c);
-      x4 = new ArrayList<>(incomingAclEcs.values());
-      if (!incomingAclNull.isEmpty()) {
-        x4.add(incomingAclNull);
-      }
-      x4.sort(c);
-      x5 = new ArrayList<>(outgoingAclEcs.values());
-      if (!outgoingAclNull.isEmpty()) {
-        x5.add(outgoingAclNull);
-      }
-      x5.sort(c);
-    }
-
-    if (t == EquivalenceType.INTERFACE) {
-      x6 = new ArrayList<>(interfaceEcs.values());
-      x6.sort(c);
-    }
-
-    if (t == EquivalenceType.NODE) {
-      x7 = new ArrayList<>(nodeEcs.values());
-      x7.sort(c);
-    }
-
-    RoleAnswerElement ae = new RoleAnswerElement();
-    ae.setImportBgpEcs(x1);
-    ae.setExportBgpEcs(x2);
-    ae.setIncomingAclEcs(x4);
-    ae.setOutgoingAclEcs(x5);
-    ae.setInterfaceEcs(x6);
-    ae.setNodeEcs(x7);
-    return ae;
   }
 
   public AnswerElement computeAbstraction() {
@@ -368,6 +89,7 @@ public class Abstractor {
     PrefixTrieMap pt = new PrefixTrieMap();
 
     // Iterate through the destinations
+
     _graph
         .getConfigurations()
         .forEach(
@@ -475,13 +197,11 @@ public class Abstractor {
             for (GraphEdge edge : edges) {
               if (!edge.isAbstract()) {
                 String peer = edge.getPeer();
-
-                Interface i = edge.getStart();
-                InterfacePolicy ipol = _importPolicyMap.get(i);
+                InterfacePolicy ipol = _importPolicyMap.get(edge);
                 GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
                 InterfacePolicy epol = null;
                 if (otherEnd != null) {
-                  epol = _exportPolicyMap.get(otherEnd.getStart());
+                  epol = _exportPolicyMap.get(otherEnd);
                 }
 
                 // For external neighbors, we don't split a partition
@@ -566,5 +286,274 @@ public class Abstractor {
     System.out.println("Total time (sec): " + ((double) end - start) / 1000);
 
     return answer;
+  }
+
+  /*
+   * Determine which protocols are running on which devices
+   */
+  private Map<String, List<Protocol>> buildProtocolMap() {
+    // Figure out which protocols are running on which devices
+    Map<String, List<Protocol>> protocols = new HashMap<>();
+    _graph
+        .getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              List<Protocol> protos = new ArrayList<>();
+              protocols.put(router, protos);
+
+              if (conf.getDefaultVrf().getOspfProcess() != null) {
+                protos.add(Protocol.OSPF);
+              }
+
+              if (conf.getDefaultVrf().getBgpProcess() != null) {
+                protos.add(Protocol.BGP);
+              }
+
+              if (!conf.getDefaultVrf().getStaticRoutes().isEmpty()) {
+                protos.add(Protocol.STATIC);
+              }
+
+              if (!conf.getInterfaces().isEmpty()) {
+                protos.add(Protocol.CONNECTED);
+              }
+            });
+    return protocols;
+  }
+
+  /*
+   * For each interface in the network, creates a canonical
+   * representation of the import and export policies on this interface.
+   */
+  private void computeInterfacePolicies() {
+
+    _graph
+        .getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              List<GraphEdge> edges = _graph.getEdgeMap().get(router);
+              for (GraphEdge ge : edges) {
+                // Import BGP policy
+                RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
+                if (importBgp != null) {
+                  BDDRecord rec = computeBDD(_graph, conf, importBgp);
+                  _importBgpPolicies.put(ge, rec);
+                }
+                // Export BGP policy
+                RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
+                if (exportBgp != null) {
+                  BDDRecord rec = computeBDD(_graph, conf, exportBgp);
+                  _exportBgpPolicies.put(ge, rec);
+                }
+
+                IpAccessList in = ge.getStart().getIncomingFilter();
+                IpAccessList out = ge.getStart().getOutgoingFilter();
+                // Incoming ACL
+                if (in != null) {
+                  AclBDD x = AclBDD.create(in);
+                  _inAcls.put(ge, x);
+                }
+                // Outgoing ACL
+                if (out != null) {
+                  AclBDD x = AclBDD.create(out);
+                  _outAcls.put(ge, x);
+                }
+              }
+            });
+
+    _graph
+        .getEdgeMap()
+        .forEach(
+            (router, edges) -> {
+              Configuration conf = _graph.getConfigurations().get(router);
+              for (GraphEdge ge : edges) {
+                BDDRecord bgpIn = _importBgpPolicies.get(ge);
+                BDDRecord bgpOut = _exportBgpPolicies.get(ge);
+                AclBDD aclIn = _inAcls.get(ge);
+                AclBDD aclOut = _outAcls.get(ge);
+                Integer ospfCost = ge.getStart().getOspfCost();
+                SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
+                InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
+                InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);
+                _importPolicyMap.put(ge, ipol);
+                _exportPolicyMap.put(ge, epol);
+              }
+            });
+  }
+
+  /*
+   * Compute a BDD representation of a routing policy.
+   */
+  public BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
+    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
+    BDDRecord rec = t.compute();
+    return rec;
+  }
+
+  /*
+   * Compute all the devices/interfaces configured with the
+   * equivalent policies.
+   */
+  public AnswerElement computeRoles(EquivalenceType t) {
+    long start = System.currentTimeMillis();
+    computeInterfacePolicies();
+    Map<BDDRecord, SortedSet<String>> importBgpEcs = new HashMap<>();
+    Map<BDDRecord, SortedSet<String>> exportBgpEcs = new HashMap<>();
+    Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
+    Map<BDD, SortedSet<String>> outgoingAclEcs = new HashMap<>();
+    Map<Tuple<InterfacePolicy, InterfacePolicy>, SortedSet<String>> interfaceEcs = new HashMap<>();
+    Map<Set<Tuple<InterfacePolicy, InterfacePolicy>>, SortedSet<String>> nodeEcs = new HashMap<>();
+
+    SortedSet<String> importBgpNull = new TreeSet<>();
+    SortedSet<String> exportBgpNull = new TreeSet<>();
+    SortedSet<String> incomingAclNull = new TreeSet<>();
+    SortedSet<String> outgoingAclNull = new TreeSet<>();
+
+    Prefix pfx = new Prefix("70.0.18.0/24");
+
+    _graph
+        .getEdgeMap()
+        .forEach(
+            (router, ges) -> {
+              Set<Tuple<InterfacePolicy, InterfacePolicy>> nodeEc = new HashSet<>();
+
+              for (GraphEdge ge : ges) {
+                String s = ge.toString();
+
+                if (t == EquivalenceType.POLICY) {
+                  BDDRecord x1 = _importBgpPolicies.get(ge);
+                  if (x1 == null) {
+                    importBgpNull.add(s);
+                  } else {
+                    SortedSet<String> ec =
+                        importBgpEcs.computeIfAbsent(x1.restrict(pfx), k -> new TreeSet<>());
+                    ec.add(s);
+                  }
+
+                  BDDRecord x2 = _exportBgpPolicies.get(ge);
+                  if (x2 == null) {
+                    exportBgpNull.add(s);
+                  } else {
+                    SortedSet<String> ec =
+                        exportBgpEcs.computeIfAbsent(x2.restrict(pfx), k -> new TreeSet<>());
+                    ec.add(s);
+                  }
+
+                  AclBDD x4 = _inAcls.get(ge);
+                  if (x4 == null) {
+                    incomingAclNull.add(s);
+                  } else {
+                    SortedSet<String> ec =
+                        incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
+                    ec.add(s);
+                  }
+
+                  AclBDD x5 = _outAcls.get(ge);
+                  if (x4 == null) {
+                    outgoingAclNull.add(s);
+                  } else {
+                    SortedSet<String> ec =
+                        outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
+                    ec.add(s);
+                  }
+                }
+
+                InterfacePolicy x6 = _importPolicyMap.get(ge);
+                InterfacePolicy x7 = _exportPolicyMap.get(ge);
+                x6 = x6.restrict(pfx);
+                x7 = x7.restrict(pfx);
+
+                Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
+
+                if (t == EquivalenceType.INTERFACE) {
+                  SortedSet<String> ec = interfaceEcs.computeIfAbsent(tup, k -> new TreeSet<>());
+                  ec.add(s);
+                }
+
+                if (t == EquivalenceType.NODE) {
+                  nodeEc.add(tup);
+                }
+              }
+
+              if (t == EquivalenceType.NODE) {
+                SortedSet<String> ec = nodeEcs.computeIfAbsent(nodeEc, k -> new TreeSet<>());
+                ec.add(router);
+              }
+            });
+
+    List<SortedSet<String>> x1 = null;
+    List<SortedSet<String>> x2 = null;
+    List<SortedSet<String>> x4 = null;
+    List<SortedSet<String>> x5 = null;
+    List<SortedSet<String>> x6 = null;
+    List<SortedSet<String>> x7 = null;
+
+    Comparator<SortedSet<String>> c = comparator();
+
+    if (t == EquivalenceType.POLICY) {
+      x1 = new ArrayList<>(importBgpEcs.values());
+      if (!importBgpNull.isEmpty()) {
+        x1.add(importBgpNull);
+      }
+      x1.sort(c);
+      x2 = new ArrayList<>(exportBgpEcs.values());
+      if (!exportBgpNull.isEmpty()) {
+        x2.add(exportBgpNull);
+      }
+      x2.sort(c);
+      x4 = new ArrayList<>(incomingAclEcs.values());
+      if (!incomingAclNull.isEmpty()) {
+        x4.add(incomingAclNull);
+      }
+      x4.sort(c);
+      x5 = new ArrayList<>(outgoingAclEcs.values());
+      if (!outgoingAclNull.isEmpty()) {
+        x5.add(outgoingAclNull);
+      }
+      x5.sort(c);
+    }
+
+    if (t == EquivalenceType.INTERFACE) {
+      x6 = new ArrayList<>(interfaceEcs.values());
+      x6.sort(c);
+    }
+
+    if (t == EquivalenceType.NODE) {
+      x7 = new ArrayList<>(nodeEcs.values());
+      x7.sort(c);
+    }
+
+    RoleAnswerElement ae = new RoleAnswerElement();
+    ae.setImportBgpEcs(x1);
+    ae.setExportBgpEcs(x2);
+    ae.setIncomingAclEcs(x4);
+    ae.setOutgoingAclEcs(x5);
+    ae.setInterfaceEcs(x6);
+    ae.setNodeEcs(x7);
+
+    long end = System.currentTimeMillis() - start;
+    System.out.println("Total time: " + end);
+
+    return ae;
+  }
+
+  private Comparator<SortedSet<String>> comparator() {
+    return (o1, o2) -> {
+      String min1 = min(o1);
+      String min2 = min(o2);
+      return min1.compareTo(min2);
+    };
+  }
+
+  /*
+   * Helper functions to sort the sets by minimum element
+   */
+  private @Nullable String min(SortedSet<String> set) {
+    String x = null;
+    for (String s : set) {
+      if (x == null || s.compareTo(x) < 0) {
+        x = s;
+      }
+    }
+    return x;
   }
 }

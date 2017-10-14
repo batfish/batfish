@@ -78,13 +78,13 @@ class TransferBDD {
 
   private static BDDFactory factory = BDDRecord.factory;
 
-  private Graph _graph;
+  private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
   private Set<CommunityVar> _comms;
 
-  private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
-
   private Configuration _conf;
+
+  private Graph _graph;
 
   private List<Statement> _statements;
 
@@ -92,82 +92,6 @@ class TransferBDD {
     _graph = g;
     _conf = conf;
     _statements = statements;
-  }
-
-  /*
-   * Return a BDD from a boolean
-   */
-  private BDD mkBDD(boolean b) {
-    return b ? factory.one() : factory.zero();
-  }
-
-  /*
-   * If-then-else statement
-   */
-  private BDD ite(BDD b, BDD x, BDD y) {
-    return b.ite(x, y);
-  }
-
-  /*
-   * Map ite over BDDInteger type
-   */
-  private BDDInteger ite(BDD b, BDDInteger x, BDDInteger y) {
-    return x.ite(b, y);
-  }
-
-  /*
-   * Map ite over BDDDomain type
-   */
-  private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
-    BDDDomain<T> result = new BDDDomain<T>(x);
-    BDDInteger i = ite(b, x.getInteger(), y.getInteger());
-    result.setInteger(i);
-    return result;
-  }
-
-  private BDDRecord ite(BDD guard, BDDRecord r1, BDDRecord r2) {
-    BDDRecord ret = new BDDRecord(_comms);
-
-    BDDInteger x;
-    BDDInteger y;
-
-    // update integer values based on condition
-    x = r1.getPrefixLength();
-    y = r2.getPrefixLength();
-    ret.getPrefixLength().setValue(ite(guard, x, y));
-
-    x = r1.getPrefix();
-    y = r2.getPrefix();
-    ret.getPrefix().setValue(ite(guard, x, y));
-
-    x = r1.getAdminDist();
-    y = r2.getAdminDist();
-    ret.getAdminDist().setValue(ite(guard, x, y));
-
-    x = r1.getLocalPref();
-    y = r2.getLocalPref();
-    ret.getLocalPref().setValue(ite(guard, x, y));
-
-    x = r1.getMetric();
-    y = r2.getMetric();
-    ret.getMetric().setValue(ite(guard, x, y));
-
-    x = r1.getMed();
-    y = r2.getMed();
-    ret.getMed().setValue(ite(guard, x, y));
-
-    r1.getCommunities()
-        .forEach(
-            (c, var1) -> {
-              BDD var2 = r2.getCommunities().get(c);
-              ret.getCommunities().put(c, ite(guard, var1, var2));
-            });
-
-    BDDInteger i =
-        ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
-    ret.getProtocolHistory().setInteger(i);
-
-    return ret;
   }
 
   /*
@@ -193,146 +117,48 @@ class TransferBDD {
   }
 
   /*
-   * Check if a prefix range match is applicable for the packet destination
-   * Ip address, given the prefix length variable.
-   *
-   * Since aggregation is modelled separately, we assume that prefixLen
-   * is not modified, and thus will contain only the underlying variables:
-   * [var(0), ..., var(n)]
+   * Apply the effect of modifying an integer value (e.g., to set the local pref)
    */
-  private BDD isRelevantFor(BDDRecord record, PrefixRange range) {
-    Prefix p = range.getPrefix();
-    SubRange r = range.getLengthRange();
-    int len = p.getPrefixLength();
-    int lower = r.getStart();
-    int upper = r.getEnd();
-
-    BDD lowerBitsMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, len);
-    BDD acc = factory.zero();
-    if (lower == 0 && upper == 32) {
-      acc = factory.one();
-    } else {
-      for (int i = lower; i <= upper; i++) {
-        BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.or(equalLen);
-      }
+  private BDDInteger applyIntExprModification(TransferParam<BDDRecord> p, BDDInteger x, IntExpr e) {
+    if (e instanceof LiteralInt) {
+      LiteralInt z = (LiteralInt) e;
+      p.debug("LiteralInt: " + z.getValue());
+      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
     }
-    return acc.and(lowerBitsMatch);
+    if (e instanceof IncrementLocalPreference) {
+      IncrementLocalPreference z = (IncrementLocalPreference) e;
+      p.debug("IncrementLocalPreference: " + z.getAddend());
+      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    }
+    if (e instanceof DecrementLocalPreference) {
+      DecrementLocalPreference z = (DecrementLocalPreference) e;
+      p.debug("DecrementLocalPreference: " + z.getSubtrahend());
+      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
+    }
+    throw new BatfishException("TODO: int expr transfer function: " + e);
   }
 
   /*
-   * Converts a route filter list to a boolean expression.
+   * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private BDD matchFilterList(TransferParam<BDDRecord> p, RouteFilterList x, BDDRecord other) {
-    BDD acc = factory.zero();
-    List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
-    Collections.reverse(lines);
-    for (RouteFilterLine line : lines) {
-      Prefix pfx = line.getPrefix();
-      SubRange r = line.getLengthRange();
-      PrefixRange range = new PrefixRange(pfx, r);
-      p.debug("Prefix Range: " + range);
-      p.debug("Action: " + line.getAction());
-      BDD matches = isRelevantFor(other, range);
-      BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
-      acc = ite(matches, action, acc);
+  private BDDInteger applyLongExprModification(
+      TransferParam<BDDRecord> p, BDDInteger x, LongExpr e) {
+    if (e instanceof LiteralLong) {
+      LiteralLong z = (LiteralLong) e;
+      p.debug("LiteralLong: " + z.getValue());
+      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
     }
-    return acc;
-  }
-
-  /*
-   * Converts a prefix set to a boolean expression.
-   */
-  private BDD matchPrefixSet(
-      TransferParam<BDDRecord> p, Configuration conf, PrefixSetExpr e, BDDRecord other) {
-    if (e instanceof ExplicitPrefixSet) {
-      ExplicitPrefixSet x = (ExplicitPrefixSet) e;
-
-      Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
-      if (ranges.isEmpty()) {
-        p.debug("empty");
-        return factory.one();
-      }
-
-      BDD acc = factory.zero();
-      for (PrefixRange range : ranges) {
-        p.debug("Prefix Range: " + range);
-        acc = acc.or(isRelevantFor(other, range));
-      }
-      return acc;
-
-    } else if (e instanceof NamedPrefixSet) {
-      NamedPrefixSet x = (NamedPrefixSet) e;
-      p.debug("Named: " + x.getName());
-      String name = x.getName();
-      RouteFilterList fl = conf.getRouteFilterLists().get(name);
-      return matchFilterList(p, fl, other);
-
-    } else {
-      throw new BatfishException("TODO: match prefix set: " + e);
+    if (e instanceof DecrementMetric) {
+      DecrementMetric z = (DecrementMetric) e;
+      p.debug("Decrement: " + z.getSubtrahend());
+      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
-  }
-
-  /*
-   * Converts a community list to a boolean expression.
-   */
-  private BDD matchCommunityList(TransferParam<BDDRecord> p, CommunityList cl, BDDRecord other) {
-    List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
-    Collections.reverse(lines);
-    BDD acc = factory.zero();
-    for (CommunityListLine line : lines) {
-      boolean action = (line.getAction() == LineAction.ACCEPT);
-      CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
-      p.debug("Match Line: " + cvar);
-      p.debug("Action: " + line.getAction());
-
-      List<CommunityVar> deps = _commDeps.get(cvar);
-      for (CommunityVar dep : deps) {
-        p.debug("Test for: " + dep);
-        BDD c = other.getCommunities().get(dep);
-        acc = ite(c, mkBDD(action), acc);
-      }
+    if (e instanceof IncrementMetric) {
+      IncrementMetric z = (IncrementMetric) e;
+      p.debug("Increment: " + z.getAddend());
+      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
     }
-    return acc;
-  }
-
-  /*
-   * Converts a community set to a boolean expression
-   */
-  private BDD matchCommunitySet(
-      TransferParam<BDDRecord> p, Configuration conf, CommunitySetExpr e, BDDRecord other) {
-    if (e instanceof InlineCommunitySet) {
-      Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
-      BDD acc = factory.one();
-      for (CommunityVar comm : comms) {
-        p.debug("Inline Community Set: " + comm);
-        BDD c = other.getCommunities().get(comm);
-        if (c == null) {
-          throw new BatfishException("matchCommunitySet: should not be null");
-        }
-        acc = acc.and(c);
-      }
-      return acc;
-    }
-
-    if (e instanceof NamedCommunitySet) {
-      p.debug("Named");
-      NamedCommunitySet x = (NamedCommunitySet) e;
-      CommunityList cl = conf.getCommunityLists().get(x.getName());
-      p.debug("Named Community Set: " + cl.getName());
-      return matchCommunityList(p, cl, other);
-    }
-
-    throw new BatfishException("TODO: match community set");
-  }
-
-  /*
-   * Wrap a simple boolean expression return value in a transfer function result
-   */
-  private TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
-    return new TransferResult<TransferReturn, BDD>()
-        .setReturnAssignedValue(factory.one())
-        .setReturnValue(b);
+    throw new BatfishException("int expr transfer function: " + e);
   }
 
   /*
@@ -528,83 +354,6 @@ class TransferBDD {
     }
 
     throw new BatfishException("TODO: compute expr transfer function: " + expr);
-  }
-
-  /*
-   * Apply the effect of modifying a long value (e.g., to set the metric)
-   */
-  private BDDInteger applyLongExprModification(
-      TransferParam<BDDRecord> p, BDDInteger x, LongExpr e) {
-    if (e instanceof LiteralLong) {
-      LiteralLong z = (LiteralLong) e;
-      p.debug("LiteralLong: " + z.getValue());
-      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
-    }
-    if (e instanceof DecrementMetric) {
-      DecrementMetric z = (DecrementMetric) e;
-      p.debug("Decrement: " + z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
-    if (e instanceof IncrementMetric) {
-      IncrementMetric z = (IncrementMetric) e;
-      p.debug("Increment: " + z.getAddend());
-      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
-    }
-    throw new BatfishException("int expr transfer function: " + e);
-  }
-
-  /*
-   * Apply the effect of modifying an integer value (e.g., to set the local pref)
-   */
-  private BDDInteger applyIntExprModification(TransferParam<BDDRecord> p, BDDInteger x, IntExpr e) {
-    if (e instanceof LiteralInt) {
-      LiteralInt z = (LiteralInt) e;
-      p.debug("LiteralInt: " + z.getValue());
-      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
-    }
-    if (e instanceof IncrementLocalPreference) {
-      IncrementLocalPreference z = (IncrementLocalPreference) e;
-      p.debug("IncrementLocalPreference: " + z.getAddend());
-      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
-    }
-    if (e instanceof DecrementLocalPreference) {
-      DecrementLocalPreference z = (DecrementLocalPreference) e;
-      p.debug("DecrementLocalPreference: " + z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
-    throw new BatfishException("TODO: int expr transfer function: " + e);
-  }
-
-  /*
-   * Compute how many times to prepend to a path from the AST
-   */
-  private int prependLength(AsPathListExpr expr) {
-    if (expr instanceof MultipliedAs) {
-      MultipliedAs x = (MultipliedAs) expr;
-      IntExpr e = x.getNumber();
-      LiteralInt i = (LiteralInt) e;
-      return i.getValue();
-    }
-    if (expr instanceof LiteralAsList) {
-      LiteralAsList x = (LiteralAsList) expr;
-      return x.getList().size();
-    }
-    throw new BatfishException("Error[prependLength]: unreachable");
-  }
-
-  /*
-   * Create a new variable reflecting the final return value of the function
-   */
-  private TransferResult<TransferReturn, BDD> returnValue(
-      TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
-    TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
-    return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
-  }
-
-  private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
-    return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
   }
 
   /*
@@ -861,6 +610,274 @@ class TransferBDD {
     return result;
   }
 
+  /*
+   * Create a BDDRecord representing the symbolic output of
+   * the RoutingPolicy given the input variables.
+   */
+  public BDDRecord compute() {
+    _commDeps = _graph.getCommunityDependencies();
+    _comms = _graph.findAllCommunities();
+    BDDRecord o = new BDDRecord(_comms);
+    TransferParam<BDDRecord> p = new TransferParam<>(o, false);
+    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
+    return result.getReturnValue().getFirst();
+  }
+
+  private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
+    BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
+    return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
+  }
+
+  /*
+   * Wrap a simple boolean expression return value in a transfer function result
+   */
+  private TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
+    return new TransferResult<TransferReturn, BDD>()
+        .setReturnAssignedValue(factory.one())
+        .setReturnValue(b);
+  }
+
+  /*
+   * Check if a prefix range match is applicable for the packet destination
+   * Ip address, given the prefix length variable.
+   *
+   * Since aggregation is modelled separately, we assume that prefixLen
+   * is not modified, and thus will contain only the underlying variables:
+   * [var(0), ..., var(n)]
+   */
+  private BDD isRelevantFor(BDDRecord record, PrefixRange range) {
+    Prefix p = range.getPrefix();
+    SubRange r = range.getLengthRange();
+    int len = p.getPrefixLength();
+    int lower = r.getStart();
+    int upper = r.getEnd();
+
+    BDD lowerBitsMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, len);
+    BDD acc = factory.zero();
+    if (lower == 0 && upper == 32) {
+      acc = factory.one();
+    } else {
+      for (int i = lower; i <= upper; i++) {
+        BDD equalLen = record.getPrefixLength().value(i);
+        acc = acc.or(equalLen);
+      }
+    }
+    return acc.and(lowerBitsMatch);
+  }
+
+  /*
+   * If-then-else statement
+   */
+  private BDD ite(BDD b, BDD x, BDD y) {
+    return b.ite(x, y);
+  }
+
+  /*
+   * Map ite over BDDInteger type
+   */
+  private BDDInteger ite(BDD b, BDDInteger x, BDDInteger y) {
+    return x.ite(b, y);
+  }
+
+  /*
+   * Map ite over BDDDomain type
+   */
+  private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
+    BDDDomain<T> result = new BDDDomain<T>(x);
+    BDDInteger i = ite(b, x.getInteger(), y.getInteger());
+    result.setInteger(i);
+    return result;
+  }
+
+  private BDDRecord ite(BDD guard, BDDRecord r1, BDDRecord r2) {
+    BDDRecord ret = new BDDRecord(_comms);
+
+    BDDInteger x;
+    BDDInteger y;
+
+    // update integer values based on condition
+    x = r1.getPrefixLength();
+    y = r2.getPrefixLength();
+    ret.getPrefixLength().setValue(ite(guard, x, y));
+
+    x = r1.getPrefix();
+    y = r2.getPrefix();
+    ret.getPrefix().setValue(ite(guard, x, y));
+
+    x = r1.getAdminDist();
+    y = r2.getAdminDist();
+    ret.getAdminDist().setValue(ite(guard, x, y));
+
+    x = r1.getLocalPref();
+    y = r2.getLocalPref();
+    ret.getLocalPref().setValue(ite(guard, x, y));
+
+    x = r1.getMetric();
+    y = r2.getMetric();
+    ret.getMetric().setValue(ite(guard, x, y));
+
+    x = r1.getMed();
+    y = r2.getMed();
+    ret.getMed().setValue(ite(guard, x, y));
+
+    r1.getCommunities()
+        .forEach(
+            (c, var1) -> {
+              BDD var2 = r2.getCommunities().get(c);
+              ret.getCommunities().put(c, ite(guard, var1, var2));
+            });
+
+    BDDInteger i =
+        ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
+    ret.getProtocolHistory().setInteger(i);
+
+    return ret;
+  }
+
+  /*
+   * Converts a community list to a boolean expression.
+   */
+  private BDD matchCommunityList(TransferParam<BDDRecord> p, CommunityList cl, BDDRecord other) {
+    List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
+    Collections.reverse(lines);
+    BDD acc = factory.zero();
+    for (CommunityListLine line : lines) {
+      boolean action = (line.getAction() == LineAction.ACCEPT);
+      CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
+      p.debug("Match Line: " + cvar);
+      p.debug("Action: " + line.getAction());
+
+      List<CommunityVar> deps = _commDeps.get(cvar);
+      for (CommunityVar dep : deps) {
+        p.debug("Test for: " + dep);
+        BDD c = other.getCommunities().get(dep);
+        acc = ite(c, mkBDD(action), acc);
+      }
+    }
+    return acc;
+  }
+
+  /*
+   * Converts a community set to a boolean expression
+   */
+  private BDD matchCommunitySet(
+      TransferParam<BDDRecord> p, Configuration conf, CommunitySetExpr e, BDDRecord other) {
+    if (e instanceof InlineCommunitySet) {
+      Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
+      BDD acc = factory.one();
+      for (CommunityVar comm : comms) {
+        p.debug("Inline Community Set: " + comm);
+        BDD c = other.getCommunities().get(comm);
+        if (c == null) {
+          throw new BatfishException("matchCommunitySet: should not be null");
+        }
+        acc = acc.and(c);
+      }
+      return acc;
+    }
+
+    if (e instanceof NamedCommunitySet) {
+      p.debug("Named");
+      NamedCommunitySet x = (NamedCommunitySet) e;
+      CommunityList cl = conf.getCommunityLists().get(x.getName());
+      p.debug("Named Community Set: " + cl.getName());
+      return matchCommunityList(p, cl, other);
+    }
+
+    throw new BatfishException("TODO: match community set");
+  }
+
+  /*
+   * Converts a route filter list to a boolean expression.
+   */
+  private BDD matchFilterList(TransferParam<BDDRecord> p, RouteFilterList x, BDDRecord other) {
+    BDD acc = factory.zero();
+    List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
+    Collections.reverse(lines);
+    for (RouteFilterLine line : lines) {
+      Prefix pfx = line.getPrefix();
+      SubRange r = line.getLengthRange();
+      PrefixRange range = new PrefixRange(pfx, r);
+      p.debug("Prefix Range: " + range);
+      p.debug("Action: " + line.getAction());
+      BDD matches = isRelevantFor(other, range);
+      BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
+      acc = ite(matches, action, acc);
+    }
+    return acc;
+  }
+
+  /*
+   * Converts a prefix set to a boolean expression.
+   */
+  private BDD matchPrefixSet(
+      TransferParam<BDDRecord> p, Configuration conf, PrefixSetExpr e, BDDRecord other) {
+    if (e instanceof ExplicitPrefixSet) {
+      ExplicitPrefixSet x = (ExplicitPrefixSet) e;
+
+      Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
+      if (ranges.isEmpty()) {
+        p.debug("empty");
+        return factory.one();
+      }
+
+      BDD acc = factory.zero();
+      for (PrefixRange range : ranges) {
+        p.debug("Prefix Range: " + range);
+        acc = acc.or(isRelevantFor(other, range));
+      }
+      return acc;
+
+    } else if (e instanceof NamedPrefixSet) {
+      NamedPrefixSet x = (NamedPrefixSet) e;
+      p.debug("Named: " + x.getName());
+      String name = x.getName();
+      RouteFilterList fl = conf.getRouteFilterLists().get(name);
+      return matchFilterList(p, fl, other);
+
+    } else {
+      throw new BatfishException("TODO: match prefix set: " + e);
+    }
+  }
+
+  /*
+   * Return a BDD from a boolean
+   */
+  private BDD mkBDD(boolean b) {
+    return b ? factory.one() : factory.zero();
+  }
+
+  /*
+   * Compute how many times to prepend to a path from the AST
+   */
+  private int prependLength(AsPathListExpr expr) {
+    if (expr instanceof MultipliedAs) {
+      MultipliedAs x = (MultipliedAs) expr;
+      IntExpr e = x.getNumber();
+      LiteralInt i = (LiteralInt) e;
+      return i.getValue();
+    }
+    if (expr instanceof LiteralAsList) {
+      LiteralAsList x = (LiteralAsList) expr;
+      return x.getList().size();
+    }
+    throw new BatfishException("Error[prependLength]: unreachable");
+  }
+
+  /*
+   * Create a new variable reflecting the final return value of the function
+   */
+  private TransferResult<TransferReturn, BDD> returnValue(
+      TransferResult<TransferReturn, BDD> r, boolean val) {
+    BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
+    TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
+    return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
+  }
+
+  /*
+   * A record of default values that represent the value of the
+   * outputs if the route is filtered / dropped in the policy
+   */
   private BDDRecord zeroedRecord() {
     BDDRecord rec = new BDDRecord(_comms);
     rec.getMetric().setValue(0);
@@ -874,14 +891,5 @@ class TransferBDD {
     }
     rec.getProtocolHistory().getInteger().setValue(0);
     return rec;
-  }
-
-  public BDDRecord compute() {
-    _commDeps = _graph.getCommunityDependencies();
-    _comms = _graph.findAllCommunities();
-    BDDRecord o = new BDDRecord(_comms);
-    TransferParam<BDDRecord> p = new TransferParam<>(o, false);
-    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
-    return result.getReturnValue().getFirst();
   }
 }

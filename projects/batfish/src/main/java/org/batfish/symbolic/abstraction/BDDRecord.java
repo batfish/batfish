@@ -28,72 +28,70 @@ import org.batfish.symbolic.Protocol;
  */
 public class BDDRecord {
 
+  private static final int prefixIndex = 135;
   static BDDFactory factory;
 
   static {
     CallbackHandler handler = new CallbackHandler();
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory = JFactory.init(1000, 10000);
+      factory = JFactory.init(1000, 5000);
+      // factory.setCacheRatio(4);
       factory.disableReorder();
+      // factory.set
       // Disables printing
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
+      //factory.registerGCCallback(handler, m);
+      //factory.registerResizeCallback(handler, m);
+      //factory.registerReorderCallback(handler, m);
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
   }
 
-  private static final int prefixIndex = 133;
+  private BDDInteger _adminDist;
+
+  private Map<Integer, String> _bitNames;
+
+  private SortedMap<CommunityVar, BDD> _communities;
+
+  private BDDInteger _localPref;
+
+  private BDDInteger _med;
+
+  private BDDInteger _metric;
+
+  private BDDDomain<OspfType> _ospfMetric;
 
   private BDDInteger _prefix;
 
   private BDDInteger _prefixLength;
 
-  private BDDInteger _adminDist;
-
-  private BDDInteger _metric;
-
-  private BDDInteger _med;
-
-  private BDDInteger _localPref;
-
-  private BDDDomain<OspfType> _ospfMetric;
-
   private BDDDomain<Protocol> _protocolHistory;
-
-  private SortedMap<CommunityVar, BDD> _communities;
-
-  private Map<Integer, String> _bitNames;
-
-  /*
-   * Helper function that builds a map from BDD variable index
-   * to some more meaningful name. Helpful for debugging.
-   */
-  private void addBitNames(String s, int length, int index) {
-    for (int i = index; i < index + length; i++) {
-      _bitNames.put(i, s + (i - index));
-    }
-  }
 
   /*
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
   public BDDRecord(Set<CommunityVar> comms) {
-
-    // Make sure we have the right number of variables
     int numVars = factory.varNum();
     int numNeeded = 32 * 5 + 5 + comms.size() + 4;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
-
     _bitNames = new HashMap<>();
 
-    // Initialize integer values
     int idx = 0;
+    // Initialize the choice of protocol
+    List<Protocol> allProtos = new ArrayList<>();
+    allProtos.add(Protocol.CONNECTED);
+    allProtos.add(Protocol.STATIC);
+    allProtos.add(Protocol.OSPF);
+    allProtos.add(Protocol.BGP);
+    _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
+    int len = _protocolHistory.getInteger().getBitvec().length;
+    addBitNames("proto", len, idx);
+    idx += len;
+    // Initialize integer values
     _metric = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("metric", 32, idx);
     idx += 32;
@@ -112,7 +110,6 @@ public class BDDRecord {
     _prefix = BDDInteger.makeFromIndex(factory, 32, idx);
     addBitNames("pfx", 32, idx);
     idx += 32;
-
     // Initialize communities
     _communities = new TreeMap<>();
     for (CommunityVar comm : comms) {
@@ -122,18 +119,6 @@ public class BDDRecord {
         idx++;
       }
     }
-
-    // Initialize the choice of protocol
-    List<Protocol> allProtos = new ArrayList<>();
-    allProtos.add(Protocol.CONNECTED);
-    allProtos.add(Protocol.STATIC);
-    allProtos.add(Protocol.OSPF);
-    allProtos.add(Protocol.BGP);
-    _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
-    int len = _protocolHistory.getInteger().getBitvec().length;
-    addBitNames("proto", len, idx);
-    idx += len;
-
     // Initialize OSPF type
     // Realistically, the AST will only set E1 or E1. Others are just for completeness
     List<OspfType> allMetricTypes = new ArrayList<>();
@@ -164,10 +149,171 @@ public class BDDRecord {
   }
 
   /*
+   * Helper function that builds a map from BDD variable index
+   * to some more meaningful name. Helpful for debugging.
+   */
+  private void addBitNames(String s, int length, int index) {
+    for (int i = index; i < index + length; i++) {
+      _bitNames.put(i, s + (i - index));
+    }
+  }
+
+  /*
    * Convenience method for the copy constructor
    */
   public BDDRecord copy() {
     return new BDDRecord(this);
+  }
+
+  /*
+   * Converts a BDD to the graphviz DOT format for debugging.
+   */
+  public String dot(BDD bdd) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("digraph G {\n");
+    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    dotRec(sb, bdd, new HashSet<>());
+    sb.append("}");
+    return sb.toString();
+  }
+
+  /*
+   * Creates a unique id for a bdd node when generating
+   * a DOT file for graphviz
+   */
+  private Integer dotId(BDD bdd) {
+    if (bdd.isZero()) {
+      return 0;
+    }
+    if (bdd.isOne()) {
+      return 1;
+    }
+    return bdd.hashCode() + 2;
+  }
+
+  /*
+   * Recursively builds each of the intermediate BDD nodes in the
+   * graphviz DOT format.
+   */
+  private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
+    if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
+      return;
+    }
+    int val = dotId(bdd);
+    int valLow = dotId(bdd.low());
+    int valHigh = dotId(bdd.high());
+    String name = _bitNames.get(bdd.var());
+    sb.append(val).append(" [label=\"").append(name).append("\"]\n");
+    sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
+    sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
+    visited.add(bdd);
+    dotRec(sb, bdd.low(), visited);
+    dotRec(sb, bdd.high(), visited);
+  }
+
+  public BDDInteger getAdminDist() {
+    return _adminDist;
+  }
+
+  public void setAdminDist(BDDInteger adminDist) {
+    this._adminDist = adminDist;
+  }
+
+  public Map<CommunityVar, BDD> getCommunities() {
+    return _communities;
+  }
+
+  public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
+    this._communities = communities;
+  }
+
+  public BDDInteger getLocalPref() {
+    return _localPref;
+  }
+
+  public void setLocalPref(BDDInteger localPref) {
+    this._localPref = localPref;
+  }
+
+  public BDDInteger getMed() {
+    return _med;
+  }
+
+  public void setMed(BDDInteger med) {
+    this._med = med;
+  }
+
+  public BDDInteger getMetric() {
+    return _metric;
+  }
+
+  public void setMetric(BDDInteger metric) {
+    this._metric = metric;
+  }
+
+  public BDDDomain<OspfType> getOspfMetric() {
+    return _ospfMetric;
+  }
+
+  public void setOspfMetric(BDDDomain<OspfType> ospfMetric) {
+    this._ospfMetric = ospfMetric;
+  }
+
+  public BDDInteger getPrefix() {
+    return _prefix;
+  }
+
+  public void setPrefix(BDDInteger prefix) {
+    this._prefix = prefix;
+  }
+
+  public BDDInteger getPrefixLength() {
+    return _prefixLength;
+  }
+
+  public void setPrefixLength(BDDInteger prefixLength) {
+    this._prefixLength = prefixLength;
+  }
+
+  public BDDDomain<Protocol> getProtocolHistory() {
+    return _protocolHistory;
+  }
+
+  public void setProtocolHistory(BDDDomain<Protocol> protocolHistory) {
+    this._protocolHistory = protocolHistory;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = _prefix != null ? _prefix.hashCode() : 0;
+    result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
+    result = 31 * result + (_adminDist != null ? _adminDist.hashCode() : 0);
+    result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
+    result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
+    result = 31 * result + (_med != null ? _med.hashCode() : 0);
+    result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
+    result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
+    result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof BDDRecord)) {
+      return false;
+    }
+    BDDRecord other = (BDDRecord) o;
+
+    return Objects.equals(_metric, other._metric)
+        && Objects.equals(_ospfMetric, other._ospfMetric)
+        && Objects.equals(_localPref, other._localPref)
+        && Objects.equals(_communities, other._communities)
+        && Objects.equals(_med, other._med)
+        && Objects.equals(_protocolHistory, other._protocolHistory)
+        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prefix, other._prefix)
+        && Objects.equals(_prefixLength, other._prefixLength);
   }
 
   /*
@@ -229,158 +375,5 @@ public class BDDRecord {
     rec.setCommunities(comms);
 
     return rec;
-  }
-
-
-  /*
-   * Creates a unique id for a bdd node when generating
-   * a DOT file for graphviz
-   */
-  private Integer dotId(BDD bdd) {
-    if (bdd.isZero()) {
-      return 0;
-    }
-    if (bdd.isOne()) {
-      return 1;
-    }
-    return bdd.hashCode() + 2;
-  }
-
-  /*
-   * Recursively builds each of the intermediate BDD nodes in the
-   * graphviz DOT format.
-   */
-  private void getDotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
-    if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
-      return;
-    }
-    int val = dotId(bdd);
-    int valLow = dotId(bdd.low());
-    int valHigh = dotId(bdd.high());
-    String name = _bitNames.get(bdd.var());
-    sb.append(val).append(" [label=\"").append(name).append("\"]\n");
-    sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
-    sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
-    visited.add(bdd);
-    getDotRec(sb, bdd.low(), visited);
-    getDotRec(sb, bdd.high(), visited);
-  }
-
-  /*
-   * Converts a BDD to the graphviz DOT format for debugging.
-   */
-  public String getDot(BDD bdd) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("digraph G {\n");
-    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    getDotRec(sb, bdd, new HashSet<>());
-    sb.append("}");
-    return sb.toString();
-  }
-
-  public BDDInteger getPrefixLength() {
-    return _prefixLength;
-  }
-
-  public BDDInteger getPrefix() {
-    return _prefix;
-  }
-
-  public BDDInteger getAdminDist() {
-    return _adminDist;
-  }
-
-  public BDDInteger getMetric() {
-    return _metric;
-  }
-
-  public BDDDomain<OspfType> getOspfMetric() {
-    return _ospfMetric;
-  }
-
-  public BDDInteger getMed() {
-    return _med;
-  }
-
-  public void setMed(BDDInteger med) {
-    this._med = med;
-  }
-
-  public BDDInteger getLocalPref() {
-    return _localPref;
-  }
-
-  public BDDDomain<Protocol> getProtocolHistory() {
-    return _protocolHistory;
-  }
-
-  public void setLocalPref(BDDInteger localPref) {
-    this._localPref = localPref;
-  }
-
-  public void setMetric(BDDInteger metric) {
-    this._metric = metric;
-  }
-
-  public void setOspfMetric(BDDDomain<OspfType> ospfMetric) {
-    this._ospfMetric = ospfMetric;
-  }
-
-  public void setPrefix(BDDInteger prefix) {
-    this._prefix = prefix;
-  }
-
-  public void setProtocolHistory(BDDDomain<Protocol> protocolHistory) {
-    this._protocolHistory = protocolHistory;
-  }
-
-  public Map<CommunityVar, BDD> getCommunities() {
-    return _communities;
-  }
-
-  public void setAdminDist(BDDInteger adminDist) {
-    this._adminDist = adminDist;
-  }
-
-  public void setPrefixLength(BDDInteger prefixLength) {
-    this._prefixLength = prefixLength;
-  }
-
-  public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
-    this._communities = communities;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof BDDRecord)) {
-      return false;
-    }
-    BDDRecord other = (BDDRecord) o;
-
-    return Objects.equals(_metric, other._metric)
-        && Objects.equals(_ospfMetric, other._ospfMetric)
-        && Objects.equals(_localPref, other._localPref)
-        && Objects.equals(_communities, other._communities)
-        && Objects.equals(_med, other._med)
-        && Objects.equals(_protocolHistory, other._protocolHistory)
-        && Objects.equals(_adminDist, other._adminDist)
-        && Objects.equals(_prefix, other._prefix)
-        && Objects.equals(_prefixLength, other._prefixLength);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = _prefix != null ? _prefix.hashCode() : 0;
-    result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
-    result = 31 * result + (_adminDist != null ? _adminDist.hashCode() : 0);
-    result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
-    result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
-    result = 31 * result + (_med != null ? _med.hashCode() : 0);
-    result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-    result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
-    result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
-    return result;
   }
 }
