@@ -9,10 +9,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtEqualLengthQuestionPlugin$EqualLengthQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "70.70.70.70"
     ],
+    "envDiff" : false,
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 0,
@@ -20,8 +23,7 @@
     "finalNodeRegex" : "R3",
     "fullModel" : true,
     "ingressNodeRegex" : "R(1|2)",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

@@ -88,7 +88,15 @@
           "|0_icmp-type|" : "0",
           "|0_ip-protocol|" : "0",
           "|0_src-ip|" : "0",
-          "|0_src-port|" : "0"
+          "|0_src-port|" : "0",
+          "|0_tcp-ack|" : "false",
+          "|0_tcp-cwr|" : "false",
+          "|0_tcp-ece|" : "false",
+          "|0_tcp-fin|" : "false",
+          "|0_tcp-psh|" : "false",
+          "|0_tcp-rst|" : "false",
+          "|0_tcp-syn|" : "false",
+          "|0_tcp-urg|" : "false"
         },
         "packetModel" : {
           "dstIp" : "70.70.70.70"
@@ -99,10 +107,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtMultipathConsistencyQuestionPlugin$MultipathConsistencyQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "70.70.70.70"
     ],
+    "envDiff" : false,
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 0,
@@ -110,8 +121,7 @@
     "finalNodeRegex" : "R3",
     "fullModel" : true,
     "ingressNodeRegex" : ".*",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

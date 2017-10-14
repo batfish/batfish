@@ -1,0 +1,23 @@
+! boot system flash:EOS.swi
+hostname r2
+!
+interface Ethernet1
+   no switchport
+   ip address 10.24.0.2/24
+!
+interface Loopback0
+   ip address 2.0.0.1/32
+!
+ip routing
+!
+!
+router bgp 1
+   router-id 2.0.0.1
+   neighbor 4.0.0.1 remote-as 1
+   neighbor 4.0.0.1 update-source Loopback0
+!
+ip route 1.0.0.1/32 10.24.0.4
+ip route 3.0.0.1/32 10.24.0.4
+ip route 4.0.0.1/32 10.24.0.4
+!
+end

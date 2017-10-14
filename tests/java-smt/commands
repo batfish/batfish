@@ -24,6 +24,7 @@ test tests/java-smt/ospf3-equal-len.ref get smt-equal-length finalNodeRegex="R3"
 test tests/java-smt/ospf3-equal-len2.ref get smt-equal-length finalNodeRegex="R3", finalIfaceRegex="Loopback.*", ingressNodeRegex="R(1|0)", fullModel=True
 test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
 test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
 
 # local consistency with bgp + environment
 init-testrig test_rigs/smt-examples/ENV2 tr-smt-env2
@@ -52,10 +53,10 @@ test tests/java-smt/redistribute1-forwarding4.ref get smt-forwarding dstIps=["14
 init-testrig test_rigs/smt-examples/OSPF1 tr-smt-ospf1
 test tests/java-smt/ospf1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
 
-# Only propagate routes when they are in the FIB
+# OSPF routes propagated even when not in FIB
 init-testrig test_rigs/smt-examples/OSPF2 tr-smt-ospf2
 test tests/java-smt/ospf2-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
-init-testrig test_rigs/smt-examples/OSPF4
+init-testrig test_rigs/smt-examples/OSPF4 tr-smt-ospf4
 test tests/java-smt/ospf4-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
 
 # Ensure prepending updates path
@@ -65,6 +66,7 @@ test tests/java-smt/prepend1-forwarding.ref get smt-forwarding dstIps=["41.41.41
 # Ensure we can find one of multiple stable solutions
 init-testrig test_rigs/smt-examples/STABLE3 tr-smt-stable3
 test tests/java-smt/stable3-forwarding.ref get smt-forwarding dstIps=["42.42.42.0"]
+test tests/java-smt/stable3-nondeterministic.ref get smt-deterministic
 
 # Check proper dropping behavior when the metric has overflow
 init-testrig test_rigs/smt-examples/OVERFLOW1 tr-smt-overflow1
@@ -94,16 +96,16 @@ test tests/java-smt/acl1-differential3.ref get smt-reachability diffType=increas
 
 # Check correctness of iBGP encoding
 init-testrig test_rigs/smt-examples/IBGP1 tr-smt-ibgp1
-test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, noEnvironment=True
+test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, baseEnvType=none
 
 # Check correctness of multiple ASes using both iBGP and eBGP. Also ensures
 # correct handling of transitivity and path metric update
 init-testrig test_rigs/smt-examples/IBGP2 tr-smt-ibgp2
-test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, noEnvironment=True
+test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
 # Check correct handling of IGP metric cost for iBGP with eBGP
 init-testrig test_rigs/smt-examples/IBGP3 tr-smt-ibgp3
-test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, noEnvironment=True
+test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
 # Check correct handling of add and delete community commands
 init-testrig test_rigs/smt-examples/COMMUNITY1 tr-smt-community1
@@ -117,8 +119,8 @@ test tests/java-smt/campus2-reachability2.ref get smt-reachability ingressNodeRe
 
 # Test differential reachabililty 
 init-testrig test_rigs/smt-examples/OSPF5 tr-smt-ospf5
-test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, diffType=any 
-test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="R0", failNode1Regex="R0"
+test tests/java-smt/differential1.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=1, diffType=any, dstIps=["70.70.70.70"]
+test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", finalIfaceRegex="Loopback.*", failures=2, diffType=any, ingressNodeRegex="R0", failNode1Regex="R0", dstIps=["70.70.70.70"]
 
 # Put everything together in testrigs/example
 #init-testrig test_rigs/example tr-smt-example

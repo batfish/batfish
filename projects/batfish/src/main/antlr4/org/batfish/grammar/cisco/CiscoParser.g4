@@ -958,6 +958,7 @@ ip_dhcp_relay_null
       ALWAYS_ON
       | INFORMATION
       | OPTION
+      | SOURCE_ADDRESS
       | SOURCE_INTERFACE
       | SUB_OPTION
       | USE_LINK_ADDRESS
@@ -2822,6 +2823,7 @@ s_system
    (
       system_default
       | system_null
+      | system_qos
    )
 ;
 
@@ -3494,13 +3496,31 @@ system_null
       | FABRIC
       | FABRIC_MODE
       | FLOWCONTROL
+      | INTERFACE
       | JUMBOMTU
+      | MODE
       | MODULE_TYPE
       | MTU
-      | QOS
       | ROUTING
       | URPF
       | VLAN
+   ) ~NEWLINE* NEWLINE
+;
+
+system_qos
+:
+   QOS NEWLINE
+   (
+      system_qos_null
+   )*
+;
+
+system_qos_null
+:
+   NO?
+   (
+      FEX
+      | SERVICE_POLICY
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -3636,6 +3656,8 @@ vi_address_family
 u
 :
    u_encrypted_password
+   | u_nohangup
+   | u_passphrase
    | u_password
    | u_privilege
    | u_role
@@ -3644,6 +3666,21 @@ u
 u_encrypted_password
 :
    ENCRYPTED_PASSWORD pass = variable_permissive
+;
+
+u_nohangup
+:
+   NOHANGUP
+;
+
+u_passphrase
+:
+   PASSPHRASE
+   (
+      GRACETIME gracetime = DEC
+      | LIFETIME lifetime = DEC
+      | WARNTIME warntime = DEC
+   )*
 ;
 
 u_password

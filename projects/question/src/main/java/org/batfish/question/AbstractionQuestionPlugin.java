@@ -15,7 +15,7 @@ public class AbstractionQuestionPlugin extends QuestionPlugin {
 
     @Override
     public AnswerElement answer() {
-      return _batfish.abstraction();
+      return _batfish.smtAbstraction();
     }
   }
 

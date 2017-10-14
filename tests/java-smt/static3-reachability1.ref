@@ -12,6 +12,8 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "192.168.8.0/24"
@@ -25,7 +27,6 @@
     "fullModel" : false,
     "ingressNodeRegex" : "host1",
     "minimize" : false,
-    "noEnvironment" : false,
     "notDstIps" : [
       "192.168.8.1"
     ]

@@ -19,7 +19,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       RoleQuestion q = (RoleQuestion) _question;
-      return _batfish.roles(q.getType());
+      return _batfish.smtRoles(q.getType());
     }
   }
 

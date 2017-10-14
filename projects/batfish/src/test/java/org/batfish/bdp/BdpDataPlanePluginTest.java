@@ -3,6 +3,8 @@ package org.batfish.bdp;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +17,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -24,7 +27,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -146,12 +151,52 @@ public class BdpDataPlanePluginTest {
   }
 
   @Test
+  public void testBgpOscillation() throws IOException {
+    String testrigName = "bgp-oscillation";
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+
+    _thrown.expect(BdpOscillationException.class);
+    dataPlanePlugin.computeDataPlane(false);
+  }
+
+  @Test
+  public void testEbgpAcceptSameNeighborID() throws IOException {
+    String testrigName = "ebgp-accept-routerid-match";
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+
+    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Set<Prefix> r1Prefixes = r1Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Prefix r1Loopback0Prefix = new Prefix("1.0.0.1/32");
+    Prefix r3Loopback0Prefix = new Prefix("3.0.0.3/32");
+
+    // Ensure that r3loopback was accepted by r1
+    assertThat(r3Loopback0Prefix, isIn(r1Prefixes));
+    // Check the other direction (r1loopback is accepted by r3)
+    assertThat(r1Loopback0Prefix, isIn(r3Prefixes));
+  }
+
+  @Test
   public void testIbgpRejectOwnAs() throws IOException {
     String testrigName = "ibgp-reject-own-as";
     String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -176,5 +221,73 @@ public class BdpDataPlanePluginTest {
      * r2a prepending 2 in the matching route-map clause.
      */
     assertFalse(r2bPrefixes.contains(r1Loopback0Prefix));
+  }
+
+  @Test
+  public void testIbgpRejectSameNeighborID() throws IOException {
+    String testrigName = "ibgp-reject-routerid-match";
+    String[] configurationNames = new String[] {"r1", "r2", "r3", "r4"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Set<Prefix> r2Prefixes = r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
+    // 9.9.9.9/32 is the prefix we test with
+    Prefix r1AdvertisedPrefix = new Prefix("9.9.9.9/32");
+
+    // Ensure that the prefix is accepted by r2, because router ids are different
+    assertThat(r1AdvertisedPrefix, isIn(r2Prefixes));
+    // Ensure that the prefix is rejected by r3, because router ids are the same
+    assertThat(r1AdvertisedPrefix, not(isIn(r3Prefixes)));
+  }
+
+  @Test
+  public void testIosRtStaticMatchesBdp() throws IOException {
+    String testrigName = "ios-rt-static-ad";
+    String[] configurationNames = new String[] {"r1"};
+    String[] routingTableNames = new String[] {"r1"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName,
+            configurationNames,
+            null,
+            null,
+            null,
+            routingTableNames,
+            _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    Prefix staticRoutePrefix = new Prefix("10.0.0.0/8");
+    SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    AbstractRoute r1BdpRoute =
+        r1BdpRoutes
+            .stream()
+            .filter(r -> r.getNetwork().equals(staticRoutePrefix))
+            .findFirst()
+            .get();
+    SortedSet<Route> r1EnvironmentRoutes =
+        environmentRoutes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    Route r1EnvironmentRoute =
+        r1EnvironmentRoutes
+            .stream()
+            .filter(r -> r.getNetwork().equals(staticRoutePrefix))
+            .findFirst()
+            .get();
+    assertThat(
+        r1BdpRoute.getAdministrativeCost(), equalTo(r1EnvironmentRoute.getAdministrativeCost()));
+    assertThat(r1BdpRoute.getMetric(), equalTo(r1EnvironmentRoute.getMetric()));
+    assertThat(r1BdpRoute.getProtocol(), equalTo(r1EnvironmentRoute.getProtocol()));
   }
 }

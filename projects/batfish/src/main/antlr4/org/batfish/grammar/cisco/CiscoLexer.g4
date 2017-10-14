@@ -2352,6 +2352,11 @@ DAMPENING
    'dampening'
 ;
 
+DATA_PRIVACY
+:
+   'data-privacy'
+;
+
 DATABASE
 :
    'database'
@@ -2875,6 +2880,11 @@ DHCPRELAY
 DIAGNOSTIC
 :
    'diagnostic'
+;
+
+DIAGNOSTIC_SIGNATURE
+:
+   'diagnostic-signature'
 ;
 
 DIAL_CONTROL_MIB
@@ -4356,6 +4366,11 @@ GRACEFUL_RESTART
    'graceful-restart'
 ;
 
+GRACETIME
+:
+   'gracetime'
+;
+
 GRANT
 :
    'grant'
@@ -5606,6 +5621,11 @@ LINK_FAULT_SIGNALING
 LINK_TYPE
 :
    'link-type'
+;
+
+LINKDEBOUNCE
+:
+   'linkdebounce'
 ;
 
 LIST
@@ -7023,6 +7043,11 @@ NOE
    'noe'
 ;
 
+NOHANGUP
+:
+   'nohangup'
+;
+
 NON500_ISAKMP
 :
    'non500-isakmp'
@@ -7446,6 +7471,11 @@ PASSIVE_INTERFACE
 PASSIVE_ONLY
 :
    'passive-only'
+;
+
+PASSPHRASE
+:
+   'passphrase'
 ;
 
 PASSWORD
@@ -9763,6 +9793,11 @@ SOURCE
    'source'
 ;
 
+SOURCE_ADDRESS
+:
+   'source-address'
+;
+
 SOURCE_INTERFACE
 :
    'source-interface' -> pushMode ( M_Interface )
@@ -11120,6 +11155,11 @@ USERNAME_PROMPT
    'username-prompt'
 ;
 
+USERPASSPHRASE
+:
+   'userpassphrase'
+;
+
 USERS
 :
    'users'
@@ -11525,6 +11565,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WARNTIME
+:
+   'warntime'
 ;
 
 WATCHDOG
@@ -13379,14 +13424,19 @@ M_MOTD_HASH_MOTD
 
 mode M_Name;
 
-M_Name_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
 M_Name_NAME
 :
    F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_Name_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Name_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_NEIGHBOR;

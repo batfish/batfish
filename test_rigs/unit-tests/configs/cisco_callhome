@@ -2,28 +2,34 @@
 hostname cisco_callhome
 !
 callhome
-  email-contact fake@example.com
-  phone-contact +1-555-555-5555
-  streetaddress 555 Fake St, Fakeville
-  destination-profile p
-  destination-profile p alert-group all
-  destination-profile p email-addr fake2@example.com
-  destination-profile p format short-txt
-  destination-profile p format XML
-  destination-profile p message-level 3
-  destination-profile p message-size 5000000
-  destination-profile p transport-method email
-  duplicate-message throttle
-  enable
-  no destination-profile p transport-method http
-  no enable
-  periodic-inventory notification
-  periodic-inventory notification interval  7
-  periodic-inventory notification timeofday 08:00
-  switch-priority 7
-  transport email smtp-server 1.2.3.4 port 25 use-vrf management
-  transport email from FAKE4@EXAMPLE.COM
-  transport email reply-to fake5@example.com
+ data-privacy level normal
+ destination-profile p
+ destination-profile p alert-group all
+ destination-profile p email-addr fake2@example.com
+ destination-profile p format short-txt
+ destination-profile p format XML
+ destination-profile p message-level 3
+ destination-profile p message-size 5000000
+ destination-profile p transport-method email
+ no destination-profile p transport-method http
+ diagnostic-signature
+  active
+  profile foobar
+ duplicate-message throttle
+ email-contact fake@example.com
+ enable
+ no enable
+ periodic-inventory notification
+ periodic-inventory notification interval  7
+ periodic-inventory notification timeofday 08:00
+ phone-contact +1-555-555-5555
+ streetaddress 555 Fake St, Fakeville
+ switch-priority 7
+ transport email smtp-server 1.2.3.4 port 25 use-vrf management
+ transport email from FAKE4@EXAMPLE.COM
+ transport email reply-to fake5@example.com
+ no transport http proxy enable
+ transport http use-vrf default
 !
 no call-home reporting anonymous
 call-home reporting anonymous

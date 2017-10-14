@@ -9,10 +9,13 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtMultipathConsistencyQuestionPlugin$MultipathConsistencyQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "42.42.42.0/24"
     ],
+    "envDiff" : false,
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 0,
@@ -20,8 +23,7 @@
     "finalNodeRegex" : "R1",
     "fullModel" : true,
     "ingressNodeRegex" : ".*",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

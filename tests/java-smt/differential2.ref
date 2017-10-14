@@ -5,7 +5,7 @@
       "flowHistory" : {
         "class" : "org.batfish.datamodel.FlowHistory",
         "traces" : {
-          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.0 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
+          "Flow<ingressNode:R0 ingressVrf:default srcIp:0.0.0.0 dstIp:70.70.70.70 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
             "environments" : {
               "BASE" : {
                 "envName" : "BASE",
@@ -32,7 +32,7 @@
             },
             "flow" : {
               "dscp" : 0,
-              "dstIp" : "70.70.70.0",
+              "dstIp" : "70.70.70.70",
               "dstPort" : 0,
               "ecn" : 0,
               "fragmentOffset" : 0,
@@ -81,17 +81,6 @@
                       "routes" : [
                         "OspfRoute<70.70.70.0/24,nhip:192.1.64.1,nhint:dynamic>"
                       ]
-                    },
-                    {
-                      "edge" : {
-                        "node1" : "R3",
-                        "node1interface" : "Loopback0",
-                        "node2" : "(none)",
-                        "node2interface" : "null_interface"
-                      },
-                      "routes" : [
-                        "ConnectedRoute<70.70.70.0/24,nhip:AUTO/NONE(-1l),nhint:Loopback0>"
-                      ]
                     }
                   ],
                   "notes" : "ACCEPTED"
@@ -114,11 +103,10 @@
         ],
         "forwardingModel" : [
           "R1,Serial1 --> R3,Serial0 (OSPF)",
-          "R2,Serial1 --> R3,Serial1 (OSPF)",
-          "R3,Loopback0 --> _,_ (CONNECTED)"
+          "R2,Serial1 --> R3,Serial1 (OSPF)"
         ],
         "packetModel" : {
-          "dstIp" : "70.70.70.0"
+          "dstIp" : "70.70.70.70"
         },
         "verified" : false
       }
@@ -126,10 +114,12 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "diffType" : "any",
     "differential" : false,
     "dstIps" : [
-      "70.70.70.0/24"
+      "70.70.70.70"
     ],
     "envDiff" : false,
     "failNode1Regex" : "R0",
@@ -139,8 +129,7 @@
     "finalNodeRegex" : "R3",
     "fullModel" : false,
     "ingressNodeRegex" : "R0",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

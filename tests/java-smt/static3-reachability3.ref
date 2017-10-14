@@ -99,6 +99,8 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "192.168.8.1"
@@ -111,8 +113,7 @@
     "finalNodeRegex" : "host3",
     "fullModel" : false,
     "ingressNodeRegex" : "host1",
-    "minimize" : false,
-    "noEnvironment" : false
+    "minimize" : false
   },
   "status" : "SUCCESS",
   "summary" : {

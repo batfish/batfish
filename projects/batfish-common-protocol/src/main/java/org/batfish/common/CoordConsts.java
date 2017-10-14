@@ -39,6 +39,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ANSWER = "answer";
   public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
+  public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINERS = "containers";
@@ -55,7 +56,6 @@ public class CoordConsts {
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";
   public static final String SVC_KEY_FORCE = "force";
-  public static final String SVC_KEY_GLOBAL_QUESTIONS = "globalquestions";
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
@@ -88,7 +88,6 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
-  public static final String SVC_RSC_GET_GLOBAL_QUESTIONS = "getglobalquestions";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
   public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
