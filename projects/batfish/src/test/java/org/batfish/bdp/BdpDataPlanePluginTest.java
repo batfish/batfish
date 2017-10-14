@@ -17,6 +17,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -147,6 +148,20 @@ public class BdpDataPlanePluginTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
     BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
+  }
+
+  @Test
+  public void testBgpOscillation() throws IOException {
+    String testrigName = "bgp-oscillation";
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+
+    _thrown.expect(BdpOscillationException.class);
+    dataPlanePlugin.computeDataPlane(false);
   }
 
   @Test
