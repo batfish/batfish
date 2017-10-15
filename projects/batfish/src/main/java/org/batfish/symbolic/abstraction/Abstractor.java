@@ -170,8 +170,10 @@ public class Abstractor {
       Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
 
       long timeStart = System.currentTimeMillis();
-      _exportPolicyMap.forEach((ge, pol) -> exportPol.put(ge, pol.restrict(prefixes)));
-      _importPolicyMap.forEach((ge, pol) -> importPol.put(ge, pol.restrict(prefixes)));
+      //_exportPolicyMap.forEach((ge, pol) -> exportPol.put(ge, pol.restrict(prefixes)));
+      //_importPolicyMap.forEach((ge, pol) -> importPol.put(ge, pol.restrict(prefixes)));
+      _exportPolicyMap.forEach((ge, pol) -> exportPol.put(ge, pol));
+      _importPolicyMap.forEach((ge, pol) -> importPol.put(ge, pol));
       long timeEnd = System.currentTimeMillis() - timeStart;
       bench += timeEnd;
 
@@ -348,13 +350,13 @@ public class Abstractor {
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
-          BDDRecord rec = computeBDD(_graph, conf, importBgp);
+          BDDRecord rec = computeBDD(_graph, conf, importBgp, true);
           _importBgpPolicies.put(ge, rec);
         }
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         if (exportBgp != null) {
-          BDDRecord rec = computeBDD(_graph, conf, exportBgp);
+          BDDRecord rec = computeBDD(_graph, conf, exportBgp, true);
           _exportBgpPolicies.put(ge, rec);
         }
 
@@ -395,9 +397,10 @@ public class Abstractor {
   /*
    * Compute a BDD representation of a routing policy.
    */
-  public BDDRecord computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
+  public BDDRecord computeBDD(
+      Graph g, Configuration conf, RoutingPolicy pol, boolean ignoreNetworks) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
-    BDDRecord rec = t.compute();
+    BDDRecord rec = t.compute(ignoreNetworks);
     return rec;
   }
 

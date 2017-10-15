@@ -86,6 +86,8 @@ class TransferBDD {
 
   private Graph _graph;
 
+  private boolean _ignoreNetwork;
+
   private List<Statement> _statements;
 
   public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
@@ -291,6 +293,7 @@ class TransferBDD {
     if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
+
       BDD r = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
       TransferReturn ret = new TransferReturn(p.getData(), r);
       return fromExpr(ret);
@@ -614,7 +617,8 @@ class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRecord compute() {
+  public BDDRecord compute(boolean ignoreNetwork) {
+    _ignoreNetwork = ignoreNetwork;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.findAllCommunities();
     BDDRecord o = new BDDRecord(_comms);
@@ -819,6 +823,24 @@ class TransferBDD {
       if (ranges.isEmpty()) {
         p.debug("empty");
         return factory.one();
+      }
+
+      // We explicity ignore originated networks
+      // TODO: not quite right -- need network origination context
+      if (_ignoreNetwork) {
+        if (ranges.size() == 1) {
+          for (PrefixRange r : ranges) {
+            int start = r.getLengthRange().getStart();
+            int end = r.getLengthRange().getEnd();
+            Prefix pfx = r.getPrefix();
+            if (start == end && start == pfx.getPrefixLength()) {
+              List<Prefix> origin = Graph.getOriginatedNetworks(_conf, Protocol.BGP);
+              if (origin.contains(pfx)) {
+                return factory.zero();
+              }
+            }
+          }
+        }
       }
 
       BDD acc = factory.zero();
