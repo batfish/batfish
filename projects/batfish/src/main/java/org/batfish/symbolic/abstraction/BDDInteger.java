@@ -45,7 +45,10 @@ public class BDDInteger {
 
   public BDDInteger(BDDInteger other) {
     _factory = other._factory;
-    _bitvec = Arrays.copyOf(other._bitvec, other._bitvec.length);
+    _bitvec = new BDD[other._bitvec.length];
+    for (int i = 0; i < _bitvec.length; i++) {
+      _bitvec[i] = other._bitvec[i].id();
+    }
   }
 
   /*

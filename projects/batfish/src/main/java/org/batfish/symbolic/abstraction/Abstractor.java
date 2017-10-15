@@ -53,8 +53,6 @@ public class Abstractor {
 
   // TODO: take a parameter indicating the set of devices that must remain concrete.
 
-  private static final String EXTERNAL_NAME = "PEER";
-
   private Map<GraphEdge, BDDRecord> _exportBgpPolicies;
 
   private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
@@ -96,6 +94,7 @@ public class Abstractor {
    */
   public AnswerElement computeAbstraction() {
     long start = System.currentTimeMillis();
+
     computeInterfacePolicies();
     Map<String, List<Protocol>> protoMap = buildProtocolMap();
 
@@ -114,7 +113,7 @@ public class Abstractor {
         // Otherwise, add the entire prefix since we don't know
         /* if (proto.isConnected()) {
           destinations = new ArrayList<>();
-          List<GraphEdge> edges = g.getEdgeMap().get(router);
+          List<GraphEdge> edges = _graph.getEdgeMap().get(router);
           for (GraphEdge ge : edges) {
             if (ge.getPeer() == null) {
               destinations.add(ge.getStart().getPrefix());
@@ -125,10 +124,10 @@ public class Abstractor {
             }
           }
         } else { */
-
         if (!proto.isStatic()) {
           destinations = Graph.getOriginatedNetworks(conf, proto);
         }
+        //}
 
         // Add all destinations to the prefix trie
         for (Prefix p : destinations) {
@@ -156,9 +155,23 @@ public class Abstractor {
     int count = 0;
     double average = 0.0;
 
+    System.out.println("Num ECs: " + destMap.size());
+    int i = 0;
+
     for (Entry<Set<String>, List<Prefix>> entry : destMap.entrySet()) {
+      i++;
       Set<String> devices = entry.getKey();
       List<Prefix> prefixes = entry.getValue();
+
+      // Restrict the BDDs to the current prefixes
+      Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
+      Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
+      _exportPolicyMap.forEach((ge, pol) -> {
+        exportPol.put(ge, pol.restrict(prefixes));
+      });
+      _importPolicyMap.forEach((ge, pol) -> {
+        importPol.put(ge, pol.restrict(prefixes));
+      });
 
       UnionSplit<String> workset = new UnionSplit<>(allDevices);
 
@@ -169,13 +182,6 @@ public class Abstractor {
         Set<String> ds = new TreeSet<>();
         ds.add(device);
         workset.split(ds);
-
-        // Don't abstract neighbors
-        //for (String neigh : g.getNeighbors().get(device)) {
-        //  ds = new TreeSet<>();
-        //  ds.add(neigh);
-        //  workset.split(ds);
-        //}
       }
 
       // System.out.println("Computing abstraction for: " + devices);
@@ -184,70 +190,54 @@ public class Abstractor {
       Set<Set<String>> todo;
       do {
         todo = new HashSet<>();
-        Set<Set<String>> ps = workset.partitions();
+        List<Set<String>> ps = workset.partitions();
 
         // System.out.println("Todo set: " + todo);
         // System.out.println("Workset: " + workset);
 
         for (Set<String> partition : ps) {
-          // Create the map from interface policy to neighboring group
 
           // Nothing to refine if already a concrete node
           if (partition.size() <= 1) {
             continue;
           }
 
-          Map<String, Set<Tuple<Integer, Tuple<InterfacePolicy, InterfacePolicy>>>> groupMap =
-              new HashMap<>();
+          Map<String, Set<EquivalenceEdge>> groupMap = new HashMap<>();
 
           for (String router : partition) {
 
-            // System.out.println("  Looking at router: " + router);
-
-            Set<Tuple<Integer, Tuple<InterfacePolicy, InterfacePolicy>>> groups = new HashSet<>();
+            Set<EquivalenceEdge> groups = new HashSet<>();
             groupMap.put(router, groups);
+
+            // TODO: don't look at edges within the same group?
 
             List<GraphEdge> edges = _graph.getEdgeMap().get(router);
             for (GraphEdge edge : edges) {
               if (!edge.isAbstract()) {
                 String peer = edge.getPeer();
-                InterfacePolicy ipol = _importPolicyMap.get(edge);
+                InterfacePolicy ipol = importPol.get(edge);
                 GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
                 InterfacePolicy epol = null;
                 if (otherEnd != null) {
-                  epol = _exportPolicyMap.get(otherEnd);
-                }
-
-                // TODO: not right
-                if (ipol != null) {
-                  ipol = ipol.restrict(prefixes);
-                }
-
-                if (epol != null) {
-                  epol = epol.restrict(prefixes);
+                  epol = exportPol.get(otherEnd);
                 }
 
                 // For external neighbors, we don't split a partition
                 Integer peerGroup;
                 if (peer != null) {
                   peerGroup = workset.getHandle(peer);
-                  // else {
-                  // peerGroup = new TreeSet<>();
-                  // peerGroup.add(EXTERNAL_NAME);
-
-                  Tuple<InterfacePolicy, InterfacePolicy> pols = new Tuple<>(ipol, epol);
-                  Tuple<Integer, Tuple<InterfacePolicy, InterfacePolicy>> pair =
-                      new Tuple<>(peerGroup, pols);
-                  groups.add(pair);
-
-                  // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
+                } else {
+                  peerGroup = -1;
                 }
+
+                EquivalenceEdge pair = new EquivalenceEdge(peerGroup, ipol, epol);
+                groups.add(pair);
+                // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
               }
             }
           }
 
-          Map<Set<Tuple<Integer, Tuple<InterfacePolicy, InterfacePolicy>>>, Set<String>>
-              inversePolicyMap = new HashMap<>();
+          Map<Set<EquivalenceEdge>, Set<String>> inversePolicyMap = new HashMap<>();
           groupMap.forEach(
               (router, groupPairs) -> {
                 Set<String> routers =
@@ -279,6 +269,8 @@ public class Abstractor {
       totalAbstract = totalAbstract + abstractSize;
       count = count + 1;
       average = (double) totalAbstract / (double) count;
+
+      System.out.println("Done with: " + i);
 
       // System.out.println("EC: " + prefixes);
       // System.out.println("Final abstraction: " + workset.partitions());

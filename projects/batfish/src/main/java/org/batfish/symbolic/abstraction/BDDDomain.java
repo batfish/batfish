@@ -59,7 +59,8 @@ public class BDDDomain<T> {
     _integer = i;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (!(o instanceof BDDDomain<?>)) {
       return false;
     }
@@ -67,7 +68,8 @@ public class BDDDomain<T> {
     return Objects.equals(_integer, other._integer);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return _integer.hashCode();
   }
 }

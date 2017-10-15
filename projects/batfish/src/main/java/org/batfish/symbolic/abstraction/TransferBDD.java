@@ -696,13 +696,13 @@ class TransferBDD {
     BDDInteger y;
 
     // update integer values based on condition
-    x = r1.getPrefixLength();
-    y = r2.getPrefixLength();
-    ret.getPrefixLength().setValue(ite(guard, x, y));
+    // x = r1.getPrefixLength();
+    // y = r2.getPrefixLength();
+    // ret.getPrefixLength().setValue(ite(guard, x, y));
 
-    x = r1.getPrefix();
-    y = r2.getPrefix();
-    ret.getPrefix().setValue(ite(guard, x, y));
+    // x = r1.getPrefix();
+    // y = r2.getPrefix();
+    // ret.getPrefix().setValue(ite(guard, x, y));
 
     x = r1.getAdminDist();
     y = r2.getAdminDist();
@@ -727,9 +727,9 @@ class TransferBDD {
               ret.getCommunities().put(c, ite(guard, var1, var2));
             });
 
-    BDDInteger i =
-        ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
-    ret.getProtocolHistory().setInteger(i);
+    //BDDInteger i =
+    //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
+    //ret.getProtocolHistory().setInteger(i);
 
     return ret;
   }

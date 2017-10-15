@@ -30,7 +30,7 @@ public class BDDPacket {
     CallbackHandler handler = new CallbackHandler();
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory = JFactory.init(100, 10000);
+      factory = JFactory.init(10000, 1000);
       factory.disableReorder();
       // Disables printing
       factory.registerGCCallback(handler, m);
@@ -220,6 +220,30 @@ public class BDDPacket {
     visited.add(bdd);
     dotRec(sb, bdd.low(), visited);
     dotRec(sb, bdd.high(), visited);
+  }
+
+  public void free() {
+    for (int i = 0; i < 32; i++) {
+      getDstIp().getBitvec()[i].free();
+      getSrcIp().getBitvec()[i].free();
+    }
+    for (int i = 0; i < 16; i++) {
+      getDstPort().getBitvec()[i].free();
+      getSrcIp().getBitvec()[i].free();
+    }
+    for (int i = 0; i < 8; i++) {
+      getIcmpCode().getBitvec()[i].free();
+      getIcmpType().getBitvec()[i].free();
+      getIpProtocol().getBitvec()[i].free();
+    }
+    _tcpAck.free();
+    _tcpCwr.free();
+    _tcpEce.free();
+    _tcpFin.free();
+    _tcpPsh.free();
+    _tcpRst.free();
+    _tcpSyn.free();
+    _tcpUrg.free();
   }
 
   public BDDInteger getDstIp() {

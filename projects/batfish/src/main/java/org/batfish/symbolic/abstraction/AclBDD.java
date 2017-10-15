@@ -319,6 +319,11 @@ public class AclBDD {
     return acc;
   }
 
+  public void free() {
+    _pkt.free();
+    _bdd.free();
+  }
+
   public IpAccessList getAcl() {
     return _acl;
   }

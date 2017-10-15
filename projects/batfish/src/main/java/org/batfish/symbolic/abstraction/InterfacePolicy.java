@@ -17,6 +17,8 @@ public class InterfacePolicy {
 
   private SortedSet<StaticRoute> _staticRoutes;
 
+  private int _hcode = 0;
+
   // TODO: route reflectors etc
 
   public InterfacePolicy(
@@ -37,6 +39,15 @@ public class InterfacePolicy {
     this._staticRoutes = other._staticRoutes;
   }
 
+  public void free() {
+    if (_acl != null) {
+      _acl.free();
+    }
+    if (_bgpPolicy != null) {
+      _bgpPolicy.free();
+    }
+  }
+
   public AclBDD getAcl() {
     return _acl;
   }
@@ -55,11 +66,14 @@ public class InterfacePolicy {
 
   @Override
   public int hashCode() {
-    int result = _ospfCost != null ? _ospfCost.hashCode() : 0;
-    result = 31 * result + (_acl != null ? _acl.hashCode() : 0);
-    result = 31 * result + (_bgpPolicy != null ? _bgpPolicy.hashCode() : 0);
-    result = 31 * result + (_staticRoutes != null ? _staticRoutes.hashCode() : 0);
-    return result;
+    if (_hcode == 0) {
+      int result = _ospfCost != null ? _ospfCost.hashCode() : 0;
+      result = 31 * result + (_acl != null ? _acl.hashCode() : 0);
+      result = 31 * result + (_bgpPolicy != null ? _bgpPolicy.hashCode() : 0);
+      result = 31 * result + (_staticRoutes != null ? _staticRoutes.hashCode() : 0);
+      _hcode = result;
+    }
+    return _hcode;
   }
 
   @Override

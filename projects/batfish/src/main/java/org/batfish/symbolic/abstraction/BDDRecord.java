@@ -29,21 +29,40 @@ import org.batfish.symbolic.Protocol;
  */
 public class BDDRecord {
 
-  private static final int prefixIndex = 135;
   static BDDFactory factory;
 
+  private static List<Protocol> allProtos;
+
+  private static List<OspfType> allMetricTypes;
+
+  private static BDDPairing pairing;
+
+  private static final int prefixIndex = 135;
+
+
   static {
+    allMetricTypes = new ArrayList<>();
+    allMetricTypes.add(OspfType.O);
+    allMetricTypes.add(OspfType.OIA);
+    allMetricTypes.add(OspfType.E1);
+    allMetricTypes.add(OspfType.E2);
+
+    allProtos = new ArrayList<>();
+    allProtos.add(Protocol.CONNECTED);
+    allProtos.add(Protocol.STATIC);
+    allProtos.add(Protocol.OSPF);
+    allProtos.add(Protocol.BGP);
+
     CallbackHandler handler = new CallbackHandler();
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory = JFactory.init(1000, 5000);
-      // factory.setCacheRatio(4);
+      factory = JFactory.init(100000, 10000);
       factory.disableReorder();
-      // factory.set
       // Disables printing
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
+      //factory.registerGCCallback(handler, m);
+      //factory.registerResizeCallback(handler, m);
+      //factory.registerReorderCallback(handler, m);
+      pairing = factory.makePair();
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
@@ -63,11 +82,11 @@ public class BDDRecord {
 
   private BDDDomain<OspfType> _ospfMetric;
 
-  private BDDInteger _prefix;
+  private final BDDInteger _prefix;
 
-  private BDDInteger _prefixLength;
+  private final BDDInteger _prefixLength;
 
-  private BDDDomain<Protocol> _protocolHistory;
+  private final BDDDomain<Protocol> _protocolHistory;
 
   /*
    * Creates a collection of BDD variables representing the
@@ -82,12 +101,6 @@ public class BDDRecord {
     _bitNames = new HashMap<>();
 
     int idx = 0;
-    // Initialize the choice of protocol
-    List<Protocol> allProtos = new ArrayList<>();
-    allProtos.add(Protocol.CONNECTED);
-    allProtos.add(Protocol.STATIC);
-    allProtos.add(Protocol.OSPF);
-    allProtos.add(Protocol.BGP);
     _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
     int len = _protocolHistory.getInteger().getBitvec().length;
     addBitNames("proto", len, idx);
@@ -121,12 +134,6 @@ public class BDDRecord {
       }
     }
     // Initialize OSPF type
-    // Realistically, the AST will only set E1 or E1. Others are just for completeness
-    List<OspfType> allMetricTypes = new ArrayList<>();
-    allMetricTypes.add(OspfType.O);
-    allMetricTypes.add(OspfType.OIA);
-    allMetricTypes.add(OspfType.E1);
-    allMetricTypes.add(OspfType.E2);
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().getBitvec().length;
     addBitNames("ospfMetric", len, idx);
@@ -213,6 +220,35 @@ public class BDDRecord {
     dotRec(sb, bdd.high(), visited);
   }
 
+  public void free() {
+    BDD[] prefix = getPrefix().getBitvec();
+    BDD[] prefixLen = getPrefixLength().getBitvec();
+    BDD[] metric = getMetric().getBitvec();
+    BDD[] adminDist = getAdminDist().getBitvec();
+    BDD[] med = getMed().getBitvec();
+    BDD[] localPref = getLocalPref().getBitvec();
+    BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
+    BDD[] proto = getProtocolHistory().getInteger().getBitvec();
+    for (int i = 0; i < 32; i++) {
+      metric[i].free();
+      adminDist[i].free();
+      med[i].free();
+      localPref[i].free();
+      prefix[i].free();
+    }
+    for (int i = 0; i < 5; i++) {
+      prefixLen[i].free();
+    }
+    for (int i = 0; i < ospfMet.length; i++) {
+      ospfMet[i].free();
+    }
+    for (int i = 0; i < proto.length; i++) {
+      proto[i].free();
+    }
+    getCommunities().forEach((cvar, bdd) -> bdd.free());
+  }
+
+
   public BDDInteger getAdminDist() {
     return _adminDist;
   }
@@ -265,36 +301,22 @@ public class BDDRecord {
     return _prefix;
   }
 
-  public void setPrefix(BDDInteger prefix) {
-    this._prefix = prefix;
-  }
-
   public BDDInteger getPrefixLength() {
     return _prefixLength;
-  }
-
-  public void setPrefixLength(BDDInteger prefixLength) {
-    this._prefixLength = prefixLength;
   }
 
   public BDDDomain<Protocol> getProtocolHistory() {
     return _protocolHistory;
   }
 
-  public void setProtocolHistory(BDDDomain<Protocol> protocolHistory) {
-    this._protocolHistory = protocolHistory;
-  }
 
   @Override
   public int hashCode() {
-    int result = _prefix != null ? _prefix.hashCode() : 0;
-    result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
-    result = 31 * result + (_adminDist != null ? _adminDist.hashCode() : 0);
+    int result = _adminDist != null ? _adminDist.hashCode() : 0;
     result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
     result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
     result = 31 * result + (_med != null ? _med.hashCode() : 0);
     result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-    result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
     result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
     return result;
   }
@@ -311,35 +333,22 @@ public class BDDRecord {
         && Objects.equals(_localPref, other._localPref)
         && Objects.equals(_communities, other._communities)
         && Objects.equals(_med, other._med)
-        && Objects.equals(_protocolHistory, other._protocolHistory)
-        && Objects.equals(_adminDist, other._adminDist)
-        && Objects.equals(_prefix, other._prefix)
-        && Objects.equals(_prefixLength, other._prefixLength);
+        && Objects.equals(_adminDist, other._adminDist);
   }
 
   /*
    * Take the point-wise disjunction of two BDDRecords
    */
-  public BDDRecord or(BDDRecord other) {
-    BDDRecord rec = new BDDRecord(this);
+  public void orWith(BDDRecord other) {
 
-    BDD[] prefix = rec.getPrefix().getBitvec();
-    BDD[] prefixLen = rec.getPrefixLength().getBitvec();
-    BDD[] metric = rec.getMetric().getBitvec();
-    BDD[] adminDist = rec.getAdminDist().getBitvec();
-    BDD[] med = rec.getMed().getBitvec();
-    BDD[] localPref = rec.getLocalPref().getBitvec();
-    BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
-    BDD[] proto = rec.getProtocolHistory().getInteger().getBitvec();
-
-    BDD[] prefix1 = getPrefix().getBitvec();
-    BDD[] prefixLen1 = getPrefixLength().getBitvec();
-    BDD[] metric1 = getMetric().getBitvec();
-    BDD[] adminDist1 = getAdminDist().getBitvec();
-    BDD[] med1 = getMed().getBitvec();
-    BDD[] localPref1 = getLocalPref().getBitvec();
-    BDD[] ospfMet1 = getOspfMetric().getInteger().getBitvec();
-    BDD[] proto1 = getProtocolHistory().getInteger().getBitvec();
+    BDD[] prefix = getPrefix().getBitvec();
+    BDD[] prefixLen = getPrefixLength().getBitvec();
+    BDD[] metric = getMetric().getBitvec();
+    BDD[] adminDist = getAdminDist().getBitvec();
+    BDD[] med = getMed().getBitvec();
+    BDD[] localPref = getLocalPref().getBitvec();
+    BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
+    BDD[] proto = getProtocolHistory().getInteger().getBitvec();
 
     BDD[] prefix2 = other.getPrefix().getBitvec();
     BDD[] prefixLen2 = other.getPrefixLength().getBitvec();
@@ -351,67 +360,61 @@ public class BDDRecord {
     BDD[] proto2 = other.getProtocolHistory().getInteger().getBitvec();
 
     for (int i = 0; i < 32; i++) {
-      metric[i] = metric1[i].or(metric2[i]);
-      adminDist[i] = adminDist1[i].or(adminDist2[i]);
-      med[i] = med1[i].or(med2[i]);
-      localPref[i] = localPref1[i].or(localPref2[i]);
-      prefix[i] = prefix1[i].or(prefix2[i]);
+      metric[i].orWith(metric2[i]);
+      adminDist[i].orWith(adminDist2[i]);
+      med[i].orWith(med2[i]);
+      localPref[i].orWith(localPref2[i]);
+      prefix[i].orWith(prefix2[i]);
     }
     for (int i = 0; i < 5; i++) {
-      prefixLen[i] = prefixLen1[i].or(prefixLen2[i]);
+      prefixLen[i].orWith(prefixLen2[i]);
     }
     for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i] = ospfMet1[i].or(ospfMet2[i]);
+      ospfMet[i].orWith(ospfMet2[i]);
     }
     for (int i = 0; i < proto.length; i++) {
-      proto[i] = proto1[i].or(proto2[i]);
+      proto[i].orWith(proto2[i]);
     }
     getCommunities().forEach((cvar, bdd1) -> {
       BDD bdd2 = other.getCommunities().get(cvar);
-      rec.getCommunities().put(cvar, bdd1.or(bdd2));
+      bdd1.orWith(bdd2);
     });
-
-    return rec;
   }
 
   public BDDRecord restrict(Prefix pfx) {
     int len = pfx.getPrefixLength();
     BitSet bits = pfx.getAddress().getAddressBits();
+    int[] vars = new int[len];
+    BDD[] vals = new BDD[len];
 
-    BDDPairing p = factory.makePair();
+    // NOTE: do not create a new pairing each time
+    // JavaBDD will start to memory leak
+    pairing.reset();
     for (int i = 0; i < len; i++) {
       int var = prefixIndex + i;
       BDD subst = bits.get(i) ? factory.one() : factory.zero();
-      p.set(var, subst);
+      vars[i] = var;
+      vals[i] = subst;
     }
+    pairing.set(vars, vals);
 
     BDDRecord rec = new BDDRecord(this);
-    BDD[] prefix = rec.getPrefix().getBitvec();
-    BDD[] prefixLen = rec.getPrefixLength().getBitvec();
     BDD[] metric = rec.getMetric().getBitvec();
     BDD[] adminDist = rec.getAdminDist().getBitvec();
     BDD[] med = rec.getMed().getBitvec();
     BDD[] localPref = rec.getLocalPref().getBitvec();
     BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
-    BDD[] proto = rec.getProtocolHistory().getInteger().getBitvec();
     for (int i = 0; i < 32; i++) {
-      metric[i] = metric[i].veccompose(p);
-      adminDist[i] = adminDist[i].veccompose(p);
-      med[i] = med[i].veccompose(p);
-      localPref[i] = localPref[i].veccompose(p);
-      prefix[i] = prefix[i].veccompose(p);
-    }
-    for (int i = 0; i < 5; i++) {
-      prefixLen[i] = prefixLen[i].veccompose(p);
+      metric[i] = metric[i].veccompose(pairing);
+      adminDist[i] = adminDist[i].veccompose(pairing);
+      med[i] = med[i].veccompose(pairing);
+      localPref[i] = localPref[i].veccompose(pairing);
     }
     for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i] = ospfMet[i].veccompose(p);
-    }
-    for (int i = 0; i < proto.length; i++) {
-      proto[i] = proto[i].veccompose(p);
+      ospfMet[i] = ospfMet[i].veccompose(pairing);
     }
     SortedMap<CommunityVar, BDD> comms = new TreeMap<>();
-    rec.getCommunities().forEach((cvar, bdd) -> comms.put(cvar, bdd.veccompose(p)));
+    rec.getCommunities().forEach((cvar, bdd) -> comms.put(cvar, bdd.veccompose(pairing)));
     rec.setCommunities(comms);
 
     return rec;
@@ -425,7 +428,7 @@ public class BDDRecord {
     for (int i = 1; i < prefixes.size(); i++) {
       Prefix p = prefixes.get(i);
       BDDRecord x = restrict(p);
-      r = r.or(x);
+      r.orWith(x);
     }
     return r;
   }
