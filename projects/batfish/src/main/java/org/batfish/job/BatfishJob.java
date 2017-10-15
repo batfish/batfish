@@ -23,8 +23,7 @@ public abstract class BatfishJob<R extends BatfishJobResult<?, ?>> implements Ca
     try {
       R r = callBatfishJob();
       return r;
-    }
-    finally {
+    } finally {
       _semaphore.release();
     }
   }
