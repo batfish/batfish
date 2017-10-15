@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -112,7 +111,7 @@ public class Abstractor {
         List<Prefix> destinations = new ArrayList<>();
         // For connected interfaces add address if there is a peer
         // Otherwise, add the entire prefix since we don't know
-        if (proto.isConnected()) {
+        /* if (proto.isConnected()) {
           destinations = new ArrayList<>();
           List<GraphEdge> edges = _graph.getEdgeMap().get(router);
           for (GraphEdge ge : edges) {
@@ -124,11 +123,11 @@ public class Abstractor {
               destinations.add(pfx);
             }
           }
-        } else {
-          if (!proto.isStatic()) {
-            destinations = Graph.getOriginatedNetworks(conf, proto);
-          }
+        } else { */
+        if (!proto.isStatic()) {
+          destinations = Graph.getOriginatedNetworks(conf, proto);
         }
+        //}
 
         // Add all destinations to the prefix trie
         for (Prefix p : destinations) {
@@ -156,6 +155,8 @@ public class Abstractor {
     int count = 0;
     double average = 0.0;
 
+    long bench = 0;
+
     System.out.println("Num ECs: " + destMap.size());
     int i = 0;
 
@@ -167,12 +168,12 @@ public class Abstractor {
       // Restrict the BDDs to the current prefixes
       Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
       Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
-      _exportPolicyMap.forEach((ge, pol) -> {
-        exportPol.put(ge, pol.restrict(prefixes));
-      });
-      _importPolicyMap.forEach((ge, pol) -> {
-        importPol.put(ge, pol.restrict(prefixes));
-      });
+
+      long timeStart = System.currentTimeMillis();
+      _exportPolicyMap.forEach((ge, pol) -> exportPol.put(ge, pol.restrict(prefixes)));
+      _importPolicyMap.forEach((ge, pol) -> importPol.put(ge, pol.restrict(prefixes)));
+      long timeEnd = System.currentTimeMillis() - timeStart;
+      bench += timeEnd;
 
       UnionSplit<String> workset = new UnionSplit<>(allDevices);
 
@@ -296,6 +297,7 @@ public class Abstractor {
 
     long end = System.currentTimeMillis();
 
+    System.out.println("Time bench (sec): " + ((double) bench) / 1000);
     System.out.println("Total time (sec): " + ((double) end - start) / 1000);
 
     return answer;
@@ -418,7 +420,7 @@ public class Abstractor {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
-    Prefix pfx = new Prefix("70.0.18.0/24");
+    Prefix pfx = new Prefix("0.0.0.0/0");
 
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();

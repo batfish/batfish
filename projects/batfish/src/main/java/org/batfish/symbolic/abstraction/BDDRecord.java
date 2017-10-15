@@ -340,40 +340,26 @@ public class BDDRecord {
    * Take the point-wise disjunction of two BDDRecords
    */
   public void orWith(BDDRecord other) {
-
-    BDD[] prefix = getPrefix().getBitvec();
-    BDD[] prefixLen = getPrefixLength().getBitvec();
     BDD[] metric = getMetric().getBitvec();
     BDD[] adminDist = getAdminDist().getBitvec();
     BDD[] med = getMed().getBitvec();
     BDD[] localPref = getLocalPref().getBitvec();
     BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
-    BDD[] proto = getProtocolHistory().getInteger().getBitvec();
 
-    BDD[] prefix2 = other.getPrefix().getBitvec();
-    BDD[] prefixLen2 = other.getPrefixLength().getBitvec();
     BDD[] metric2 = other.getMetric().getBitvec();
     BDD[] adminDist2 = other.getAdminDist().getBitvec();
     BDD[] med2 = other.getMed().getBitvec();
     BDD[] localPref2 = other.getLocalPref().getBitvec();
     BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
-    BDD[] proto2 = other.getProtocolHistory().getInteger().getBitvec();
 
     for (int i = 0; i < 32; i++) {
       metric[i].orWith(metric2[i]);
       adminDist[i].orWith(adminDist2[i]);
       med[i].orWith(med2[i]);
       localPref[i].orWith(localPref2[i]);
-      prefix[i].orWith(prefix2[i]);
-    }
-    for (int i = 0; i < 5; i++) {
-      prefixLen[i].orWith(prefixLen2[i]);
     }
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i].orWith(ospfMet2[i]);
-    }
-    for (int i = 0; i < proto.length; i++) {
-      proto[i].orWith(proto2[i]);
     }
     getCommunities().forEach((cvar, bdd1) -> {
       BDD bdd2 = other.getCommunities().get(cvar);
@@ -386,7 +372,6 @@ public class BDDRecord {
     BitSet bits = pfx.getAddress().getAddressBits();
     int[] vars = new int[len];
     BDD[] vals = new BDD[len];
-
     // NOTE: do not create a new pairing each time
     // JavaBDD will start to memory leak
     pairing.reset();
@@ -413,10 +398,7 @@ public class BDDRecord {
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i] = ospfMet[i].veccompose(pairing);
     }
-    SortedMap<CommunityVar, BDD> comms = new TreeMap<>();
-    rec.getCommunities().forEach((cvar, bdd) -> comms.put(cvar, bdd.veccompose(pairing)));
-    rec.setCommunities(comms);
-
+    rec.getCommunities().replaceAll((k,v) -> v.veccompose(pairing));
     return rec;
   }
 
