@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -111,7 +112,7 @@ public class Abstractor {
         List<Prefix> destinations = new ArrayList<>();
         // For connected interfaces add address if there is a peer
         // Otherwise, add the entire prefix since we don't know
-        /* if (proto.isConnected()) {
+        if (proto.isConnected()) {
           destinations = new ArrayList<>();
           List<GraphEdge> edges = _graph.getEdgeMap().get(router);
           for (GraphEdge ge : edges) {
@@ -123,11 +124,11 @@ public class Abstractor {
               destinations.add(pfx);
             }
           }
-        } else { */
-        if (!proto.isStatic()) {
-          destinations = Graph.getOriginatedNetworks(conf, proto);
+        } else {
+          if (!proto.isStatic()) {
+            destinations = Graph.getOriginatedNetworks(conf, proto);
+          }
         }
-        //}
 
         // Add all destinations to the prefix trie
         for (Prefix p : destinations) {
@@ -456,7 +457,7 @@ public class Abstractor {
           }
 
           AclBDD x5 = _outAcls.get(ge);
-          if (x4 == null) {
+          if (x5 == null) {
             outgoingAclNull.add(s);
           } else {
             SortedSet<String> ec =
