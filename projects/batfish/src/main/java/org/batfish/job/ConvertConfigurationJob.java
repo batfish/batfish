@@ -30,7 +30,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   @Override
-  public ConvertConfigurationResult call() throws Exception {
+  public ConvertConfigurationResult callBatfishJob() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     _logger.info("Processing: \"" + _name + "\"");

@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,7 +88,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   @SuppressWarnings("fallthrough")
   @Override
-  public ParseVendorConfigurationResult call() throws Exception {
+  public ParseVendorConfigurationResult callBatfishJob() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     String currentPath = _file.toAbsolutePath().toString();
@@ -156,7 +157,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         break;
 
       case HOST:
-        vc = HostConfiguration.fromJson(_fileText, _warnings);
+        try {
+          vc = HostConfiguration.fromJson(_fileText, _warnings);
+        } catch (IOException e) {
+          elapsedTime = System.currentTimeMillis() - startTime;
+          return new ParseVendorConfigurationResult(
+              elapsedTime,
+              _logger.getHistory(),
+              _file,
+              new BatfishException("Error reading host configuration", e));
+        }
         elapsedTime = System.currentTimeMillis() - startTime;
         return new ParseVendorConfigurationResult(
             elapsedTime, _logger.getHistory(), _file, vc, _warnings, _ptSentences);

@@ -149,7 +149,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
   }
 
   @Override
-  public NodJobResult call() throws Exception {
+  public NodJobResult callBatfishJob() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     try (Context ctx = new Context()) {
