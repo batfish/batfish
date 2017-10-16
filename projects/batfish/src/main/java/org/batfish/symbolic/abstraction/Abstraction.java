@@ -52,7 +52,7 @@ import org.batfish.symbolic.utils.Tuple;
 // - add parent / client RRs
 // - Always assume multipath?
 
-public class Abstractor implements Iterable<EquivalenceClass> {
+public class Abstraction implements Iterable<EquivalenceClass> {
 
   private IBatfish _batfish;
 
@@ -66,7 +66,7 @@ public class Abstractor implements Iterable<EquivalenceClass> {
 
   private Map<Set<String>, List<Prefix>> _destinationMap;
 
-  private Abstractor(
+  private Abstraction(
       IBatfish batfish, @Nullable Set<String> concrete, @Nullable List<Prefix> prefixes) {
     _batfish = batfish;
     _graph = new Graph(batfish);
@@ -76,15 +76,15 @@ public class Abstractor implements Iterable<EquivalenceClass> {
     _destinationMap = new HashMap<>();
   }
 
-  public static Abstractor create(
+  public static Abstraction create(
       IBatfish batfish, @Nullable Set<String> concrete, @Nullable List<Prefix> prefixes) {
-    Abstractor abs = new Abstractor(batfish, concrete, prefixes);
+    Abstraction abs = new Abstraction(batfish, concrete, prefixes);
     abs.computeDestinationMap();
     return abs;
   }
 
-  public static Abstractor create(IBatfish batfish, @Nullable Set<String> concrete) {
-    Abstractor abs = new Abstractor(batfish, concrete, null);
+  public static Abstraction create(IBatfish batfish, @Nullable Set<String> concrete) {
+    Abstraction abs = new Abstraction(batfish, concrete, null);
     abs.computeDestinationMap();
     return abs;
   }
