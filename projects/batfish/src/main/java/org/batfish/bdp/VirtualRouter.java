@@ -760,7 +760,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     return false;
   }
 
-  private void markPrefix(
+  private static synchronized void markPrefix(
       Prefix prefix,
       BgpNeighbor neighbor,
       BgpNeighbor remoteBgpNeighbor,
@@ -1194,18 +1194,22 @@ public class VirtualRouter extends ComparableStructure<String> {
                     }
                     _receivedBgpAdvertisements.add(receivedAdvert);
                   } else {
-                    deferredBgpAdvertisements
-                        .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                        .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<BgpAdvertisement>())
-                        .add(receivedAdvert);
-                    deferredIncomingRoutes
-                        .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                        .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<BgpRoute>())
-                        .add(transformedIncomingRoute);
-                    deferredIncomingRouteRibs
-                        .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                        .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<BgpMultipathRib>())
-                        .add(targetRib);
+                    synchronized (deferredBgpAdvertisements) {
+                      deferredBgpAdvertisements
+                          .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
+                          .computeIfAbsent(
+                              remoteBgpNeighbor, n -> new LinkedList<BgpAdvertisement>())
+                          .add(receivedAdvert);
+                      deferredIncomingRoutes
+                          .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
+                          .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<BgpRoute>())
+                          .add(transformedIncomingRoute);
+                      deferredIncomingRouteRibs
+                          .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
+                          .computeIfAbsent(
+                              remoteBgpNeighbor, n -> new LinkedList<BgpMultipathRib>())
+                          .add(targetRib);
+                    }
                   }
                 } else {
                   if (targetRib.mergeRoute(transformedIncomingRoute)) {
