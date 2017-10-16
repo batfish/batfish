@@ -49,10 +49,6 @@ public class UnionSplit<T> {
     _nextCount++;
   }
 
-  public void printStuff() {
-    System.out.println("  size1: " + _partitionMap.size());
-    System.out.println("  size2: " + _reverseMap.size());
-  }
 
   public Integer getHandle(T element) {
     return _partitionMap.get(element);
@@ -64,6 +60,10 @@ public class UnionSplit<T> {
 
   public List<Set<T>> partitions() {
     return new ArrayList<>(_reverseMap.values());
+  }
+
+  public Set<Integer> handles() {
+    return _reverseMap.keySet();
   }
 
   @Override public String toString() {

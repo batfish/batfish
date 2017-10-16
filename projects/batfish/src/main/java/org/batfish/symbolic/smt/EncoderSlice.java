@@ -45,6 +45,7 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.collections.Table2;
+import org.batfish.symbolic.utils.PrefixUtils;
 
 /**
  * A class responsible for building a symbolic encoding of the network for a particular packet. The
@@ -441,37 +442,7 @@ class EncoderSlice {
    * Checks if a prefix could possible be relevant for encoding
    */
   boolean relevantPrefix(Prefix p) {
-    return overlaps(_headerSpace, p);
-  }
-
-  /*
-   * Checks if a prefix overlaps with the destination in a headerspace
-   */
-  private boolean overlaps(HeaderSpace h, Prefix p) {
-    if (h.getDstIps().isEmpty()) {
-      return true;
-    }
-    for (IpWildcard ipWildcard : h.getDstIps()) {
-      Prefix p2 = ipWildcard.toPrefix();
-      if (overlaps(p, p2)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /*
-   * Checks if two prefixes ever overlap
-   */
-  private boolean overlaps(Prefix p1, Prefix p2) {
-    long l1 = p1.getNetworkPrefix().getAddress().asLong();
-    long l2 = p2.getNetworkPrefix().getAddress().asLong();
-    long u1 = p1.getNetworkPrefix().getEndAddress().asLong();
-    long u2 = p2.getNetworkPrefix().getEndAddress().asLong();
-    return (l1 >= l2 && l1 <= u2)
-        || (u1 <= u2 && u1 >= l2)
-        || (u2 >= l1 && u2 <= u1)
-        || (l2 >= l1 && l2 <= u1);
+    return PrefixUtils.overlap(_headerSpace, p);
   }
 
   /*

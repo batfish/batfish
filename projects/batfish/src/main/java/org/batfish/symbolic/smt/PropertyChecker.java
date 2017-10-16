@@ -1189,7 +1189,7 @@ public class PropertyChecker {
       // Create transfer function for router 1
       Set<String> toModel1 = new TreeSet<>();
       toModel1.add(r1);
-      Graph g1 = new Graph(batfish, toModel1);
+      Graph g1 = new Graph(batfish, null, toModel1);
       Encoder e1 = new Encoder(g1, q);
       e1.computeEncoding();
 
@@ -1198,7 +1198,7 @@ public class PropertyChecker {
       // Create transfer function for router 2
       Set<String> toModel2 = new TreeSet<>();
       toModel2.add(r2);
-      Graph g2 = new Graph(batfish, toModel2);
+      Graph g2 = new Graph(batfish, null, toModel2);
       Encoder e2 = new Encoder(e1, g2);
       e2.computeEncoding();
 

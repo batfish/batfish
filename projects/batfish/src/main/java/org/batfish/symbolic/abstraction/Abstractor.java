@@ -1,30 +1,38 @@
 package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.Stack;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.sf.javabdd.BDD;
+import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfNeighbor;
+import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.questions.smt.EquivalenceType;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.answers.AbstractionAnswerElement;
-import org.batfish.symbolic.answers.RoleAnswerElement;
+import org.batfish.symbolic.utils.PrefixUtils;
 import org.batfish.symbolic.utils.Tuple;
 
 /**
@@ -40,68 +48,51 @@ import org.batfish.symbolic.utils.Tuple;
  * the compressed form.
  */
 
-// TODO list
-// - How does this interact with the following:
-//    + iBGP
-//    + Route Reflectors
-//    + Router ID stuff
-//    + Multipath routing
-//    + MEDs
-//    + Redistribution (Treat as local pref?)
+// - iBGP check source ACL
+// - add parent / client RRs
+// - Always assume multipath?
 
-public class Abstractor {
+public class Abstractor implements Iterable<EquivalenceClass> {
 
-  // TODO: take a parameter indicating the set of devices that must remain concrete.
-
-  private Map<GraphEdge, BDDRecord> _exportBgpPolicies;
-
-  private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
+  private IBatfish _batfish;
 
   private Graph _graph;
 
-  private Map<GraphEdge, BDDRecord> _importBgpPolicies;
+  private BDDNetwork _network;
 
-  private Map<GraphEdge, InterfacePolicy> _importPolicyMap;
+  private List<Prefix> _slice;
 
-  private Map<GraphEdge, AclBDD> _inAcls;
+  private Set<String> _concreteNodes;
 
-  private Map<GraphEdge, AclBDD> _outAcls;
+  private Map<Set<String>, List<Prefix>> _destinationMap;
 
-  public Abstractor(IBatfish batfish) {
+  private Abstractor(
+      IBatfish batfish, @Nullable Set<String> concrete, @Nullable List<Prefix> prefixes) {
+    _batfish = batfish;
     _graph = new Graph(batfish);
-    _importPolicyMap = new HashMap<>();
-    _exportPolicyMap = new HashMap<>();
-    _importBgpPolicies = new HashMap<>();
-    _exportBgpPolicies = new HashMap<>();
-    _inAcls = new HashMap<>();
-    _outAcls = new HashMap<>();
+    _network = BDDNetwork.create(_graph);
+    _slice = prefixes;
+    _concreteNodes = concrete;
+    _destinationMap = new HashMap<>();
   }
 
-  /*
-   * Given a network, computes a compressed, abstract version
-   * of the network that should preserve all stable routing solutions.
-   * For example, the concrete network below:
-   *
-   *            A                A
-   *          /   \              |
-   *         B    C    ==>       B'
-   *          \  /               |
-   *           D                 D
-   *
-   * My be compressed into the abstract network on the right depending
-   * on the particular route-maps, acls, etc configured on devices
-   * A through D.
-   */
-  public AnswerElement computeAbstraction() {
-    long start = System.currentTimeMillis();
+  public static Abstractor create(
+      IBatfish batfish, @Nullable Set<String> concrete, @Nullable List<Prefix> prefixes) {
+    Abstractor abs = new Abstractor(batfish, concrete, prefixes);
+    abs.computeDestinationMap();
+    return abs;
+  }
 
-    computeInterfacePolicies();
+  public static Abstractor create(IBatfish batfish, @Nullable Set<String> concrete) {
+    Abstractor abs = new Abstractor(batfish, concrete, null);
+    abs.computeDestinationMap();
+    return abs;
+  }
+
+  private void computeDestinationMap() {
     Map<String, List<Protocol>> protoMap = buildProtocolMap();
 
-    // Create the trie
     PrefixTrieMap pt = new PrefixTrieMap();
-
-    // Iterate through the destinations
 
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
@@ -129,185 +120,24 @@ public class Abstractor {
         }
         //}
 
-        // Add all destinations to the prefix trie
+        // Add all destinations to the prefix trie relevant to this slice
         for (Prefix p : destinations) {
-          //System.out.println(
-          // "Destination for " + router + "," + proto.name() + " has: " + p);
-          pt.add(p, router);
+          if (_slice == null || PrefixUtils.overlap(p, _slice)) {
+            pt.add(p, router);
+          }
         }
       }
     }
 
     // Map collections of devices to the destination IP ranges that are rooted there
-    Map<Set<String>, List<Prefix>> destMap = pt.createDestinationMap();
+    _destinationMap = pt.createDestinationMap();
 
     System.out.println("Destination Map:");
-    destMap.forEach(
+    _destinationMap.forEach(
         (devices, prefixes) -> System.out.println("Devices: " + devices + " --> " + prefixes));
-
-    // For each collection of destinations, we need to create an abstract network.
-    // First we will figure out sets of nodes that can map together.
-    Set<String> allDevices = _graph.getConfigurations().keySet();
-
-    int min = -1;
-    int max = 0;
-    int totalAbstract = 0;
-    int count = 0;
-    double average = 0.0;
-
-    long bench = 0;
-
-    System.out.println("Num ECs: " + destMap.size());
-    int i = 0;
-
-    for (Entry<Set<String>, List<Prefix>> entry : destMap.entrySet()) {
-      i++;
-      Set<String> devices = entry.getKey();
-      List<Prefix> prefixes = entry.getValue();
-
-      // Restrict the BDDs to the current prefixes
-      Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
-      Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
-
-      long timeStart = System.currentTimeMillis();
-      //_exportPolicyMap.forEach((ge, pol) -> exportPol.put(ge, pol.restrict(prefixes)));
-      //_importPolicyMap.forEach((ge, pol) -> importPol.put(ge, pol.restrict(prefixes)));
-      _exportPolicyMap.forEach((ge, pol) -> exportPol.put(ge, pol));
-      _importPolicyMap.forEach((ge, pol) -> importPol.put(ge, pol));
-      long timeEnd = System.currentTimeMillis() - timeStart;
-      bench += timeEnd;
-
-      UnionSplit<String> workset = new UnionSplit<>(allDevices);
-
-      // System.out.println("Workset: " + workset);
-
-      // Split by the singleton set for each origination point
-      for (String device : devices) {
-        Set<String> ds = new TreeSet<>();
-        ds.add(device);
-        workset.split(ds);
-      }
-
-      // System.out.println("Computing abstraction for: " + devices);
-
-      // Repeatedly split the abstraction to a fixed point
-      Set<Set<String>> todo;
-      do {
-        todo = new HashSet<>();
-        List<Set<String>> ps = workset.partitions();
-
-        // System.out.println("Todo set: " + todo);
-        // System.out.println("Workset: " + workset);
-
-        for (Set<String> partition : ps) {
-
-          // Nothing to refine if already a concrete node
-          if (partition.size() <= 1) {
-            continue;
-          }
-
-          Map<String, Set<EquivalenceEdge>> groupMap = new HashMap<>();
-
-          for (String router : partition) {
-
-            Set<EquivalenceEdge> groups = new HashSet<>();
-            groupMap.put(router, groups);
-
-            // TODO: don't look at edges within the same group?
-
-            List<GraphEdge> edges = _graph.getEdgeMap().get(router);
-            for (GraphEdge edge : edges) {
-              if (!edge.isAbstract()) {
-                String peer = edge.getPeer();
-                InterfacePolicy ipol = importPol.get(edge);
-                GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
-                InterfacePolicy epol = null;
-                if (otherEnd != null) {
-                  epol = exportPol.get(otherEnd);
-                }
-
-                // For external neighbors, we don't split a partition
-                Integer peerGroup;
-                if (peer != null) {
-                  peerGroup = workset.getHandle(peer);
-                } else {
-                  peerGroup = -1;
-                }
-
-                EquivalenceEdge pair = new EquivalenceEdge(peerGroup, ipol, epol);
-                groups.add(pair);
-                // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
-              }
-            }
-          }
-
-          Map<Set<EquivalenceEdge>, Set<String>> inversePolicyMap = new HashMap<>();
-          groupMap.forEach(
-              (router, groupPairs) -> {
-                Set<String> routers =
-                    inversePolicyMap.computeIfAbsent(groupPairs, gs -> new HashSet<>());
-                routers.add(router);
-              });
-
-          // Only add changed to the list
-          for (Set<String> collection : inversePolicyMap.values()) {
-            if (!ps.contains(collection)) {
-              todo.add(collection);
-            }
-          }
-
-          // System.out.println("Todo now: " + todo);
-        }
-
-        // Now divide the abstraction further
-        for (Set<String> partition : todo) {
-          workset.split(partition);
-        }
-
-      } while (!todo.isEmpty());
-
-      // Update the metrics
-      int abstractSize = workset.partitions().size();
-      min = (min < 0 ? abstractSize : Math.min(min, abstractSize));
-      max = Math.max(max, abstractSize);
-      totalAbstract = totalAbstract + abstractSize;
-      count = count + 1;
-      average = (double) totalAbstract / (double) count;
-
-      System.out.println("Done with: " + i);
-
-      // System.out.println("EC: " + prefixes);
-      // System.out.println("Final abstraction: " + workset.partitions());
-      // System.out.println("Original Size: " + allDevices.size());
-      // System.out.println("Compressed: " + workset.partitions().size());
-    }
-
-    System.out.println("===============================================");
-    System.out.println("Number of ECs: " + count);
-    System.out.println("Concrete size: " + allDevices.size());
-    System.out.println("Smallest abstraction: " + min);
-    System.out.println("Largest abstraction: " + max);
-    System.out.println("Average abstraction: " + average);
-    System.out.println("===============================================");
-
-    AbstractionAnswerElement answer = new AbstractionAnswerElement();
-    answer.setAverage(average);
-    answer.setMax(max);
-    answer.setMin(min);
-    answer.setNumClasses(count);
-    answer.setOriginalSize(allDevices.size());
-
-    long end = System.currentTimeMillis();
-
-    System.out.println("Time bench (sec): " + ((double) bench) / 1000);
-    System.out.println("Total time (sec): " + ((double) end - start) / 1000);
-
-    return answer;
   }
 
-  /*
-   * Determine which protocols are running on which devices
-   */
+
   private Map<String, List<Protocol>> buildProtocolMap() {
     // Figure out which protocols are running on which devices
     Map<String, List<Protocol>> protocols = new HashMap<>();
@@ -336,238 +166,338 @@ public class Abstractor {
     return protocols;
   }
 
+  @Nonnull
+  @Override
+  public Iterator<EquivalenceClass> iterator() {
+    return new AbstractionIterator();
+  }
+
+  private EquivalenceClass computeAbstraction(Set<String> devices, List<Prefix> prefixes) {
+    Set<String> allDevices = _graph.getConfigurations().keySet();
+
+    Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
+    Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
+    _network.getExportPolicyMap().forEach((ge, pol) -> exportPol.put(ge, pol));
+    _network.getImportPolicyMap().forEach((ge, pol) -> importPol.put(ge, pol));
+
+    UnionSplit<String> workset = new UnionSplit<>(allDevices);
+
+    // System.out.println("Workset: " + workset);
+
+    // Add concrete nodes to the set of devices that must be concrete
+    if (_concreteNodes != null) {
+      devices.addAll(_concreteNodes);
+    }
+
+    // Split by the singleton set for each origination point
+    for (String device : devices) {
+      Set<String> ds = new TreeSet<>();
+      ds.add(device);
+      workset.split(ds);
+    }
+
+    // System.out.println("Computing abstraction for: " + devices);
+
+    // Repeatedly split the abstraction to a fixed point
+    Set<Set<String>> todo;
+    do {
+      todo = new HashSet<>();
+      List<Set<String>> ps = workset.partitions();
+
+      // System.out.println("Todo set: " + todo);
+      // System.out.println("Workset: " + workset);
+
+      for (Set<String> partition : ps) {
+
+        // Nothing to refine if already a concrete node
+        if (partition.size() <= 1) {
+          continue;
+        }
+
+        Map<String, Set<EquivalenceEdge>> groupMap = new HashMap<>();
+
+        for (String router : partition) {
+
+          Set<EquivalenceEdge> groups = new HashSet<>();
+          groupMap.put(router, groups);
+
+          // TODO: don't look at edges within the same group?
+
+          List<GraphEdge> edges = _graph.getEdgeMap().get(router);
+          for (GraphEdge edge : edges) {
+            if (!edge.isAbstract()) {
+              String peer = edge.getPeer();
+              InterfacePolicy ipol = importPol.get(edge);
+              GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
+              InterfacePolicy epol = null;
+              if (otherEnd != null) {
+                epol = exportPol.get(otherEnd);
+              }
+
+              // For external neighbors, we don't split a partition
+              Integer peerGroup;
+              if (peer != null) {
+                peerGroup = workset.getHandle(peer);
+              } else {
+                peerGroup = -1;
+              }
+
+              EquivalenceEdge pair = new EquivalenceEdge(peerGroup, ipol, epol);
+              groups.add(pair);
+              // System.out.println("    Group: " + pair.getKey() + "," + pair.getValue());
+            }
+          }
+        }
+
+        Map<Set<EquivalenceEdge>, Set<String>> inversePolicyMap = new HashMap<>();
+        groupMap.forEach(
+            (router, groupPairs) -> {
+              Set<String> routers =
+                  inversePolicyMap.computeIfAbsent(groupPairs, gs -> new HashSet<>());
+              routers.add(router);
+            });
+
+        // Only add changed to the list
+        for (Set<String> collection : inversePolicyMap.values()) {
+          if (!ps.contains(collection)) {
+            todo.add(collection);
+          }
+        }
+
+        // System.out.println("Todo now: " + todo);
+      }
+
+      // Now divide the abstraction further
+      for (Set<String> partition : todo) {
+        workset.split(partition);
+      }
+
+    } while (!todo.isEmpty());
+
+    Graph abstractGraph = createAbstractNetwork(workset, devices);
+    return new EquivalenceClass(prefixes, abstractGraph);
+
+    // System.out.println("EC: " + prefixes);
+    // System.out.println("Final abstraction: " + workset.partitions());
+    // System.out.println("Original Size: " + allDevices.size());
+    // System.out.println("Compressed: " + workset.partitions().size());
+  }
+
+
   /*
-   * For each interface in the network, creates a canonical
-   * representation of the import and export policies on this interface.
+   * Given a collection of abstract roles, computes a set of canonical
+   * representatives from each role that serve as the abstraction.
    */
-  private void computeInterfacePolicies() {
+  private Set<String> chooseCanonicalRouters(UnionSplit<String> us, Set<String> dests) {
+    Map<Integer, String> choosen = new HashMap<>();
+    Stack<Tuple<Integer,String>> todo = new Stack<>();
 
-    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
-      String router = entry.getKey();
-      Configuration conf = entry.getValue();
-      List<GraphEdge> edges = _graph.getEdgeMap().get(router);
-      for (GraphEdge ge : edges) {
-        // Import BGP policy
-        RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
-        if (importBgp != null) {
-          BDDRecord rec = computeBDD(_graph, conf, importBgp, true);
-          _importBgpPolicies.put(ge, rec);
-        }
-        // Export BGP policy
-        RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
-        if (exportBgp != null) {
-          BDDRecord rec = computeBDD(_graph, conf, exportBgp, true);
-          _exportBgpPolicies.put(ge, rec);
-        }
+    // Start with the concrete nodes
+    for (String d : dests) {
+      Integer i = us.getHandle(d);
+      Tuple<Integer, String> tup = new Tuple<>(i,d);
+      choosen.put(i,d);
+      todo.push(tup);
+    }
 
-        IpAccessList in = ge.getStart().getIncomingFilter();
-        IpAccessList out = ge.getStart().getOutgoingFilter();
-        // Incoming ACL
-        if (in != null) {
-          AclBDD x = AclBDD.create(in);
-          _inAcls.put(ge, x);
+    // Need to choose representatives that are connected
+    while (!todo.isEmpty()) {
+      Tuple<Integer,String> tup = todo.pop();
+      Integer i = tup.getFirst();
+      String router = tup.getSecond();
+      if (choosen.containsKey(i)) {
+        continue;
+      }
+      choosen.put(i, router);
+      for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
+        String peer = ge.getPeer();
+        if (peer != null) {
+          Integer j = us.getHandle(peer);
+          Tuple<Integer, String> peerTup = new Tuple<>(j, peer);
+          todo.push(peerTup);
         }
-        // Outgoing ACL
-        if (out != null) {
-          AclBDD x = AclBDD.create(out);
-          _outAcls.put(ge, x);
+      }
+    }
+    return new HashSet<>(choosen.values());
+  }
+
+  /*
+   * Creates a new Configuration from an old one for an abstract router
+   * by copying the old configuration, but removing any concrete interfaces,
+   * neighbors etc that do not correpond to any abstract neighbors.
+   */
+  private Configuration createAbstractConfig(Set<String> abstractRouters, Configuration conf) {
+    Configuration abstractConf = new Configuration(conf.getHostname());
+    abstractConf.setDomainName(conf.getDomainName());
+    abstractConf.setConfigurationFormat(conf.getConfigurationFormat());
+    abstractConf.setDnsServers(conf.getDnsServers());
+    abstractConf.setDnsSourceInterface(conf.getDnsSourceInterface());
+    abstractConf.setAuthenticationKeyChains(conf.getAuthenticationKeyChains());
+    abstractConf.setIkeGateways(conf.getIkeGateways());
+    abstractConf.setDefaultCrossZoneAction(conf.getDefaultCrossZoneAction());
+    abstractConf.setIkePolicies(conf.getIkePolicies());
+    abstractConf.setIkeProposals(conf.getIkeProposals());
+    abstractConf.setDefaultInboundAction(conf.getDefaultInboundAction());
+    abstractConf.setIp6AccessLists(conf.getIp6AccessLists());
+    abstractConf.setRoute6FilterLists(conf.getRoute6FilterLists());
+    abstractConf.setIpsecPolicies(conf.getIpsecPolicies());
+    abstractConf.setIpsecProposals(conf.getIpsecProposals());
+    abstractConf.setIpsecVpns(conf.getIpsecVpns());
+    abstractConf.setLoggingServers(conf.getLoggingServers());
+    abstractConf.setLoggingSourceInterface(conf.getLoggingSourceInterface());
+    abstractConf.setNormalVlanRange(conf.getNormalVlanRange());
+    abstractConf.setNtpServers(conf.getNtpServers());
+    abstractConf.setNtpSourceInterface(conf.getNtpSourceInterface());
+    abstractConf.setRoles(conf.getRoles());
+    abstractConf.setSnmpSourceInterface(conf.getSnmpSourceInterface());
+    abstractConf.setSnmpTrapServers(conf.getSnmpTrapServers());
+    abstractConf.setTacacsServers(conf.getTacacsServers());
+    abstractConf.setTacacsSourceInterface(conf.getTacacsSourceInterface());
+    abstractConf.setVendorFamily(conf.getVendorFamily());
+    abstractConf.setZones(conf.getZones());
+    abstractConf.setCommunityLists(conf.getCommunityLists());
+
+    SortedSet<Interface> toRetain = new TreeSet<>();
+    SortedSet<Pair<Ip,Ip>> ipNeighbors = new TreeSet<>();
+    SortedSet<BgpNeighbor> bgpNeighbors = new TreeSet<>();
+
+    List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getName());
+    for (GraphEdge ge : edges) {
+      if (abstractRouters.contains(ge.getRouter())
+          && ge.getPeer() != null
+          && abstractRouters.contains(ge.getPeer())) {
+        toRetain.add(ge.getStart());
+        Ip start = ge.getStart().getPrefix().getAddress();
+        Ip end = ge.getEnd().getPrefix().getAddress();
+        ipNeighbors.add(new Pair<>(start, end));
+        BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);
+        if (n != null) {
+          bgpNeighbors.add(n);
         }
       }
     }
 
-    for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
-      String router = entry.getKey();
-      List<GraphEdge> edges = entry.getValue();
-      Configuration conf = _graph.getConfigurations().get(router);
-      for (GraphEdge ge : edges) {
-        BDDRecord bgpIn = _importBgpPolicies.get(ge);
-        BDDRecord bgpOut = _exportBgpPolicies.get(ge);
-        AclBDD aclIn = _inAcls.get(ge);
-        AclBDD aclOut = _outAcls.get(ge);
-        Integer ospfCost = ge.getStart().getOspfCost();
-        SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
-        InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
-        InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);
-        _importPolicyMap.put(ge, ipol);
-        _exportPolicyMap.put(ge, epol);
+    NavigableMap<String, Interface> abstractInterfaces = new TreeMap<>();
+
+    conf.getInterfaces().forEach((name, iface) -> {
+      if (toRetain.contains(iface)) {
+        abstractInterfaces.put(name, iface);
       }
-    }
+    });
+    abstractConf.setInterfaces(abstractInterfaces);
+
+    abstractConf.setVrfs(conf.getVrfs());
+
+    Map<String, Vrf> abstractVrfs = new HashMap<>();
+    conf.getVrfs().forEach((name, vrf) -> {
+      Vrf abstractVrf = new Vrf(name);
+      abstractVrf.setStaticRoutes(vrf.getStaticRoutes());
+      abstractVrf.setIsisProcess(vrf.getIsisProcess());
+      abstractVrf.setRipProcess(vrf.getRipProcess());
+      abstractVrf.setSnmpServer(vrf.getSnmpServer());
+
+      NavigableMap<String, Interface> abstractVrfInterfaces = new TreeMap<>();
+      vrf.getInterfaces().forEach((iname, iface) -> {
+        if (toRetain.contains(iface)) {
+          abstractVrfInterfaces.put(iname, iface);
+        }
+      });
+      abstractVrf.setInterfaces(abstractVrfInterfaces);
+      abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
+
+      OspfProcess ospf = vrf.getOspfProcess();
+      if (ospf != null) {
+        OspfProcess abstractOspf = new OspfProcess();
+        abstractOspf.setAreas(ospf.getAreas());
+        abstractOspf.setExportPolicy(ospf.getExportPolicy());
+        abstractOspf.setReferenceBandwidth(ospf.getReferenceBandwidth());
+        abstractOspf.setRouterId(ospf.getRouterId());
+
+        Map<Pair<Ip,Ip>, OspfNeighbor> abstractNeighbors = new HashMap<>();
+        ospf.getOspfNeighbors().forEach((pair, neighbor) -> {
+          if (ipNeighbors.contains(pair)) {
+            abstractNeighbors.put(pair, neighbor);
+          }
+        });
+        abstractOspf.setOspfNeighbors(abstractNeighbors);
+        abstractVrf.setOspfProcess(abstractOspf);
+      }
+
+      BgpProcess bgp = vrf.getBgpProcess();
+      if (bgp != null) {
+        BgpProcess abstractBgp = new BgpProcess();
+        abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
+        abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
+        abstractBgp.setRouterId(bgp.getRouterId());
+        abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
+
+        // TODO: set bgp neighbors accordingly
+        SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
+        bgp.getNeighbors().forEach((prefix, neighbor) -> {
+          if (bgpNeighbors.contains(neighbor)) {
+            abstractBgpNeighbors.put(prefix, neighbor);
+          }
+        });
+        abstractBgp.setNeighbors(abstractBgpNeighbors);
+      }
+
+      abstractVrfs.put(name, abstractVrf);
+    });
+
+    return abstractConf;
   }
 
   /*
-   * Compute a BDD representation of a routing policy.
+   * Create a collection of abstract configurations given the roles computed
+   * and the collection of concrete devices. Chooses a collection of canonical
+   * representatives from each role, and then removes all their interfaces etc
+   * that connect to non-canonical routers.
    */
-  public BDDRecord computeBDD(
-      Graph g, Configuration conf, RoutingPolicy pol, boolean ignoreNetworks) {
-    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
-    BDDRecord rec = t.compute(ignoreNetworks);
-    return rec;
+  private Graph createAbstractNetwork(UnionSplit<String> us, Set<String> dests) {
+    Set<String> abstractRouters = chooseCanonicalRouters(us, dests);
+    Map<String, Configuration> newConfigs = new HashMap<>();
+    _graph.getConfigurations().forEach((router,conf) -> {
+      if (abstractRouters.contains(router)) {
+        Configuration abstractConf = createAbstractConfig(abstractRouters, conf);
+        newConfigs.put(router, abstractConf);
+      }
+    });
+    return new Graph(_batfish, newConfigs);
   }
 
-  /*
-   * Compute all the devices/interfaces configured with the
-   * equivalent policies.
-   */
-  public AnswerElement computeRoles(EquivalenceType t) {
+
+
+  public AnswerElement asAnswer() {
     long start = System.currentTimeMillis();
-    computeInterfacePolicies();
-    Map<BDDRecord, SortedSet<String>> importBgpEcs = new HashMap<>();
-    Map<BDDRecord, SortedSet<String>> exportBgpEcs = new HashMap<>();
-    Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
-    Map<BDD, SortedSet<String>> outgoingAclEcs = new HashMap<>();
-    Map<Tuple<InterfacePolicy, InterfacePolicy>, SortedSet<String>> interfaceEcs = new HashMap<>();
-    Map<Set<Tuple<InterfacePolicy, InterfacePolicy>>, SortedSet<String>> nodeEcs = new HashMap<>();
-
-    SortedSet<String> importBgpNull = new TreeSet<>();
-    SortedSet<String> exportBgpNull = new TreeSet<>();
-    SortedSet<String> incomingAclNull = new TreeSet<>();
-    SortedSet<String> outgoingAclNull = new TreeSet<>();
-
-    Prefix pfx = new Prefix("0.0.0.0/0");
-
-    for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
-      String router = entry.getKey();
-      List<GraphEdge> ges = entry.getValue();
-      Set<Tuple<InterfacePolicy, InterfacePolicy>> nodeEc = new HashSet<>();
-
-      for (GraphEdge ge : ges) {
-        String s = ge.toString();
-
-        if (t == EquivalenceType.POLICY) {
-          BDDRecord x1 = _importBgpPolicies.get(ge);
-          if (x1 == null) {
-            importBgpNull.add(s);
-          } else {
-            SortedSet<String> ec =
-                importBgpEcs.computeIfAbsent(x1.restrict(pfx), k -> new TreeSet<>());
-            ec.add(s);
-          }
-
-          BDDRecord x2 = _exportBgpPolicies.get(ge);
-          if (x2 == null) {
-            exportBgpNull.add(s);
-          } else {
-            SortedSet<String> ec =
-                exportBgpEcs.computeIfAbsent(x2.restrict(pfx), k -> new TreeSet<>());
-            ec.add(s);
-          }
-
-          AclBDD x4 = _inAcls.get(ge);
-          if (x4 == null) {
-            incomingAclNull.add(s);
-          } else {
-            SortedSet<String> ec =
-                incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
-            ec.add(s);
-          }
-
-          AclBDD x5 = _outAcls.get(ge);
-          if (x5 == null) {
-            outgoingAclNull.add(s);
-          } else {
-            SortedSet<String> ec =
-                outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
-            ec.add(s);
-          }
-        }
-
-        InterfacePolicy x6 = _importPolicyMap.get(ge);
-        InterfacePolicy x7 = _exportPolicyMap.get(ge);
-        x6 = x6.restrict(pfx);
-        x7 = x7.restrict(pfx);
-
-        Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
-
-        if (t == EquivalenceType.INTERFACE) {
-          SortedSet<String> ec = interfaceEcs.computeIfAbsent(tup, k -> new TreeSet<>());
-          ec.add(s);
-        }
-
-        if (t == EquivalenceType.NODE) {
-          nodeEc.add(tup);
-        }
-      }
-
-      if (t == EquivalenceType.NODE) {
-        SortedSet<String> ec = nodeEcs.computeIfAbsent(nodeEc, k -> new TreeSet<>());
-        ec.add(router);
-      }
+    int i = 0;
+    for (EquivalenceClass ec : this) {
+      i++;
+      System.out.println("EC: " + i);
     }
-
-    List<SortedSet<String>> x1 = null;
-    List<SortedSet<String>> x2 = null;
-    List<SortedSet<String>> x4 = null;
-    List<SortedSet<String>> x5 = null;
-    List<SortedSet<String>> x6 = null;
-    List<SortedSet<String>> x7 = null;
-
-    Comparator<SortedSet<String>> c = comparator();
-
-    if (t == EquivalenceType.POLICY) {
-      x1 = new ArrayList<>(importBgpEcs.values());
-      if (!importBgpNull.isEmpty()) {
-        x1.add(importBgpNull);
-      }
-      x1.sort(c);
-      x2 = new ArrayList<>(exportBgpEcs.values());
-      if (!exportBgpNull.isEmpty()) {
-        x2.add(exportBgpNull);
-      }
-      x2.sort(c);
-      x4 = new ArrayList<>(incomingAclEcs.values());
-      if (!incomingAclNull.isEmpty()) {
-        x4.add(incomingAclNull);
-      }
-      x4.sort(c);
-      x5 = new ArrayList<>(outgoingAclEcs.values());
-      if (!outgoingAclNull.isEmpty()) {
-        x5.add(outgoingAclNull);
-      }
-      x5.sort(c);
-    }
-
-    if (t == EquivalenceType.INTERFACE) {
-      x6 = new ArrayList<>(interfaceEcs.values());
-      x6.sort(c);
-    }
-
-    if (t == EquivalenceType.NODE) {
-      x7 = new ArrayList<>(nodeEcs.values());
-      x7.sort(c);
-    }
-
-    RoleAnswerElement ae = new RoleAnswerElement();
-    ae.setImportBgpEcs(x1);
-    ae.setExportBgpEcs(x2);
-    ae.setIncomingAclEcs(x4);
-    ae.setOutgoingAclEcs(x5);
-    ae.setInterfaceEcs(x6);
-    ae.setNodeEcs(x7);
-
-    long end = System.currentTimeMillis() - start;
-    System.out.println("Total time: " + end);
-
-    return ae;
+    AbstractionAnswerElement answer = new AbstractionAnswerElement();
+    long end = System.currentTimeMillis();
+    System.out.println("Total time (sec): " + ((double) end - start) / 1000);
+    return answer;
   }
 
-  private Comparator<SortedSet<String>> comparator() {
-    return (o1, o2) -> {
-      String min1 = min(o1);
-      String min2 = min(o2);
-      return min1.compareTo(min2);
-    };
+  private class AbstractionIterator implements Iterator<EquivalenceClass> {
+
+    private Iterator<Entry<Set<String>, List<Prefix>>> _iter;
+
+    AbstractionIterator() {
+      _iter = _destinationMap.entrySet().iterator();
+    }
+
+    @Override public boolean hasNext() {
+      return _iter.hasNext();
+    }
+
+    @Override public EquivalenceClass next() {
+      Entry<Set<String>, List<Prefix>> x = _iter.next();
+      Set<String> devices = x.getKey();
+      List<Prefix> prefixes = x.getValue();
+      return computeAbstraction(devices, prefixes);
+    }
   }
 
-  /*
-   * Helper functions to sort the sets by minimum element
-   */
-  private @Nullable String min(SortedSet<String> set) {
-    String x = null;
-    for (String s : set) {
-      if (x == null || s.compareTo(x) < 0) {
-        x = s;
-      }
-    }
-    return x;
-  }
 }

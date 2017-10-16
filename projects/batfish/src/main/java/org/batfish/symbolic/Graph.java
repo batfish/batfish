@@ -64,9 +64,10 @@ import org.batfish.symbolic.collections.Table2;
  */
 public class Graph {
 
-  static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
+
+  private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
   private static final String NULL_INTERFACE_NAME = "null_interface";
 
@@ -106,15 +107,21 @@ public class Graph {
    * Create a graph from a Batfish object
    */
   public Graph(IBatfish batfish) {
-    this(batfish, null);
+    this(batfish, null, null);
+  }
+
+  public Graph(IBatfish batfish, Map<String, Configuration> configs) {
+    this(batfish, configs, null);
   }
 
   /*
    * Create a graph, while selecting the subset of routers to use.
    */
-  public Graph(IBatfish batfish, @Nullable Set<String> routers) {
+  public Graph(
+      IBatfish batfish,
+      @Nullable Map<String, Configuration> configs,
+      @Nullable Set<String> routers) {
     _batfish = batfish;
-    _configurations = new HashMap<>(_batfish.loadConfigurations());
     _edgeMap = new HashMap<>();
     _allEdges = new HashSet<>();
     _allRealEdges = new HashSet<>();
@@ -129,6 +136,11 @@ public class Graph {
     _originatorId = new HashMap<>();
     _domainMap = new HashMap<>();
     _domainMapInverse = new HashMap<>();
+    _configurations = configs;
+
+    if (_configurations == null) {
+      _configurations = new HashMap<>(_batfish.loadConfigurations());
+    }
 
     // Remove the routers we don't want to model
     if (routers != null) {
@@ -151,6 +163,125 @@ public class Graph {
     initIbgpNeighbors();
     initAreaIds();
     initDomains();
+  }
+
+  /*
+   * Check if a static route is configured to drop packets
+   */
+  public static boolean isNullRouted(StaticRoute sr) {
+    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
+  }
+
+  /*
+   * Find the common (default) routing policy for the protocol.
+   */
+  @Nullable
+  public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
+    if (proto.isOspf()) {
+      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
+      return conf.getRoutingPolicies().get(exp);
+    }
+    if (proto.isBgp()) {
+      for (Map.Entry<String, RoutingPolicy> entry : conf.getRoutingPolicies().entrySet()) {
+        String name = entry.getKey();
+        if (name.contains(BGP_COMMON_FILTER_LIST_NAME)) {
+          return entry.getValue();
+        }
+      }
+      return null;
+    }
+    if (proto.isStatic()) {
+      return null;
+    }
+    if (proto.isConnected()) {
+      return null;
+    }
+    throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
+  }
+
+  /*
+   * Collects and returns all originated prefixes for the given
+   * router as well as the protocol. Static routes and connected
+   * routes are treated as originating the prefix.
+   */
+  public static List<Prefix> getOriginatedNetworks(Configuration conf, Protocol proto) {
+    List<Prefix> acc = new ArrayList<>();
+
+    if (proto.isOspf()) {
+      conf.getDefaultVrf()
+          .getOspfProcess()
+          .getAreas()
+          .forEach(
+              (areaID, area) -> {
+                for (Interface iface : area.getInterfaces()) {
+                  if (iface.getActive() && iface.getOspfEnabled()) {
+                    acc.add(iface.getPrefix());
+                  }
+                }
+              });
+      return acc;
+    }
+
+    if (proto.isBgp()) {
+      RoutingPolicy defaultPol = findCommonRoutingPolicy(conf, Protocol.BGP);
+      if (defaultPol != null) {
+        AstVisitor v = new AstVisitor();
+        v.visit(
+            conf,
+            defaultPol.getStatements(),
+            stmt -> { },
+            expr -> {
+              if (expr instanceof Conjunction) {
+                Conjunction c = (Conjunction) expr;
+                if (c.getConjuncts().size() >= 2) {
+                  BooleanExpr be1 = c.getConjuncts().get(0);
+                  BooleanExpr be2 = c.getConjuncts().get(1);
+                  if (be1 instanceof MatchPrefixSet && be2 instanceof Not) {
+                    MatchPrefixSet mps = (MatchPrefixSet) be1;
+                    Not n = (Not) be2;
+                    if (n.getExpr() instanceof MatchProtocol) {
+                      MatchProtocol mp = (MatchProtocol) n.getExpr();
+                      if (mp.getProtocol() == RoutingProtocol.BGP) {
+                        PrefixSetExpr e = mps.getPrefixSet();
+                        if (e instanceof ExplicitPrefixSet) {
+                          ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
+                          Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
+                          for (PrefixRange r : ranges) {
+                            acc.add(r.getPrefix());
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            });
+      }
+      return acc;
+    }
+
+    if (proto.isConnected()) {
+      conf.getInterfaces()
+          .forEach(
+              (name, iface) -> {
+                Prefix p = iface.getPrefix();
+                if (p != null) {
+                  acc.add(p);
+                }
+              });
+      return acc;
+    }
+
+    if (proto.isStatic()) {
+      for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
+        if (sr.getNetwork() != null && !Graph.isNullRouted(sr)) {
+          acc.add(sr.getNetwork());
+        }
+      }
+      return acc;
+    }
+
+    throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
   }
 
   /*
@@ -214,7 +345,6 @@ public class Graph {
                         graphEdges.add(ge1);
                         neighs.add(neighbor);
                       }
-
                     }
                   }
                 }
@@ -270,13 +400,6 @@ public class Graph {
    */
   private void initOspfCosts() {
     _configurations.forEach((router, conf) -> initOspfInterfaceCosts(conf));
-  }
-
-  /*
-   * Check if a static route is configured to drop packets
-   */
-  public static boolean isNullRouted(StaticRoute sr) {
-    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 
   /*
@@ -508,13 +631,6 @@ public class Graph {
 
   }
 
-  public enum BgpSendType {
-    TO_EBGP,
-    TO_NONCLIENT,
-    TO_CLIENT,
-    TO_RR
-  }
-
   public BgpSendType peerType(GraphEdge ge) {
     if (_ebgpNeighbors.get(ge) != null) {
       return BgpSendType.TO_EBGP;
@@ -643,16 +759,17 @@ public class Graph {
     return deps;
   }
 
-
   /*
    * Finds all uniquely mentioned community matches
    * in the network by walking over every configuration.
    */
   public Set<CommunityVar> findAllCommunities() {
     Set<CommunityVar> comms = new HashSet<>();
-    getConfigurations().forEach((router, conf) -> {
-      comms.addAll(findAllCommunities(router));
-    });
+    getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              comms.addAll(findAllCommunities(router));
+            });
     // Add an other option that matches a regex but isn't from this network
     List<CommunityVar> others = new ArrayList<>();
     for (CommunityVar c : comms) {
@@ -875,33 +992,6 @@ public class Graph {
   }
 
   /*
-   * Find the common (default) routing policy for the protocol.
-   */
-  @Nullable
-  public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
-    if (proto.isOspf()) {
-      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
-      return conf.getRoutingPolicies().get(exp);
-    }
-    if (proto.isBgp()) {
-      for (Map.Entry<String, RoutingPolicy> entry : conf.getRoutingPolicies().entrySet()) {
-        String name = entry.getKey();
-        if (name.contains(BGP_COMMON_FILTER_LIST_NAME)) {
-          return entry.getValue();
-        }
-      }
-      return null;
-    }
-    if (proto.isStatic()) {
-      return null;
-    }
-    if (proto.isConnected()) {
-      return null;
-    }
-    throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
-  }
-
-  /*
    * Find the BGP neighbor of a particular edge
    */
   public BgpNeighbor findBgpNeighbor(GraphEdge e) {
@@ -968,91 +1058,6 @@ public class Graph {
     throw new BatfishException("TODO: findExportRoutingPolicy for " + proto.name());
   }
 
-  /*
-   * Collects and returns all originated prefixes for the given
-   * router as well as the protocol. Static routes and connected
-   * routes are treated as originating the prefix.
-   */
-  public static List<Prefix> getOriginatedNetworks(Configuration conf, Protocol proto) {
-    List<Prefix> acc = new ArrayList<>();
-
-    if (proto.isOspf()) {
-      conf.getDefaultVrf()
-          .getOspfProcess()
-          .getAreas()
-          .forEach(
-              (areaID, area) -> {
-                for (Interface iface : area.getInterfaces()) {
-                  if (iface.getActive() && iface.getOspfEnabled()) {
-                    acc.add(iface.getPrefix());
-                  }
-                }
-              });
-      return acc;
-    }
-
-    if (proto.isBgp()) {
-      RoutingPolicy defaultPol = findCommonRoutingPolicy(conf, Protocol.BGP);
-      if (defaultPol != null) {
-        AstVisitor v = new AstVisitor();
-        v.visit(
-            conf,
-            defaultPol.getStatements(),
-            stmt -> { },
-            expr -> {
-              if (expr instanceof Conjunction) {
-                Conjunction c = (Conjunction) expr;
-                if (c.getConjuncts().size() >= 2) {
-                  BooleanExpr be1 = c.getConjuncts().get(0);
-                  BooleanExpr be2 = c.getConjuncts().get(1);
-                  if (be1 instanceof MatchPrefixSet && be2 instanceof Not) {
-                    MatchPrefixSet mps = (MatchPrefixSet) be1;
-                    Not n = (Not) be2;
-                    if (n.getExpr() instanceof MatchProtocol) {
-                      MatchProtocol mp = (MatchProtocol) n.getExpr();
-                      if (mp.getProtocol() == RoutingProtocol.BGP) {
-                        PrefixSetExpr e = mps.getPrefixSet();
-                        if (e instanceof ExplicitPrefixSet) {
-                          ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
-                          Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
-                          for (PrefixRange r : ranges) {
-                            acc.add(r.getPrefix());
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            });
-      }
-      return acc;
-    }
-
-    if (proto.isConnected()) {
-      conf.getInterfaces()
-          .forEach(
-              (name, iface) -> {
-                Prefix p = iface.getPrefix();
-                if (p != null) {
-                  acc.add(p);
-                }
-              });
-      return acc;
-    }
-
-    if (proto.isStatic()) {
-      for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-        if (sr.getNetwork() != null && !Graph.isNullRouted(sr)) {
-          acc.add(sr.getNetwork());
-        }
-      }
-      return acc;
-    }
-
-    throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
-  }
-
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -1109,13 +1114,13 @@ public class Graph {
     return sb.toString();
   }
 
-  /*
-   * Getters and setters
-   */
-
   public Map<String, String> getRouteReflectorParent() {
     return _routeReflectorParent;
   }
+
+  /*
+   * Getters and setters
+   */
 
   public Map<String, Set<String>> getRouteReflectorClients() {
     return _routeReflectorClients;
@@ -1167,5 +1172,12 @@ public class Graph {
 
   public Set<GraphEdge> getAllEdges() {
     return _allEdges;
+  }
+
+  public enum BgpSendType {
+    TO_EBGP,
+    TO_NONCLIENT,
+    TO_CLIENT,
+    TO_RR
   }
 }

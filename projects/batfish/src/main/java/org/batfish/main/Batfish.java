@@ -177,6 +177,7 @@ import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.symbolic.abstraction.Abstractor;
+import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -4422,8 +4423,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement smtAbstraction() {
-    Abstractor a = new Abstractor(this);
-    return a.computeAbstraction();
+    Abstractor a = Abstractor.create(this, null, null);
+    return a.asAnswer();
   }
 
   @Override
@@ -4476,8 +4477,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement smtRoles(EquivalenceType t) {
-    Abstractor a = new Abstractor(this);
-    return a.computeRoles(t);
+    Roles roles = Roles.create(this);
+    return roles.asAnswer(t);
   }
 
   @Override
