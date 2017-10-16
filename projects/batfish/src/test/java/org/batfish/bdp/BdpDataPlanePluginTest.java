@@ -23,8 +23,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -219,11 +219,40 @@ public class BdpDataPlanePluginTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    batfish.getSettings().setBdpDebugIterationsDetailed(true);
+    batfish.getSettings().setBdpDebugAllIterations(true);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-
-    _thrown.expect(BdpOscillationException.class);
     dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    Prefix bgpPrefix = new Prefix("1.1.1.1/32");
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Stream<AbstractRoute> r2MatchingRoutes =
+        r2Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix));
+    Stream<AbstractRoute> r3MatchingRoutes =
+        r3Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix));
+    AbstractRoute r2Route =
+        r2Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix)).findAny().get();
+    AbstractRoute r3Route =
+        r3Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix)).findAny().get();
+    String r2NextHop = r2Route.getNextHop();
+    String r3NextHop = r3Route.getNextHop();
+    int routesWithR1AsNextHop = 0;
+    if (r2Route.getNextHop().equals("r1")) {
+      routesWithR1AsNextHop++;
+    }
+    if (r3Route.getNextHop().equals("r1")) {
+      routesWithR1AsNextHop++;
+    }
+    boolean r2AsNextHop = r3NextHop.equals("r2");
+    boolean r3AsNextHop = r2NextHop.equals("r3");
+
+    assertThat(r2MatchingRoutes.count(), equalTo(1L));
+    assertThat(r3MatchingRoutes.count(), equalTo(1L));
+    assertThat(routesWithR1AsNextHop, equalTo(1));
+    assertTrue((r2AsNextHop && !r3AsNextHop) || (!r2AsNextHop && r3AsNextHop));
   }
 
   @Test
