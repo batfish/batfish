@@ -274,6 +274,8 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
     } while (!todo.isEmpty());
 
+    System.out.println("  size: " + workset.partitions().size());
+
     Graph abstractGraph = createAbstractNetwork(workset, devices);
     return new EquivalenceClass(prefixes, abstractGraph);
 
@@ -473,6 +475,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     for (EquivalenceClass ec : this) {
       i++;
       System.out.println("EC: " + i);
+      //System.out.println("EC: " + i + " has size " + ec.getGraph().getConfigurations().size());
     }
     AbstractionAnswerElement answer = new AbstractionAnswerElement();
     long end = System.currentTimeMillis();
