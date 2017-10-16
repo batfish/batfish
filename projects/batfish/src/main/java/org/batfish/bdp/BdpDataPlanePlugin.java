@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
@@ -97,6 +98,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     // No NAT rule matched.
     return flow;
   }
+
+  private int _maxRecordedIterations;
 
   private final Map<BdpDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
@@ -287,7 +290,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       int first,
       int last) {
     SortedSet<Prefix> oscillatingPrefixes = new TreeSet<>();
-    if (_settings.getBdpDebugIterationsDetailed()) {
+    if (_settings.getBdpDetail()) {
       for (int i = first + 1; i <= last; i++) {
         SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> baseRoutesByHostname =
             iterationAbsRoutes.get(i - 1);
@@ -418,9 +421,11 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     _batfish.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
     Map<String, Node> nodes = new TreeMap<>();
     AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
+    SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
     do {
       configurations.values().forEach(c -> nodes.put(c.getHostname(), new Node(c, nodes)));
-    } while (computeFixedPoint(nodes, topology, dp, externalAdverts, ae));
+    } while (computeFixedPoint(
+        nodes, topology, dp, externalAdverts, ae, recoveryIterationHashCodes));
     computeFibs(nodes);
     dp.setNodes(nodes);
     dp.setTopology(topology);
@@ -756,7 +761,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       Topology topology,
       BdpDataPlane dp,
       AdvertisementSet externalAdverts,
-      BdpAnswerElement ae) {
+      BdpAnswerElement ae,
+      SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes) {
     SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
     // BEGIN DONE ONCE (except main rib)
     // connected, initial static routes, ospf setup, bgp setup
@@ -905,18 +911,17 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     Map<Integer, RouteSet> iterationRoutes = null;
     Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
         iterationAbstractRoutes = null;
-    if (_settings.getBdpDebugAllIterations()) {
-      if (_settings.getBdpDebugIterationsDetailed()) {
+    if (_settings.getBdpRecordAllIterations()) {
+      if (_settings.getBdpDetail()) {
         iterationAbstractRoutes = new TreeMap<>();
       } else {
         iterationRoutes = new TreeMap<>();
       }
-    } else if (_settings.getBdpDebugRepeatIterations()
-        && _settings.getBdpDebugMaxRecordedIterations() > 1) {
-      if (_settings.getBdpDebugIterationsDetailed()) {
-        iterationAbstractRoutes = new LRUMap<>(_settings.getBdpDebugMaxRecordedIterations());
+    } else if (_maxRecordedIterations > 0) {
+      if (_settings.getBdpDetail()) {
+        iterationAbstractRoutes = new LRUMap<>(_maxRecordedIterations);
       } else {
-        iterationRoutes = new LRUMap<>(_settings.getBdpDebugMaxRecordedIterations());
+        iterationRoutes = new LRUMap<>(_maxRecordedIterations);
       }
     }
     AtomicBoolean dependentRoutesChanged = new AtomicBoolean(false);
@@ -961,13 +966,20 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       } else if (!iterationsWithThisHashCode.contains(
           dependentRoutesIterations - minNumberOfUnchangedIterationsForConvergence)) {
         int lowestIterationWithThisHashCode = iterationsWithThisHashCode.first();
+        int completedOscillationRecoveryAttempts = ae.getCompletedOscillationRecoveryAttempts();
+        if (!oscillatingPrefixes.isEmpty()) {
+          completedOscillationRecoveryAttempts++;
+          ae.setCompletedOscillationRecoveryAttempts(completedOscillationRecoveryAttempts);
+        }
+        recoveryIterationHashCodes.put(completedOscillationRecoveryAttempts, iterationHashCodes);
         handleOscillation(
-            iterationHashCodes,
+            recoveryIterationHashCodes,
             iterationRoutes,
             iterationAbstractRoutes,
-            dependentRoutesIterations,
             lowestIterationWithThisHashCode,
-            oscillatingPrefixes);
+            dependentRoutesIterations,
+            oscillatingPrefixes,
+            ae.getCompletedOscillationRecoveryAttempts());
         return true;
       }
       compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
@@ -1127,9 +1139,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   @Override
   protected void dataPlanePluginInitialize() {
     _settings = (BdpSettings) _batfish.getDataPlanePluginSettings();
+    _maxRecordedIterations = _settings.getBdpMaxRecordedIterations();
   }
 
-  @SuppressWarnings("unused")
   private String debugAbstractRoutesIterations(
       String msg,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
@@ -1223,7 +1235,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     return sb.toString();
   }
 
-  @SuppressWarnings("unused")
   private String debugIterations(
       String msg, Map<Integer, RouteSet> iterationRoutes, int first, int last) {
     StringBuilder sb = new StringBuilder();
@@ -1380,29 +1391,51 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    *     involved in the oscillation
    */
   private void handleOscillation(
-      SortedMap<Integer, Integer> iterationHashCodes,
+      SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes,
       Map<Integer, RouteSet> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbstractRoutes,
       int start,
       int end,
-      SortedSet<Prefix> oscillatingPrefixes) {
+      SortedSet<Prefix> oscillatingPrefixes,
+      int completedOscillationRecoveryAttempts) {
+    if (completedOscillationRecoveryAttempts == _settings.getBdpMaxOscillationRecoveryAttempts()) {
+      String msg =
+          "Iteration "
+              + end
+              + " has same hash as iteration: "
+              + start
+              + "\n"
+              + recoveryIterationHashCodes;
+      if (!_settings.getBdpPrintOscillatingIterations() && !_settings.getBdpPrintAllIterations()) {
+        throw new BdpOscillationException(msg);
+      } else if (!_settings.getBdpPrintAllIterations()) {
+        String errorMessage =
+            _settings.getBdpDetail()
+                ? debugAbstractRoutesIterations(msg, iterationAbstractRoutes, start, end)
+                : debugIterations(msg, iterationRoutes, start, end);
+        throw new BdpOscillationException(errorMessage);
+      } else {
+        String errorMessage =
+            _settings.getBdpDetail()
+                ? debugAbstractRoutesIterations(msg, iterationAbstractRoutes, 1, end)
+                : debugIterations(msg, iterationRoutes, 1, end);
+        throw new BdpOscillationException(errorMessage);
+      }
+    }
     /*
      * In order to record oscillating prefixes, we need routes from at least the first iteration of
      * the oscillation to the final iteration.
      */
-    int minOscillationRecoveryIterations = start - end + 1;
+    int minOscillationRecoveryIterations = end - start + 1;
     boolean enoughInfo =
-        _settings.getBdpDebugAllIterations()
-            || (_settings.getBdpDebugRepeatIterations()
-                && _settings.getBdpDebugMaxRecordedIterations()
-                    >= minOscillationRecoveryIterations);
+        _settings.getBdpRecordAllIterations()
+            || _maxRecordedIterations >= minOscillationRecoveryIterations;
     if (enoughInfo) {
       oscillatingPrefixes.addAll(
-          collectOscillatingPrefixes(iterationRoutes, iterationAbstractRoutes, end, start));
+          collectOscillatingPrefixes(iterationRoutes, iterationAbstractRoutes, start, end));
     } else {
-      _settings.setBdpDebugRepeatIterations(true);
-      _settings.setBdpDebugMaxRecordedIterations(minOscillationRecoveryIterations);
+      _maxRecordedIterations = minOscillationRecoveryIterations;
     }
   }
 
@@ -1650,9 +1683,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbstractRoutes,
       int dependentRoutesIterations) {
-    if (_settings.getBdpDebugRepeatIterations() || _settings.getBdpDebugAllIterations()) {
+    if (_maxRecordedIterations > 0 || _settings.getBdpRecordAllIterations()) {
       Map<Ip, String> ipOwners = dp.getIpOwnersSimple();
-      if (_settings.getBdpDebugIterationsDetailed()) {
+      if (_settings.getBdpDetail()) {
         iterationAbstractRoutes.put(
             dependentRoutesIterations, computeOutputAbstractRoutes(nodes, ipOwners));
       } else {

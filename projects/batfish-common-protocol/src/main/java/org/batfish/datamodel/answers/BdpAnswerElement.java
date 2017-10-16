@@ -30,6 +30,8 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
 
   private SortedMap<Integer, Integer> _bgpMultipathRibRoutesByIteration;
 
+  private int _completedOscillationRecoveryAttempts;
+
   private int _dependentRoutesIterations;
 
   private SortedMap<Integer, Integer> _mainRibRoutesByIteration;
@@ -55,6 +57,10 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
   @JsonProperty(PROP_BGP_MULTIPATH_RIB_ROUTES_BY_ITERATION)
   public SortedMap<Integer, Integer> getBgpMultipathRibRoutesByIteration() {
     return _bgpMultipathRibRoutesByIteration;
+  }
+
+  public int getCompletedOscillationRecoveryAttempts() {
+    return _completedOscillationRecoveryAttempts;
   }
 
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
@@ -107,6 +113,10 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
   public void setBgpMultipathRibRoutesByIteration(
       SortedMap<Integer, Integer> bgpMultipathRibRoutesByIteration) {
     _bgpMultipathRibRoutesByIteration = bgpMultipathRibRoutesByIteration;
+  }
+
+  public void setCompletedOscillationRecoveryAttempts(int completedOscillationRecoveryAttempts) {
+    _completedOscillationRecoveryAttempts = completedOscillationRecoveryAttempts;
   }
 
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)

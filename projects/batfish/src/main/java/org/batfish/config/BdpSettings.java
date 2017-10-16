@@ -4,19 +4,27 @@ import org.batfish.common.plugin.DataPlanePluginSettings;
 
 public interface BdpSettings extends DataPlanePluginSettings {
 
-  boolean getBdpDebugAllIterations();
+  boolean getBdpDetail();
 
-  boolean getBdpDebugIterationsDetailed();
+  int getBdpMaxOscillationRecoveryAttempts();
 
-  int getBdpDebugMaxRecordedIterations();
+  int getBdpMaxRecordedIterations();
 
-  boolean getBdpDebugRepeatIterations();
+  boolean getBdpPrintAllIterations();
 
-  void setBdpDebugAllIterations(boolean bdpDebugAlliterations);
+  boolean getBdpPrintOscillatingIterations();
 
-  void setBdpDebugIterationsDetailed(boolean bdpDebugIterationsDetailed);
+  boolean getBdpRecordAllIterations();
 
-  void setBdpDebugMaxRecordedIterations(int bdpDebugMaxRecordedIterations);
+  void setBdpDetail(boolean bdpDetail);
 
-  void setBdpDebugRepeatIterations(boolean bdpDebugRepeatIterations);
+  void setBdpMaxOscillationRecoveryAttempts(int bdpMaxOscillationRecoveryAttempts);
+
+  void setBdpMaxRecordedIterations(int bdpMaxRecordedIterations);
+
+  void setBdpPrintAllIterations(boolean bdpPrintAllIterations);
+
+  void setBdpPrintOscillatingIterations(boolean bdpPrintErrorIterations);
+
+  void setBdpRecordAllIterations(boolean bdpRecordAllIterations);
 }

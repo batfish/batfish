@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -219,8 +220,24 @@ public class BdpDataPlanePluginTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
-    batfish.getSettings().setBdpDebugIterationsDetailed(true);
-    batfish.getSettings().setBdpDebugAllIterations(true);
+    batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(0);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+
+    _thrown.expect(BdpOscillationException.class);
+    dataPlanePlugin.computeDataPlane(false);
+  }
+
+  @Test
+  public void testBgpOscillationRecovery() throws IOException {
+    String testrigName = "bgp-oscillation";
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    batfish.getSettings().setBdpDetail(true);
+    batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(1);
+    batfish.getSettings().setBdpRecordAllIterations(true);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
