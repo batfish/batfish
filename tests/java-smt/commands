@@ -26,6 +26,10 @@ test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
 test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
 test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
 
+# ospf with different costs along different edges
+init-testrig test_rigs/smt-examples/OSPF-COST tr-smt-ospf-cost
+test tests/java-smt/ospf-cost.ref get smt-forwarding dstIps=["192.168.8.3"], fullModel=True
+
 # local consistency with bgp + environment
 init-testrig test_rigs/smt-examples/ENV2 tr-smt-env2
 test tests/java-smt/env2-local.ref get smt-local-consistency nodeRegex=".*", fullModel=True

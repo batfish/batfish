@@ -368,20 +368,40 @@ class SymbolicRecord {
     return _permitted;
   }
 
+  public void setPermitted(BoolExpr permitted) {
+    this._permitted = permitted;
+  }
+
   ArithExpr getMetric() {
     return _metric;
+  }
+
+  public void setMetric(ArithExpr metric) {
+    this._metric = metric;
   }
 
   ArithExpr getLocalPref() {
     return _localPref;
   }
 
+  public void setLocalPref(ArithExpr localPref) {
+    this._localPref = localPref;
+  }
+
   ArithExpr getAdminDist() {
     return _adminDist;
   }
 
+  public void setAdminDist(ArithExpr adminDist) {
+    this._adminDist = adminDist;
+  }
+
   ArithExpr getMed() {
     return _med;
+  }
+
+  public void setMed(ArithExpr med) {
+    this._med = med;
   }
 
   ArithExpr getRouterId() {
@@ -392,16 +412,32 @@ class SymbolicRecord {
     return _prefixLength;
   }
 
+  public void setPrefixLength(ArithExpr prefixLength) {
+    this._prefixLength = prefixLength;
+  }
+
   SymbolicEnum<Long> getOspfArea() {
     return _ospfArea;
+  }
+
+  public void setOspfArea(SymbolicEnum<Long> ospfArea) {
+    this._ospfArea = ospfArea;
   }
 
   SymbolicOspfType getOspfType() {
     return _ospfType;
   }
 
+  public void setOspfType(SymbolicOspfType ospfType) {
+    this._ospfType = ospfType;
+  }
+
   Map<CommunityVar, BoolExpr> getCommunities() {
     return _communities;
+  }
+
+  public void setCommunities(Map<CommunityVar, BoolExpr> communities) {
+    this._communities = communities;
   }
 
   SymbolicEnum<Protocol> getProtocolHistory() {
@@ -412,64 +448,28 @@ class SymbolicRecord {
     return _clientId;
   }
 
+  public void setClientId(SymbolicOriginatorId clientId) {
+    this._clientId = clientId;
+  }
+
   BoolExpr getBgpInternal() {
     return _bgpInternal;
-  }
-
-  public ArithExpr getIgpMetric() {
-    return _igpMetric;
-  }
-
-  Protocol getProto() {
-    return _proto;
-  }
-
-  public void setPermitted(BoolExpr permitted) {
-    this._permitted = permitted;
-  }
-
-  public void setPrefixLength(ArithExpr prefixLength) {
-    this._prefixLength = prefixLength;
-  }
-
-  public void setAdminDist(ArithExpr adminDist) {
-    this._adminDist = adminDist;
-  }
-
-  public void setMetric(ArithExpr metric) {
-    this._metric = metric;
-  }
-
-  public void setMed(ArithExpr med) {
-    this._med = med;
-  }
-
-  public void setLocalPref(ArithExpr localPref) {
-    this._localPref = localPref;
   }
 
   public void setBgpInternal(BoolExpr bgpInternal) {
     this._bgpInternal = bgpInternal;
   }
 
+  public ArithExpr getIgpMetric() {
+    return _igpMetric;
+  }
+
   public void setIgpMetric(ArithExpr igpMetric) {
     this._igpMetric = igpMetric;
   }
 
-  public void setOspfArea(SymbolicEnum<Long> ospfArea) {
-    this._ospfArea = ospfArea;
-  }
-
-  public void setOspfType(SymbolicOspfType ospfType) {
-    this._ospfType = ospfType;
-  }
-
-  public void setClientId(SymbolicOriginatorId clientId) {
-    this._clientId = clientId;
-  }
-
-  public void setCommunities(Map<CommunityVar, BoolExpr> communities) {
-    this._communities = communities;
+  Protocol getProto() {
+    return _proto;
   }
 
   @Override

@@ -1237,7 +1237,10 @@ class TransferFunctionSSA {
   }
 
   private void applyMetricUpdate(TransferFunctionParam p) {
-    if (_isExport) {
+    boolean updateOspf = (!_isExport && _to.isOspf());
+    boolean updateBgp = (_isExport && _to.isBgp());
+    boolean updateMetric =  updateOspf || updateBgp;
+    if (updateMetric) {
       // If it is a BGP route learned from IGP, then we use metric 0
       ArithExpr newValue;
       ArithExpr cost = _enc.mkInt(_addedCost);
