@@ -386,17 +386,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
                 boolean changed = false;
-                if (!vr._mainRib.getRoutes().equals(vr._prevMainRib.getRoutes())) {
+                if (!vr._mainRib.equals(vr._prevMainRib)) {
                   changed = true;
                 }
-                if (!vr._ospfExternalType1Rib
-                    .getRoutes()
-                    .equals(vr._prevOspfExternalType1Rib.getRoutes())) {
+                if (!vr._ospfExternalType1Rib.equals(vr._prevOspfExternalType1Rib)) {
                   changed = true;
                 }
-                if (!vr._ospfExternalType2Rib
-                    .getRoutes()
-                    .equals(vr._prevOspfExternalType2Rib.getRoutes())) {
+                if (!vr._ospfExternalType2Rib.equals(vr._prevOspfExternalType2Rib)) {
                   changed = true;
                 }
                 if (changed) {
@@ -440,6 +436,76 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     return answer;
   }
 
+  /** Initialize OSPF internal routes */
+  int initOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
+    final AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
+    int ospfInternalIterations = 0;
+    while (ospfInternalChanged.get()) {
+      ospfInternalIterations++;
+      ospfInternalChanged.set(false);
+
+      AtomicInteger ospfInterAreaSummaryCompleted =
+          _batfish.newBatch(
+              "Compute OSPF Inter-area summaries: iteration " + ospfInternalIterations,
+              nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n._virtualRouters.values()) {
+                  if (vr.computeInterAreaSummaries()) {
+                    ospfInternalChanged.set(true);
+                  }
+                }
+                ospfInterAreaSummaryCompleted.incrementAndGet();
+              });
+      AtomicInteger ospfInternalCompleted =
+          _batfish.newBatch(
+              "Compute OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n._virtualRouters.values()) {
+                  if (vr.propagateOspfInternalRoutes(nodes, topology)) {
+                    ospfInternalChanged.set(true);
+                  }
+                }
+                ospfInternalCompleted.incrementAndGet();
+              });
+      AtomicInteger ospfInternalUnstageCompleted =
+          _batfish.newBatch(
+              "Unstage OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n._virtualRouters.values()) {
+                  vr.unstageOspfInternalRoutes();
+                }
+                ospfInternalUnstageCompleted.incrementAndGet();
+              });
+    }
+    AtomicInteger ospfInternalImportCompleted =
+        _batfish.newBatch("Import OSPF Internal routes", nodes.size());
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n._virtualRouters.values()) {
+                vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
+                vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
+                vr.importRib(vr._independentRib, vr._ospfRib);
+              }
+              ospfInternalImportCompleted.incrementAndGet();
+            });
+    return ospfInternalIterations;
+  }
+
   private void computeDependentRoutesIteration(
       Map<String, Node> nodes,
       Topology topology,
@@ -472,68 +538,17 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               for (VirtualRouter vr : n._virtualRouters.values()) {
 
                 /*
-                 * RIBs that are read from
+                 * For RIBs that require comparision to previous version,
+                 * call a function that stores existing ribs
+                 * as previous RIBs, then re-initializes current RIBs
                  */
-                vr._prevMainRib = vr._mainRib;
-                vr._mainRib = new Rib(vr);
-
-                vr._prevOspfExternalType1Rib = vr._ospfExternalType1Rib;
-                vr._ospfExternalType1Rib = new OspfExternalType1Rib(vr);
-
-                vr._prevOspfExternalType2Rib = vr._ospfExternalType2Rib;
-                vr._ospfExternalType2Rib = new OspfExternalType2Rib(vr);
-
-                vr._prevBgpMultipathRib = vr._bgpMultipathRib;
-                vr._bgpMultipathRib = new BgpMultipathRib(vr);
-
-                vr._prevBgpBestPathRib = vr._bgpBestPathRib;
-                vr._bgpBestPathRib = new BgpBestPathRib(vr, vr._prevBgpBestPathRib, true);
-
-                vr._prevEbgpMultipathRib = vr._ebgpMultipathRib;
-                vr._ebgpMultipathRib = new BgpMultipathRib(vr);
-                vr.importRib(vr._ebgpMultipathRib, vr._baseEbgpRib);
-
-                vr._prevEbgpBestPathRib = vr._ebgpBestPathRib;
-                vr._ebgpBestPathRib = new BgpBestPathRib(vr, vr._prevEbgpBestPathRib, true);
-                vr.importRib(vr._ebgpBestPathRib, vr._baseEbgpRib);
-
-                vr._prevIbgpBestPathRib = vr._ibgpBestPathRib;
-                vr._ibgpBestPathRib = new BgpBestPathRib(vr, vr._prevIbgpBestPathRib, true);
-                vr.importRib(vr._ibgpBestPathRib, vr._baseIbgpRib);
-
-                vr._prevIbgpMultipathRib = vr._ibgpMultipathRib;
-                vr._ibgpMultipathRib = new BgpMultipathRib(vr);
-                vr.importRib(vr._ibgpMultipathRib, vr._baseIbgpRib);
+                vr.moveRibs();
 
                 /*
-                 * RIBs not read from
+                 * For RIBs that do not require comparison to previous version, just re-init
                  */
-                vr._ospfRib = new OspfRib(vr);
-                vr._ripRib = new RipRib(vr);
+                vr.reinitRibsNewIteration();
 
-                /*
-                 * Staging RIBs
-                 */
-                vr._ebgpStagingRib = new BgpMultipathRib(vr);
-                vr._ibgpStagingRib = new BgpMultipathRib(vr);
-                vr._ospfExternalType1StagingRib = new OspfExternalType1Rib(vr);
-                vr._ospfExternalType2StagingRib = new OspfExternalType2Rib(vr);
-
-                /*
-                 * Add routes that cannot change (does not affect below
-                 * computation)
-                 */
-                vr.importRib(vr._mainRib, vr._independentRib);
-
-                /*
-                 * Re-add independent OSPF routes to ospfRib for tie-breaking
-                 */
-                vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
-                vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
-                /*
-                 * Re-add independent RIP routes to ripRib for tie-breaking
-                 */
-                vr.importRib(vr._ripRib, vr._ripInternalRib);
               }
               reinitializeDependentCompleted.incrementAndGet();
             });
@@ -574,10 +589,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 boolean generatedChanged;
                 vr._generatedRib = new Rib(vr);
                 do {
-                  generatedChanged = false;
-                  if (vr.activateGeneratedRoutes()) {
-                    generatedChanged = true;
-                  }
+                  generatedChanged = vr.activateGeneratedRoutes();
                 } while (generatedChanged);
                 vr.importRib(vr._mainRib, vr._generatedRib);
               }
@@ -679,7 +691,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
                 vr.propagateBgpRoutes(
-                    nodes,
                     dp.getIpOwners(),
                     dependentRoutesIterations,
                     oscillatingPrefixes,
@@ -733,6 +744,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             });
   }
 
+  /**
+   * Run computeFib on all of the given nodes
+   * @param nodes mapping of node names to node instances
+   */
   private void computeFibs(Map<String, Node> nodes) {
     AtomicInteger completed = _batfish.newBatch("Computing FIBs", nodes.size());
     nodes
@@ -768,8 +783,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       BdpAnswerElement ae,
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes) {
     SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
+
     // BEGIN DONE ONCE (except main rib)
-    // connected, initial static routes, ospf setup, bgp setup
+
+    // For each virtual router, setup the initial easy-to-do routes and init protocol-based RIBs:
     AtomicInteger initialCompleted =
         _batfish.newBatch(
             "Compute initial connected and static routes, ospf setup, bgp setup", nodes.size());
@@ -778,89 +795,116 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .parallelStream()
         .forEach(
             n -> {
-              for (VirtualRouter vr : n._virtualRouters.values()) {
-                vr.initConnectedRib();
-                vr.importRib(vr._independentRib, vr._connectedRib);
-                vr.importRib(vr._mainRib, vr._connectedRib);
-                vr.initStaticRib();
-                vr.importRib(vr._independentRib, vr._staticInterfaceRib);
-                vr.importRib(vr._mainRib, vr._staticInterfaceRib);
-                vr.initBaseOspfRoutes();
-                vr.initBaseRipRoutes();
-                vr.initEbgpTopology(dp);
-                vr.initBaseBgpRibs(externalAdverts, dp.getIpOwners());
-              }
+              n._virtualRouters
+                  .values()
+                  .forEach(vr -> vr.initRibsForBdp(dp.getIpOwners(), externalAdverts));
               initialCompleted.incrementAndGet();
             });
 
     // OSPF internal routes
-    final AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
-    int ospfInternalIterations = 0;
-    while (ospfInternalChanged.get()) {
-      ospfInternalIterations++;
-      ospfInternalChanged.set(false);
-      AtomicInteger ospfInterAreaSummaryCompleted =
-          _batfish.newBatch(
-              "Compute OSPF Inter-area summaries: iteration " + ospfInternalIterations,
-              nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n._virtualRouters.values()) {
-                  if (vr.computeInterAreaSummaries()) {
-                    ospfInternalChanged.set(true);
-                  }
-                }
-                ospfInterAreaSummaryCompleted.incrementAndGet();
-              });
-      AtomicInteger ospfInternalCompleted =
-          _batfish.newBatch(
-              "Compute OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n._virtualRouters.values()) {
-                  if (vr.propagateOspfInternalRoutes(nodes, topology)) {
-                    ospfInternalChanged.set(true);
-                  }
-                }
-                ospfInternalCompleted.incrementAndGet();
-              });
-      AtomicInteger ospfInternalUnstageCompleted =
-          _batfish.newBatch(
-              "Unstage OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n._virtualRouters.values()) {
-                  vr.unstageOspfInternalRoutes();
-                }
-                ospfInternalUnstageCompleted.incrementAndGet();
-              });
-    }
-    AtomicInteger ospfInternalImportCompleted =
-        _batfish.newBatch("Import OSPF Internal routes", nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n._virtualRouters.values()) {
-                vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
-                vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
-                vr.importRib(vr._independentRib, vr._ospfRib);
-              }
-              ospfInternalImportCompleted.incrementAndGet();
-            });
-    // END DONE ONCE (OSPF)
+    int numOspfInternalIterations = initOspfInternalRoutes(nodes, topology);
 
     // RIP internal routes
+    initRipInternalRoutes(nodes, topology);
+
+    // END DONE ONCE
+
+    // Setup maps to track iterations. We need this for oscillation detection
+    Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
+    SortedMap<Integer, Integer> iterationHashCodes = new TreeMap<>();
+    Map<Integer, SortedSet<Route>> iterationRoutes = null;
+    Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
+        iterationAbstractRoutes = null;
+    if (_settings.getBdpRecordAllIterations()) {
+      if (_settings.getBdpDetail()) {
+        iterationAbstractRoutes = new TreeMap<>();
+      } else {
+        iterationRoutes = new TreeMap<>();
+      }
+    } else if (_maxRecordedIterations > 0) {
+      if (_settings.getBdpDetail()) {
+        iterationAbstractRoutes = new LRUMap<>(_maxRecordedIterations);
+      } else {
+        iterationRoutes = new LRUMap<>(_maxRecordedIterations);
+      }
+    }
+    AtomicBoolean dependentRoutesChanged = new AtomicBoolean(false);
+    AtomicBoolean evenDependentRoutesChanged = new AtomicBoolean(false);
+    AtomicBoolean oddDependentRoutesChanged = new AtomicBoolean(false);
+    int numDependentRoutesIterations = 0;
+
+    // Go into iteration mode, until the routes converge (or oscillation is detected)
+    do {
+      numDependentRoutesIterations++;
+      AtomicBoolean currentChangedMonitor;
+      if (oscillatingPrefixes.isEmpty()) {
+        currentChangedMonitor = dependentRoutesChanged;
+      } else if (numDependentRoutesIterations % 2 == 0) {
+        currentChangedMonitor = evenDependentRoutesChanged;
+      } else {
+        currentChangedMonitor = oddDependentRoutesChanged;
+      }
+      currentChangedMonitor.set(false);
+      computeDependentRoutesIteration(
+          nodes, topology, dp, numDependentRoutesIterations, oscillatingPrefixes);
+
+      /* Collect sizes of certain RIBs this iteration */
+      computeIterationStatistics(nodes, ae, numDependentRoutesIterations);
+
+      recordIterationDebugInfo(
+          nodes, dp, iterationRoutes, iterationAbstractRoutes, numDependentRoutesIterations);
+
+      // Check to see if hash has changed
+      AtomicInteger checkFixedPointCompleted =
+          _batfish.newBatch(
+              "Iteration " + numDependentRoutesIterations + ": Check if fixed-point reached",
+              nodes.size());
+
+      // This hashcode uniquely identifies the iteration (i.e., network state)
+      int iterationHashCode = computeIterationHashCode(nodes);
+      SortedSet<Integer> iterationsWithThisHashCode =
+          iterationsByHashCode.computeIfAbsent(iterationHashCode, h -> new TreeSet<>());
+      iterationHashCodes.put(numDependentRoutesIterations, iterationHashCode);
+      int minNumberOfUnchangedIterationsForConvergence = oscillatingPrefixes.isEmpty() ? 1 : 2;
+      if (iterationsWithThisHashCode.isEmpty()
+          || (!oscillatingPrefixes.isEmpty()
+              && iterationsWithThisHashCode.equals(
+                  Collections.singleton(numDependentRoutesIterations - 1)))) {
+        iterationsWithThisHashCode.add(numDependentRoutesIterations);
+      } else if (!iterationsWithThisHashCode.contains(
+          numDependentRoutesIterations - minNumberOfUnchangedIterationsForConvergence)) {
+        int lowestIterationWithThisHashCode = iterationsWithThisHashCode.first();
+        int completedOscillationRecoveryAttempts = ae.getCompletedOscillationRecoveryAttempts();
+        if (!oscillatingPrefixes.isEmpty()) {
+          completedOscillationRecoveryAttempts++;
+          ae.setCompletedOscillationRecoveryAttempts(completedOscillationRecoveryAttempts);
+        }
+        recoveryIterationHashCodes.put(completedOscillationRecoveryAttempts, iterationHashCodes);
+        handleOscillation(
+            recoveryIterationHashCodes,
+            iterationRoutes,
+            iterationAbstractRoutes,
+            lowestIterationWithThisHashCode,
+            numDependentRoutesIterations,
+            oscillatingPrefixes,
+            ae.getCompletedOscillationRecoveryAttempts());
+        return true;
+      }
+      compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
+    } while (checkDependentRoutesChanged(
+        dependentRoutesChanged,
+        evenDependentRoutesChanged,
+        oddDependentRoutesChanged,
+        oscillatingPrefixes,
+        numDependentRoutesIterations));
+
+    // Set iteration stats in the answer
+    ae.setOspfInternalIterations(numOspfInternalIterations);
+    ae.setDependentRoutesIterations(numDependentRoutesIterations);
+    return false;
+  }
+
+  private int initRipInternalRoutes(SortedMap<String, Node> nodes, Topology topology) {
     final AtomicBoolean ripInternalChanged = new AtomicBoolean(true);
     int ripInternalIterations = 0;
     while (ripInternalChanged.get()) {
@@ -908,94 +952,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               }
               ripInternalImportCompleted.incrementAndGet();
             });
-    // END DONE ONCE (RIP)
-
-    Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
-    SortedMap<Integer, Integer> iterationHashCodes = new TreeMap<>();
-    Map<Integer, SortedSet<Route>> iterationRoutes = null;
-    Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
-        iterationAbstractRoutes = null;
-    if (_settings.getBdpRecordAllIterations()) {
-      if (_settings.getBdpDetail()) {
-        iterationAbstractRoutes = new TreeMap<>();
-      } else {
-        iterationRoutes = new TreeMap<>();
-      }
-    } else if (_maxRecordedIterations > 0) {
-      if (_settings.getBdpDetail()) {
-        iterationAbstractRoutes = new LRUMap<>(_maxRecordedIterations);
-      } else {
-        iterationRoutes = new LRUMap<>(_maxRecordedIterations);
-      }
-    }
-    AtomicBoolean dependentRoutesChanged = new AtomicBoolean(false);
-    AtomicBoolean evenDependentRoutesChanged = new AtomicBoolean(false);
-    AtomicBoolean oddDependentRoutesChanged = new AtomicBoolean(false);
-    int dependentRoutesIterations = 0;
-    do {
-      dependentRoutesIterations++;
-      AtomicBoolean currentChangedMonitor;
-      if (oscillatingPrefixes.isEmpty()) {
-        currentChangedMonitor = dependentRoutesChanged;
-      } else if (dependentRoutesIterations % 2 == 0) {
-        currentChangedMonitor = evenDependentRoutesChanged;
-      } else {
-        currentChangedMonitor = oddDependentRoutesChanged;
-      }
-      currentChangedMonitor.set(false);
-      computeDependentRoutesIteration(
-          nodes, topology, dp, dependentRoutesIterations, oscillatingPrefixes);
-
-      /* Collect sizes of certain RIBs this iteration */
-      computeIterationStatistics(nodes, ae, dependentRoutesIterations);
-
-      recordIterationDebugInfo(
-          nodes, dp, iterationRoutes, iterationAbstractRoutes, dependentRoutesIterations);
-
-      // Check to see if hash has changed
-      AtomicInteger checkFixedPointCompleted =
-          _batfish.newBatch(
-              "Iteration " + dependentRoutesIterations + ": Check if fixed-point reached",
-              nodes.size());
-      int iterationHashCode = computeIterationHashCode(nodes);
-      SortedSet<Integer> iterationsWithThisHashCode =
-          iterationsByHashCode.computeIfAbsent(iterationHashCode, h -> new TreeSet<>());
-      iterationHashCodes.put(dependentRoutesIterations, iterationHashCode);
-      int minNumberOfUnchangedIterationsForConvergence = oscillatingPrefixes.isEmpty() ? 1 : 2;
-      if (iterationsWithThisHashCode.isEmpty()
-          || (!oscillatingPrefixes.isEmpty()
-              && iterationsWithThisHashCode.equals(
-                  Collections.singleton(dependentRoutesIterations - 1)))) {
-        iterationsWithThisHashCode.add(dependentRoutesIterations);
-      } else if (!iterationsWithThisHashCode.contains(
-          dependentRoutesIterations - minNumberOfUnchangedIterationsForConvergence)) {
-        int lowestIterationWithThisHashCode = iterationsWithThisHashCode.first();
-        int completedOscillationRecoveryAttempts = ae.getCompletedOscillationRecoveryAttempts();
-        if (!oscillatingPrefixes.isEmpty()) {
-          completedOscillationRecoveryAttempts++;
-          ae.setCompletedOscillationRecoveryAttempts(completedOscillationRecoveryAttempts);
-        }
-        recoveryIterationHashCodes.put(completedOscillationRecoveryAttempts, iterationHashCodes);
-        handleOscillation(
-            recoveryIterationHashCodes,
-            iterationRoutes,
-            iterationAbstractRoutes,
-            lowestIterationWithThisHashCode,
-            dependentRoutesIterations,
-            oscillatingPrefixes,
-            ae.getCompletedOscillationRecoveryAttempts());
-        return true;
-      }
-      compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
-    } while (checkDependentRoutesChanged(
-        dependentRoutesChanged,
-        evenDependentRoutesChanged,
-        oddDependentRoutesChanged,
-        oscillatingPrefixes,
-        dependentRoutesIterations));
-    ae.setOspfInternalIterations(ospfInternalIterations);
-    ae.setDependentRoutesIterations(dependentRoutesIterations);
-    return false;
+    return ripInternalIterations;
   }
 
   private int computeIterationHashCode(Map<String, Node> nodes) {
@@ -1387,7 +1344,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   /**
    * Recover from an oscillating data plane
    *
-   * @param iterationHashCodes A mapping from iteration number to corresponding iteration hash
+   * @param recoveryIterationHashCodes A mapping from iteration number to corresponding iteration
+   *     hash
    * @param iterationRoutes A mapping from iteration number to router summaries
    * @param iterationAbstractRoutes A mapping from iteraiton number to detailed route information
    * @param start The first iteration in the oscillation

@@ -4,16 +4,15 @@ import org.batfish.datamodel.RipInternalRoute;
 
 public class RipInternalRib extends AbstractRib<RipInternalRoute> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  public RipInternalRib(VirtualRouter owner) {
+  RipInternalRib(VirtualRouter owner) {
     super(owner);
   }
 
   @Override
   public int comparePreference(RipInternalRoute lhs, RipInternalRoute rhs) {
-    // reversed on purpose
+    // reversed on purpose, because lower metric is more preferable for RIP
     return Long.compare(rhs.getMetric(), lhs.getMetric());
   }
 }

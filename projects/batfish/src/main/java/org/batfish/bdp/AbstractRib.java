@@ -3,6 +3,7 @@ package org.batfish.bdp;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -68,6 +69,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       int prefixLength = prefix.getPrefixLength();
       BitSet bits = prefix.getAddress().getAddressBits();
       return _root.mergeRoute(route, bits, prefixLength, 0);
+    }
+
+    boolean hasSameRoutes(RibTree other) {
+      return _root.hasSameRoutes(other._root);
     }
   }
 
@@ -371,21 +376,51 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     public String toString() {
       return _prefix.toString();
     }
+
+    boolean hasSameRoutes(RibTreeNode other) {
+      // Make sure other node is not null, then check if routes are the same
+      boolean checkSelf = (other != null && _routes.equals(other._routes));
+      if (!checkSelf) { // found a mismatch, exit with false
+        return false;
+      }
+
+      // Check left children, make sure to avoid null pointer exceptions
+      boolean checkLeft;
+      if (_left == null) {
+        checkLeft = (other._left == null);
+      } else {
+        checkLeft = _left.hasSameRoutes(other._left);
+      }
+      if (!checkLeft) { // if found a mismatch, exit early
+        return false;
+      }
+
+      // Check right children, and again check for null
+      boolean checkRight;
+      if (_right == null) {
+        checkRight = (other._right == null);
+      } else {
+        checkRight = _right.hasSameRoutes(other._right);
+      }
+      return checkRight;
+    }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  protected VirtualRouter _owner;
+  VirtualRouter _owner;
 
   private RibTree _tree;
+
+  Set<R> _finalRoutes;
 
   public AbstractRib(VirtualRouter owner) {
     _tree = new RibTree();
     _owner = owner;
+    _finalRoutes = null;
   }
 
-  protected final boolean containsRoute(R route) {
+  final boolean containsRoute(R route) {
     return _tree.containsRoute(route);
   }
 
@@ -409,9 +444,21 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     return prefixes;
   }
 
+  /** Return a set of routes this RIB contains. */
   @Override
-  public Set<R> getRoutes() {
+  public final Set<R> getRoutes() {
+    if (_finalRoutes != null) {
+      return _finalRoutes;
+    }
     return _tree.getRoutes();
+  }
+
+  /**
+   * Freeze the RIB. Prevents addition (merging) of new routes. Also computes and caches the set of
+   * all routes for quick subsequent access.
+   */
+  void freeze() {
+    _finalRoutes = Collections.unmodifiableSet(getRoutes());
   }
 
   @Override
@@ -435,8 +482,19 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     return _tree.getLongestPrefixMatch(address);
   }
 
+  /**
+   * Add a new route to the RIB.
+   *
+   * @param route the route to add
+   * @return true if the route was added. False if the route already existed or was discarded due to
+   *     preference comparisons.
+   * @throws UnmodifiableRibException if the RIB is "frozen" and cannot be modified
+   */
   @Override
   public boolean mergeRoute(R route) {
+    if (_finalRoutes != null) {
+      throw new UnmodifiableRibException("Cannot modify frozen RIB");
+    }
     return _tree.mergeRoute(route);
   }
 
@@ -450,5 +508,18 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       nextHopIps.add(nextHopIp);
     }
     return map;
+  }
+
+  /**
+   * Check if two RIBs have exactly same sets of routes.
+   *
+   * <p>Designed to be faster (in an average case) than doing two calls to getRoutes() and then
+   * testing the sets for equality.
+   *
+   * @param other the other RIB
+   * @return True if both ribs contain identical routes
+   */
+  boolean equals(AbstractRib<R> other) {
+    return _tree.hasSameRoutes(other._tree);
   }
 }

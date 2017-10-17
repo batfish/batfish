@@ -5,6 +5,8 @@ import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
@@ -155,5 +157,45 @@ public class AbstractRibTest {
 
     match = _rib.longestPrefixMatch(new Ip("11.1.1.1"));
     assertThat(match, is(emptyIterableOf(StaticRoute.class)));
+  }
+
+  @Test
+  public void testSelfHasSameRoutes() {
+    assertThat(_rib.equals(_rib), is(true));
+
+    // Add some stuff to the rib
+    setupOverlappingRoutes();
+    assertThat(_rib.equals(_rib), is(true));
+  }
+
+  @Test
+  public void testHasSameRoutes() {
+    List<StaticRoute> routes = setupOverlappingRoutes();
+
+    // And create a new different RIB
+    AbstractRib<StaticRoute> rib2 = new StaticRib(null);
+    assertThat(rib2.equals(_rib), is(false));
+
+    // Add routes
+    rib2.mergeRoute(routes.get(0));
+    rib2.mergeRoute(routes.get(2));
+    rib2.mergeRoute(routes.get(3));
+    assertThat(rib2.equals(_rib), is(false));
+
+    rib2.mergeRoute(routes.get(1));
+    assertThat(rib2.equals(_rib), is(true));
+  }
+
+  @Test(expected = UnmodifiableRibException.class)
+  public void testRibFreeze() {
+    setupOverlappingRoutes();
+
+    assertThat(_rib._finalRoutes, is(nullValue()));
+
+    _rib.freeze();
+
+    assertThat(_rib._finalRoutes, is(notNullValue()));
+    // This throws an exception
+    _rib.mergeRoute(_mostGeneralRoute);
   }
 }
