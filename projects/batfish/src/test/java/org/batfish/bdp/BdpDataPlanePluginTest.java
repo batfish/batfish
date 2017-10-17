@@ -253,6 +253,64 @@ public class BdpDataPlanePluginTest {
   }
 
   @Test
+  public void testContainsRoute() {
+    String hostname = "r1";
+    Configuration c =
+        BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
+    BgpProcess proc = new BgpProcess();
+    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    Map<String, Node> nodes = new HashMap<String, Node>();
+    Node node = new Node(c, nodes);
+    nodes.put(hostname, node);
+    VirtualRouter vr = new VirtualRouter(hostname, c, nodes);
+    BgpBestPathRib bbr = new BgpBestPathRib(vr);
+    BgpMultipathRib bmr = new BgpMultipathRib(vr);
+    Ip ip1 = new Ip("1.0.0.0");
+    Ip ip2 = new Ip("2.2.0.0");
+    BgpRoute.Builder b1 =
+        new BgpRoute.Builder()
+            .setNextHopIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.ZERO)
+            .setProtocol(RoutingProtocol.BGP);
+    BgpRoute.Builder b2 =
+        new BgpRoute.Builder()
+            .setNextHopIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.MAX)
+            .setProtocol(RoutingProtocol.BGP);
+
+    /*
+     * Toss a bunch of different routes in each RIB. In the best-path rib, only lower originatorIp
+     * routes should remain. In the multipath RIB, all routes should remain.
+     */
+    for (int i = 8; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
+      bbr.mergeRoute(b1.setNetwork(new Prefix(ip1, i)).build());
+      bbr.mergeRoute(b2.setNetwork(new Prefix(ip1, i)).build());
+      bmr.mergeRoute(b1.setNetwork(new Prefix(ip1, i)).build());
+      bmr.mergeRoute(b2.setNetwork(new Prefix(ip1, i)).build());
+    }
+    for (int i = 16; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
+      bbr.mergeRoute(b1.setNetwork(new Prefix(ip2, i)).build());
+      bbr.mergeRoute(b2.setNetwork(new Prefix(ip2, i)).build());
+      bmr.mergeRoute(b1.setNetwork(new Prefix(ip2, i)).build());
+      bmr.mergeRoute(b2.setNetwork(new Prefix(ip2, i)).build());
+    }
+    for (int i = 8; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
+      assertTrue(bbr.containsRoute(b1.setNetwork(new Prefix(ip1, i)).build()));
+      assertFalse(bbr.containsRoute(b2.setNetwork(new Prefix(ip1, i)).build()));
+      assertTrue(bmr.containsRoute(b1.setNetwork(new Prefix(ip1, i)).build()));
+      assertTrue(bmr.containsRoute(b2.setNetwork(new Prefix(ip1, i)).build()));
+    }
+    for (int i = 16; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
+      assertTrue(bbr.containsRoute(b1.setNetwork(new Prefix(ip2, i)).build()));
+      assertFalse(bbr.containsRoute(b2.setNetwork(new Prefix(ip2, i)).build()));
+      assertTrue(bmr.containsRoute(b1.setNetwork(new Prefix(ip2, i)).build()));
+      assertTrue(bmr.containsRoute(b2.setNetwork(new Prefix(ip2, i)).build()));
+    }
+  }
+
+  @Test
   public void testIbgpRejectOwnAs() throws IOException {
     String testrigName = "ibgp-reject-own-as";
     String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
