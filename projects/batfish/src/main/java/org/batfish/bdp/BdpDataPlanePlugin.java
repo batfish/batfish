@@ -419,7 +419,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     Map<Ip, String> ipOwnersSimple = _batfish.computeIpOwnersSimple(ipOwners);
     dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
     _batfish.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
-    Map<String, Node> nodes = new TreeMap<>();
+    SortedMap<String, Node> nodes = new TreeMap<>();
     AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
     SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
     do {
@@ -760,7 +760,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   private boolean computeFixedPoint(
-      Map<String, Node> nodes,
+      SortedMap<String, Node> nodes,
       Topology topology,
       BdpDataPlane dp,
       AdvertisementSet externalAdverts,
