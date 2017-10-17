@@ -1325,36 +1325,6 @@ class TransferFunctionSSA {
     }
   }
 
-  private ArithExpr applyMetricUpdate(ArithExpr metric) {
-    boolean updateOspf = (!_isExport && _to.isOspf());
-    boolean updateBgp = (_isExport && _to.isBgp());
-    boolean updateMetric = updateOspf || updateBgp;
-    if (updateMetric) {
-      // If it is a BGP route learned from IGP, then we use metric 0
-      ArithExpr newValue;
-      ArithExpr cost = _enc.mkInt(_addedCost);
-      ArithExpr sum = _enc.mkSum(metric, cost);
-      if (_to.isBgp()) {
-        BoolExpr isBGP;
-        String router = _conf.getName();
-        boolean hasProtocolVar = _other.getProtocolHistory() != null;
-        boolean onlyBGP = _enc.getOptimizations().getSliceHasSingleProtocol().contains(router);
-        if (hasProtocolVar) {
-          isBGP = _other.getProtocolHistory().checkIfValue(Protocol.BGP);
-        } else if (onlyBGP) {
-          isBGP = _enc.mkTrue();
-        } else {
-          isBGP = _enc.mkFalse();
-        }
-        newValue = _enc.mkIf(isBGP, sum, cost);
-      } else {
-        newValue = sum;
-      }
-      return newValue;
-    }
-    return metric;
-  }
-
   private void applyMetricUpdate(TransferFunctionParam p) {
     boolean updateOspf = (!_isExport && _to.isOspf());
     boolean updateBgp = (_isExport && _to.isBgp());
