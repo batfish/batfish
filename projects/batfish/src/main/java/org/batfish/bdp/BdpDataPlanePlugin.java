@@ -481,14 +481,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 vr._prevOspfExternalType2Rib = vr._ospfExternalType2Rib;
                 vr._ospfExternalType2Rib = new OspfExternalType2Rib(vr);
 
-                vr._prevBgpRib = vr._bgpMultipathRib;
+                vr._prevBgpMultipathRib = vr._bgpMultipathRib;
                 vr._bgpMultipathRib = new BgpMultipathRib(vr);
 
                 vr._prevBgpBestPathRib = vr._bgpBestPathRib;
                 vr._prevBgpBestPathRib._prev = null;
                 vr._bgpBestPathRib = new BgpBestPathRib(vr, vr._prevBgpBestPathRib);
 
-                vr._prevEbgpRib = vr._ebgpMultipathRib;
+                vr._prevEbgpMultipathRib = vr._ebgpMultipathRib;
                 vr._ebgpMultipathRib = new BgpMultipathRib(vr);
                 vr.importRib(vr._ebgpMultipathRib, vr._baseEbgpRib);
 
@@ -502,7 +502,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 vr._ibgpBestPathRib = new BgpBestPathRib(vr, vr._prevIbgpBestPathRib);
                 vr.importRib(vr._ibgpBestPathRib, vr._baseIbgpRib);
 
-                vr._prevIbgpRib = vr._ibgpMultipathRib;
+                vr._prevIbgpMultipathRib = vr._ibgpMultipathRib;
                 vr._ibgpMultipathRib = new BgpMultipathRib(vr);
                 vr.importRib(vr._ibgpMultipathRib, vr._baseIbgpRib);
 

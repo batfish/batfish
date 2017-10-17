@@ -110,15 +110,15 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient BgpBestPathRib _prevBgpBestPathRib;
 
-  transient BgpMultipathRib _prevBgpRib;
+  transient BgpMultipathRib _prevBgpMultipathRib;
 
   transient BgpBestPathRib _prevEbgpBestPathRib;
 
-  transient BgpMultipathRib _prevEbgpRib;
+  transient BgpMultipathRib _prevEbgpMultipathRib;
 
   transient BgpBestPathRib _prevIbgpBestPathRib;
 
-  transient BgpMultipathRib _prevIbgpRib;
+  transient BgpMultipathRib _prevIbgpMultipathRib;
 
   transient Rib _prevMainRib;
 
@@ -870,7 +870,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                   && remoteBgpNeighbor.getAdditionalPathsSend()
                   && remoteBgpNeighbor.getAdditionalPathsSelectAll();
           if (additionalPaths) {
-            for (AbstractRoute remoteCandidateRoute : remoteVirtualRouter._prevBgpRib.getRoutes()) {
+            for (AbstractRoute remoteCandidateRoute :
+                remoteVirtualRouter._prevBgpMultipathRib.getRoutes()) {
               remoteCandidateRoutes.add(remoteCandidateRoute);
             }
           }
