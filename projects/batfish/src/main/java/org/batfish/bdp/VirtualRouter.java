@@ -283,7 +283,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @return Whether or not a given remote neighbor is allowed to advertise to this neighbor this
    *     iteration.
    */
-  private boolean hasAdvertisementPriority(
+  private boolean hasAdvertisementPriorityDuringRecovery(
       AbstractRoute route,
       int currentIteration,
       SortedSet<Prefix> oscillatingPrefixes,
@@ -1187,7 +1187,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
                 Prefix prefix = remoteRoute.getNetwork();
                 if (oscillatingPrefixes.contains(prefix)) {
-                  if (hasAdvertisementPriority(
+                  if (hasAdvertisementPriorityDuringRecovery(
                       remoteRoute,
                       dependentRoutesIterations,
                       oscillatingPrefixes,
