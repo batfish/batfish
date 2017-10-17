@@ -2,6 +2,7 @@ package org.batfish.bdp;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpBestPathRib extends AbstractRib<BgpRoute> {
@@ -9,8 +10,11 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public BgpBestPathRib(VirtualRouter owner) {
+  BgpBestPathRib _prev;
+
+  public BgpBestPathRib(VirtualRouter owner, BgpBestPathRib prev) {
     super(owner);
+    _prev = prev;
   }
 
   @Override
@@ -78,6 +82,42 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
      * The remaining criteria are used for tie-breaking to end up with a
      * single best-path.
      */
+
+    /*
+     * Break tie with process's chosen tie-breaking mechanism
+     */
+    BgpTieBreaker tieBreaker = _owner._vrf.getBgpProcess().getTieBreaker();
+    boolean bothEbgp =
+        lhs.getProtocol() == RoutingProtocol.BGP && rhs.getProtocol() == RoutingProtocol.BGP;
+    switch (tieBreaker) {
+      case ARRIVAL_ORDER:
+        if (!bothEbgp) {
+          break;
+        }
+        boolean lhsOld = _prev.containsRoute(lhs);
+        boolean rhsOld = _prev.containsRoute(rhs);
+        if (lhsOld && !rhsOld) {
+          return 1;
+        } else if (!lhsOld && rhsOld) {
+          return -1;
+        }
+        break;
+
+      case ROUTER_ID:
+        if (!bothEbgp) {
+          break;
+        }
+        /** Prefer the route that comes from the BGP router with the lowest router ID. */
+        res = rhs.getOriginatorIp().compareTo(lhs.getOriginatorIp());
+        if (res != 0) {
+          return res;
+        }
+        break;
+
+      case CLUSTER_LIST_LENGTH:
+      default:
+        throw new BatfishException("Unhandled tie-breaker: " + tieBreaker);
+    }
 
     /** Prefer the route that comes from the BGP router with the lowest router ID. */
     res = rhs.getOriginatorIp().compareTo(lhs.getOriginatorIp());

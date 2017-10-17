@@ -511,9 +511,13 @@ public class VirtualRouter extends ComparableStructure<String> {
 
     _ebgpMultipathRib = new BgpMultipathRib(this);
     _ibgpMultipathRib = new BgpMultipathRib(this);
-    _ebgpBestPathRib = new BgpBestPathRib(this);
-    _ibgpBestPathRib = new BgpBestPathRib(this);
-    _bgpBestPathRib = new BgpBestPathRib(this);
+    /*
+     * We use prev-less best-path rib since it is read-only and will never contain anything during
+     * age comparison.
+     */
+    _ebgpBestPathRib = new BgpBestPathRib(this, new BgpBestPathRib(this, null));
+    _ibgpBestPathRib = new BgpBestPathRib(this, new BgpBestPathRib(this, null));
+    _bgpBestPathRib = new BgpBestPathRib(this, new BgpBestPathRib(this, null));
     importRib(_ebgpMultipathRib, _baseEbgpRib);
     importRib(_ebgpBestPathRib, _baseEbgpRib);
     importRib(_bgpBestPathRib, _baseEbgpRib);
