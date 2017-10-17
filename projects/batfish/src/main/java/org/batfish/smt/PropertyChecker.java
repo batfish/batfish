@@ -1391,10 +1391,7 @@ public class PropertyChecker {
           assert (dataFwd2 != null);
           sameForwarding = ctx.mkAnd(sameForwarding, ctx.mkEq(dataFwd1, dataFwd2));
         }
-        required =
-            ctx.mkAnd(
-                sameForwarding,
-                equalOutputs); // , equalOutputs); //, equalOutputs, equalIncomingAcls);
+        required = ctx.mkAnd(sameForwarding); // equalOutputs, equalIncomingAcls);
       }
 
       // System.out.println("Assumptions: ");
@@ -1474,7 +1471,7 @@ public class PropertyChecker {
       Context ctx, EncoderSlice e1, String r1, Configuration conf1) {
     BoolExpr validDest = ctx.mkBool(true);
     for (Protocol proto1 : e1.getProtocols().get(r1)) {
-      List<Prefix> prefixes = e1.getOriginatedNetworks(conf1, proto1);
+      Set<Prefix> prefixes = e1.getOriginatedNetworks(conf1, proto1);
       BoolExpr dest = e1.relevantOrigination(prefixes);
       validDest = ctx.mkAnd(validDest, ctx.mkNot(dest));
     }

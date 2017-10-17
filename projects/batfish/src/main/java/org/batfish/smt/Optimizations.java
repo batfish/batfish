@@ -14,7 +14,6 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -276,6 +275,7 @@ class Optimizations {
             });
   }
 
+
   /*
    * We need to model the connected protocol if its interface Ip
    * overlaps with the destination IP of interest in the packet.
@@ -296,12 +296,7 @@ class Optimizations {
     if (Optimizations.ENABLE_SLICING_OPTIMIZATION) {
       return hasRelevantOriginatedRoute(conf, Protocol.STATIC);
     } else {
-      for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-        if (!Graph.isNullRouted(sr)) {
-          return true;
-        }
-      }
-      return false;
+      return !conf.getDefaultVrf().getStaticRoutes().isEmpty();
     }
   }
 
@@ -604,7 +599,7 @@ class Optimizations {
    * possibly relevant for symbolic the destination Ip packet.
    */
   private boolean hasRelevantOriginatedRoute(Configuration conf, Protocol proto) {
-    List<Prefix> prefixes = _encoderSlice.getOriginatedNetworks(conf, proto);
+    Set<Prefix> prefixes = _encoderSlice.getOriginatedNetworks(conf, proto);
     for (Prefix p1 : prefixes) {
       if (_encoderSlice.relevantPrefix(p1)) {
         return true;

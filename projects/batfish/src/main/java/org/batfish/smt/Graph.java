@@ -39,8 +39,8 @@ import org.batfish.smt.collections.Table2;
  */
 public class Graph {
 
+  static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
   private static final String NULL_INTERFACE_NAME = "null_interface";
-
   private IBatfish _batfish;
 
   private Map<String, Configuration> _configurations;
@@ -48,6 +48,8 @@ public class Graph {
   private Map<String, Set<Long>> _areaIds;
 
   private Map<String, Map<String, List<StaticRoute>>> _staticRoutes;
+
+  private Map<String, List<StaticRoute>> _nullStaticRoutes;
 
   private Map<String, Set<String>> _neighbors;
 
@@ -92,6 +94,7 @@ public class Graph {
     _otherEnd = new HashMap<>();
     _areaIds = new HashMap<>();
     _staticRoutes = new HashMap<>();
+    _nullStaticRoutes = new HashMap<>();
     _neighbors = new HashMap<>();
     _ebgpNeighbors = new HashMap<>();
     _ibgpNeighbors = new HashMap<>();
@@ -117,10 +120,42 @@ public class Graph {
 
     initGraph();
     initStaticRoutes();
+    addNullRouteEdges();
     initEbgpNeighbors();
     initIbgpNeighbors();
     initAreaIds();
     initDomains();
+  }
+
+  public static boolean isNullRouted(StaticRoute sr) {
+    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
+  }
+
+  /*
+   * Find the common (default) routing policy for the protocol.
+   */
+  @Nullable
+  public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
+    if (proto.isOspf()) {
+      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
+      return conf.getRoutingPolicies().get(exp);
+    }
+    if (proto.isBgp()) {
+      for (Map.Entry<String, RoutingPolicy> entry : conf.getRoutingPolicies().entrySet()) {
+        String name = entry.getKey();
+        if (name.contains(BGP_COMMON_FILTER_LIST_NAME)) {
+          return entry.getValue();
+        }
+      }
+      return null;
+    }
+    if (proto.isStatic()) {
+      return null;
+    }
+    if (proto.isConnected()) {
+      return null;
+    }
+    throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
   }
 
   /*
@@ -159,32 +194,31 @@ public class Graph {
                 Interface i1 = ifaceMap.get(nip);
                 boolean hasNoOtherEnd = (es == null && i1.getPrefix() != null);
                 if (hasNoOtherEnd) {
-                  GraphEdge ge = new GraphEdge(i1, null, router, null, false);
+                  GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
                   graphEdges.add(ge);
                 }
                 if (es != null) {
                   boolean hasMultipleEnds = (es.size() > 2);
                   if (hasMultipleEnds) {
-                    GraphEdge ge = new GraphEdge(i1, null, router, null, false);
+                    GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
                     graphEdges.add(ge);
                   } else {
                     for (Edge e : es) {
                       // Weird inference behavior from Batfish here with a self-loop
                       if (router.equals(e.getNode1()) && router.equals(e.getNode2())) {
-                        GraphEdge ge = new GraphEdge(i1, null, router, null, false);
+                        GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
                         graphEdges.add(ge);
                       }
                       // Only look at the first pair
                       if (!router.equals(e.getNode2())) {
                         Interface i2 = ifaceMap.get(e.getInterface2());
                         String neighbor = e.getNode2();
-                        GraphEdge ge1 = new GraphEdge(i1, i2, router, neighbor, false);
-                        GraphEdge ge2 = new GraphEdge(i2, i1, neighbor, router, false);
+                        GraphEdge ge1 = new GraphEdge(i1, i2, router, neighbor, false, false);
+                        GraphEdge ge2 = new GraphEdge(i2, i1, neighbor, router, false, false);
                         _otherEnd.put(ge1, ge2);
                         graphEdges.add(ge1);
                         neighs.add(neighbor);
                       }
-
                     }
                   }
                 }
@@ -197,18 +231,16 @@ public class Graph {
         });
   }
 
-  public static boolean isNullRouted(StaticRoute sr) {
-    return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
-  }
-
   /*
    * Collect all static routes after inferring which interface they indicate
    * should be used for the next-hop.
    */
   private void initStaticRoutes() {
+
     _configurations.forEach(
         (router, conf) -> {
           Map<String, List<StaticRoute>> map = new HashMap<>();
+
           _staticRoutes.put(router, map);
 
           for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
@@ -223,7 +255,7 @@ public class Graph {
               String hereName = here.getName();
               someIface = true;
               if (hereName.equals(sr.getNextHopInterface())) {
-                List<StaticRoute> srs = map.getOrDefault(hereName, new ArrayList<>());
+                List<StaticRoute> srs = map.computeIfAbsent(hereName, k -> new ArrayList<>());
                 srs.add(sr);
                 map.put(hereName, srs);
               }
@@ -237,10 +269,16 @@ public class Graph {
 
               if (isNextHop) {
                 someIface = true;
-                List<StaticRoute> srs = map.getOrDefault(hereName, new ArrayList<>());
+                List<StaticRoute> srs = map.computeIfAbsent(hereName, k -> new ArrayList<>());
                 srs.add(sr);
                 map.put(here.getName(), srs);
               }
+            }
+
+            if (Graph.isNullRouted(sr)) {
+              List<StaticRoute> nulls =
+                  _nullStaticRoutes.computeIfAbsent(router, k -> new ArrayList<>());
+              nulls.add(sr);
             }
 
             if (!someIface && !Graph.isNullRouted(sr)) {
@@ -256,6 +294,31 @@ public class Graph {
             }
           }
         });
+  }
+
+  /*
+   * Add graph edges to represent the null interface when used by a static route
+   */
+  private void addNullRouteEdges() {
+    _nullStaticRoutes.forEach((router, srs) -> {
+      for (StaticRoute sr : srs) {
+        String name = sr.getNextHopInterface();
+        // Create null route interface
+        Interface iface = new Interface(name);
+        iface.setActive(true);
+        iface.setPrefix(sr.getNetwork());
+        // Add static route to all static routes list
+        Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
+        List<StaticRoute> routes = map.computeIfAbsent(name, k -> new ArrayList<>());
+        routes.add(sr);
+        // Create and add graph edge for null route
+        GraphEdge ge = new GraphEdge(iface, null, router, null, false, true);
+        _allRealEdges.add(ge);
+        _allEdges.add(ge);
+        List<GraphEdge> edges = _edgeMap.computeIfAbsent(router, k -> new ArrayList<>());
+        edges.add(ge);
+      }
+    });
   }
 
   /*
@@ -373,9 +436,9 @@ public class Graph {
           GraphEdge ge;
           if (n2 != null) {
             Interface iface2 = createIbgpInterface(n2, r1);
-            ge = new GraphEdge(iface1, iface2, r1, r2, true);
+            ge = new GraphEdge(iface1, iface2, r1, r2, true, false);
           } else {
-            ge = new GraphEdge(iface1, null, r1, null, true);
+            ge = new GraphEdge(iface1, null, r1, null, true, false);
           }
 
           _allEdges.add(ge);
@@ -427,13 +490,6 @@ public class Graph {
         }
     }); */
 
-  }
-
-  public enum BgpSendType {
-    TO_EBGP,
-    TO_NONCLIENT,
-    TO_CLIENT,
-    TO_RR
   }
 
   public BgpSendType peerType(GraphEdge ge) {
@@ -540,6 +596,11 @@ public class Graph {
   public boolean isEdgeUsed(Configuration conf, Protocol proto, GraphEdge ge) {
     Interface iface = ge.getStart();
 
+    // Use a null routed edge, but only for the static protocol
+    if (ge.isNullEdge()) {
+      return proto.isStatic();
+    }
+
     // Don't use if interface is not active
     if (!isInterfaceActive(proto, iface)) {
       return false;
@@ -591,34 +652,6 @@ public class Graph {
     Configuration conf = _configurations.get(ge.getRouter());
     ConfigurationFormat format = conf.getConfigurationFormat();
     return ge.getStart().isLoopback(format);
-  }
-
-  /*
-   * Find the common (default) routing policy for the protocol.
-   */
-  @Nullable
-  public RoutingPolicy findCommonRoutingPolicy(String router, Protocol proto) {
-    Configuration conf = _configurations.get(router);
-    if (proto.isOspf()) {
-      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
-      return conf.getRoutingPolicies().get(exp);
-    }
-    if (proto.isBgp()) {
-      for (Map.Entry<String, RoutingPolicy> entry : conf.getRoutingPolicies().entrySet()) {
-        String name = entry.getKey();
-        if (name.contains(EncoderSlice.BGP_COMMON_FILTER_LIST_NAME)) {
-          return entry.getValue();
-        }
-      }
-      return null;
-    }
-    if (proto.isStatic()) {
-      return null;
-    }
-    if (proto.isConnected()) {
-      return null;
-    }
-    throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
   }
 
   /*
@@ -741,13 +774,13 @@ public class Graph {
     return sb.toString();
   }
 
-  /*
-   * Getters and setters
-   */
-
   public Map<String, String> getRouteReflectorParent() {
     return _routeReflectorParent;
   }
+
+  /*
+   * Getters and setters
+   */
 
   public Map<String, Set<String>> getRouteReflectorClients() {
     return _routeReflectorClients;
@@ -799,5 +832,12 @@ public class Graph {
 
   public Set<GraphEdge> getAllEdges() {
     return _allEdges;
+  }
+
+  public enum BgpSendType {
+    TO_EBGP,
+    TO_NONCLIENT,
+    TO_CLIENT,
+    TO_RR
   }
 }
