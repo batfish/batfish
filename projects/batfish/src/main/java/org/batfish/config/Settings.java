@@ -1078,7 +1078,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_ANONYMIZE, false);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
-    setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 1);
+    setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, 5);
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
