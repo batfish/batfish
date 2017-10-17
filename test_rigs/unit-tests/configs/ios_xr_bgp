@@ -1,0 +1,7 @@
+!
+hostname ios_xr_bgp
+!
+router bgp 1
+ bgp bestpath compare-routerid
+!
+
