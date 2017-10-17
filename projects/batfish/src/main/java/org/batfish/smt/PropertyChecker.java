@@ -81,7 +81,7 @@ public class PropertyChecker {
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
-    // result.debug(encoder.getMainSlice(), true, null);
+    // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;

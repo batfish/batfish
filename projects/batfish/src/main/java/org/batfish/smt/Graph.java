@@ -555,7 +555,7 @@ public class Graph {
     }
 
     // Don't use ospf over edges to hosts / external
-    if (ge.getPeer() == null && proto.isOspf()) {
+    if ((ge.getPeer() == null || isHost(ge.getPeer())) && proto.isOspf()) {
       return false;
     }
 
