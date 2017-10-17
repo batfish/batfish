@@ -235,24 +235,24 @@ public class VirtualRouter extends ComparableStructure<String> {
   static Long computeUpdatedOspfSummaryMetric(
       OspfAreaRoute route, Prefix areaPrefix, @Nullable Long currentMetric, long areaNum) {
     Prefix contributingRoutePrefix = route.getNetwork();
-    // Compute for different areas only and if area prefix contains the route prefix
-    if (areaNum != route.getArea() && areaPrefix.containsPrefix(contributingRoutePrefix)) {
-      long contributingRouteMetric = route.getMetric();
-      if (currentMetric == null) {
-        return contributingRouteMetric;
-      } else {
-        /*
-         * NOTE: The min function is used to compute the metric according to RFC 1583.
-         * HOWEVER, Cisco claims to have switched to using max function in IOS v.12.0 and later,
-         * as described in RFC 2328.
-         * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
-         * Not sure if special handling is necessary by the OSPF process
-         */
-        return Math.min(currentMetric, contributingRouteMetric);
-      }
+    // Only update metric for different areas and if the area prefix contains the route prefix
+    if (areaNum == route.getArea() || !areaPrefix.containsPrefix(contributingRoutePrefix)) {
+      return currentMetric;
     }
-    // No changes, return current metric
-    return currentMetric;
+    long contributingRouteMetric = route.getMetric();
+    // Definitely update if we have no previous metric
+    if (currentMetric == null) {
+      return contributingRouteMetric;
+    }
+    // Otherwise just take the best between route and current metrics
+    /*
+     * NOTE: The min function is used to compute the metric according to RFC 1583.
+     * HOWEVER, Cisco claims to have switched to using max function in IOS v.12.0 and later,
+     * as described in RFC 2328.
+     * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
+     * Not sure if special handling is necessary by the OSPF process
+     */
+    return Math.min(currentMetric, contributingRouteMetric);
   }
 
   boolean computeInterAreaSummaries() {
