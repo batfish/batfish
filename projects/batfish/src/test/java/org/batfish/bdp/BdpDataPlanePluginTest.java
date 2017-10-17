@@ -2,8 +2,10 @@ package org.batfish.bdp;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -11,6 +13,11 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -19,6 +26,8 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
@@ -26,9 +35,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -148,6 +160,56 @@ public class BdpDataPlanePluginTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
     BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
+  }
+
+  @Test
+  public void testBgpCompareOriginId() {
+    String hostname = "r1";
+    Configuration c =
+        BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
+    BgpProcess proc = new BgpProcess();
+    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    Map<String, Node> nodes = new HashMap<String, Node>();
+    Node node = new Node(c, nodes);
+    nodes.put(hostname, node);
+    VirtualRouter vr = new VirtualRouter(hostname, c, nodes);
+    BgpBestPathRib bbr = new BgpBestPathRib(vr);
+    BgpMultipathRib bmr = new BgpMultipathRib(vr);
+    Prefix p = new Prefix("0.0.0.0/0");
+    BgpRoute.Builder b = new BgpRoute.Builder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
+
+    /*
+     *  Initialize with different originator ips, which should not affect comparison of routes with
+     *  different origin type.
+     */
+    Map<OriginType, List<BgpRoute>> routesByOriginType = new LinkedHashMap<>();
+    for (OriginType originType : OriginType.values()) {
+      List<BgpRoute> routes =
+          routesByOriginType.computeIfAbsent(originType, o -> new ArrayList<>());
+      routes.add(b.setOriginatorIp(Ip.ZERO).setOriginType(originType).build());
+      routes.add(b.setOriginatorIp(Ip.MAX).setOriginType(originType).build());
+    }
+
+    /*
+     * Whenever origin type is different, it should be overriding factor in preference.
+     */
+    for (OriginType o1 : OriginType.values()) {
+      List<BgpRoute> lhsList = routesByOriginType.get(o1);
+      for (OriginType o2 : OriginType.values()) {
+        List<BgpRoute> rhsList = routesByOriginType.get(o2);
+        for (BgpRoute lhs : lhsList) {
+          for (BgpRoute rhs : rhsList) {
+            if (o1.getPreference() > o2.getPreference()) {
+              assertThat(bbr.comparePreference(lhs, rhs), greaterThan(0));
+              assertThat(bmr.comparePreference(lhs, rhs), greaterThan(0));
+            } else if (o1.getPreference() < o2.getPreference()) {
+              assertThat(bbr.comparePreference(lhs, rhs), lessThan(0));
+              assertThat(bmr.comparePreference(lhs, rhs), lessThan(0));
+            }
+          }
+        }
+      }
+    }
   }
 
   @Test
