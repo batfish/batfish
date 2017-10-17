@@ -23,6 +23,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
@@ -172,8 +173,8 @@ public class BdpDataPlanePluginTest {
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c, nodes);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(hostname, c, nodes);
-    BgpBestPathRib bbr = new BgpBestPathRib(vr);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+    BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Prefix p = new Prefix("0.0.0.0/0");
     BgpRoute.Builder b = new BgpRoute.Builder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
@@ -219,11 +220,117 @@ public class BdpDataPlanePluginTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(0);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
 
     _thrown.expect(BdpOscillationException.class);
     dataPlanePlugin.computeDataPlane(false);
+  }
+
+  @Test
+  public void testBgpOscillationRecovery() throws IOException {
+    String testrigName = "bgp-oscillation";
+    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    batfish.getSettings().setBdpDetail(true);
+    batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(1);
+    batfish.getSettings().setBdpRecordAllIterations(true);
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    dataPlanePlugin.computeDataPlane(false);
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        dataPlanePlugin.getRoutes();
+    Prefix bgpPrefix = new Prefix("1.1.1.1/32");
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Stream<AbstractRoute> r2MatchingRoutes =
+        r2Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix));
+    Stream<AbstractRoute> r3MatchingRoutes =
+        r3Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix));
+    AbstractRoute r2Route =
+        r2Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix)).findAny().get();
+    AbstractRoute r3Route =
+        r3Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix)).findAny().get();
+    String r2NextHop = r2Route.getNextHop();
+    String r3NextHop = r3Route.getNextHop();
+    int routesWithR1AsNextHop = 0;
+    if (r2Route.getNextHop().equals("r1")) {
+      routesWithR1AsNextHop++;
+    }
+    if (r3Route.getNextHop().equals("r1")) {
+      routesWithR1AsNextHop++;
+    }
+    boolean r2AsNextHop = r3NextHop.equals("r2");
+    boolean r3AsNextHop = r2NextHop.equals("r3");
+
+    assertThat(r2MatchingRoutes.count(), equalTo(1L));
+    assertThat(r3MatchingRoutes.count(), equalTo(1L));
+    assertThat(routesWithR1AsNextHop, equalTo(1));
+    assertTrue((r2AsNextHop && !r3AsNextHop) || (!r2AsNextHop && r3AsNextHop));
+  }
+
+  @Test
+  public void testBgpTieBreaker() {
+    String hostname = "r1";
+    Configuration c =
+        BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
+    BgpProcess proc = new BgpProcess();
+    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    Map<String, Node> nodes = new HashMap<String, Node>();
+    Node node = new Node(c, nodes);
+    nodes.put(hostname, node);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+
+    // good for both ebgp and ibgp
+    BgpMultipathRib bmr = new BgpMultipathRib(vr);
+    // ebgp
+    BgpBestPathRib ebgpOldBbr = BgpBestPathRib.initial(vr);
+    BgpBestPathRib ebgpNewBbr = new BgpBestPathRib(vr, ebgpOldBbr, false);
+    BgpRoute.Builder ebgpBuilder =
+        new BgpRoute.Builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.ZERO)
+            .setProtocol(RoutingProtocol.BGP);
+    BgpRoute ebgpOlderHigherOriginator = ebgpBuilder.setOriginatorIp(Ip.MAX).build();
+    BgpRoute ebgpNewerHigherOriginator = ebgpBuilder.setOriginatorIp(Ip.MAX).build();
+    BgpRoute ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
+    // ibgp
+    BgpBestPathRib ibgpOldBbr = BgpBestPathRib.initial(vr);
+    BgpBestPathRib ibgpNewBbr = new BgpBestPathRib(vr, ibgpOldBbr, false);
+    BgpRoute.Builder ibgpBuilder =
+        new BgpRoute.Builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.ZERO)
+            .setProtocol(RoutingProtocol.IBGP);
+    BgpRoute ibgpOlderHigherOriginator = ibgpBuilder.setOriginatorIp(Ip.MAX).build();
+    BgpRoute ibgpNewerHigherOriginator = ibgpBuilder.setOriginatorIp(Ip.MAX).build();
+    BgpRoute ibgpLowerOriginator = ibgpBuilder.setOriginatorIp(Ip.ZERO).build();
+
+    ebgpOldBbr.mergeRoute(ebgpOlderHigherOriginator);
+    ibgpOldBbr.mergeRoute(ibgpOlderHigherOriginator);
+
+    /*
+     * Given default tie-breaking, and all more important attributes being equivalent:
+     * - When comparing two eBGP adverts, best-path rib prefers older advert.
+     * - If neither is older, or one is iBGP, best-path rib prefers advert with higher router-id.
+     * - Multipath RIB ignores both age and router-id, seeing both adverts as equal.
+     */
+    assertThat(
+        ebgpOldBbr.comparePreference(ebgpNewerHigherOriginator, ebgpLowerOriginator), lessThan(0));
+    assertThat(
+        ebgpNewBbr.comparePreference(ebgpNewerHigherOriginator, ebgpLowerOriginator),
+        greaterThan(0));
+    assertThat(bmr.comparePreference(ebgpNewerHigherOriginator, ebgpLowerOriginator), equalTo(0));
+    assertThat(
+        ibgpOldBbr.comparePreference(ibgpNewerHigherOriginator, ibgpLowerOriginator), lessThan(0));
+    assertThat(
+        ibgpNewBbr.comparePreference(ibgpNewerHigherOriginator, ibgpLowerOriginator), lessThan(0));
+    assertThat(bmr.comparePreference(ibgpNewerHigherOriginator, ibgpLowerOriginator), equalTo(0));
   }
 
   @Test
@@ -262,8 +369,8 @@ public class BdpDataPlanePluginTest {
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c, nodes);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(hostname, c, nodes);
-    BgpBestPathRib bbr = new BgpBestPathRib(vr);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+    BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("2.2.0.0");

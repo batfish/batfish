@@ -501,13 +501,17 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private TestrigSettings _baseTestrigSettings;
 
-  private boolean _bdpDebugAllIterations;
+  private boolean _bdpDetail;
 
-  private boolean _bdpDebugIterationsDetailed;
+  private int _bdpMaxOscillationRecoveryAttempts;
 
-  private int _bdpDebugMaxRecordedIterations;
+  private int _bdpMaxRecordedIterations;
 
-  private boolean _bdpDebugRepeatIterations;
+  private boolean _bdpPrintAllIterations;
+
+  private boolean _bdpPrintOscillatingIterations;
+
+  private boolean _bdpRecordAllIterations;
 
   private List<String> _blockNames;
 
@@ -728,20 +732,28 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _baseTestrigSettings;
   }
 
-  public boolean getBdpDebugAllIterations() {
-    return _bdpDebugAllIterations;
+  public boolean getBdpDetail() {
+    return _bdpDetail;
   }
 
-  public boolean getBdpDebugIterationsDetailed() {
-    return _bdpDebugIterationsDetailed;
+  public int getBdpMaxOscillationRecoveryAttempts() {
+    return _bdpMaxOscillationRecoveryAttempts;
   }
 
-  public int getBdpDebugMaxRecordedIterations() {
-    return _bdpDebugMaxRecordedIterations;
+  public int getBdpMaxRecordedIterations() {
+    return _bdpMaxRecordedIterations;
   }
 
-  public boolean getBdpDebugRepeatIterations() {
-    return _bdpDebugRepeatIterations;
+  public boolean getBdpPrintAllIterations() {
+    return _bdpPrintAllIterations;
+  }
+
+  public boolean getBdpPrintOscillatingIterations() {
+    return _bdpPrintOscillatingIterations;
+  }
+
+  public boolean getBdpRecordAllIterations() {
+    return _bdpRecordAllIterations;
   }
 
   public List<String> getBlockNames() {
@@ -1065,10 +1077,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(ARG_ANONYMIZE, false);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
-    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_ALL_ITERATIONS, false);
-    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_ITERATIONS_DETAILED, false);
-    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS, 12);
-    setDefaultProperty(BfConsts.ARG_BDP_DEBUG_REPEAT_ITERATIONS, false);
+    setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
+    setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
+    setDefaultProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, 5);
+    setDefaultProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, false);
+    setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
+    setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
@@ -1156,26 +1170,36 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.ARG_ANSWER_JSON_PATH, "save query json output to specified file", ARGNAME_PATH);
 
     addBooleanOption(
-        BfConsts.ARG_BDP_DEBUG_ALL_ITERATIONS,
-        "Set to true to debug all iterations, including during oscillation. Ignores max recorded "
-            + "iterations value.");
-
-    addBooleanOption(
-        BfConsts.ARG_BDP_DEBUG_ITERATIONS_DETAILED,
-        "Set to true to see detailed protocol-specific information about routes in each iteration "
-            + "(when iteration debugging is enabled), rather than only protocol-independent "
-            + "information");
+        BfConsts.ARG_BDP_DETAIL,
+        "Set to true to print/record detailed protocol-specific information about routes in each"
+            + "iteration rather than only protocol-independent information.");
 
     addOption(
-        BfConsts.ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS,
-        "Max number of iterations to record when debugging BDP. When debugging oscillations, set "
-            + "this at least as high as the length of the cycle.",
+        BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS,
+        "Max number of recovery attempts when oscillation occurs during data plane computations",
+        ARGNAME_NUMBER);
+
+    addOption(
+        BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS,
+        "Max number of iterations to record when debugging BDP. To avoid extra fixed-point"
+            + "computation when oscillations occur, set this at least as high as the length of the"
+            + "cycle.",
         ARGNAME_NUMBER);
 
     addBooleanOption(
-        BfConsts.ARG_BDP_DEBUG_REPEAT_ITERATIONS,
-        "Set to true to debug oscillations. Make sure to set max recorded iterations to minimum "
-            + "necessary value.");
+        BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS,
+        "Set to true to print all iterations when oscillation occurs. Make sure to either set max"
+            + "recorded iterations to minimum necessary value, or simply record all iterations");
+
+    addBooleanOption(
+        BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS,
+        "Set to true to print only oscillating iterations when oscillation occurs. Make sure to"
+            + "set max recorded iterations to minimum necessary value.");
+
+    addBooleanOption(
+        BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS,
+        "Set to true to record all iterations, including during oscillation. Ignores max recorded "
+            + "iterations value.");
 
     addListOption(
         BfConsts.ARG_BLOCK_NAMES, "list of blocks of logic rules to add or remove", "blocknames");
@@ -1428,11 +1452,14 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _analyze = getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
     _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
-    _bdpDebugAllIterations = getBooleanOptionValue(BfConsts.ARG_BDP_DEBUG_ALL_ITERATIONS);
-    _bdpDebugIterationsDetailed = getBooleanOptionValue(BfConsts.ARG_BDP_DEBUG_ITERATIONS_DETAILED);
-    _bdpDebugMaxRecordedIterations =
-        getIntOptionValue(BfConsts.ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS);
-    _bdpDebugRepeatIterations = getBooleanOptionValue(BfConsts.ARG_BDP_DEBUG_REPEAT_ITERATIONS);
+    _bdpRecordAllIterations = getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
+    _bdpDetail = getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);
+    _bdpMaxOscillationRecoveryAttempts =
+        getIntOptionValue(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
+    _bdpMaxRecordedIterations = getIntOptionValue(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
+    _bdpPrintAllIterations = getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
+    _bdpPrintOscillatingIterations =
+        getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
     _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     _containerDir = getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
@@ -1525,20 +1552,28 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _activeTestrigSettings = activeTestrigSettings;
   }
 
-  public void setBdpDebugAllIterations(boolean bdpDebugAllIterations) {
-    _bdpDebugAllIterations = bdpDebugAllIterations;
+  public void setBdpDetail(boolean bdpDetail) {
+    _bdpDetail = bdpDetail;
   }
 
-  public void setBdpDebugIterationsDetailed(boolean bdpDebugIterationsDetailed) {
-    _bdpDebugIterationsDetailed = bdpDebugIterationsDetailed;
+  public void setBdpMaxOscillationRecoveryAttempts(int bdpMaxOscillationRecoveryAttempts) {
+    _bdpMaxOscillationRecoveryAttempts = bdpMaxOscillationRecoveryAttempts;
   }
 
-  public void setBdpDebugMaxRecordedIterations(int bdpDebugMaxRecordedIterations) {
-    _bdpDebugMaxRecordedIterations = bdpDebugMaxRecordedIterations;
+  public void setBdpMaxRecordedIterations(int bdpMaxRecordedIterations) {
+    _bdpMaxRecordedIterations = bdpMaxRecordedIterations;
   }
 
-  public void setBdpDebugRepeatIterations(boolean bdpDebugRepeatIterations) {
-    _bdpDebugRepeatIterations = bdpDebugRepeatIterations;
+  public void setBdpPrintAllIterations(boolean bdpPrintAllIterations) {
+    _bdpPrintAllIterations = bdpPrintAllIterations;
+  }
+
+  public void setBdpPrintOscillatingIterations(boolean bdpPrintOscillatingIterations) {
+    _bdpPrintOscillatingIterations = bdpPrintOscillatingIterations;
+  }
+
+  public void setBdpRecordAllIterations(boolean bdpRecordAllIterations) {
+    _bdpRecordAllIterations = bdpRecordAllIterations;
   }
 
   public void setContainerDir(Path containerDir) {
