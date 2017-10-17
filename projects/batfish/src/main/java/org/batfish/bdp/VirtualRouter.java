@@ -1193,13 +1193,12 @@ public class VirtualRouter extends ComparableStructure<String> {
                       oscillatingPrefixes,
                       neighbor,
                       remoteBgpNeighbor)) {
-                    synchronized (markedPrefixes) {
-                      if (targetRib.mergeRoute(transformedIncomingRoute)) {
-                        markPrefix(prefix, neighbor, remoteBgpNeighbor, markedPrefixes);
-                        numRoutes++;
-                      }
-                      _receivedBgpAdvertisements.add(receivedAdvert);
+                    if (targetRib.mergeRoute(transformedIncomingRoute)) {
+                      markPrefix(prefix, neighbor, remoteBgpNeighbor, markedPrefixes);
+                      numRoutes++;
                     }
+                    _receivedBgpAdvertisements.add(receivedAdvert);
+
                   } else {
                     synchronized (deferredBgpAdvertisements) {
                       deferredBgpAdvertisements
