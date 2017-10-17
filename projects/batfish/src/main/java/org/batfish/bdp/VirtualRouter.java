@@ -515,9 +515,9 @@ public class VirtualRouter extends ComparableStructure<String> {
      * We use prev-less best-path rib since it is read-only and will never contain anything during
      * age comparison.
      */
-    _ebgpBestPathRib = new BgpBestPathRib(this, new BgpBestPathRib(this, null));
-    _ibgpBestPathRib = new BgpBestPathRib(this, new BgpBestPathRib(this, null));
-    _bgpBestPathRib = new BgpBestPathRib(this, new BgpBestPathRib(this, null));
+    _ebgpBestPathRib = BgpBestPathRib.initial(this);
+    _ibgpBestPathRib = BgpBestPathRib.initial(this);
+    _bgpBestPathRib = BgpBestPathRib.initial(this);
     importRib(_ebgpMultipathRib, _baseEbgpRib);
     importRib(_ebgpBestPathRib, _baseEbgpRib);
     importRib(_bgpBestPathRib, _baseEbgpRib);

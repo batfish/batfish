@@ -10,11 +10,33 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  BgpBestPathRib _prev;
+  private BgpBestPathRib _prev;
 
-  public BgpBestPathRib(VirtualRouter owner, BgpBestPathRib prev) {
+  /**
+   * Construct an instance with given owner and previous instance.
+   *
+   * @param owner The virtual router context for this RIB
+   * @param prev The previous RIB used for tie-breaking based on age
+   * @param clearOldPrev Whether to clear out the previous instance's reference to its own previous
+   *     instance to enable GC. This is only safe if prev is no longer used for route preference
+   *     comparison, but only for content inspection.
+   */
+  public BgpBestPathRib(VirtualRouter owner, BgpBestPathRib prev, boolean clearOldPrev) {
     super(owner);
     _prev = prev;
+    if (clearOldPrev && _prev != null) {
+      _prev._prev = null;
+    }
+  }
+
+  /**
+   * Construct an initial best-path RIB with no age information for tie-breaking
+   *
+   * @param owner The virtual router context for this RIB
+   * @return A new instance
+   */
+  public static final BgpBestPathRib initial(VirtualRouter owner) {
+    return new BgpBestPathRib(owner, new BgpBestPathRib(owner, null, false), false);
   }
 
   @Override

@@ -174,7 +174,7 @@ public class BdpDataPlanePluginTest {
     Node node = new Node(c, nodes);
     nodes.put(hostname, node);
     VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
-    BgpBestPathRib bbr = new BgpBestPathRib(vr, new BgpBestPathRib(vr, null));
+    BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Prefix p = new Prefix("0.0.0.0/0");
     BgpRoute.Builder b = new BgpRoute.Builder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
@@ -287,8 +287,8 @@ public class BdpDataPlanePluginTest {
     // good for both ebgp and ibgp
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     // ebgp
-    BgpBestPathRib ebgpOldBbr = new BgpBestPathRib(vr, new BgpBestPathRib(vr, null));
-    BgpBestPathRib ebgpNewBbr = new BgpBestPathRib(vr, ebgpOldBbr);
+    BgpBestPathRib ebgpOldBbr = BgpBestPathRib.initial(vr);
+    BgpBestPathRib ebgpNewBbr = new BgpBestPathRib(vr, ebgpOldBbr, false);
     BgpRoute.Builder ebgpBuilder =
         new BgpRoute.Builder()
             .setNetwork(Prefix.ZERO)
@@ -299,8 +299,8 @@ public class BdpDataPlanePluginTest {
     BgpRoute ebgpNewerHigherOriginator = ebgpBuilder.setOriginatorIp(Ip.MAX).build();
     BgpRoute ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
     // ibgp
-    BgpBestPathRib ibgpOldBbr = new BgpBestPathRib(vr, new BgpBestPathRib(vr, null));
-    BgpBestPathRib ibgpNewBbr = new BgpBestPathRib(vr, ibgpOldBbr);
+    BgpBestPathRib ibgpOldBbr = BgpBestPathRib.initial(vr);
+    BgpBestPathRib ibgpNewBbr = new BgpBestPathRib(vr, ibgpOldBbr, false);
     BgpRoute.Builder ibgpBuilder =
         new BgpRoute.Builder()
             .setNetwork(Prefix.ZERO)
@@ -370,7 +370,7 @@ public class BdpDataPlanePluginTest {
     Node node = new Node(c, nodes);
     nodes.put(hostname, node);
     VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
-    BgpBestPathRib bbr = new BgpBestPathRib(vr, new BgpBestPathRib(vr, null));
+    BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("2.2.0.0");

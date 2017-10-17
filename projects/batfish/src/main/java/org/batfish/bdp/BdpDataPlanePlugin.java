@@ -485,21 +485,18 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                 vr._bgpMultipathRib = new BgpMultipathRib(vr);
 
                 vr._prevBgpBestPathRib = vr._bgpBestPathRib;
-                vr._prevBgpBestPathRib._prev = null;
-                vr._bgpBestPathRib = new BgpBestPathRib(vr, vr._prevBgpBestPathRib);
+                vr._bgpBestPathRib = new BgpBestPathRib(vr, vr._prevBgpBestPathRib, true);
 
                 vr._prevEbgpMultipathRib = vr._ebgpMultipathRib;
                 vr._ebgpMultipathRib = new BgpMultipathRib(vr);
                 vr.importRib(vr._ebgpMultipathRib, vr._baseEbgpRib);
 
                 vr._prevEbgpBestPathRib = vr._ebgpBestPathRib;
-                vr._prevEbgpBestPathRib._prev = null;
-                vr._ebgpBestPathRib = new BgpBestPathRib(vr, vr._prevEbgpBestPathRib);
+                vr._ebgpBestPathRib = new BgpBestPathRib(vr, vr._prevEbgpBestPathRib, true);
                 vr.importRib(vr._ebgpBestPathRib, vr._baseEbgpRib);
 
                 vr._prevIbgpBestPathRib = vr._ibgpBestPathRib;
-                vr._prevIbgpBestPathRib._prev = null;
-                vr._ibgpBestPathRib = new BgpBestPathRib(vr, vr._prevIbgpBestPathRib);
+                vr._ibgpBestPathRib = new BgpBestPathRib(vr, vr._prevIbgpBestPathRib, true);
                 vr.importRib(vr._ibgpBestPathRib, vr._baseIbgpRib);
 
                 vr._prevIbgpMultipathRib = vr._ibgpMultipathRib;
