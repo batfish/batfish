@@ -27,9 +27,7 @@ public abstract class OspfAreaRoute extends OspfRoute {
   }
 
   @Override
-  public RoutingProtocol getProtocol() {
-    return RoutingProtocol.OSPF_IA;
-  }
+  public abstract RoutingProtocol getProtocol();
 
   @Override
   public int getTag() {

@@ -17,6 +17,10 @@ public class OspfInterAreaRoute extends OspfAreaRoute {
     super(network, nextHopIp, admin, metric, area);
   }
 
+  @Override public RoutingProtocol getProtocol() {
+    return RoutingProtocol.OSPF_IA;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == this) {

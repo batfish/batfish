@@ -18,6 +18,10 @@ public class OspfIntraAreaRoute extends OspfAreaRoute {
     super(network, nextHopIp, admin, metric, area);
   }
 
+  @Override public RoutingProtocol getProtocol() {
+    return RoutingProtocol.OSPF;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == this) {
