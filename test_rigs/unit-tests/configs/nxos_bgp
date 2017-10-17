@@ -1,0 +1,8 @@
+!
+hostname nxos_bgp
+feature privilege
+!
+router bgp 1
+ bestpath compare-routerid
+!
+

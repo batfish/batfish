@@ -24,6 +24,8 @@ public class BgpProcess implements Serializable {
 
   private static final String PROP_ROUTER_ID = "routerId";
 
+  private static final String PROP_TIE_BREAKER = "tieBreaker";
+
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -47,10 +49,13 @@ public class BgpProcess implements Serializable {
 
   private Ip _routerId;
 
+  private BgpTieBreaker _tieBreaker;
+
   /** Constructs a BgpProcess */
   public BgpProcess() {
     _neighbors = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
+    _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
   }
 
   /** @return {@link #_generatedRoutes} */
@@ -91,6 +96,11 @@ public class BgpProcess implements Serializable {
     return _routerId;
   }
 
+  @JsonProperty(PROP_TIE_BREAKER)
+  public BgpTieBreaker getTieBreaker() {
+    return _tieBreaker;
+  }
+
   @JsonProperty(PROP_GENERATED_ROUTES)
   public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
@@ -118,5 +128,10 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_ROUTER_ID)
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
+  }
+
+  @JsonProperty(PROP_TIE_BREAKER)
+  public void setTieBreaker(BgpTieBreaker tieBreaker) {
+    _tieBreaker = tieBreaker;
   }
 }
