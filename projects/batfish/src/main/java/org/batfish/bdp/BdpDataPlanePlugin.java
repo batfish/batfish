@@ -756,6 +756,19 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             });
   }
 
+  /**
+   * Attempt to compute the fixed point of the data plane.
+   *
+   * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
+   * @param topology The topology representing physical adjacencies between interface of the nodes
+   * @param dp The output data plane
+   * @param externalAdverts Optional external BGP advertisements fed into the data plane computation
+   * @param ae The output answer element in which to store a report of the computation. Also
+   *     contains the current recovery iteration.
+   * @param recoveryIterationHashCodes Dependent-route computation iteration hash-code dictionaries,
+   *     themselves keyed by outer recovery iteration.
+   * @return true iff the computation is oscillating
+   */
   private boolean computeFixedPoint(
       SortedMap<String, Node> nodes,
       Topology topology,

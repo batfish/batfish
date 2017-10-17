@@ -271,9 +271,9 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /**
-   * Whether or not a given remote neighbor is allowed to advertise to this neighbor this iteration.
-   * Lexicographically-lower neighbors are allowed to advertise in odd iterations, while
-   * lexicographically-higher neighbors are allowed to advertise only in even iterations.
+   * Whether or not a given remote neighbor has priority to advertise to this neighbor this
+   * iteration. Lexicographically-lower neighbors have priority to advertise in odd iterations,
+   * while lexicographically-higher neighbors have priority to advertise only in even iterations.
    *
    * @param route The route to advertise
    * @param currentIteration The current dependent routes iteration
