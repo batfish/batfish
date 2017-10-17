@@ -285,28 +285,41 @@ public class BdpDataPlanePluginTest {
      * routes should remain. In the multipath RIB, all routes should remain.
      */
     for (int i = 8; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      bbr.mergeRoute(b1.setNetwork(new Prefix(ip1, i)).build());
-      bbr.mergeRoute(b2.setNetwork(new Prefix(ip1, i)).build());
-      bmr.mergeRoute(b1.setNetwork(new Prefix(ip1, i)).build());
-      bmr.mergeRoute(b2.setNetwork(new Prefix(ip1, i)).build());
+      Prefix p = new Prefix(ip1, i);
+      b1.setNetwork(p);
+      b2.setNetwork(p);
+      bbr.mergeRoute(b1.build());
+      bbr.mergeRoute(b2.build());
+      bmr.mergeRoute(b1.build());
+      bmr.mergeRoute(b2.build());
     }
     for (int i = 16; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      bbr.mergeRoute(b1.setNetwork(new Prefix(ip2, i)).build());
-      bbr.mergeRoute(b2.setNetwork(new Prefix(ip2, i)).build());
-      bmr.mergeRoute(b1.setNetwork(new Prefix(ip2, i)).build());
-      bmr.mergeRoute(b2.setNetwork(new Prefix(ip2, i)).build());
+      Prefix p = new Prefix(ip2, i);
+      b1.setNetwork(p);
+      b2.setNetwork(p);
+      bbr.mergeRoute(b1.build());
+      bbr.mergeRoute(b2.build());
+      bmr.mergeRoute(b1.build());
+      bmr.mergeRoute(b2.build());
     }
     for (int i = 8; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      assertTrue(bbr.containsRoute(b1.setNetwork(new Prefix(ip1, i)).build()));
-      assertFalse(bbr.containsRoute(b2.setNetwork(new Prefix(ip1, i)).build()));
-      assertTrue(bmr.containsRoute(b1.setNetwork(new Prefix(ip1, i)).build()));
-      assertTrue(bmr.containsRoute(b2.setNetwork(new Prefix(ip1, i)).build()));
+      Prefix p = new Prefix(ip1, i);
+      assertTrue(bbr.containsRoute(b1.setNetwork(p).build()));
+      b1.setNetwork(p);
+      b2.setNetwork(p);
+      assertTrue(bbr.containsRoute(b1.build()));
+      assertFalse(bbr.containsRoute(b2.build()));
+      assertTrue(bmr.containsRoute(b1.build()));
+      assertTrue(bmr.containsRoute(b2.build()));
     }
     for (int i = 16; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      assertTrue(bbr.containsRoute(b1.setNetwork(new Prefix(ip2, i)).build()));
-      assertFalse(bbr.containsRoute(b2.setNetwork(new Prefix(ip2, i)).build()));
-      assertTrue(bmr.containsRoute(b1.setNetwork(new Prefix(ip2, i)).build()));
-      assertTrue(bmr.containsRoute(b2.setNetwork(new Prefix(ip2, i)).build()));
+      Prefix p = new Prefix(ip2, i);
+      b1.setNetwork(p);
+      b2.setNetwork(p);
+      assertTrue(bbr.containsRoute(b1.build()));
+      assertFalse(bbr.containsRoute(b2.build()));
+      assertTrue(bmr.containsRoute(b1.build()));
+      assertTrue(bmr.containsRoute(b2.build()));
     }
   }
 
