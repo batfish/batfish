@@ -173,7 +173,7 @@ public class BdpDataPlanePluginTest {
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c, nodes);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(hostname, c, nodes);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
     BgpBestPathRib bbr = new BgpBestPathRib(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Prefix p = new Prefix("0.0.0.0/0");
@@ -308,7 +308,7 @@ public class BdpDataPlanePluginTest {
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c, nodes);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(hostname, c, nodes);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
     BgpBestPathRib bbr = new BgpBestPathRib(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Ip ip1 = new Ip("1.0.0.0");
