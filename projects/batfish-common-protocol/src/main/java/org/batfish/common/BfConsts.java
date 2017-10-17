@@ -29,11 +29,13 @@ public class BfConsts {
 
   public static final String ARG_ANALYSIS_NAME = "analysisname";
   public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
-  public static final String ARG_BDP_DEBUG_ALL_ITERATIONS = "bdpdebugalliterations";
-  public static final String ARG_BDP_DEBUG_ITERATIONS_DETAILED = "bdpdebugiterationsdetailed";
-  public static final String ARG_BDP_DEBUG_MAX_RECORDED_ITERATIONS =
-      "bdpdebugmaxrecordediterations";
-  public static final String ARG_BDP_DEBUG_REPEAT_ITERATIONS = "bdpdebugrepeatiterations";
+  public static final String ARG_BDP_DETAIL = "bdpdetail";
+  public static final String ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS =
+      "bdpmaxoscillationrecoveryattempts";
+  public static final String ARG_BDP_MAX_RECORDED_ITERATIONS = "bdpmaxrecordediterations";
+  public static final String ARG_BDP_PRINT_ALL_ITERATIONS = "bdpprintalliterations";
+  public static final String ARG_BDP_PRINT_OSCILLATING_ITERATIONS = "bdpprintoscillatingiterations";
+  public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
   public static final String ARG_BLOCK_NAMES = "blocknames";
   public static final String ARG_CONTAINER_DIR = "containerdir";
   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
