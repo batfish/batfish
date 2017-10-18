@@ -30,7 +30,7 @@ public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisement
       try {
         JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
 
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
+        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
 
         ObjectMapper mapper = new ObjectMapper();
 

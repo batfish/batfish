@@ -157,8 +157,29 @@ class Optimizations {
     if (!Optimizations.ENABLE_SLICING_OPTIMIZATION) {
       return true;
     }
-    // Currently I don't believe batfish models setting AD
-    return false;
+    AstVisitor v = new AstVisitor();
+    Boolean[] val = new Boolean[1];
+    val[0] = false;
+    _encoderSlice
+        .getGraph()
+        .getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              conf.getRoutingPolicies()
+                  .forEach(
+                      (name, pol) -> {
+                        v.visit(
+                            conf,
+                            pol.getStatements(),
+                            stmt -> {
+                              if (stmt instanceof SetOspfMetricType) {
+                                val[0] = true;
+                              }
+                            },
+                            expr -> { });
+                      });
+            });
+    return val[0];
   }
 
   // TODO: also check if med never set
@@ -391,6 +412,7 @@ class Optimizations {
 
                   // Ensure single area for this router
                   Set<Long> areas = _encoderSlice.getGraph().getAreaIds().get(router);
+
                   boolean singleArea = areas.size() <= 1;
 
                   map.put(
@@ -444,7 +466,7 @@ class Optimizations {
                 List<GraphEdge> edges = new ArrayList<>();
                 if (Optimizations.ENABLE_IMPORT_EXPORT_MERGE_OPTIMIZATION) {
 
-                  if (!proto.isConnected() && !proto.isStatic()) {
+                  if (!proto.isConnected() && !proto.isStatic() && !proto.isOspf()) {
 
                     for (GraphEdge ge : _encoderSlice.getGraph().getEdgeMap().get(router)) {
 

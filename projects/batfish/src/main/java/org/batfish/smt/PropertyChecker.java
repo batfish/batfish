@@ -24,6 +24,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
@@ -38,13 +42,17 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.smt.EnvironmentType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.smt.CommunityVar.Type;
+import org.batfish.smt.answers.SmtDeterminismAnswerElement;
 import org.batfish.smt.answers.SmtManyAnswerElement;
 import org.batfish.smt.answers.SmtOneAnswerElement;
 import org.batfish.smt.answers.SmtReachabilityAnswerElement;
@@ -73,7 +81,7 @@ public class PropertyChecker {
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
-    // result.debug(encoder.getMainSlice(), true, null);
+    // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;
@@ -221,7 +229,7 @@ public class PropertyChecker {
    * From the model, reconstruct the collection of Edges in
    * the graph that have been failed.
    */
-  private static Set<Edge> buildFailedLinks(Encoder enc, Model m) {
+  private static SortedSet<Edge> buildFailedLinks(Encoder enc, Model m) {
     Set<GraphEdge> failed = new HashSet<>();
     Graph g = enc.getMainSlice().getGraph();
     g.getEdgeMap()
@@ -241,15 +249,15 @@ public class PropertyChecker {
               }
             });
     // Convert to Batfish Edge type
-    Set<Edge> failedEdges = new HashSet<>();
+    SortedSet<Edge> failedEdges = new TreeSet<>();
     for (GraphEdge ge : failed) {
       failedEdges.add(fromGraphEdge(ge));
     }
     return failedEdges;
   }
 
-  private static Map<String, String> buildEnvRoutingTable(Encoder enc, Model m) {
-    Map<String, String> routes = new TreeMap<>();
+  private static SortedSet<BgpAdvertisement> buildEnvRoutingTable(Encoder enc, Model m) {
+    SortedSet<BgpAdvertisement> routes = new TreeSet<>();
     EncoderSlice slice = enc.getMainSlice();
     LogicalGraph lg = slice.getLogicalGraph();
     lg.getEnvironmentVars()
@@ -261,6 +269,7 @@ public class PropertyChecker {
                 // If we actually use it
                 GraphEdge ge = lge.getEdge();
                 String router = ge.getRouter();
+                Configuration conf = slice.getGraph().getConfigurations().get(router);
                 SymbolicDecisions decisions = slice.getSymbolicDecisions();
                 BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
                 assert ctrFwd != null;
@@ -270,11 +279,59 @@ public class PropertyChecker {
                   SymbolicPacket pkt = slice.getSymbolicPacket();
                   Flow f = buildFlow(m, pkt, router);
                   Prefix pfx = buildPrefix(r, m, f);
-                  Protocol proto = buildProcotol(r, m, slice, router);
-                  String route = buildRoute(pfx, proto, ge);
                   int pathLength = intVal(m, r.getMetric());
-                  String length = "as-path-length=" + pathLength;
-                  routes.put(ge.toString(), route + "," + length);
+                  int localPref = intVal(m, r.getLocalPref());
+
+                  // Create dummy information
+                  BgpNeighbor n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
+                  String srcNode = "as" + n.getRemoteAs();
+                  Ip zeroIp = new Ip(0);
+                  Ip dstIp = n.getLocalIp();
+
+                  // Recover AS path
+                  List<SortedSet<Integer>> asSets = new ArrayList<>();
+                  for (int i = 0; i < pathLength; i++) {
+                    SortedSet<Integer> asSet = new TreeSet<>();
+                    asSet.add(-1);
+                    asSets.add(asSet);
+                  }
+                  AsPath path = new AsPath(asSets);
+
+                  // Recover communities
+                  SortedSet<Long> communities = new TreeSet<>();
+                  r.getCommunities()
+                      .forEach(
+                          (cvar, expr) -> {
+                            if (cvar.getType() == Type.EXACT) {
+                              String c = evaluate(m, expr);
+                              if ("true".equals(c)) {
+                                communities.add(cvar.asLong());
+                              }
+                            }
+                          });
+
+                  BgpAdvertisement adv =
+                      new BgpAdvertisement(
+                          BgpAdvertisementType.EBGP_RECEIVED,
+                          pfx,
+                          zeroIp,
+                          srcNode,
+                          "default",
+                          zeroIp,
+                          router,
+                          "default",
+                          dstIp,
+                          RoutingProtocol.BGP,
+                          OriginType.EGP,
+                          localPref,
+                          80,
+                          zeroIp,
+                          path,
+                          communities,
+                          null,
+                          0);
+
+                  routes.add(adv);
                 }
               }
             });
@@ -312,6 +369,20 @@ public class PropertyChecker {
       nhint = "dynamic";
     }
     return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx.getNetworkPrefix(), nhip, nhint);
+  }
+
+  /*
+   * Create a route from a graph edge
+   */
+  private static String buildRoute(EncoderSlice slice, Model m, GraphEdge ge) {
+    String router = ge.getRouter();
+    SymbolicDecisions decisions = slice.getSymbolicDecisions();
+    SymbolicRecord r = decisions.getBestNeighbor().get(router);
+    SymbolicPacket pkt = slice.getSymbolicPacket();
+    Flow f = buildFlow(m, pkt, router);
+    Prefix pfx = buildPrefix(r, m, f);
+    Protocol proto = buildProcotol(r, m, slice, router);
+    return buildRoute(pfx, proto, ge);
   }
 
   /*
@@ -466,11 +537,11 @@ public class PropertyChecker {
         BoolExpr sourceVar = reach.get(source);
         if (isFalse(model, sourceVar)) {
           Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, model, source);
-          Set<Edge> failedLinks = buildFailedLinks(enc, model);
-          Map<String, String> envRoutes = buildEnvRoutingTable(enc, model);
+          SortedSet<Edge> failedLinks = buildFailedLinks(enc, model);
+          SortedSet<BgpAdvertisement> envRoutes = buildEnvRoutingTable(enc, model);
           Environment baseEnv =
               new Environment(
-                  "BASE", batfish.getTestrigName(), failedLinks, null, null, null, envRoutes, null);
+                  "BASE", batfish.getTestrigName(), failedLinks, null, null, null, null, envRoutes);
           fh.addFlowTrace(tup.getFirst(), "BASE", baseEnv, tup.getSecond());
         }
       }
@@ -503,10 +574,10 @@ public class PropertyChecker {
         if (!Objects.equals(val1, val2)) {
           Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, model, source);
           Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, model, source);
-          Set<Edge> failedLinksDiff = buildFailedLinks(enc, model);
-          Set<Edge> failedLinksBase = buildFailedLinks(enc2, model);
-          Map<String, String> envRoutesDiff = buildEnvRoutingTable(enc, model);
-          Map<String, String> envRoutesBase = buildEnvRoutingTable(enc2, model);
+          SortedSet<Edge> failedLinksDiff = buildFailedLinks(enc, model);
+          SortedSet<Edge> failedLinksBase = buildFailedLinks(enc2, model);
+          SortedSet<BgpAdvertisement> envRoutesDiff = buildEnvRoutingTable(enc, model);
+          SortedSet<BgpAdvertisement> envRoutesBase = buildEnvRoutingTable(enc2, model);
           Environment baseEnv =
               new Environment(
                   "BASE",
@@ -515,8 +586,8 @@ public class PropertyChecker {
                   null,
                   null,
                   null,
-                  envRoutesBase,
-                  null);
+                  null,
+                  envRoutesBase);
           Environment failedEnv =
               new Environment(
                   "DELTA",
@@ -525,8 +596,8 @@ public class PropertyChecker {
                   null,
                   null,
                   null,
-                  envRoutesDiff,
-                  null);
+                  null,
+                  envRoutesDiff);
           fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
           fh.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
         }
@@ -582,6 +653,22 @@ public class PropertyChecker {
       assert r2 != null;
       BoolExpr x = equal(enc1, conf, r1, r2);
       related = enc1.mkAnd(related, x);
+    }
+    return related;
+  }
+
+  /*
+   * Creates a boolean expression that relates the environments of
+   * two separate network copies.
+   */
+  private static BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
+    BoolExpr related = enc1.mkTrue();
+    for (GraphEdge ge : enc1.getMainSlice().getGraph().getAllRealEdges()) {
+      ArithExpr a1 = enc1.getSymbolicFailures().getFailedVariable(ge);
+      ArithExpr a2 = enc2.getSymbolicFailures().getFailedVariable(ge);
+      assert a1 != null;
+      assert a2 != null;
+      related = enc1.mkEq(a1, a2);
     }
     return related;
   }
@@ -774,6 +861,77 @@ public class PropertyChecker {
     SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
     answer.setResult(res);
     answer.setFlowHistory(fh);
+    return answer;
+  }
+
+  /*
+   * Check if there exist multiple stable solutions to the netowrk.
+   * If so, reports the forwarding differences between the two cases.
+   */
+  public static AnswerElement computeDeterminism(IBatfish batfish, HeaderQuestion q) {
+    Graph graph = new Graph(batfish);
+    Encoder enc1 = new Encoder(graph, q);
+    Encoder enc2 = new Encoder(enc1, graph, q);
+    enc1.computeEncoding();
+    enc2.computeEncoding();
+    addEnvironmentConstraints(enc1, q.getBaseEnvironmentType());
+
+    BoolExpr relatedFailures = relateFailures(enc1, enc2);
+    BoolExpr relatedEnvs = relateEnvironments(enc1, enc2);
+    BoolExpr relatedPkts = relatePackets(enc1, enc2);
+    BoolExpr related = enc1.mkAnd(relatedFailures, relatedEnvs, relatedPkts);
+    BoolExpr required = enc1.mkTrue();
+    for (GraphEdge ge : graph.getAllRealEdges()) {
+      SymbolicDecisions d1 = enc1.getMainSlice().getSymbolicDecisions();
+      SymbolicDecisions d2 = enc2.getMainSlice().getSymbolicDecisions();
+      BoolExpr dataFwd1 = d1.getDataForwarding().get(ge.getRouter(), ge);
+      BoolExpr dataFwd2 = d2.getDataForwarding().get(ge.getRouter(), ge);
+      assert dataFwd1 != null;
+      assert dataFwd2 != null;
+      required = enc1.mkAnd(required, enc1.mkEq(dataFwd1, dataFwd2));
+    }
+
+    enc1.add(related);
+    enc1.add(enc1.mkNot(required));
+
+    Tuple<VerificationResult, Model> tup = enc1.verify();
+    VerificationResult res = tup.getFirst();
+    Model model = tup.getSecond();
+
+    SortedSet<String> case1 = null;
+    SortedSet<String> case2 = null;
+    Flow flow = null;
+    if (!res.isVerified()) {
+      case1 = new TreeSet<>();
+      case2 = new TreeSet<>();
+      flow = buildFlow(model, enc1.getMainSlice().getSymbolicPacket(), "(none)");
+      for (GraphEdge ge : graph.getAllRealEdges()) {
+        SymbolicDecisions d1 = enc1.getMainSlice().getSymbolicDecisions();
+        SymbolicDecisions d2 = enc2.getMainSlice().getSymbolicDecisions();
+        BoolExpr dataFwd1 = d1.getDataForwarding().get(ge.getRouter(), ge);
+        BoolExpr dataFwd2 = d2.getDataForwarding().get(ge.getRouter(), ge);
+        String s1 = evaluate(model, dataFwd1);
+        String s2 = evaluate(model, dataFwd2);
+        if (!Objects.equals(s1, s2)) {
+          if ("true".equals(s1)) {
+            String route = buildRoute(enc1.getMainSlice(), model, ge);
+            String msg = ge + " -- " + route;
+            case1.add(msg);
+          }
+          if ("true".equals(s2)) {
+            String route = buildRoute(enc2.getMainSlice(), model, ge);
+            String msg = ge + " -- " + route;
+            case2.add(msg);
+          }
+        }
+      }
+    }
+
+    SmtDeterminismAnswerElement answer = new SmtDeterminismAnswerElement();
+    answer.setResult(res);
+    answer.setFlow(flow);
+    answer.setForwardingCase1(case1);
+    answer.setForwardingCase2(case2);
     return answer;
   }
 

@@ -94,6 +94,23 @@ callhome_destination_profile_transport_method
    TRANSPORT_METHOD variable NEWLINE
 ;
 
+callhome_diagnostic_signature
+:
+   DIAGNOSTIC_SIGNATURE NEWLINE
+   (
+      callhome_diagnostic_signature_null
+   )*
+;
+
+callhome_diagnostic_signature_null
+:
+   NO?
+   (
+      ACTIVE
+      | PROFILE
+   ) ~NEWLINE* NEWLINE
+;
+
 callhome_email_contact
 :
    EMAIL_CONTACT variable NEWLINE
@@ -108,7 +125,8 @@ callhome_null
 :
    NO?
    (
-      DUPLICATE_MESSAGE
+      DATA_PRIVACY
+      | DUPLICATE_MESSAGE
       |
       (
          NO
@@ -206,6 +224,7 @@ s_callhome
    (
       callhome_email_contact
       | callhome_destination_profile
+      | callhome_diagnostic_signature
       | callhome_enable
       | callhome_null
       | callhome_phone_contact

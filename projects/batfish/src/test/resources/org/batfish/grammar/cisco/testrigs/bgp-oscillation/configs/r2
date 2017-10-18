@@ -1,0 +1,23 @@
+!
+hostname r2
+!
+interface Ethernet1
+ ip address 10.12.0.2/24
+!
+interface Ethernet3
+ ip address 10.23.0.2/24
+!
+interface Loopback0
+ ip address 2.2.2.2/32
+!
+route-map from-1 permit 100
+ set local-preference 50
+!
+router bgp 2
+ router-id 2.2.2.2
+ neighbor 10.12.0.1 remote-as 1
+ neighbor 10.12.0.1 activate
+ neighbor 10.12.0.1 route-map from-1 in
+ neighbor 10.23.0.3 remote-as 3
+ neighbor 10.23.0.3 activate
+!

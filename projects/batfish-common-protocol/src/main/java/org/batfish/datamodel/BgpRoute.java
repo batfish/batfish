@@ -106,44 +106,54 @@ public class BgpRoute extends AbstractRoute {
       return _weight;
     }
 
-    public void setAsPath(List<SortedSet<Integer>> asPath) {
+    public Builder setAsPath(List<SortedSet<Integer>> asPath) {
       _asPath = asPath;
+      return getThis();
     }
 
-    public void setClusterList(SortedSet<Long> clusterList) {
+    public Builder setClusterList(SortedSet<Long> clusterList) {
       _clusterList = clusterList;
+      return getThis();
     }
 
-    public void setCommunities(SortedSet<Long> communities) {
+    public Builder setCommunities(SortedSet<Long> communities) {
       _communities = communities;
+      return getThis();
     }
 
-    public void setLocalPreference(int localPreference) {
+    public Builder setLocalPreference(int localPreference) {
       _localPreference = localPreference;
+      return getThis();
     }
 
-    public void setOriginatorIp(Ip originatorIp) {
+    public Builder setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
+      return getThis();
     }
 
-    public void setOriginType(OriginType originType) {
+    public Builder setOriginType(OriginType originType) {
       _originType = originType;
+      return getThis();
     }
 
-    public void setProtocol(RoutingProtocol protocol) {
+    public Builder setProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
+      return getThis();
     }
 
-    public void setReceivedFromRouteReflectorClient(boolean receivedFromRouteReflectorClient) {
+    public Builder setReceivedFromRouteReflectorClient(boolean receivedFromRouteReflectorClient) {
       _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
+      return getThis();
     }
 
-    public void setSrcProtocol(RoutingProtocol srcProtocol) {
+    public Builder setSrcProtocol(RoutingProtocol srcProtocol) {
       _srcProtocol = srcProtocol;
+      return getThis();
     }
 
-    public void setWeight(int weight) {
+    public Builder setWeight(int weight) {
       _weight = weight;
+      return getThis();
     }
   }
 

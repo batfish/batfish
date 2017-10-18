@@ -1,0 +1,13 @@
+!
+hostname nxos_system
+feature privilege
+!
+no system interface shutdown
+no system mode maintenance
+system qos
+ fex queue-limit
+ service-policy type queuing input default-in-policy
+ service-policy type queuing output default-out-policy
+ service-policy type network-qos jumbo
+!
+

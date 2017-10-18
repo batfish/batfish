@@ -53,6 +53,10 @@ public class Graph {
 
   private Map<String, List<GraphEdge>> _edgeMap;
 
+  private Set<GraphEdge> _allRealEdges;
+
+  private Set<GraphEdge> _allEdges;
+
   private Map<GraphEdge, GraphEdge> _otherEnd;
 
   private Map<GraphEdge, BgpNeighbor> _ebgpNeighbors;
@@ -83,6 +87,8 @@ public class Graph {
     _batfish = batfish;
     _configurations = new HashMap<>(_batfish.loadConfigurations());
     _edgeMap = new HashMap<>();
+    _allEdges = new HashSet<>();
+    _allRealEdges = new HashSet<>();
     _otherEnd = new HashMap<>();
     _areaIds = new HashMap<>();
     _staticRoutes = new HashMap<>();
@@ -184,6 +190,8 @@ public class Graph {
                 }
               });
 
+          _allRealEdges.addAll(graphEdges);
+          _allEdges.addAll(graphEdges);
           _edgeMap.put(router, new ArrayList<>(graphEdges));
           _neighbors.put(router, neighs);
         });
@@ -370,6 +378,7 @@ public class Graph {
             ge = new GraphEdge(iface1, null, r1, null, true);
           }
 
+          _allEdges.add(ge);
           _ibgpNeighbors.put(ge, n1);
 
           reverse.put(r1, r2, ge);
@@ -546,7 +555,7 @@ public class Graph {
     }
 
     // Don't use ospf over edges to hosts / external
-    if (ge.getPeer() == null && proto.isOspf()) {
+    if ((ge.getPeer() == null || isHost(ge.getPeer())) && proto.isOspf()) {
       return false;
     }
 
@@ -782,5 +791,13 @@ public class Graph {
 
   public IBatfish getBatfish() {
     return _batfish;
+  }
+
+  public Set<GraphEdge> getAllRealEdges() {
+    return _allRealEdges;
+  }
+
+  public Set<GraphEdge> getAllEdges() {
+    return _allEdges;
   }
 }
