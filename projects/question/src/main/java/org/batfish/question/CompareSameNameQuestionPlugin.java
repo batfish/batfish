@@ -14,6 +14,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeGateway;
@@ -153,22 +154,23 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _answerElement = new CompareSameNameAnswerElement();
       _answerElement.setNodes(_nodes);
 
-      add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
-      add(CommunityList.class, c -> c.getCommunityLists());
-      add(IkeGateway.class, c -> c.getIkeGateways());
-      add(IkePolicy.class, c -> c.getIkePolicies());
-      add(IkeProposal.class, c -> c.getIkeProposals());
-      add(Interface.class, c -> c.getInterfaces());
-      add(Ip6AccessList.class, c -> c.getIp6AccessLists());
-      add(IpAccessList.class, c -> c.getIpAccessLists());
-      add(IpsecPolicy.class, c -> c.getIpsecPolicies());
-      add(IpsecProposal.class, c -> c.getIpsecProposals());
-      add(IpsecVpn.class, c -> c.getIpsecVpns());
-      add(Route6FilterList.class, c -> c.getRoute6FilterLists());
-      add(RouteFilterList.class, c -> c.getRouteFilterLists());
-      add(RoutingPolicy.class, c -> c.getRoutingPolicies());
-      add(Vrf.class, c -> c.getVrfs());
-      add(Zone.class, c -> c.getZones());
+      add(AsPathAccessList.class, Configuration::getAsPathAccessLists);
+      add(AuthenticationKeyChain.class, Configuration::getAuthenticationKeyChains);
+      add(CommunityList.class, Configuration::getCommunityLists);
+      add(IkeGateway.class, Configuration::getIkeGateways);
+      add(IkePolicy.class, Configuration::getIkePolicies);
+      add(IkeProposal.class, Configuration::getIkeProposals);
+      add(Interface.class, Configuration::getInterfaces);
+      add(Ip6AccessList.class, Configuration::getIp6AccessLists);
+      add(IpAccessList.class, Configuration::getIpAccessLists);
+      add(IpsecPolicy.class, Configuration::getIpsecPolicies);
+      add(IpsecProposal.class, Configuration::getIpsecProposals);
+      add(IpsecVpn.class, Configuration::getIpsecVpns);
+      add(Route6FilterList.class, Configuration::getRoute6FilterLists);
+      add(RouteFilterList.class, Configuration::getRouteFilterLists);
+      add(RoutingPolicy.class, Configuration::getRoutingPolicies);
+      add(Vrf.class, Configuration::getVrfs);
+      add(Zone.class, Configuration::getZones);
 
       return _answerElement;
     }
@@ -223,10 +225,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    *
    * @type CompareSameName multifile
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface, Ip6AccessList,
-   *     IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, RouteFilterList,
-   *     RoutingPolicy, Vrf, Zone ) Default value is '[]', which denotes all types except those
-   *     in excludedNamedStructTypes.
+   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface,
+   *     Ip6AccessList, IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList,
+   *     RouteFilterList, RoutingPolicy, Vrf, Zone ) Default value is '[]', which denotes all types
+   *     except those in excludedNamedStructTypes.
    * @param excludedNamedStructTypes Set of structure types to omit from the analysis.  Default is
    *     [Interface, Vrf].
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
