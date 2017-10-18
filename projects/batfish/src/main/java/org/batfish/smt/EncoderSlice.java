@@ -32,7 +32,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
@@ -41,11 +40,16 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -75,8 +79,6 @@ import org.batfish.smt.collections.Table2;
 class EncoderSlice {
 
   static final int BITS = 0;
-
-  static final String BGP_NETWORK_FILTER_LIST_NAME = "BGP_NETWORK_NETWORKS_FILTER";
 
   static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
 
@@ -109,6 +111,8 @@ class EncoderSlice {
   private List<SymbolicRecord> _allSymbolicRecords;
 
   private Map<String, SymbolicRecord> _ospfRedistributed;
+
+  private Table2<String, Protocol, Set<Prefix>> _originatedNetworks;
 
 
   /**
@@ -166,8 +170,10 @@ class EncoderSlice {
     _outboundAcls = new HashMap<>();
     _forwardsAcross = new Table2<>();
     _ospfRedistributed = new HashMap<>();
+    _originatedNetworks = new Table2<>();
 
     initOptimizations();
+    initOriginatedPrefixes();
     initCommunities();
     initRedistributionProtocols();
     initVariables();
@@ -601,7 +607,7 @@ class EncoderSlice {
 
                 _logicalGraph.getRedistributedProtocols().put(router, proto, redistributed);
 
-                RoutingPolicy pol = getGraph().findCommonRoutingPolicy(router, proto);
+                RoutingPolicy pol = Graph.findCommonRoutingPolicy(conf, proto);
                 if (pol != null) {
                   Set<Protocol> ps = findRedistributedProtocols(conf, pol, proto);
                   for (Protocol p : ps) {
@@ -639,7 +645,7 @@ class EncoderSlice {
    * Converts a list of prefixes into a boolean expression that determines
    * if they are relevant for the symbolic packet.
    */
-  public BoolExpr relevantOrigination(List<Prefix> prefixes) {
+  public BoolExpr relevantOrigination(Set<Prefix> prefixes) {
     BoolExpr acc = mkFalse();
     for (Prefix p : prefixes) {
       acc = mkOr(acc, isRelevantFor(p, _symbolicPacket.getDstIp()));
@@ -780,8 +786,8 @@ class EncoderSlice {
    * router as well as the protocol. Static routes and connected
    * routes are treated as originating the prefix.
    */
-  public List<Prefix> getOriginatedNetworks(Configuration conf, Protocol proto) {
-    List<Prefix> acc = new ArrayList<>();
+  public Set<Prefix> getOriginatedNetworks(Configuration conf, Protocol proto) {
+    Set<Prefix> acc = new HashSet<>();
 
     if (proto.isOspf()) {
       conf.getDefaultVrf()
@@ -799,15 +805,40 @@ class EncoderSlice {
     }
 
     if (proto.isBgp()) {
-      conf.getRouteFilterLists()
-          .forEach(
-              (name, list) -> {
-                for (RouteFilterLine line : list.getLines()) {
-                  if (name.contains(BGP_NETWORK_FILTER_LIST_NAME)) {
-                    acc.add(line.getPrefix());
+      RoutingPolicy defaultPol = Graph.findCommonRoutingPolicy(conf, Protocol.BGP);
+      if (defaultPol != null) {
+        AstVisitor v = new AstVisitor();
+        v.visit(
+            conf,
+            defaultPol.getStatements(),
+            stmt -> { },
+            expr -> {
+              if (expr instanceof Conjunction) {
+                Conjunction c = (Conjunction) expr;
+                if (c.getConjuncts().size() >= 2) {
+                  BooleanExpr be1 = c.getConjuncts().get(0);
+                  BooleanExpr be2 = c.getConjuncts().get(1);
+                  if (be1 instanceof MatchPrefixSet && be2 instanceof Not) {
+                    MatchPrefixSet mps = (MatchPrefixSet) be1;
+                    Not n = (Not) be2;
+                    if (n.getExpr() instanceof MatchProtocol) {
+                      MatchProtocol mp = (MatchProtocol) n.getExpr();
+                      if (mp.getProtocol() == RoutingProtocol.BGP) {
+                        PrefixSetExpr e = mps.getPrefixSet();
+                        if (e instanceof ExplicitPrefixSet) {
+                          ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
+                          Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
+                          for (PrefixRange r : ranges) {
+                            acc.add(r.getPrefix());
+                          }
+                        }
+                      }
+                    }
                   }
                 }
-              });
+              }
+            });
+      }
       return acc;
     }
 
@@ -825,7 +856,7 @@ class EncoderSlice {
 
     if (proto.isStatic()) {
       for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-        if (sr.getNetwork() != null && !Graph.isNullRouted(sr)) {
+        if (sr.getNetwork() != null) {
           acc.add(sr.getNetwork());
         }
       }
@@ -1241,6 +1272,15 @@ class EncoderSlice {
    */
   private void initOptimizations() {
     _optimizations.computeOptimizations();
+  }
+
+  private void initOriginatedPrefixes() {
+    getGraph().getConfigurations().forEach((router, conf) -> {
+      for (Protocol proto : _optimizations.getProtocols().get(router)) {
+        Set<Prefix> prefixes = getOriginatedNetworks(conf, proto);
+        _originatedNetworks.put(router, proto, prefixes);
+      }
+    });
   }
 
   /*
@@ -2632,7 +2672,7 @@ class EncoderSlice {
       GraphEdge ge,
       String router,
       boolean usedExport,
-      List<Prefix> originations) {
+      Set<Prefix> originations) {
 
     SymbolicRecord vars = e.getSymbolicRecord();
 
@@ -2704,7 +2744,6 @@ class EncoderSlice {
         List<Statement> statements;
         Statements.StaticStatement s1 = new Statements.StaticStatement(Statements.ExitAccept);
         Statements.StaticStatement s2 = new Statements.StaticStatement(Statements.ExitReject);
-
         if (proto.isOspf()) {
           If i = new If();
           List<Statement> stmts =
@@ -2760,51 +2799,17 @@ class EncoderSlice {
 
         List<Long> areas = new ArrayList<>(getGraph().getAreaIds().get(router));
         for (Prefix p : originations) {
-          BoolExpr notIbgpExport = mkNot(mkBool(isNonClientEdge));
-          BoolExpr ifaceUp = interfaceActive(iface, proto);
-          BoolExpr relevantPrefix = isRelevantFor(p, _symbolicPacket.getDstIp());
-          BoolExpr relevant = mkAnd(notIbgpExport, ifaceUp, relevantPrefix);
 
-          int adminDistance = defaultAdminDistance(conf, proto);
-          int prefixLength = p.getPrefixLength();
+          // For OSPF, we need to explicitly initiate a route
+          if (proto.isOspf()) {
 
-          BoolExpr values;
+            BoolExpr ifaceUp = interfaceActive(iface, proto);
+            BoolExpr relevantPrefix = isRelevantFor(p, _symbolicPacket.getDstIp());
+            BoolExpr relevant = mkAnd(ifaceUp, relevantPrefix);
 
-          if (proto.isBgp()) {
+            int adminDistance = defaultAdminDistance(conf, proto);
+            int prefixLength = p.getPrefixLength();
 
-            // TODO: delete the unused values below
-            SymbolicRecord r = new SymbolicRecord();
-            r.setPermitted(mkTrue());
-            r.setLocalPref(mkInt(0));
-            r.setAdminDist(mkInt(adminDistance));
-            r.setMetric(mkInt(0));
-            r.setMed(mkInt(100));
-            r.setPrefixLength(mkInt(prefixLength));
-            r.setOspfType(new SymbolicOspfType(this, OspfType.O));
-            r.setOspfArea(
-                new SymbolicEnum<>(this, areas, iface.getOspfAreaName())); // TODO: NAMING BUG
-            r.setBgpInternal(mkFalse());
-            r.setIgpMetric(mkInt(0));
-
-            // send the client id for route reflector purposes
-            Integer x = getGraph().getOriginatorId().get(router);
-            int clientId = (!isClientEdge && !isNonClientEdge ? 0 : x);
-            r.setClientId(new SymbolicOriginatorId(this, clientId));
-
-            Map<CommunityVar, BoolExpr> comms = new HashMap<>();
-            vars.getCommunities()
-                .forEach(
-                    (cvar, b) -> {
-                      comms.put(cvar, mkFalse());
-                    });
-            r.setCommunities(comms);
-
-            TransferFunctionSSA origin =
-                new TransferFunctionSSA(
-                    this, conf, r, vars, proto, proto, statements, cost, ge, true);
-            values = origin.compute();
-
-          } else {
             BoolExpr per = vars.getPermitted();
             BoolExpr lp = safeEq(vars.getLocalPref(), mkInt(0));
             BoolExpr ad = safeEq(vars.getAdminDist(), mkInt(adminDistance));
@@ -2819,21 +2824,21 @@ class EncoderSlice {
             for (Map.Entry<CommunityVar, BoolExpr> entry : vars.getCommunities().entrySet()) {
               comms = mkAnd(comms, mkNot(entry.getValue()));
             }
+            BoolExpr values =
+                mkAnd(per, lp, ad, met, med, len, type, area, internal, igpMet, comms);
 
-            values = mkAnd(per, lp, ad, met, med, len, type, area, internal, igpMet, comms);
+            // Don't originate OSPF route when there is a better redistributed route
+            if (ospfRedistribVars != null) {
+              BoolExpr betterLen = mkGt(ospfRedistribVars.getPrefixLength(), mkInt(prefixLength));
+              BoolExpr equalLen = mkEq(ospfRedistribVars.getPrefixLength(), mkInt(prefixLength));
+              BoolExpr betterAd = mkLt(ospfRedistribVars.getAdminDist(), mkInt(110));
+              BoolExpr better = mkOr(betterLen, mkAnd(equalLen, betterAd));
+              BoolExpr betterRedistributed = mkAnd(ospfRedistribVars.getPermitted(), better);
+              relevant = mkAnd(relevant, mkNot(betterRedistributed));
+            }
+
+            acc = mkIf(relevant, values, acc);
           }
-
-          // Don't originate OSPF route when there is a better redistributed route
-          if (ospfRedistribVars != null) {
-            BoolExpr betterLen = mkGt(ospfRedistribVars.getPrefixLength(), mkInt(prefixLength));
-            BoolExpr equalLen = mkEq(ospfRedistribVars.getPrefixLength(), mkInt(prefixLength));
-            BoolExpr betterAd = mkLt(ospfRedistribVars.getAdminDist(), mkInt(110));
-            BoolExpr better = mkOr(betterLen, mkAnd(equalLen, betterAd));
-            BoolExpr betterRedistributed = mkAnd(ospfRedistribVars.getPermitted(), better);
-            relevant = mkAnd(relevant, mkNot(betterRedistributed));
-          }
-
-          acc = mkIf(relevant, values, acc);
         }
 
         add(acc);
@@ -2898,7 +2903,7 @@ class EncoderSlice {
                             varsOther = _symbolicDecisions.getBestNeighbor().get(router);
                           }
 
-                          List<Prefix> originations = getOriginatedNetworks(conf, proto);
+                          Set<Prefix> originations = _originatedNetworks.get(router, proto);
                           addExportConstraint(
                               e,
                               varsOther,
@@ -3340,5 +3345,9 @@ class EncoderSlice {
 
   SymbolicFailures getSymbolicFailures() {
     return _encoder.getSymbolicFailures();
+  }
+
+  public Table2<String, Protocol, Set<Prefix>> getOriginatedNetworks() {
+    return _originatedNetworks;
   }
 }
