@@ -46,6 +46,11 @@ test tests/java-smt/static3-reachability1.ref get smt-reachability ingressNodeRe
 test tests/java-smt/static3-reachability2.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.2"]
 test tests/java-smt/static3-reachability3.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.1"]
 
+# Correct BGP network semantics if there is an IGP route
+init-testrig test_rigs/smt-examples/BGP3 tr-smt-bgp3
+test tests/java-smt/bgp3-forwarding1.ref get smt-forwarding dstIps=["69.69.69.0"], fullModel=True
+test tests/java-smt/bgp3-forwarding2.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
+
 # redistribution of different protocols
 init-testrig test_rigs/smt-examples/REDISTRIBUTE1 tr-smt-redistribute1
 test tests/java-smt/redistribute1-forwarding1.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True

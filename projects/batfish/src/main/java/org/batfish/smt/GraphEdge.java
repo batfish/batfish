@@ -24,6 +24,8 @@ public class GraphEdge {
 
   private static final String ABSTRACT_VAR = "isAbstract";
 
+  private static final String NULL_VAR = "isNullEdge";
+
   private Interface _start;
 
   private Interface _end;
@@ -34,18 +36,22 @@ public class GraphEdge {
 
   private boolean _isAbstract;
 
+  private boolean _isNullEdge;
+
   @JsonCreator
   public GraphEdge(
       @JsonProperty(START_VAR) Interface start,
       @Nullable @JsonProperty(END_VAR) Interface end,
       @JsonProperty(ROUTER_VAR) String router,
       @Nullable @JsonProperty(PEER_VAR) String peer,
-      @JsonProperty(ABSTRACT_VAR) boolean isAbstract) {
+      @JsonProperty(ABSTRACT_VAR) boolean isAbstract,
+      @JsonProperty(NULL_VAR) boolean isNullEdge) {
     _start = start;
     _end = end;
     _router = router;
     _peer = peer;
     _isAbstract = isAbstract;
+    _isNullEdge = isNullEdge;
   }
 
   @JsonProperty(START_VAR)
@@ -73,8 +79,12 @@ public class GraphEdge {
     return _isAbstract;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  @JsonProperty(NULL_VAR)
+  public boolean isNullEdge() {
+    return _isNullEdge;
+  }
+
+  @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -85,6 +95,9 @@ public class GraphEdge {
     GraphEdge graphEdge = (GraphEdge) o;
 
     if (_isAbstract != graphEdge._isAbstract) {
+      return false;
+    }
+    if (_isNullEdge != graphEdge._isNullEdge) {
       return false;
     }
     if (_start != null ? !_start.equals(graphEdge._start) : graphEdge._start != null) {
@@ -99,13 +112,13 @@ public class GraphEdge {
     return _peer != null ? _peer.equals(graphEdge._peer) : graphEdge._peer == null;
   }
 
-  @Override
-  public int hashCode() {
-    int result = _start != null ? _start.getName().hashCode() : 0;
-    result = 31 * result + (_end != null ? _end.getName().hashCode() : 0);
+  @Override public int hashCode() {
+    int result = _start != null ? _start.hashCode() : 0;
+    result = 31 * result + (_end != null ? _end.hashCode() : 0);
     result = 31 * result + (_router != null ? _router.hashCode() : 0);
     result = 31 * result + (_peer != null ? _peer.hashCode() : 0);
     result = 31 * result + (_isAbstract ? 1 : 0);
+    result = 31 * result + (_isNullEdge ? 1 : 0);
     return result;
   }
 
