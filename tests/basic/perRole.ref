@@ -9,6 +9,9 @@
             "AsPathAccessList" : {
               "structureClassName" : "AsPathAccessList"
             },
+            "AuthenticationKeyChain" : {
+              "structureClassName" : "AuthenticationKeyChain"
+            },
             "CommunityList" : {
               "structureClassName" : "CommunityList"
             },
@@ -213,6 +216,9 @@
             "AsPathAccessList" : {
               "structureClassName" : "AsPathAccessList"
             },
+            "AuthenticationKeyChain" : {
+              "structureClassName" : "AuthenticationKeyChain"
+            },
             "CommunityList" : {
               "structureClassName" : "CommunityList"
             },
@@ -266,6 +272,9 @@
             "AsPathAccessList" : {
               "structureClassName" : "AsPathAccessList"
             },
+            "AuthenticationKeyChain" : {
+              "structureClassName" : "AuthenticationKeyChain"
+            },
             "CommunityList" : {
               "structureClassName" : "CommunityList"
             },
@@ -315,6 +324,9 @@
           "equivalenceSetsMap" : {
             "AsPathAccessList" : {
               "structureClassName" : "AsPathAccessList"
+            },
+            "AuthenticationKeyChain" : {
+              "structureClassName" : "AuthenticationKeyChain"
             },
             "CommunityList" : {
               "structureClassName" : "CommunityList"
@@ -366,6 +378,9 @@
           "equivalenceSetsMap" : {
             "AsPathAccessList" : {
               "structureClassName" : "AsPathAccessList"
+            },
+            "AuthenticationKeyChain" : {
+              "structureClassName" : "AuthenticationKeyChain"
             },
             "CommunityList" : {
               "structureClassName" : "CommunityList"
@@ -452,6 +467,10 @@
     "question" : {
       "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
       "differential" : false,
+      "excludedNamedStructTypes" : [
+        "Interface",
+        "Vrf"
+      ],
       "missing" : false,
       "nodeRegex" : "(?=\\Qhost1\\E|\\Qhost2\\E).*",
       "singletons" : false
