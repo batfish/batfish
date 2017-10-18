@@ -127,6 +127,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
           new CompareSameNameQuestionPlugin.CompareSameNameQuestion();
       inner.setNodeRegex(question.getNodeRegex());
       inner.setNamedStructTypes(question.getNamedStructTypes());
+      inner.setExcludedNamedStructTypes(new TreeSet<>());
       inner.setSingletons(true);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer =
           new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);

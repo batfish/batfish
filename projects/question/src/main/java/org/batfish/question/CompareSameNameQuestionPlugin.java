@@ -102,11 +102,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Map<String, Configuration> _configurations;
 
-    private final Set<String> _excludedByDefaultTypes = new TreeSet<>();
-
     private boolean _missing;
 
     private Set<String> _namedStructTypes;
+
+    private Set<String> _excludedNamedStructTypes;
 
     private List<String> _nodes;
 
@@ -114,14 +114,14 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     public CompareSameNameAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
-      initExcludedByDefaultTypes();
     }
 
     private <T> void add(
         Class<T> structureClass, Function<Configuration, Map<String, T>> structureMapRetriever) {
+      String structType = structureClass.getSimpleName().toLowerCase();
       if ((_namedStructTypes.isEmpty()
-              && !(_excludedByDefaultTypes.contains(structureClass.getSimpleName())))
-          || _namedStructTypes.contains(structureClass.getSimpleName().toLowerCase())) {
+              && !(_excludedNamedStructTypes.contains(structType)))
+          || _namedStructTypes.contains(structType)) {
         _answerElement.add(
             structureClass.getSimpleName(),
             processStructures(structureClass, _nodes, _configurations, structureMapRetriever));
@@ -139,7 +139,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
           question
               .getNamedStructTypes()
               .stream()
-              .map(s -> s.toLowerCase())
+              .map(String::toLowerCase)
+              .collect(Collectors.toSet());
+      _excludedNamedStructTypes =
+          question
+              .getExcludedNamedStructTypes()
+              .stream()
+              .map(String::toLowerCase)
               .collect(Collectors.toSet());
       _singletons = question.getSingletons();
       _missing = question.getMissing();
@@ -167,13 +173,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return _answerElement;
     }
 
-    // These named structure types seem to be less useful and have many entries
-    // so slow down the computation considerably.  Therefore they are excluded
-    // from the analysis by default.
-    private void initExcludedByDefaultTypes() {
-      _excludedByDefaultTypes.add(Interface.class.getSimpleName());
-      _excludedByDefaultTypes.add(Vrf.class.getSimpleName());
-    }
 
     private <T> NamedStructureEquivalenceSets<T> processStructures(
         Class<T> structureClass,
@@ -226,8 +225,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
    *     CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface, Ip6AccessList,
    *     IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, RouteFilterList,
-   *     RoutingPolicy, Vrf, Zone ) Default value is '[]' (which denotes all structure types except
-   *     Interface and Vrf).
+   *     RoutingPolicy, Vrf, Zone ) Default value is '[]', which denotes all types except those
+   *     in excludedNamedStructTypes.
+   * @param excludedNamedStructTypes Set of structure types to omit from the analysis.  Default is
+   *     [Interface, Vrf].
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @param singletons Defaults to false. Specifies whether or not to include named structures for
@@ -241,6 +242,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
+    private static final String PROP_EXCLUDED_NAMED_STRUCT_TYPES = "excludedNamedStructTypes";
+
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private static final String PROP_SINGLETONS = "singletons";
@@ -249,13 +252,26 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<String> _namedStructTypes;
 
+    private SortedSet<String> _excludedNamedStructTypes;
+
     private String _nodeRegex;
 
     private boolean _singletons;
 
     public CompareSameNameQuestion() {
       _namedStructTypes = new TreeSet<>();
+      initExcludedNamedStructTypes();
       _nodeRegex = ".*";
+
+    }
+
+    // These named structure types seem to be less useful and have many entries
+    // so slow down the computation considerably.  Therefore they are excluded
+    // from the analysis by default.
+    private void initExcludedNamedStructTypes() {
+      _excludedNamedStructTypes = new TreeSet<>();
+      _excludedNamedStructTypes.add(Interface.class.getSimpleName());
+      _excludedNamedStructTypes.add(Vrf.class.getSimpleName());
     }
 
     @Override
@@ -276,6 +292,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public SortedSet<String> getNamedStructTypes() {
       return _namedStructTypes;
+    }
+
+    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
+    public SortedSet<String> getExcludedNamedStructTypes() {
+      return _excludedNamedStructTypes;
     }
 
     @Override
@@ -302,6 +323,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
       _namedStructTypes = namedStructTypes;
+    }
+
+    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
+    public void setExcludedNamedStructTypes(SortedSet<String> excludedNamedStructTypes) {
+      _excludedNamedStructTypes = excludedNamedStructTypes;
     }
 
     @Override
