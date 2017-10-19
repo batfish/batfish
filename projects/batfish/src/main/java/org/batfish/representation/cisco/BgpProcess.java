@@ -31,6 +31,8 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   private boolean _alwaysCompareMed;
 
+  private boolean _asPathMultipathRelax;
+
   private Ip _clusterId;
 
   private boolean _defaultIpv4Activate;
@@ -86,6 +88,9 @@ public class BgpProcess extends ComparableStructure<Integer> {
     _peerSessions = new HashMap<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _masterBgpPeerGroup = new MasterBgpPeerGroup();
+    if (format == ConfigurationFormat.ARISTA) {
+      _asPathMultipathRelax = true;
+    }
     switch (format) {
       case CISCO_IOS:
       case CISCO_IOS_XR:
@@ -164,6 +169,10 @@ public class BgpProcess extends ComparableStructure<Integer> {
     return _alwaysCompareMed;
   }
 
+  public boolean getAsPathMultipathRelax() {
+    return _asPathMultipathRelax;
+  }
+
   public Ip getClusterId() {
     return _clusterId;
   }
@@ -238,6 +247,10 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   public void setAlwaysCompareMed(boolean b) {
     _alwaysCompareMed = b;
+  }
+
+  public void setAsPathMultipathRelax(boolean asPathMultipathRelax) {
+    _asPathMultipathRelax = asPathMultipathRelax;
   }
 
   public void setClusterId(Ip clusterId) {

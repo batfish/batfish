@@ -1971,6 +1971,11 @@ CONFDCONFIG
    'confdConfig'
 ;
 
+CONFED
+:
+   'confed'
+;
+
 CONFEDERATION
 :
    'confederation'
@@ -12490,6 +12495,11 @@ M_AsPath_ACCESS_LIST
    'access-list' -> type ( ACCESS_LIST ) , mode ( M_AsPathAccessList )
 ;
 
+M_AsPath_CONFED
+:
+   'confed' -> type ( CONFED ) , popMode
+;
+
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
@@ -12509,6 +12519,11 @@ M_AsPath_IN
 M_AsPath_IS_LOCAL
 :
    'is-local' -> type ( IS_LOCAL ) , popMode
+;
+
+M_AsPath_MULTIPATH_RELAX
+:
+   'multipath-relax' -> type ( MULTIPATH_RELAX ) , popMode
 ;
 
 M_AsPath_NEIGHBOR_IS
