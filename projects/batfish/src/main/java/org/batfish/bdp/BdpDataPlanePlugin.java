@@ -722,21 +722,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .forEach(
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
-                vr.unstageBgpRoutes();
                 BgpProcess proc = vr._vrf.getBgpProcess();
-                if (proc != null && proc.getMultipathEbgp()) {
-                  vr.importRib(vr._bgpMultipathRib, vr._ebgpMultipathRib);
-                } else {
-                  vr.importRib(vr._bgpMultipathRib, vr._ebgpBestPathRib);
+                if (proc != null) {
+                  vr.finalizeBgpRoutes(proc.getMultipathEbgp(), proc.getMultipathIbgp());
                 }
-                if (proc != null && proc.getMultipathIbgp()) {
-                  vr.importRib(vr._bgpMultipathRib, vr._ibgpMultipathRib);
-                } else {
-                  vr.importRib(vr._bgpMultipathRib, vr._ibgpBestPathRib);
-                }
-                vr.importRib(vr._bgpBestPathRib, vr._ebgpBestPathRib);
-                vr.importRib(vr._bgpBestPathRib, vr._ibgpBestPathRib);
-                vr.importRib(vr._mainRib, vr._bgpMultipathRib);
               }
               importBgpCompleted.incrementAndGet();
             });

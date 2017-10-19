@@ -1569,11 +1569,28 @@ public class VirtualRouter extends ComparableStructure<String> {
     return changed;
   }
 
-  public void unstageBgpRoutes() {
-    importRib(_ebgpMultipathRib, _ebgpStagingRib);
+  public void finalizeBgpRoutes(boolean multipathEbgp, boolean multipathIbgp) {
+    // Best-path RIBs
     importRib(_ebgpBestPathRib, _ebgpStagingRib);
-    importRib(_ibgpMultipathRib, _ibgpStagingRib);
     importRib(_ibgpBestPathRib, _ibgpStagingRib);
+    importRib(_bgpBestPathRib, _ebgpBestPathRib);
+    importRib(_bgpBestPathRib, _ibgpBestPathRib);
+
+    // Multi-path RIBs
+    _bgpMultipathRib.setBestAsPaths(_bgpBestPathRib.getBestAsPaths());
+    if (multipathEbgp) {
+      importRib(_ebgpMultipathRib, _ebgpStagingRib);
+      importRib(_bgpMultipathRib, _ebgpMultipathRib);
+    } else {
+      importRib(_bgpMultipathRib, _ebgpBestPathRib);
+    }
+    if (multipathIbgp) {
+      importRib(_ibgpMultipathRib, _ibgpStagingRib);
+      importRib(_bgpMultipathRib, _ibgpMultipathRib);
+    } else {
+      importRib(_bgpMultipathRib, _ibgpBestPathRib);
+    }
+    importRib(_mainRib, _bgpMultipathRib);
   }
 
   public void unstageOspfExternalRoutes() {
