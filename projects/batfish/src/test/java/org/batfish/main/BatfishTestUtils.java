@@ -13,6 +13,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
@@ -80,6 +81,11 @@ public class BatfishTestUtils {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
     settings.setDisableUnrecognized(true);
+    settings.setHaltOnConvertError(true);
+    settings.setHaltOnParseError(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    settings.setVerboseParse(true);
     Path containerDir = tempFolder.newFolder("container").toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
@@ -102,11 +108,16 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache());
-    batfish.serializeVendorConfigs(
-        testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
-    batfish.serializeIndependentConfigs(
-        settings.getBaseTestrigSettings().getSerializeVendorPath(),
-        settings.getBaseTestrigSettings().getSerializeIndependentPath());
+    try {
+      batfish.serializeVendorConfigs(
+          testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
+      batfish.serializeIndependentConfigs(
+          settings.getBaseTestrigSettings().getSerializeVendorPath(),
+          settings.getBaseTestrigSettings().getSerializeIndependentPath());
+    } catch (CompositeBatfishException e) {
+      System.err.print(e.getAnswerElement().prettyPrint());
+      throw new BatfishException("Failed to initialize test batfish", e);
+    }
     return batfish;
   }
 
