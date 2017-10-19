@@ -36,6 +36,7 @@ import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
@@ -250,8 +251,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     BgpGroup mg = routingInstance.getMasterBgpGroup();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
+    boolean multipathMultipleAs = false;
     boolean multipathEbgpSet = false;
     boolean multipathIbgpSet = false;
+    boolean multipathMultipleAsSet = false;
 
     if (mg.getLocalAs() == null) {
       Integer routingInstanceAs = routingInstance.getAs();
@@ -291,6 +294,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
+
+      // multipath multiple-as
+      boolean currentGroupMultipathMultipleAs = ig.getMultipathMultipleAs();
+      if (multipathMultipleAsSet && currentGroupMultipathMultipleAs != multipathMultipleAs) {
+        _w.redFlag(
+            "Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgp"
+                + "groups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS");
+        multipathMultipleAs = false;
+      } else {
+        multipathMultipleAs = currentGroupMultipathMultipleAs;
+        multipathMultipleAsSet = true;
+      }
+
       String authenticationKeyChainName = ig.getAuthenticationKeyChainName();
       if (ig.getAuthenticationKeyChainName() != null) {
         if (!_c.getAuthenticationKeyChains().containsKey(authenticationKeyChainName)) {
@@ -502,6 +518,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     proc.setMultipathEbgp(multipathEbgpSet);
     proc.setMultipathIbgp(multipathIbgp);
+    MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
+        multipathMultipleAs
+            ? MultipathEquivalentAsPathMatchMode.PATH_LENGTH
+            : MultipathEquivalentAsPathMatchMode.FIRST_AS;
+    proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
+
     return proc;
   }
 

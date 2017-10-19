@@ -2363,7 +2363,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitB_multipath(B_multipathContext ctx) {
     _currentBgpGroup.setMultipath(true);
-    // TODO: support multiple-as function properly
+    if (ctx.MULTIPLE_AS() != null) {
+      _currentBgpGroup.setMultipathMultipleAs(true);
+    }
   }
 
   @Override

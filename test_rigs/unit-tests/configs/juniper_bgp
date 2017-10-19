@@ -25,6 +25,7 @@ set protocols bgp group someinternalipv4group import someimportpolicy
 set protocols bgp group someinternalipv4group local-address 1.2.3.4
 set protocols bgp group someinternalipv4group multipath
 set protocols bgp group someinternalipv4group neighbor 1.2.3.5 description boo
+set protocols bgp group someinternalipv4group neighbor 1.2.3.5 multipath multiple-as
 set protocols bgp group someinternalipv4group peer-as 54321
 set protocols bgp group someinternalipv4group type internal
 set protocols bgp group someinternalipv6group export someexportpolicy
@@ -38,3 +39,4 @@ set protocols bgp group someinternalipv6group type internal
 set protocols bgp log-updown
 set protocols bgp path-selection external-router-id
 #
+

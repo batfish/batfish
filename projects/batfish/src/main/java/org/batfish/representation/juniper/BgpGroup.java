@@ -50,6 +50,8 @@ public class BgpGroup implements Serializable {
 
   private Boolean _multipath;
 
+  private Boolean _multipathMultipleAs;
+
   private BgpGroup _parent;
 
   private Integer _peerAs;
@@ -114,6 +116,9 @@ public class BgpGroup implements Serializable {
       }
       if (_multipath == null) {
         _multipath = _parent._multipath;
+      }
+      if (_multipathMultipleAs == null) {
+        _multipathMultipleAs = _parent._multipathMultipleAs;
       }
       if (_peerAs == null) {
         _peerAs = _parent._peerAs;
@@ -188,6 +193,10 @@ public class BgpGroup implements Serializable {
     return _multipath;
   }
 
+  public Boolean getMultipathMultipleAs() {
+    return _multipathMultipleAs;
+  }
+
   public final BgpGroup getParent() {
     return _parent;
   }
@@ -254,6 +263,10 @@ public class BgpGroup implements Serializable {
 
   public void setMultipath(Boolean multipath) {
     _multipath = multipath;
+  }
+
+  public void setMultipathMultipleAs(Boolean multipathMultipleAs) {
+    _multipathMultipleAs = multipathMultipleAs;
   }
 
   public final void setParent(BgpGroup parent) {
