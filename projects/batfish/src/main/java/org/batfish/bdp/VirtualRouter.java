@@ -229,11 +229,17 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param areaPrefix The Ip prefix of the OSPF area
    * @param currentMetric The current summary metric for the area
    * @param areaNum Area number.
+   * @param useOldRfc Whether to use the older RFC 1583 computation, which takes the minimum of
+   *     metrics as opposed to the newer RFC 2328, which uses the maximum
    * @return the newly computed summary metric.
    */
   @Nullable
   static Long computeUpdatedOspfSummaryMetric(
-      OspfAreaRoute route, Prefix areaPrefix, @Nullable Long currentMetric, long areaNum) {
+      OspfAreaRoute route,
+      Prefix areaPrefix,
+      @Nullable Long currentMetric,
+      long areaNum,
+      boolean useOldRfc) {
     Prefix contributingRoutePrefix = route.getNetwork();
     // Only update metric for different areas and if the area prefix contains the route prefix
     if (areaNum == route.getArea() || !areaPrefix.containsPrefix(contributingRoutePrefix)) {
@@ -244,48 +250,64 @@ public class VirtualRouter extends ComparableStructure<String> {
     if (currentMetric == null) {
       return contributingRouteMetric;
     }
-    // Otherwise just take the best between route and current metrics
+    // Take the best metric between the route's and current available
     /*
-     * NOTE: The min function is used to compute the metric according to RFC 1583.
-     * HOWEVER, Cisco claims to have switched to using max function in IOS v.12.0 and later,
+     * NOTE: Best was determined using the min function according to RFC 1583.
+     * However, OSPFv2 uses max function.
+     * Cisco claims to have switched to using max in IOS v.12.0 and later,
      * as described in RFC 2328.
      * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
-     * Not sure if special handling is necessary by the OSPF process
      */
-    return Math.min(currentMetric, contributingRouteMetric);
+    if (useOldRfc) {
+      return Math.min(currentMetric, contributingRouteMetric);
+    }
+    return Math.max(currentMetric, contributingRouteMetric);
   }
 
   boolean computeInterAreaSummaries() {
     OspfProcess proc = _vrf.getOspfProcess();
     boolean changed = false;
-    // Ensure we have a running OSPF process on the VRF
-    if (proc != null) {
-      // Admin cost for the given protocol
-      int admin = RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat());
-      // Compute summaries for each area
-      for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
-        long areaNum = e.getKey();
-        OspfArea area = e.getValue();
-        for (Entry<Prefix, Boolean> e2 : area.getSummaries().entrySet()) {
-          Prefix prefix = e2.getKey();
-          boolean advertise = e2.getValue();
-          if (advertise) {
-            Long metric = null;
-            for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
-              metric = computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum);
-            }
-            for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
-              metric = computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum);
-            }
-            if (metric != null) {
-              // Non-null metric means we generate a new summary and put it in the RIB
-              OspfInterAreaRoute summaryRoute =
-                  new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
-              if (_ospfInterAreaStagingRib.mergeRoute(summaryRoute)) {
-                changed = true;
-              }
-            }
-          }
+    // Ensure we have a running OSPF process on the VRF, otherwise bail.
+    if (proc == null) {
+      return false;
+    }
+    // Admin cost for the given protocol
+    int admin = RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat());
+    // Compute summaries for each area
+    for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
+      long areaNum = e.getKey();
+      OspfArea area = e.getValue();
+      for (Entry<Prefix, Boolean> e2 : area.getSummaries().entrySet()) {
+        Prefix prefix = e2.getKey();
+        boolean advertise = e2.getValue();
+
+        // Only advertised summaries can contribute
+        if (!advertise) {
+          continue;
+        }
+
+        Long metric = null;
+        // Compute the metric from any possible contributing routes, use older RFC by default
+        // as it seems consistent with the GNS3 simulations
+        for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
+          metric =
+              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, true);
+        }
+        for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
+          metric =
+              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, true);
+        }
+
+        // No routes contributed to the summary, nothing to construct
+        if (metric == null) {
+          continue;
+        }
+
+        // Non-null metric means we generate a new summary and put it in the RIB
+        OspfInterAreaRoute summaryRoute =
+            new OspfInterAreaRoute(prefix, Ip.ZERO, admin, metric, areaNum);
+        if (_ospfInterAreaStagingRib.mergeRoute(summaryRoute)) {
+          changed = true;
         }
       }
     }

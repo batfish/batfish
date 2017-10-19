@@ -26,20 +26,28 @@ public class VirtualRouterTest {
 
     // The route is in the prefix and existing metric is null, so return the route's metric
     assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, null, definedArea),
+        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, null, definedArea, true),
         equalTo(definedMetric));
-    // Return the route's metric if the existing metric is higher (but not null)
+    // Return the lower metric if the existing not null and using old RFC
     assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 10L, definedArea),
+        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 10L, definedArea, true),
         equalTo(definedMetric));
+    // Return the higher metric if the existing metric is not null and using new RFC
+    assertThat(
+        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 10L, definedArea, false),
+        equalTo(10L));
     // The route is in the prefix but the existing metric is lower, so return the existing metric
     assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 4L, definedArea),
+        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 4L, definedArea, true),
         equalTo(4L));
+    // The route is in the prefix but the existing metric is lower, so return the existing metric
+    assertThat(
+        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 4L, definedArea, false),
+        equalTo(definedMetric));
     // The route is not in the area's prefix, return the current metric
     assertThat(
         VirtualRouter.computeUpdatedOspfSummaryMetric(
-            route, new Prefix("2.0.0.0/8"), 4L, definedArea),
+            route, new Prefix("2.0.0.0/8"), 4L, definedArea, true),
         equalTo(4L));
 
     OspfInterAreaRoute sameAreaRoute =
@@ -52,7 +60,7 @@ public class VirtualRouterTest {
     // Thus the metric should remain null
     assertThat(
         VirtualRouter.computeUpdatedOspfSummaryMetric(
-            sameAreaRoute, Prefix.ZERO, null, definedArea),
+            sameAreaRoute, Prefix.ZERO, null, definedArea, true),
         equalTo(null));
   }
 }
