@@ -215,6 +215,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "1.2.3.4/32" : {
@@ -587,6 +588,7 @@
               ],
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "198.188.136.21",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -720,6 +722,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -1759,6 +1762,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : true,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
                 "neighbors" : {
                   "1.10.1.1/32" : {
@@ -1867,6 +1871,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -1997,6 +2002,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -2057,6 +2063,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -2191,6 +2198,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : true,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "64.57.21.1/32" : {
@@ -2521,6 +2529,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -3734,6 +3743,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -3936,6 +3946,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -3996,6 +4007,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -7474,6 +7486,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -7958,6 +7971,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ROUTER_ID"
@@ -8990,6 +9004,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -9066,6 +9081,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ROUTER_ID"
@@ -9201,6 +9217,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "1.2.1.1/32" : {
@@ -10303,6 +10320,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -10600,6 +10618,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : true,
+                "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "172.16.2.1/32" : {
@@ -11399,6 +11418,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -11765,6 +11785,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "123.123.123.123/32" : {
@@ -11849,6 +11870,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "207.46.160.15",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -11984,6 +12006,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "123.123.123.123/32" : {
@@ -12213,6 +12236,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "1.1.1.1/32" : {
@@ -12369,6 +12393,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -12436,6 +12461,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -12512,6 +12538,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -12691,6 +12718,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : true,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
@@ -12912,6 +12940,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "10.0.0.0/32" : {
@@ -13039,6 +13068,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ROUTER_ID"
@@ -13530,6 +13560,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : true,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
                 "neighbors" : {
                   "10.98.25.0/25" : {
@@ -15854,6 +15885,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "1.1.1.1/32" : {
@@ -17646,6 +17678,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "routerId" : "0.0.0.0",
                 "tieBreaker" : "ARRIVAL_ORDER"
