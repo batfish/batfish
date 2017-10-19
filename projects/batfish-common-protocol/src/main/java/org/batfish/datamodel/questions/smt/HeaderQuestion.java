@@ -14,6 +14,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.IQuestion;
 import org.batfish.datamodel.questions.Question;
 
+
 public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_DST_IPS = "dstIps";
@@ -66,6 +67,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_DIFF_ENV_TYPE = "deltaEnvType";
 
+  private static final String PROP_USE_ABSTRACTION = "useAbstraction";
+
   private Set<ForwardingAction> _actions;
 
   private final HeaderSpace _headerSpace;
@@ -86,6 +89,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private EnvironmentType _deltaEnvType;
 
+  private boolean _useAbstraction;
+
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
     _headerSpace = new HeaderSpace();
@@ -97,6 +102,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = false;
     _baseEnvType = EnvironmentType.ANY;
     _deltaEnvType = EnvironmentType.ANY;
+    _useAbstraction = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -110,6 +116,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = q._envDiff;
     _baseEnvType = q._baseEnvType;
     _deltaEnvType = q._deltaEnvType;
+    _useAbstraction = q._useAbstraction;
   }
 
   @Override
@@ -252,7 +259,10 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _deltaEnvType;
   }
 
-
+  @JsonProperty(PROP_USE_ABSTRACTION)
+  public boolean getUseAbstraction() {
+    return _useAbstraction;
+  }
 
   @Override
   public boolean getTraffic() {
@@ -454,5 +464,10 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_DIFF_ENV_TYPE)
   public void setDeltaEnvironmentType(EnvironmentType e) {
     _deltaEnvType = e;
+  }
+
+  @JsonProperty(PROP_USE_ABSTRACTION)
+  public void setUseAbstraction(boolean x) {
+    this._useAbstraction = x;
   }
 }

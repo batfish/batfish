@@ -18,7 +18,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 
-public class AclBDD {
+public class BDDAcl {
 
   private IpAccessList _acl;
 
@@ -28,22 +28,22 @@ public class AclBDD {
 
   private BDDPacket _pkt;
 
-  private AclBDD(IpAccessList acl) {
+  private BDDAcl(IpAccessList acl) {
     _bdd = null;
     _acl = acl;
     _factory = BDDPacket.factory;
     _pkt = new BDDPacket();
   }
 
-  private AclBDD(AclBDD other) {
+  private BDDAcl(BDDAcl other) {
     _bdd = other._bdd;
     _acl = other._acl;
     _factory = other._factory;
     _pkt = other._pkt;
   }
 
-  public static AclBDD create(IpAccessList acl) {
-    AclBDD abdd = new AclBDD(acl);
+  public static BDDAcl create(IpAccessList acl) {
+    BDDAcl abdd = new BDDAcl(acl);
     abdd.computeACL();
     return abdd;
   }
@@ -347,18 +347,18 @@ public class AclBDD {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof AclBDD)) {
+    if (!(o instanceof BDDAcl)) {
       return false;
     }
-    AclBDD other = (AclBDD) o;
+    BDDAcl other = (BDDAcl) o;
     return Objects.equals(_bdd, other._bdd);
   }
 
   /*
    * Create a new version of the BDD restricted to a prefix
    */
-  public AclBDD restrict(Prefix pfx) {
-    AclBDD other = new AclBDD(this);
+  public BDDAcl restrict(Prefix pfx) {
+    BDDAcl other = new BDDAcl(this);
     other._bdd = this._pkt.restrict(this._bdd, pfx);
     return other;
   }
@@ -366,8 +366,8 @@ public class AclBDD {
   /*
  * Create a new version of the BDD restricted to a list of prefixes
  */
-  public AclBDD restrict(List<Prefix> prefixes) {
-    AclBDD other = new AclBDD(this);
+  public BDDAcl restrict(List<Prefix> prefixes) {
+    BDDAcl other = new BDDAcl(this);
     other._bdd = this._pkt.restrict(this._bdd, prefixes);
     return other;
   }

@@ -115,7 +115,7 @@ public class Roles {
           ec.add(s);
         }
 
-        AclBDD x4 = _network.getInAcls().get(ge);
+        BDDAcl x4 = _network.getInAcls().get(ge);
         if (x4 == null) {
           incomingAclNull.add(s);
         } else {
@@ -124,7 +124,7 @@ public class Roles {
           ec.add(s);
         }
 
-        AclBDD x5 = _network.getOutAcls().get(ge);
+        BDDAcl x5 = _network.getOutAcls().get(ge);
         if (x5 == null) {
           outgoingAclNull.add(s);
         } else {

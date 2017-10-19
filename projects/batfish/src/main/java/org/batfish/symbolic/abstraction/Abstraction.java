@@ -1,6 +1,7 @@
 package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,13 +17,16 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -60,30 +64,30 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
   private BDDNetwork _network;
 
-  private List<Prefix> _slice;
+  private HeaderSpace _headerspace;
 
-  private Set<String> _concreteNodes;
+  private Collection<String> _concreteNodes;
 
   private Map<Set<String>, List<Prefix>> _destinationMap;
 
   private Abstraction(
-      IBatfish batfish, @Nullable Set<String> concrete, @Nullable List<Prefix> prefixes) {
+      IBatfish batfish, @Nullable Collection<String> concrete, @Nullable HeaderSpace h) {
     _batfish = batfish;
     _graph = new Graph(batfish);
     _network = BDDNetwork.create(_graph);
-    _slice = prefixes;
     _concreteNodes = concrete;
     _destinationMap = new HashMap<>();
+    _headerspace = h;
   }
 
   public static Abstraction create(
-      IBatfish batfish, @Nullable Set<String> concrete, @Nullable List<Prefix> prefixes) {
-    Abstraction abs = new Abstraction(batfish, concrete, prefixes);
+      IBatfish batfish, @Nullable Collection<String> concrete, @Nullable HeaderSpace h) {
+    Abstraction abs = new Abstraction(batfish, concrete, h);
     abs.computeDestinationMap();
     return abs;
   }
 
-  public static Abstraction create(IBatfish batfish, @Nullable Set<String> concrete) {
+  public static Abstraction create(IBatfish batfish, @Nullable Collection<String> concrete) {
     Abstraction abs = new Abstraction(batfish, concrete, null);
     abs.computeDestinationMap();
     return abs;
@@ -91,6 +95,27 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
   private void computeDestinationMap() {
     Map<String, List<Protocol>> protoMap = buildProtocolMap();
+
+    // Convert headerspace to list of prefixes
+    List<Prefix> dstIps = new ArrayList<>();
+    List<Prefix> notDstIps = new ArrayList<>();
+    if (_headerspace != null) {
+      for (IpWildcard ip : _headerspace.getDstIps()) {
+        if (!ip.isPrefix()) {
+          throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
+        }
+        dstIps.add(ip.toPrefix());
+      }
+      for (IpWildcard ip : _headerspace.getNotDstIps()) {
+        if (!ip.isPrefix()) {
+          throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
+        }
+        notDstIps.add(ip.toPrefix());
+      }
+    }
+
+    System.out.println("DstIps: " + dstIps);
+    System.out.println("NotDstIps: " + notDstIps);
 
     PrefixTrieMap pt = new PrefixTrieMap();
 
@@ -122,7 +147,9 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
         // Add all destinations to the prefix trie relevant to this slice
         for (Prefix p : destinations) {
-          if (_slice == null || PrefixUtils.overlap(p, _slice)) {
+          if (_headerspace == null
+              || (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps))) {
+            System.out.println("Adding: " + p);
             pt.add(p, router);
           }
         }
@@ -136,7 +163,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     _destinationMap.forEach(
         (devices, prefixes) -> System.out.println("Devices: " + devices + " --> " + prefixes));
   }
-
 
   private Map<String, List<Protocol>> buildProtocolMap() {
     // Figure out which protocols are running on which devices
@@ -170,6 +196,17 @@ public class Abstraction implements Iterable<EquivalenceClass> {
   @Override
   public Iterator<EquivalenceClass> iterator() {
     return new AbstractionIterator();
+  }
+
+  private HeaderSpace createHeaderSpace(List<Prefix> prefixes) {
+    HeaderSpace h = new HeaderSpace();
+    SortedSet<IpWildcard> ips = new TreeSet<>();
+    for (Prefix pfx : prefixes) {
+      IpWildcard ip = new IpWildcard(pfx);
+      ips.add(ip);
+    }
+    h.setDstIps(ips);
+    return h;
   }
 
   private EquivalenceClass computeAbstraction(Set<String> devices, List<Prefix> prefixes) {
@@ -274,37 +311,40 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
     } while (!todo.isEmpty());
 
-    System.out.println("  size: " + workset.partitions().size());
+    // System.out.println("  size: " + workset.partitions().size());
+    // System.out.println("Abstraction for: " + prefixes);
+    // System.out.println("ECs: \n" + workset.partitions());
 
-    Graph abstractGraph = createAbstractNetwork(workset, devices);
-    return new EquivalenceClass(prefixes, abstractGraph);
+    Tuple<Graph, Map<String,String>> abstractNetwork = createAbstractNetwork(workset, devices);
+    Graph abstractGraph = abstractNetwork.getFirst();
+    Map<String,String> abstraction = abstractNetwork.getSecond();
 
-    // System.out.println("EC: " + prefixes);
-    // System.out.println("Final abstraction: " + workset.partitions());
-    // System.out.println("Original Size: " + allDevices.size());
-    // System.out.println("Compressed: " + workset.partitions().size());
+    // System.out.println("New graph: \n" + abstractGraph);
+    System.out.println("Size: " + abstractGraph.getConfigurations().size());
+    System.out.println("ECs: " + workset.partitions().size());
+
+    HeaderSpace h = createHeaderSpace(prefixes);
+    return new EquivalenceClass(h, abstractGraph, abstraction);
   }
-
 
   /*
    * Given a collection of abstract roles, computes a set of canonical
    * representatives from each role that serve as the abstraction.
    */
-  private Set<String> chooseCanonicalRouters(UnionSplit<String> us, Set<String> dests) {
+  private Map<Integer, String> chooseCanonicalRouters(UnionSplit<String> us, Set<String> dests) {
     Map<Integer, String> choosen = new HashMap<>();
-    Stack<Tuple<Integer,String>> todo = new Stack<>();
+    Stack<Tuple<Integer, String>> todo = new Stack<>();
 
     // Start with the concrete nodes
     for (String d : dests) {
       Integer i = us.getHandle(d);
-      Tuple<Integer, String> tup = new Tuple<>(i,d);
-      choosen.put(i,d);
+      Tuple<Integer, String> tup = new Tuple<>(i, d);
       todo.push(tup);
     }
 
     // Need to choose representatives that are connected
     while (!todo.isEmpty()) {
-      Tuple<Integer,String> tup = todo.pop();
+      Tuple<Integer, String> tup = todo.pop();
       Integer i = tup.getFirst();
       String router = tup.getSecond();
       if (choosen.containsKey(i)) {
@@ -320,7 +360,8 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         }
       }
     }
-    return new HashSet<>(choosen.values());
+
+    return choosen;
   }
 
   /*
@@ -341,6 +382,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     abstractConf.setIkeProposals(conf.getIkeProposals());
     abstractConf.setDefaultInboundAction(conf.getDefaultInboundAction());
     abstractConf.setIp6AccessLists(conf.getIp6AccessLists());
+    abstractConf.setRouteFilterLists(conf.getRouteFilterLists());
     abstractConf.setRoute6FilterLists(conf.getRoute6FilterLists());
     abstractConf.setIpsecPolicies(conf.getIpsecPolicies());
     abstractConf.setIpsecProposals(conf.getIpsecProposals());
@@ -358,20 +400,23 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     abstractConf.setVendorFamily(conf.getVendorFamily());
     abstractConf.setZones(conf.getZones());
     abstractConf.setCommunityLists(conf.getCommunityLists());
+    abstractConf.setRoutingPolicies(conf.getRoutingPolicies());
 
     SortedSet<Interface> toRetain = new TreeSet<>();
-    SortedSet<Pair<Ip,Ip>> ipNeighbors = new TreeSet<>();
+    SortedSet<Pair<Ip, Ip>> ipNeighbors = new TreeSet<>();
     SortedSet<BgpNeighbor> bgpNeighbors = new TreeSet<>();
 
     List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getName());
     for (GraphEdge ge : edges) {
-      if (abstractRouters.contains(ge.getRouter())
-          && ge.getPeer() != null
-          && abstractRouters.contains(ge.getPeer())) {
+      boolean leavesNetwork = (ge.getPeer() == null);
+      if (leavesNetwork
+          || (abstractRouters.contains(ge.getRouter()) && abstractRouters.contains(ge.getPeer()))) {
         toRetain.add(ge.getStart());
         Ip start = ge.getStart().getPrefix().getAddress();
-        Ip end = ge.getEnd().getPrefix().getAddress();
-        ipNeighbors.add(new Pair<>(start, end));
+        if (!leavesNetwork) {
+          Ip end = ge.getEnd().getPrefix().getAddress();
+          ipNeighbors.add(new Pair<>(start, end));
+        }
         BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);
         if (n != null) {
           bgpNeighbors.add(n);
@@ -379,72 +424,84 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       }
     }
 
+    // Update interfaces
     NavigableMap<String, Interface> abstractInterfaces = new TreeMap<>();
-
-    conf.getInterfaces().forEach((name, iface) -> {
-      if (toRetain.contains(iface)) {
-        abstractInterfaces.put(name, iface);
-      }
-    });
+    conf.getInterfaces()
+        .forEach(
+            (name, iface) -> {
+              if (toRetain.contains(iface)) {
+                abstractInterfaces.put(name, iface);
+              }
+            });
     abstractConf.setInterfaces(abstractInterfaces);
 
-    abstractConf.setVrfs(conf.getVrfs());
-
+    // Update VRFs
     Map<String, Vrf> abstractVrfs = new HashMap<>();
-    conf.getVrfs().forEach((name, vrf) -> {
-      Vrf abstractVrf = new Vrf(name);
-      abstractVrf.setStaticRoutes(vrf.getStaticRoutes());
-      abstractVrf.setIsisProcess(vrf.getIsisProcess());
-      abstractVrf.setRipProcess(vrf.getRipProcess());
-      abstractVrf.setSnmpServer(vrf.getSnmpServer());
+    conf.getVrfs()
+        .forEach(
+            (name, vrf) -> {
+              Vrf abstractVrf = new Vrf(name);
+              abstractVrf.setStaticRoutes(vrf.getStaticRoutes());
+              abstractVrf.setIsisProcess(vrf.getIsisProcess());
+              abstractVrf.setRipProcess(vrf.getRipProcess());
+              abstractVrf.setSnmpServer(vrf.getSnmpServer());
 
-      NavigableMap<String, Interface> abstractVrfInterfaces = new TreeMap<>();
-      vrf.getInterfaces().forEach((iname, iface) -> {
-        if (toRetain.contains(iface)) {
-          abstractVrfInterfaces.put(iname, iface);
-        }
-      });
-      abstractVrf.setInterfaces(abstractVrfInterfaces);
-      abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
+              NavigableMap<String, Interface> abstractVrfInterfaces = new TreeMap<>();
+              vrf.getInterfaces()
+                  .forEach(
+                      (iname, iface) -> {
+                        if (toRetain.contains(iface)) {
+                          abstractVrfInterfaces.put(iname, iface);
+                        }
+                      });
+              abstractVrf.setInterfaces(abstractVrfInterfaces);
+              abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
 
-      OspfProcess ospf = vrf.getOspfProcess();
-      if (ospf != null) {
-        OspfProcess abstractOspf = new OspfProcess();
-        abstractOspf.setAreas(ospf.getAreas());
-        abstractOspf.setExportPolicy(ospf.getExportPolicy());
-        abstractOspf.setReferenceBandwidth(ospf.getReferenceBandwidth());
-        abstractOspf.setRouterId(ospf.getRouterId());
+              OspfProcess ospf = vrf.getOspfProcess();
+              if (ospf != null) {
+                OspfProcess abstractOspf = new OspfProcess();
+                abstractOspf.setAreas(ospf.getAreas());
+                abstractOspf.setExportPolicy(ospf.getExportPolicy());
+                abstractOspf.setReferenceBandwidth(ospf.getReferenceBandwidth());
+                abstractOspf.setRouterId(ospf.getRouterId());
 
-        Map<Pair<Ip,Ip>, OspfNeighbor> abstractNeighbors = new HashMap<>();
-        ospf.getOspfNeighbors().forEach((pair, neighbor) -> {
-          if (ipNeighbors.contains(pair)) {
-            abstractNeighbors.put(pair, neighbor);
-          }
-        });
-        abstractOspf.setOspfNeighbors(abstractNeighbors);
-        abstractVrf.setOspfProcess(abstractOspf);
-      }
+                Map<Pair<Ip, Ip>, OspfNeighbor> abstractNeighbors = new HashMap<>();
+                ospf.getOspfNeighbors()
+                    .forEach(
+                        (pair, neighbor) -> {
+                          if (ipNeighbors.contains(pair)) {
+                            abstractNeighbors.put(pair, neighbor);
+                          }
+                        });
+                abstractOspf.setOspfNeighbors(abstractNeighbors);
+                abstractVrf.setOspfProcess(abstractOspf);
+              }
 
-      BgpProcess bgp = vrf.getBgpProcess();
-      if (bgp != null) {
-        BgpProcess abstractBgp = new BgpProcess();
-        abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
-        abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
-        abstractBgp.setRouterId(bgp.getRouterId());
-        abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
+              BgpProcess bgp = vrf.getBgpProcess();
+              if (bgp != null) {
+                BgpProcess abstractBgp = new BgpProcess();
+                abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
+                abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
+                abstractBgp.setRouterId(bgp.getRouterId());
+                abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
 
-        // TODO: set bgp neighbors accordingly
-        SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
-        bgp.getNeighbors().forEach((prefix, neighbor) -> {
-          if (bgpNeighbors.contains(neighbor)) {
-            abstractBgpNeighbors.put(prefix, neighbor);
-          }
-        });
-        abstractBgp.setNeighbors(abstractBgpNeighbors);
-      }
+                // TODO: set bgp neighbors accordingly
+                SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
+                bgp.getNeighbors()
+                    .forEach(
+                        (prefix, neighbor) -> {
+                          if (bgpNeighbors.contains(neighbor)) {
+                            abstractBgpNeighbors.put(prefix, neighbor);
+                          }
+                        });
+                abstractBgp.setNeighbors(abstractBgpNeighbors);
+                abstractVrf.setBgpProcess(abstractBgp);
+              }
 
-      abstractVrfs.put(name, abstractVrf);
-    });
+              abstractVrfs.put(name, abstractVrf);
+            });
+
+    abstractConf.setVrfs(abstractVrfs);
 
     return abstractConf;
   }
@@ -455,19 +512,34 @@ public class Abstraction implements Iterable<EquivalenceClass> {
    * representatives from each role, and then removes all their interfaces etc
    * that connect to non-canonical routers.
    */
-  private Graph createAbstractNetwork(UnionSplit<String> us, Set<String> dests) {
-    Set<String> abstractRouters = chooseCanonicalRouters(us, dests);
+  private Tuple<Graph, Map<String, String>> createAbstractNetwork(
+      UnionSplit<String> us, Set<String> dests) {
+    Map<Integer, String> canonicalChoices = chooseCanonicalRouters(us, dests);
+    Set<String> abstractRouters = new HashSet<>(canonicalChoices.values());
+    // Create the abstract configurations
     Map<String, Configuration> newConfigs = new HashMap<>();
-    _graph.getConfigurations().forEach((router,conf) -> {
-      if (abstractRouters.contains(router)) {
-        Configuration abstractConf = createAbstractConfig(abstractRouters, conf);
-        newConfigs.put(router, abstractConf);
+    _graph
+        .getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              if (abstractRouters.contains(router)) {
+                Configuration abstractConf = createAbstractConfig(abstractRouters, conf);
+                newConfigs.put(router, abstractConf);
+              }
+            });
+    Graph abstractGraph = new Graph(_batfish, newConfigs);
+
+    Map<String, String> abstractionMap = new HashMap<>();
+    canonicalChoices.forEach((idx, choice) -> {
+      Set<String> group = us.getPartition(idx);
+      for (String s : group) {
+        abstractionMap.put(s, choice);
       }
     });
-    return new Graph(_batfish, newConfigs);
+
+
+    return new Tuple<>(abstractGraph, abstractionMap);
   }
-
-
 
   public AnswerElement asAnswer() {
     long start = System.currentTimeMillis();
@@ -491,16 +563,17 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       _iter = _destinationMap.entrySet().iterator();
     }
 
-    @Override public boolean hasNext() {
+    @Override
+    public boolean hasNext() {
       return _iter.hasNext();
     }
 
-    @Override public EquivalenceClass next() {
+    @Override
+    public EquivalenceClass next() {
       Entry<Set<String>, List<Prefix>> x = _iter.next();
       Set<String> devices = x.getKey();
       List<Prefix> prefixes = x.getValue();
       return computeAbstraction(devices, prefixes);
     }
   }
-
 }

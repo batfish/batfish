@@ -25,9 +25,9 @@ public class BDDNetwork {
 
   private Map<GraphEdge, InterfacePolicy> _importPolicyMap;
 
-  private Map<GraphEdge, AclBDD> _inAcls;
+  private Map<GraphEdge, BDDAcl> _inAcls;
 
-  private Map<GraphEdge, AclBDD> _outAcls;
+  private Map<GraphEdge, BDDAcl> _outAcls;
 
   public static BDDNetwork create(Graph g) {
     BDDNetwork network = new BDDNetwork(g);
@@ -83,12 +83,12 @@ public class BDDNetwork {
         IpAccessList out = ge.getStart().getOutgoingFilter();
         // Incoming ACL
         if (in != null) {
-          AclBDD x = AclBDD.create(in);
+          BDDAcl x = BDDAcl.create(in);
           _inAcls.put(ge, x);
         }
         // Outgoing ACL
         if (out != null) {
-          AclBDD x = AclBDD.create(out);
+          BDDAcl x = BDDAcl.create(out);
           _outAcls.put(ge, x);
         }
       }
@@ -101,8 +101,8 @@ public class BDDNetwork {
       for (GraphEdge ge : edges) {
         BDDRecord bgpIn = _importBgpPolicies.get(ge);
         BDDRecord bgpOut = _exportBgpPolicies.get(ge);
-        AclBDD aclIn = _inAcls.get(ge);
-        AclBDD aclOut = _outAcls.get(ge);
+        BDDAcl aclIn = _inAcls.get(ge);
+        BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
         SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
         InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
@@ -129,11 +129,11 @@ public class BDDNetwork {
     return _importPolicyMap;
   }
 
-  public Map<GraphEdge, AclBDD> getInAcls() {
+  public Map<GraphEdge, BDDAcl> getInAcls() {
     return _inAcls;
   }
 
-  public Map<GraphEdge, AclBDD> getOutAcls() {
+  public Map<GraphEdge, BDDAcl> getOutAcls() {
     return _outAcls;
   }
 }

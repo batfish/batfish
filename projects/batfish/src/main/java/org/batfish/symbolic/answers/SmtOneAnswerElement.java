@@ -1,5 +1,6 @@
 package org.batfish.symbolic.answers;
 
+import javax.annotation.Nullable;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;
 
@@ -11,7 +12,7 @@ public class SmtOneAnswerElement implements AnswerElement {
     return _result;
   }
 
-  public void setResult(VerificationResult result) {
+  public void setResult(@Nullable VerificationResult result) {
     this._result = result;
   }
 

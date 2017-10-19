@@ -1,25 +1,34 @@
 package org.batfish.symbolic.abstraction;
 
-import java.util.List;
-import org.batfish.datamodel.Prefix;
+import java.util.Map;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.symbolic.Graph;
 
 public class EquivalenceClass {
 
   private Graph _graph;
 
-  private List<Prefix> _slice;
+  private HeaderSpace _headerSpace;
 
-  public EquivalenceClass(List<Prefix> slice, Graph graph) {
-    this._slice = slice;
+  private Map<String, String> _abstraction;
+
+  public EquivalenceClass(
+      HeaderSpace headerSpace, Graph graph, @Nullable Map<String, String> abstraction) {
+    this._headerSpace = headerSpace;
     this._graph = graph;
+    this._abstraction = abstraction;
   }
 
   public Graph getGraph() {
     return _graph;
   }
 
-  public List<Prefix> getSlice() {
-    return _slice;
+  public HeaderSpace getHeaderSpace() {
+    return _headerSpace;
+  }
+
+  public Map<String, String> getAbstraction() {
+    return _abstraction;
   }
 }

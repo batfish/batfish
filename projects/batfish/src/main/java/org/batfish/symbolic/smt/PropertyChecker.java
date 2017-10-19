@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,6 +57,8 @@ import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.abstraction.Abstraction;
+import org.batfish.symbolic.abstraction.EquivalenceClass;
 import org.batfish.symbolic.answers.SmtDeterminismAnswerElement;
 import org.batfish.symbolic.answers.SmtManyAnswerElement;
 import org.batfish.symbolic.answers.SmtOneAnswerElement;
@@ -64,7 +67,6 @@ import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PathRegexes;
 import org.batfish.symbolic.utils.PatternUtils;
 import org.batfish.symbolic.utils.Tuple;
-
 
 /**
  * A collection of functions to checks if various properties hold in the network. The general flow
@@ -285,7 +287,6 @@ public class PropertyChecker {
                   Flow f = buildFlow(m, pkt, router);
                   Prefix pfx = buildPrefix(r, m, f);
                   int pathLength = intVal(m, r.getMetric());
-                  int localPref = intVal(m, r.getLocalPref());
 
                   // Create dummy information
                   BgpNeighbor n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
@@ -328,7 +329,7 @@ public class PropertyChecker {
                           dstIp,
                           RoutingProtocol.BGP,
                           OriginType.EGP,
-                          localPref,
+                          100,
                           80,
                           zeroIp,
                           path,
@@ -531,7 +532,7 @@ public class PropertyChecker {
   private static FlowHistory buildFlowCounterExample(
       IBatfish batfish,
       VerificationResult res,
-      List<String> sourceRouters,
+      Set<String> sourceRouters,
       Model model,
       Encoder enc,
       Map<String, BoolExpr> reach) {
@@ -561,7 +562,7 @@ public class PropertyChecker {
   private static FlowHistory buildFlowDiffCounterExample(
       IBatfish batfish,
       VerificationResult res,
-      List<String> sourceRouters,
+      Set<String> sourceRouters,
       Model model,
       Encoder enc,
       Encoder enc2,
@@ -738,6 +739,37 @@ public class PropertyChecker {
   }
 
   /*
+   * Returns an iterator that lazily generates new Equivalence classes to verify.
+   * If the abstraction option is enabled, will create abstract networks on-the-fly.
+   */
+  private static Iterator<EquivalenceClass> findAllEquivalenceClasses(
+      IBatfish batfish, HeaderQuestion q, Graph graph) {
+    if (q.getUseAbstraction()) {
+      Abstraction abs = Abstraction.create(batfish, new ArrayList<>(), q.getHeaderSpace());
+      return abs.iterator();
+    }
+    List<EquivalenceClass> singleEc = new ArrayList<>();
+    EquivalenceClass ec = new EquivalenceClass(q.getHeaderSpace(), graph, null);
+    singleEc.add(ec);
+    return singleEc.iterator();
+  }
+
+  /*
+   * Apply mapping from concrete to abstract nodes
+   */
+  private static Set<String> mapNodes(EquivalenceClass ec, List<String> concreteNodes) {
+    if (ec.getAbstraction() == null) {
+      return new HashSet<>(concreteNodes);
+    }
+    Set<String> abstractNodes = new HashSet<>();
+    for (String c : concreteNodes) {
+      String a = ec.getAbstraction().get(c);
+      abstractNodes.add(a);
+    }
+    return abstractNodes;
+  }
+
+  /*
    * Compute if a collection of source routers can reach a collection of destination
    * ports. This is broken up into multiple queries, one for each destination port.
    */
@@ -758,114 +790,138 @@ public class PropertyChecker {
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
 
-    Encoder enc = new Encoder(graph, q);
-    enc.computeEncoding();
+    Iterator<EquivalenceClass> it = findAllEquivalenceClasses(batfish, q, graph);
+    VerificationResult res = null;
 
-    // Add environment constraints for base case
-    if (q.getDiffType() != null) {
-      if (q.getEnvDiff()) {
-        addEnvironmentConstraints(enc, q.getDeltaEnvironmentType());
-      }
-    } else {
-      addEnvironmentConstraints(enc, q.getBaseEnvironmentType());
-    }
+    long start = System.currentTimeMillis();
+    while (it.hasNext()) {
+      EquivalenceClass ec = it.next();
+      graph = ec.getGraph();
+      Set<String> srcRouters = mapNodes(ec, sourceRouters);
 
-    // Add reachability variables
-    PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
-    Map<String, BoolExpr> reach = pa.instrumentReachability(destPorts);
+      Encoder enc = new Encoder(graph, q);
+      enc.computeEncoding();
 
-    // If this is a equivalence query, we create a second copy of the network
-    Encoder enc2 = null;
-    Map<String, BoolExpr> reach2 = null;
-
-    if (q.getDiffType() != null) {
-      HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
-      q2.setFailures(0);
-      enc2 = new Encoder(enc, graph, q2);
-      enc2.computeEncoding();
-    }
-
-    // TODO: Should equivalence be factored out separately?
-    if (q.getDiffType() != null) {
-      assert (enc2 != null);
-
-      // create a map for enc2 to lookup a related environment variable from enc
-      Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
-      enc2.getMainSlice()
-          .getLogicalGraph()
-          .getEnvironmentVars()
-          .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
-
-      BoolExpr related = enc.mkTrue();
-
-      // Setup environment for the second copy
-      addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
-
-      if (!q.getEnvDiff()) {
-        related = relateEnvironments(enc, enc2);
-      }
-
-      PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
-      reach2 = pa2.instrumentReachability(destPorts);
-
-      // Add diff constraints
-      BoolExpr required = enc.mkTrue();
-      for (String source : sourceRouters) {
-        BoolExpr sourceReachable1 = reach.get(source);
-        BoolExpr sourceReachable2 = reach2.get(source);
-        BoolExpr val;
-        switch (q.getDiffType()) {
-          case INCREASED:
-            val = enc.mkImplies(sourceReachable1, sourceReachable2);
-            break;
-          case REDUCED:
-            val = enc.mkImplies(sourceReachable2, sourceReachable1);
-            break;
-          case ANY:
-            val = enc.mkEq(sourceReachable1, sourceReachable2);
-            break;
-          default:
-            throw new BatfishException("Missing case: " + q.getDiffType());
+      // Add environment constraints for base case
+      if (q.getDiffType() != null) {
+        if (q.getEnvDiff()) {
+          addEnvironmentConstraints(enc, q.getDeltaEnvironmentType());
         }
-        required = enc.mkAnd(required, val);
+      } else {
+        addEnvironmentConstraints(enc, q.getBaseEnvironmentType());
       }
 
-      // Ensure packets are equal
-      related = enc.mkAnd(related, relatePackets(enc, enc2));
+      // Add reachability variables
+      PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+      Map<String, BoolExpr> reach = pa.instrumentReachability(destPorts);
 
-      // Assuming equal packets and environments, is reachability the same
-      enc.add(related);
-      enc.add(enc.mkNot(required));
+      // If this is a equivalence query, we create a second copy of the network
+      Encoder enc2 = null;
+      Map<String, BoolExpr> reach2 = null;
 
-    } else {
-      BoolExpr allReach = enc.mkTrue();
-      for (String router : sourceRouters) {
-        BoolExpr r = reach.get(router);
-        allReach = enc.mkAnd(allReach, r);
+      if (q.getDiffType() != null) {
+        HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
+        q2.setFailures(0);
+        enc2 = new Encoder(enc, graph, q2);
+        enc2.computeEncoding();
       }
-      enc.add(enc.mkNot(allReach));
+
+      // TODO: Should equivalence be factored out separately?
+      if (q.getDiffType() != null) {
+        assert (enc2 != null);
+
+        // create a map for enc2 to lookup a related environment variable from enc
+        Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
+        enc2.getMainSlice()
+            .getLogicalGraph()
+            .getEnvironmentVars()
+            .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
+
+        BoolExpr related = enc.mkTrue();
+
+        // Setup environment for the second copy
+        addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
+
+        if (!q.getEnvDiff()) {
+          related = relateEnvironments(enc, enc2);
+        }
+
+        PropertyAdder pa2 = new PropertyAdder(enc2.getMainSlice());
+        reach2 = pa2.instrumentReachability(destPorts);
+
+        // Add diff constraints
+        BoolExpr required = enc.mkTrue();
+        for (String source : srcRouters) {
+          BoolExpr sourceReachable1 = reach.get(source);
+          BoolExpr sourceReachable2 = reach2.get(source);
+          BoolExpr val;
+          switch (q.getDiffType()) {
+            case INCREASED:
+              val = enc.mkImplies(sourceReachable1, sourceReachable2);
+              break;
+            case REDUCED:
+              val = enc.mkImplies(sourceReachable2, sourceReachable1);
+              break;
+            case ANY:
+              val = enc.mkEq(sourceReachable1, sourceReachable2);
+              break;
+            default:
+              throw new BatfishException("Missing case: " + q.getDiffType());
+          }
+          required = enc.mkAnd(required, val);
+        }
+
+        // Ensure packets are equal
+        related = enc.mkAnd(related, relatePackets(enc, enc2));
+
+        // Assuming equal packets and environments, is reachability the same
+        enc.add(related);
+        enc.add(enc.mkNot(required));
+
+      } else {
+        BoolExpr allReach = enc.mkTrue();
+        for (String router : srcRouters) {
+          BoolExpr r = reach.get(router);
+          allReach = enc.mkAnd(allReach, r);
+        }
+        enc.add(enc.mkNot(allReach));
+      }
+
+      // Only consider failures for allowed edges
+      addFailureConstraints(enc, destPorts, failOptions);
+
+      Tuple<VerificationResult, Model> result = enc.verify();
+      res = result.getFirst();
+      Model model = result.getSecond();
+
+      // res.debug(enc.getMainSlice(), true, null);
+
+      if (res.isVerified()) {
+        continue;
+      }
+
+      FlowHistory fh;
+      if (q.getDiffType() != null) {
+        fh =
+            buildFlowDiffCounterExample(
+                batfish, res, srcRouters, model, enc, enc2, reach, reach2);
+      } else {
+        fh = buildFlowCounterExample(batfish, res, srcRouters, model, enc, reach);
+      }
+
+      System.out.println("Total time: " + (System.currentTimeMillis() - start));
+
+      SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
+      answer.setResult(res);
+      answer.setFlowHistory(fh);
+      return answer;
     }
 
-    // Only consider failures for allowed edges
-    addFailureConstraints(enc, destPorts, failOptions);
-
-    Tuple<VerificationResult, Model> result = enc.verify();
-    VerificationResult res = result.getFirst();
-    Model model = result.getSecond();
-
-    // res.debug(enc.getMainSlice(), true, null);
-
-    FlowHistory fh;
-    if (q.getDiffType() != null) {
-      fh =
-          buildFlowDiffCounterExample(batfish, res, sourceRouters, model, enc, enc2, reach, reach2);
-    } else {
-      fh = buildFlowCounterExample(batfish, res, sourceRouters, model, enc, reach);
-    }
+    System.out.println("Total time: " + (System.currentTimeMillis() - start));
 
     SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
     answer.setResult(res);
-    answer.setFlowHistory(fh);
+    answer.setFlowHistory(new FlowHistory());
     return answer;
   }
 

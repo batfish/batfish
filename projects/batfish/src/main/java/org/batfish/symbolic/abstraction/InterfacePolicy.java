@@ -9,7 +9,7 @@ import org.batfish.datamodel.StaticRoute;
 
 public class InterfacePolicy {
 
-  private AclBDD _acl;
+  private BDDAcl _acl;
 
   private BDDRecord _bgpPolicy;
 
@@ -22,7 +22,7 @@ public class InterfacePolicy {
   // TODO: route reflectors etc
 
   public InterfacePolicy(
-      @Nullable AclBDD acl,
+      @Nullable BDDAcl acl,
       @Nullable BDDRecord bgpPolicy,
       @Nullable Integer ospfCost,
       @Nullable SortedSet<StaticRoute> staticRoutes) {
@@ -48,7 +48,7 @@ public class InterfacePolicy {
     }
   }
 
-  public AclBDD getAcl() {
+  public BDDAcl getAcl() {
     return _acl;
   }
 
