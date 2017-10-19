@@ -6,11 +6,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.collections.SingletonSortedSet;
 
 public class AsPath implements Serializable, Comparable<AsPath> {
 
@@ -22,6 +25,15 @@ public class AsPath implements Serializable, Comparable<AsPath> {
    */
   public static boolean isPrivateAs(int as) {
     return (as >= 64512 && as <= 65535);
+  }
+
+  public static final AsPath ofSingletonAsSets(Integer... asNums) {
+    return ofSingletonAsSets(Arrays.asList(asNums));
+  }
+
+  public static final AsPath ofSingletonAsSets(List<Integer> asNums) {
+    return new AsPath(
+        asNums.stream().map(as -> SingletonSortedSet.of(as)).collect(Collectors.toList()));
   }
 
   public static List<SortedSet<Integer>> removePrivateAs(List<SortedSet<Integer>> asPath) {

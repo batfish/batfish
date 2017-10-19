@@ -1,13 +1,18 @@
 package org.batfish.bdp;
 
+import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpMultipathRib extends AbstractRib<BgpRoute> {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private Map<Prefix, AsPath> _bestAsPaths;
 
   public BgpMultipathRib(VirtualRouter owner) {
     super(owner);
@@ -101,5 +106,9 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
       default:
         throw new BatfishException("Invalid BGP protocol: '" + protocol + "'");
     }
+  }
+
+  public void setBestAsPaths(Map<Prefix, AsPath> bestAsPaths) {
+    _bestAsPaths = bestAsPaths;
   }
 }
