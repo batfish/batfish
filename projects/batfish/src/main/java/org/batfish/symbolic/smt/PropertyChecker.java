@@ -329,7 +329,7 @@ public class PropertyChecker {
 
               // Add environment constraints for base case
               if (question.getDiffType() != null) {
-                if (q.getEnvDiff()) {
+                if (question.getEnvDiff()) {
                   addEnvironmentConstraints(enc, question.getDeltaEnvironmentType());
                 }
               } else {
