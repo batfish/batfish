@@ -15,6 +15,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -172,6 +173,18 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     return protocols;
   }
 
+
+  public ArrayList<Supplier<EquivalenceClass>> equivalenceClasses() {
+    ArrayList<Supplier<EquivalenceClass>> classes = new ArrayList<>();
+    for (Entry<Set<String>, List<Prefix>> entry : _destinationMap.entrySet()) {
+      Set<String> devices = entry.getKey();
+      List<Prefix> prefixes = entry.getValue();
+      Supplier<EquivalenceClass> sup = () -> computeAbstraction(devices, prefixes);
+      classes.add(sup);
+    }
+    return classes;
+  }
+
   @Nonnull
   @Override
   public Iterator<EquivalenceClass> iterator() {
@@ -305,10 +318,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     System.out.println("Abstract Size: " + abstractGraph.getConfigurations().size());
     // System.out.println("Num Groups: " + workset.partitions().size());
 
-    abstractGraph.getConfigurations().forEach((router,conf) -> {
-
-    });
-
     HeaderSpace h = createHeaderSpace(prefixes);
     return new EquivalenceClass(h, abstractGraph, abstraction);
   }
@@ -414,84 +423,82 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
     // Update interfaces
     NavigableMap<String, Interface> abstractInterfaces = new TreeMap<>();
-    conf.getInterfaces()
-        .forEach(
-            (name, iface) -> {
-              if (toRetain.contains(iface)) {
-                abstractInterfaces.put(name, iface);
-              }
-            });
+    for (Entry<String, Interface> entry : conf.getInterfaces().entrySet()) {
+      String name = entry.getKey();
+      Interface iface = entry.getValue();
+      if (toRetain.contains(iface)) {
+        abstractInterfaces.put(name, iface);
+      }
+    }
     abstractConf.setInterfaces(abstractInterfaces);
 
     // Update VRFs
     Map<String, Vrf> abstractVrfs = new HashMap<>();
-    conf.getVrfs()
-        .forEach(
-            (name, vrf) -> {
-              Vrf abstractVrf = new Vrf(name);
-              abstractVrf.setStaticRoutes(vrf.getStaticRoutes());
-              abstractVrf.setIsisProcess(vrf.getIsisProcess());
-              abstractVrf.setRipProcess(vrf.getRipProcess());
-              abstractVrf.setSnmpServer(vrf.getSnmpServer());
+    for (Entry<String, Vrf> entry : conf.getVrfs().entrySet()) {
+      String name = entry.getKey();
+      Vrf vrf = entry.getValue();
+      Vrf abstractVrf = new Vrf(name);
+      abstractVrf.setStaticRoutes(vrf.getStaticRoutes());
+      abstractVrf.setIsisProcess(vrf.getIsisProcess());
+      abstractVrf.setRipProcess(vrf.getRipProcess());
+      abstractVrf.setSnmpServer(vrf.getSnmpServer());
 
-              NavigableMap<String, Interface> abstractVrfInterfaces = new TreeMap<>();
-              vrf.getInterfaces()
-                  .forEach(
-                      (iname, iface) -> {
-                        if (toRetain.contains(iface)) {
-                          abstractVrfInterfaces.put(iname, iface);
-                        }
-                      });
-              abstractVrf.setInterfaces(abstractVrfInterfaces);
-              abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
+      NavigableMap<String, Interface> abstractVrfInterfaces = new TreeMap<>();
+      for (Entry<String, Interface> entry2 : vrf.getInterfaces().entrySet()) {
+        String iname = entry2.getKey();
+        Interface iface = entry2.getValue();
+        if (toRetain.contains(iface)) {
+          abstractVrfInterfaces.put(iname, iface);
+        }
+      }
+      abstractVrf.setInterfaces(abstractVrfInterfaces);
+      abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
 
-              OspfProcess ospf = vrf.getOspfProcess();
-              if (ospf != null) {
-                OspfProcess abstractOspf = new OspfProcess();
-                abstractOspf.setAreas(ospf.getAreas());
-                abstractOspf.setExportPolicy(ospf.getExportPolicy());
-                abstractOspf.setReferenceBandwidth(ospf.getReferenceBandwidth());
-                abstractOspf.setRouterId(ospf.getRouterId());
+      OspfProcess ospf = vrf.getOspfProcess();
+      if (ospf != null) {
+        OspfProcess abstractOspf = new OspfProcess();
+        abstractOspf.setAreas(ospf.getAreas());
+        abstractOspf.setExportPolicy(ospf.getExportPolicy());
+        abstractOspf.setReferenceBandwidth(ospf.getReferenceBandwidth());
+        abstractOspf.setRouterId(ospf.getRouterId());
+        // Copy over neighbors
+        Map<Pair<Ip, Ip>, OspfNeighbor> abstractNeighbors = new HashMap<>();
+        for (Entry<Pair<Ip, Ip>, OspfNeighbor> entry2 : ospf.getOspfNeighbors().entrySet()) {
+          Pair<Ip,Ip> pair = entry2.getKey();
+          OspfNeighbor neighbor = entry2.getValue();
+          if (ipNeighbors.contains(pair)) {
+            abstractNeighbors.put(pair, neighbor);
+          }
+        }
+        abstractOspf.setOspfNeighbors(abstractNeighbors);
+        abstractVrf.setOspfProcess(abstractOspf);
+      }
 
-                Map<Pair<Ip, Ip>, OspfNeighbor> abstractNeighbors = new HashMap<>();
-                ospf.getOspfNeighbors()
-                    .forEach(
-                        (pair, neighbor) -> {
-                          if (ipNeighbors.contains(pair)) {
-                            abstractNeighbors.put(pair, neighbor);
-                          }
-                        });
-                abstractOspf.setOspfNeighbors(abstractNeighbors);
-                abstractVrf.setOspfProcess(abstractOspf);
-              }
+      BgpProcess bgp = vrf.getBgpProcess();
+      if (bgp != null) {
+        BgpProcess abstractBgp = new BgpProcess();
+        abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
+        abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
+        abstractBgp.setRouterId(bgp.getRouterId());
+        abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
+        // TODO: set bgp neighbors accordingly
+        // Copy over neighbors
+        SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
+        for (Entry<Prefix, BgpNeighbor> entry2 : bgp.getNeighbors().entrySet()) {
+          Prefix prefix = entry2.getKey();
+          BgpNeighbor neighbor = entry2.getValue();
+          if (bgpNeighbors.contains(neighbor)) {
+            abstractBgpNeighbors.put(prefix, neighbor);
+          }
+        }
+        abstractBgp.setNeighbors(abstractBgpNeighbors);
+        abstractVrf.setBgpProcess(abstractBgp);
+      }
 
-              BgpProcess bgp = vrf.getBgpProcess();
-              if (bgp != null) {
-                BgpProcess abstractBgp = new BgpProcess();
-                abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
-                abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
-                abstractBgp.setRouterId(bgp.getRouterId());
-                abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
-
-                // TODO: set bgp neighbors accordingly
-                SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
-                bgp.getNeighbors()
-                    .forEach(
-                        (prefix, neighbor) -> {
-                          if (bgpNeighbors.contains(neighbor)) {
-                            abstractBgpNeighbors.put(prefix, neighbor);
-                          }
-                        });
-                abstractBgp.setNeighbors(abstractBgpNeighbors);
-
-                abstractVrf.setBgpProcess(abstractBgp);
-              }
-
-              abstractVrfs.put(name, abstractVrf);
-            });
+      abstractVrfs.put(name, abstractVrf);
+    }
 
     abstractConf.setVrfs(abstractVrfs);
-
     return abstractConf;
   }
 

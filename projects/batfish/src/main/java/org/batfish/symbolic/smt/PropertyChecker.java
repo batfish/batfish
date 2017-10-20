@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,7 +21,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -221,20 +222,23 @@ public class PropertyChecker {
     }
   }
 
-  /*
-   * Returns an iterator that lazily generates new Equivalence classes to verify.
-   * If the abstraction option is enabled, will create abstract networks on-the-fly.
-   */
-  private Iterator<EquivalenceClass> findAllEquivalenceClasses(
-      IBatfish batfish, HeaderQuestion q, Graph graph) {
+  private Stream<Supplier<EquivalenceClass>> findAllEquivalenceClasses(
+      HeaderQuestion q, Graph graph) {
+
     if (q.getUseAbstraction()) {
-      Abstraction abs = Abstraction.create(batfish, new ArrayList<>(), q.getHeaderSpace());
-      return abs.iterator();
+      long l = System.currentTimeMillis();
+      Abstraction abs = Abstraction.create(_batfish, new ArrayList<>(), q.getHeaderSpace());
+      if (q.getBenchmark()) {
+        System.out.println("  Create abstraction: " + (System.currentTimeMillis() - l));
+      }
+      ArrayList<Supplier<EquivalenceClass>> ecs = abs.equivalenceClasses();
+      return ecs.stream();
     }
-    List<EquivalenceClass> singleEc = new ArrayList<>();
+    List<Supplier<EquivalenceClass>> singleEc = new ArrayList<>();
     EquivalenceClass ec = new EquivalenceClass(q.getHeaderSpace(), graph, null);
-    singleEc.add(ec);
-    return singleEc.iterator();
+    Supplier<EquivalenceClass> sup = () -> ec;
+    singleEc.add(sup);
+    return singleEc.stream();
   }
 
   /*
@@ -275,8 +279,8 @@ public class PropertyChecker {
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
       Function<VerifyParam, AnswerElement> answer) {
 
-    PathRegexes p = new PathRegexes(q);
     long l = System.currentTimeMillis();
+    PathRegexes p = new PathRegexes(q);
     Graph graph = new Graph(_batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
@@ -288,127 +292,152 @@ public class PropertyChecker {
       throw new BatfishException("Set of valid ingress nodes is empty");
     }
 
-    VerificationResult res = null;
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
-    Iterator<EquivalenceClass> it = findAllEquivalenceClasses(_batfish, q, graph);
+    Stream<Supplier<EquivalenceClass>> stream = findAllEquivalenceClasses(q, graph);
 
-    // long start = System.currentTimeMillis();
-    while (it.hasNext()) {
-      EquivalenceClass ec = it.next();
+    AnswerElement[] answerElement = new AnswerElement[1];
+    VerificationResult[] result = new VerificationResult[1];
+    answerElement[0] = null;
+    result[0] = null;
+    Object o = new Object();
 
-      // Make sure the headerspace is correct
-      q = new HeaderLocationQuestion(q);
-      q.setHeaderSpace(ec.getHeaderSpace());
+    // Checks ECs in parallel, but short circuits when a counterexample is found
+    boolean hasCounterExample =
+        stream.anyMatch(
+            lazyEc -> {
+              long ecTime = System.currentTimeMillis();
+              EquivalenceClass ec = lazyEc.get();
+              if (q.getBenchmark()) {
+                System.out.println("  Next EC: " + (System.currentTimeMillis() - ecTime));
+              }
 
-      // Get the EC graph and mapping
-      graph = ec.getGraph();
-      Set<String> srcRouters = mapConcreteToAbstract(ec, sourceRouters);
+              // Make sure the headerspace is correct
+              HeaderLocationQuestion question = new HeaderLocationQuestion(q);
+              question.setHeaderSpace(ec.getHeaderSpace());
 
-      Encoder enc = new Encoder(graph, q);
-      // long l1 = System.currentTimeMillis();
-      enc.computeEncoding();
-      // System.out.println("Encoding1 : " + (System.currentTimeMillis() - l1));
+              // Get the EC graph and mapping
+              Graph g = ec.getGraph();
+              Set<String> srcRouters = mapConcreteToAbstract(ec, sourceRouters);
 
-      // Add environment constraints for base case
-      if (q.getDiffType() != null) {
-        if (q.getEnvDiff()) {
-          addEnvironmentConstraints(enc, q.getDeltaEnvironmentType());
-        }
-      } else {
-        addEnvironmentConstraints(enc, q.getBaseEnvironmentType());
-      }
+              long l1 = System.currentTimeMillis();
+              Encoder enc = new Encoder(g, question);
+              enc.computeEncoding();
+              if (question.getBenchmark()) {
+                System.out.println("  Base Encoding: " + (System.currentTimeMillis() - l1));
+              }
 
-      Map<String, BoolExpr> prop = instrument.apply(enc, srcRouters, destPorts);
+              // Add environment constraints for base case
+              if (question.getDiffType() != null) {
+                if (q.getEnvDiff()) {
+                  addEnvironmentConstraints(enc, question.getDeltaEnvironmentType());
+                }
+              } else {
+                addEnvironmentConstraints(enc, question.getBaseEnvironmentType());
+              }
 
-      // If this is a equivalence query, we create a second copy of the network
-      Encoder enc2 = null;
-      Map<String, BoolExpr> prop2 = null;
+              Map<String, BoolExpr> prop = instrument.apply(enc, srcRouters, destPorts);
 
-      if (q.getDiffType() != null) {
-        HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
-        q2.setFailures(0);
-        enc2 = new Encoder(enc, graph, q2);
-        // long l2 = System.currentTimeMillis();
-        enc2.computeEncoding();
-        // System.out.println("Encoding2 : " + (System.currentTimeMillis() - l2));
-      }
+              // If this is a equivalence query, we create a second copy of the network
+              Encoder enc2 = null;
+              Map<String, BoolExpr> prop2 = null;
 
-      if (q.getDiffType() != null) {
-        assert (enc2 != null);
-        // create a map for enc2 to lookup a related environment variable from enc
-        Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
-        enc2.getMainSlice()
-            .getLogicalGraph()
-            .getEnvironmentVars()
-            .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
+              if (question.getDiffType() != null) {
+                HeaderLocationQuestion q2 = new HeaderLocationQuestion(question);
+                q2.setFailures(0);
+                long l2 = System.currentTimeMillis();
+                enc2 = new Encoder(enc, g, q2);
+                enc2.computeEncoding();
+                if (question.getBenchmark()) {
+                  System.out.println("  Diff Encoding: " + (System.currentTimeMillis() - l2));
+                }
+              }
 
-        BoolExpr related = enc.mkTrue();
-        addEnvironmentConstraints(enc2, q.getBaseEnvironmentType());
+              if (question.getDiffType() != null) {
+                assert (enc2 != null);
+                // create a map for enc2 to lookup a related environment variable from enc
+                Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
+                enc2.getMainSlice()
+                    .getLogicalGraph()
+                    .getEnvironmentVars()
+                    .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
 
-        if (!q.getEnvDiff()) {
-          related = relateEnvironments(enc, enc2);
-        }
+                BoolExpr related = enc.mkTrue();
+                addEnvironmentConstraints(enc2, question.getBaseEnvironmentType());
 
-        prop2 = instrument.apply(enc2, srcRouters, destPorts);
+                if (!question.getEnvDiff()) {
+                  related = relateEnvironments(enc, enc2);
+                }
 
-        // Add diff constraints
-        BoolExpr required = enc.mkTrue();
-        for (String source : srcRouters) {
-          BoolExpr sourceProp1 = prop.get(source);
-          BoolExpr sourceProp2 = prop2.get(source);
-          BoolExpr val;
-          switch (q.getDiffType()) {
-            case INCREASED:
-              val = enc.mkImplies(sourceProp1, sourceProp2);
-              break;
-            case REDUCED:
-              val = enc.mkImplies(sourceProp2, sourceProp1);
-              break;
-            case ANY:
-              val = enc.mkEq(sourceProp1, sourceProp2);
-              break;
-            default:
-              throw new BatfishException("Missing case: " + q.getDiffType());
-          }
-          required = enc.mkAnd(required, val);
-        }
+                prop2 = instrument.apply(enc2, srcRouters, destPorts);
 
-        related = enc.mkAnd(related, relatePackets(enc, enc2));
-        enc.add(related);
-        enc.add(enc.mkNot(required));
+                // Add diff constraints
+                BoolExpr required = enc.mkTrue();
+                for (String source : srcRouters) {
+                  BoolExpr sourceProp1 = prop.get(source);
+                  BoolExpr sourceProp2 = prop2.get(source);
+                  BoolExpr val;
+                  switch (q.getDiffType()) {
+                    case INCREASED:
+                      val = enc.mkImplies(sourceProp1, sourceProp2);
+                      break;
+                    case REDUCED:
+                      val = enc.mkImplies(sourceProp2, sourceProp1);
+                      break;
+                    case ANY:
+                      val = enc.mkEq(sourceProp1, sourceProp2);
+                      break;
+                    default:
+                      throw new BatfishException("Missing case: " + q.getDiffType());
+                  }
+                  required = enc.mkAnd(required, val);
+                }
 
-      } else {
-        BoolExpr allProp = enc.mkTrue();
-        for (String router : srcRouters) {
-          BoolExpr r = prop.get(router);
-          allProp = enc.mkAnd(allProp, r);
-        }
-        enc.add(enc.mkNot(allProp));
-      }
+                related = enc.mkAnd(related, relatePackets(enc, enc2));
+                enc.add(related);
+                enc.add(enc.mkNot(required));
 
-      addFailureConstraints(enc, destPorts, failOptions);
+              } else {
+                BoolExpr allProp = enc.mkTrue();
+                for (String router : srcRouters) {
+                  BoolExpr r = prop.get(router);
+                  allProp = enc.mkAnd(allProp, r);
+                }
+                enc.add(enc.mkNot(allProp));
+              }
 
-      //long startVerify = System.currentTimeMillis();
-      Tuple<VerificationResult, Model> result = enc.verify();
-      //System.out.println("Verification time: " + (System.currentTimeMillis() - startVerify));
+              addFailureConstraints(enc, destPorts, failOptions);
 
-      res = result.getFirst();
-      Model model = result.getSecond();
+              long startVerify = System.currentTimeMillis();
+              Tuple<VerificationResult, Model> tup = enc.verify();
+              if (question.getBenchmark()) {
+                System.out.println("  z3 time: " + (System.currentTimeMillis() - startVerify));
+              }
 
-      if (res.isVerified()) {
-        continue;
-      }
+              VerificationResult res = tup.getFirst();
+              Model model = tup.getSecond();
 
-      // res.debug(enc.getMainSlice(), true, null);
+              if (!res.isVerified()) {
+                VerifyParam vp = new VerifyParam(res, model, srcRouters, enc, enc2, prop, prop2);
+                synchronized (o) {
+                  answerElement[0] = answer.apply(vp);
+                }
+                return true;
+              }
 
-      // System.out.println("Total time: " + (System.currentTimeMillis() - l));
-      VerifyParam vp = new VerifyParam(res, model, srcRouters, enc, enc2, prop, prop2);
-      return answer.apply(vp);
+              synchronized (o) {
+                result[0] = res;
+              }
+              return false;
+            });
+
+    if (q.getBenchmark()) {
+      System.out.println("Total time: " + (System.currentTimeMillis() - l));
     }
-
-    // System.out.println("Total time: " + (System.currentTimeMillis() - l));
-    VerifyParam vp = new VerifyParam(res, null, null, null, null, null, null);
+    if (hasCounterExample) {
+      return answerElement[0];
+    }
+    VerifyParam vp = new VerifyParam(result[0], null, null, null, null, null, null);
     return answer.apply(vp);
   }
 

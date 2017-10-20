@@ -55,14 +55,10 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class Encoder {
 
-  private static final boolean ENABLE_UNSAT_CORE = false;
-
-  private static final Boolean ENABLE_BENCHMARKING = false;
-
   static final Boolean ENABLE_DEBUGGING = false;
-
   static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
-
+  private static final boolean ENABLE_UNSAT_CORE = false;
+  private static final Boolean ENABLE_BENCHMARKING = false;
   private int _encodingId;
 
   private boolean _modelIgp;
@@ -213,8 +209,7 @@ public class Encoder {
       Set<String> peers = entry.getValue();
       for (String peer : peers) {
         // sort names for unique
-        String pair =
-            (router.compareTo(peer) < 0 ? router + "_" + peer : peer + "_" + router);
+        String pair = (router.compareTo(peer) < 0 ? router + "_" + peer : peer + "_" + router);
         String name = getId() + "_FAILED-EDGE_" + pair;
         ArithExpr var = _ctx.mkIntConst(name);
         _symbolicFailures.getFailedInternalLinks().put(router, peer, var);
@@ -551,8 +546,7 @@ public class Encoder {
         if ("true".equals(valuation.get(r.getPermitted()))) {
           SortedMap<String, String> recordMap = new TreeMap<>();
           GraphEdge ge = lge.getEdge();
-          String nodeIface =
-              ge.getRouter() + "," + ge.getStart().getName() + " (BGP)";
+          String nodeIface = ge.getRouter() + "," + ge.getStart().getName() + " (BGP)";
           envModel.put(nodeIface, recordMap);
           if (r.getPrefixLength() != null) {
             String x = valuation.get(r.getPrefixLength());
@@ -612,8 +606,7 @@ public class Encoder {
             if ("true".equals(c)) {
               if (displayCommunity(cvar)) {
                 String s = cvar.getValue();
-                String t =
-                    slice.getNamedCommunities().get(cvar.getValue());
+                String t = slice.getNamedCommunities().get(cvar.getValue());
                 s = (t == null ? s : t);
                 recordMap.put("community " + s, "");
               }

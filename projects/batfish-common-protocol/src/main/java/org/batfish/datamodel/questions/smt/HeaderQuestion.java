@@ -69,6 +69,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_USE_ABSTRACTION = "useAbstraction";
 
+  private static final String PROP_BENCHMARK = "benchmark";
+
   private Set<ForwardingAction> _actions;
 
   private HeaderSpace _headerSpace;
@@ -91,6 +93,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _useAbstraction;
 
+  private boolean _benchmark;
+
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
     _headerSpace = new HeaderSpace();
@@ -103,6 +107,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _baseEnvType = EnvironmentType.ANY;
     _deltaEnvType = EnvironmentType.ANY;
     _useAbstraction = false;
+    _benchmark = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -117,6 +122,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _baseEnvType = q._baseEnvType;
     _deltaEnvType = q._deltaEnvType;
     _useAbstraction = q._useAbstraction;
+    _benchmark = q._benchmark;
   }
 
   @Override
@@ -267,6 +273,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_USE_ABSTRACTION)
   public boolean getUseAbstraction() {
     return _useAbstraction;
+  }
+
+  @JsonProperty(PROP_BENCHMARK)
+  public boolean getBenchmark() {
+    return _benchmark;
   }
 
   @Override
@@ -474,5 +485,10 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_USE_ABSTRACTION)
   public void setUseAbstraction(boolean x) {
     this._useAbstraction = x;
+  }
+
+  @JsonProperty(PROP_BENCHMARK)
+  public void setBenchmark(boolean x) {
+    this._benchmark = x;
   }
 }
