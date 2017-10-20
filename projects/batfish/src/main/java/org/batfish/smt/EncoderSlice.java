@@ -797,7 +797,7 @@ class EncoderSlice {
               (areaID, area) -> {
                 for (Interface iface : area.getInterfaces()) {
                   if (iface.getActive() && iface.getOspfEnabled()) {
-                    acc.add(iface.getPrefix());
+                    acc.add(iface.getPrefix().getNetworkPrefix());
                   }
                 }
               });
@@ -829,7 +829,7 @@ class EncoderSlice {
                           ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
                           Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
                           for (PrefixRange r : ranges) {
-                            acc.add(r.getPrefix());
+                            acc.add(r.getPrefix().getNetworkPrefix());
                           }
                         }
                       }
@@ -848,7 +848,7 @@ class EncoderSlice {
               (name, iface) -> {
                 Prefix p = iface.getPrefix();
                 if (p != null) {
-                  acc.add(p);
+                  acc.add(p.getNetworkPrefix());
                 }
               });
       return acc;
@@ -857,7 +857,7 @@ class EncoderSlice {
     if (proto.isStatic()) {
       for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
         if (sr.getNetwork() != null) {
-          acc.add(sr.getNetwork());
+          acc.add(sr.getNetwork().getNetworkPrefix());
         }
       }
       return acc;
