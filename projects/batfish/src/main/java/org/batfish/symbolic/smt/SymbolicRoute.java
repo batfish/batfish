@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.CommunityVar;
@@ -321,10 +322,9 @@ public class SymbolicRoute {
     if (_igpMetric != null) {
       all.put(_igpMetric.toString(), _igpMetric);
     }
-    _communities.forEach(
-        (name, var) -> {
-          all.put(var.toString(), var);
-        });
+    for (BoolExpr var : _communities.values()) {
+      all.put(var.toString(), var);
+    }
   }
 
   boolean getIsUsed() {

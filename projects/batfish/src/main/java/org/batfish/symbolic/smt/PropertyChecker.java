@@ -241,22 +241,21 @@ public class PropertyChecker {
   private static SortedSet<Edge> buildFailedLinks(Encoder enc, Model m) {
     Set<GraphEdge> failed = new HashSet<>();
     Graph g = enc.getMainSlice().getGraph();
-    g.getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                ArithExpr e = enc.getSymbolicFailures().getFailedVariable(ge);
-                assert e != null;
-                String s = evaluate(m, e);
-                if (!"0".equals(s)) {
-                  // Don't add both directions?
-                  GraphEdge other = g.getOtherEnd().get(ge);
-                  if (other == null || !failed.contains(other)) {
-                    failed.add(ge);
-                  }
-                }
-              }
-            });
+    for (List<GraphEdge> edges : g.getEdgeMap().values()) {
+      for (GraphEdge ge : edges) {
+        ArithExpr e = enc.getSymbolicFailures().getFailedVariable(ge);
+        assert e != null;
+        String s = evaluate(m, e);
+        if (!"0".equals(s)) {
+          // Don't add both directions?
+          GraphEdge other = g.getOtherEnd().get(ge);
+          if (other == null || !failed.contains(other)) {
+            failed.add(ge);
+          }
+        }
+      }
+    }
+
     // Convert to Batfish Edge type
     SortedSet<Edge> failedEdges = new TreeSet<>();
     for (GraphEdge ge : failed) {
@@ -269,76 +268,79 @@ public class PropertyChecker {
     SortedSet<BgpAdvertisement> routes = new TreeSet<>();
     EncoderSlice slice = enc.getMainSlice();
     LogicalGraph lg = slice.getLogicalGraph();
-    lg.getEnvironmentVars()
-        .forEach(
-            (lge, record) -> {
-              // If there is an external advertisement
-              if (boolVal(m, record.getPermitted())) {
-                // If we actually use it
-                GraphEdge ge = lge.getEdge();
-                String router = ge.getRouter();
-                SymbolicDecisions decisions = slice.getSymbolicDecisions();
-                BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
-                assert ctrFwd != null;
-                if (boolVal(m, ctrFwd)) {
-                  SymbolicRoute r = decisions.getBestNeighbor().get(router);
-                  SymbolicPacket pkt = slice.getSymbolicPacket();
-                  Flow f = buildFlow(m, pkt, router);
-                  Prefix pfx = buildPrefix(r, m, f);
-                  int pathLength = intVal(m, r.getMetric());
 
-                  // Create dummy information
-                  BgpNeighbor n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
-                  String srcNode = "as" + n.getRemoteAs();
-                  Ip zeroIp = new Ip(0);
-                  Ip dstIp = n.getLocalIp();
+    for (Entry<LogicalEdge, SymbolicRoute> entry : lg.getEnvironmentVars().entrySet()) {
+      LogicalEdge lge = entry.getKey();
+      SymbolicRoute record = entry.getValue();
+      // If there is an external advertisement
+      if (boolVal(m, record.getPermitted())) {
+        // If we actually use it
+        GraphEdge ge = lge.getEdge();
+        String router = ge.getRouter();
+        SymbolicDecisions decisions = slice.getSymbolicDecisions();
+        BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
+        assert ctrFwd != null;
 
-                  // Recover AS path
-                  List<SortedSet<Integer>> asSets = new ArrayList<>();
-                  for (int i = 0; i < pathLength; i++) {
-                    SortedSet<Integer> asSet = new TreeSet<>();
-                    asSet.add(-1);
-                    asSets.add(asSet);
-                  }
-                  AsPath path = new AsPath(asSets);
+        if (boolVal(m, ctrFwd)) {
+          SymbolicRoute r = decisions.getBestNeighbor().get(router);
+          SymbolicPacket pkt = slice.getSymbolicPacket();
+          Flow f = buildFlow(m, pkt, router);
+          Prefix pfx = buildPrefix(r, m, f);
+          int pathLength = intVal(m, r.getMetric());
 
-                  // Recover communities
-                  SortedSet<Long> communities = new TreeSet<>();
-                  r.getCommunities()
-                      .forEach(
-                          (cvar, expr) -> {
-                            if (cvar.getType() == Type.EXACT) {
-                              if (boolVal(m, expr)) {
-                                communities.add(cvar.asLong());
-                              }
-                            }
-                          });
+          // Create dummy information
+          BgpNeighbor n = slice.getGraph().getEbgpNeighbors().get(lge.getEdge());
+          String srcNode = "as" + n.getRemoteAs();
+          Ip zeroIp = new Ip(0);
+          Ip dstIp = n.getLocalIp();
 
-                  BgpAdvertisement adv =
-                      new BgpAdvertisement(
-                          BgpAdvertisementType.EBGP_RECEIVED,
-                          pfx,
-                          zeroIp,
-                          srcNode,
-                          "default",
-                          zeroIp,
-                          router,
-                          "default",
-                          dstIp,
-                          RoutingProtocol.BGP,
-                          OriginType.EGP,
-                          100,
-                          80,
-                          zeroIp,
-                          path,
-                          communities,
-                          new TreeSet<>(),
-                          0);
+          // Recover AS path
+          List<SortedSet<Integer>> asSets = new ArrayList<>();
+          for (int i = 0; i < pathLength; i++) {
+            SortedSet<Integer> asSet = new TreeSet<>();
+            asSet.add(-1);
+            asSets.add(asSet);
+          }
+          AsPath path = new AsPath(asSets);
 
-                  routes.add(adv);
-                }
+          // Recover communities
+          SortedSet<Long> communities = new TreeSet<>();
+          for (Entry<CommunityVar, BoolExpr> entry2 : r.getCommunities().entrySet()) {
+            CommunityVar cvar = entry2.getKey();
+            BoolExpr expr = entry2.getValue();
+            if (cvar.getType() == Type.EXACT) {
+              if (boolVal(m, expr)) {
+                communities.add(cvar.asLong());
               }
-            });
+            }
+          }
+
+          BgpAdvertisement adv =
+              new BgpAdvertisement(
+                  BgpAdvertisementType.EBGP_RECEIVED,
+                  pfx,
+                  zeroIp,
+                  srcNode,
+                  "default",
+                  zeroIp,
+                  router,
+                  "default",
+                  dstIp,
+                  RoutingProtocol.BGP,
+                  OriginType.EGP,
+                  100,
+                  80,
+                  zeroIp,
+                  path,
+                  communities,
+                  new TreeSet<>(),
+                  0);
+
+          routes.add(adv);
+        }
+      }
+    }
+
     return routes;
   }
 
@@ -634,10 +636,12 @@ public class PropertyChecker {
   private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
-    enc2.getMainSlice()
-        .getLogicalGraph()
-        .getEnvironmentVars()
-        .forEach((lge, r) -> relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r));
+    for (Entry<LogicalEdge, SymbolicRoute> entry :
+        enc2.getMainSlice().getLogicalGraph().getEnvironmentVars().entrySet()) {
+      LogicalEdge lge = entry.getKey();
+      SymbolicRoute r = entry.getValue();
+      relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r);
+    }
 
     BoolExpr related = enc1.mkTrue();
 
@@ -692,26 +696,23 @@ public class PropertyChecker {
   private static void addFailureConstraints(
       Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
-    graph
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
-                assert f != null;
-                if (!failSet.contains(ge)) {
-                  enc.add(enc.mkEq(f, enc.mkInt(0)));
-                } else if (dstPorts.contains(ge)) {
-                  // Don't fail an interface if it is for the destination ip we are considering
-                  // Otherwise, any failure can trivially make equivalence false
-                  Prefix pfx = ge.getStart().getPrefix();
-                  BitVecExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
-                  BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
-                  BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
-                  enc.add(enc.mkImplies(relevant, notFailed));
-                }
-              }
-            });
+    for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
+      for (GraphEdge ge : edges) {
+        ArithExpr f = enc.getSymbolicFailures().getFailedVariable(ge);
+        assert f != null;
+        if (!failSet.contains(ge)) {
+          enc.add(enc.mkEq(f, enc.mkInt(0)));
+        } else if (dstPorts.contains(ge)) {
+          // Don't fail an interface if it is for the destination ip we are considering
+          // Otherwise, any failure can trivially make equivalence false
+          Prefix pfx = ge.getStart().getPrefix();
+          BitVecExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
+          BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
+          BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));
+          enc.add(enc.mkImplies(relevant, notFailed));
+        }
+      }
+    }
   }
 
   /*
@@ -724,11 +725,14 @@ public class PropertyChecker {
       case ANY:
         break;
       case NONE:
-        lg.getEnvironmentVars().forEach((le, vars) -> enc.add(ctx.mkNot(vars.getPermitted())));
+        for (SymbolicRoute vars : lg.getEnvironmentVars().values()) {
+          enc.add(ctx.mkNot(vars.getPermitted()));
+        }
         break;
       case SANE:
-        lg.getEnvironmentVars()
-            .forEach((le, vars) -> enc.add(ctx.mkLe(vars.getMetric(), ctx.mkInt(50))));
+        for (SymbolicRoute vars : lg.getEnvironmentVars().values()) {
+          enc.add(ctx.mkLe(vars.getMetric(), ctx.mkInt(50)));
+        }
         break;
       default:
         break;
@@ -1004,21 +1008,21 @@ public class PropertyChecker {
 
     // Collect routers that have no host/environment edge
     List<String> toCheck = new ArrayList<>();
-    graph
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              boolean check = true;
-              for (GraphEdge edge : edges) {
-                if (edge.getEnd() == null) {
-                  check = false;
-                  break;
-                }
-              }
-              if (check) {
-                toCheck.add(router);
-              }
-            });
+
+    for (Entry<String, List<GraphEdge>> entry : graph.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      boolean check = true;
+      for (GraphEdge edge : edges) {
+        if (edge.getEnd() == null) {
+          check = false;
+          break;
+        }
+      }
+      if (check) {
+        toCheck.add(router);
+      }
+    }
 
     // Ensure the router never receives traffic and then drops the traffic
     BoolExpr someBlackHole = ctx.mkBool(false);
@@ -1171,13 +1175,14 @@ public class PropertyChecker {
       // TODO: add threshold
       // All routers bounded by a particular length
       List<Expr> peerLoads = new ArrayList<>();
-      peerRouters.forEach(
-          (router, allPeers) -> {
-            // ArithExpr load = loadVars.get(router);
-            for (String peer : allPeers) {
-              peerLoads.add(loadVars.get(peer));
-            }
-          });
+      for (Entry<String, List<String>> entry : peerRouters.entrySet()) {
+        String router = entry.getKey();
+        List<String> allPeers = entry.getValue();
+        for (String peer : allPeers) {
+          peerLoads.add(loadVars.get(peer));
+        }
+      }
+
       BoolExpr evenLoads = PropertyAdder.allEqual(ctx, peerLoads);
       enc.add(ctx.mkNot(evenLoads));
 
@@ -1600,14 +1605,13 @@ public class PropertyChecker {
     // Collect all routers that use static routes as a
     // potential node along a loop
     List<String> routers = new ArrayList<>();
-    graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              if (conf.getDefaultVrf().getStaticRoutes().size() > 0) {
-                routers.add(router);
-              }
-            });
+    for (Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      if (conf.getDefaultVrf().getStaticRoutes().size() > 0) {
+        routers.add(router);
+      }
+    }
 
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();

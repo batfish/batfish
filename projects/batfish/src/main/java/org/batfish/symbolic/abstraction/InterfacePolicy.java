@@ -41,15 +41,6 @@ public class InterfacePolicy {
     this._staticRoutes = other._staticRoutes;
   }
 
-  public void free() {
-    if (_acl != null) {
-      _acl.free();
-    }
-    if (_bgpPolicy != null) {
-      _bgpPolicy.free();
-    }
-  }
-
   public BDDAcl getAcl() {
     return _acl;
   }

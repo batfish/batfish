@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -22,6 +23,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -199,34 +201,31 @@ public class Encoder {
    * Initialize symbolic variables to represent link failures.
    */
   private void initFailedLinkVariables() {
-    _graph
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                if (ge.getPeer() == null) {
-                  Interface i = ge.getStart();
-                  String name = getId() + "_FAILED-EDGE_" + ge.getRouter() + "_" + i.getName();
-                  ArithExpr var = getCtx().mkIntConst(name);
-                  _symbolicFailures.getFailedEdgeLinks().put(ge, var);
-                  _allVariables.put(var.toString(), var);
-                }
-              }
-            });
-    _graph
-        .getNeighbors()
-        .forEach(
-            (router, peers) -> {
-              for (String peer : peers) {
-                // sort names for unique
-                String pair =
-                    (router.compareTo(peer) < 0 ? router + "_" + peer : peer + "_" + router);
-                String name = getId() + "_FAILED-EDGE_" + pair;
-                ArithExpr var = _ctx.mkIntConst(name);
-                _symbolicFailures.getFailedInternalLinks().put(router, peer, var);
-                _allVariables.put(var.toString(), var);
-              }
-            });
+    for (List<GraphEdge> edges : _graph.getEdgeMap().values()) {
+      for (GraphEdge ge : edges) {
+        if (ge.getPeer() == null) {
+          Interface i = ge.getStart();
+          String name = getId() + "_FAILED-EDGE_" + ge.getRouter() + "_" + i.getName();
+          ArithExpr var = getCtx().mkIntConst(name);
+          _symbolicFailures.getFailedEdgeLinks().put(ge, var);
+          _allVariables.put(var.toString(), var);
+        }
+      }
+    }
+
+    for (Entry<String, Set<String>> entry : _graph.getNeighbors().entrySet()) {
+      String router = entry.getKey();
+      Set<String> peers = entry.getValue();
+      for (String peer : peers) {
+        // sort names for unique
+        String pair =
+            (router.compareTo(peer) < 0 ? router + "_" + peer : peer + "_" + router);
+        String name = getId() + "_FAILED-EDGE_" + pair;
+        ArithExpr var = _ctx.mkIntConst(name);
+        _symbolicFailures.getFailedInternalLinks().put(router, peer, var);
+        _allVariables.put(var.toString(), var);
+      }
+    }
   }
 
   /*
@@ -244,48 +243,48 @@ public class Encoder {
     if (_modelIgp) {
       SortedSet<Pair<String, Ip>> ibgpRouters = new TreeSet<>();
 
-      g.getIbgpNeighbors()
-          .forEach(
-              (ge, n) -> {
-                String router = ge.getRouter();
-                Ip ip = n.getLocalIp();
-                Pair<String, Ip> pair = new Pair<>(router, ip);
+      for (Entry<GraphEdge, BgpNeighbor> entry : g.getIbgpNeighbors().entrySet()) {
+        GraphEdge ge = entry.getKey();
+        BgpNeighbor n = entry.getValue();
+        String router = ge.getRouter();
+        Ip ip = n.getLocalIp();
+        Pair<String, Ip> pair = new Pair<>(router, ip);
 
-                // Add one slice per (router, source ip) pair
-                if (!ibgpRouters.contains(pair)) {
+        // Add one slice per (router, source ip) pair
+        if (!ibgpRouters.contains(pair)) {
 
-                  ibgpRouters.add(pair);
+          ibgpRouters.add(pair);
 
-                  // Create a control plane slice only for this ip
-                  HeaderSpace hs = new HeaderSpace();
+          // Create a control plane slice only for this ip
+          HeaderSpace hs = new HeaderSpace();
 
-                  // Make sure messages are sent to this destination IP
-                  SortedSet<IpWildcard> ips = new TreeSet<>();
-                  ips.add(new IpWildcard(n.getLocalIp()));
-                  hs.setDstIps(ips);
+          // Make sure messages are sent to this destination IP
+          SortedSet<IpWildcard> ips = new TreeSet<>();
+          ips.add(new IpWildcard(n.getLocalIp()));
+          hs.setDstIps(ips);
 
-                  // Make sure messages use TCP port 179
-                  SortedSet<SubRange> dstPorts = new TreeSet<>();
-                  dstPorts.add(new SubRange(179, 179));
-                  hs.setDstPorts(dstPorts);
+          // Make sure messages use TCP port 179
+          SortedSet<SubRange> dstPorts = new TreeSet<>();
+          dstPorts.add(new SubRange(179, 179));
+          hs.setDstPorts(dstPorts);
 
-                  // Make sure messages use the TCP protocol
-                  SortedSet<IpProtocol> protocols = new TreeSet<>();
-                  protocols.add(IpProtocol.TCP);
-                  hs.setIpProtocols(protocols);
+          // Make sure messages use the TCP protocol
+          SortedSet<IpProtocol> protocols = new TreeSet<>();
+          protocols.add(IpProtocol.TCP);
+          hs.setIpProtocols(protocols);
 
-                  // TODO: create domains once
-                  Graph gNew = new Graph(g.getBatfish(), null, g.getDomain(router));
+          // TODO: create domains once
+          Graph gNew = new Graph(g.getBatfish(), null, g.getDomain(router));
 
-                  String sliceName = "SLICE-" + router + "_";
-                  EncoderSlice slice = new EncoderSlice(this, hs, gNew, sliceName);
-                  _slices.put(sliceName, slice);
+          String sliceName = "SLICE-" + router + "_";
+          EncoderSlice slice = new EncoderSlice(this, hs, gNew, sliceName);
+          _slices.put(sliceName, slice);
 
-                  PropertyAdder pa = new PropertyAdder(slice);
-                  Map<String, BoolExpr> reachVars = pa.instrumentReachability(router);
-                  _sliceReachability.put(router, reachVars);
-                }
-              });
+          PropertyAdder pa = new PropertyAdder(slice);
+          Map<String, BoolExpr> reachVars = pa.instrumentReachability(router);
+          _sliceReachability.put(router, reachVars);
+        }
+      }
     }
   }
 
@@ -438,18 +437,6 @@ public class Encoder {
     } else {
       add(mkLe(sum, mkInt(k)));
     }
-
-    /* if (getFailures() > 0) {
-      getSymbolicFailures().getFailedInternalLinks().forEach((x, y, var) -> {
-        System.out.println("Edge: " + x + "," + y);
-        boolean b1 = x.equals("as2border2") && y.equals("as3border1");
-        boolean b2 = x.equals("as3border1") && y.equals("as2border2");
-        if (b1 || b2) {
-          System.out.println("  Failing");
-          add(mkEq(var, mkInt(1)));
-        }
-      });
-    } */
   }
 
   /*
@@ -462,7 +449,7 @@ public class Encoder {
     if (cvar.getType() == CommunityVar.Type.EXACT) {
       return true;
     }
-    return true; //!StringUtils.containsAny(cvar.getValue(), "$^*+[()]");
+    return true;
   }
 
   /*
@@ -480,17 +467,18 @@ public class Encoder {
     SortedMap<Expr, String> valuation = new TreeMap<>();
 
     // If user asks for the full model
-    _allVariables.forEach(
-        (name, e) -> {
-          Expr val = m.evaluate(e, true);
-          if (!val.equals(e)) {
-            String s = val.toString();
-            if (_question.getFullModel()) {
-              model.put(name, s);
-            }
-            valuation.put(e, s);
-          }
-        });
+    for (Entry<String, Expr> entry : _allVariables.entrySet()) {
+      String name = entry.getKey();
+      Expr e = entry.getValue();
+      Expr val = m.evaluate(e, true);
+      if (!val.equals(e)) {
+        String s = val.toString();
+        if (_question.getFullModel()) {
+          model.put(name, s);
+        }
+        valuation.put(e, s);
+      }
+    }
 
     // Packet model
     SymbolicPacket p = enc.getMainSlice().getSymbolicPacket();
@@ -560,87 +548,85 @@ public class Encoder {
       packetModel.put("tcpUrg", "set");
     }
 
-    enc.getSlices()
-        .forEach(
-            (name, slice) ->
-                slice
-                    .getLogicalGraph()
-                    .getEnvironmentVars()
-                    .forEach(
-                        (lge, r) -> {
-                          if ("true".equals(valuation.get(r.getPermitted()))) {
-                            SortedMap<String, String> recordMap = new TreeMap<>();
-                            GraphEdge ge = lge.getEdge();
-                            String nodeIface =
-                                ge.getRouter() + "," + ge.getStart().getName() + " (BGP)";
-                            envModel.put(nodeIface, recordMap);
-                            if (r.getPrefixLength() != null) {
-                              String x = valuation.get(r.getPrefixLength());
-                              if (x != null) {
-                                int len = Integer.parseInt(x);
-                                Prefix p1 = new Prefix(dip, len);
-                                Prefix p2 = p1.getNetworkPrefix();
-                                recordMap.put("prefix", p2.toString());
-                              }
-                            }
-                            if (r.getAdminDist() != null) {
-                              String x = valuation.get(r.getAdminDist());
-                              if (x != null) {
-                                recordMap.put("admin distance", x);
-                              }
-                            }
-                            if (r.getLocalPref() != null) {
-                              String x = valuation.get(r.getLocalPref());
-                              if (x != null) {
-                                recordMap.put("local preference", x);
-                              }
-                            }
-                            if (r.getMetric() != null) {
-                              String x = valuation.get(r.getMetric());
-                              if (x != null) {
-                                recordMap.put("protocol metric", x);
-                              }
-                            }
-                            if (r.getMed() != null) {
-                              String x = valuation.get(r.getMed());
-                              if (x != null) {
-                                recordMap.put("multi-exit disc.", valuation.get(r.getMed()));
-                              }
-                            }
-                            if (r.getOspfArea() != null && r.getOspfArea().getBitVec() != null) {
-                              String x = valuation.get(r.getOspfArea().getBitVec());
-                              if (x != null) {
-                                Integer i = Integer.parseInt(x);
-                                Long area = r.getOspfArea().value(i);
-                                recordMap.put("OSPF Area", area.toString());
-                              }
-                            }
-                            if (r.getOspfType() != null && r.getOspfType().getBitVec() != null) {
-                              String x = valuation.get(r.getOspfType().getBitVec());
-                              if (x != null) {
-                                Integer i = Integer.parseInt(x);
-                                OspfType type = r.getOspfType().value(i);
-                                recordMap.put("OSPF Type", type.toString());
-                              }
-                            }
+    for (EncoderSlice slice : enc.getSlices().values()) {
+      for (Entry<LogicalEdge, SymbolicRoute> entry2 :
+          slice.getLogicalGraph().getEnvironmentVars().entrySet()) {
+        LogicalEdge lge = entry2.getKey();
+        SymbolicRoute r = entry2.getValue();
+        if ("true".equals(valuation.get(r.getPermitted()))) {
+          SortedMap<String, String> recordMap = new TreeMap<>();
+          GraphEdge ge = lge.getEdge();
+          String nodeIface =
+              ge.getRouter() + "," + ge.getStart().getName() + " (BGP)";
+          envModel.put(nodeIface, recordMap);
+          if (r.getPrefixLength() != null) {
+            String x = valuation.get(r.getPrefixLength());
+            if (x != null) {
+              int len = Integer.parseInt(x);
+              Prefix p1 = new Prefix(dip, len);
+              Prefix p2 = p1.getNetworkPrefix();
+              recordMap.put("prefix", p2.toString());
+            }
+          }
+          if (r.getAdminDist() != null) {
+            String x = valuation.get(r.getAdminDist());
+            if (x != null) {
+              recordMap.put("admin distance", x);
+            }
+          }
+          if (r.getLocalPref() != null) {
+            String x = valuation.get(r.getLocalPref());
+            if (x != null) {
+              recordMap.put("local preference", x);
+            }
+          }
+          if (r.getMetric() != null) {
+            String x = valuation.get(r.getMetric());
+            if (x != null) {
+              recordMap.put("protocol metric", x);
+            }
+          }
+          if (r.getMed() != null) {
+            String x = valuation.get(r.getMed());
+            if (x != null) {
+              recordMap.put("multi-exit disc.", valuation.get(r.getMed()));
+            }
+          }
+          if (r.getOspfArea() != null && r.getOspfArea().getBitVec() != null) {
+            String x = valuation.get(r.getOspfArea().getBitVec());
+            if (x != null) {
+              Integer i = Integer.parseInt(x);
+              Long area = r.getOspfArea().value(i);
+              recordMap.put("OSPF Area", area.toString());
+            }
+          }
+          if (r.getOspfType() != null && r.getOspfType().getBitVec() != null) {
+            String x = valuation.get(r.getOspfType().getBitVec());
+            if (x != null) {
+              Integer i = Integer.parseInt(x);
+              OspfType type = r.getOspfType().value(i);
+              recordMap.put("OSPF Type", type.toString());
+            }
+          }
 
-                            r.getCommunities()
-                                .forEach(
-                                    (cvar, e) -> {
-                                      String c = valuation.get(e);
-                                      // TODO: what about OTHER type?
-                                      if ("true".equals(c)) {
-                                        if (displayCommunity(cvar)) {
-                                          String s = cvar.getValue();
-                                          String t =
-                                              slice.getNamedCommunities().get(cvar.getValue());
-                                          s = (t == null ? s : t);
-                                          recordMap.put("community " + s, "");
-                                        }
-                                      }
-                                    });
-                          }
-                        }));
+          for (Entry<CommunityVar, BoolExpr> entry3 : r.getCommunities().entrySet()) {
+            CommunityVar cvar = entry3.getKey();
+            BoolExpr e = entry3.getValue();
+            String c = valuation.get(e);
+            // TODO: what about OTHER type?
+            if ("true".equals(c)) {
+              if (displayCommunity(cvar)) {
+                String s = cvar.getValue();
+                String t =
+                    slice.getNamedCommunities().get(cvar.getValue());
+                s = (t == null ? s : t);
+                recordMap.put("community " + s, "");
+              }
+            }
+          }
+        }
+      }
+    }
 
     // Forwarding Model
     enc.getMainSlice()
@@ -679,6 +665,7 @@ public class Encoder {
                 failures.add("link(" + pair + ")");
               }
             });
+
     _symbolicFailures
         .getFailedEdgeLinks()
         .forEach(
@@ -810,12 +797,13 @@ public class Encoder {
   void computeEncoding() {
     addFailedConstraints(_question.getFailures());
     getMainSlice().computeEncoding();
-    _slices.forEach(
-        (name, slice) -> {
-          if (!name.equals(MAIN_SLICE_NAME)) {
-            slice.computeEncoding();
-          }
-        });
+    for (Entry<String, EncoderSlice> entry : _slices.entrySet()) {
+      String name = entry.getKey();
+      EncoderSlice slice = entry.getValue();
+      if (!name.equals(MAIN_SLICE_NAME)) {
+        slice.computeEncoding();
+      }
+    }
   }
 
   /*

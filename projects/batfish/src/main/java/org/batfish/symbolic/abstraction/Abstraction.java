@@ -100,7 +100,9 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     // Convert headerspace to list of prefixes
     List<Prefix> dstIps = new ArrayList<>();
     List<Prefix> notDstIps = new ArrayList<>();
-    if (_headerspace != null) {
+    if (_headerspace == null || _headerspace.getDstIps().isEmpty()) {
+      dstIps.add(new Prefix("0.0.0.0/0"));
+    } else {
       for (IpWildcard ip : _headerspace.getDstIps()) {
         if (!ip.isPrefix()) {
           throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
@@ -207,10 +209,8 @@ public class Abstraction implements Iterable<EquivalenceClass> {
   private EquivalenceClass computeAbstraction(Set<String> devices, List<Prefix> prefixes) {
     Set<String> allDevices = _graph.getConfigurations().keySet();
 
-    Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
-    Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
-    _network.getExportPolicyMap().forEach((ge, pol) -> exportPol.put(ge, pol));
-    _network.getImportPolicyMap().forEach((ge, pol) -> importPol.put(ge, pol));
+    Map<GraphEdge, InterfacePolicy> exportPol = _network.getExportPolicyMap();
+    Map<GraphEdge, InterfacePolicy> importPol = _network.getImportPolicyMap();
 
     UnionSplit<String> workset = new UnionSplit<>(allDevices);
 

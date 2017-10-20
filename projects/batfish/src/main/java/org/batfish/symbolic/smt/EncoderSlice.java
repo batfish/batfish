@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -279,50 +280,50 @@ class EncoderSlice {
    * Initialize boolean expressions to represent ACLs on each interface.
    */
   private void initAclFunctions() {
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                Interface i = ge.getStart();
+    for (Entry<String, List<GraphEdge>> entry : getGraph().getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
 
-                IpAccessList outbound = i.getOutgoingFilter();
-                if (outbound != null) {
-                  String outName =
-                      String.format(
-                          "%d_%s_%s_%s_%s_%s",
-                          _encoder.getId(),
-                          _sliceName,
-                          router,
-                          i.getName(),
-                          "OUTBOUND",
-                          outbound.getName());
+      for (GraphEdge ge : edges) {
+        Interface i = ge.getStart();
 
-                  BoolExpr outAcl = getCtx().mkBoolConst(outName);
-                  BoolExpr outAclFunc = computeACL(outbound);
-                  add(mkEq(outAcl, outAclFunc));
-                  _outboundAcls.put(ge, outAcl);
-                }
+        IpAccessList outbound = i.getOutgoingFilter();
+        if (outbound != null) {
+          String outName =
+              String.format(
+                  "%d_%s_%s_%s_%s_%s",
+                  _encoder.getId(),
+                  _sliceName,
+                  router,
+                  i.getName(),
+                  "OUTBOUND",
+                  outbound.getName());
 
-                IpAccessList inbound = i.getIncomingFilter();
-                if (inbound != null) {
-                  String inName =
-                      String.format(
-                          "%d_%s_%s_%s_%s_%s",
-                          _encoder.getId(),
-                          _sliceName,
-                          router,
-                          i.getName(),
-                          "INBOUND",
-                          inbound.getName());
+          BoolExpr outAcl = getCtx().mkBoolConst(outName);
+          BoolExpr outAclFunc = computeACL(outbound);
+          add(mkEq(outAcl, outAclFunc));
+          _outboundAcls.put(ge, outAcl);
+        }
 
-                  BoolExpr inAcl = getCtx().mkBoolConst(inName);
-                  BoolExpr inAclFunc = computeACL(inbound);
-                  add(mkEq(inAcl, inAclFunc));
-                  _inboundAcls.put(ge, inAcl);
-                }
-              }
-            });
+        IpAccessList inbound = i.getIncomingFilter();
+        if (inbound != null) {
+          String inName =
+              String.format(
+                  "%d_%s_%s_%s_%s_%s",
+                  _encoder.getId(),
+                  _sliceName,
+                  router,
+                  i.getName(),
+                  "INBOUND",
+                  inbound.getName());
+
+          BoolExpr inAcl = getCtx().mkBoolConst(inName);
+          BoolExpr inAclFunc = computeACL(inbound);
+          add(mkEq(inAcl, inAclFunc));
+          _inboundAcls.put(ge, inAcl);
+        }
+      }
+    }
   }
 
   /*
@@ -363,31 +364,27 @@ class EncoderSlice {
    * Initialize the map of redistributed protocols.
    */
   private void initRedistributionProtocols() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : getProtocols().get(router)) {
-
-                Set<Protocol> redistributed = new HashSet<>();
-                redistributed.add(proto);
-
-                _logicalGraph.getRedistributedProtocols().put(router, proto, redistributed);
-
-                RoutingPolicy pol = Graph.findCommonRoutingPolicy(conf, proto);
-                if (pol != null) {
-                  Set<Protocol> ps = getGraph().findRedistributedProtocols(conf, pol, proto);
-                  for (Protocol p : ps) {
-                    // Make sure there is actually a routing process for the other protocol
-                    // For example, it might get sliced away if not relevant
-                    boolean isProto = getProtocols().get(router).contains(p);
-                    if (isProto) {
-                      redistributed.add(p);
-                    }
-                  }
-                }
-              }
-            });
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      for (Protocol proto : getProtocols().get(router)) {
+        Set<Protocol> redistributed = new HashSet<>();
+        redistributed.add(proto);
+        _logicalGraph.getRedistributedProtocols().put(router, proto, redistributed);
+        RoutingPolicy pol = Graph.findCommonRoutingPolicy(conf, proto);
+        if (pol != null) {
+          Set<Protocol> ps = getGraph().findRedistributedProtocols(conf, pol, proto);
+          for (Protocol p : ps) {
+            // Make sure there is actually a routing process for the other protocol
+            // For example, it might get sliced away if not relevant
+            boolean isProto = getProtocols().get(router).contains(p);
+            if (isProto) {
+              redistributed.add(p);
+            }
+          }
+        }
+      }
+    }
   }
 
   /*
@@ -503,14 +500,12 @@ class EncoderSlice {
    * Initializes the logical graph edges for the protocol-centric view
    */
   private void buildEdgeMap() {
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (Protocol p : getProtocols().get(router)) {
-                _logicalGraph.getLogicalEdges().put(router, p, new ArrayList<>());
-              }
-            });
+    for (Entry<String, List<Protocol>> entry : getProtocols().entrySet()) {
+      String router = entry.getKey();
+      for (Protocol p : entry.getValue()) {
+        _logicalGraph.getLogicalEdges().put(router, p, new ArrayList<>());
+      }
+    }
   }
 
   /*
@@ -518,28 +513,21 @@ class EncoderSlice {
    * to use a particular interface for control-plane forwarding
    */
   private void addChoiceVariables() {
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              Configuration conf = getGraph().getConfigurations().get(router);
-
-              Map<Protocol, Map<LogicalEdge, BoolExpr>> map = new HashMap<>();
-              _symbolicDecisions.getChoiceVariables().put(router, map);
-
-              for (Protocol proto : getProtocols().get(router)) {
-
-                Map<LogicalEdge, BoolExpr> edgeMap = new HashMap<>();
-                map.put(proto, edgeMap);
-
-                for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
-                  String chName = e.getSymbolicRecord().getName() + "_choice";
-                  BoolExpr choiceVar = getCtx().mkBoolConst(chName);
-                  getAllVariables().put(choiceVar.toString(), choiceVar);
-                  edgeMap.put(e, choiceVar);
-                }
-              }
-            });
+    for (String router : getGraph().getRouters()) {
+      Configuration conf = getGraph().getConfigurations().get(router);
+      Map<Protocol, Map<LogicalEdge, BoolExpr>> map = new HashMap<>();
+      _symbolicDecisions.getChoiceVariables().put(router, map);
+      for (Protocol proto : getProtocols().get(router)) {
+        Map<LogicalEdge, BoolExpr> edgeMap = new HashMap<>();
+        map.put(proto, edgeMap);
+        for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
+          String chName = e.getSymbolicRecord().getName() + "_choice";
+          BoolExpr choiceVar = getCtx().mkBoolConst(chName);
+          getAllVariables().put(choiceVar.toString(), choiceVar);
+          edgeMap.put(e, choiceVar);
+        }
+      }
+    }
   }
 
   /*
@@ -547,41 +535,39 @@ class EncoderSlice {
    * data plane final forwarding decisions
    */
   private void addForwardingVariables() {
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge edge : edges) {
-                String iface = edge.getStart().getName();
+    for (Entry<String, List<GraphEdge>> entry : getGraph().getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      for (GraphEdge edge : edges) {
+        String iface = edge.getStart().getName();
+        String cName =
+            _encoder.getId()
+                + "_"
+                + _sliceName
+                + "CONTROL-FORWARDING_"
+                + router
+                + "_"
+                + iface;
+        BoolExpr cForward = getCtx().mkBoolConst(cName);
+        getAllVariables().put(cForward.toString(), cForward);
+        _symbolicDecisions.getControlForwarding().put(router, edge, cForward);
 
-                String cName =
-                    _encoder.getId()
-                        + "_"
-                        + _sliceName
-                        + "CONTROL-FORWARDING_"
-                        + router
-                        + "_"
-                        + iface;
-                BoolExpr cForward = getCtx().mkBoolConst(cName);
-                getAllVariables().put(cForward.toString(), cForward);
-                _symbolicDecisions.getControlForwarding().put(router, edge, cForward);
-
-                // Don't add data forwarding variable for abstract edge
-                if (!edge.isAbstract()) {
-                  String dName =
-                      _encoder.getId()
-                          + "_"
-                          + _sliceName
-                          + "DATA-FORWARDING_"
-                          + router
-                          + "_"
-                          + iface;
-                  BoolExpr dForward = getCtx().mkBoolConst(dName);
-                  getAllVariables().put(dForward.toString(), dForward);
-                  _symbolicDecisions.getDataForwarding().put(router, edge, dForward);
-                }
-              }
-            });
+        // Don't add data forwarding variable for abstract edge
+        if (!edge.isAbstract()) {
+          String dName =
+              _encoder.getId()
+                  + "_"
+                  + _sliceName
+                  + "DATA-FORWARDING_"
+                  + router
+                  + "_"
+                  + iface;
+          BoolExpr dForward = getCtx().mkBoolConst(dName);
+          getAllVariables().put(dForward.toString(), dForward);
+          _symbolicDecisions.getDataForwarding().put(router, edge, dForward);
+        }
+      }
+    }
   }
 
   /*
@@ -589,70 +575,43 @@ class EncoderSlice {
    * each protocol as well as for the router as a whole
    */
   private void addBestVariables() {
+    for (Entry<String, List<Protocol>> entry : getProtocols().entrySet()) {
+      String router = entry.getKey();
+      List<Protocol> allProtos = entry.getValue();
+      // Overall best
+      for (int len = 0; len <= BITS; len++) {
+        String name =
+            String.format(
+                "%d_%s%s_%s_%s_%s",
+                _encoder.getId(), _sliceName, router, "OVERALL", "BEST", "None");
+        String historyName = name + "_history";
+        SymbolicEnum<Protocol> h = new SymbolicEnum<>(this, allProtos, historyName);
+        SymbolicRoute evBest =
+            new SymbolicRoute(this, name, router, Protocol.BEST, _optimizations, h, false);
+        getAllSymbolicRecords().add(evBest);
+        _symbolicDecisions.getBestNeighbor().put(router, evBest);
+      }
 
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              List<Protocol> allProtos = getProtocols().get(router);
+      // Best per protocol
+      if (!_optimizations.getSliceHasSingleProtocol().contains(router)) {
+        for (Protocol proto : getProtocols().get(router)) {
+          String name =
+              String.format(
+                  "%d_%s%s_%s_%s_%s",
+                  _encoder.getId(), _sliceName, router, proto.name(), "BEST", "None");
+          // String historyName = name + "_history";
+          // SymbolicEnum<Protocol> h = new SymbolicEnum<>(this, allProtos, historyName);
 
-              // Overall best
-              for (int len = 0; len <= BITS; len++) {
-                String name =
-                    String.format(
-                        "%d_%s%s_%s_%s_%s",
-                        _encoder.getId(), _sliceName, router, "OVERALL", "BEST", "None");
-                String historyName = name + "_history";
-                SymbolicEnum<Protocol> h = new SymbolicEnum<>(this, allProtos, historyName);
-                SymbolicRoute evBest =
-                    new SymbolicRoute(this, name, router, Protocol.BEST, _optimizations, h, false);
-                getAllSymbolicRecords().add(evBest);
-                _symbolicDecisions.getBestNeighbor().put(router, evBest);
-              }
-
-              // Best per protocol
-              if (!_optimizations.getSliceHasSingleProtocol().contains(router)) {
-                for (Protocol proto : getProtocols().get(router)) {
-                  String name =
-                      String.format(
-                          "%d_%s%s_%s_%s_%s",
-                          _encoder.getId(), _sliceName, router, proto.name(), "BEST", "None");
-                  // String historyName = name + "_history";
-                  // SymbolicEnum<Protocol> h = new SymbolicEnum<>(this, allProtos, historyName);
-
-                  for (int len = 0; len <= BITS; len++) {
-                    SymbolicRoute evBest =
-                        new SymbolicRoute(this, name, router, proto, _optimizations, null, false);
-                    getAllSymbolicRecords().add(evBest);
-                    _symbolicDecisions.getBestNeighborPerProtocol().put(router, proto, evBest);
-                  }
-                }
-              }
-            });
+          for (int len = 0; len <= BITS; len++) {
+            SymbolicRoute evBest =
+                new SymbolicRoute(this, name, router, proto, _optimizations, null, false);
+            getAllSymbolicRecords().add(evBest);
+            _symbolicDecisions.getBestNeighborPerProtocol().put(router, proto, evBest);
+          }
+        }
+      }
+    }
   }
-
-  // I.E., when there is a originated prefix overlapping with the
-  // actual destination IP for the query.
-  /* private void addOriginationVariables() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : getProtocols().get(router)) {
-                if (proto.isBgp() || proto.isOspf()) {
-                  String name =
-                      String.format(
-                          "%d_%s%s_%s_%s_%s",
-                          _encoder.getId(), _sliceName, router, proto.name(), "ORIGINATE", "None");
-                  SymbolicRecord origin =
-                      new SymbolicRecord(
-                          this, name, router, Protocol.BEST, _optimizations, null, false);
-                  getAllSymbolicRecords().add(origin);
-                  _originationRecords.put(router, proto, origin);
-                }
-              }
-            });
-  } */
 
   /*
    * Initialize all control-plane message symbolic records.
@@ -666,176 +625,175 @@ class EncoderSlice {
     Map<String, Map<Protocol, SymbolicRoute>> singleExportMap = new HashMap<>();
 
     // add edge EXPORT and IMPORT state variables
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              Map<Protocol, SymbolicRoute> singleProtoMap;
-              singleProtoMap = new HashMap<>();
-              Map<Protocol, Map<GraphEdge, ArrayList<LogicalEdge>>> importEnumMap;
-              importEnumMap = new HashMap<>();
-              Map<Protocol, Map<GraphEdge, ArrayList<LogicalEdge>>> exportEnumMap;
-              exportEnumMap = new HashMap<>();
+    for (Entry<String, List<GraphEdge>> entry : getGraph().getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      Map<Protocol, SymbolicRoute> singleProtoMap;
+      singleProtoMap = new HashMap<>();
+      Map<Protocol, Map<GraphEdge, ArrayList<LogicalEdge>>> importEnumMap;
+      importEnumMap = new HashMap<>();
+      Map<Protocol, Map<GraphEdge, ArrayList<LogicalEdge>>> exportEnumMap;
+      exportEnumMap = new HashMap<>();
 
-              singleExportMap.put(router, singleProtoMap);
-              importInverseMap.put(router, importEnumMap);
-              exportInverseMap.put(router, exportEnumMap);
+      singleExportMap.put(router, singleProtoMap);
+      importInverseMap.put(router, importEnumMap);
+      exportInverseMap.put(router, exportEnumMap);
 
-              for (Protocol proto : getProtocols().get(router)) {
+      for (Protocol proto : getProtocols().get(router)) {
 
-                // Add redistribution variables
-                Set<Protocol> r = _logicalGraph.getRedistributedProtocols().get(router, proto);
-                assert r != null;
-                if (proto.isOspf() && r.size() > 1) {
-                  // Add the ospf redistributed record if needed
-                  String rname =
-                      String.format(
-                          "%d_%s%s_%s_%s",
-                          _encoder.getId(), _sliceName, router, proto.name(), "Redistributed");
+        // Add redistribution variables
+        Set<Protocol> r = _logicalGraph.getRedistributedProtocols().get(router, proto);
+        assert r != null;
+        if (proto.isOspf() && r.size() > 1) {
+          // Add the ospf redistributed record if needed
+          String rname =
+              String.format(
+                  "%d_%s%s_%s_%s",
+                  _encoder.getId(), _sliceName, router, proto.name(), "Redistributed");
 
-                  SymbolicRoute rec =
-                      new SymbolicRoute(this, rname, router, proto, _optimizations, null, false);
-                  _ospfRedistributed.put(router, rec);
-                  getAllSymbolicRecords().add(rec);
-                }
+          SymbolicRoute rec =
+              new SymbolicRoute(this, rname, router, proto, _optimizations, null, false);
+          _ospfRedistributed.put(router, rec);
+          getAllSymbolicRecords().add(rec);
+        }
 
-                Boolean useSingleExport =
-                    _optimizations.getSliceCanKeepSingleExportVar().get(router, proto);
-                assert (useSingleExport != null);
+        Boolean useSingleExport =
+            _optimizations.getSliceCanKeepSingleExportVar().get(router, proto);
+        assert (useSingleExport != null);
 
-                Map<GraphEdge, ArrayList<LogicalEdge>> importGraphEdgeMap = new HashMap<>();
-                Map<GraphEdge, ArrayList<LogicalEdge>> exportGraphEdgeMap = new HashMap<>();
+        Map<GraphEdge, ArrayList<LogicalEdge>> importGraphEdgeMap = new HashMap<>();
+        Map<GraphEdge, ArrayList<LogicalEdge>> exportGraphEdgeMap = new HashMap<>();
 
-                importEnumMap.put(proto, importGraphEdgeMap);
-                exportEnumMap.put(proto, exportGraphEdgeMap);
+        importEnumMap.put(proto, importGraphEdgeMap);
+        exportEnumMap.put(proto, exportGraphEdgeMap);
 
-                for (GraphEdge e : edges) {
+        for (GraphEdge e : edges) {
 
-                  Configuration conf = getGraph().getConfigurations().get(router);
+          Configuration conf = getGraph().getConfigurations().get(router);
 
-                  if (getGraph().isEdgeUsed(conf, proto, e)) {
+          if (getGraph().isEdgeUsed(conf, proto, e)) {
 
-                    ArrayList<LogicalEdge> importEdgeList = new ArrayList<>();
-                    ArrayList<LogicalEdge> exportEdgeList = new ArrayList<>();
-                    importGraphEdgeMap.put(e, importEdgeList);
-                    exportGraphEdgeMap.put(e, exportEdgeList);
+            ArrayList<LogicalEdge> importEdgeList = new ArrayList<>();
+            ArrayList<LogicalEdge> exportEdgeList = new ArrayList<>();
+            importGraphEdgeMap.put(e, importEdgeList);
+            exportGraphEdgeMap.put(e, exportEdgeList);
 
-                    for (int len = 0; len <= BITS; len++) {
+            for (int len = 0; len <= BITS; len++) {
 
-                      String ifaceName = e.getStart().getName();
+              String ifaceName = e.getStart().getName();
 
-                      if (!proto.isConnected() && !proto.isStatic()) {
-                        // If we use a single set of export variables, then make sure
-                        // to reuse the existing variables instead of creating new ones
-                        if (useSingleExport) {
-                          SymbolicRoute singleVars = singleExportMap.get(router).get(proto);
-                          SymbolicRoute ev1;
-                          if (singleVars == null) {
-                            String name =
-                                String.format(
-                                    "%d_%s%s_%s_%s_%s",
-                                    _encoder.getId(),
-                                    _sliceName,
-                                    router,
-                                    proto.name(),
-                                    "SINGLE-EXPORT",
-                                    "");
-                            ev1 =
-                                new SymbolicRoute(
-                                    this,
-                                    name,
-                                    router,
-                                    proto,
-                                    _optimizations,
-                                    null,
-                                    e.isAbstract());
-                            singleProtoMap.put(proto, ev1);
-                            getAllSymbolicRecords().add(ev1);
+              if (!proto.isConnected() && !proto.isStatic()) {
+                // If we use a single set of export variables, then make sure
+                // to reuse the existing variables instead of creating new ones
+                if (useSingleExport) {
+                  SymbolicRoute singleVars = singleExportMap.get(router).get(proto);
+                  SymbolicRoute ev1;
+                  if (singleVars == null) {
+                    String name =
+                        String.format(
+                            "%d_%s%s_%s_%s_%s",
+                            _encoder.getId(),
+                            _sliceName,
+                            router,
+                            proto.name(),
+                            "SINGLE-EXPORT",
+                            "");
+                    ev1 =
+                        new SymbolicRoute(
+                            this,
+                            name,
+                            router,
+                            proto,
+                            _optimizations,
+                            null,
+                            e.isAbstract());
+                    singleProtoMap.put(proto, ev1);
+                    getAllSymbolicRecords().add(ev1);
 
-                          } else {
-                            ev1 = singleVars;
-                          }
-                          LogicalEdge eExport = new LogicalEdge(e, EdgeType.EXPORT, ev1);
-                          exportEdgeList.add(eExport);
-
-                        } else {
-                          String name =
-                              String.format(
-                                  "%d_%s%s_%s_%s_%s",
-                                  _encoder.getId(),
-                                  _sliceName,
-                                  router,
-                                  proto.name(),
-                                  "EXPORT",
-                                  ifaceName);
-
-                          SymbolicRoute ev1 =
-                              new SymbolicRoute(
-                                  this, name, router, proto, _optimizations, null, e.isAbstract());
-                          LogicalEdge eExport = new LogicalEdge(e, EdgeType.EXPORT, ev1);
-                          exportEdgeList.add(eExport);
-                          getAllSymbolicRecords().add(ev1);
-                        }
-                      }
-
-                      boolean notNeeded =
-                          _optimizations
-                              .getSliceCanCombineImportExportVars()
-                              .get(router)
-                              .get(proto)
-                              .contains(e);
-
-                      Interface i = e.getStart();
-                      Prefix p = i.getPrefix();
-
-                      boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
-                      // Optimization: Don't model the connected interfaces that aren't relevant
-                      if (doModel) {
-                        if (notNeeded) {
-                          String name =
-                              String.format(
-                                  "%d_%s%s_%s_%s_%s",
-                                  _encoder.getId(),
-                                  _sliceName,
-                                  router,
-                                  proto.name(),
-                                  "IMPORT",
-                                  ifaceName);
-                          SymbolicRoute ev2 = new SymbolicRoute(name, proto);
-                          LogicalEdge eImport = new LogicalEdge(e, EdgeType.IMPORT, ev2);
-                          importEdgeList.add(eImport);
-                        } else {
-                          String name =
-                              String.format(
-                                  "%d_%s%s_%s_%s_%s",
-                                  _encoder.getId(),
-                                  _sliceName,
-                                  router,
-                                  proto.name(),
-                                  "IMPORT",
-                                  ifaceName);
-                          SymbolicRoute ev2 =
-                              new SymbolicRoute(
-                                  this, name, router, proto, _optimizations, null, e.isAbstract());
-                          LogicalEdge eImport = new LogicalEdge(e, EdgeType.IMPORT, ev2);
-                          importEdgeList.add(eImport);
-                          getAllSymbolicRecords().add(ev2);
-                        }
-                      }
-                    }
-
-                    List<ArrayList<LogicalEdge>> es =
-                        _logicalGraph.getLogicalEdges().get(router, proto);
-                    assert (es != null);
-
-                    ArrayList<LogicalEdge> allEdges = new ArrayList<>();
-                    allEdges.addAll(importEdgeList);
-                    allEdges.addAll(exportEdgeList);
-                    es.add(allEdges);
+                  } else {
+                    ev1 = singleVars;
                   }
+                  LogicalEdge eExport = new LogicalEdge(e, EdgeType.EXPORT, ev1);
+                  exportEdgeList.add(eExport);
+
+                } else {
+                  String name =
+                      String.format(
+                          "%d_%s%s_%s_%s_%s",
+                          _encoder.getId(),
+                          _sliceName,
+                          router,
+                          proto.name(),
+                          "EXPORT",
+                          ifaceName);
+
+                  SymbolicRoute ev1 =
+                      new SymbolicRoute(
+                          this, name, router, proto, _optimizations, null, e.isAbstract());
+                  LogicalEdge eExport = new LogicalEdge(e, EdgeType.EXPORT, ev1);
+                  exportEdgeList.add(eExport);
+                  getAllSymbolicRecords().add(ev1);
                 }
               }
-            });
+
+              boolean notNeeded =
+                  _optimizations
+                      .getSliceCanCombineImportExportVars()
+                      .get(router)
+                      .get(proto)
+                      .contains(e);
+
+              Interface i = e.getStart();
+              Prefix p = i.getPrefix();
+
+              boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
+              // Optimization: Don't model the connected interfaces that aren't relevant
+              if (doModel) {
+                if (notNeeded) {
+                  String name =
+                      String.format(
+                          "%d_%s%s_%s_%s_%s",
+                          _encoder.getId(),
+                          _sliceName,
+                          router,
+                          proto.name(),
+                          "IMPORT",
+                          ifaceName);
+                  SymbolicRoute ev2 = new SymbolicRoute(name, proto);
+                  LogicalEdge eImport = new LogicalEdge(e, EdgeType.IMPORT, ev2);
+                  importEdgeList.add(eImport);
+                } else {
+                  String name =
+                      String.format(
+                          "%d_%s%s_%s_%s_%s",
+                          _encoder.getId(),
+                          _sliceName,
+                          router,
+                          proto.name(),
+                          "IMPORT",
+                          ifaceName);
+                  SymbolicRoute ev2 =
+                      new SymbolicRoute(
+                          this, name, router, proto, _optimizations, null, e.isAbstract());
+                  LogicalEdge eImport = new LogicalEdge(e, EdgeType.IMPORT, ev2);
+                  importEdgeList.add(eImport);
+                  getAllSymbolicRecords().add(ev2);
+                }
+              }
+            }
+
+            List<ArrayList<LogicalEdge>> es =
+                _logicalGraph.getLogicalEdges().get(router, proto);
+            assert (es != null);
+
+            ArrayList<LogicalEdge> allEdges = new ArrayList<>();
+            allEdges.addAll(importEdgeList);
+            allEdges.addAll(exportEdgeList);
+            es.add(allEdges);
+          }
+        }
+      }
+    }
 
     // Build a map to find the opposite of a given edge
     _logicalGraph
@@ -890,15 +848,14 @@ class EncoderSlice {
   }
 
   private void initOriginatedPrefixes() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : _optimizations.getProtocols().get(router)) {
-                Set<Prefix> prefixes = Graph.getOriginatedNetworks(conf, proto);
-                _originatedNetworks.put(router, proto, prefixes);
-              }
-            });
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      for (Protocol proto : _optimizations.getProtocols().get(router)) {
+        Set<Prefix> prefixes = Graph.getOriginatedNetworks(conf, proto);
+        _originatedNetworks.put(router, proto, prefixes);
+      }
+    }
   }
 
   /*
@@ -923,63 +880,58 @@ class EncoderSlice {
     }
 
     // Otherwise create it anew
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : getProtocols().get(router)) {
-                if (proto.isBgp()) {
-                  List<ArrayList<LogicalEdge>> les =
-                      _logicalGraph.getLogicalEdges().get(router, proto);
-                  assert (les != null);
-                  les.forEach(
-                      eList ->
-                          eList.forEach(
-                              e -> {
-                                if (e.getEdgeType() == EdgeType.IMPORT) {
-                                  GraphEdge ge = e.getEdge();
-                                  BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
-                                  if (n != null && ge.getEnd() == null) {
+    for (String router : getGraph().getRouters()) {
+      for (Protocol proto : getProtocols().get(router)) {
+        if (proto.isBgp()) {
+          List<ArrayList<LogicalEdge>> les = _logicalGraph.getLogicalEdges().get(router, proto);
+          assert (les != null);
+          for (ArrayList<LogicalEdge> eList : les) {
+            for (LogicalEdge e : eList) {
+              if (e.getEdgeType() == EdgeType.IMPORT) {
+                GraphEdge ge = e.getEdge();
+                BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
+                if (n != null && ge.getEnd() == null) {
 
-                                    if (!isMainSlice()) {
-                                      LogicalGraph lg = _encoder.getMainSlice().getLogicalGraph();
-                                      SymbolicRoute r = lg.getEnvironmentVars().get(e);
-                                      _logicalGraph.getEnvironmentVars().put(e, r);
-                                    } else {
-                                      String address;
-                                      if (n.getAddress() == null) {
-                                        address = "null";
-                                      } else {
-                                        address = n.getAddress().toString();
-                                      }
-                                      String ifaceName = "ENV-" + address;
-                                      String name =
-                                          String.format(
-                                              "%d_%s%s_%s_%s_%s",
-                                              _encoder.getId(),
-                                              _sliceName,
-                                              router,
-                                              proto.name(),
-                                              "EXPORT",
-                                              ifaceName);
-                                      SymbolicRoute vars =
-                                          new SymbolicRoute(
-                                              this,
-                                              name,
-                                              router,
-                                              proto,
-                                              _optimizations,
-                                              null,
-                                              ge.isAbstract());
-                                      getAllSymbolicRecords().add(vars);
-                                      _logicalGraph.getEnvironmentVars().put(e, vars);
-                                    }
-                                  }
-                                }
-                              }));
+                  if (!isMainSlice()) {
+                    LogicalGraph lg = _encoder.getMainSlice().getLogicalGraph();
+                    SymbolicRoute r = lg.getEnvironmentVars().get(e);
+                    _logicalGraph.getEnvironmentVars().put(e, r);
+                  } else {
+                    String address;
+                    if (n.getAddress() == null) {
+                      address = "null";
+                    } else {
+                      address = n.getAddress().toString();
+                    }
+                    String ifaceName = "ENV-" + address;
+                    String name =
+                        String.format(
+                            "%d_%s%s_%s_%s_%s",
+                            _encoder.getId(),
+                            _sliceName,
+                            router,
+                            proto.name(),
+                            "EXPORT",
+                            ifaceName);
+                    SymbolicRoute vars =
+                        new SymbolicRoute(
+                            this,
+                            name,
+                            router,
+                            proto,
+                            _optimizations,
+                            null,
+                            ge.isAbstract());
+                    getAllSymbolicRecords().add(vars);
+                    _logicalGraph.getEnvironmentVars().put(e, vars);
+                  }
                 }
               }
-            });
+            }
+          }
+        }
+      }
+    }
   }
 
   /*
@@ -1081,20 +1033,20 @@ class EncoderSlice {
    */
   private void addCommunityConstraints() {
     for (SymbolicRoute r : getAllSymbolicRecords()) {
-      r.getCommunities()
-          .forEach(
-              (cvar, e) -> {
-                if (cvar.getType() == CommunityVar.Type.REGEX) {
-                  BoolExpr acc = mkFalse();
-                  List<CommunityVar> deps = _communityDependencies.get(cvar);
-                  for (CommunityVar dep : deps) {
-                    BoolExpr depExpr = r.getCommunities().get(dep);
-                    acc = mkOr(acc, depExpr);
-                  }
-                  BoolExpr regex = mkEq(acc, e);
-                  add(regex);
-                }
-              });
+      for (Entry<CommunityVar, BoolExpr> entry : r.getCommunities().entrySet()) {
+        CommunityVar cvar = entry.getKey();
+        BoolExpr e = entry.getValue();
+        if (cvar.getType() == CommunityVar.Type.REGEX) {
+          BoolExpr acc = mkFalse();
+          List<CommunityVar> deps = _communityDependencies.get(cvar);
+          for (CommunityVar dep : deps) {
+            BoolExpr depExpr = r.getCommunities().get(dep);
+            acc = mkOr(acc, depExpr);
+          }
+          BoolExpr regex = mkEq(acc, e);
+          add(regex);
+        }
+      }
     }
   }
 
@@ -1538,57 +1490,55 @@ class EncoderSlice {
    * (best =  best_prot1) or  ... or  (best =  best_protn)
    */
   private void addBestOverallConstraints() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      // These constraints will be added at the protocol-level when a single protocol
+      if (!_optimizations.getSliceHasSingleProtocol().contains(router)) {
 
-              // These constraints will be added at the protocol-level when a single protocol
-              if (!_optimizations.getSliceHasSingleProtocol().contains(router)) {
+        boolean someProto = false;
 
-                boolean someProto = false;
+        BoolExpr acc = null;
+        BoolExpr somePermitted = null;
+        SymbolicRoute best = _symbolicDecisions.getBestNeighbor().get(router);
 
-                BoolExpr acc = null;
-                BoolExpr somePermitted = null;
-                SymbolicRoute best = _symbolicDecisions.getBestNeighbor().get(router);
+        for (Protocol proto : getProtocols().get(router)) {
+          someProto = true;
 
-                for (Protocol proto : getProtocols().get(router)) {
-                  someProto = true;
+          SymbolicRoute bestVars =
+              _symbolicDecisions.getBestVars(_optimizations, router, proto);
+          assert (bestVars != null);
 
-                  SymbolicRoute bestVars =
-                      _symbolicDecisions.getBestVars(_optimizations, router, proto);
-                  assert (bestVars != null);
+          if (somePermitted == null) {
+            somePermitted = bestVars.getPermitted();
+          } else {
+            somePermitted = mkOr(somePermitted, bestVars.getPermitted());
+          }
 
-                  if (somePermitted == null) {
-                    somePermitted = bestVars.getPermitted();
-                  } else {
-                    somePermitted = mkOr(somePermitted, bestVars.getPermitted());
-                  }
+          BoolExpr val =
+              mkAnd(
+                  bestVars.getPermitted(), equal(conf, proto, best, bestVars, null, true));
+          if (acc == null) {
+            acc = val;
+          } else {
+            acc = mkOr(acc, val);
+          }
+          add(
+              mkImplies(
+                  bestVars.getPermitted(),
+                  greaterOrEqual(conf, proto, best, bestVars, null)));
+        }
 
-                  BoolExpr val =
-                      mkAnd(
-                          bestVars.getPermitted(), equal(conf, proto, best, bestVars, null, true));
-                  if (acc == null) {
-                    acc = val;
-                  } else {
-                    acc = mkOr(acc, val);
-                  }
-                  add(
-                      mkImplies(
-                          bestVars.getPermitted(),
-                          greaterOrEqual(conf, proto, best, bestVars, null)));
-                }
-
-                if (someProto) {
-                  if (acc != null) {
-                    add(mkEq(somePermitted, best.getPermitted()));
-                    add(mkImplies(somePermitted, acc));
-                  }
-                } else {
-                  add(mkNot(best.getPermitted()));
-                }
-              }
-            });
+        if (someProto) {
+          if (acc != null) {
+            add(mkEq(somePermitted, best.getPermitted()));
+            add(mkImplies(somePermitted, acc));
+          }
+        } else {
+          add(mkNot(best.getPermitted()));
+        }
+      }
+    }
   }
 
   /*
@@ -1597,47 +1547,47 @@ class EncoderSlice {
    * at least one of them.
    */
   private void addBestPerProtocolConstraints() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : getProtocols().get(router)) {
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
 
-                SymbolicRoute bestVars =
-                    _symbolicDecisions.getBestVars(_optimizations, router, proto);
-                assert (bestVars != null);
+      for (Protocol proto : getProtocols().get(router)) {
 
-                BoolExpr acc = null;
-                BoolExpr somePermitted = null;
+        SymbolicRoute bestVars =
+            _symbolicDecisions.getBestVars(_optimizations, router, proto);
+        assert (bestVars != null);
 
-                for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
+        BoolExpr acc = null;
+        BoolExpr somePermitted = null;
 
-                  SymbolicRoute vars = correctVars(e);
+        for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
 
-                  if (somePermitted == null) {
-                    somePermitted = vars.getPermitted();
-                  } else {
-                    somePermitted = mkOr(somePermitted, vars.getPermitted());
-                  }
+          SymbolicRoute vars = correctVars(e);
 
-                  BoolExpr v =
-                      mkAnd(vars.getPermitted(), equal(conf, proto, bestVars, vars, e, true));
-                  if (acc == null) {
-                    acc = v;
-                  } else {
-                    acc = mkOr(acc, v);
-                  }
-                  add(
-                      mkImplies(
-                          vars.getPermitted(), greaterOrEqual(conf, proto, bestVars, vars, e)));
-                }
+          if (somePermitted == null) {
+            somePermitted = vars.getPermitted();
+          } else {
+            somePermitted = mkOr(somePermitted, vars.getPermitted());
+          }
 
-                if (acc != null) {
-                  add(mkEq(somePermitted, bestVars.getPermitted()));
-                  add(mkImplies(somePermitted, acc));
-                }
-              }
-            });
+          BoolExpr v =
+              mkAnd(vars.getPermitted(), equal(conf, proto, bestVars, vars, e, true));
+          if (acc == null) {
+            acc = v;
+          } else {
+            acc = mkOr(acc, v);
+          }
+          add(
+              mkImplies(
+                  vars.getPermitted(), greaterOrEqual(conf, proto, bestVars, vars, e)));
+        }
+
+        if (acc != null) {
+          add(mkEq(somePermitted, bestVars.getPermitted()));
+          add(mkImplies(somePermitted, acc));
+        }
+      }
+    }
   }
 
   /*
@@ -1648,23 +1598,22 @@ class EncoderSlice {
    * choice_bgp_Serial0 = (import_Serial0 = best_bgp)
    */
   private void addChoicePerProtocolConstraints() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : getProtocols().get(router)) {
-                SymbolicRoute bestVars =
-                    _symbolicDecisions.getBestVars(_optimizations, router, proto);
-                assert (bestVars != null);
-                for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
-                  SymbolicRoute vars = correctVars(e);
-                  BoolExpr choice = _symbolicDecisions.getChoiceVariables().get(router, proto, e);
-                  assert (choice != null);
-                  BoolExpr isBest = equal(conf, proto, bestVars, vars, e, false);
-                  add(mkEq(choice, mkAnd(vars.getPermitted(), isBest)));
-                }
-              }
-            });
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      for (Protocol proto : getProtocols().get(router)) {
+        SymbolicRoute bestVars =
+            _symbolicDecisions.getBestVars(_optimizations, router, proto);
+        assert (bestVars != null);
+        for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
+          SymbolicRoute vars = correctVars(e);
+          BoolExpr choice = _symbolicDecisions.getChoiceVariables().get(router, proto, e);
+          assert (choice != null);
+          BoolExpr isBest = equal(conf, proto, bestVars, vars, e, false);
+          add(mkEq(choice, mkAnd(vars.getPermitted(), isBest)));
+        }
+      }
+    }
   }
 
   /*
@@ -1674,100 +1623,99 @@ class EncoderSlice {
    * Otherwise, it will not occur.
    */
   private void addControlForwardingConstraints() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              boolean someEdge = false;
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      boolean someEdge = false;
 
-              SymbolicRoute best = _symbolicDecisions.getBestNeighbor().get(router);
-              Map<GraphEdge, BoolExpr> cfExprs = new HashMap<>();
+      SymbolicRoute best = _symbolicDecisions.getBestNeighbor().get(router);
+      Map<GraphEdge, BoolExpr> cfExprs = new HashMap<>();
 
-              Set<GraphEdge> constrained = new HashSet<>();
+      Set<GraphEdge> constrained = new HashSet<>();
 
-              for (Protocol proto : getProtocols().get(router)) {
+      for (Protocol proto : getProtocols().get(router)) {
 
-                for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
+        for (LogicalEdge e : collectAllImportLogicalEdges(router, conf, proto)) {
 
-                  someEdge = true;
-                  constrained.add(e.getEdge());
+          someEdge = true;
+          constrained.add(e.getEdge());
 
-                  SymbolicRoute vars = correctVars(e);
-                  BoolExpr choice = _symbolicDecisions.getChoiceVariables().get(router, proto, e);
-                  BoolExpr isBest = mkAnd(choice, equal(conf, proto, best, vars, e, false));
+          SymbolicRoute vars = correctVars(e);
+          BoolExpr choice = _symbolicDecisions.getChoiceVariables().get(router, proto, e);
+          BoolExpr isBest = mkAnd(choice, equal(conf, proto, best, vars, e, false));
 
-                  GraphEdge ge = e.getEdge();
+          GraphEdge ge = e.getEdge();
 
-                  // Connected routes should only forward if not absorbed by interface
-                  GraphEdge other = getGraph().getOtherEnd().get(ge);
-                  BoolExpr connectedWillSend;
-                  if (other == null || getGraph().isHost(ge.getPeer())) {
-                    Ip ip = ge.getStart().getPrefix().getAddress();
-                    BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
-                    connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), val));
-                  } else {
-                    Ip ip = other.getStart().getPrefix().getAddress();
-                    BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
-                    connectedWillSend = mkEq(_symbolicPacket.getDstIp(), val);
-                  }
-                  BoolExpr canSend = (proto.isConnected() ? connectedWillSend : mkTrue());
+          // Connected routes should only forward if not absorbed by interface
+          GraphEdge other = getGraph().getOtherEnd().get(ge);
+          BoolExpr connectedWillSend;
+          if (other == null || getGraph().isHost(ge.getPeer())) {
+            Ip ip = ge.getStart().getPrefix().getAddress();
+            BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
+            connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), val));
+          } else {
+            Ip ip = other.getStart().getPrefix().getAddress();
+            BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
+            connectedWillSend = mkEq(_symbolicPacket.getDstIp(), val);
+          }
+          BoolExpr canSend = (proto.isConnected() ? connectedWillSend : mkTrue());
 
-                  BoolExpr sends = mkAnd(canSend, isBest);
+          BoolExpr sends = mkAnd(canSend, isBest);
 
-                  BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
-                  assert (cForward != null);
-                  add(mkImplies(sends, cForward));
+          BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
+          assert (cForward != null);
+          add(mkImplies(sends, cForward));
 
-                  // record the negation as well
-                  cfExprs.merge(ge, sends, (a, b) -> mkOr(a, b));
-                }
+          // record the negation as well
+          cfExprs.merge(ge, sends, (a, b) -> mkOr(a, b));
+        }
+      }
+
+      // For edges that are never used, we constraint them to not be forwarded out of
+      for (GraphEdge ge : getGraph().getEdgeMap().get(router)) {
+        if (!constrained.contains(ge)) {
+          BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
+          assert (cForward != null);
+          add(mkNot(cForward));
+        }
+      }
+
+      // Handle the case that the router has no protocol running
+      if (!someEdge) {
+        for (GraphEdge ge : getGraph().getEdgeMap().get(router)) {
+          BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
+          assert (cForward != null);
+          add(mkNot(cForward));
+        }
+      } else {
+        // If no best route, then no forwarding
+        Map<Protocol, List<ArrayList<LogicalEdge>>> map =
+            _logicalGraph.getLogicalEdges().get(router);
+
+        Set<GraphEdge> seen = new HashSet<>();
+        for (List<ArrayList<LogicalEdge>> eList : map.values()) {
+          for (ArrayList<LogicalEdge> edges : eList) {
+            for (LogicalEdge le : edges) {
+              GraphEdge ge = le.getEdge();
+              if (seen.contains(ge)) {
+                continue;
               }
-
-              // For edges that are never used, we constraint them to not be forwarded out of
-              for (GraphEdge ge : getGraph().getEdgeMap().get(router)) {
-                if (!constrained.contains(ge)) {
-                  BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
-                  assert (cForward != null);
-                  add(mkNot(cForward));
-                }
-              }
-
-              // Handle the case that the router has no protocol running
-              if (!someEdge) {
-                for (GraphEdge ge : getGraph().getEdgeMap().get(router)) {
-                  BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
-                  assert (cForward != null);
-                  add(mkNot(cForward));
-                }
+              seen.add(ge);
+              BoolExpr expr = cfExprs.get(ge);
+              BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
+              assert (cForward != null);
+              if (expr != null) {
+                add(mkImplies(mkNot(expr), mkNot(cForward)));
               } else {
-                // If no best route, then no forwarding
-                _logicalGraph
-                    .getLogicalEdges()
-                    .get(router)
-                    .forEach(
-                        (proto, eList) ->
-                            eList.forEach(
-                                edges -> {
-                                  edges.forEach(
-                                      le -> {
-                                        GraphEdge ge = le.getEdge();
-                                        BoolExpr expr = cfExprs.get(ge);
-
-                                        BoolExpr cForward =
-                                            _symbolicDecisions
-                                                .getControlForwarding()
-                                                .get(router, ge);
-                                        assert (cForward != null);
-
-                                        if (expr != null) {
-                                          add(mkImplies(mkNot(expr), mkNot(cForward)));
-                                        } else {
-                                          add(mkNot(cForward));
-                                        }
-                                      });
-                                }));
+                add(mkNot(cForward));
               }
-            });
+            }
+          }
+
+        }
+      }
+    }
+
   }
 
   /*
@@ -2012,80 +1960,73 @@ class EncoderSlice {
    * data_fwd(iface) = control_fwd(iface) and not acl(iface)
    */
   private void addDataForwardingConstraints() {
+    for (Entry<String, List<GraphEdge>> entry : getGraph().getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      for (GraphEdge ge : edges) {
 
-    getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
+        // setup forwarding for non-abstract edges
+        if (!ge.isAbstract()) {
+          BoolExpr fwd = mkFalse();
+          BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
+          BoolExpr dForward = _symbolicDecisions.getDataForwarding().get(router, ge);
+          assert (cForward != null);
+          assert (dForward != null);
 
-                // setup forwarding for non-abstract edges
-                if (!ge.isAbstract()) {
-
-                  BoolExpr fwd = mkFalse();
-
-                  BoolExpr cForward = _symbolicDecisions.getControlForwarding().get(router, ge);
-                  BoolExpr dForward = _symbolicDecisions.getDataForwarding().get(router, ge);
-                  assert (cForward != null);
-                  assert (dForward != null);
-
-                  // for each abstract control edge,
-                  // if that edge is on and its neighbor slices has next hop forwarding
-                  // out the current edge ge, the we use ge.
-                  for (GraphEdge ge2 : getGraph().getEdgeMap().get(router)) {
-                    if (ge2.isAbstract()) {
-                      BoolExpr ctrlFwd =
-                          getSymbolicDecisions().getControlForwarding().get(router, ge2);
-                      Graph.BgpSendType st = getGraph().peerType(ge2);
-                      // If Route reflectors, then next hop based on ID
-                      if (st == Graph.BgpSendType.TO_RR) {
-                        SymbolicRoute record =
-                            getSymbolicDecisions().getBestNeighbor().get(router);
-
-                        // adjust for iBGP in main slice
-                        BoolExpr acc = mkFalse();
-                        if (isMainSlice()) {
-                          for (Map.Entry<String, Integer> entry :
-                              getGraph().getOriginatorId().entrySet()) {
-                            String r = entry.getKey();
-                            Integer id = entry.getValue();
-                            EncoderSlice s = _encoder.getSlice(r);
-                            // Make sure
-                            if (otherSliceHasEdge(s, router, ge)) {
-                              BoolExpr outEdge =
-                                  s.getSymbolicDecisions().getDataForwarding().get(router, ge);
-                              acc =
-                                  mkOr(acc, mkAnd(record.getClientId().checkIfValue(id), outEdge));
-                            }
-                          }
-                        }
-
-                        fwd = mkOr(fwd, mkAnd(ctrlFwd, acc));
-                      } else { // Otherwise, we know the next hop statically
-
-                        // adjust for iBGP in main slice
-                        if (isMainSlice()) {
-                          EncoderSlice s = _encoder.getSlice(ge2.getPeer());
-                          if (otherSliceHasEdge(s, router, ge)) {
-                            BoolExpr outEdge =
-                                s.getSymbolicDecisions().getDataForwarding().get(router, ge);
-                            fwd = mkOr(fwd, mkAnd(ctrlFwd, outEdge));
-                          }
-                        }
-                      }
+          // for each abstract control edge,
+          // if that edge is on and its neighbor slices has next hop forwarding
+          // out the current edge ge, the we use ge.
+          for (GraphEdge ge2 : getGraph().getEdgeMap().get(router)) {
+            if (ge2.isAbstract()) {
+              BoolExpr ctrlFwd =
+                  getSymbolicDecisions().getControlForwarding().get(router, ge2);
+              Graph.BgpSendType st = getGraph().peerType(ge2);
+              // If Route reflectors, then next hop based on ID
+              if (st == Graph.BgpSendType.TO_RR) {
+                SymbolicRoute record = getSymbolicDecisions().getBestNeighbor().get(router);
+                // adjust for iBGP in main slice
+                BoolExpr acc = mkFalse();
+                if (isMainSlice()) {
+                  for (Entry<String, Integer> entry2 : getGraph().getOriginatorId().entrySet()) {
+                    String r = entry2.getKey();
+                    Integer id = entry2.getValue();
+                    EncoderSlice s = _encoder.getSlice(r);
+                    // Make sure
+                    if (otherSliceHasEdge(s, router, ge)) {
+                      BoolExpr outEdge =
+                          s.getSymbolicDecisions().getDataForwarding().get(router, ge);
+                      acc =
+                          mkOr(acc, mkAnd(record.getClientId().checkIfValue(id), outEdge));
                     }
                   }
+                }
+                fwd = mkOr(fwd, mkAnd(ctrlFwd, acc));
 
-                  fwd = mkOr(fwd, cForward);
-                  BoolExpr acl = _outboundAcls.get(ge);
-                  if (acl == null) {
-                    acl = mkTrue();
+              } else {
+                // Otherwise, we know the next hop statically
+                // adjust for iBGP in main slice
+                if (isMainSlice()) {
+                  EncoderSlice s = _encoder.getSlice(ge2.getPeer());
+                  if (otherSliceHasEdge(s, router, ge)) {
+                    BoolExpr outEdge =
+                        s.getSymbolicDecisions().getDataForwarding().get(router, ge);
+                    fwd = mkOr(fwd, mkAnd(ctrlFwd, outEdge));
                   }
-                  BoolExpr notBlocked = mkAnd(fwd, acl);
-                  add(mkEq(notBlocked, dForward));
                 }
               }
-            });
+            }
+          }
+
+          fwd = mkOr(fwd, cForward);
+          BoolExpr acl = _outboundAcls.get(ge);
+          if (acl == null) {
+            acl = mkTrue();
+          }
+          BoolExpr notBlocked = mkAnd(fwd, acl);
+          add(mkEq(notBlocked, dForward));
+        }
+      }
+    }
   }
 
   /*
@@ -2471,85 +2412,84 @@ class EncoderSlice {
    * of variables.
    */
   private void addTransferFunction() {
-    getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              for (Protocol proto : getProtocols().get(router)) {
-                Boolean usedExport = false;
-                boolean hasEdge = false;
+    for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      for (Protocol proto : getProtocols().get(router)) {
+        Boolean usedExport = false;
+        boolean hasEdge = false;
 
-                List<ArrayList<LogicalEdge>> les =
-                    _logicalGraph.getLogicalEdges().get(router, proto);
-                assert (les != null);
+        List<ArrayList<LogicalEdge>> les = _logicalGraph.getLogicalEdges().get(router, proto);
+        assert (les != null);
+        for (ArrayList<LogicalEdge> eList : les) {
+          for (LogicalEdge e : eList) {
+            GraphEdge ge = e.getEdge();
 
-                for (ArrayList<LogicalEdge> eList : les) {
-                  for (LogicalEdge e : eList) {
-                    GraphEdge ge = e.getEdge();
+            if (!getGraph().isEdgeUsed(conf, proto, ge)) {
+              continue;
+            }
 
-                    if (getGraph().isEdgeUsed(conf, proto, ge)) {
-                      hasEdge = true;
-                      SymbolicRoute varsOther;
-                      switch (e.getEdgeType()) {
-                        case IMPORT:
-                          varsOther = _logicalGraph.findOtherVars(e);
-                          addImportConstraint(e, varsOther, conf, proto, ge, router);
-                          break;
+            hasEdge = true;
+            SymbolicRoute varsOther;
 
-                        case EXPORT:
-                          // OSPF export is tricky because it does not depend on being
-                          // in the FIB. So it can come from either a redistributed route
-                          // or another OSPF route. We always take the direct OSPF
-                          SymbolicRoute ospfRedistribVars = null;
-                          SymbolicRoute overallBest = null;
-                          if (proto.isOspf()) {
-                            varsOther = getBestNeighborPerProtocol(router, proto);
-                            if (_ospfRedistributed.containsKey(router)) {
-                              ospfRedistribVars = _ospfRedistributed.get(router);
-                              overallBest = _symbolicDecisions.getBestNeighbor().get(router);
-                            }
-                          } else {
-                            varsOther = _symbolicDecisions.getBestNeighbor().get(router);
-                          }
-                          Set<Prefix> originations = _originatedNetworks.get(router, proto);
+            switch (e.getEdgeType()) {
+            case IMPORT:
+              varsOther = _logicalGraph.findOtherVars(e);
+              addImportConstraint(e, varsOther, conf, proto, ge, router);
+              break;
 
-                          assert varsOther != null;
-                          assert originations != null;
-
-                          addExportConstraint(
-                              e,
-                              varsOther,
-                              ospfRedistribVars,
-                              overallBest,
-                              conf,
-                              proto,
-                              ge,
-                              router,
-                              usedExport,
-                              originations);
-
-                          usedExport = true;
-                          break;
-
-                        default:
-                          break;
-                      }
-                    }
-                  }
+            case EXPORT:
+              // OSPF export is tricky because it does not depend on being
+              // in the FIB. So it can come from either a redistributed route
+              // or another OSPF route. We always take the direct OSPF
+              SymbolicRoute ospfRedistribVars = null;
+              SymbolicRoute overallBest = null;
+              if (proto.isOspf()) {
+                varsOther = getBestNeighborPerProtocol(router, proto);
+                if (_ospfRedistributed.containsKey(router)) {
+                  ospfRedistribVars = _ospfRedistributed.get(router);
+                  overallBest = _symbolicDecisions.getBestNeighbor().get(router);
                 }
-                // If no edge used, then just set the best record to be false for that protocol
-                if (!hasEdge) {
-                  SymbolicRoute protoBest;
-                  if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
-                    protoBest = _symbolicDecisions.getBestNeighbor().get(router);
-                  } else {
-                    protoBest = _symbolicDecisions.getBestNeighborPerProtocol().get(router, proto);
-                  }
-                  assert protoBest != null;
-                  add(mkNot(protoBest.getPermitted()));
-                }
+              } else {
+                varsOther = _symbolicDecisions.getBestNeighbor().get(router);
               }
-            });
+              Set<Prefix> originations = _originatedNetworks.get(router, proto);
+              assert varsOther != null;
+              assert originations != null;
+
+              addExportConstraint(e,
+                  varsOther,
+                  ospfRedistribVars,
+                  overallBest,
+                  conf,
+                  proto,
+                  ge,
+                  router,
+                  usedExport,
+                  originations);
+
+              usedExport = true;
+              break;
+
+            default:
+              break;
+            }
+
+          }
+        }
+        // If no edge used, then just set the best record to be false for that protocol
+        if (!hasEdge) {
+          SymbolicRoute protoBest;
+          if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
+            protoBest = _symbolicDecisions.getBestNeighbor().get(router);
+          } else {
+            protoBest = _symbolicDecisions.getBestNeighborPerProtocol().get(router, proto);
+          }
+          assert protoBest != null;
+          add(mkNot(protoBest.getPermitted()));
+        }
+      }
+    }
   }
 
   /*
@@ -2558,19 +2498,14 @@ class EncoderSlice {
    * in the actual FIB.
    */
   private void addHistoryConstraints() {
-    //_symbolicDecisions.getBestNeighborPerProtocol().forEach((router, proto, vars) -> {
-    //    add(mkImplies(vars.getPermitted(), vars.getProtocolHistory().checkIfValue(proto)));
-    //});
-
-    _symbolicDecisions
-        .getBestNeighbor()
-        .forEach(
-            (router, vars) -> {
-              if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
-                Protocol proto = getProtocols().get(router).get(0);
-                add(mkImplies(vars.getPermitted(), vars.getProtocolHistory().checkIfValue(proto)));
-              }
-            });
+    for (Entry<String, SymbolicRoute> entry : _symbolicDecisions.getBestNeighbor().entrySet()) {
+      String router = entry.getKey();
+      SymbolicRoute vars = entry.getValue();
+      if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
+        Protocol proto = getProtocols().get(router).get(0);
+        add(mkImplies(vars.getPermitted(), vars.getProtocolHistory().checkIfValue(proto)));
+      }
+    }
   }
 
   /*
@@ -2818,26 +2753,16 @@ class EncoderSlice {
    * Add various constraints for well-formed environments
    */
   private void addEnvironmentConstraints() {
-    // Environment messages are not internal
-    getLogicalGraph()
-        .getEnvironmentVars()
-        .forEach(
-            (le, vars) -> {
-              BoolExpr x = vars.getBgpInternal();
-              if (x != null) {
-                add(mkNot(x));
-              }
-            });
-
-    // Environment messages have 0 value for client id
-    getLogicalGraph()
-        .getEnvironmentVars()
-        .forEach(
-            (le, vars) -> {
-              if (vars.getClientId() != null) {
-                add(vars.getClientId().isNotFromClient());
-              }
-            });
+    for (SymbolicRoute vars : getLogicalGraph().getEnvironmentVars().values()) {
+      // Environment messages are not internal
+      if (vars.getBgpInternal() != null) {
+        add(mkNot(vars.getBgpInternal()));
+      }
+      // Environment messages have 0 value for client id
+      if (vars.getClientId() != null) {
+        add(vars.getClientId().isNotFromClient());
+      }
+    }
   }
 
   /*

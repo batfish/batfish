@@ -14,7 +14,6 @@ import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
-import org.batfish.symbolic.abstraction.CallbackHandler;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs
