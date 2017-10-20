@@ -1,8 +1,12 @@
 package org.batfish.bdp;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpBestPathRib extends AbstractRib<BgpRoute> {
@@ -159,6 +163,14 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     } else {
       return 0;
     }
+  }
+
+  public Map<Prefix, AsPath> getBestAsPaths() {
+    Map<Prefix, AsPath> bestAsPaths = new HashMap<>();
+    for (BgpRoute route : getRoutes()) {
+      bestAsPaths.put(route.getNetwork(), route.getAsPath());
+    }
+    return bestAsPaths;
   }
 
   private int getTypeCost(RoutingProtocol protocol) {

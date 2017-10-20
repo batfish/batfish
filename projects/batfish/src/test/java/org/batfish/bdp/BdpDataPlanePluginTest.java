@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -36,6 +38,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -45,6 +48,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -161,6 +165,147 @@ public class BdpDataPlanePluginTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
     BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
+  }
+
+  private void testBgpAsPathMultipath_helper(
+      MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
+      boolean primeBestPathInMultipathBgpRib,
+      boolean expectRoute2,
+      boolean expectRoute3a,
+      boolean expectRoute3b,
+      boolean expectRoute3c,
+      boolean expectRoute3d) {
+    /*
+     * Properties of the routes
+     */
+    // Should appear only for path-length match
+    List<SortedSet<Integer>> asPath2 = AsPath.ofSingletonAsSets(2, 4, 6).getAsSets();
+    // Should appear only for first-as match and path-length match
+    List<SortedSet<Integer>> asPath3a = AsPath.ofSingletonAsSets(3, 5, 6).getAsSets();
+    // Should never appear
+    List<SortedSet<Integer>> asPath3b = AsPath.ofSingletonAsSets(3, 4, 4, 6).getAsSets();
+    // Should always appear
+    AsPath bestAsPath = AsPath.ofSingletonAsSets(3, 4, 6);
+    List<SortedSet<Integer>> asPath3c = bestAsPath.getAsSets();
+    List<SortedSet<Integer>> asPath3d = bestAsPath.getAsSets();
+    Ip nextHop2 = new Ip("2.0.0.0");
+    Ip nextHop3a = new Ip("3.0.0.1");
+    Ip nextHop3b = new Ip("3.0.0.2");
+    Ip nextHop3c = new Ip("3.0.0.3");
+    Ip nextHop3d = new Ip("3.0.0.4");
+
+    /*
+     * Common attributes for all routes
+     */
+    Prefix p = Prefix.ZERO;
+    BgpRoute.Builder b =
+        new BgpRoute.Builder()
+            .setNetwork(p)
+            .setProtocol(RoutingProtocol.BGP)
+            .setOriginType(OriginType.INCOMPLETE);
+
+    /*
+     * Boilerplate virtual-router setup
+     */
+    String hostname = "r1";
+    Configuration c =
+        BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
+    BgpProcess proc = new BgpProcess();
+    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    Map<String, Node> nodes = new HashMap<String, Node>();
+    Node node = new Node(c, nodes);
+    nodes.put(hostname, node);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+
+    /*
+     * Instantiate routes
+     */
+    BgpRoute route2 = b.setAsPath(asPath2).setNextHopIp(nextHop2).setOriginatorIp(nextHop2).build();
+    BgpRoute route3a =
+        b.setAsPath(asPath3a).setNextHopIp(nextHop3a).setOriginatorIp(nextHop3a).build();
+    BgpRoute route3b =
+        b.setAsPath(asPath3b).setNextHopIp(nextHop3b).setOriginatorIp(nextHop3b).build();
+    BgpRoute route3c =
+        b.setAsPath(asPath3c).setNextHopIp(nextHop3c).setOriginatorIp(nextHop3c).build();
+    BgpRoute route3d =
+        b.setAsPath(asPath3d).setNextHopIp(nextHop3d).setOriginatorIp(nextHop3d).build();
+
+    /*
+     * Set the as-path match mode prior to instantiating bgp multipath RIB
+     */
+    proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
+    BgpMultipathRib bmr = new BgpMultipathRib(vr);
+
+    /*
+     * Prime bgp multipath RIB with best path for the prefix
+     */
+    if (primeBestPathInMultipathBgpRib) {
+      bmr.setBestAsPaths(Collections.singletonMap(p, bestAsPath));
+    }
+
+    /*
+     * Add routes to multipath RIB.
+     */
+    bmr.mergeRoute(route2);
+    bmr.mergeRoute(route3a);
+    bmr.mergeRoute(route3b);
+    bmr.mergeRoute(route3c);
+    bmr.mergeRoute(route3d);
+
+    /*
+     * Initialize the matchers with respect to the output route set
+     */
+    Set<BgpRoute> postMergeRoutes = bmr.getRoutes();
+    Matcher<BgpRoute> present = isIn(postMergeRoutes);
+    Matcher<BgpRoute> absent = not(present);
+
+    /*
+     * ASSERTIONS:
+     * Only the expected routes for the given match mode should be present at end
+     */
+    assertThat(route2, expectRoute2 ? present : absent);
+    assertThat(route3a, expectRoute3a ? present : absent);
+    assertThat(route3b, expectRoute3b ? present : absent);
+    assertThat(route3c, expectRoute3c ? present : absent);
+    assertThat(route3c, expectRoute3d ? present : absent);
+  }
+
+  @Test
+  public void testBgpAsPathMultipathExactPath() {
+    /*
+     * Only routes with first-as matching that of best as path should appear in RIB post-merge.
+     */
+    testBgpAsPathMultipath_helper(
+        MultipathEquivalentAsPathMatchMode.EXACT_PATH, true, false, false, false, true, true);
+  }
+
+  @Test
+  public void testBgpAsPathMultipathFirstAs() {
+    /*
+     * Only routes with first-as matching that of best as path should appear in RIB post-merge.
+     */
+    testBgpAsPathMultipath_helper(
+        MultipathEquivalentAsPathMatchMode.FIRST_AS, true, false, true, false, true, true);
+  }
+
+  @Test
+  public void testBgpAsPathMultipathPathLength() {
+    /*
+     * All routes with same as-path-length as that of best as-path should appear in RIB post-merge.
+     */
+    testBgpAsPathMultipath_helper(
+        MultipathEquivalentAsPathMatchMode.PATH_LENGTH, true, true, true, false, true, true);
+  }
+
+  @Test
+  public void testBgpAsPathMultipathUnprimed() {
+    /*
+     * Without priming best as path map, all paths except the longer one should be considered
+     * equivalent. Results should be independent of chosen mode.
+     */
+    for (MultipathEquivalentAsPathMatchMode mode : MultipathEquivalentAsPathMatchMode.values()) {
+      testBgpAsPathMultipath_helper(mode, false, true, true, false, true, true);
+    }
   }
 
   @Test

@@ -46,6 +46,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
@@ -1352,6 +1353,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (tieBreaker != null) {
       newBgpProcess.setTieBreaker(tieBreaker);
     }
+    MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
+        proc.getAsPathMultipathRelax()
+            ? MultipathEquivalentAsPathMatchMode.PATH_LENGTH
+            : MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+    newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
     Integer maximumPaths = proc.getMaximumPaths();
     Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
     Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
