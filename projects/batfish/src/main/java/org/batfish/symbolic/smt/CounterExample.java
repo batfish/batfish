@@ -410,11 +410,12 @@ class CounterExample {
    * Creates a trace-based example of what happens
    * to a packet (e.g., why it is not reachable).
    */
-  FlowHistory buildFlowCounterExample(
+  FlowHistory buildFlowHistory(
       String testrigName,
       Collection<String> sourceRouters,
       Encoder enc,
       Map<String, BoolExpr> reach) {
+
     FlowHistory fh = new FlowHistory();
     for (String source : sourceRouters) {
       BoolExpr sourceVar = reach.get(source);
@@ -435,7 +436,7 @@ class CounterExample {
    * Create a trace-based counterexample demonstrating
    * the difference between two networks on a single packet.
    */
-  FlowHistory buildFlowDiffCounterExample(
+  FlowHistory buildFlowHistoryDiff(
       String testRigName,
       Collection<String> sourceRouters,
       Encoder enc,

@@ -9,7 +9,9 @@ import com.microsoft.z3.Solver;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import org.batfish.datamodel.Configuration;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -28,9 +30,6 @@ class PropertyAdder {
     _encoderSlice = encoderSlice;
   }
 
-  /*
-   * Ensure that all expressions in a list are equal
-   */
   static BoolExpr allEqual(Context ctx, List<Expr> exprs) {
     BoolExpr acc = ctx.mkBool(true);
     if (exprs.size() > 1) {
@@ -53,27 +52,22 @@ class PropertyAdder {
       Solver solver,
       Map<String, BoolExpr> reachableVars,
       Map<String, ArithExpr> idVars) {
+
     String sliceName = slice.getSliceName();
     ArithExpr zero = ctx.mkInt(0);
-    _encoderSlice
-        .getGraph()
-        .getConfigurations()
-        .forEach(
-            (r, conf) -> {
-              int id = _encoderSlice.getEncoder().getId();
-              String s1 = id + "_" + sliceName + "_reachable-id_" + r;
-              String s2 = id + "_" + sliceName + "_reachable_" + r;
-              ArithExpr idVar = ctx.mkIntConst(s1);
-              BoolExpr var = ctx.mkBoolConst(s2);
-
-              idVars.put(r, idVar);
-              reachableVars.put(r, var);
-              _encoderSlice.getAllVariables().put(idVar.toString(), idVar);
-              _encoderSlice.getAllVariables().put(var.toString(), var);
-
-              solver.add(ctx.mkEq(var, ctx.mkGt(idVar, zero)));
-              solver.add(ctx.mkGe(idVar, zero));
-            });
+    for (String r : _encoderSlice.getGraph().getRouters()) {
+      int id = _encoderSlice.getEncoder().getId();
+      String s1 = id + "_" + sliceName + "_reachable-id_" + r;
+      String s2 = id + "_" + sliceName + "_reachable_" + r;
+      ArithExpr idVar = ctx.mkIntConst(s1);
+      BoolExpr var = ctx.mkBoolConst(s2);
+      idVars.put(r, idVar);
+      reachableVars.put(r, var);
+      _encoderSlice.getAllVariables().put(idVar.toString(), idVar);
+      _encoderSlice.getAllVariables().put(var.toString(), var);
+      solver.add(ctx.mkEq(var, ctx.mkGt(idVar, zero)));
+      solver.add(ctx.mkGe(idVar, zero));
+    }
   }
 
   /*
@@ -90,6 +84,7 @@ class PropertyAdder {
       Map<String, ArithExpr> idVars,
       String router,
       ArithExpr id) {
+
     ArithExpr zero = ctx.mkInt(0);
     BoolExpr hasRecursiveRoute = ctx.mkFalse();
     BoolExpr largerIds = ctx.mkTrue();
@@ -121,48 +116,46 @@ class PropertyAdder {
     EncoderSlice slice = _encoderSlice;
     Map<String, BoolExpr> reachableVars = new HashMap<>();
     Map<String, ArithExpr> idVars = new HashMap<>();
-
     initializeReachabilityVars(slice, ctx, solver, reachableVars, idVars);
     Graph g = _encoderSlice.getGraph();
-    g.getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              ArithExpr id = idVars.get(router);
-              // Add the base case, reachable if we forward to a directly connected interface
-              BoolExpr hasDirectRoute = ctx.mkFalse();
-              BoolExpr isAbsorbed = ctx.mkFalse();
 
-              SymbolicRoute r =
-                  _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+    for (Entry<String, List<GraphEdge>> entry : g.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      ArithExpr id = idVars.get(router);
+      // Add the base case, reachable if we forward to a directly connected interface
+      BoolExpr hasDirectRoute = ctx.mkFalse();
+      BoolExpr isAbsorbed = ctx.mkFalse();
+      SymbolicRoute r = _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
 
-              for (GraphEdge ge : edges) {
-                if (!ge.isAbstract() && ges.contains(ge)) {
-                  // If a host, consider reachable
-                  if (g.isHost(router)) {
-                    hasDirectRoute = ctx.mkTrue();
-                    break;
-                  }
-                  // Reachable if we leave the network
-                  if (ge.getPeer() == null) {
-                    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-                    assert (fwdIface != null);
-                    hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
-                  }
-                  // Also reachable if connected route and we use it despite not forwarding
-                  if (r != null) {
-                    BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-                    BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
-                    BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
-                    isAbsorbed = ctx.mkOr(isAbsorbed, reach);
-                  }
-                }
-              }
-              // Add the recursive case, where it is reachable through a neighbor
-              BoolExpr recursive = recursiveReachability(ctx, slice, edges, idVars, router, id);
-              BoolExpr guard = ctx.mkOr(hasDirectRoute, isAbsorbed);
-              BoolExpr cond = slice.mkIf(guard, ctx.mkEq(id, ctx.mkInt(1)), recursive);
-              solver.add(cond);
-            });
+      for (GraphEdge ge : edges) {
+        if (!ge.isAbstract() && ges.contains(ge)) {
+          // If a host, consider reachable
+          if (g.isHost(router)) {
+            hasDirectRoute = ctx.mkTrue();
+            break;
+          }
+          // Reachable if we leave the network
+          if (ge.getPeer() == null) {
+            BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+            assert (fwdIface != null);
+            hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+          }
+          // Also reachable if connected route and we use it despite not forwarding
+          if (r != null) {
+            BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
+            BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+            isAbsorbed = ctx.mkOr(isAbsorbed, reach);
+          }
+        }
+      }
+      // Add the recursive case, where it is reachable through a neighbor
+      BoolExpr recursive = recursiveReachability(ctx, slice, edges, idVars, router, id);
+      BoolExpr guard = ctx.mkOr(hasDirectRoute, isAbsorbed);
+      BoolExpr cond = slice.mkIf(guard, ctx.mkEq(id, ctx.mkInt(1)), recursive);
+      solver.add(cond);
+    }
 
     return reachableVars;
   }
@@ -171,26 +164,26 @@ class PropertyAdder {
    * Also instruments reachability, but to a destination router
    * rather than a destination port.
    */
-  public Map<String, BoolExpr> instrumentReachability(String router) {
+  Map<String, BoolExpr> instrumentReachability(String router) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     Map<String, BoolExpr> reachableVars = new HashMap<>();
     Map<String, ArithExpr> idVars = new HashMap<>();
-
     initializeReachabilityVars(_encoderSlice, ctx, solver, reachableVars, idVars);
+
     ArithExpr baseId = idVars.get(router);
     _encoderSlice.add(ctx.mkEq(baseId, ctx.mkInt(1)));
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (r, edges) -> {
-              if (!r.equals(router)) {
-                ArithExpr id = idVars.get(r);
-                BoolExpr cond = recursiveReachability(ctx, _encoderSlice, edges, idVars, r, id);
-                solver.add(cond);
-              }
-            });
+
+    Graph g = _encoderSlice.getGraph();
+    for (Entry<String, List<GraphEdge>> entry : g.getEdgeMap().entrySet()) {
+      String r = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      if (!r.equals(router)) {
+        ArithExpr id = idVars.get(r);
+        BoolExpr cond = recursiveReachability(ctx, _encoderSlice, edges, idVars, r, id);
+        solver.add(cond);
+      }
+    }
 
     return reachableVars;
   }
@@ -304,18 +297,14 @@ class PropertyAdder {
     String sliceName = _encoderSlice.getSliceName();
 
     // Initialize path length variables
+    Graph graph = _encoderSlice.getGraph();
     Map<String, ArithExpr> lenVars = new HashMap<>();
-    _encoderSlice
-        .getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              String name =
-                  _encoderSlice.getEncoder().getId() + "_" + sliceName + "_path-length_" + router;
-              ArithExpr var = ctx.mkIntConst(name);
-              lenVars.put(router, var);
-              _encoderSlice.getAllVariables().put(var.toString(), var);
-            });
+    for (String router : graph.getRouters()) {
+      String name = _encoderSlice.getEncoder().getId() + "_" + sliceName + "_path-length_" + router;
+      ArithExpr var = ctx.mkIntConst(name);
+      lenVars.put(router, var);
+      _encoderSlice.getAllVariables().put(var.toString(), var);
+    }
 
     ArithExpr zero = ctx.mkInt(0);
     ArithExpr one = ctx.mkInt(1);
@@ -323,66 +312,58 @@ class PropertyAdder {
 
     // Lower bound for all lengths
     lenVars.forEach((name, var) -> solver.add(ctx.mkGe(var, minusOne)));
+    for (Entry<String, List<GraphEdge>> entry : graph.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      ArithExpr length = lenVars.get(router);
 
-    // If no peer has a path, then I don't have a path
-    // Otherwise I choose 1 + somePeer value to capture all possible lengths
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              ArithExpr length = lenVars.get(router);
+      // If there is a direct route, then we have length 0
+      BoolExpr hasDirectRoute = ctx.mkFalse();
+      BoolExpr isAbsorbed = ctx.mkFalse();
+      SymbolicRoute r = _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
 
-              // If there is a direct route, then we have length 0
-              BoolExpr hasDirectRoute = ctx.mkFalse();
-              BoolExpr isAbsorbed = ctx.mkFalse();
+      for (GraphEdge ge : edges) {
+        if (!ge.isAbstract() && ges.contains(ge)) {
+          // Reachable if we leave the network
+          if (ge.getPeer() == null) {
+            BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+            assert (fwdIface != null);
+            hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+          }
+          // Also reachable if connected route and we use it despite not forwarding
+          if (r != null) {
+            BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
+            BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+            isAbsorbed = ctx.mkOr(isAbsorbed, reach);
+          }
+        }
+      }
 
-              SymbolicRoute r =
-                  _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+      // Otherwise, we find length recursively
+      BoolExpr accNone = ctx.mkTrue();
+      BoolExpr accSome = ctx.mkFalse();
+      for (GraphEdge edge : edges) {
+        if (!edge.isAbstract()) {
+          if (edge.getPeer() != null) {
+            BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
+            assert (dataFwd != null);
+            ArithExpr peerLen = lenVars.get(edge.getPeer());
+            accNone =
+                ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(peerLen, zero), ctx.mkNot(dataFwd)));
+            ArithExpr newVal = ctx.mkAdd(peerLen, one);
+            BoolExpr fwd =
+                ctx.mkAnd(ctx.mkGe(peerLen, zero), dataFwd, ctx.mkEq(length, newVal));
+            accSome = ctx.mkOr(accSome, fwd);
+          }
+        }
+      }
 
-              for (GraphEdge ge : edges) {
-                if (!ge.isAbstract() && ges.contains(ge)) {
-
-                  // Reachable if we leave the network
-                  if (ge.getPeer() == null) {
-                    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-                    assert (fwdIface != null);
-                    hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
-                  }
-                  // Also reachable if connected route and we use it despite not forwarding
-                  if (r != null) {
-                    BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
-                    BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
-                    BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
-                    isAbsorbed = ctx.mkOr(isAbsorbed, reach);
-                  }
-                }
-              }
-
-              // Otherwise, we find length recursively
-              BoolExpr accNone = ctx.mkTrue();
-              BoolExpr accSome = ctx.mkFalse();
-              for (GraphEdge edge : edges) {
-                if (!edge.isAbstract()) {
-                  if (edge.getPeer() != null) {
-                    BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
-                    assert (dataFwd != null);
-                    ArithExpr peerLen = lenVars.get(edge.getPeer());
-                    accNone =
-                        ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(peerLen, zero), ctx.mkNot(dataFwd)));
-                    ArithExpr newVal = ctx.mkAdd(peerLen, one);
-                    BoolExpr fwd =
-                        ctx.mkAnd(ctx.mkGe(peerLen, zero), dataFwd, ctx.mkEq(length, newVal));
-                    accSome = ctx.mkOr(accSome, fwd);
-                  }
-                }
-              }
-
-              BoolExpr guard = _encoderSlice.mkOr(hasDirectRoute, isAbsorbed);
-              BoolExpr cond1 = _encoderSlice.mkIf(accNone, ctx.mkEq(length, minusOne), accSome);
-              BoolExpr cond2 = _encoderSlice.mkIf(guard, ctx.mkEq(length, zero), cond1);
-              solver.add(cond2);
-            });
+      BoolExpr guard = _encoderSlice.mkOr(hasDirectRoute, isAbsorbed);
+      BoolExpr cond1 = _encoderSlice.mkIf(accNone, ctx.mkEq(length, minusOne), accSome);
+      BoolExpr cond2 = _encoderSlice.mkIf(guard, ctx.mkEq(length, zero), cond1);
+      solver.add(cond2);
+    }
 
     return lenVars;
   }
@@ -392,58 +373,69 @@ class PropertyAdder {
    * port for graph edge ge. Each router will split load according to the
    * number of neighbors it actively uses to get to ge.
    */
-  Map<String, ArithExpr> instrumentLoad(GraphEdge ge) {
+  Map<String, ArithExpr> instrumentLoad(Set<GraphEdge> ges) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
 
-    BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-    assert (fwdIface != null);
-
     Map<String, ArithExpr> loadVars = new HashMap<>();
-    _encoderSlice
-        .getGraph()
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              String name =
-                  _encoderSlice.getEncoder().getId() + "_" + sliceName + "_load_" + router;
-              ArithExpr var = ctx.mkIntConst(name);
-              loadVars.put(router, var);
-              _encoderSlice.getAllVariables().put(var.toString(), var);
-            });
+    Graph graph = _encoderSlice.getGraph();
+    for (String router : graph.getRouters()) {
+      String name = _encoderSlice.getEncoder().getId() + "_" + sliceName + "_load_" + router;
+      ArithExpr var = ctx.mkIntConst(name);
+      loadVars.put(router, var);
+      _encoderSlice.getAllVariables().put(var.toString(), var);
+    }
 
-    // Lower bound for all lengths
     loadVars.forEach((name, var) -> solver.add(ctx.mkGe(var, ctx.mkInt(0))));
-
-    // Root router has load 1 if it uses the interface
     ArithExpr zero = ctx.mkInt(0);
     ArithExpr one = ctx.mkInt(1);
-    ArithExpr baseRouterLoad = loadVars.get(ge.getRouter());
-    solver.add(ctx.mkImplies(fwdIface, ctx.mkEq(baseRouterLoad, one)));
 
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              if (!router.equals(ge.getRouter())) {
-                ArithExpr var = loadVars.get(router);
-                ArithExpr acc = ctx.mkInt(0);
-                for (GraphEdge edge : edges) {
-                  if (!edge.isAbstract()) {
-                    BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
-                    assert (fwd != null);
-                    if (edge.getPeer() != null) {
-                      ArithExpr peerLoad = loadVars.get(edge.getPeer());
-                      ArithExpr x = (ArithExpr) ctx.mkITE(fwd, peerLoad, zero);
-                      acc = ctx.mkAdd(acc, x);
-                    }
-                  }
-                }
-                solver.add(ctx.mkEq(var, acc));
-              }
-            });
+    for (Entry<String, List<GraphEdge>> entry : graph.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+
+      ArithExpr load = loadVars.get(router);
+      BoolExpr hasDirectRoute = ctx.mkFalse();
+      BoolExpr isAbsorbed = ctx.mkFalse();
+      SymbolicRoute r = _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+
+      for (GraphEdge ge : edges) {
+        if (!ge.isAbstract() && ges.contains(ge)) {
+          // if we leave the network
+          if (ge.getPeer() == null) {
+            BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+            assert (fwdIface != null);
+            hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+          }
+          // if connected route and we use it despite not forwarding
+          if (r != null) {
+            BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
+            BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+            isAbsorbed = ctx.mkOr(isAbsorbed, reach);
+          }
+        }
+      }
+
+      ArithExpr acc = ctx.mkInt(0);
+      for (GraphEdge edge : edges) {
+        if (!edge.isAbstract()) {
+          BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
+          assert (fwd != null);
+          if (edge.getPeer() != null) {
+            ArithExpr peerLoad = loadVars.get(edge.getPeer());
+            ArithExpr x = (ArithExpr) ctx.mkITE(fwd, peerLoad, zero);
+            acc = ctx.mkAdd(acc, x);
+          }
+        }
+      }
+      solver.add(ctx.mkEq(load, acc));
+
+      BoolExpr guard = _encoderSlice.mkOr(hasDirectRoute, isAbsorbed);
+      BoolExpr cond = _encoderSlice.mkIf(guard, ctx.mkEq(load, one), ctx.mkEq(load, acc));
+      solver.add(cond);
+    }
 
     return loadVars;
   }
@@ -459,50 +451,45 @@ class PropertyAdder {
 
     // Add on-loop variables to track a loop
     Map<String, BoolExpr> onLoop = new HashMap<>();
-    _encoderSlice
-        .getGraph()
-        .getConfigurations()
-        .forEach(
-            (r, conf) -> {
-              String name =
-                  _encoderSlice.getEncoder().getId()
-                      + "_"
-                      + sliceName
-                      + "_on-loop_"
-                      + router
-                      + "_"
-                      + r;
-              BoolExpr var = ctx.mkBoolConst(name);
-              onLoop.put(r, var);
-              _encoderSlice.getAllVariables().put(var.toString(), var);
-            });
+    Graph graph = _encoderSlice.getGraph();
 
-    // Transitive closure for other routers
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (r, edges) -> {
-              BoolExpr var = onLoop.get(r);
-              BoolExpr acc = ctx.mkBool(false);
-              for (GraphEdge edge : edges) {
-                if (!edge.isAbstract()) {
-                  BoolExpr fwd = _encoderSlice.getForwardsAcross().get(r, edge);
-                  String peer = edge.getPeer();
-                  if (peer != null) {
-                    if (peer.equals(router)) {
-                      // If next hop is static route router, then on loop
-                      acc = ctx.mkOr(acc, fwd);
-                    } else {
-                      // Otherwise check if next hop also is on the loop
-                      BoolExpr peerOnLoop = onLoop.get(peer);
-                      acc = ctx.mkOr(acc, ctx.mkAnd(fwd, peerOnLoop));
-                    }
-                  }
-                }
-              }
-              solver.add(ctx.mkEq(var, acc));
-            });
+    for (String r : graph.getRouters()) {
+      String name =
+          _encoderSlice.getEncoder().getId()
+              + "_"
+              + sliceName
+              + "_on-loop_"
+              + router
+              + "_"
+              + r;
+      BoolExpr var = ctx.mkBoolConst(name);
+      onLoop.put(r, var);
+      _encoderSlice.getAllVariables().put(var.toString(), var);
+    }
+
+    for (Entry<String, List<GraphEdge>> entry : graph.getEdgeMap().entrySet()) {
+      String r = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      BoolExpr var = onLoop.get(r);
+      BoolExpr acc = ctx.mkBool(false);
+      for (GraphEdge edge : edges) {
+        if (!edge.isAbstract()) {
+          BoolExpr fwd = _encoderSlice.getForwardsAcross().get(r, edge);
+          String peer = edge.getPeer();
+          if (peer != null) {
+            if (peer.equals(router)) {
+              // If next hop is static route router, then on loop
+              acc = ctx.mkOr(acc, fwd);
+            } else {
+              // Otherwise check if next hop also is on the loop
+              BoolExpr peerOnLoop = onLoop.get(peer);
+              acc = ctx.mkOr(acc, ctx.mkAnd(fwd, peerOnLoop));
+            }
+          }
+        }
+      }
+      solver.add(ctx.mkEq(var, acc));
+    }
 
     return onLoop.get(router);
   }

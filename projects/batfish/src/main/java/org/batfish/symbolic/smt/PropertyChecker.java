@@ -54,8 +54,8 @@ import org.batfish.symbolic.utils.TriFunction;
 import org.batfish.symbolic.utils.Tuple;
 
 /**
- * A collection of functions to checks if various properties hold in the network. The general flow
- * is to create a new encoder object for the network, instrument additional properties on top of the
+ * A collection of functions to check if various properties hold in the network. The general idea is
+ * to create a new encoder object for the network, instrument additional properties on top of the
  * model, and then assert the negation of the property of interest.
  *
  * @author Ryan Beckett
@@ -68,19 +68,12 @@ public class PropertyChecker {
     this._batfish = batfish;
   }
 
-  /*
-   * Find the collection of relevant destination interfaces
-   */
   private Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
     Set<GraphEdge> edges = new HashSet<>();
     edges.addAll(PatternUtils.findMatchingEdges(g, p));
     return edges;
   }
 
-  /*
-   * From the destination interfaces, infer the relevant headerspace.
-   * E.g., what range of destination IP is interesting for the query
-   */
   private void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Infer relevant destination IP headerspace from interfaces
@@ -118,9 +111,6 @@ public class PropertyChecker {
     }
   }
 
-  /*
-   * Constraint that encodes if two symbolic records are equal
-   */
   private BoolExpr equal(Encoder e, Configuration conf, SymbolicRoute r1, SymbolicRoute r2) {
     EncoderSlice main = e.getMainSlice();
     BoolExpr eq = main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
@@ -128,9 +118,6 @@ public class PropertyChecker {
     return e.mkAnd(eq, samePermitted);
   }
 
-  /*
-   * Find the set of edges that the solver can consider to fail
-   */
   private Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
     Pattern p1 = Pattern.compile(q.getFailNode1Regex());
     Pattern p2 = Pattern.compile(q.getFailNode2Regex());
@@ -146,10 +133,6 @@ public class PropertyChecker {
     return failChoices;
   }
 
-  /*
-   * Creates a boolean expression that relates the environments of
-   * two separate network copies.
-   */
   private BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
@@ -159,7 +142,6 @@ public class PropertyChecker {
       SymbolicRoute r = entry.getValue();
       relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r);
     }
-
     // relate environments if necessary
     BoolExpr related = enc1.mkTrue();
     Map<LogicalEdge, SymbolicRoute> map =
@@ -169,7 +151,6 @@ public class PropertyChecker {
       SymbolicRoute r1 = entry.getValue();
       String router = le.getEdge().getRouter();
       Configuration conf = enc1.getMainSlice().getGraph().getConfigurations().get(router);
-
       // Lookup the same environment variable in the other copy
       // The copy will have a different name but the same edge and type
       SymbolicRoute r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
@@ -180,10 +161,6 @@ public class PropertyChecker {
     return related;
   }
 
-  /*
-   * Creates a boolean expression that relates the environments of
-   * two separate network copies.
-   */
   private BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
     BoolExpr related = enc1.mkTrue();
     for (GraphEdge ge : enc1.getMainSlice().getGraph().getAllRealEdges()) {
@@ -196,21 +173,13 @@ public class PropertyChecker {
     return related;
   }
 
-  /*
-   * Relate the two packets from different network copies
-   */
   private BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
     SymbolicPacket p1 = enc1.getMainSlice().getSymbolicPacket();
     SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
     return p1.mkEqual(p2);
   }
 
-  /*
-   * Adds additional constraints that certain edges should not be failed to avoid
-   * trivial false positives.
-   */
-  private void addFailureConstraints(
-      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
+  private void addFailureConstraints(Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
       for (GraphEdge ge : edges) {
@@ -231,9 +200,6 @@ public class PropertyChecker {
     }
   }
 
-  /*
-   * Add constraints on the environment
-   */
   private void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
     LogicalGraph lg = enc.getMainSlice().getLogicalGraph();
     Context ctx = enc.getCtx();
@@ -286,22 +252,19 @@ public class PropertyChecker {
     return abstractNodes;
   }
 
-
   /*
- * Compute the forwarding behavior for the network. This adds no additional
- * constraints on top of the base network encoding. Forwarding will be
- * determined only for a particular network environment, failure scenario,
- * and data plane packet.
- */
+   * Compute the forwarding behavior for the network. This adds no
+   * additional constraints on top of the base network encoding.
+   * Forwarding will be determined only for a particular network
+   * environment, failure scenario, and data plane packet.
+   */
   public AnswerElement checkForwarding(HeaderQuestion q) {
     Encoder encoder = new Encoder(_batfish, q);
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
-    // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
     return new SmtOneAnswerElement(result);
   }
-
 
   /*
    * General purpose logic for checking a property that holds that
@@ -461,17 +424,15 @@ public class PropertyChecker {
             String testrigName = _batfish.getTestrigName();
             if (q.getDiffType() != null) {
               fh =
-                  ce.buildFlowDiffCounterExample(
+                  ce.buildFlowHistoryDiff(
                       testrigName,
-                      vp.getSourceRouters(),
-                      vp.getEncoder1(),
-                      vp.getEncoder2(),
-                      vp.getProp1(),
-                      vp.getProp2());
+                      vp.getSrcRouters(),
+                      vp.getEnc(),
+                      vp.getEncDiff(),
+                      vp.getProp(),
+                      vp.getPropDiff());
             } else {
-              fh =
-                  ce.buildFlowCounterExample(
-                      testrigName, vp.getSourceRouters(), vp.getEncoder1(), vp.getProp1());
+              fh = ce.buildFlowHistory(testrigName, vp.getSrcRouters(), vp.getEnc(), vp.getProp());
             }
             return new SmtReachabilityAnswerElement(vp.getResult(), fh);
           }
@@ -513,15 +474,36 @@ public class PropertyChecker {
           }
           BoolExpr allEqual = PropertyAdder.allEqual(enc.getCtx(), lens);
           enc.add(enc.mkNot(allEqual));
-          lenVars.forEach((name, ae) -> eqVars.put(name, allEqual));
+          for (Entry<String, ArithExpr> entry : lenVars.entrySet()) {
+            String name = entry.getKey();
+            BoolExpr b = srcRouters.contains(name) ? allEqual : enc.mkTrue();
+            eqVars.put(name, b);
+          }
           return eqVars;
         },
         (vp) -> new SmtOneAnswerElement(vp.getResult()));
   }
 
+  /*
+   * Computes whether load balancing for each source node in a collection is
+   * within some threshold k of the each other.
+   */
+  public AnswerElement checkLoadBalancing(HeaderLocationQuestion q, int k) {
+    return checkProperty(
+        q,
+        (enc, srcRouters, destPorts) -> {
+          PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+          Map<String, ArithExpr> loads = pa.instrumentLoad(destPorts);
+          Map<String, BoolExpr> prop = new HashMap<>();
+          // TODO: implement this properly after refactoring
+          loads.forEach((name, ae) -> prop.put(name, enc.mkTrue()));
+          return prop;
+        },
+        (vp) -> new SmtOneAnswerElement(vp.getResult()));
+  }
 
   /*
-   * Check if there exist multiple stable solutions to the netowrk.
+   * Check if there exist multiple stable solutions to the network.
    * If so, reports the forwarding differences between the two cases.
    */
   public AnswerElement checkDeterminism(HeaderQuestion q) {
@@ -590,75 +572,6 @@ public class PropertyChecker {
   }
 
   /*
-   * Computes whether load balancing for each source node in a collection is
-   * within some threshold k of the each other.
-   */
-  public AnswerElement checkLoadBalancing(HeaderLocationQuestion q, int k) {
-    PathRegexes p = new PathRegexes(q);
-    Graph graph = new Graph(_batfish);
-    List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
-    List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
-    Map<String, List<String>> peerRouters = new HashMap<>();
-    SortedMap<String, VerificationResult> result = new TreeMap<>();
-
-    List<String> pRouters = PatternUtils.findMatchingSourceNodes(graph, p);
-    for (String router : sourceRouters) {
-      List<String> list = new ArrayList<>();
-      peerRouters.put(router, list);
-      Set<String> neighbors = graph.getNeighbors().get(router);
-      for (String peer : pRouters) {
-        if (neighbors.contains(peer)) {
-          list.add(peer);
-        }
-      }
-    }
-
-    for (GraphEdge ge : destinationPorts) {
-      // Add the interface destination
-      boolean addedDestination = false;
-      if (q.getHeaderSpace().getDstIps().isEmpty()) {
-        addedDestination = true;
-        Prefix destination = ge.getStart().getPrefix();
-        IpWildcard dst = new IpWildcard(destination);
-        q.getHeaderSpace().getDstIps().add(dst);
-      }
-
-      Encoder enc = new Encoder(graph, q);
-      enc.computeEncoding();
-
-      EncoderSlice slice = enc.getMainSlice();
-
-      PropertyAdder pa = new PropertyAdder(slice);
-      Map<String, ArithExpr> loadVars = pa.instrumentLoad(ge);
-
-      Context ctx = enc.getCtx();
-
-      // TODO: add threshold
-      // All routers bounded by a particular length
-      List<Expr> peerLoads = new ArrayList<>();
-      for (Entry<String, List<String>> entry : peerRouters.entrySet()) {
-        String router = entry.getKey();
-        List<String> allPeers = entry.getValue();
-        for (String peer : allPeers) {
-          peerLoads.add(loadVars.get(peer));
-        }
-      }
-
-      BoolExpr evenLoads = PropertyAdder.allEqual(ctx, peerLoads);
-      enc.add(ctx.mkNot(evenLoads));
-
-      VerificationResult res = enc.verify().getFirst();
-      result.put(ge.getRouter() + "," + ge.getStart().getName(), res);
-
-      if (addedDestination) {
-        q.getHeaderSpace().getDstIps().clear();
-      }
-    }
-
-    return new SmtManyAnswerElement(result);
-  }
-
-  /*
    * Compute if there can ever be a black hole for routers that are
    * not at the edge of the network. This is almost certainly a bug.
    */
@@ -711,6 +624,100 @@ public class PropertyChecker {
     }
 
     enc.add(someBlackHole);
+    VerificationResult result = enc.verify().getFirst();
+    return new SmtOneAnswerElement(result);
+  }
+
+  /*
+   * Computes multipath consistency, which ensures traffic that travels
+   * multiple paths will be treated equivalently by each path
+   * (i.e., dropped or accepted by each).
+   */
+  public AnswerElement checkMultipathConsistency(HeaderLocationQuestion q) {
+    PathRegexes p = new PathRegexes(q);
+    Graph graph = new Graph(_batfish);
+    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
+    inferDestinationHeaderSpace(graph, destPorts, q);
+
+    Encoder enc = new Encoder(graph, q);
+    enc.computeEncoding();
+    EncoderSlice slice = enc.getMainSlice();
+
+    PropertyAdder pa = new PropertyAdder(slice);
+    Map<String, BoolExpr> reachableVars = pa.instrumentReachability(destPorts);
+
+    BoolExpr acc = enc.mkFalse();
+    for (Map.Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      BoolExpr reach = reachableVars.get(router);
+      BoolExpr all = enc.mkTrue();
+      for (GraphEdge edge : graph.getEdgeMap().get(router)) {
+        BoolExpr dataFwd = slice.getForwardsAcross().get(router, edge);
+        BoolExpr ctrFwd = slice.getSymbolicDecisions().getControlForwarding().get(router, edge);
+        assert (ctrFwd != null);
+        BoolExpr peerReach = enc.mkTrue();
+        if (edge.getPeer() != null) {
+          peerReach = reachableVars.get(edge.getPeer());
+        }
+        BoolExpr imp = enc.mkImplies(ctrFwd, enc.mkAnd(dataFwd, peerReach));
+        all = enc.mkAnd(all, imp);
+      }
+      acc = enc.mkOr(acc, enc.mkNot(enc.mkImplies(reach, all)));
+    }
+
+    enc.add(acc);
+    VerificationResult res = enc.verify().getFirst();
+    return new SmtOneAnswerElement(res);
+  }
+
+  /*
+   * Checks for routing loops in the network. For efficiency reasons,
+   * we only check for loops with routers that use static routes since
+   * these can override the usual loop-prevention mechanisms.
+   */
+  public AnswerElement checkRoutingLoop(HeaderQuestion q) {
+    Graph graph = new Graph(_batfish);
+
+    // Collect all relevant destinations
+    List<Prefix> prefixes = new ArrayList<>();
+    graph
+        .getStaticRoutes()
+        .forEach(
+            (router, ifaceName, srs) -> {
+              for (StaticRoute sr : srs) {
+                prefixes.add(sr.getNetwork());
+              }
+            });
+
+    SortedSet<IpWildcard> pfxs = new TreeSet<>();
+    for (Prefix prefix : prefixes) {
+      pfxs.add(new IpWildcard(prefix));
+    }
+    q.getHeaderSpace().setDstIps(pfxs);
+
+    // Collect all routers that use static routes as a
+    // potential node along a loop
+    List<String> routers = new ArrayList<>();
+    for (Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      if (conf.getDefaultVrf().getStaticRoutes().size() > 0) {
+        routers.add(router);
+      }
+    }
+    Encoder enc = new Encoder(graph, q);
+    enc.computeEncoding();
+    Context ctx = enc.getCtx();
+    EncoderSlice slice = enc.getMainSlice();
+    PropertyAdder pa = new PropertyAdder(slice);
+
+    BoolExpr someLoop = ctx.mkBool(false);
+    for (String router : routers) {
+      BoolExpr hasLoop = pa.instrumentLoop(router);
+      someLoop = ctx.mkOr(someLoop, hasLoop);
+    }
+    enc.add(someLoop);
+
     VerificationResult result = enc.verify().getFirst();
     return new SmtOneAnswerElement(result);
   }
@@ -782,9 +789,6 @@ public class PropertyChecker {
       }
 
       // TODO: check running same protocols?
-
-      // Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>>
-      //        lgeMap1 = logicalEdgeMap(e1);
       Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>> lgeMap2 =
           logicalEdgeMap(slice2);
 
@@ -852,7 +856,6 @@ public class PropertyChecker {
                   BoolExpr ce1 = entry.getValue();
                   BoolExpr ce2 = vars2.getCommunities().get(cvar);
                   if (ce2 == null) {
-
                     if (!communities.contains(cvar.getValue())) {
                       communities.add(cvar.getValue());
                       /* String msg =
@@ -884,12 +887,8 @@ public class PropertyChecker {
                 }
 
                 envRecords.add(vars1);
-
                 BoolExpr equalVars = slice1.equal(conf1, proto1, vars1, vars2, lge1, true);
                 equalEnvs = ctx.mkAnd(equalEnvs, unsetComms, samePermitted, equalVars, equalComms);
-
-                // System.out.println("Unset communities: ");
-                // System.out.println(unsetComms);
 
               } else if (hasEnv1 || hasEnv2) {
                 System.out.println("Edge1: " + lge1);
@@ -984,8 +983,8 @@ public class PropertyChecker {
   /*
    * Build the inverse map for each logical edge
    */
-  private Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>>
-      logicalEdgeMap(EncoderSlice enc) {
+  private Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>> logicalEdgeMap(
+      EncoderSlice enc) {
 
     Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>> acc = new HashMap<>();
     enc.getLogicalGraph()
@@ -1043,132 +1042,31 @@ public class PropertyChecker {
     return ifaceMap;
   }
 
-  /*
-   * Computes multipath consistency, which ensures traffic that travels
-   * multiple paths will be treated equivalently by each path
-   * (i.e., dropped or accepted by each).
-   */
-  public AnswerElement checkMultipathConsistency(HeaderLocationQuestion q) {
-    PathRegexes p = new PathRegexes(q);
-    Graph graph = new Graph(_batfish);
-    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
-    inferDestinationHeaderSpace(graph, destPorts, q);
-
-    Encoder enc = new Encoder(graph, q);
-    enc.computeEncoding();
-    EncoderSlice slice = enc.getMainSlice();
-
-    PropertyAdder pa = new PropertyAdder(slice);
-    Map<String, BoolExpr> reachableVars = pa.instrumentReachability(destPorts);
-
-    BoolExpr acc = enc.mkFalse();
-    for (Map.Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
-      String router = entry.getKey();
-      BoolExpr reach = reachableVars.get(router);
-
-      BoolExpr all = enc.mkTrue();
-      for (GraphEdge edge : graph.getEdgeMap().get(router)) {
-        BoolExpr dataFwd = slice.getForwardsAcross().get(router, edge);
-        BoolExpr ctrFwd = slice.getSymbolicDecisions().getControlForwarding().get(router, edge);
-        assert (ctrFwd != null);
-        BoolExpr peerReach = enc.mkTrue();
-        if (edge.getPeer() != null) {
-          peerReach = reachableVars.get(edge.getPeer());
-        }
-        BoolExpr imp = enc.mkImplies(ctrFwd, enc.mkAnd(dataFwd, peerReach));
-
-        all = enc.mkAnd(all, imp);
-      }
-
-      acc = enc.mkOr(acc, enc.mkNot(enc.mkImplies(reach, all)));
-    }
-
-    enc.add(acc);
-    VerificationResult res = enc.verify().getFirst();
-    return new SmtOneAnswerElement(res);
-  }
-
-  /*
-   * Checks for routing loops in the network. For efficiency reasons,
-   * we only check for loops with routers that use static routes since
-   * these can override the usual loop-prevention mechanisms.
-   */
-  public AnswerElement checkRoutingLoop(HeaderQuestion q) {
-    Graph graph = new Graph(_batfish);
-
-    // Collect all relevant destinations
-    List<Prefix> prefixes = new ArrayList<>();
-    graph
-        .getStaticRoutes()
-        .forEach(
-            (router, ifaceName, srs) -> {
-              for (StaticRoute sr : srs) {
-                prefixes.add(sr.getNetwork());
-              }
-            });
-
-    SortedSet<IpWildcard> pfxs = new TreeSet<>();
-    for (Prefix prefix : prefixes) {
-      pfxs.add(new IpWildcard(prefix));
-    }
-    q.getHeaderSpace().setDstIps(pfxs);
-
-    // Collect all routers that use static routes as a
-    // potential node along a loop
-    List<String> routers = new ArrayList<>();
-    for (Entry<String, Configuration> entry : graph.getConfigurations().entrySet()) {
-      String router = entry.getKey();
-      Configuration conf = entry.getValue();
-      if (conf.getDefaultVrf().getStaticRoutes().size() > 0) {
-        routers.add(router);
-      }
-    }
-
-    Encoder enc = new Encoder(graph, q);
-    enc.computeEncoding();
-    Context ctx = enc.getCtx();
-
-    EncoderSlice slice = enc.getMainSlice();
-    PropertyAdder pa = new PropertyAdder(slice);
-
-    BoolExpr someLoop = ctx.mkBool(false);
-    for (String router : routers) {
-      BoolExpr hasLoop = pa.instrumentLoop(router);
-      someLoop = ctx.mkOr(someLoop, hasLoop);
-    }
-    enc.add(someLoop);
-
-    VerificationResult result = enc.verify().getFirst();
-    return new SmtOneAnswerElement(result);
-  }
-
-
-
   private static class VerifyParam {
 
     private VerificationResult _result;
     private Model _model;
-    private List<String> _sourceRouters;
-    private Encoder _encoder1;
-    private Encoder _encoder2;
-    private Map<String, BoolExpr> _prop1;
-    private Map<String, BoolExpr> _prop2;
+    private List<String> _srcRouters;
+    private Encoder _enc;
+    private Encoder _encDiff;
+    private Map<String, BoolExpr> _prop;
+    private Map<String, BoolExpr> _propDiff;
 
     VerifyParam(
         VerificationResult result,
         @Nullable Model model,
         @Nullable List<String> sourceRouters,
-        @Nullable Encoder encoder1,
-        @Nullable Encoder encoder2,
+        @Nullable Encoder enc,
+        @Nullable Encoder encDiff,
         @Nullable Map<String, BoolExpr> prop1,
         @Nullable Map<String, BoolExpr> prop2) {
       this._result = result;
       this._model = model;
-      this._sourceRouters = sourceRouters;
-      this._encoder1 = encoder1;
-      this._encoder2 = encoder2;
-      this._prop1 = prop1;
-      this._prop2 = prop2;
+      this._srcRouters = sourceRouters;
+      this._enc = enc;
+      this._encDiff = encDiff;
+      this._prop = prop1;
+      this._propDiff = prop2;
     }
 
     VerificationResult getResult() {
@@ -1179,24 +1077,24 @@ public class PropertyChecker {
       return _model;
     }
 
-    List<String> getSourceRouters() {
-      return _sourceRouters;
+    List<String> getSrcRouters() {
+      return _srcRouters;
     }
 
-    Encoder getEncoder1() {
-      return _encoder1;
+    Encoder getEnc() {
+      return _enc;
     }
 
-    Encoder getEncoder2() {
-      return _encoder2;
+    Encoder getEncDiff() {
+      return _encDiff;
     }
 
-    Map<String, BoolExpr> getProp1() {
-      return _prop1;
+    Map<String, BoolExpr> getProp() {
+      return _prop;
     }
 
-    Map<String, BoolExpr> getProp2() {
-      return _prop2;
+    Map<String, BoolExpr> getPropDiff() {
+      return _propDiff;
     }
   }
 }
