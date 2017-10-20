@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -61,25 +62,16 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class PropertyChecker {
 
-  /*
-   * Compute the forwarding behavior for the network. This adds no additional
-   * constraints on top of the base network encoding. Forwarding will be
-   * determined only for a particular network environment, failure scenario,
-   * and data plane packet.
-   */
-  public static AnswerElement computeForwarding(IBatfish batfish, HeaderQuestion q) {
-    Encoder encoder = new Encoder(batfish, q);
-    encoder.computeEncoding();
-    addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
-    VerificationResult result = encoder.verify().getFirst();
-    // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
-    return new SmtOneAnswerElement(result);
+  private IBatfish _batfish;
+
+  public PropertyChecker(IBatfish batfish) {
+    this._batfish = batfish;
   }
 
   /*
    * Find the collection of relevant destination interfaces
    */
-  private static Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
+  private Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
     Set<GraphEdge> edges = new HashSet<>();
     edges.addAll(PatternUtils.findMatchingEdges(g, p));
     return edges;
@@ -89,7 +81,7 @@ public class PropertyChecker {
    * From the destination interfaces, infer the relevant headerspace.
    * E.g., what range of destination IP is interesting for the query
    */
-  private static void inferDestinationHeaderSpace(
+  private void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Infer relevant destination IP headerspace from interfaces
     if (q.getHeaderSpace().getDstIps().isEmpty()) {
@@ -129,7 +121,7 @@ public class PropertyChecker {
   /*
    * Constraint that encodes if two symbolic records are equal
    */
-  private static BoolExpr equal(Encoder e, Configuration conf, SymbolicRoute r1, SymbolicRoute r2) {
+  private BoolExpr equal(Encoder e, Configuration conf, SymbolicRoute r1, SymbolicRoute r2) {
     EncoderSlice main = e.getMainSlice();
     BoolExpr eq = main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
     BoolExpr samePermitted = e.mkEq(r1.getPermitted(), r2.getPermitted());
@@ -139,7 +131,7 @@ public class PropertyChecker {
   /*
    * Find the set of edges that the solver can consider to fail
    */
-  private static Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
+  private Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
     Pattern p1 = Pattern.compile(q.getFailNode1Regex());
     Pattern p2 = Pattern.compile(q.getFailNode2Regex());
     Pattern p3 = Pattern.compile(q.getNotFailNode1Regex());
@@ -158,7 +150,7 @@ public class PropertyChecker {
    * Creates a boolean expression that relates the environments of
    * two separate network copies.
    */
-  private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
+  private BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
     for (Entry<LogicalEdge, SymbolicRoute> entry :
@@ -168,9 +160,8 @@ public class PropertyChecker {
       relatedEnv.put(lge.getEdge(), lge.getEdgeType(), r);
     }
 
-    BoolExpr related = enc1.mkTrue();
-
     // relate environments if necessary
+    BoolExpr related = enc1.mkTrue();
     Map<LogicalEdge, SymbolicRoute> map =
         enc1.getMainSlice().getLogicalGraph().getEnvironmentVars();
     for (Map.Entry<LogicalEdge, SymbolicRoute> entry : map.entrySet()) {
@@ -193,7 +184,7 @@ public class PropertyChecker {
    * Creates a boolean expression that relates the environments of
    * two separate network copies.
    */
-  private static BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
+  private BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
     BoolExpr related = enc1.mkTrue();
     for (GraphEdge ge : enc1.getMainSlice().getGraph().getAllRealEdges()) {
       ArithExpr a1 = enc1.getSymbolicFailures().getFailedVariable(ge);
@@ -208,7 +199,7 @@ public class PropertyChecker {
   /*
    * Relate the two packets from different network copies
    */
-  private static BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
+  private BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
     SymbolicPacket p1 = enc1.getMainSlice().getSymbolicPacket();
     SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
     return p1.mkEqual(p2);
@@ -218,7 +209,7 @@ public class PropertyChecker {
    * Adds additional constraints that certain edges should not be failed to avoid
    * trivial false positives.
    */
-  private static void addFailureConstraints(
+  private void addFailureConstraints(
       Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
@@ -243,7 +234,7 @@ public class PropertyChecker {
   /*
    * Add constraints on the environment
    */
-  private static void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
+  private void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
     LogicalGraph lg = enc.getMainSlice().getLogicalGraph();
     Context ctx = enc.getCtx();
     switch (t) {
@@ -268,7 +259,7 @@ public class PropertyChecker {
    * Returns an iterator that lazily generates new Equivalence classes to verify.
    * If the abstraction option is enabled, will create abstract networks on-the-fly.
    */
-  private static Iterator<EquivalenceClass> findAllEquivalenceClasses(
+  private Iterator<EquivalenceClass> findAllEquivalenceClasses(
       IBatfish batfish, HeaderQuestion q, Graph graph) {
     if (q.getUseAbstraction()) {
       Abstraction abs = Abstraction.create(batfish, new ArrayList<>(), q.getHeaderSpace());
@@ -283,7 +274,7 @@ public class PropertyChecker {
   /*
    * Apply mapping from concrete to abstract nodes
    */
-  private static Set<String> mapNodes(EquivalenceClass ec, List<String> concreteNodes) {
+  private Set<String> mapConcreteToAbstract(EquivalenceClass ec, List<String> concreteNodes) {
     if (ec.getAbstraction() == null) {
       return new HashSet<>(concreteNodes);
     }
@@ -295,15 +286,35 @@ public class PropertyChecker {
     return abstractNodes;
   }
 
-  private static AnswerElement computeProperty(
-      IBatfish batfish,
+
+  /*
+ * Compute the forwarding behavior for the network. This adds no additional
+ * constraints on top of the base network encoding. Forwarding will be
+ * determined only for a particular network environment, failure scenario,
+ * and data plane packet.
+ */
+  public AnswerElement checkForwarding(HeaderQuestion q) {
+    Encoder encoder = new Encoder(_batfish, q);
+    encoder.computeEncoding();
+    addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
+    VerificationResult result = encoder.verify().getFirst();
+    // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
+    return new SmtOneAnswerElement(result);
+  }
+
+
+  /*
+   * General purpose logic for checking a property that holds that
+   * handles the various flags and parameters for a query with endpoints
+   */
+  private AnswerElement checkProperty(
       HeaderLocationQuestion q,
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
       Function<VerifyParam, AnswerElement> answer) {
 
     PathRegexes p = new PathRegexes(q);
     long l = System.currentTimeMillis();
-    Graph graph = new Graph(batfish);
+    Graph graph = new Graph(_batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
 
@@ -317,13 +328,13 @@ public class PropertyChecker {
     VerificationResult res = null;
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
-    Iterator<EquivalenceClass> it = findAllEquivalenceClasses(batfish, q, graph);
+    Iterator<EquivalenceClass> it = findAllEquivalenceClasses(_batfish, q, graph);
 
     // long start = System.currentTimeMillis();
     while (it.hasNext()) {
       EquivalenceClass ec = it.next();
       graph = ec.getGraph();
-      Set<String> srcRouters = mapNodes(ec, sourceRouters);
+      Set<String> srcRouters = mapConcreteToAbstract(ec, sourceRouters);
 
       Encoder enc = new Encoder(graph, q);
       long l1 = System.currentTimeMillis();
@@ -431,12 +442,11 @@ public class PropertyChecker {
   }
 
   /*
-   * Compute if a collection of source routers can reach a collection of destination
-   * ports. This is broken up into multiple queries, one for each destination port.
+   * Check if a collection of routers will be reachable to
+   * one or more destinations.
    */
-  public static AnswerElement computeReachability(IBatfish batfish, HeaderLocationQuestion q) {
-    return computeProperty(
-        batfish,
+  public AnswerElement checkReachability(HeaderLocationQuestion q) {
+    return checkProperty(
         q,
         (enc, srcRouters, destPorts) -> {
           PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
@@ -448,7 +458,7 @@ public class PropertyChecker {
           } else {
             FlowHistory fh;
             CounterExample ce = new CounterExample(vp.getModel());
-            String testrigName = batfish.getTestrigName();
+            String testrigName = _batfish.getTestrigName();
             if (q.getDiffType() != null) {
               fh =
                   ce.buildFlowDiffCounterExample(
@@ -469,11 +479,53 @@ public class PropertyChecker {
   }
 
   /*
+   * Compute whether the path length will always be bounded by a constant k
+   * for a collection of source routers to any of a number of destination ports.
+   */
+  public AnswerElement checkBoundedLength(HeaderLocationQuestion q, int k) {
+    return checkProperty(
+        q,
+        (enc, srcRouters, destPorts) -> {
+          ArithExpr bound = enc.mkInt(k);
+          PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+          Map<String, ArithExpr> lenVars = pa.instrumentPathLength(destPorts);
+          Map<String, BoolExpr> boundVars = new HashMap<>();
+          lenVars.forEach((n, ae) -> boundVars.put(n, enc.mkLe(ae, bound)));
+          return boundVars;
+        },
+        (vp) -> new SmtOneAnswerElement(vp.getResult()));
+  }
+
+  /*
+   * Computes whether a collection of source routers will always have
+   * equal path length to destination port(s).
+   */
+  public AnswerElement checkEqualLength(HeaderLocationQuestion q) {
+    return checkProperty(
+        q,
+        (enc, srcRouters, destPorts) -> {
+          PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+          Map<String, ArithExpr> lenVars = pa.instrumentPathLength(destPorts);
+          Map<String, BoolExpr> eqVars = new HashMap<>();
+          List<Expr> lens = new ArrayList<>();
+          for (String router : srcRouters) {
+            lens.add(lenVars.get(router));
+          }
+          BoolExpr allEqual = PropertyAdder.allEqual(enc.getCtx(), lens);
+          enc.add(enc.mkNot(allEqual));
+          lenVars.forEach((name, ae) -> eqVars.put(name, allEqual));
+          return eqVars;
+        },
+        (vp) -> new SmtOneAnswerElement(vp.getResult()));
+  }
+
+
+  /*
    * Check if there exist multiple stable solutions to the netowrk.
    * If so, reports the forwarding differences between the two cases.
    */
-  public static AnswerElement computeDeterminism(IBatfish batfish, HeaderQuestion q) {
-    Graph graph = new Graph(batfish);
+  public AnswerElement checkDeterminism(HeaderQuestion q) {
+    Graph graph = new Graph(_batfish);
     Encoder enc1 = new Encoder(graph, q);
     Encoder enc2 = new Encoder(enc1, graph, q);
     enc1.computeEncoding();
@@ -538,68 +590,18 @@ public class PropertyChecker {
   }
 
   /*
-   * Compute whether the path length will always be bounded by a constant k
-   * for a collection of source routers to any of a number of destination ports.
-   */
-  public static AnswerElement computeBoundedLength(
-      IBatfish batfish, HeaderLocationQuestion q, int k) {
-
-    return computeProperty(
-        batfish,
-        q,
-        (enc, srcRouters, destPorts) -> {
-          ArithExpr bound = enc.mkInt(k);
-          PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
-          Map<String, ArithExpr> lenVars = pa.instrumentPathLength(destPorts);
-          Map<String, BoolExpr> boundVars = new HashMap<>();
-          lenVars.forEach((n, ae) -> boundVars.put(n, enc.mkLe(ae, bound)));
-          return boundVars;
-        },
-        (vp) -> new SmtOneAnswerElement(vp.getResult()));
-  }
-
-  /*
-   * Computes whether a collection of source routers will always have
-   * equal path length to destination port(s).
-   */
-  public static AnswerElement computeEqualLength(IBatfish batfish, HeaderLocationQuestion q) {
-    return computeProperty(
-        batfish,
-        q,
-        (enc, srcRouters, destPorts) -> {
-          PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
-          Map<String, ArithExpr> lenVars = pa.instrumentPathLength(destPorts);
-          Map<String, BoolExpr> eqVars = new HashMap<>();
-          List<Expr> lens = new ArrayList<>();
-          for (String router : srcRouters) {
-            lens.add(lenVars.get(router));
-          }
-          BoolExpr allEqual = PropertyAdder.allEqual(enc.getCtx(), lens);
-          enc.add(enc.mkNot(allEqual));
-          lenVars.forEach((name, ae) -> eqVars.put(name, allEqual));
-          return eqVars;
-        },
-        (vp) -> new SmtOneAnswerElement(vp.getResult()));
-  }
-
-  /*
    * Computes whether load balancing for each source node in a collection is
    * within some threshold k of the each other.
    */
-  public static AnswerElement computeLoadBalance(
-      IBatfish batfish, HeaderLocationQuestion q, int k) {
-
+  public AnswerElement checkLoadBalancing(HeaderLocationQuestion q, int k) {
     PathRegexes p = new PathRegexes(q);
-
-    Graph graph = new Graph(batfish);
+    Graph graph = new Graph(_batfish);
     List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     Map<String, List<String>> peerRouters = new HashMap<>();
     SortedMap<String, VerificationResult> result = new TreeMap<>();
 
     List<String> pRouters = PatternUtils.findMatchingSourceNodes(graph, p);
-
-    // TODO: refactor this out separately
     for (String router : sourceRouters) {
       List<String> list = new ArrayList<>();
       peerRouters.put(router, list);
@@ -660,8 +662,8 @@ public class PropertyChecker {
    * Compute if there can ever be a black hole for routers that are
    * not at the edge of the network. This is almost certainly a bug.
    */
-  public static AnswerElement computeBlackHole(IBatfish batfish, HeaderQuestion q) {
-    Graph graph = new Graph(batfish);
+  public AnswerElement checkBlackHole(HeaderQuestion q) {
+    Graph graph = new Graph(_batfish);
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
     Context ctx = enc.getCtx();
@@ -723,9 +725,8 @@ public class PropertyChecker {
    * We finally check that their forwarding decisions and exported messages
    * will be equal given their equal inputs.
    */
-  public static AnswerElement computeLocalConsistency(
-      IBatfish batfish, Pattern n, boolean strict, boolean fullModel) {
-    Graph graph = new Graph(batfish);
+  public AnswerElement checkLocalEquivalence(Pattern n, boolean strict, boolean fullModel) {
+    Graph graph = new Graph(_batfish);
     List<String> routers = PatternUtils.findMatchingNodes(graph, n, Pattern.compile(""));
 
     HeaderQuestion q = new HeaderQuestion();
@@ -750,7 +751,7 @@ public class PropertyChecker {
       // Create transfer function for router 1
       Set<String> toModel1 = new TreeSet<>();
       toModel1.add(r1);
-      Graph g1 = new Graph(batfish, null, toModel1);
+      Graph g1 = new Graph(_batfish, null, toModel1);
       Encoder e1 = new Encoder(g1, q);
       e1.computeEncoding();
 
@@ -759,7 +760,7 @@ public class PropertyChecker {
       // Create transfer function for router 2
       Set<String> toModel2 = new TreeSet<>();
       toModel2.add(r2);
-      Graph g2 = new Graph(batfish, null, toModel2);
+      Graph g2 = new Graph(_batfish, null, toModel2);
       Encoder e2 = new Encoder(e1, g2);
       e2.computeEncoding();
 
@@ -972,7 +973,7 @@ public class PropertyChecker {
   /*
    * Get the interface names for a collection of edges
    */
-  private static Set<String> interfaces(List<GraphEdge> edges) {
+  private Set<String> interfaces(List<GraphEdge> edges) {
     Set<String> ifaces = new TreeSet<>();
     for (GraphEdge edge : edges) {
       ifaces.add(edge.getStart().getName());
@@ -983,7 +984,7 @@ public class PropertyChecker {
   /*
    * Build the inverse map for each logical edge
    */
-  private static Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>>
+  private Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>>
       logicalEdgeMap(EncoderSlice enc) {
 
     Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>> acc = new HashMap<>();
@@ -1020,7 +1021,7 @@ public class PropertyChecker {
    * Creates a boolean variable representing destinations we don't want
    * to consider due to local differences.
    */
-  private static BoolExpr ignoredDestinations(
+  private BoolExpr ignoredDestinations(
       Context ctx, EncoderSlice e1, String r1, Configuration conf1) {
     BoolExpr validDest = ctx.mkBool(true);
     for (Protocol proto1 : e1.getProtocols().get(r1)) {
@@ -1034,7 +1035,7 @@ public class PropertyChecker {
   /*
    * Create a map from interface name to graph edge.
    */
-  private static Map<String, GraphEdge> interfaceMap(List<GraphEdge> edges) {
+  private Map<String, GraphEdge> interfaceMap(List<GraphEdge> edges) {
     Map<String, GraphEdge> ifaceMap = new HashMap<>();
     for (GraphEdge edge : edges) {
       ifaceMap.put(edge.getStart().getName(), edge);
@@ -1047,10 +1048,9 @@ public class PropertyChecker {
    * multiple paths will be treated equivalently by each path
    * (i.e., dropped or accepted by each).
    */
-  public static AnswerElement computeMultipathConsistency(
-      IBatfish batfish, HeaderLocationQuestion q) {
+  public AnswerElement checkMultipathConsistency(HeaderLocationQuestion q) {
     PathRegexes p = new PathRegexes(q);
-    Graph graph = new Graph(batfish);
+    Graph graph = new Graph(_batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
 
@@ -1093,8 +1093,8 @@ public class PropertyChecker {
    * we only check for loops with routers that use static routes since
    * these can override the usual loop-prevention mechanisms.
    */
-  public static AnswerElement computeRoutingLoop(IBatfish batfish, HeaderQuestion q) {
-    Graph graph = new Graph(batfish);
+  public AnswerElement checkRoutingLoop(HeaderQuestion q) {
+    Graph graph = new Graph(_batfish);
 
     // Collect all relevant destinations
     List<Prefix> prefixes = new ArrayList<>();
@@ -1129,7 +1129,6 @@ public class PropertyChecker {
     Context ctx = enc.getCtx();
 
     EncoderSlice slice = enc.getMainSlice();
-
     PropertyAdder pa = new PropertyAdder(slice);
 
     BoolExpr someLoop = ctx.mkBool(false);
@@ -1140,7 +1139,6 @@ public class PropertyChecker {
     enc.add(someLoop);
 
     VerificationResult result = enc.verify().getFirst();
-
     return new SmtOneAnswerElement(result);
   }
 
@@ -1149,27 +1147,21 @@ public class PropertyChecker {
   private static class VerifyParam {
 
     private VerificationResult _result;
-
     private Model _model;
-
     private List<String> _sourceRouters;
-
     private Encoder _encoder1;
-
     private Encoder _encoder2;
-
     private Map<String, BoolExpr> _prop1;
-
     private Map<String, BoolExpr> _prop2;
 
-    public VerifyParam(
+    VerifyParam(
         VerificationResult result,
-        Model model,
-        List<String> sourceRouters,
-        Encoder encoder1,
-        Encoder encoder2,
-        Map<String, BoolExpr> prop1,
-        Map<String, BoolExpr> prop2) {
+        @Nullable Model model,
+        @Nullable List<String> sourceRouters,
+        @Nullable Encoder encoder1,
+        @Nullable Encoder encoder2,
+        @Nullable Map<String, BoolExpr> prop1,
+        @Nullable Map<String, BoolExpr> prop2) {
       this._result = result;
       this._model = model;
       this._sourceRouters = sourceRouters;
@@ -1179,31 +1171,31 @@ public class PropertyChecker {
       this._prop2 = prop2;
     }
 
-    public VerificationResult getResult() {
+    VerificationResult getResult() {
       return _result;
     }
 
-    public Model getModel() {
+    Model getModel() {
       return _model;
     }
 
-    public List<String> getSourceRouters() {
+    List<String> getSourceRouters() {
       return _sourceRouters;
     }
 
-    public Encoder getEncoder1() {
+    Encoder getEncoder1() {
       return _encoder1;
     }
 
-    public Encoder getEncoder2() {
+    Encoder getEncoder2() {
       return _encoder2;
     }
 
-    public Map<String, BoolExpr> getProp1() {
+    Map<String, BoolExpr> getProp1() {
       return _prop1;
     }
 
-    public Map<String, BoolExpr> getProp2() {
+    Map<String, BoolExpr> getProp2() {
       return _prop2;
     }
   }
