@@ -296,13 +296,19 @@ public class PropertyChecker {
     // long start = System.currentTimeMillis();
     while (it.hasNext()) {
       EquivalenceClass ec = it.next();
+
+      // Make sure the headerspace is correct
+      q = new HeaderLocationQuestion(q);
+      q.setHeaderSpace(ec.getHeaderSpace());
+
+      // Get the EC graph and mapping
       graph = ec.getGraph();
       Set<String> srcRouters = mapConcreteToAbstract(ec, sourceRouters);
 
       Encoder enc = new Encoder(graph, q);
-      long l1 = System.currentTimeMillis();
+      // long l1 = System.currentTimeMillis();
       enc.computeEncoding();
-      System.out.println("Encoding1 : " + (System.currentTimeMillis() - l1));
+      // System.out.println("Encoding1 : " + (System.currentTimeMillis() - l1));
 
       // Add environment constraints for base case
       if (q.getDiffType() != null) {
@@ -323,9 +329,9 @@ public class PropertyChecker {
         HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
         q2.setFailures(0);
         enc2 = new Encoder(enc, graph, q2);
-        long l2 = System.currentTimeMillis();
+        // long l2 = System.currentTimeMillis();
         enc2.computeEncoding();
-        System.out.println("Encoding2 : " + (System.currentTimeMillis() - l2));
+        // System.out.println("Encoding2 : " + (System.currentTimeMillis() - l2));
       }
 
       if (q.getDiffType() != null) {
@@ -394,12 +400,14 @@ public class PropertyChecker {
         continue;
       }
 
-      VerifyParam vp = new VerifyParam(res, model, sourceRouters, enc, enc2, prop, prop2);
+      // res.debug(enc.getMainSlice(), true, null);
+
+      // System.out.println("Total time: " + (System.currentTimeMillis() - l));
+      VerifyParam vp = new VerifyParam(res, model, srcRouters, enc, enc2, prop, prop2);
       return answer.apply(vp);
     }
 
-    System.out.println("Total time: " + (System.currentTimeMillis() - l));
-
+    // System.out.println("Total time: " + (System.currentTimeMillis() - l));
     VerifyParam vp = new VerifyParam(res, null, null, null, null, null, null);
     return answer.apply(vp);
   }
@@ -1046,7 +1054,7 @@ public class PropertyChecker {
 
     private VerificationResult _result;
     private Model _model;
-    private List<String> _srcRouters;
+    private Set<String> _srcRouters;
     private Encoder _enc;
     private Encoder _encDiff;
     private Map<String, BoolExpr> _prop;
@@ -1055,7 +1063,7 @@ public class PropertyChecker {
     VerifyParam(
         VerificationResult result,
         @Nullable Model model,
-        @Nullable List<String> sourceRouters,
+        @Nullable Set<String> sourceRouters,
         @Nullable Encoder enc,
         @Nullable Encoder encDiff,
         @Nullable Map<String, BoolExpr> prop1,
@@ -1077,7 +1085,7 @@ public class PropertyChecker {
       return _model;
     }
 
-    List<String> getSrcRouters() {
+    Set<String> getSrcRouters() {
       return _srcRouters;
     }
 

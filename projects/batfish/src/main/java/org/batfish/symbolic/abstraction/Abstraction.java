@@ -125,26 +125,9 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       // System.out.println("Looking at router: " + router);
       for (Protocol proto : protoMap.get(router)) {
         Set<Prefix> destinations = new HashSet<>();
-        // For connected interfaces add address if there is a peer
-        // Otherwise, add the entire prefix since we don't know
-        /* if (proto.isConnected()) {
-          destinations = new ArrayList<>();
-          List<GraphEdge> edges = _graph.getEdgeMap().get(router);
-          for (GraphEdge ge : edges) {
-            if (ge.getPeer() == null) {
-              destinations.add(ge.getStart().getPrefix());
-            } else {
-              Ip ip = ge.getStart().getPrefix().getAddress();
-              Prefix pfx = new Prefix(ip,32);
-              destinations.add(pfx);
-            }
-          }
-        } else { */
         if (!proto.isStatic()) {
           destinations = Graph.getOriginatedNetworks(conf, proto);
         }
-        //}
-
         // Add all destinations to the prefix trie relevant to this slice
         for (Prefix p : destinations) {
           if (_headerspace == null
@@ -158,7 +141,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     // Map collections of devices to the destination IP ranges that are rooted there
     _destinationMap = pt.createDestinationMap();
     _destinationMap.forEach(
-        (devices, prefixes) -> System.out.println("Devices: " + devices + " --> " + prefixes));
+        (devices, prefixes) -> System.out.println("Check for: " + devices + " --> " + prefixes));
   }
 
   private Map<String, List<Protocol>> buildProtocolMap() {
@@ -207,6 +190,9 @@ public class Abstraction implements Iterable<EquivalenceClass> {
   }
 
   private EquivalenceClass computeAbstraction(Set<String> devices, List<Prefix> prefixes) {
+    // System.out.println("EC Devices: " + devices);
+    // System.out.println("EC Prefixes: " + prefixes);
+
     Set<String> allDevices = _graph.getConfigurations().keySet();
 
     Map<GraphEdge, InterfacePolicy> exportPol = _network.getExportPolicyMap();
@@ -299,7 +285,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         // System.out.println("Todo now: " + todo);
       }
 
-      // Now divide the abstraction further
+      // Now refine the abstraction further
       for (Set<String> partition : todo) {
         workset.split(partition);
       }
@@ -314,9 +300,14 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     Graph abstractGraph = abstractNetwork.getFirst();
     Map<String,String> abstraction = abstractNetwork.getSecond();
 
+    // System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
-    System.out.println("EC Size: " + abstractGraph.getConfigurations().size());
-    // System.out.println("ECs: " + workset.partitions().size());
+    System.out.println("Abstract Size: " + abstractGraph.getConfigurations().size());
+    // System.out.println("Num Groups: " + workset.partitions().size());
+
+    abstractGraph.getConfigurations().forEach((router,conf) -> {
+
+    });
 
     HeaderSpace h = createHeaderSpace(prefixes);
     return new EquivalenceClass(h, abstractGraph, abstraction);
@@ -376,6 +367,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     abstractConf.setIkePolicies(conf.getIkePolicies());
     abstractConf.setIkeProposals(conf.getIkeProposals());
     abstractConf.setDefaultInboundAction(conf.getDefaultInboundAction());
+    abstractConf.setIpAccessLists(conf.getIpAccessLists());
     abstractConf.setIp6AccessLists(conf.getIp6AccessLists());
     abstractConf.setRouteFilterLists(conf.getRouteFilterLists());
     abstractConf.setRoute6FilterLists(conf.getRoute6FilterLists());
@@ -396,6 +388,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     abstractConf.setZones(conf.getZones());
     abstractConf.setCommunityLists(conf.getCommunityLists());
     abstractConf.setRoutingPolicies(conf.getRoutingPolicies());
+    abstractConf.setRoute6FilterLists(conf.getRoute6FilterLists());
 
     SortedSet<Interface> toRetain = new TreeSet<>();
     SortedSet<Pair<Ip, Ip>> ipNeighbors = new TreeSet<>();
@@ -490,6 +483,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
                           }
                         });
                 abstractBgp.setNeighbors(abstractBgpNeighbors);
+
                 abstractVrf.setBgpProcess(abstractBgp);
               }
 
@@ -513,15 +507,15 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     Set<String> abstractRouters = new HashSet<>(canonicalChoices.values());
     // Create the abstract configurations
     Map<String, Configuration> newConfigs = new HashMap<>();
-    _graph
-        .getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              if (abstractRouters.contains(router)) {
-                Configuration abstractConf = createAbstractConfig(abstractRouters, conf);
-                newConfigs.put(router, abstractConf);
-              }
-            });
+    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      if (abstractRouters.contains(router)) {
+        Configuration abstractConf = createAbstractConfig(abstractRouters, conf);
+        newConfigs.put(router, abstractConf);
+      }
+    }
+
     Graph abstractGraph = new Graph(_batfish, newConfigs);
     // Create the abstraction map from concrete to abstract
     Map<String, String> abstractionMap = new HashMap<>();

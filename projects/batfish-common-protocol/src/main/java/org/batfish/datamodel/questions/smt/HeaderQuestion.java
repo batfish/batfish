@@ -71,7 +71,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private Set<ForwardingAction> _actions;
 
-  private final HeaderSpace _headerSpace;
+  private HeaderSpace _headerSpace;
 
   private int _failures;
 
@@ -142,6 +142,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonIgnore
   public HeaderSpace getHeaderSpace() {
     return _headerSpace;
+  }
+
+  @JsonIgnore
+  public void setHeaderSpace(HeaderSpace h) {
+    _headerSpace = h;
   }
 
   @JsonProperty(PROP_ICMP_CODES)

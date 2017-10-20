@@ -1112,21 +1112,24 @@ public class Graph {
               edge -> {
                 sb.append("  edge from: ").append(edge.getStart().getName());
                 if (edge.getEnd() == null) {
-                  sb.append(" to: null \n");
+                  sb.append(" to: null ");
                 } else {
                   sb.append(" to: ")
                       .append(edge.getPeer())
                       .append(",")
-                      .append(edge.getEnd().getName())
-                      .append("\n");
+                      .append(edge.getEnd().getName());
                 }
+                sb.append(edge.getStart().getPrefix());
+                sb.append("\n");
               });
         });
 
     sb.append("---------------- eBGP Neighbors ----------------\n");
     _ebgpNeighbors.forEach(
-        (ge, n) ->
-            sb.append("Edge: ").append(ge).append(" (").append(n.getAddress()).append(")\n"));
+        (ge, n) -> {
+          sb.append(n);
+          sb.append("Edge: ").append(ge).append(" (").append(n.getAddress()).append(")\n");
+        });
 
     sb.append("---------------- iBGP Neighbors ----------------\n");
     _ibgpNeighbors.forEach(
@@ -1146,6 +1149,13 @@ public class Graph {
                     .append("\n");
               }
             }));
+
+    sb.append("---------- Area ids ----------\n");
+    _areaIds.forEach((router, ids) -> {
+      if (!ids.isEmpty()) {
+        sb.append("Router: ").append(router).append("=").append(ids).append("\n");
+      }
+    });
 
     sb.append("=======================================================\n");
     return sb.toString();
