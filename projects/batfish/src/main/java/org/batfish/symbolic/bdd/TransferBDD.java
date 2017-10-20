@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -76,7 +76,7 @@ import org.batfish.symbolic.TransferResult;
 /** @author Ryan Beckett */
 class TransferBDD {
 
-  private static BDDFactory factory = BDDRecord.factory;
+  private static BDDFactory factory = BDDRoute.factory;
 
   private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
@@ -121,7 +121,7 @@ class TransferBDD {
   /*
    * Apply the effect of modifying an integer value (e.g., to set the local pref)
    */
-  private BDDInteger applyIntExprModification(TransferParam<BDDRecord> p, BDDInteger x, IntExpr e) {
+  private BDDInteger applyIntExprModification(TransferParam<BDDRoute> p, BDDInteger x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
       p.debug("LiteralInt: " + z.getValue());
@@ -144,7 +144,7 @@ class TransferBDD {
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
   private BDDInteger applyLongExprModification(
-      TransferParam<BDDRecord> p, BDDInteger x, LongExpr e) {
+      TransferParam<BDDRoute> p, BDDInteger x, LongExpr e) {
     if (e instanceof LiteralLong) {
       LiteralLong z = (LiteralLong) e;
       p.debug("LiteralLong: " + z.getValue());
@@ -168,7 +168,7 @@ class TransferBDD {
    * by performing inlining of stateful side effects.
    */
   private TransferResult<TransferReturn, BDD> compute(
-      BooleanExpr expr, TransferParam<BDDRecord> p) {
+      BooleanExpr expr, TransferParam<BDDRoute> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
@@ -224,11 +224,11 @@ class TransferBDD {
         return fromExpr(ret);
       } else {
         TransferResult<TransferReturn, BDD> result = new TransferResult<>();
-        TransferParam<BDDRecord> record = p;
+        TransferParam<BDDRoute> record = p;
         BDD acc = factory.zero();
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr conjunct = conjuncts.get(i);
-          TransferParam<BDDRecord> param =
+          TransferParam<BDDRoute> param =
               record.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
           TransferResult<TransferReturn, BDD> r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
@@ -252,11 +252,11 @@ class TransferBDD {
         return fromExpr(ret);
       } else {
         TransferResult<TransferReturn, BDD> result = new TransferResult<>();
-        TransferParam<BDDRecord> record = p;
+        TransferParam<BDDRoute> record = p;
         BDD acc = factory.zero();
         for (int i = disjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr disjunct = disjuncts.get(i);
-          TransferParam<BDDRecord> param =
+          TransferParam<BDDRoute> param =
               record.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
           TransferResult<TransferReturn, BDD> r = compute(disjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
@@ -363,7 +363,7 @@ class TransferBDD {
    * Convert a list of statements into a Z3 boolean expression for the transfer function.
    */
   private TransferResult<TransferReturn, BDD> compute(
-      List<Statement> statements, TransferParam<BDDRecord> p) {
+      List<Statement> statements, TransferParam<BDDRoute> p) {
     boolean doesReturn = false;
 
     TransferResult<TransferReturn, BDD> result = new TransferResult<>();
@@ -454,10 +454,10 @@ class TransferBDD {
         BDD guard = r.getReturnValue().getSecond();
         p.debug("guard: ");
 
-        BDDRecord current = result.getReturnValue().getFirst();
+        BDDRoute current = result.getReturnValue().getFirst();
 
-        TransferParam<BDDRecord> pTrue = p.indent().setData(current.copy());
-        TransferParam<BDDRecord> pFalse = p.indent().setData(current.copy());
+        TransferParam<BDDRoute> pTrue = p.indent().setData(current.copy());
+        TransferParam<BDDRoute> pFalse = p.indent().setData(current.copy());
         p.debug("True Branch");
         TransferResult<TransferReturn, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
         p.debug("True Branch: " + trueBranch.getReturnValue());
@@ -465,9 +465,9 @@ class TransferBDD {
         TransferResult<TransferReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
         p.debug("False Branch: " + trueBranch.getReturnValue());
 
-        BDDRecord r1 = trueBranch.getReturnValue().getFirst();
-        BDDRecord r2 = falseBranch.getReturnValue().getFirst();
-        BDDRecord recordVal = ite(guard, r1, r2);
+        BDDRoute r1 = trueBranch.getReturnValue().getFirst();
+        BDDRoute r2 = falseBranch.getReturnValue().getFirst();
+        BDDRoute recordVal = ite(guard, r1, r2);
 
         // update return values
         BDD returnVal =
@@ -607,7 +607,7 @@ class TransferBDD {
 
       // Set all the values to 0 if the return is not true;
       TransferReturn ret = result.getReturnValue();
-      BDDRecord retVal = ite(ret.getSecond(), ret.getFirst(), zeroedRecord());
+      BDDRoute retVal = ite(ret.getSecond(), ret.getFirst(), zeroedRecord());
       result = result.setReturnValue(new TransferReturn(retVal, ret.getSecond()));
     }
     return result;
@@ -617,12 +617,12 @@ class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRecord compute(boolean ignoreNetwork) {
+  public BDDRoute compute(boolean ignoreNetwork) {
     _ignoreNetwork = ignoreNetwork;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.findAllCommunities();
-    BDDRecord o = new BDDRecord(_comms);
-    TransferParam<BDDRecord> p = new TransferParam<>(o, false);
+    BDDRoute o = new BDDRoute(_comms);
+    TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     return result.getReturnValue().getFirst();
   }
@@ -649,7 +649,7 @@ class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  private BDD isRelevantFor(BDDRecord record, PrefixRange range) {
+  private BDD isRelevantFor(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
     SubRange r = range.getLengthRange();
     int len = p.getPrefixLength();
@@ -687,14 +687,14 @@ class TransferBDD {
    * Map ite over BDDDomain type
    */
   private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
-    BDDDomain<T> result = new BDDDomain<T>(x);
+    BDDDomain<T> result = new BDDDomain<>(x);
     BDDInteger i = ite(b, x.getInteger(), y.getInteger());
     result.setInteger(i);
     return result;
   }
 
-  private BDDRecord ite(BDD guard, BDDRecord r1, BDDRecord r2) {
-    BDDRecord ret = new BDDRecord(_comms);
+  private BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
+    BDDRoute ret = new BDDRoute(_comms);
 
     BDDInteger x;
     BDDInteger y;
@@ -741,7 +741,7 @@ class TransferBDD {
   /*
    * Converts a community list to a boolean expression.
    */
-  private BDD matchCommunityList(TransferParam<BDDRecord> p, CommunityList cl, BDDRecord other) {
+  private BDD matchCommunityList(TransferParam<BDDRoute> p, CommunityList cl, BDDRoute other) {
     List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
     Collections.reverse(lines);
     BDD acc = factory.zero();
@@ -765,7 +765,7 @@ class TransferBDD {
    * Converts a community set to a boolean expression
    */
   private BDD matchCommunitySet(
-      TransferParam<BDDRecord> p, Configuration conf, CommunitySetExpr e, BDDRecord other) {
+      TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
     if (e instanceof InlineCommunitySet) {
       Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
       BDD acc = factory.one();
@@ -794,7 +794,7 @@ class TransferBDD {
   /*
    * Converts a route filter list to a boolean expression.
    */
-  private BDD matchFilterList(TransferParam<BDDRecord> p, RouteFilterList x, BDDRecord other) {
+  private BDD matchFilterList(TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other) {
     BDD acc = factory.zero();
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
@@ -815,7 +815,7 @@ class TransferBDD {
    * Converts a prefix set to a boolean expression.
    */
   private BDD matchPrefixSet(
-      TransferParam<BDDRecord> p, Configuration conf, PrefixSetExpr e, BDDRecord other) {
+      TransferParam<BDDRoute> p, Configuration conf, PrefixSetExpr e, BDDRoute other) {
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
 
@@ -900,8 +900,8 @@ class TransferBDD {
    * A record of default values that represent the value of the
    * outputs if the route is filtered / dropped in the policy
    */
-  private BDDRecord zeroedRecord() {
-    BDDRecord rec = new BDDRecord(_comms);
+  private BDDRoute zeroedRecord() {
+    BDDRoute rec = new BDDRoute(_comms);
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);

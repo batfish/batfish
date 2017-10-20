@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,14 +12,15 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.abstraction.InterfacePolicy;
 
 public class BDDNetwork {
 
   private Graph _graph;
 
-  private Map<GraphEdge, BDDRecord> _exportBgpPolicies;
+  private Map<GraphEdge, BDDRoute> _exportBgpPolicies;
 
-  private Map<GraphEdge, BDDRecord> _importBgpPolicies;
+  private Map<GraphEdge, BDDRoute> _importBgpPolicies;
 
   private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
 
@@ -49,7 +50,7 @@ public class BDDNetwork {
   /*
    * Compute a BDD representation of a routing policy.
    */
-  private BDDRecord computeBDD(
+  private BDDRoute computeBDD(
       Graph g, Configuration conf, RoutingPolicy pol, boolean ignoreNetworks) {
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     return t.compute(ignoreNetworks);
@@ -69,13 +70,13 @@ public class BDDNetwork {
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
-          BDDRecord rec = computeBDD(_graph, conf, importBgp, true);
+          BDDRoute rec = computeBDD(_graph, conf, importBgp, true);
           _importBgpPolicies.put(ge, rec);
         }
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         if (exportBgp != null) {
-          BDDRecord rec = computeBDD(_graph, conf, exportBgp, true);
+          BDDRoute rec = computeBDD(_graph, conf, exportBgp, true);
           _exportBgpPolicies.put(ge, rec);
         }
 
@@ -99,8 +100,8 @@ public class BDDNetwork {
       List<GraphEdge> edges = entry.getValue();
       Configuration conf = _graph.getConfigurations().get(router);
       for (GraphEdge ge : edges) {
-        BDDRecord bgpIn = _importBgpPolicies.get(ge);
-        BDDRecord bgpOut = _exportBgpPolicies.get(ge);
+        BDDRoute bgpIn = _importBgpPolicies.get(ge);
+        BDDRoute bgpOut = _exportBgpPolicies.get(ge);
         BDDAcl aclIn = _inAcls.get(ge);
         BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
@@ -113,11 +114,11 @@ public class BDDNetwork {
     }
   }
 
-  public Map<GraphEdge, BDDRecord> getExportBgpPolicies() {
+  public Map<GraphEdge, BDDRoute> getExportBgpPolicies() {
     return _exportBgpPolicies;
   }
 
-  public Map<GraphEdge, BDDRecord> getImportBgpPolicies() {
+  public Map<GraphEdge, BDDRoute> getImportBgpPolicies() {
     return _importBgpPolicies;
   }
 

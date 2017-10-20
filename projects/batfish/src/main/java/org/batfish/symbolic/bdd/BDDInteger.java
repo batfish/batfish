@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.util.Arrays;
 import net.sf.javabdd.BDD;

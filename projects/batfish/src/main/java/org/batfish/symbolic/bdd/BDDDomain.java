@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.util.List;
 import java.util.Objects;

@@ -6,12 +6,14 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.bdd.BDDRoute;
 
 public class InterfacePolicy {
 
   private BDDAcl _acl;
 
-  private BDDRecord _bgpPolicy;
+  private BDDRoute _bgpPolicy;
 
   private Integer _ospfCost;
 
@@ -23,7 +25,7 @@ public class InterfacePolicy {
 
   public InterfacePolicy(
       @Nullable BDDAcl acl,
-      @Nullable BDDRecord bgpPolicy,
+      @Nullable BDDRoute bgpPolicy,
       @Nullable Integer ospfCost,
       @Nullable SortedSet<StaticRoute> staticRoutes) {
     this._acl = acl;
@@ -52,7 +54,7 @@ public class InterfacePolicy {
     return _acl;
   }
 
-  public BDDRecord getBgpPolicy() {
+  public BDDRoute getBgpPolicy() {
     return _bgpPolicy;
   }
 

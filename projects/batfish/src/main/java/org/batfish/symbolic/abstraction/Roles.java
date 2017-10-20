@@ -18,6 +18,9 @@ import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.answers.RoleAnswerElement;
+import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.bdd.BDDNetwork;
+import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.utils.Tuple;
 
 public class Roles {
@@ -77,8 +80,8 @@ public class Roles {
    * equivalent policies.
    */
   private void computeRoles() {
-    Map<BDDRecord, SortedSet<String>> importBgpEcs = new HashMap<>();
-    Map<BDDRecord, SortedSet<String>> exportBgpEcs = new HashMap<>();
+    Map<BDDRoute, SortedSet<String>> importBgpEcs = new HashMap<>();
+    Map<BDDRoute, SortedSet<String>> exportBgpEcs = new HashMap<>();
     Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
     Map<BDD, SortedSet<String>> outgoingAclEcs = new HashMap<>();
     Map<Tuple<InterfacePolicy, InterfacePolicy>, SortedSet<String>> interfaceEcs = new HashMap<>();
@@ -97,7 +100,7 @@ public class Roles {
       for (GraphEdge ge : ges) {
         String s = ge.toString();
 
-        BDDRecord x1 = _network.getImportBgpPolicies().get(ge);
+        BDDRoute x1 = _network.getImportBgpPolicies().get(ge);
         if (x1 == null) {
           importBgpNull.add(s);
         } else {
@@ -106,7 +109,7 @@ public class Roles {
           ec.add(s);
         }
 
-        BDDRecord x2 = _network.getExportBgpPolicies().get(ge);
+        BDDRoute x2 = _network.getExportBgpPolicies().get(ge);
         if (x2 == null) {
           exportBgpNull.add(s);
         } else {

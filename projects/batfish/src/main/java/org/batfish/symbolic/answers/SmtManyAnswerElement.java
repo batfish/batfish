@@ -1,19 +1,27 @@
 package org.batfish.symbolic.answers;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
+import java.util.SortedMap;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtManyAnswerElement implements AnswerElement {
 
-  protected Map<String, VerificationResult> _result;
+  private static final String PROP_RESULT = "result";
 
-  public Map<String, VerificationResult> getResult() {
-    return _result;
+  private SortedMap<String, VerificationResult> _result;
+
+  @JsonCreator
+  public SmtManyAnswerElement(
+      @JsonProperty(PROP_RESULT) SortedMap<String, VerificationResult> result) {
+    _result = result;
   }
 
-  public void setResult(Map<String, VerificationResult> result) {
-    _result = result;
+  @JsonProperty(PROP_RESULT)
+  public SortedMap<String, VerificationResult> getResult() {
+    return _result;
   }
 
   @Override

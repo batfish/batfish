@@ -650,7 +650,7 @@ public class Encoder {
             (router, edge, e) -> {
               String s = valuation.get(e);
               if ("true".equals(s)) {
-                SymbolicRecord r =
+                SymbolicRoute r =
                     enc.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(router);
                 if (r.getProtocolHistory() != null) {
                   Protocol proto;
@@ -699,9 +699,9 @@ public class Encoder {
     BoolExpr acc2 = mkTrue();
 
     // Disable an environment edge if possible
-    Map<LogicalEdge, SymbolicRecord> map = getMainSlice().getLogicalGraph().getEnvironmentVars();
-    for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
-      SymbolicRecord record = entry.getValue();
+    Map<LogicalEdge, SymbolicRoute> map = getMainSlice().getLogicalGraph().getEnvironmentVars();
+    for (Map.Entry<LogicalEdge, SymbolicRoute> entry : map.entrySet()) {
+      SymbolicRoute record = entry.getValue();
       BoolExpr per = record.getPermitted();
       Expr x = m.evaluate(per, false);
       if (x.toString().equals("true")) {
@@ -712,8 +712,8 @@ public class Encoder {
     }
 
     // Disable a community value if possible
-    for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
-      SymbolicRecord record = entry.getValue();
+    for (Map.Entry<LogicalEdge, SymbolicRoute> entry : map.entrySet()) {
+      SymbolicRoute record = entry.getValue();
       for (Map.Entry<CommunityVar, BoolExpr> centry : record.getCommunities().entrySet()) {
         BoolExpr comm = centry.getValue();
         Expr x = m.evaluate(comm, false);

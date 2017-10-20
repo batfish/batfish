@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -89,9 +90,7 @@ public class PropertyChecker {
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
     // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
-    answer.setResult(result);
-    return answer;
+    return new SmtOneAnswerElement(result);
   }
 
   /*
@@ -164,6 +163,10 @@ public class PropertyChecker {
     return Integer.parseInt(evaluate(m, e));
   }
 
+  private static boolean boolVal(Model m, Expr e) {
+    return Boolean.parseBoolean(evaluate(m, e));
+  }
+
   private static Ip ipVal(Model m, Expr e) {
     return new Ip(Long.parseLong(evaluate(m, e)));
   }
@@ -172,7 +175,7 @@ public class PropertyChecker {
    * Constraint that encodes if two symbolic records are equal
    */
   private static BoolExpr equal(
-      Encoder e, Configuration conf, SymbolicRecord r1, SymbolicRecord r2) {
+      Encoder e, Configuration conf, SymbolicRoute r1, SymbolicRoute r2) {
     EncoderSlice main = e.getMainSlice();
     BoolExpr eq = main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
     BoolExpr samePermitted = e.mkEq(r1.getPermitted(), r2.getPermitted());
@@ -270,17 +273,15 @@ public class PropertyChecker {
         .forEach(
             (lge, record) -> {
               // If there is an external advertisement
-              String s = evaluate(m, record.getPermitted());
-              if ("true".equals(s)) {
+              if (boolVal(m, record.getPermitted())) {
                 // If we actually use it
                 GraphEdge ge = lge.getEdge();
                 String router = ge.getRouter();
                 SymbolicDecisions decisions = slice.getSymbolicDecisions();
                 BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
                 assert ctrFwd != null;
-                s = evaluate(m, ctrFwd);
-                if ("true".equals(s)) {
-                  SymbolicRecord r = decisions.getBestNeighbor().get(router);
+                if (boolVal(m, ctrFwd)) {
+                  SymbolicRoute r = decisions.getBestNeighbor().get(router);
                   SymbolicPacket pkt = slice.getSymbolicPacket();
                   Flow f = buildFlow(m, pkt, router);
                   Prefix pfx = buildPrefix(r, m, f);
@@ -307,8 +308,7 @@ public class PropertyChecker {
                       .forEach(
                           (cvar, expr) -> {
                             if (cvar.getType() == Type.EXACT) {
-                              String c = evaluate(m, expr);
-                              if ("true".equals(c)) {
+                              if (boolVal(m, expr)) {
                                 communities.add(cvar.asLong());
                               }
                             }
@@ -381,7 +381,7 @@ public class PropertyChecker {
   private static String buildRoute(EncoderSlice slice, Model m, GraphEdge ge) {
     String router = ge.getRouter();
     SymbolicDecisions decisions = slice.getSymbolicDecisions();
-    SymbolicRecord r = decisions.getBestNeighbor().get(router);
+    SymbolicRoute r = decisions.getBestNeighbor().get(router);
     SymbolicPacket pkt = slice.getSymbolicPacket();
     Flow f = buildFlow(m, pkt, router);
     Prefix pfx = buildPrefix(r, m, f);
@@ -392,7 +392,7 @@ public class PropertyChecker {
   /*
    * Reconstruct the prefix from a symbolic record
    */
-  private static Prefix buildPrefix(SymbolicRecord r, Model m, Flow f) {
+  private static Prefix buildPrefix(SymbolicRoute r, Model m, Flow f) {
     Integer pfxLen = intVal(m, r.getPrefixLength());
     return new Prefix(f.getDstIp(), pfxLen);
   }
@@ -401,7 +401,7 @@ public class PropertyChecker {
    * Reconstruct the protocol from a symbolic record
    */
   private static Protocol buildProcotol(
-      SymbolicRecord r, Model m, EncoderSlice slice, String router) {
+      SymbolicRoute r, Model m, EncoderSlice slice, String router) {
     Protocol proto;
     if (r.getProtocolHistory().getBitVec() == null) {
       proto = slice.getProtocols().get(router).get(0);
@@ -432,7 +432,7 @@ public class PropertyChecker {
       Map<GraphEdge, BoolExpr> cfwd = decisions.getControlForwarding().get(current);
       Map<GraphEdge, BoolExpr> across = enc.getMainSlice().getForwardsAcross().get(current);
       // Find the route used
-      SymbolicRecord r = decisions.getBestNeighbor().get(current);
+      SymbolicRoute r = decisions.getBestNeighbor().get(current);
       Protocol proto = buildProcotol(r, m, slice, current);
       Prefix pfx = buildPrefix(r, m, f);
       // pick the next router
@@ -499,8 +499,7 @@ public class PropertyChecker {
       }
       if (!found) {
         BoolExpr permitted = r.getPermitted();
-        String s1 = evaluate(m, permitted);
-        if ("true".equals(s1)) {
+        if (boolVal(m, permitted)) {
           // Check if there is an accepting interface
           for (GraphEdge ge : slice.getGraph().getEdgeMap().get(current)) {
             Interface i = ge.getStart();
@@ -634,7 +633,7 @@ public class PropertyChecker {
    */
   private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
-    Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
+    Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
     enc2.getMainSlice()
         .getLogicalGraph()
         .getEnvironmentVars()
@@ -643,17 +642,17 @@ public class PropertyChecker {
     BoolExpr related = enc1.mkTrue();
 
     // relate environments if necessary
-    Map<LogicalEdge, SymbolicRecord> map =
+    Map<LogicalEdge, SymbolicRoute> map =
         enc1.getMainSlice().getLogicalGraph().getEnvironmentVars();
-    for (Map.Entry<LogicalEdge, SymbolicRecord> entry : map.entrySet()) {
+    for (Map.Entry<LogicalEdge, SymbolicRoute> entry : map.entrySet()) {
       LogicalEdge le = entry.getKey();
-      SymbolicRecord r1 = entry.getValue();
+      SymbolicRoute r1 = entry.getValue();
       String router = le.getEdge().getRouter();
       Configuration conf = enc1.getMainSlice().getGraph().getConfigurations().get(router);
 
       // Lookup the same environment variable in the other copy
       // The copy will have a different name but the same edge and type
-      SymbolicRecord r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
+      SymbolicRoute r2 = relatedEnv.get(le.getEdge(), le.getEdgeType());
       assert r2 != null;
       BoolExpr x = equal(enc1, conf, r1, r2);
       related = enc1.mkAnd(related, x);
@@ -798,7 +797,9 @@ public class PropertyChecker {
       Set<String> srcRouters = mapNodes(ec, sourceRouters);
 
       Encoder enc = new Encoder(graph, q);
+      long l1 = System.currentTimeMillis();
       enc.computeEncoding();
+      System.out.println("Encoding1 : " + (System.currentTimeMillis() - l1));
 
       // Add environment constraints for base case
       if (q.getDiffType() != null) {
@@ -821,7 +822,9 @@ public class PropertyChecker {
         HeaderLocationQuestion q2 = new HeaderLocationQuestion(q);
         q2.setFailures(0);
         enc2 = new Encoder(enc, graph, q2);
+        long l2 = System.currentTimeMillis();
         enc2.computeEncoding();
+        System.out.println("Encoding2 : " + (System.currentTimeMillis() - l2));
       }
 
       // TODO: Should equivalence be factored out separately?
@@ -829,7 +832,7 @@ public class PropertyChecker {
         assert (enc2 != null);
 
         // create a map for enc2 to lookup a related environment variable from enc
-        Table2<GraphEdge, EdgeType, SymbolicRecord> relatedEnv = new Table2<>();
+        Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
         enc2.getMainSlice()
             .getLogicalGraph()
             .getEnvironmentVars()
@@ -913,19 +916,11 @@ public class PropertyChecker {
       }
 
       // System.out.println("Total time: " + (System.currentTimeMillis() - start));
-
-      SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
-      answer.setResult(res);
-      answer.setFlowHistory(fh);
-      return answer;
+      return new SmtReachabilityAnswerElement(res, fh);
     }
 
     // System.out.println("Total time: " + (System.currentTimeMillis() - start));
-
-    SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
-    answer.setResult(res);
-    answer.setFlowHistory(new FlowHistory());
-    return answer;
+    return new SmtReachabilityAnswerElement(res, new FlowHistory());
   }
 
   /*
@@ -976,15 +971,15 @@ public class PropertyChecker {
         BoolExpr dataFwd2 = d2.getDataForwarding().get(ge.getRouter(), ge);
         assert dataFwd1 != null;
         assert dataFwd2 != null;
-        String s1 = evaluate(model, dataFwd1);
-        String s2 = evaluate(model, dataFwd2);
-        if (!Objects.equals(s1, s2)) {
-          if ("true".equals(s1)) {
+        boolean b1 = boolVal(model, dataFwd1);
+        boolean b2 = boolVal(model, dataFwd2);
+        if (b1 != b2) {
+          if (b1) {
             String route = buildRoute(enc1.getMainSlice(), model, ge);
             String msg = ge + " -- " + route;
             case1.add(msg);
           }
-          if ("true".equals(s2)) {
+          if (b2) {
             String route = buildRoute(enc2.getMainSlice(), model, ge);
             String msg = ge + " -- " + route;
             case2.add(msg);
@@ -1056,9 +1051,7 @@ public class PropertyChecker {
 
     VerificationResult result = enc.verify().getFirst();
 
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
-    answer.setResult(result);
-    return answer;
+    return new SmtOneAnswerElement(result);
   }
 
   /*
@@ -1092,9 +1085,7 @@ public class PropertyChecker {
     enc.add(allBounded);
 
     VerificationResult res = enc.verify().getFirst();
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
-    answer.setResult(res);
-    return answer;
+    return new SmtOneAnswerElement(res);
   }
 
   /*
@@ -1125,9 +1116,7 @@ public class PropertyChecker {
     enc.add(ctx.mkNot(allEqual));
 
     VerificationResult res = enc.verify().getFirst();
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
-    answer.setResult(res);
-    return answer;
+    return new SmtOneAnswerElement(res);
   }
 
   /*
@@ -1143,7 +1132,7 @@ public class PropertyChecker {
     List<GraphEdge> destinationPorts = PatternUtils.findMatchingEdges(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
     Map<String, List<String>> peerRouters = new HashMap<>();
-    Map<String, VerificationResult> result = new HashMap<>();
+    SortedMap<String, VerificationResult> result = new TreeMap<>();
 
     List<String> pRouters = PatternUtils.findMatchingSourceNodes(graph, p);
 
@@ -1200,9 +1189,7 @@ public class PropertyChecker {
       }
     }
 
-    SmtManyAnswerElement answer = new SmtManyAnswerElement();
-    answer.setResult(result);
-    return answer;
+    return new SmtManyAnswerElement(result);
   }
 
   /*
@@ -1226,14 +1213,11 @@ public class PropertyChecker {
     q.setBaseEnvironmentType(EnvironmentType.ANY);
 
     Collections.sort(routers);
-
-    Map<String, VerificationResult> result = new HashMap<>();
+    SortedMap<String, VerificationResult> result = new TreeMap<>();
 
     int len = routers.size();
     if (len <= 1) {
-      SmtManyAnswerElement answer = new SmtManyAnswerElement();
-      answer.setResult(new HashMap<>());
-      return answer;
+      return new SmtManyAnswerElement(new TreeMap<>());
     }
 
     for (int i = 0; i < len - 1; i++) {
@@ -1272,9 +1256,7 @@ public class PropertyChecker {
       if (!(ifaces1.containsAll(ifaces2) && ifaces2.containsAll(ifaces1))) {
         String msg = String.format("Routers %s and %s have different interfaces", r1, r2);
         System.out.println(msg);
-        SmtManyAnswerElement answer = new SmtManyAnswerElement();
-        answer.setResult(new TreeMap<>());
-        return answer;
+        return new SmtManyAnswerElement(new TreeMap<>());
       }
 
       // TODO: check running same protocols?
@@ -1294,7 +1276,7 @@ public class PropertyChecker {
       // Set environments equal
       Set<String> communities = new HashSet<>();
 
-      Set<SymbolicRecord> envRecords = new HashSet<>();
+      Set<SymbolicRoute> envRecords = new HashSet<>();
 
       for (Protocol proto1 : slice1.getProtocols().get(r1)) {
         for (ArrayList<LogicalEdge> es :
@@ -1307,8 +1289,8 @@ public class PropertyChecker {
 
             if (lge1.getEdgeType() == EdgeType.IMPORT) {
 
-              SymbolicRecord vars1 = slice1.getLogicalGraph().getEnvironmentVars().get(lge1);
-              SymbolicRecord vars2 = slice2.getLogicalGraph().getEnvironmentVars().get(lge2);
+              SymbolicRoute vars1 = slice1.getLogicalGraph().getEnvironmentVars().get(lge1);
+              SymbolicRoute vars2 = slice2.getLogicalGraph().getEnvironmentVars().get(lge2);
 
               BoolExpr aclIn1 = slice1.getIncomingAcls().get(lge1.getEdge());
               BoolExpr aclIn2 = slice2.getIncomingAcls().get(lge2.getEdge());
@@ -1395,8 +1377,8 @@ public class PropertyChecker {
 
             } else {
 
-              SymbolicRecord out1 = lge1.getSymbolicRecord();
-              SymbolicRecord out2 = lge2.getSymbolicRecord();
+              SymbolicRoute out1 = lge1.getSymbolicRecord();
+              SymbolicRoute out2 = lge2.getSymbolicRecord();
 
               equalOutputs =
                   ctx.mkAnd(equalOutputs, slice1.equal(conf1, proto1, out1, out2, lge1, false));
@@ -1408,8 +1390,8 @@ public class PropertyChecker {
       // Ensure that there is only one active environment message if we want to
       // check the stronger version of local equivalence
       if (strict) {
-        for (SymbolicRecord env1 : envRecords) {
-          for (SymbolicRecord env2 : envRecords) {
+        for (SymbolicRoute env1 : envRecords) {
+          for (SymbolicRoute env2 : envRecords) {
             if (!env1.equals(env2)) {
               BoolExpr c = e2.mkImplies(env1.getPermitted(), e2.mkNot(env2.getPermitted()));
               e2.add(c);
@@ -1434,9 +1416,9 @@ public class PropertyChecker {
       // Best choices should be the same
       BoolExpr required;
       if (strict) {
-        SymbolicRecord best1 =
+        SymbolicRoute best1 =
             e1.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf1.getName());
-        SymbolicRecord best2 =
+        SymbolicRoute best2 =
             e2.getMainSlice().getSymbolicDecisions().getBestNeighbor().get(conf2.getName());
         // Just pick some protocol for defaults, shouldn't matter for best choice
         required = equal(e2, conf2, best1, best2);
@@ -1455,26 +1437,15 @@ public class PropertyChecker {
         required = ctx.mkAnd(sameForwarding); // equalOutputs, equalIncomingAcls);
       }
 
-      // System.out.println("Assumptions: ");
-      // System.out.println(assumptions.simplify());
-
-      // System.out.println("Required: ");
-      // System.out.println(required.simplify());
-
       e2.add(assumptions);
       e2.add(ctx.mkNot(required));
 
       VerificationResult res = e2.verify().getFirst();
-
-      // res.debug(e1.getMainSlice(), false, null);
-
       String name = r1 + "<-->" + r2;
       result.put(name, res);
     }
 
-    SmtManyAnswerElement answer = new SmtManyAnswerElement();
-    answer.setResult(result);
-    return answer;
+    return new SmtManyAnswerElement(result);
   }
 
   /*
@@ -1595,9 +1566,7 @@ public class PropertyChecker {
 
     VerificationResult res = enc.verify().getFirst();
 
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
-    answer.setResult(res);
-    return answer;
+    return new SmtOneAnswerElement(res);
   }
 
   /*
@@ -1657,8 +1626,6 @@ public class PropertyChecker {
 
     VerificationResult result = enc.verify().getFirst();
 
-    SmtOneAnswerElement answer = new SmtOneAnswerElement();
-    answer.setResult(result);
-    return answer;
+    return new SmtOneAnswerElement(result);
   }
 }

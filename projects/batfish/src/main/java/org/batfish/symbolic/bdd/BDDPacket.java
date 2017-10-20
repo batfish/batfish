@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.lang.reflect.Method;
 import java.util.BitSet;
@@ -14,6 +14,7 @@ import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
+import org.batfish.symbolic.abstraction.CallbackHandler;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs
@@ -77,7 +78,7 @@ public class BDDPacket {
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
-  public BDDPacket() {
+  BDDPacket() {
 
     // Make sure we have the right number of variables
     int numVars = factory.varNum();
@@ -140,7 +141,7 @@ public class BDDPacket {
    * Create a BDDRecord from another. Because BDDs are immutable,
    * there is no need for a deep copy.
    */
-  public BDDPacket(BDDPacket other) {
+  private BDDPacket(BDDPacket other) {
     _srcIp = new BDDInteger(other._srcIp);
     _dstIp = new BDDInteger(other._dstIp);
     _srcPort = new BDDInteger(other._srcPort);
@@ -220,30 +221,6 @@ public class BDDPacket {
     visited.add(bdd);
     dotRec(sb, bdd.low(), visited);
     dotRec(sb, bdd.high(), visited);
-  }
-
-  public void free() {
-    for (int i = 0; i < 32; i++) {
-      getDstIp().getBitvec()[i].free();
-      getSrcIp().getBitvec()[i].free();
-    }
-    for (int i = 0; i < 16; i++) {
-      getDstPort().getBitvec()[i].free();
-      getSrcIp().getBitvec()[i].free();
-    }
-    for (int i = 0; i < 8; i++) {
-      getIcmpCode().getBitvec()[i].free();
-      getIcmpType().getBitvec()[i].free();
-      getIpProtocol().getBitvec()[i].free();
-    }
-    _tcpAck.free();
-    _tcpCwr.free();
-    _tcpEce.free();
-    _tcpFin.free();
-    _tcpPsh.free();
-    _tcpRst.free();
-    _tcpSyn.free();
-    _tcpUrg.free();
   }
 
   public BDDInteger getDstIp() {

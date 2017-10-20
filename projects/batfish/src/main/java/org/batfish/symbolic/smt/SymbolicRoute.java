@@ -20,7 +20,7 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-public class SymbolicRecord {
+public class SymbolicRoute {
 
   private String _name;
 
@@ -66,7 +66,7 @@ public class SymbolicRecord {
 
   private Map<CommunityVar, BoolExpr> _communities;
 
-  SymbolicRecord(String name, Protocol proto) {
+  SymbolicRoute(String name, Protocol proto) {
     _name = name;
     _proto = proto;
     _enc = null;
@@ -95,7 +95,7 @@ public class SymbolicRecord {
    * To avoid changing values along different mkIf branches,
    * we must create a new copy of several variables that can change.
    */
-  SymbolicRecord(SymbolicRecord other) {
+  SymbolicRoute(SymbolicRoute other) {
     _name = other._name;
     _proto = other._proto;
     _enc = other._enc;
@@ -121,7 +121,7 @@ public class SymbolicRecord {
         new HashMap<>(other._communities); // TODO: use a persistent map to avoid this penalty
   }
 
-  SymbolicRecord(
+  SymbolicRoute(
       EncoderSlice slice,
       String name,
       String router,
@@ -460,7 +460,7 @@ public class SymbolicRecord {
       return false;
     }
 
-    SymbolicRecord that = (SymbolicRecord) o;
+    SymbolicRoute that = (SymbolicRoute) o;
 
     return this._name.equals(that._name);
   }
@@ -470,7 +470,7 @@ public class SymbolicRecord {
     return _name.hashCode();
   }
 
-  public SymbolicRecord copy() {
-    return new SymbolicRecord(this);
+  public SymbolicRoute copy() {
+    return new SymbolicRoute(this);
   }
 }

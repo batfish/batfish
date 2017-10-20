@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -21,13 +21,14 @@ import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.abstraction.CallbackHandler;
 
 /**
  * A collection of attributes describing an advertisement, represented using BDDs
  *
  * @author Ryan Beckett
  */
-public class BDDRecord {
+public class BDDRoute {
 
   static BDDFactory factory;
 
@@ -92,7 +93,7 @@ public class BDDRecord {
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
-  public BDDRecord(Set<CommunityVar> comms) {
+  public BDDRoute(Set<CommunityVar> comms) {
     int numVars = factory.varNum();
     int numNeeded = 32 * 5 + 5 + comms.size() + 4;
     if (numVars < numNeeded) {
@@ -143,7 +144,7 @@ public class BDDRecord {
    * Create a BDDRecord from another. Because BDDs are immutable,
    * there is no need for a deep copy.
    */
-  public BDDRecord(BDDRecord other) {
+  public BDDRoute(BDDRoute other) {
     _communities = new TreeMap<>(other._communities);
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
@@ -169,8 +170,8 @@ public class BDDRecord {
   /*
    * Convenience method for the copy constructor
    */
-  public BDDRecord copy() {
-    return new BDDRecord(this);
+  public BDDRoute copy() {
+    return new BDDRoute(this);
   }
 
   /*
@@ -219,35 +220,6 @@ public class BDDRecord {
     dotRec(sb, bdd.low(), visited);
     dotRec(sb, bdd.high(), visited);
   }
-
-  public void free() {
-    BDD[] prefix = getPrefix().getBitvec();
-    BDD[] prefixLen = getPrefixLength().getBitvec();
-    BDD[] metric = getMetric().getBitvec();
-    BDD[] adminDist = getAdminDist().getBitvec();
-    BDD[] med = getMed().getBitvec();
-    BDD[] localPref = getLocalPref().getBitvec();
-    BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
-    BDD[] proto = getProtocolHistory().getInteger().getBitvec();
-    for (int i = 0; i < 32; i++) {
-      metric[i].free();
-      adminDist[i].free();
-      med[i].free();
-      localPref[i].free();
-      prefix[i].free();
-    }
-    for (int i = 0; i < 5; i++) {
-      prefixLen[i].free();
-    }
-    for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i].free();
-    }
-    for (int i = 0; i < proto.length; i++) {
-      proto[i].free();
-    }
-    getCommunities().forEach((cvar, bdd) -> bdd.free());
-  }
-
 
   public BDDInteger getAdminDist() {
     return _adminDist;
@@ -323,10 +295,10 @@ public class BDDRecord {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof BDDRecord)) {
+    if (!(o instanceof BDDRoute)) {
       return false;
     }
-    BDDRecord other = (BDDRecord) o;
+    BDDRoute other = (BDDRoute) o;
 
     return Objects.equals(_metric, other._metric)
         && Objects.equals(_ospfMetric, other._ospfMetric)
@@ -339,7 +311,7 @@ public class BDDRecord {
   /*
    * Take the point-wise disjunction of two BDDRecords
    */
-  public void orWith(BDDRecord other) {
+  public void orWith(BDDRoute other) {
     BDD[] metric = getMetric().getBitvec();
     BDD[] adminDist = getAdminDist().getBitvec();
     BDD[] med = getMed().getBitvec();
@@ -367,7 +339,7 @@ public class BDDRecord {
     });
   }
 
-  public BDDRecord restrict(Prefix pfx) {
+  public BDDRoute restrict(Prefix pfx) {
     int len = pfx.getPrefixLength();
     BitSet bits = pfx.getAddress().getAddressBits();
     int[] vars = new int[len];
@@ -383,7 +355,7 @@ public class BDDRecord {
     }
     pairing.set(vars, vals);
 
-    BDDRecord rec = new BDDRecord(this);
+    BDDRoute rec = new BDDRoute(this);
     BDD[] metric = rec.getMetric().getBitvec();
     BDD[] adminDist = rec.getAdminDist().getBitvec();
     BDD[] med = rec.getMed().getBitvec();
@@ -402,14 +374,14 @@ public class BDDRecord {
     return rec;
   }
 
-  public BDDRecord restrict(List<Prefix> prefixes) {
+  public BDDRoute restrict(List<Prefix> prefixes) {
     if (prefixes.isEmpty()) {
       throw new BatfishException("Empty prefix list in BDDRecord restrict");
     }
-    BDDRecord r = restrict(prefixes.get(0));
+    BDDRoute r = restrict(prefixes.get(0));
     for (int i = 1; i < prefixes.size(); i++) {
       Prefix p = prefixes.get(i);
-      BDDRecord x = restrict(p);
+      BDDRoute x = restrict(p);
       r.orWith(x);
     }
     return r;

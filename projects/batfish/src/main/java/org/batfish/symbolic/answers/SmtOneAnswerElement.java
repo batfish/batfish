@@ -1,19 +1,24 @@
 package org.batfish.symbolic.answers;
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtOneAnswerElement implements AnswerElement {
 
-  protected VerificationResult _result;
+  private static final String PROP_RESULT = "result";
 
-  public VerificationResult getResult() {
-    return _result;
+  private VerificationResult _result;
+
+  @JsonCreator
+  public SmtOneAnswerElement(@JsonProperty(PROP_RESULT) VerificationResult result) {
+    _result = result;
   }
 
-  public void setResult(@Nullable VerificationResult result) {
-    this._result = result;
+  @JsonProperty(PROP_RESULT)
+  public VerificationResult getResult() {
+    return _result;
   }
 
   @Override

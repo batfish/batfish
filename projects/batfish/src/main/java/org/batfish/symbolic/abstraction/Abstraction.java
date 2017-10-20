@@ -36,6 +36,7 @@ import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.answers.AbstractionAnswerElement;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.utils.PrefixUtils;
 import org.batfish.symbolic.utils.Tuple;
 

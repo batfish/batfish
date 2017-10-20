@@ -15,20 +15,20 @@ class LogicalEdge {
 
   private EdgeType _type;
 
-  private SymbolicRecord _symbolicRecord;
+  private SymbolicRoute _symbolicRoute;
 
-  LogicalEdge(GraphEdge edge, EdgeType type, SymbolicRecord symbolicRecord) {
+  LogicalEdge(GraphEdge edge, EdgeType type, SymbolicRoute symbolicRoute) {
     _edge = edge;
     _type = type;
-    _symbolicRecord = symbolicRecord;
+    _symbolicRoute = symbolicRoute;
   }
 
   EdgeType getEdgeType() {
     return _type;
   }
 
-  SymbolicRecord getSymbolicRecord() {
-    return _symbolicRecord;
+  SymbolicRoute getSymbolicRecord() {
+    return _symbolicRoute;
   }
 
   GraphEdge getEdge() {
@@ -47,14 +47,14 @@ class LogicalEdge {
     LogicalEdge other = (LogicalEdge) o;
     return _type == other._type
         && Objects.equals(_edge, other._edge)
-        && Objects.equals(_symbolicRecord, other._symbolicRecord);
+        && Objects.equals(_symbolicRoute, other._symbolicRoute);
   }
 
   @Override
   public int hashCode() {
     int result = _edge != null ? _edge.hashCode() : 0;
     result = 31 * result + (_type != null ? (_type == EdgeType.EXPORT ? 2 : 1) : 0);
-    result = 31 * result + (_symbolicRecord != null ? _symbolicRecord.hashCode() : 0);
+    result = 31 * result + (_symbolicRoute != null ? _symbolicRoute.hashCode() : 0);
     return result;
   }
 }

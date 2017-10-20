@@ -133,9 +133,9 @@ class TransferSSA {
 
   private Configuration _conf;
 
-  private SymbolicRecord _current;
+  private SymbolicRoute _current;
 
-  private SymbolicRecord _other;
+  private SymbolicRoute _other;
 
   private Protocol _to;
 
@@ -156,8 +156,8 @@ class TransferSSA {
   TransferSSA(
       EncoderSlice encoderSlice,
       Configuration conf,
-      SymbolicRecord other,
-      SymbolicRecord current,
+      SymbolicRoute other,
+      SymbolicRoute current,
       Protocol to,
       Protocol from,
       List<Statement> statements,
@@ -206,7 +206,7 @@ class TransferSSA {
   /*
    * Converts a route filter list to a boolean expression.
    */
-  private BoolExpr matchFilterList(RouteFilterList x, SymbolicRecord other) {
+  private BoolExpr matchFilterList(RouteFilterList x, SymbolicRoute other) {
     BoolExpr acc = _enc.mkFalse();
 
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
@@ -227,7 +227,7 @@ class TransferSSA {
    * Converts a prefix set to a boolean expression.
    */
   private TransferResult<BoolExpr, BoolExpr> matchPrefixSet(
-      Configuration conf, PrefixSetExpr e, SymbolicRecord other) {
+      Configuration conf, PrefixSetExpr e, SymbolicRoute other) {
 
     ArithExpr otherLen = other.getPrefixLength();
 
@@ -267,7 +267,7 @@ class TransferSSA {
                 return result.setReturnValue(directRoute);
               } else {
                 // Also use network statement if OSPF has a route with the correct length
-                SymbolicRecord rec = _enc.getBestNeighborPerProtocol(router, Protocol.OSPF);
+                SymbolicRoute rec = _enc.getBestNeighborPerProtocol(router, Protocol.OSPF);
                 if (rec != null) {
                   BoolExpr ospfRelevant = _enc.isRelevantFor(rec.getPrefixLength(), r);
                   ArithExpr newLength = _enc.mkIf(ospfRelevant, originLength, otherLen);
@@ -302,7 +302,7 @@ class TransferSSA {
   /*
    * Converts a community list to a boolean expression.
    */
-  private BoolExpr matchCommunityList(CommunityList cl, SymbolicRecord other) {
+  private BoolExpr matchCommunityList(CommunityList cl, SymbolicRoute other) {
     List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
     Collections.reverse(lines);
     BoolExpr acc = _enc.mkFalse();
@@ -318,7 +318,7 @@ class TransferSSA {
   /*
    * Converts a community set to a boolean expression
    */
-  private BoolExpr matchCommunitySet(Configuration conf, CommunitySetExpr e, SymbolicRecord other) {
+  private BoolExpr matchCommunitySet(Configuration conf, CommunitySetExpr e, SymbolicRoute other) {
     if (e instanceof InlineCommunitySet) {
       Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(conf, e);
       BoolExpr acc = _enc.mkTrue();
@@ -362,7 +362,7 @@ class TransferSSA {
    * by performing inlining of stateful side effects.
    */
   private TransferResult<BoolExpr, BoolExpr> compute(
-      BooleanExpr expr, TransferParam<SymbolicRecord> p) {
+      BooleanExpr expr, TransferParam<SymbolicRoute> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
@@ -417,7 +417,7 @@ class TransferSSA {
         BoolExpr acc = _enc.mkFalse();
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr conjunct = conjuncts.get(i);
-          TransferParam<SymbolicRecord> param =
+          TransferParam<SymbolicRoute> param =
               p.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
           TransferResult<BoolExpr, BoolExpr> r = compute(conjunct, param);
           result = result.addChangedVariables(r);
@@ -443,7 +443,7 @@ class TransferSSA {
         BoolExpr acc = _enc.mkFalse();
         for (int i = disjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr disjunct = disjuncts.get(i);
-          TransferParam<SymbolicRecord> param =
+          TransferParam<SymbolicRoute> param =
               p.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
           TransferResult<BoolExpr, BoolExpr> r = compute(disjunct, param);
           result.addChangedVariables(r);
@@ -664,7 +664,7 @@ class TransferSSA {
    * Relate the symbolic control plane route variables
    */
   private BoolExpr relateVariables(
-      TransferParam<SymbolicRecord> p, TransferResult<BoolExpr, BoolExpr> result) {
+      TransferParam<SymbolicRoute> p, TransferResult<BoolExpr, BoolExpr> result) {
 
     ArithExpr defaultLen = _enc.mkInt(_enc.defaultLength());
     ArithExpr defaultAd = _enc.defaultAdminDistance(_conf, _from, p.getData());
@@ -713,7 +713,7 @@ class TransferSSA {
       // Case where it is a non client, we lookup the next-hop
       if (isNonClient) {
         EncoderSlice s = _enc.getEncoder().getSlice(peer);
-        SymbolicRecord r = s.getSymbolicDecisions().getBestNeighbor().get(router);
+        SymbolicRoute r = s.getSymbolicDecisions().getBestNeighbor().get(router);
         igpMet = _enc.mkEq(_current.getIgpMetric(), r.getMetric());
       }
 
@@ -725,7 +725,7 @@ class TransferSSA {
           Integer clientId = entry.getValue();
           if (!r.equals(router)) {
             EncoderSlice s = _enc.getEncoder().getSlice(r);
-            SymbolicRecord record = s.getSymbolicDecisions().getBestNeighbor().get(r);
+            SymbolicRoute record = s.getSymbolicDecisions().getBestNeighbor().get(r);
             BoolExpr eq = _enc.mkEq(_current.getIgpMetric(), record.getMetric());
             acc =
                 _enc.mkAnd(
@@ -824,7 +824,7 @@ class TransferSSA {
    * Create a new variable reflecting the final return value of the function
    */
   private TransferResult<BoolExpr, BoolExpr> returnValue(
-      TransferParam<SymbolicRecord> p, TransferResult<BoolExpr, BoolExpr> r, boolean val) {
+      TransferParam<SymbolicRoute> p, TransferResult<BoolExpr, BoolExpr> r, boolean val) {
     BoolExpr b = _enc.mkIf(r.getReturnAssignedValue(), r.getReturnValue(), _enc.mkBool(val));
     BoolExpr newRet = createBoolVariableWith(p, "RETURN", b);
     return r.setReturnValue(newRet)
@@ -833,7 +833,7 @@ class TransferSSA {
   }
 
   private TransferResult<BoolExpr, BoolExpr> fallthrough(
-      TransferParam<SymbolicRecord> p, TransferResult<BoolExpr, BoolExpr> r) {
+      TransferParam<SymbolicRoute> p, TransferResult<BoolExpr, BoolExpr> r) {
     BoolExpr b = _enc.mkIf(r.getReturnAssignedValue(), r.getFallthroughValue(), _enc.mkTrue());
     BoolExpr newFallthrough = createBoolVariableWith(p, "FALLTHROUGH", b);
     return r.setFallthroughValue(newFallthrough)
@@ -841,7 +841,7 @@ class TransferSSA {
         .addChangedVariable("FALLTHROUGH", newFallthrough);
   }
 
-  private void updateSingleValue(TransferParam<SymbolicRecord> p, String variableName, Expr expr) {
+  private void updateSingleValue(TransferParam<SymbolicRoute> p, String variableName, Expr expr) {
     switch (variableName) {
       case "METRIC":
         p.getData().setMetric((ArithExpr) expr);
@@ -878,7 +878,7 @@ class TransferSSA {
    * different branches of an mkIf statement.
    */
   private Pair<Expr, Expr> joinPoint(
-      TransferParam<SymbolicRecord> p,
+      TransferParam<SymbolicRoute> p,
       TransferResult<BoolExpr, BoolExpr> r,
       BoolExpr guard,
       Pair<String, Pair<Expr, Expr>> values) {
@@ -974,7 +974,7 @@ class TransferSSA {
    */
   private TransferResult<BoolExpr, BoolExpr> compute(
       List<Statement> statements,
-      TransferParam<SymbolicRecord> p,
+      TransferParam<SymbolicRoute> p,
       TransferResult<BoolExpr, BoolExpr> result) {
     boolean doesReturn = false;
 
@@ -1080,8 +1080,8 @@ class TransferSSA {
           default:
             p.debug("True Branch");
             // clear changed variables before proceeding
-            TransferParam<SymbolicRecord> p1 = p.indent().setData(p.getData().copy());
-            TransferParam<SymbolicRecord> p2 = p.indent().setData(p.getData().copy());
+            TransferParam<SymbolicRoute> p1 = p.indent().setData(p.getData().copy());
+            TransferParam<SymbolicRoute> p2 = p.indent().setData(p.getData().copy());
 
             TransferResult<BoolExpr, BoolExpr> trueBranch =
                 compute(i.getTrueStatements(), p1, initialResult());
@@ -1278,7 +1278,7 @@ class TransferSSA {
    * while also simultaneously setting their value based on an old value.
    */
   private ArithExpr createArithVariableWith(
-      TransferParam<SymbolicRecord> p, String name, ArithExpr e) {
+      TransferParam<SymbolicRoute> p, String name, ArithExpr e) {
     e = (ArithExpr) e.simplify();
     if (canInline(e)) {
       p.debug(name + "=" + e);
@@ -1294,7 +1294,7 @@ class TransferSSA {
   }
 
   private BoolExpr createBoolVariableWith(
-      TransferParam<SymbolicRecord> p, String name, BoolExpr e) {
+      TransferParam<SymbolicRoute> p, String name, BoolExpr e) {
     e = (BoolExpr) e.simplify();
     if (canInline(e)) {
       p.debug(name + "=" + e);
@@ -1310,7 +1310,7 @@ class TransferSSA {
   }
 
   private BitVecExpr createBitVecVariableWith(
-      TransferParam<SymbolicRecord> p, String name, int size, BitVecExpr e) {
+      TransferParam<SymbolicRoute> p, String name, int size, BitVecExpr e) {
     e = (BitVecExpr) e.simplify();
     if (canInline(e)) {
       p.debug(name + "=" + e);
@@ -1329,7 +1329,7 @@ class TransferSSA {
    * Create a new variable representing the new prefix length after
    * applying the effect of aggregation.
    */
-  private void computeIntermediatePrefixLen(TransferParam<SymbolicRecord> param) {
+  private void computeIntermediatePrefixLen(TransferParam<SymbolicRoute> param) {
     ArithExpr prefixLen = param.getData().getPrefixLength();
     if (_isExport && _to.isBgp()) {
       _aggregates = aggregateRoutes();
@@ -1350,7 +1350,7 @@ class TransferSSA {
     }
   }
 
-  private void applyMetricUpdate(TransferParam<SymbolicRecord> p) {
+  private void applyMetricUpdate(TransferParam<SymbolicRoute> p) {
     boolean updateOspf = (!_isExport && _to.isOspf());
     boolean updateBgp = (_isExport && _to.isBgp());
     boolean updateMetric = updateOspf || updateBgp;
@@ -1379,7 +1379,7 @@ class TransferSSA {
     }
   }
 
-  private void setDefaultLocalPref(TransferParam<SymbolicRecord> p) {
+  private void setDefaultLocalPref(TransferParam<SymbolicRoute> p) {
     // must be the case that it is an environment variable
     if (p.getData().getLocalPref() == null) {
       p.getData().setLocalPref(_enc.mkInt(100));
@@ -1387,8 +1387,8 @@ class TransferSSA {
   }
 
   public BoolExpr compute() {
-    SymbolicRecord o = new SymbolicRecord(_other);
-    TransferParam<SymbolicRecord> p = new TransferParam<>(o, Encoder.ENABLE_DEBUGGING);
+    SymbolicRoute o = new SymbolicRoute(_other);
+    TransferParam<SymbolicRoute> p = new TransferParam<>(o, Encoder.ENABLE_DEBUGGING);
     computeIntermediatePrefixLen(p);
     applyMetricUpdate(p);
     setDefaultLocalPref(p);

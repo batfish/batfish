@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.bdd;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -128,7 +128,6 @@ public class BDDAcl {
 
       if (l.getIpProtocols() != null) {
         BDD val = computeIpProtocols(l.getIpProtocols());
-        _pkt.dot(val);
         val = l.getIpProtocols().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
@@ -218,8 +217,6 @@ public class BDDAcl {
    */
   private BDD computeTcpFlags(TcpFlags flags) {
     BDD acc = _factory.one();
-    BDD one = _factory.one();
-    BDD zero = _factory.zero();
     if (flags.getUseAck()) {
       BDD value = flags.getAck() ? _pkt.getTcpAck() : _pkt.getTcpAck().not();
       acc = acc.and(value);
@@ -284,7 +281,6 @@ public class BDDAcl {
       if (!wc.isPrefix()) {
         throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
       }
-      BDD relevant = isRelevantFor(wc.toPrefix(), field);
       acc = acc.or(isRelevantFor(wc.toPrefix(), field));
     }
     return acc;
@@ -317,11 +313,6 @@ public class BDDAcl {
       }
     }
     return acc;
-  }
-
-  public void free() {
-    _pkt.free();
-    _bdd.free();
   }
 
   public IpAccessList getAcl() {

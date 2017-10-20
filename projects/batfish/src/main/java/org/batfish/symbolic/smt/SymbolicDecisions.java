@@ -18,9 +18,9 @@ import org.batfish.symbolic.collections.Table3;
  */
 class SymbolicDecisions {
 
-  private Table2<String, Protocol, SymbolicRecord> _bestNeighborPerProtocol;
+  private Table2<String, Protocol, SymbolicRoute> _bestNeighborPerProtocol;
 
-  private Map<String, SymbolicRecord> _bestNeighbor;
+  private Map<String, SymbolicRoute> _bestNeighbor;
 
   private Table3<String, Protocol, LogicalEdge, BoolExpr> _choiceVariables;
 
@@ -36,11 +36,11 @@ class SymbolicDecisions {
     _dataForwarding = new Table2<>();
   }
 
-  Table2<String, Protocol, SymbolicRecord> getBestNeighborPerProtocol() {
+  Table2<String, Protocol, SymbolicRoute> getBestNeighborPerProtocol() {
     return _bestNeighborPerProtocol;
   }
 
-  Map<String, SymbolicRecord> getBestNeighbor() {
+  Map<String, SymbolicRoute> getBestNeighbor() {
     return _bestNeighbor;
   }
 
@@ -56,8 +56,7 @@ class SymbolicDecisions {
     return _dataForwarding;
   }
 
-  @Nullable
-  SymbolicRecord getBestVars(Optimizations opts, String router, Protocol proto) {
+  @Nullable SymbolicRoute getBestVars(Optimizations opts, String router, Protocol proto) {
     if (opts.getSliceHasSingleProtocol().contains(router)) {
       return _bestNeighbor.get(router);
     } else {

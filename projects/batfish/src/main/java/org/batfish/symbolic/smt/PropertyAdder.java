@@ -132,7 +132,7 @@ class PropertyAdder {
               BoolExpr hasDirectRoute = ctx.mkFalse();
               BoolExpr isAbsorbed = ctx.mkFalse();
 
-              SymbolicRecord r =
+              SymbolicRoute r =
                   _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
 
               for (GraphEdge ge : edges) {
@@ -337,7 +337,7 @@ class PropertyAdder {
               BoolExpr hasDirectRoute = ctx.mkFalse();
               BoolExpr isAbsorbed = ctx.mkFalse();
 
-              SymbolicRecord r =
+              SymbolicRoute r =
                   _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
 
               for (GraphEdge ge : edges) {
