@@ -2195,8 +2195,7 @@ class EncoderSlice {
           Integer cost = proto.isOspf() ? addedCost(proto, ge) : 0;
 
           TransferSSA f =
-              new TransferSSA(
-                  this, conf, varsOther, vars, proto, proto, statements, cost, ge, false);
+              new TransferSSA(this, conf, varsOther, vars, proto, statements, cost, ge, false);
           importFunction = f.compute();
 
           BoolExpr acc = mkIf(usable, importFunction, val);
@@ -2314,7 +2313,7 @@ class EncoderSlice {
         }
 
         TransferSSA f =
-            new TransferSSA(this, conf, varsOther, vars, proto, proto, statements, cost, ge, true);
+            new TransferSSA(this, conf, varsOther, vars, proto, statements, cost, ge, true);
         acc = f.compute();
 
         BoolExpr usable = mkAnd(active, doExport, varsOther.getPermitted(), notFailed);
@@ -2332,7 +2331,6 @@ class EncoderSlice {
                   conf,
                   overallBest,
                   ospfRedistribVars,
-                  proto,
                   proto,
                   statements,
                   cost,
@@ -2780,7 +2778,6 @@ class EncoderSlice {
     addControlForwardingConstraints();
     addDataForwardingConstraints();
     addUnusedDefaultValueConstraints();
-    // addInactiveLinkConstraints();
     addHeaderSpaceConstraint();
     if (isMainSlice()) {
       addEnvironmentConstraints();

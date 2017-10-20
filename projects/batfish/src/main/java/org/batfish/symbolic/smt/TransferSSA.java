@@ -137,9 +137,7 @@ class TransferSSA {
 
   private SymbolicRoute _other;
 
-  private Protocol _to;
-
-  private Protocol _from;
+  private Protocol _proto;
 
   private List<Statement> _statements;
 
@@ -158,8 +156,7 @@ class TransferSSA {
       Configuration conf,
       SymbolicRoute other,
       SymbolicRoute current,
-      Protocol to,
-      Protocol from,
+      Protocol proto,
       List<Statement> statements,
       Integer addedCost,
       GraphEdge ge,
@@ -168,8 +165,7 @@ class TransferSSA {
     _conf = conf;
     _current = current;
     _other = other;
-    _to = to;
-    _from = from;
+    _proto = proto;
     _statements = statements;
     _addedCost = addedCost;
     _graphEdge = ge;
@@ -469,7 +465,7 @@ class TransferSSA {
         return fromExpr(_enc.mkFalse());
       }
       if (_other.getProtocolHistory() == null) {
-        BoolExpr protoMatch = _enc.mkBool(proto.equals(_from));
+        BoolExpr protoMatch = _enc.mkBool(proto.equals(_proto));
         p.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
         return fromExpr(protoMatch);
       }
@@ -649,7 +645,7 @@ class TransferSSA {
    * sent to/from the neighboring BGP peer.
    */
   private boolean sendCommunity() {
-    if (_to.isBgp()) {
+    if (_proto.isBgp()) {
       if (!_isExport) {
         return true;
       }
@@ -667,15 +663,15 @@ class TransferSSA {
       TransferParam<SymbolicRoute> p, TransferResult<BoolExpr, BoolExpr> result) {
 
     ArithExpr defaultLen = _enc.mkInt(_enc.defaultLength());
-    ArithExpr defaultAd = _enc.defaultAdminDistance(_conf, _from, p.getData());
-    ArithExpr defaultMed = _enc.mkInt(_enc.defaultMed(_from));
+    ArithExpr defaultAd = _enc.defaultAdminDistance(_conf, _proto, p.getData());
+    ArithExpr defaultMed = _enc.mkInt(_enc.defaultMed(_proto));
     ArithExpr defaultLp = _enc.mkInt(_enc.defaultLocalPref());
     ArithExpr defaultId = _enc.mkInt(_enc.defaultId());
     ArithExpr defaultMet = _enc.mkInt(_enc.defaultMetric());
 
     // TODO: remove all isChanged calls with actual symbolic values that test for a change
 
-    boolean isIbgp = _graphEdge.isAbstract() && _to.isBgp();
+    boolean isIbgp = _graphEdge.isAbstract() && _proto.isBgp();
 
     // Update prefix length when aggregation
     BoolExpr len =
@@ -793,14 +789,14 @@ class TransferSSA {
     // If this was an external route, then we need to add the correct next-hop tag
     boolean isEbgpEdge = _enc.getGraph().getEbgpNeighbors().get(_graphEdge) != null;
     BoolExpr cid = _enc.mkTrue();
-    if (_isExport && _to.isBgp() && p.getData().getClientId() != null) {
+    if (_isExport && _proto.isBgp() && p.getData().getClientId() != null) {
       if (isEbgpEdge) {
         cid = _current.getClientId().checkIfValue(0);
       } else {
         cid = _enc.safeEqEnum(_current.getClientId(), p.getData().getClientId());
       }
     }
-    if (!_isExport && _to.isBgp()) {
+    if (!_isExport && _proto.isBgp()) {
       if (p.getData().getClientId() != null) {
         BoolExpr fromExternal = p.getData().getClientId().checkIfValue(0);
         BoolExpr edgeIsInternal = _enc.mkBool(!isClient && !isNonClient);
@@ -815,7 +811,7 @@ class TransferSSA {
     BoolExpr updates =
         _enc.mkAnd(
             per, len, ad, med, lp, met, id, cid, type, area, comms, history, isInternal, igpMet);
-    BoolExpr noOverflow = noOverflow(otherMet, _to);
+    BoolExpr noOverflow = noOverflow(otherMet, _proto);
 
     return _enc.mkIf(noOverflow, updates, _enc.mkNot(_current.getPermitted()));
   }
@@ -1331,7 +1327,7 @@ class TransferSSA {
    */
   private void computeIntermediatePrefixLen(TransferParam<SymbolicRoute> param) {
     ArithExpr prefixLen = param.getData().getPrefixLength();
-    if (_isExport && _to.isBgp()) {
+    if (_isExport && _proto.isBgp()) {
       _aggregates = aggregateRoutes();
       if (_aggregates.size() > 0) {
         for (Map.Entry<Prefix, Boolean> entry : _aggregates.entrySet()) {
@@ -1351,15 +1347,15 @@ class TransferSSA {
   }
 
   private void applyMetricUpdate(TransferParam<SymbolicRoute> p) {
-    boolean updateOspf = (!_isExport && _to.isOspf());
-    boolean updateBgp = (_isExport && _to.isBgp());
+    boolean updateOspf = (!_isExport && _proto.isOspf());
+    boolean updateBgp = (_isExport && _proto.isBgp());
     boolean updateMetric = updateOspf || updateBgp;
     if (updateMetric) {
       // If it is a BGP route learned from IGP, then we use metric 0
       ArithExpr newValue;
       ArithExpr cost = _enc.mkInt(_addedCost);
       ArithExpr sum = _enc.mkSum(p.getData().getMetric(), cost);
-      if (_to.isBgp()) {
+      if (_proto.isBgp()) {
         BoolExpr isBGP;
         String router = _conf.getName();
         boolean hasProtocolVar = _other.getProtocolHistory() != null;

@@ -174,11 +174,6 @@ public class Encoder {
       _solver = solver;
     }
 
-    // Set parameters
-    //Params p = _ctx.mkParams();
-    //p.add("print_stats", true);
-    //_solver.setParameters(p);
-
     _symbolicFailures = new SymbolicFailures();
 
     if (vars == null) {

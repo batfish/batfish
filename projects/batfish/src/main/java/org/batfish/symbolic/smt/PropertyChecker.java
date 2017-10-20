@@ -777,6 +777,7 @@ public class PropertyChecker {
   public static AnswerElement computeReachability(IBatfish batfish, HeaderLocationQuestion q) {
 
     PathRegexes p = new PathRegexes(q);
+    long l = System.currentTimeMillis();
     Graph graph = new Graph(batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
@@ -919,11 +920,11 @@ public class PropertyChecker {
         fh = buildFlowCounterExample(batfish, res, srcRouters, model, enc, reach);
       }
 
-      // System.out.println("Total time: " + (System.currentTimeMillis() - start));
+      System.out.println("Total time: " + (System.currentTimeMillis() - l));
       return new SmtReachabilityAnswerElement(res, fh);
     }
 
-    // System.out.println("Total time: " + (System.currentTimeMillis() - start));
+    System.out.println("Total time: " + (System.currentTimeMillis() - l));
     return new SmtReachabilityAnswerElement(res, new FlowHistory());
   }
 
