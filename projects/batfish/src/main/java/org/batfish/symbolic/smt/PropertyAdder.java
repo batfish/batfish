@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
