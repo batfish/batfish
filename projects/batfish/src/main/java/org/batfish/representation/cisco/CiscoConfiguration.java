@@ -28,6 +28,7 @@ import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -1347,6 +1348,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       final Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+    BgpTieBreaker tieBreaker = proc.getTieBreaker();
+    if (tieBreaker != null) {
+      newBgpProcess.setTieBreaker(tieBreaker);
+    }
     Integer maximumPaths = proc.getMaximumPaths();
     Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
     Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();

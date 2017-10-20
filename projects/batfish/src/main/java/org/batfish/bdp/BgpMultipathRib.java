@@ -50,6 +50,9 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
      * origin type (IGP better than EGP, which is better than INCOMPLETE)
      */
     res = Integer.compare(lhs.getOriginType().getPreference(), rhs.getOriginType().getPreference());
+    if (res != 0) {
+      return res;
+    }
 
     /*
      * then compare MED

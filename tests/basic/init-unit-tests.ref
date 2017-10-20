@@ -153,6 +153,7 @@
         "interface_sdr" : "interface_sdr",
         "ios_bgp" : "ios_bgp",
         "ios_xr_acl" : "ios_xr_acl",
+        "ios_xr_bgp" : "ios_xr_bgp",
         "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
         "ios_xr_isis" : "ios_xr_isis",
         "ios_xr_multipart" : "ios_xr_multipart",
@@ -202,6 +203,7 @@
         "no_aaa_group_server" : "no_aaa_group_server",
         "non_nexus_neighbor_af" : "non_nexus_neighbor_af",
         "nxos_acl" : "nxos_acl",
+        "nxos_bgp" : "nxos_bgp",
         "nxos_interface" : "nxos_interface",
         "nxos_misc" : "nxos_misc",
         "nxos_system" : "nxos_system",
@@ -385,6 +387,7 @@
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
         "ios_xr_multipart" : "PASSED",
@@ -434,6 +437,7 @@
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
+        "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
         "nxos_system" : "PASSED",
@@ -466,7 +470,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.31.0",
+      "version" : "0.32.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -1863,7 +1867,7 @@
           }
         }
       },
-      "version" : "0.31.0",
+      "version" : "0.32.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -2116,6 +2120,7 @@
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
         "ios_xr_multipart" : "PASSED",
@@ -2165,6 +2170,7 @@
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
+        "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
         "nxos_system" : "PASSED",

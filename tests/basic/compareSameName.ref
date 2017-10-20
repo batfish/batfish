@@ -6,6 +6,9 @@
         "AsPathAccessList" : {
           "structureClassName" : "AsPathAccessList"
         },
+        "AuthenticationKeyChain" : {
+          "structureClassName" : "AuthenticationKeyChain"
+        },
         "CommunityList" : {
           "structureClassName" : "CommunityList"
         },
@@ -286,9 +289,18 @@
   "question" : {
     "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
     "differential" : false,
+    "excludedNamedStructTypes" : [
+      "Interface",
+      "Vrf"
+    ],
     "missing" : false,
     "nodeRegex" : ".*",
     "singletons" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

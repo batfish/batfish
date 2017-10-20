@@ -20,6 +20,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as4_community",
           "outliers" : [
             "as1border2"
@@ -43,6 +44,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "INSIDE_TO_AS1",
           "outliers" : [
             "as2border1"
@@ -66,6 +68,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "INSIDE_TO_AS3",
           "outliers" : [
             "as2border2"
@@ -89,6 +92,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "RESTRICT_HOST_TRAFFIC_IN",
           "outliers" : [
             "as2dept1"
@@ -112,6 +116,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "RESTRICT_HOST_TRAFFIC_OUT",
           "outliers" : [
             "as2dept1"
@@ -135,6 +140,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "blocktelnet",
           "outliers" : [
             "as2core1"
@@ -158,6 +164,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as4-prefixes",
           "outliers" : [
             "as1border2"
@@ -181,6 +188,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as1_to_as4",
           "outliers" : [
             "as1border2"
@@ -204,6 +212,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as2_to_dept",
           "outliers" : [
             "as2dept1"
@@ -227,6 +236,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as4_to_as1",
           "outliers" : [
             "as1border2"
@@ -250,6 +260,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "dept_to_as2",
           "outliers" : [
             "as2dept1"
@@ -272,12 +283,109 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "dept_community",
           "outliers" : [
             "as2dist1",
             "as2dist2"
           ],
           "structType" : "CommunityList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "hypothesis" : "sameName",
+          "name" : "GigabitEthernet0/0",
+          "outliers" : [
+            "host1",
+            "host2"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "hypothesis" : "sameName",
+          "name" : "GigabitEthernet1/0",
+          "outliers" : [
+            "host1",
+            "host2"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "hypothesis" : "sameName",
+          "name" : "Loopback0",
+          "outliers" : [
+            "host1",
+            "host2"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "hypothesis" : "sameName",
+          "name" : "eth0",
+          "outliers" : [
+            "host1",
+            "host2"
+          ],
+          "structType" : "Interface"
         },
         {
           "conformers" : [
@@ -295,6 +403,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "OUTSIDE_TO_INSIDE",
           "outliers" : [
             "as2border1",
@@ -318,6 +427,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "filter::FORWARD",
           "outliers" : [
             "host1",
@@ -341,6 +451,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "filter::INPUT",
           "outliers" : [
             "host1",
@@ -364,6 +475,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "filter::OUTPUT",
           "outliers" : [
             "host1",
@@ -387,6 +499,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "mangle::FORWARD",
           "outliers" : [
             "host1",
@@ -410,6 +523,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "mangle::INPUT",
           "outliers" : [
             "host1",
@@ -433,6 +547,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "mangle::OUTPUT",
           "outliers" : [
             "host1",
@@ -456,6 +571,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "mangle::POSTROUTING",
           "outliers" : [
             "host1",
@@ -479,6 +595,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "mangle::PREROUTING",
           "outliers" : [
             "host1",
@@ -502,6 +619,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "nat::OUTPUT",
           "outliers" : [
             "host1",
@@ -525,6 +643,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "nat::POSTROUTING",
           "outliers" : [
             "host1",
@@ -548,6 +667,7 @@
             "as3border2",
             "as3core1"
           ],
+          "hypothesis" : "sameName",
           "name" : "nat::PREROUTING",
           "outliers" : [
             "host1",
@@ -571,6 +691,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "105",
           "outliers" : [
             "as2dist1",
@@ -594,6 +715,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "default_list",
           "outliers" : [
             "as1border1",
@@ -617,6 +739,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "outbound_routes",
           "outliers" : [
             "as2border1",
@@ -640,6 +763,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as2dist_to_dept",
           "outliers" : [
             "as2dist1",
@@ -663,6 +787,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "dept_to_as2dist",
           "outliers" : [
             "as2dist1",
@@ -685,6 +810,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "105",
           "outliers" : [
             "as2dept1",
@@ -692,6 +818,30 @@
             "as2dist2"
           ],
           "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameName",
+          "name" : "GigabitEthernet3/0",
+          "outliers" : [
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as3core1"
+          ],
+          "structType" : "Interface"
         },
         {
           "conformers" : [
@@ -707,6 +857,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as1_to_as2",
           "outliers" : [
             "as1border1",
@@ -730,6 +881,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as1_to_as3",
           "outliers" : [
             "as1border1",
@@ -753,6 +905,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as2_to_as1",
           "outliers" : [
             "as1border1",
@@ -776,6 +929,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as2_to_as3",
           "outliers" : [
             "as2border1",
@@ -799,6 +953,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as3_to_as1",
           "outliers" : [
             "as1border1",
@@ -822,6 +977,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "as3_to_as2",
           "outliers" : [
             "as2border1",
@@ -844,6 +1000,7 @@
             "host1",
             "host2"
           ],
+          "hypothesis" : "sameName",
           "name" : "102",
           "outliers" : [
             "as1border1",
@@ -853,213 +1010,6 @@
             "as3border2"
           ],
           "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "as1_community",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "as3_community",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "101",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "103",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "101",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "103",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "inbound_route_filter",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as2dist1",
-            "as2dist2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "as2_community",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as2dept1",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as1core1",
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "name" : "102",
-          "outliers" : [
-            "as1border1",
-            "as1border2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structType" : "IpAccessList"
         }
       ]
     }

@@ -153,6 +153,7 @@
         "interface_sdr" : "interface_sdr",
         "ios_bgp" : "ios_bgp",
         "ios_xr_acl" : "ios_xr_acl",
+        "ios_xr_bgp" : "ios_xr_bgp",
         "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
         "ios_xr_isis" : "ios_xr_isis",
         "ios_xr_multipart" : "ios_xr_multipart",
@@ -202,6 +203,7 @@
         "no_aaa_group_server" : "no_aaa_group_server",
         "non_nexus_neighbor_af" : "non_nexus_neighbor_af",
         "nxos_acl" : "nxos_acl",
+        "nxos_bgp" : "nxos_bgp",
         "nxos_interface" : "nxos_interface",
         "nxos_misc" : "nxos_misc",
         "nxos_system" : "nxos_system",
@@ -385,6 +387,7 @@
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
         "ios_xr_multipart" : "PASSED",
@@ -434,6 +437,7 @@
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
+        "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
         "nxos_system" : "PASSED",
@@ -32178,10 +32182,9 @@
             "            AUTO_SHUTDOWN_NEW_NEIGHBORS:'auto-shutdown-new-neighbors'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
-            "        (bgp_tail",
-            "          (null_bgp_tail",
-            "            COMPARE_ROUTERID:'compare-routerid'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "        (compare_routerid_rb_stanza",
+            "          COMPARE_ROUTERID:'compare-routerid'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (null_bgp_tail",
@@ -33196,6 +33199,29 @@
             "        (xr_mac_specifier",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "ios_xr_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'ios_xr_bgp'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      DEC:'1'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (compare_routerid_rb_stanza",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
+            "          COMPARE_ROUTERID:'compare-routerid'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -41874,6 +41900,34 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "nxos_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'nxos_bgp'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_feature",
+            "      FEATURE:'feature'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        PRIVILEGE:'privilege'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      DEC:'1'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (compare_routerid_rb_stanza",
+            "          BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
+            "          COMPARE_ROUTERID:'compare-routerid'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "nxos_interface" : {
           "sentences" : [
             "(cisco_configuration",
@@ -45943,7 +45997,7 @@
           ]
         }
       },
-      "version" : "0.31.0",
+      "version" : "0.32.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -47340,7 +47394,7 @@
           }
         }
       },
-      "version" : "0.31.0",
+      "version" : "0.32.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -47593,6 +47647,7 @@
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
         "ios_xr_multipart" : "PASSED",
@@ -47642,6 +47697,7 @@
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
+        "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
         "nxos_system" : "PASSED",

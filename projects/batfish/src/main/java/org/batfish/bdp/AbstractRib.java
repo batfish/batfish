@@ -31,6 +31,13 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       _root = new ByteTrieNode(Prefix.ZERO);
     }
 
+    public boolean containsRoute(R route) {
+      Prefix prefix = route.getNetwork();
+      int prefixLength = prefix.getPrefixLength();
+      BitSet bits = prefix.getAddress().getAddressBits();
+      return _root.containsRoute(route, bits, prefixLength, 0);
+    }
+
     public Set<R> getLongestPrefixMatch(Ip address) {
       BitSet addressBits = address.getAddressBits();
       return _root.getLongestPrefixMatch(address, addressBits, 0);
@@ -76,6 +83,68 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
         _right.collectRoutes(routes);
       }
       routes.addAll(_routes);
+    }
+
+    public boolean containsRoute(
+        R route, BitSet bits, int prefixLength, int firstUnmatchedBitIndex) {
+      if (prefixLength == _prefix.getPrefixLength()) {
+        return _routes.contains(route);
+      } else {
+        boolean currentBit = bits.get(firstUnmatchedBitIndex);
+        if (currentBit) {
+          if (_right == null) {
+            return false;
+          } else {
+            Prefix rightPrefix = _right._prefix;
+            int rightPrefixLength = rightPrefix.getPrefixLength();
+            Ip rightAddress = rightPrefix.getAddress();
+            BitSet rightAddressBits = rightAddress.getAddressBits();
+            int nextUnmatchedBit;
+            boolean currentAddressBit = false;
+            boolean currentRightAddressBit;
+            for (nextUnmatchedBit = firstUnmatchedBitIndex + 1;
+                nextUnmatchedBit < rightPrefixLength && nextUnmatchedBit < prefixLength;
+                nextUnmatchedBit++) {
+              currentAddressBit = bits.get(nextUnmatchedBit);
+              currentRightAddressBit = rightAddressBits.get(nextUnmatchedBit);
+              if (currentRightAddressBit != currentAddressBit) {
+                break;
+              }
+            }
+            if (nextUnmatchedBit == rightPrefixLength) {
+              return _right.containsRoute(route, bits, prefixLength, nextUnmatchedBit);
+            } else {
+              return false;
+            }
+          }
+        } else {
+          if (_left == null) {
+            return false;
+          } else {
+            Prefix leftPrefix = _left._prefix;
+            int leftPrefixLength = leftPrefix.getPrefixLength();
+            Ip leftAddress = leftPrefix.getAddress();
+            BitSet leftAddressBits = leftAddress.getAddressBits();
+            int nextUnmatchedBit;
+            boolean currentAddressBit = false;
+            boolean currentLeftAddressBit;
+            for (nextUnmatchedBit = firstUnmatchedBitIndex + 1;
+                nextUnmatchedBit < leftPrefixLength && nextUnmatchedBit < prefixLength;
+                nextUnmatchedBit++) {
+              currentAddressBit = bits.get(nextUnmatchedBit);
+              currentLeftAddressBit = leftAddressBits.get(nextUnmatchedBit);
+              if (currentLeftAddressBit != currentAddressBit) {
+                break;
+              }
+            }
+            if (nextUnmatchedBit == leftPrefixLength) {
+              return _left.containsRoute(route, bits, prefixLength, nextUnmatchedBit);
+            } else {
+              return false;
+            }
+          }
+        }
+      }
     }
 
     private Set<R> getLongestPrefixMatch(Ip address) {
@@ -271,6 +340,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
   public AbstractRib(VirtualRouter owner) {
     _trie = new ByteTrie();
     _owner = owner;
+  }
+
+  protected final boolean containsRoute(R route) {
+    return _trie.containsRoute(route);
   }
 
   @Override

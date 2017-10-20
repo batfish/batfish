@@ -26,6 +26,10 @@ test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
 test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
 test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
 
+# ospf with different costs along different edges
+init-testrig test_rigs/smt-examples/OSPF-COST tr-smt-ospf-cost
+test tests/java-smt/ospf-cost.ref get smt-forwarding dstIps=["192.168.8.3"], fullModel=True
+
 # local consistency with bgp + environment
 init-testrig test_rigs/smt-examples/ENV2 tr-smt-env2
 test tests/java-smt/env2-local.ref get smt-local-consistency nodeRegex=".*", fullModel=True
@@ -41,6 +45,11 @@ init-testrig test_rigs/smt-examples/STATIC3 tr-smt-static3
 test tests/java-smt/static3-reachability1.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3"
 test tests/java-smt/static3-reachability2.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.2"]
 test tests/java-smt/static3-reachability3.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.1"]
+
+# Correct BGP network semantics if there is an IGP route
+init-testrig test_rigs/smt-examples/BGP3 tr-smt-bgp3
+test tests/java-smt/bgp3-forwarding1.ref get smt-forwarding dstIps=["69.69.69.0"], fullModel=True
+test tests/java-smt/bgp3-forwarding2.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
 
 # redistribution of different protocols
 init-testrig test_rigs/smt-examples/REDISTRIBUTE1 tr-smt-redistribute1

@@ -2,9 +2,14 @@ package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import org.batfish.datamodel.Prefix;
 
 public class BdpAnswerElement implements DataPlaneAnswerElement {
+
+  private static final String MAIN_RIB_ROUTES_BY_ITERATION = "mainRibRoutesByIteration";
 
   private static final String PROP_BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION =
       "bgpBestPathRibRoutesByIteration";
@@ -14,7 +19,7 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
 
   private static final String PROP_DEPENDENT_ROUTES_ITERATIONS = "dependentRoutesIterations";
 
-  private static final String MAIN_RIB_ROUTES_BY_ITERATION = "mainRibRoutesByIteration";
+  private static final String PROP_OSCILLATING_PREFIXES = "oscillatingPrefixes";
 
   private static final String PROP_OSPF_INTERNAL_ITERATIONS = "ospfInternalIterations";
 
@@ -25,9 +30,13 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
 
   private SortedMap<Integer, Integer> _bgpMultipathRibRoutesByIteration;
 
+  private int _completedOscillationRecoveryAttempts;
+
   private int _dependentRoutesIterations;
 
   private SortedMap<Integer, Integer> _mainRibRoutesByIteration;
+
+  private SortedSet<Prefix> _oscillatingPrefixes;
 
   private int _ospfInternalIterations;
 
@@ -37,6 +46,7 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     _bgpBestPathRibRoutesByIteration = new TreeMap<>();
     _bgpMultipathRibRoutesByIteration = new TreeMap<>();
     _mainRibRoutesByIteration = new TreeMap<>();
+    _oscillatingPrefixes = new TreeSet<>();
   }
 
   @JsonProperty(PROP_BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION)
@@ -49,6 +59,10 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     return _bgpMultipathRibRoutesByIteration;
   }
 
+  public int getCompletedOscillationRecoveryAttempts() {
+    return _completedOscillationRecoveryAttempts;
+  }
+
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
   public int getDependentRoutesIterations() {
     return _dependentRoutesIterations;
@@ -57,6 +71,11 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
   @JsonProperty(MAIN_RIB_ROUTES_BY_ITERATION)
   public SortedMap<Integer, Integer> getMainRibRoutesByIteration() {
     return _mainRibRoutesByIteration;
+  }
+
+  @JsonProperty(PROP_OSCILLATING_PREFIXES)
+  public SortedSet<Prefix> getOscillatingPrefixes() {
+    return _oscillatingPrefixes;
   }
 
   @JsonProperty(PROP_OSPF_INTERNAL_ITERATIONS)
@@ -96,6 +115,10 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
     _bgpMultipathRibRoutesByIteration = bgpMultipathRibRoutesByIteration;
   }
 
+  public void setCompletedOscillationRecoveryAttempts(int completedOscillationRecoveryAttempts) {
+    _completedOscillationRecoveryAttempts = completedOscillationRecoveryAttempts;
+  }
+
   @JsonProperty(PROP_DEPENDENT_ROUTES_ITERATIONS)
   public void setDependentRoutesIterations(int dependentRoutesIterations) {
     _dependentRoutesIterations = dependentRoutesIterations;
@@ -104,6 +127,11 @@ public class BdpAnswerElement implements DataPlaneAnswerElement {
   @JsonProperty(MAIN_RIB_ROUTES_BY_ITERATION)
   public void setMainRibRoutesByIteration(SortedMap<Integer, Integer> mainRibRoutesByIteration) {
     _mainRibRoutesByIteration = mainRibRoutesByIteration;
+  }
+
+  @JsonProperty(PROP_OSCILLATING_PREFIXES)
+  public void setOscillatingPrefixes(SortedSet<Prefix> oscillatingPrefixes) {
+    _oscillatingPrefixes = oscillatingPrefixes;
   }
 
   @JsonProperty(PROP_OSPF_INTERNAL_ITERATIONS)

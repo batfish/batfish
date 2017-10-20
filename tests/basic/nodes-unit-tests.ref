@@ -240,7 +240,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -587,7 +588,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "198.188.136.21"
+                "routerId" : "198.188.136.21",
+                "tieBreaker" : "ARRIVAL_ORDER"
               },
               "generatedIpv6Routes" : [
                 {
@@ -719,7 +721,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -1805,7 +1808,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "1.1.1.1"
+                "routerId" : "1.1.1.1",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -1864,7 +1868,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -1993,7 +1998,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -2052,7 +2058,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -2211,7 +2218,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -2514,7 +2522,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -3726,7 +3735,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -3927,7 +3937,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -3986,7 +3997,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -7463,7 +7475,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -7946,7 +7959,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ROUTER_ID"
               }
             }
           }
@@ -8977,7 +8991,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -8995,6 +9010,66 @@
           "vrfs" : {
             "default" : {
               "name" : "default"
+            }
+          }
+        },
+        "ios_xr_bgp" : {
+          "name" : "ios_xr_bgp",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+            }
+          },
+          "routingPolicies" : {
+            "~BGP_COMMON_EXPORT_POLICY:default~" : {
+              "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "ios_xr_bgp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "multipathEbgp" : false,
+                "multipathIbgp" : false,
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ROUTER_ID"
+              }
             }
           }
         },
@@ -9201,7 +9276,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -10228,7 +10304,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -10581,7 +10658,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -11322,7 +11400,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -11711,7 +11790,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -11770,7 +11850,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "207.46.160.15"
+                "routerId" : "207.46.160.15",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -11928,7 +12009,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12203,7 +12285,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "10.10.10.10"
+                "routerId" : "10.10.10.10",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12287,7 +12370,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12353,7 +12437,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12428,7 +12513,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12606,7 +12692,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : true,
                 "multipathIbgp" : true,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12850,7 +12937,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -12892,6 +12980,69 @@
           "vrfs" : {
             "default" : {
               "name" : "default"
+            }
+          }
+        },
+        "nxos_bgp" : {
+          "name" : "nxos_bgp",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "route6FilterLists" : {
+            "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+              "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+            }
+          },
+          "routingPolicies" : {
+            "~BGP_COMMON_EXPORT_POLICY:default~" : {
+              "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                    "disjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "bgp"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "ibgp"
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "features" : {
+                "privilege" : true
+              },
+              "hostname" : "nxos_bgp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "bgpProcess" : {
+                "multipathEbgp" : false,
+                "multipathIbgp" : false,
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ROUTER_ID"
+              }
             }
           }
         },
@@ -13429,7 +13580,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -15729,7 +15881,8 @@
                     "vrf" : "default"
                   }
                 },
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }
@@ -17494,7 +17647,8 @@
               "bgpProcess" : {
                 "multipathEbgp" : false,
                 "multipathIbgp" : false,
-                "routerId" : "0.0.0.0"
+                "routerId" : "0.0.0.0",
+                "tieBreaker" : "ARRIVAL_ORDER"
               }
             }
           }

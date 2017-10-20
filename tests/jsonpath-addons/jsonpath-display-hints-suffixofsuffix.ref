@@ -1131,7 +1131,8 @@
                           "vrf" : "default"
                         }
                       },
-                      "routerId" : "2.1.1.1"
+                      "routerId" : "2.1.1.1",
+                      "tieBreaker" : "ARRIVAL_ORDER"
                     },
                     "interfaces" : [
                       "Ethernet0/0",

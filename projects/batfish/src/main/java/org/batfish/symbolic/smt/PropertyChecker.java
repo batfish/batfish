@@ -88,7 +88,7 @@ public class PropertyChecker {
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
-    // result.debug(encoder.getMainSlice(), true, null);
+    // result.debug(encoder.getMainSlice(), true, "0_R0_OSPF_IMPORT_Serial0_metric");
     SmtOneAnswerElement answer = new SmtOneAnswerElement();
     answer.setResult(result);
     return answer;
@@ -792,7 +792,7 @@ public class PropertyChecker {
     Iterator<EquivalenceClass> it = findAllEquivalenceClasses(batfish, q, graph);
     VerificationResult res = null;
 
-    long start = System.currentTimeMillis();
+    // long start = System.currentTimeMillis();
     while (it.hasNext()) {
       EquivalenceClass ec = it.next();
       graph = ec.getGraph();
@@ -889,9 +889,9 @@ public class PropertyChecker {
       // Only consider failures for allowed edges
       addFailureConstraints(enc, destPorts, failOptions);
 
-      long startVerify = System.currentTimeMillis();
+      //long startVerify = System.currentTimeMillis();
       Tuple<VerificationResult, Model> result = enc.verify();
-      System.out.println("Verification time: " + (System.currentTimeMillis() - startVerify));
+      //System.out.println("Verification time: " + (System.currentTimeMillis() - startVerify));
 
       res = result.getFirst();
       Model model = result.getSecond();
@@ -911,7 +911,7 @@ public class PropertyChecker {
         fh = buildFlowCounterExample(batfish, res, srcRouters, model, enc, reach);
       }
 
-      System.out.println("Total time: " + (System.currentTimeMillis() - start));
+      // System.out.println("Total time: " + (System.currentTimeMillis() - start));
 
       SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
       answer.setResult(res);
@@ -919,7 +919,7 @@ public class PropertyChecker {
       return answer;
     }
 
-    System.out.println("Total time: " + (System.currentTimeMillis() - start));
+    // System.out.println("Total time: " + (System.currentTimeMillis() - start));
 
     SmtReachabilityAnswerElement answer = new SmtReachabilityAnswerElement();
     answer.setResult(res);
@@ -1454,10 +1454,7 @@ public class PropertyChecker {
           assert (dataFwd2 != null);
           sameForwarding = ctx.mkAnd(sameForwarding, ctx.mkEq(dataFwd1, dataFwd2));
         }
-        required =
-            ctx.mkAnd(
-                sameForwarding,
-                equalOutputs); // , equalOutputs); //, equalOutputs, equalIncomingAcls);
+        required = ctx.mkAnd(sameForwarding); // equalOutputs, equalIncomingAcls);
       }
 
       // System.out.println("Assumptions: ");

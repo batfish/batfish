@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -65,6 +66,8 @@ public class BgpProcess extends ComparableStructure<Integer> {
   private final Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
 
   private Ip _routerId;
+
+  private BgpTieBreaker _tieBreaker;
 
   public BgpProcess(ConfigurationFormat format, int procnum) {
     super(procnum);
@@ -229,6 +232,10 @@ public class BgpProcess extends ComparableStructure<Integer> {
     return _routerId;
   }
 
+  public BgpTieBreaker getTieBreaker() {
+    return _tieBreaker;
+  }
+
   public void setAlwaysCompareMed(boolean b) {
     _alwaysCompareMed = b;
   }
@@ -255,5 +262,9 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
+  }
+
+  public void setTieBreaker(BgpTieBreaker tieBreaker) {
+    _tieBreaker = tieBreaker;
   }
 }

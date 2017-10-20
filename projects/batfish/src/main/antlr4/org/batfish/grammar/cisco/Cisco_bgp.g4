@@ -224,6 +224,13 @@ cluster_id_rb_stanza
    BGP cluster_id_bgp_tail
 ;
 
+compare_routerid_rb_stanza
+:
+   (
+      BGP? BESTPATH
+   )? COMPARE_ROUTERID NEWLINE
+;
+
 default_information_originate_rb_stanza
 :
    DEFAULT_INFORMATION ORIGINATE NEWLINE
@@ -533,7 +540,13 @@ null_bgp_tail
             | IPV6_PREFIX
          )
       )
-      | BESTPATH
+      |
+      (
+         BESTPATH
+         (
+            AS_PATH
+         )
+      )
       | BFD
       | BFD_ENABLE
       |
@@ -541,7 +554,13 @@ null_bgp_tail
          BGP
          (
             ATTRIBUTE_DOWNLOAD
-            | BESTPATH
+            |
+            (
+               BESTPATH
+               (
+                  AS_PATH
+               )
+            )
             | CLIENT_TO_CLIENT
             | DAMPENING
             | DEFAULT
@@ -562,7 +581,6 @@ null_bgp_tail
       )
       | CAPABILITY
       | CLIENT_TO_CLIENT
-      | COMPARE_ROUTERID
       | CONNECT_RETRY
       | DAMPEN
       | DAMPEN_IGP_METRIC
@@ -800,6 +818,7 @@ router_bgp_stanza_tail
    | bgp_redistribute_internal_rb_stanza
    | bgp_tail
    | cluster_id_rb_stanza
+   | compare_routerid_rb_stanza
    | default_information_originate_rb_stanza
    |
    // do NOT put neighbor_block_rb_stanza under neighbor_flat_rb_stanza
