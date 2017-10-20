@@ -20,7 +20,7 @@ public class SymbolicOriginatorId extends SymbolicEnum<Integer> {
     return addZero(slice.getGraph().getOriginatorId().values());
   }
 
-  public SymbolicOriginatorId(EncoderSlice slice, String name) {
+  SymbolicOriginatorId(EncoderSlice slice, String name) {
     super(slice, values(slice), name);
   }
 

@@ -1,11 +1,22 @@
 package org.batfish.symbolic.answers;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtDeterminismAnswerElement implements AnswerElement {
+
+  private static final String PROP_RESULT = "result";
+
+  private static final String PROP_FLOW = "flow";
+
+  private static final String PROP_FORWARDING_CASE1 = "forwardingCase1";
+
+  private static final String PROP_FORWARDING_CASE2 = "forwardingCase2";
 
   private VerificationResult _result;
 
@@ -15,36 +26,36 @@ public class SmtDeterminismAnswerElement implements AnswerElement {
 
   private SortedSet<String> _forwardingCase2;
 
+  @JsonCreator
+  public SmtDeterminismAnswerElement(
+      @JsonProperty(PROP_RESULT) VerificationResult result,
+      @JsonProperty(PROP_FLOW) @Nullable Flow flow,
+      @JsonProperty(PROP_FORWARDING_CASE1) @Nullable SortedSet<String> case1,
+      @JsonProperty(PROP_FORWARDING_CASE2) @Nullable SortedSet<String> case2) {
+    _result = result;
+    _flow = flow;
+    _forwardingCase1 = case1;
+    _forwardingCase2 = case2;
+  }
+
+  @JsonProperty(PROP_RESULT)
   public VerificationResult getResult() {
     return _result;
   }
 
+  @JsonProperty(PROP_FLOW)
   public Flow getFlow() {
     return _flow;
   }
 
+  @JsonProperty(PROP_FORWARDING_CASE1)
   public SortedSet<String> getForwardingCase1() {
     return _forwardingCase1;
   }
 
+  @JsonProperty(PROP_FORWARDING_CASE2)
   public SortedSet<String> getForwardingCase2() {
     return _forwardingCase2;
-  }
-
-  public void setResult(VerificationResult x) {
-    this._result = x;
-  }
-
-  public void setFlow(Flow x) {
-    this._flow = x;
-  }
-
-  public void setForwardingCase1(SortedSet<String> x) {
-    this._forwardingCase1 = x;
-  }
-
-  public void setForwardingCase2(SortedSet<String> x) {
-    this._forwardingCase2 = x;
   }
 
   @Override

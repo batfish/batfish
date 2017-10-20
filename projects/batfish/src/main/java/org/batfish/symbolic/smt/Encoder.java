@@ -53,11 +53,13 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class Encoder {
 
-  public static final boolean ENABLE_UNSAT_CORE = false;
+  private static final boolean ENABLE_UNSAT_CORE = false;
 
-  public static final Boolean ENABLE_DEBUGGING = false;
+  private static final Boolean ENABLE_BENCHMARKING = false;
 
-  public static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
+  static final Boolean ENABLE_DEBUGGING = false;
+
+  static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
 
   private int _encodingId;
 
@@ -88,7 +90,7 @@ public class Encoder {
    *
    * @param batfish The Batfish object
    */
-  public Encoder(IBatfish batfish, HeaderQuestion q) {
+  Encoder(IBatfish batfish, HeaderQuestion q) {
     this(new Graph(batfish), q);
   }
 
@@ -97,7 +99,7 @@ public class Encoder {
    *
    * @param graph The network graph
    */
-  public Encoder(Graph graph, HeaderQuestion q) {
+  Encoder(Graph graph, HeaderQuestion q) {
     this(null, graph, q, null, null, null, 0);
   }
 
@@ -560,85 +562,85 @@ public class Encoder {
 
     enc.getSlices()
         .forEach(
-            (name, slice) -> {
-              slice
-                  .getLogicalGraph()
-                  .getEnvironmentVars()
-                  .forEach(
-                      (lge, r) -> {
-                        if ("true".equals(valuation.get(r.getPermitted()))) {
-                          SortedMap<String, String> recordMap = new TreeMap<>();
-                          GraphEdge ge = lge.getEdge();
-                          String nodeIface =
-                              ge.getRouter() + "," + ge.getStart().getName() + " (BGP)";
-                          envModel.put(nodeIface, recordMap);
-                          if (r.getPrefixLength() != null) {
-                            String x = valuation.get(r.getPrefixLength());
-                            if (x != null) {
-                              int len = Integer.parseInt(x);
-                              Prefix p1 = new Prefix(dip, len);
-                              Prefix p2 = p1.getNetworkPrefix();
-                              recordMap.put("prefix", p2.toString());
+            (name, slice) ->
+                slice
+                    .getLogicalGraph()
+                    .getEnvironmentVars()
+                    .forEach(
+                        (lge, r) -> {
+                          if ("true".equals(valuation.get(r.getPermitted()))) {
+                            SortedMap<String, String> recordMap = new TreeMap<>();
+                            GraphEdge ge = lge.getEdge();
+                            String nodeIface =
+                                ge.getRouter() + "," + ge.getStart().getName() + " (BGP)";
+                            envModel.put(nodeIface, recordMap);
+                            if (r.getPrefixLength() != null) {
+                              String x = valuation.get(r.getPrefixLength());
+                              if (x != null) {
+                                int len = Integer.parseInt(x);
+                                Prefix p1 = new Prefix(dip, len);
+                                Prefix p2 = p1.getNetworkPrefix();
+                                recordMap.put("prefix", p2.toString());
+                              }
                             }
-                          }
-                          if (r.getAdminDist() != null) {
-                            String x = valuation.get(r.getAdminDist());
-                            if (x != null) {
-                              recordMap.put("admin distance", x);
+                            if (r.getAdminDist() != null) {
+                              String x = valuation.get(r.getAdminDist());
+                              if (x != null) {
+                                recordMap.put("admin distance", x);
+                              }
                             }
-                          }
-                          if (r.getLocalPref() != null) {
-                            String x = valuation.get(r.getLocalPref());
-                            if (x != null) {
-                              recordMap.put("local preference", x);
+                            if (r.getLocalPref() != null) {
+                              String x = valuation.get(r.getLocalPref());
+                              if (x != null) {
+                                recordMap.put("local preference", x);
+                              }
                             }
-                          }
-                          if (r.getMetric() != null) {
-                            String x = valuation.get(r.getMetric());
-                            if (x != null) {
-                              recordMap.put("protocol metric", x);
+                            if (r.getMetric() != null) {
+                              String x = valuation.get(r.getMetric());
+                              if (x != null) {
+                                recordMap.put("protocol metric", x);
+                              }
                             }
-                          }
-                          if (r.getMed() != null) {
-                            String x = valuation.get(r.getMed());
-                            if (x != null) {
-                              recordMap.put("multi-exit disc.", valuation.get(r.getMed()));
+                            if (r.getMed() != null) {
+                              String x = valuation.get(r.getMed());
+                              if (x != null) {
+                                recordMap.put("multi-exit disc.", valuation.get(r.getMed()));
+                              }
                             }
-                          }
-                          if (r.getOspfArea() != null && r.getOspfArea().getBitVec() != null) {
-                            String x = valuation.get(r.getOspfArea().getBitVec());
-                            if (x != null) {
-                              Integer i = Integer.parseInt(x);
-                              Long area = r.getOspfArea().value(i);
-                              recordMap.put("OSPF Area", area.toString());
+                            if (r.getOspfArea() != null && r.getOspfArea().getBitVec() != null) {
+                              String x = valuation.get(r.getOspfArea().getBitVec());
+                              if (x != null) {
+                                Integer i = Integer.parseInt(x);
+                                Long area = r.getOspfArea().value(i);
+                                recordMap.put("OSPF Area", area.toString());
+                              }
                             }
-                          }
-                          if (r.getOspfType() != null && r.getOspfType().getBitVec() != null) {
-                            String x = valuation.get(r.getOspfType().getBitVec());
-                            if (x != null) {
-                              Integer i = Integer.parseInt(x);
-                              OspfType type = r.getOspfType().value(i);
-                              recordMap.put("OSPF Type", type.toString());
+                            if (r.getOspfType() != null && r.getOspfType().getBitVec() != null) {
+                              String x = valuation.get(r.getOspfType().getBitVec());
+                              if (x != null) {
+                                Integer i = Integer.parseInt(x);
+                                OspfType type = r.getOspfType().value(i);
+                                recordMap.put("OSPF Type", type.toString());
+                              }
                             }
-                          }
 
-                          r.getCommunities()
-                              .forEach(
-                                  (cvar, e) -> {
-                                    String c = valuation.get(e);
-                                    // TODO: what about OTHER type?
-                                    if ("true".equals(c)) {
-                                      if (displayCommunity(cvar)) {
-                                        String s = cvar.getValue();
-                                        String t = slice.getNamedCommunities().get(cvar.getValue());
-                                        s = (t == null ? s : t);
-                                        recordMap.put("community " + s, "");
+                            r.getCommunities()
+                                .forEach(
+                                    (cvar, e) -> {
+                                      String c = valuation.get(e);
+                                      // TODO: what about OTHER type?
+                                      if ("true".equals(c)) {
+                                        if (displayCommunity(cvar)) {
+                                          String s = cvar.getValue();
+                                          String t =
+                                              slice.getNamedCommunities().get(cvar.getValue());
+                                          s = (t == null ? s : t);
+                                          recordMap.put("community " + s, "");
+                                        }
                                       }
-                                    }
-                                  });
-                        }
-                      });
-            });
+                                    });
+                          }
+                        }));
 
     // Forwarding Model
     enc.getMainSlice()
@@ -748,15 +750,14 @@ public class Encoder {
     Status status = _solver.check();
     long time = System.currentTimeMillis() - start;
 
-    VerificationStats stats =
-        new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
-
-    //if (ENABLE_DEBUGGING) {
-    //System.out.println("Constraints: " + stats.getNumConstraints());
-    //System.out.println("Variables: " + stats.getNumVariables());
-    //System.out.println("Z3 Time: " + stats.getTime());
-    //System.out.println("Stats: \n" + _solver.getStatistics());
-    //}
+    if (ENABLE_BENCHMARKING) {
+      VerificationStats stats =
+          new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
+      System.out.println("Constraints: " + stats.getNumConstraints());
+      System.out.println("Variables: " + stats.getNumVariables());
+      System.out.println("Z3 Time: " + stats.getTime());
+      System.out.println("Stats: \n" + _solver.getStatistics());
+    }
 
     if (status == Status.UNSATISFIABLE) {
       VerificationResult res = new VerificationResult(true, null, null, null, null, null);
@@ -806,7 +807,7 @@ public class Encoder {
    * Adds all the constraints to capture the interactions of messages among all protocols in the
    * network. This should be called prior to calling the <b>verify method</b>
    */
-  public void computeEncoding() {
+  void computeEncoding() {
     addFailedConstraints(_question.getFailures());
     getMainSlice().computeEncoding();
     _slices.forEach(
@@ -821,11 +822,11 @@ public class Encoder {
    * Getters and setters
    */
 
-  public SymbolicFailures getSymbolicFailures() {
+  SymbolicFailures getSymbolicFailures() {
     return _symbolicFailures;
   }
 
-  public EncoderSlice getSlice(String router) {
+  EncoderSlice getSlice(String router) {
     String s = "SLICE-" + router + "_";
     return _slices.get(s);
   }
@@ -834,35 +835,35 @@ public class Encoder {
     return _ctx;
   }
 
-  public EncoderSlice getMainSlice() {
+  EncoderSlice getMainSlice() {
     return _slices.get(MAIN_SLICE_NAME);
   }
 
-  public Solver getSolver() {
+  Solver getSolver() {
     return _solver;
   }
 
-  public Map<String, Expr> getAllVariables() {
+  Map<String, Expr> getAllVariables() {
     return _allVariables;
   }
 
-  public int getId() {
+  int getId() {
     return _encodingId;
   }
 
-  public boolean getModelIgp() {
+  boolean getModelIgp() {
     return _modelIgp;
   }
 
-  public Map<String, Map<String, BoolExpr>> getSliceReachability() {
+  Map<String, Map<String, BoolExpr>> getSliceReachability() {
     return _sliceReachability;
   }
 
-  public UnsatCore getUnsatCore() {
+  UnsatCore getUnsatCore() {
     return _unsatCore;
   }
 
-  public int getFailures() {
+  int getFailures() {
     return _question.getFailures();
   }
 
@@ -870,11 +871,11 @@ public class Encoder {
     return _question.getFullModel();
   }
 
-  public Map<String, EncoderSlice> getSlices() {
+  private Map<String, EncoderSlice> getSlices() {
     return _slices;
   }
 
-  public HeaderQuestion getQuestion() {
+  HeaderQuestion getQuestion() {
     return _question;
   }
 

@@ -66,29 +66,6 @@ public class SymbolicRecord {
 
   private Map<CommunityVar, BoolExpr> _communities;
 
-  SymbolicRecord() {
-    _name = null;
-    _proto = null;
-    _enc = null;
-    _isUsed = false;
-    _isBest = false;
-    _isBestOverall = false;
-    _isEnv = false;
-    _isExport = false;
-    _prefixLength = null;
-    _metric = null;
-    _adminDist = null;
-    _med = null;
-    _localPref = null;
-    _bgpInternal = null;
-    _clientId = null;
-    _igpMetric = null;
-    _routerId = null;
-    _permitted = null;
-    _ospfType = null;
-    _protocolHistory = null;
-  }
-
   SymbolicRecord(String name, Protocol proto) {
     _name = name;
     _proto = proto;

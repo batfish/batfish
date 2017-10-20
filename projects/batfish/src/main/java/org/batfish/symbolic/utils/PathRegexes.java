@@ -38,27 +38,27 @@ public class PathRegexes {
     }
   }
 
-  public Pattern getDstRegex() {
+  Pattern getDstRegex() {
     return _dstRegex;
   }
 
-  public Pattern getNotDstRegex() {
+  Pattern getNotDstRegex() {
     return _notDstRegex;
   }
 
-  public Pattern getIfaceRegex() {
+  Pattern getIfaceRegex() {
     return _ifaceRegex;
   }
 
-  public Pattern getNotIfaceRegex() {
+  Pattern getNotIfaceRegex() {
     return _notIfaceRegex;
   }
 
-  public Pattern getSrcRegex() {
+  Pattern getSrcRegex() {
     return _srcRegex;
   }
 
-  public Pattern getNotSrcRegex() {
+  Pattern getNotSrcRegex() {
     return _notSrcRegex;
   }
 }

@@ -1,6 +1,7 @@
 package org.batfish.symbolic;
 
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -70,7 +71,8 @@ public class CommunityVar implements Comparable<CommunityVar> {
     return result;
   }
 
-  @Override public int compareTo(CommunityVar that) {
+  @Override
+  public int compareTo(@Nonnull CommunityVar that) {
     if (this._type.compareTo(that._type) < 0) {
       return -1;
     } else if (this._type.compareTo(that._type) > 0) {

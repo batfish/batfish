@@ -171,7 +171,7 @@ public class Graph {
   /*
    * Check if a static route is configured to drop packets
    */
-  public static boolean isNullRouted(StaticRoute sr) {
+  private static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 
@@ -475,25 +475,26 @@ public class Graph {
    * Add graph edges to represent the null interface when used by a static route
    */
   private void addNullRouteEdges() {
-    _nullStaticRoutes.forEach((router, srs) -> {
-      for (StaticRoute sr : srs) {
-        String name = sr.getNextHopInterface();
-        // Create null route interface
-        Interface iface = new Interface(name);
-        iface.setActive(true);
-        iface.setPrefix(sr.getNetwork());
-        // Add static route to all static routes list
-        Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
-        List<StaticRoute> routes = map.computeIfAbsent(name, k -> new ArrayList<>());
-        routes.add(sr);
-        // Create and add graph edge for null route
-        GraphEdge ge = new GraphEdge(iface, null, router, null, false, true);
-        _allRealEdges.add(ge);
-        _allEdges.add(ge);
-        List<GraphEdge> edges = _edgeMap.computeIfAbsent(router, k -> new ArrayList<>());
-        edges.add(ge);
-      }
-    });
+    _nullStaticRoutes.forEach(
+        (router, srs) -> {
+          for (StaticRoute sr : srs) {
+            String name = sr.getNextHopInterface();
+            // Create null route interface
+            Interface iface = new Interface(name);
+            iface.setActive(true);
+            iface.setPrefix(sr.getNetwork());
+            // Add static route to all static routes list
+            Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
+            List<StaticRoute> routes = map.computeIfAbsent(name, k -> new ArrayList<>());
+            routes.add(sr);
+            // Create and add graph edge for null route
+            GraphEdge ge = new GraphEdge(iface, null, router, null, false, true);
+            _allRealEdges.add(ge);
+            _allEdges.add(ge);
+            List<GraphEdge> edges = _edgeMap.computeIfAbsent(router, k -> new ArrayList<>());
+            edges.add(ge);
+          }
+        });
   }
 
   /*
@@ -801,11 +802,7 @@ public class Graph {
    */
   public Set<CommunityVar> findAllCommunities() {
     Set<CommunityVar> comms = new HashSet<>();
-    getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              comms.addAll(findAllCommunities(router));
-            });
+    getConfigurations().forEach((router, conf) -> comms.addAll(findAllCommunities(router)));
     // Add an other option that matches a regex but isn't from this network
     List<CommunityVar> others = new ArrayList<>();
     for (CommunityVar c : comms) {
@@ -818,7 +815,7 @@ public class Graph {
     return comms;
   }
 
-  public Set<CommunityVar> findAllCommunities(String router) {
+  private Set<CommunityVar> findAllCommunities(String router) {
     Set<CommunityVar> comms = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
     conf.getRoutingPolicies()
@@ -904,16 +901,15 @@ public class Graph {
     Map<String, String> comms = new HashMap<>();
     getConfigurations()
         .forEach(
-            (router, conf) -> {
-              conf.getCommunityLists()
-                  .forEach(
-                      (name, cl) -> {
-                        if (cl != null && cl.getLines().size() == 1) {
-                          CommunityListLine line = cl.getLines().get(0);
-                          comms.put(line.getRegex(), name);
-                        }
-                      });
-            });
+            (router, conf) ->
+                conf.getCommunityLists()
+                    .forEach(
+                        (name, cl) -> {
+                          if (cl != null && cl.getLines().size() == 1) {
+                            CommunityListLine line = cl.getLines().get(0);
+                            comms.put(line.getRegex(), name);
+                          }
+                        }));
     return comms;
   }
 
@@ -1124,32 +1120,27 @@ public class Graph {
 
     sb.append("---------------- eBGP Neighbors ----------------\n");
     _ebgpNeighbors.forEach(
-        (ge, n) -> {
-          sb.append("Edge: ").append(ge).append(" (").append(n.getAddress()).append(")\n");
-        });
+        (ge, n) ->
+            sb.append("Edge: ").append(ge).append(" (").append(n.getAddress()).append(")\n"));
 
     sb.append("---------------- iBGP Neighbors ----------------\n");
     _ibgpNeighbors.forEach(
-        (ge, n) -> {
-          sb.append("Edge: ").append(ge).append(" (").append(n.getPrefix()).append(")\n");
-        });
+        (ge, n) -> sb.append("Edge: ").append(ge).append(" (").append(n.getPrefix()).append(")\n"));
 
     sb.append("---------- Static Routes by Interface ----------\n");
     _staticRoutes.forEach(
-        (router, map) -> {
-          map.forEach(
-              (iface, srs) -> {
-                for (StaticRoute sr : srs) {
-                  sb.append("Router: ")
-                      .append(router)
-                      .append(", Interface: ")
-                      .append(iface)
-                      .append(" --> ")
-                      .append(sr.getNetwork())
-                      .append("\n");
-                }
-              });
-        });
+        (router, map) -> map.forEach(
+            (iface, srs) -> {
+              for (StaticRoute sr : srs) {
+                sb.append("Router: ")
+                    .append(router)
+                    .append(", Interface: ")
+                    .append(iface)
+                    .append(" --> ")
+                    .append(sr.getNetwork())
+                    .append("\n");
+              }
+            }));
 
     sb.append("=======================================================\n");
     return sb.toString();

@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import java.util.Objects;
 import org.batfish.symbolic.GraphEdge;
 
 /**
@@ -40,24 +41,13 @@ class LogicalEdge {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof LogicalEdge)) {
       return false;
     }
-
-    LogicalEdge that = (LogicalEdge) o;
-
-    if (_edge != null ? !_edge.equals(that._edge) : that._edge != null) {
-      return false;
-    }
-    if (_type != that._type) {
-      return false;
-    }
-    return _symbolicRecord != null
-        ? _symbolicRecord.equals(that._symbolicRecord)
-        : that._symbolicRecord == null;
+    LogicalEdge other = (LogicalEdge) o;
+    return _type == other._type
+        && Objects.equals(_edge, other._edge)
+        && Objects.equals(_symbolicRecord, other._symbolicRecord);
   }
 
   @Override

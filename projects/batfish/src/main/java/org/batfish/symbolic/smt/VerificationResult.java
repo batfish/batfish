@@ -87,7 +87,7 @@ public class VerificationResult {
     return _failures;
   }
 
-  public String prettyPrintEnv() {
+  private String prettyPrintEnv() {
     StringBuilder sb = new StringBuilder();
     if (_envModel != null) {
       sb.append("\n");
@@ -97,15 +97,13 @@ public class VerificationResult {
           (edge, map) -> {
             sb.append("\n").append(edge).append(":\n");
             map.forEach(
-                (key, val) -> {
-                  sb.append("  ").append(key).append(": ").append(val).append("\n");
-                });
+                (key, val) -> sb.append("  ").append(key).append(": ").append(val).append("\n"));
           });
     }
     return sb.toString();
   }
 
-  public String prettyPrintFailures() {
+  private String prettyPrintFailures() {
     StringBuilder sb = new StringBuilder();
     if (_failures != null) {
       sb.append("\n");
@@ -118,7 +116,7 @@ public class VerificationResult {
     return sb.toString();
   }
 
-  public String prettyPrintForwarding() {
+  private String prettyPrintForwarding() {
     StringBuilder sb = new StringBuilder();
     if (_fwdModel != null) {
       sb.append("\n");
@@ -131,14 +129,11 @@ public class VerificationResult {
     return sb.toString();
   }
 
-  public String prettyPrintPacket() {
+  private String prettyPrintPacket() {
     StringBuilder sb = new StringBuilder();
     sb.append("Packet:\n");
     sb.append("----------------------\n");
-    _packetModel.forEach(
-        (key, val) -> {
-          sb.append(key).append(": ").append(val).append("\n");
-        });
+    _packetModel.forEach((key, val) -> sb.append(key).append(": ").append(val).append("\n"));
     return sb.toString();
   }
 
@@ -179,18 +174,17 @@ public class VerificationResult {
       enc.getSymbolicDecisions()
           .getDataForwarding()
           .forEach(
-              (router, map) -> {
-                map.forEach(
-                    (edge, e) -> {
-                      String expr = e.toString();
-                      if (expr.contains("DATA-")) {
-                        String result = _model.get(expr);
-                        if ("true".equals(result)) {
-                          System.out.println(edge);
+              (router, map) ->
+                  map.forEach(
+                      (edge, e) -> {
+                        String expr = e.toString();
+                        if (expr.contains("DATA-")) {
+                          String result = _model.get(expr);
+                          if ("true".equals(result)) {
+                            System.out.println(edge);
+                          }
                         }
-                      }
-                    });
-              });
+                      }));
       System.out.println("");
       _model.forEach(
           (var, val) -> {

@@ -56,7 +56,7 @@ import org.batfish.symbolic.utils.PrefixUtils;
  */
 class EncoderSlice {
 
-  static final int BITS = 0;
+  private static final int BITS = 0;
 
   private Encoder _encoder;
 
@@ -89,7 +89,6 @@ class EncoderSlice {
   private Map<String, SymbolicRecord> _ospfRedistributed;
 
   private Table2<String, Protocol, Set<Prefix>> _originatedNetworks;
-
 
   /**
    * Create a new encoding slice
@@ -413,7 +412,7 @@ class EncoderSlice {
    * Converts a list of prefixes into a boolean expression that determines
    * if they are relevant for the symbolic packet.
    */
-  public BoolExpr relevantOrigination(Set<Prefix> prefixes) {
+  BoolExpr relevantOrigination(Set<Prefix> prefixes) {
     BoolExpr acc = mkFalse();
     for (Prefix p : prefixes) {
       acc = mkOr(acc, isRelevantFor(p, _symbolicPacket.getDstIp()));
@@ -453,17 +452,15 @@ class EncoderSlice {
    * Check if a prefix range match is applicable for the packet destination
    * Ip address, given the prefix length variable.
    */
-  public BoolExpr isRelevantFor(ArithExpr prefixLen, PrefixRange range) {
+  BoolExpr isRelevantFor(ArithExpr prefixLen, PrefixRange range) {
     Prefix p = range.getPrefix();
     SubRange r = range.getLengthRange();
     long pfx = p.getNetworkAddress().asLong();
     int len = p.getPrefixLength();
     int lower = r.getStart();
     int upper = r.getEnd();
-
     // well formed prefix
     assert (p.getPrefixLength() < lower && lower <= upper);
-
     BoolExpr lowerBitsMatch = firstBitsEqual(_symbolicPacket.getDstIp(), pfx, len);
     if (lower == upper) {
       BoolExpr equalLen = mkEq(prefixLen, mkInt(lower));
@@ -473,21 +470,6 @@ class EncoderSlice {
       BoolExpr lengthUpperBound = mkLe(prefixLen, mkInt(upper));
       return mkAnd(lengthLowerBound, lengthUpperBound, lowerBitsMatch);
     }
-  }
-
-  /*
-   * Check if the first n bits of symbolic variable x
-   * and concrete value y are equal. For example,
-   * 192.0.1.0/24 would have y=int(192.0.1.0), n=24.
-   */
-  private BoolExpr firstBitsEqual(ArithExpr x, long y, int n) {
-    assert (n >= 0 && n <= 32);
-    if (n == 0) {
-      return mkTrue();
-    }
-    long bound = (long) Math.pow(2, 32 - n);
-    ArithExpr upperBound = mkInt(y + bound);
-    return mkAnd(mkGe(x, mkInt(y)), mkLt(x, upperBound));
   }
 
   private BoolExpr firstBitsEqual(BitVecExpr x, long y, int n) {
@@ -504,22 +486,13 @@ class EncoderSlice {
     return mkEq(getCtx().mkBVAND(x, mask), getCtx().mkBVAND(val, mask));
   }
 
-
-  /*
-   * Creates a symbolic expression representing that prefix p
-   * is relevant (the first bits match) with arithmetic expression ae
-   */
-  public BoolExpr isRelevantFor(Prefix p, ArithExpr ae) {
-    long pfx = p.getNetworkAddress().asLong();
-    return firstBitsEqual(ae, pfx, p.getPrefixLength());
-  }
-
-  public BoolExpr isRelevantFor(Prefix p, BitVecExpr be) {
+  BoolExpr isRelevantFor(Prefix p, BitVecExpr be) {
     long pfx = p.getNetworkAddress().asLong();
     return firstBitsEqual(be, pfx, p.getPrefixLength());
   }
 
-  public SymbolicRecord getBestNeighborPerProtocol(String router, Protocol proto) {
+  @Nullable
+  SymbolicRecord getBestNeighborPerProtocol(String router, Protocol proto) {
     if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
       return getSymbolicDecisions().getBestNeighbor().get(router);
     } else {
@@ -713,26 +686,16 @@ class EncoderSlice {
 
                 // Add redistribution variables
                 Set<Protocol> r = _logicalGraph.getRedistributedProtocols().get(router, proto);
+                assert r != null;
                 if (proto.isOspf() && r.size() > 1) {
                   // Add the ospf redistributed record if needed
                   String rname =
                       String.format(
                           "%d_%s%s_%s_%s",
-                          _encoder.getId(),
-                          _sliceName,
-                          router,
-                          proto.name(),
-                          "Redistributed");
+                          _encoder.getId(), _sliceName, router, proto.name(), "Redistributed");
 
                   SymbolicRecord rec =
-                      new SymbolicRecord(
-                          this,
-                          rname,
-                          router,
-                          proto,
-                          _optimizations,
-                          null,
-                          false);
+                      new SymbolicRecord(this, rname, router, proto, _optimizations, null, false);
                   _ospfRedistributed.put(router, rec);
                   getAllSymbolicRecords().add(rec);
                 }
@@ -928,18 +891,21 @@ class EncoderSlice {
   }
 
   private void initOriginatedPrefixes() {
-    getGraph().getConfigurations().forEach((router, conf) -> {
-      for (Protocol proto : _optimizations.getProtocols().get(router)) {
-        Set<Prefix> prefixes = Graph.getOriginatedNetworks(conf, proto);
-        _originatedNetworks.put(router, proto, prefixes);
-      }
-    });
+    getGraph()
+        .getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              for (Protocol proto : _optimizations.getProtocols().get(router)) {
+                Set<Prefix> prefixes = Graph.getOriginatedNetworks(conf, proto);
+                _originatedNetworks.put(router, proto, prefixes);
+              }
+            });
   }
 
   /*
    * Check if this is the main slice
    */
-  public boolean isMainSlice() {
+  boolean isMainSlice() {
     return _sliceName.equals("") || _sliceName.equals(Encoder.MAIN_SLICE_NAME);
   }
 
@@ -968,51 +934,50 @@ class EncoderSlice {
                       _logicalGraph.getLogicalEdges().get(router, proto);
                   assert (les != null);
                   les.forEach(
-                      eList -> {
-                        eList.forEach(
-                            e -> {
-                              if (e.getEdgeType() == EdgeType.IMPORT) {
-                                GraphEdge ge = e.getEdge();
-                                BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
-                                if (n != null && ge.getEnd() == null) {
+                      eList ->
+                          eList.forEach(
+                              e -> {
+                                if (e.getEdgeType() == EdgeType.IMPORT) {
+                                  GraphEdge ge = e.getEdge();
+                                  BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
+                                  if (n != null && ge.getEnd() == null) {
 
-                                  if (!isMainSlice()) {
-                                    LogicalGraph lg = _encoder.getMainSlice().getLogicalGraph();
-                                    SymbolicRecord r = lg.getEnvironmentVars().get(e);
-                                    _logicalGraph.getEnvironmentVars().put(e, r);
-                                  } else {
-                                    String address;
-                                    if (n.getAddress() == null) {
-                                      address = "null";
+                                    if (!isMainSlice()) {
+                                      LogicalGraph lg = _encoder.getMainSlice().getLogicalGraph();
+                                      SymbolicRecord r = lg.getEnvironmentVars().get(e);
+                                      _logicalGraph.getEnvironmentVars().put(e, r);
                                     } else {
-                                      address = n.getAddress().toString();
+                                      String address;
+                                      if (n.getAddress() == null) {
+                                        address = "null";
+                                      } else {
+                                        address = n.getAddress().toString();
+                                      }
+                                      String ifaceName = "ENV-" + address;
+                                      String name =
+                                          String.format(
+                                              "%d_%s%s_%s_%s_%s",
+                                              _encoder.getId(),
+                                              _sliceName,
+                                              router,
+                                              proto.name(),
+                                              "EXPORT",
+                                              ifaceName);
+                                      SymbolicRecord vars =
+                                          new SymbolicRecord(
+                                              this,
+                                              name,
+                                              router,
+                                              proto,
+                                              _optimizations,
+                                              null,
+                                              ge.isAbstract());
+                                      getAllSymbolicRecords().add(vars);
+                                      _logicalGraph.getEnvironmentVars().put(e, vars);
                                     }
-                                    String ifaceName = "ENV-" + address;
-                                    String name =
-                                        String.format(
-                                            "%d_%s%s_%s_%s_%s",
-                                            _encoder.getId(),
-                                            _sliceName,
-                                            router,
-                                            proto.name(),
-                                            "EXPORT",
-                                            ifaceName);
-                                    SymbolicRecord vars =
-                                        new SymbolicRecord(
-                                            this,
-                                            name,
-                                            router,
-                                            proto,
-                                            _optimizations,
-                                            null,
-                                            ge.isAbstract());
-                                    getAllSymbolicRecords().add(vars);
-                                    _logicalGraph.getEnvironmentVars().put(e, vars);
                                   }
                                 }
-                              }
-                            });
-                      });
+                              }));
                 }
               }
             });
@@ -1140,7 +1105,7 @@ class EncoderSlice {
    * remove various attributes from messages when unnecessary.
    */
 
-  public ArithExpr defaultAdminDistance(Configuration conf, Protocol proto, SymbolicRecord r) {
+  ArithExpr defaultAdminDistance(Configuration conf, Protocol proto, SymbolicRecord r) {
     ArithExpr def = mkInt(defaultAdminDistance(conf, proto));
     if (r.getBgpInternal() == null) {
       return def;
@@ -1148,39 +1113,39 @@ class EncoderSlice {
     return mkIf(r.getBgpInternal(), mkInt(200), def);
   }
 
-  public int defaultAdminDistance(Configuration conf, Protocol proto) {
+  private int defaultAdminDistance(Configuration conf, Protocol proto) {
     RoutingProtocol rp = Protocol.toRoutingProtocol(proto);
     return rp.getDefaultAdministrativeCost(conf.getConfigurationFormat());
   }
 
-  public int defaultId() {
+  int defaultId() {
     return 0;
   }
 
-  public int defaultMetric() {
+  int defaultMetric() {
     return 0;
   }
 
-  public int defaultMed(Protocol proto) {
+  int defaultMed(Protocol proto) {
     if (proto.isBgp()) {
       return 100;
     }
     return 0;
   }
 
-  public int defaultLocalPref() {
+  int defaultLocalPref() {
     return 100;
   }
 
-  public int defaultLength() {
+  int defaultLength() {
     return 0;
   }
 
-  public int defaultIgpMetric() {
+  private int defaultIgpMetric() {
     return 0;
   }
 
-  public BitVecExpr defaultOspfType() {
+  private BitVecExpr defaultOspfType() {
     return getCtx().mkBV(0, 2); // OI
   }
 
@@ -1221,7 +1186,7 @@ class EncoderSlice {
    * Creates a test to check for equal protocol histories
    * after accounting for null values introduced by optimizations
    */
-  public BoolExpr equalHistories(SymbolicRecord best, SymbolicRecord vars) {
+  BoolExpr equalHistories(SymbolicRecord best, SymbolicRecord vars) {
     BoolExpr history;
     if (best.getProtocolHistory() == null) {
       history = mkTrue();
@@ -1244,7 +1209,7 @@ class EncoderSlice {
    * Creates a test to check for equal bgp internal
    * tags after accounting for null values introduced by optimizations
    */
-  public BoolExpr equalBgpInternal(SymbolicRecord best, SymbolicRecord vars) {
+  private BoolExpr equalBgpInternal(SymbolicRecord best, SymbolicRecord vars) {
     if (best.getBgpInternal() == null || vars.getBgpInternal() == null) {
       return mkTrue();
     } else {
@@ -1781,26 +1746,27 @@ class EncoderSlice {
                     .getLogicalEdges()
                     .get(router)
                     .forEach(
-                        (proto, eList) -> {
-                          eList.forEach(
-                              edges -> {
-                                edges.forEach(
-                                    le -> {
-                                      GraphEdge ge = le.getEdge();
-                                      BoolExpr expr = cfExprs.get(ge);
+                        (proto, eList) ->
+                            eList.forEach(
+                                edges -> {
+                                  edges.forEach(
+                                      le -> {
+                                        GraphEdge ge = le.getEdge();
+                                        BoolExpr expr = cfExprs.get(ge);
 
-                                      BoolExpr cForward =
-                                          _symbolicDecisions.getControlForwarding().get(router, ge);
-                                      assert (cForward != null);
+                                        BoolExpr cForward =
+                                            _symbolicDecisions
+                                                .getControlForwarding()
+                                                .get(router, ge);
+                                        assert (cForward != null);
 
-                                      if (expr != null) {
-                                        add(mkImplies(mkNot(expr), mkNot(cForward)));
-                                      } else {
-                                        add(mkNot(cForward));
-                                      }
-                                    });
-                              });
-                        });
+                                        if (expr != null) {
+                                          add(mkImplies(mkNot(expr), mkNot(cForward)));
+                                        } else {
+                                          add(mkNot(cForward));
+                                        }
+                                      });
+                                }));
               }
             });
   }
@@ -2036,7 +2002,7 @@ class EncoderSlice {
   private boolean otherSliceHasEdge(EncoderSlice slice, String r, GraphEdge ge) {
     Map<String, List<GraphEdge>> edgeMap = slice.getGraph().getEdgeMap();
     List<GraphEdge> edges = edgeMap.get(r);
-    return edges != null  && edges.contains(ge);
+    return edges != null && edges.contains(ge);
   }
 
   /*
@@ -2374,11 +2340,8 @@ class EncoderSlice {
           } else {
             // Lookup if we learned from iBGP, and if so, don't export the route
             SymbolicRecord other = getBestNeighborPerProtocol(router, proto);
-            /* if (_optimizations.getSliceHasSingleProtocol().contains(router)) {
-              other = varsOther;
-            } else {
-              other = getSymbolicDecisions().getBestNeighborPerProtocol().get(router, proto);
-            } */
+            assert other != null;
+            assert other.getBgpInternal() != null;
             if (other.getBgpInternal() != null) {
               doExport = mkNot(other.getBgpInternal());
               cost = 0;
@@ -2411,8 +2374,7 @@ class EncoderSlice {
         }
 
         TransferSSA f =
-            new TransferSSA(
-                this, conf, varsOther, vars, proto, proto, statements, cost, ge, true);
+            new TransferSSA(this, conf, varsOther, vars, proto, proto, statements, cost, ge, true);
         acc = f.compute();
 
         BoolExpr usable = mkAnd(active, doExport, varsOther.getPermitted(), notFailed);
@@ -2500,10 +2462,8 @@ class EncoderSlice {
           System.out.println("\n\n");
         }
       }
-
     }
   }
-
 
   /*
    * Constraints that define relationships between various messages
@@ -2543,7 +2503,6 @@ class EncoderSlice {
                           // or another OSPF route. We always take the direct OSPF
                           SymbolicRecord ospfRedistribVars = null;
                           SymbolicRecord overallBest = null;
-                          String name = e.getSymbolicRecord().getName();
                           if (proto.isOspf()) {
                             varsOther = getBestNeighborPerProtocol(router, proto);
                             if (_ospfRedistributed.containsKey(router)) {
@@ -2553,8 +2512,11 @@ class EncoderSlice {
                           } else {
                             varsOther = _symbolicDecisions.getBestNeighbor().get(router);
                           }
-
                           Set<Prefix> originations = _originatedNetworks.get(router, proto);
+
+                          assert varsOther != null;
+                          assert originations != null;
+
                           addExportConstraint(
                               e,
                               varsOther,
@@ -2584,6 +2546,7 @@ class EncoderSlice {
                   } else {
                     protoBest = _symbolicDecisions.getBestNeighborPerProtocol().get(router, proto);
                   }
+                  assert protoBest != null;
                   add(mkNot(protoBest.getPermitted()));
                 }
               }
@@ -2678,26 +2641,8 @@ class EncoderSlice {
   }
 
   /*
-   * Create a boolean expression for a variable being within a prefix bound.
-   */
-  private BoolExpr boundConstraint(ArithExpr e, Prefix p) {
-    Prefix n = p.getNetworkPrefix();
-    long lower = n.getAddress().asLong();
-    long upper = n.getEndAddress().asLong();
-    return boundConstraint(e, lower, upper);
-  }
-
-  /*
    * Create a boolean expression for a variable being withing an IpWildCard bound
    */
-  /* private BoolExpr ipWildCardBound(ArithExpr e, IpWildcard ipWildcard) {
-    if (!ipWildcard.isPrefix()) {
-      throw new BatfishException("Unsupported IP wildcard: " + ipWildcard);
-    }
-    Prefix p = ipWildcard.toPrefix().getNetworkPrefix();
-    return boundConstraint(e, p);
-  } */
-
   private BoolExpr ipWildCardBound(BitVecExpr field, IpWildcard wc) {
     BitVecExpr ip = getCtx().mkBV(wc.getIp().asLong(), 32);
     BitVecExpr mask = getCtx().mkBV(~wc.getWildcard().asLong(), 32);
@@ -2986,19 +2931,19 @@ class EncoderSlice {
     return _encoder.getUnsatCore();
   }
 
-  List<SymbolicRecord> getAllSymbolicRecords() {
+  private List<SymbolicRecord> getAllSymbolicRecords() {
     return _allSymbolicRecords;
   }
 
-  SymbolicFailures getSymbolicFailures() {
+  private SymbolicFailures getSymbolicFailures() {
     return _encoder.getSymbolicFailures();
   }
 
-  public Map<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
+  Map<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
     return _communityDependencies;
   }
 
-  public Table2<String, Protocol, Set<Prefix>> getOriginatedNetworks() {
+  Table2<String, Protocol, Set<Prefix>> getOriginatedNetworks() {
     return _originatedNetworks;
   }
 }

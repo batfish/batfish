@@ -165,7 +165,6 @@ public class PropertyChecker {
   }
 
   private static Ip ipVal(Model m, Expr e) {
-    String s = evaluate(m, e);
     return new Ip(Long.parseLong(evaluate(m, e)));
   }
 
@@ -333,7 +332,7 @@ public class PropertyChecker {
                           zeroIp,
                           path,
                           communities,
-                          null,
+                          new TreeSet<>(),
                           0);
 
                   routes.add(adv);
@@ -346,7 +345,7 @@ public class PropertyChecker {
   /*
    * Build an individual flow hop along a path
    */
-  private static FlowTraceHop buildFlowTraceHop(Flow f, GraphEdge ge, String route) {
+  private static FlowTraceHop buildFlowTraceHop(GraphEdge ge, String route) {
     String node1 = ge.getRouter();
     String int1 = ge.getStart().getName();
     String node2 = ge.getPeer() == null ? "(none)" : ge.getPeer();
@@ -445,7 +444,7 @@ public class PropertyChecker {
         BoolExpr aexpr = across.get(ge);
         String route = buildRoute(pfx, proto, ge);
         if (isTrue(m, dexpr)) {
-          hops.add(buildFlowTraceHop(f, ge, route));
+          hops.add(buildFlowTraceHop(ge, route));
           if (ge.getPeer() != null && visited.contains(ge.getPeer())) {
             FlowTrace ft = new FlowTrace(FlowDisposition.LOOP, hops, "LOOP");
             return new Tuple<>(f, ft);
@@ -488,7 +487,7 @@ public class PropertyChecker {
           break;
 
         } else if (isTrue(m, cexpr)) {
-          hops.add(buildFlowTraceHop(f, ge, route));
+          hops.add(buildFlowTraceHop(ge, route));
           Interface i = ge.getStart();
           IpAccessList acl = i.getOutgoingFilter();
           FilterResult fr = acl.filter(f);
@@ -904,6 +903,8 @@ public class PropertyChecker {
 
       FlowHistory fh;
       if (q.getDiffType() != null) {
+        assert enc2 != null;
+        assert reach2 != null;
         fh =
             buildFlowDiffCounterExample(
                 batfish, res, srcRouters, model, enc, enc2, reach, reach2);
@@ -973,6 +974,8 @@ public class PropertyChecker {
         SymbolicDecisions d2 = enc2.getMainSlice().getSymbolicDecisions();
         BoolExpr dataFwd1 = d1.getDataForwarding().get(ge.getRouter(), ge);
         BoolExpr dataFwd2 = d2.getDataForwarding().get(ge.getRouter(), ge);
+        assert dataFwd1 != null;
+        assert dataFwd2 != null;
         String s1 = evaluate(model, dataFwd1);
         String s2 = evaluate(model, dataFwd2);
         if (!Objects.equals(s1, s2)) {
@@ -990,12 +993,7 @@ public class PropertyChecker {
       }
     }
 
-    SmtDeterminismAnswerElement answer = new SmtDeterminismAnswerElement();
-    answer.setResult(res);
-    answer.setFlow(flow);
-    answer.setForwardingCase1(case1);
-    answer.setForwardingCase2(case2);
-    return answer;
+    return new SmtDeterminismAnswerElement(res, flow, case1, case2);
   }
 
   /*

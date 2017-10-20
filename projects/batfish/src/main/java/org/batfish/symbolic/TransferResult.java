@@ -24,7 +24,7 @@ public class TransferResult<U,T> {
     this._returnAssignedValue = null;
   }
 
-  public TransferResult(TransferResult<U,T> other) {
+  private TransferResult(TransferResult<U,T> other) {
     this._changedVariables = other._changedVariables;
     this._returnValue = other._returnValue;
     this._fallthroughValue = other._fallthroughValue;

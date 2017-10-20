@@ -131,22 +131,21 @@ class Optimizations {
         .getGraph()
         .getConfigurations()
         .forEach(
-            (router, conf) -> {
-              conf.getRoutingPolicies()
-                  .forEach(
-                      (name, pol) -> {
-                        AstVisitor v = new AstVisitor();
-                        v.visit(
-                            conf,
-                            pol.getStatements(),
-                            stmt -> {
-                              if (stmt instanceof SetLocalPreference) {
-                                val[0] = true;
-                              }
-                            },
-                            expr -> { });
-                      });
-            });
+            (router, conf) ->
+                conf.getRoutingPolicies()
+                    .forEach(
+                        (name, pol) -> {
+                          AstVisitor v = new AstVisitor();
+                          v.visit(
+                              conf,
+                              pol.getStatements(),
+                              stmt -> {
+                                if (stmt instanceof SetLocalPreference) {
+                                  val[0] = true;
+                                }
+                              },
+                              expr -> { });
+                        }));
     return val[0];
   }
 
@@ -167,21 +166,19 @@ class Optimizations {
         .getGraph()
         .getConfigurations()
         .forEach(
-            (router, conf) -> {
-              conf.getRoutingPolicies()
-                  .forEach(
-                      (name, pol) -> {
-                        v.visit(
-                            conf,
-                            pol.getStatements(),
-                            stmt -> {
-                              if (stmt instanceof SetOspfMetricType) {
-                                val[0] = true;
-                              }
-                            },
-                            expr -> { });
-                      });
-            });
+            (router, conf) ->
+                conf.getRoutingPolicies()
+                    .forEach(
+                        (name, pol) ->
+                            v.visit(
+                                conf,
+                                pol.getStatements(),
+                                stmt -> {
+                                  if (stmt instanceof SetOspfMetricType) {
+                                    val[0] = true;
+                                  }
+                                },
+                                expr -> { })));
     return val[0];
   }
 
@@ -214,21 +211,19 @@ class Optimizations {
         .getGraph()
         .getConfigurations()
         .forEach(
-            (router, conf) -> {
-              conf.getRoutingPolicies()
-                  .forEach(
-                      (name, pol) -> {
-                        v.visit(
-                            conf,
-                            pol.getStatements(),
-                            stmt -> {
-                              if (stmt instanceof SetOspfMetricType) {
-                                val[0] = true;
-                              }
-                            },
-                            expr -> { });
-                      });
-            });
+            (router, conf) ->
+                conf.getRoutingPolicies()
+                    .forEach(
+                        (name, pol) ->
+                            v.visit(
+                                conf,
+                                pol.getStatements(),
+                                stmt -> {
+                                  if (stmt instanceof SetOspfMetricType) {
+                                    val[0] = true;
+                                  }
+                                },
+                                expr -> { })));
     if (val[0]) {
       return true;
     }
@@ -253,11 +248,7 @@ class Optimizations {
    */
   private void initProtocols() {
     Graph g = _encoderSlice.getGraph();
-    g.getConfigurations()
-        .forEach(
-            (router, conf) -> {
-              getProtocols().put(router, new ArrayList<>());
-            });
+    g.getConfigurations().forEach((router, conf) -> getProtocols().put(router, new ArrayList<>()));
     g.getConfigurations()
         .forEach(
             (router, conf) -> {
@@ -279,17 +270,13 @@ class Optimizations {
             });
   }
 
-
   /*
    * We need to model the connected protocol if its interface Ip
    * overlaps with the destination IP of interest in the packet.
    */
   private boolean needToModelConnected(Configuration conf) {
-    if (Optimizations.ENABLE_SLICING_OPTIMIZATION) {
-      return hasRelevantOriginatedRoute(conf, Protocol.CONNECTED);
-    } else {
-      return true;
-    }
+    return !Optimizations.ENABLE_SLICING_OPTIMIZATION
+        || hasRelevantOriginatedRoute(conf, Protocol.CONNECTED);
   }
 
   /*
@@ -351,10 +338,7 @@ class Optimizations {
     _encoderSlice
         .getGraph()
         .getIbgpNeighbors()
-        .forEach(
-            (ge, n) -> {
-              _needBgpInternal.add(ge.getRouter());
-            });
+        .forEach((ge, n) -> _needBgpInternal.add(ge.getRouter()));
   }
 
   /*
@@ -389,7 +373,6 @@ class Optimizations {
         .getConfigurations()
         .forEach(
             (router, conf) -> {
-
               HashMap<Protocol, Boolean> map = new HashMap<>();
               _sliceCanKeepSingleExportVar.put(router, map);
 
@@ -636,7 +619,7 @@ class Optimizations {
    * Getters and Setters
    */
 
-  public boolean getNeedOriginatorIds() {
+  boolean getNeedOriginatorIds() {
     return _needOriginatorIds;
   }
 
@@ -687,5 +670,4 @@ class Optimizations {
   boolean getKeepOspfType() {
     return _keepOspfType;
   }
-
 }

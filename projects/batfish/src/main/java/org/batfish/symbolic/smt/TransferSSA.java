@@ -153,7 +153,7 @@ class TransferSSA {
 
   private boolean _isExport;
 
-  public TransferSSA(
+  TransferSSA(
       EncoderSlice encoderSlice,
       Configuration conf,
       SymbolicRecord other,

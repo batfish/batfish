@@ -20,18 +20,18 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-public class PropertyAdder {
+class PropertyAdder {
 
   private EncoderSlice _encoderSlice;
 
-  public PropertyAdder(EncoderSlice encoderSlice) {
+  PropertyAdder(EncoderSlice encoderSlice) {
     _encoderSlice = encoderSlice;
   }
 
   /*
    * Ensure that all expressions in a list are equal
    */
-  public static BoolExpr allEqual(Context ctx, List<Expr> exprs) {
+  static BoolExpr allEqual(Context ctx, List<Expr> exprs) {
     BoolExpr acc = ctx.mkBool(true);
     if (exprs.size() > 1) {
       for (int i = 0; i < exprs.size() - 1; i++) {
@@ -115,7 +115,7 @@ public class PropertyAdder {
    * the destination. A router is reachable if it has some neighbor that
    * is also reachable.
    */
-  public Map<String, BoolExpr> instrumentReachability(Set<GraphEdge> ges) {
+  Map<String, BoolExpr> instrumentReachability(Set<GraphEdge> ges) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     EncoderSlice slice = _encoderSlice;
@@ -298,7 +298,7 @@ public class PropertyAdder {
    * A router has a path of length n if some neighbor has a path
    * with length n-1.
    */
-  public Map<String, ArithExpr> instrumentPathLength(Set<GraphEdge> ges) {
+  Map<String, ArithExpr> instrumentPathLength(Set<GraphEdge> ges) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
@@ -392,7 +392,7 @@ public class PropertyAdder {
    * port for graph edge ge. Each router will split load according to the
    * number of neighbors it actively uses to get to ge.
    */
-  public Map<String, ArithExpr> instrumentLoad(GraphEdge ge) {
+  Map<String, ArithExpr> instrumentLoad(GraphEdge ge) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
@@ -414,10 +414,7 @@ public class PropertyAdder {
             });
 
     // Lower bound for all lengths
-    loadVars.forEach(
-        (name, var) -> {
-          solver.add(ctx.mkGe(var, ctx.mkInt(0)));
-        });
+    loadVars.forEach((name, var) -> solver.add(ctx.mkGe(var, ctx.mkInt(0))));
 
     // Root router has load 1 if it uses the interface
     ArithExpr zero = ctx.mkInt(0);
@@ -455,7 +452,7 @@ public class PropertyAdder {
    * Instruments the network to check if a router will be part
    * of a routing loop.
    */
-  public BoolExpr instrumentLoop(String router) {
+  BoolExpr instrumentLoop(String router) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();

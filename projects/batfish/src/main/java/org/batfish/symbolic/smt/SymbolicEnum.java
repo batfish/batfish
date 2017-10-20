@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents a symbolic variable for a small, finite number of choices. For optimization purposes,
@@ -17,15 +18,15 @@ import java.util.Map;
  */
 class SymbolicEnum<T> {
 
-  protected EncoderSlice _enc;
+  EncoderSlice _enc;
 
-  protected BitVecExpr _bitvec;
+  BitVecExpr _bitvec;
 
-  protected int _numBits;
+  int _numBits;
 
-  protected List<T> _values;
+  private List<T> _values;
 
-  protected Map<T, BitVecExpr> _valueMap;
+  private Map<T, BitVecExpr> _valueMap;
 
   SymbolicEnum(EncoderSlice slice, List<T> values, String name) {
     _enc = slice;
@@ -59,7 +60,7 @@ class SymbolicEnum<T> {
     _valueMap = other._valueMap;
   }
 
-  protected SymbolicEnum(EncoderSlice slice, List<T> values, T value) {
+  SymbolicEnum(EncoderSlice slice, List<T> values, T value) {
     _enc = slice;
     int idx = values.indexOf(value);
     _numBits = numBits(values);
@@ -101,18 +102,18 @@ class SymbolicEnum<T> {
     return (x & -x) == x;
   }
 
-  public void setBitVec(BitVecExpr bv) {
+  void setBitVec(BitVecExpr bv) {
     this._bitvec = bv;
   }
 
-  public BoolExpr mkEq(SymbolicEnum<T> other) {
+  BoolExpr mkEq(SymbolicEnum<T> other) {
     if (_bitvec == null || other._bitvec == null) {
       return _enc.mkTrue();
     }
     return _enc.mkEq(_bitvec, other._bitvec);
   }
 
-  public BoolExpr checkIfValue(T p) {
+  BoolExpr checkIfValue(T p) {
     if (_bitvec == null) {
       T q = _values.get(0);
       return _enc.mkBool(p == q);
@@ -126,36 +127,28 @@ class SymbolicEnum<T> {
     return _enc.mkEq(_bitvec, bv);
   }
 
-  public BoolExpr isDefaultValue() {
+  BoolExpr isDefaultValue() {
     if (_bitvec == null) {
       return _enc.mkTrue();
     }
     return _enc.mkEq(_bitvec, _enc.getCtx().mkBV(0, _numBits));
   }
 
-  public T value(int i) {
+  T value(int i) {
     return _values.get(i);
   }
 
-  public BitVecExpr getBitVec() {
+  BitVecExpr getBitVec() {
     return _bitvec;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof SymbolicEnum<?>)) {
       return false;
     }
-
-    SymbolicEnum<?> that = (SymbolicEnum<?>) o;
-
-    if (_numBits != that._numBits) {
-      return false;
-    }
-    return _bitvec != null ? _bitvec.equals(that._bitvec) : that._bitvec == null;
+    SymbolicEnum<?> other = (SymbolicEnum<?>) o;
+    return _numBits == other._numBits && Objects.equals(_bitvec, other._bitvec);
   }
 
   @Override

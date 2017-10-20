@@ -69,4 +69,10 @@ public class VerificationStats {
   public long getTime() {
     return _time;
   }
+
+  @Override public String toString() {
+    return "VerificationStats{" + "_numNodes=" + _numNodes + ", _numEdges=" + _numEdges
+        + ", _numVariables=" + _numVariables + ", _numConstraints=" + _numConstraints + ", _time="
+        + _time + '}';
+  }
 }

@@ -22,13 +22,6 @@ class SymbolicOspfType extends SymbolicEnum<OspfType> {
     super(other);
   }
 
-  /* BoolExpr isExternal() {
-    if (this._bitvec == null) {
-      return _enc.mkFalse();
-    }
-    return _enc.getCtx().mkBVUGE(_bitvec, _enc.getCtx().mkBV(2, 2));
-  } */
-
   BoolExpr isInternal() {
     if (this._bitvec == null) {
       return _enc.mkTrue();

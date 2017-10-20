@@ -2,6 +2,7 @@ package org.batfish.symbolic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 
@@ -85,31 +86,16 @@ public class GraphEdge {
   }
 
   @Override public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof GraphEdge)) {
       return false;
     }
-
-    GraphEdge graphEdge = (GraphEdge) o;
-
-    if (_isAbstract != graphEdge._isAbstract) {
-      return false;
-    }
-    if (_isNullEdge != graphEdge._isNullEdge) {
-      return false;
-    }
-    if (_start != null ? !_start.equals(graphEdge._start) : graphEdge._start != null) {
-      return false;
-    }
-    if (_end != null ? !_end.equals(graphEdge._end) : graphEdge._end != null) {
-      return false;
-    }
-    if (_router != null ? !_router.equals(graphEdge._router) : graphEdge._router != null) {
-      return false;
-    }
-    return _peer != null ? _peer.equals(graphEdge._peer) : graphEdge._peer == null;
+    GraphEdge other = (GraphEdge) o;
+    return _isAbstract == other._isAbstract
+        && _isNullEdge == other._isNullEdge
+        && Objects.equals(_router, other._router)
+        && Objects.equals(_start, other._start)
+        && Objects.equals(_peer, other._peer)
+        && Objects.equals(_end, other._end);
   }
 
   @Override public int hashCode() {
