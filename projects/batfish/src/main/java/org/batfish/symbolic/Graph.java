@@ -204,8 +204,8 @@ public class Graph {
    * router as well as the protocol. Static routes and connected
    * routes are treated as originating the prefix.
    */
-  public static List<Prefix> getOriginatedNetworks(Configuration conf, Protocol proto) {
-    List<Prefix> acc = new ArrayList<>();
+  public static Set<Prefix> getOriginatedNetworks(Configuration conf, Protocol proto) {
+    Set<Prefix> acc = new HashSet<>();
 
     if (proto.isOspf()) {
       conf.getDefaultVrf()
@@ -215,7 +215,7 @@ public class Graph {
               (areaID, area) -> {
                 for (Interface iface : area.getInterfaces()) {
                   if (iface.getActive() && iface.getOspfEnabled()) {
-                    acc.add(iface.getPrefix());
+                    acc.add(iface.getPrefix().getNetworkPrefix());
                   }
                 }
               });
@@ -247,7 +247,7 @@ public class Graph {
                           ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
                           Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
                           for (PrefixRange r : ranges) {
-                            acc.add(r.getPrefix());
+                            acc.add(r.getPrefix().getNetworkPrefix());
                           }
                         }
                       }
@@ -266,7 +266,7 @@ public class Graph {
               (name, iface) -> {
                 Prefix p = iface.getPrefix();
                 if (p != null) {
-                  acc.add(p);
+                  acc.add(p.getNetworkPrefix());
                 }
               });
       return acc;
@@ -275,7 +275,7 @@ public class Graph {
     if (proto.isStatic()) {
       for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
         if (sr.getNetwork() != null && !Graph.isNullRouted(sr)) {
-          acc.add(sr.getNetwork());
+          acc.add(sr.getNetwork().getNetworkPrefix());
         }
       }
       return acc;

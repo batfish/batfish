@@ -276,7 +276,6 @@ public class PropertyChecker {
                 // If we actually use it
                 GraphEdge ge = lge.getEdge();
                 String router = ge.getRouter();
-                Configuration conf = slice.getGraph().getConfigurations().get(router);
                 SymbolicDecisions decisions = slice.getSymbolicDecisions();
                 BoolExpr ctrFwd = decisions.getControlForwarding().get(router, ge);
                 assert ctrFwd != null;
@@ -890,11 +889,14 @@ public class PropertyChecker {
       // Only consider failures for allowed edges
       addFailureConstraints(enc, destPorts, failOptions);
 
+      long startVerify = System.currentTimeMillis();
       Tuple<VerificationResult, Model> result = enc.verify();
+      System.out.println("Verification time: " + (System.currentTimeMillis() - startVerify));
+
       res = result.getFirst();
       Model model = result.getSecond();
 
-      // res.debug(enc.getMainSlice(), true, null);
+      // res.debug(enc.getMainSlice(), false, null);
 
       if (res.isVerified()) {
         continue;
@@ -1535,7 +1537,7 @@ public class PropertyChecker {
       Context ctx, EncoderSlice e1, String r1, Configuration conf1) {
     BoolExpr validDest = ctx.mkBool(true);
     for (Protocol proto1 : e1.getProtocols().get(r1)) {
-      List<Prefix> prefixes = Graph.getOriginatedNetworks(conf1, proto1);
+      Set<Prefix> prefixes = Graph.getOriginatedNetworks(conf1, proto1);
       BoolExpr dest = e1.relevantOrigination(prefixes);
       validDest = ctx.mkAnd(validDest, ctx.mkNot(dest));
     }

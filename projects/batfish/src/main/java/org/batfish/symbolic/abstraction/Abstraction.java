@@ -114,9 +114,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       }
     }
 
-    System.out.println("DstIps: " + dstIps);
-    System.out.println("NotDstIps: " + notDstIps);
-
     PrefixTrieMap pt = new PrefixTrieMap();
 
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
@@ -124,7 +121,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       Configuration conf = entry.getValue();
       // System.out.println("Looking at router: " + router);
       for (Protocol proto : protoMap.get(router)) {
-        List<Prefix> destinations = new ArrayList<>();
+        Set<Prefix> destinations = new HashSet<>();
         // For connected interfaces add address if there is a peer
         // Otherwise, add the entire prefix since we don't know
         /* if (proto.isConnected()) {
@@ -149,7 +146,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         for (Prefix p : destinations) {
           if (_headerspace == null
               || (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps))) {
-            System.out.println("Adding: " + p);
             pt.add(p, router);
           }
         }
@@ -158,8 +154,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
     // Map collections of devices to the destination IP ranges that are rooted there
     _destinationMap = pt.createDestinationMap();
-
-    System.out.println("Destination Map:");
     _destinationMap.forEach(
         (devices, prefixes) -> System.out.println("Devices: " + devices + " --> " + prefixes));
   }
@@ -320,8 +314,8 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     Map<String,String> abstraction = abstractNetwork.getSecond();
 
     // System.out.println("New graph: \n" + abstractGraph);
-    System.out.println("Size: " + abstractGraph.getConfigurations().size());
-    System.out.println("ECs: " + workset.partitions().size());
+    System.out.println("EC Size: " + abstractGraph.getConfigurations().size());
+    // System.out.println("ECs: " + workset.partitions().size());
 
     HeaderSpace h = createHeaderSpace(prefixes);
     return new EquivalenceClass(h, abstractGraph, abstraction);
@@ -528,7 +522,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
               }
             });
     Graph abstractGraph = new Graph(_batfish, newConfigs);
-
+    // Create the abstraction map from concrete to abstract
     Map<String, String> abstractionMap = new HashMap<>();
     canonicalChoices.forEach((idx, choice) -> {
       Set<String> group = us.getPartition(idx);
@@ -536,8 +530,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         abstractionMap.put(s, choice);
       }
     });
-
-
     return new Tuple<>(abstractGraph, abstractionMap);
   }
 

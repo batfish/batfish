@@ -409,7 +409,7 @@ class EncoderSlice {
    * Converts a list of prefixes into a boolean expression that determines
    * if they are relevant for the symbolic packet.
    */
-  public BoolExpr relevantOrigination(List<Prefix> prefixes) {
+  public BoolExpr relevantOrigination(Set<Prefix> prefixes) {
     BoolExpr acc = mkFalse();
     for (Prefix p : prefixes) {
       acc = mkOr(acc, isRelevantFor(p, _symbolicPacket.getDstIp()));
@@ -2320,7 +2320,7 @@ class EncoderSlice {
       GraphEdge ge,
       String router,
       boolean usedExport,
-      List<Prefix> originations) {
+      Set<Prefix> originations) {
 
     SymbolicRecord vars = e.getSymbolicRecord();
 
@@ -2539,7 +2539,7 @@ class EncoderSlice {
                             varsOther = _symbolicDecisions.getBestNeighbor().get(router);
                           }
 
-                          List<Prefix> originations = Graph.getOriginatedNetworks(conf, proto);
+                          Set<Prefix> originations = Graph.getOriginatedNetworks(conf, proto);
                           usedExport =
                               addExportConstraint(
                                   e,

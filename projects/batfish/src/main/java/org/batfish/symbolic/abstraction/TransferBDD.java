@@ -834,7 +834,7 @@ class TransferBDD {
             int end = r.getLengthRange().getEnd();
             Prefix pfx = r.getPrefix();
             if (start == end && start == pfx.getPrefixLength()) {
-              List<Prefix> origin = Graph.getOriginatedNetworks(_conf, Protocol.BGP);
+              Set<Prefix> origin = Graph.getOriginatedNetworks(_conf, Protocol.BGP);
               if (origin.contains(pfx)) {
                 return factory.zero();
               }

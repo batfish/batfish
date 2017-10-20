@@ -586,7 +586,7 @@ class Optimizations {
    * possibly relevant for symbolic the destination Ip packet.
    */
   private boolean hasRelevantOriginatedRoute(Configuration conf, Protocol proto) {
-    List<Prefix> prefixes = Graph.getOriginatedNetworks(conf, proto);
+    Set<Prefix> prefixes = Graph.getOriginatedNetworks(conf, proto);
     for (Prefix p1 : prefixes) {
       if (_encoderSlice.relevantPrefix(p1)) {
         return true;
