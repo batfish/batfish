@@ -2069,8 +2069,7 @@ class EncoderSlice {
       }
 
       if (proto.isStatic()) {
-        List<StaticRoute> srs =
-            getGraph().getStaticRoutes().get(router).get(iface.getName()); // should exist
+        List<StaticRoute> srs = getGraph().getStaticRoutes().get(router, iface.getName());
         assert (srs != null);
         BoolExpr acc = mkNot(vars.getPermitted());
         for (StaticRoute sr : srs) {

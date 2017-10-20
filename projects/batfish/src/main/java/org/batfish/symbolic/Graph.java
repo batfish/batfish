@@ -87,7 +87,7 @@ public class Graph {
 
   private Map<String, Set<Long>> _areaIds;
 
-  private Map<String, Map<String, List<StaticRoute>>> _staticRoutes;
+  private Table2<String, String, List<StaticRoute>> _staticRoutes;
 
   private Map<String, List<StaticRoute>> _nullStaticRoutes;
 
@@ -139,7 +139,7 @@ public class Graph {
     _allRealEdges = new HashSet<>();
     _otherEnd = new HashMap<>();
     _areaIds = new HashMap<>();
-    _staticRoutes = new HashMap<>();
+    _staticRoutes = new Table2<>();
     _nullStaticRoutes = new HashMap<>();
     _neighbors = new HashMap<>();
     _ebgpNeighbors = new HashMap<>();
@@ -1001,7 +1001,7 @@ public class Graph {
 
     // Only use specified edges from static routes
     if (proto.isStatic()) {
-      List<StaticRoute> srs = getStaticRoutes().get(conf.getName()).get(iface.getName());
+      List<StaticRoute> srs = getStaticRoutes().get(conf.getName(), iface.getName());
       return iface.getActive() && srs != null && srs.size() > 0;
     }
 
@@ -1175,7 +1175,7 @@ public class Graph {
     return _ibgpNeighbors;
   }
 
-  public Map<String, Map<String, List<StaticRoute>>> getStaticRoutes() {
+  public Table2<String, String, List<StaticRoute>> getStaticRoutes() {
     return _staticRoutes;
   }
 

@@ -5,6 +5,7 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Model;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -411,7 +412,7 @@ class CounterExample {
    */
   FlowHistory buildFlowCounterExample(
       String testrigName,
-      Set<String> sourceRouters,
+      Collection<String> sourceRouters,
       Encoder enc,
       Map<String, BoolExpr> reach) {
     FlowHistory fh = new FlowHistory();
@@ -436,7 +437,7 @@ class CounterExample {
    */
   FlowHistory buildFlowDiffCounterExample(
       String testRigName,
-      Set<String> sourceRouters,
+      Collection<String> sourceRouters,
       Encoder enc,
       Encoder enc2,
       Map<String, BoolExpr> reach,
