@@ -29,9 +29,9 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_EQUIVALENCE_TYPE = "equivType";
 
-    private String _nodeRegex;
+    private String _nodeRegex = ".*";
 
-    private EquivalenceType _type;
+    private EquivalenceType _type = EquivalenceType.NODE;
 
     RoleQuestion() {
       _type = EquivalenceType.NODE;
